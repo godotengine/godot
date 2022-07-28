@@ -278,7 +278,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 
 	Callable::CallError ce;
 
-	p_node->call(config.name, (const Variant **)argp.ptr(), argc, ce);
+	p_node->callp(config.name, (const Variant **)argp.ptr(), argc, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		String error = Variant::get_call_error_text(p_node, config.name, (const Variant **)argp.ptr(), argc, ce);
 		error = "RPC - " + error;
@@ -302,12 +302,9 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
 	}
 
-	NodePath from_path = multiplayer->get_root_path().rel_path_to(p_from->get_path());
-	ERR_FAIL_COND_MSG(from_path.is_empty(), "Unable to send RPC. Relative path is empty. THIS IS LIKELY A BUG IN THE ENGINE!");
-
 	// See if all peers have cached path (if so, call can be fast).
 	int psc_id;
-	const bool has_all_peers = multiplayer->send_object_cache(p_from, from_path, p_to, psc_id);
+	const bool has_all_peers = multiplayer->send_object_cache(p_from, p_to, psc_id);
 
 	// Create base packet, lots of hardcode because it must be tight.
 
@@ -414,6 +411,7 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		// Not all verified path, so send one by one.
 
 		// Append path at the end, since we will need it for some packets.
+		NodePath from_path = multiplayer->get_root_path().rel_path_to(p_from->get_path());
 		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
@@ -480,7 +478,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 		Callable::CallError ce;
 
 		multiplayer->set_remote_sender_override(peer->get_unique_id());
-		node->call(p_method, p_arg, p_argcount, ce);
+		node->callp(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
 		if (ce.error != Callable::CallError::CALL_OK) {
@@ -496,7 +494,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 		ce.error = Callable::CallError::CALL_OK;
 
 		multiplayer->set_remote_sender_override(peer->get_unique_id());
-		node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		node->get_script_instance()->callp(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
 		if (ce.error != Callable::CallError::CALL_OK) {

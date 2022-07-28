@@ -56,7 +56,6 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   hb_array_t& operator= (const hb_array_t&) = default;
   hb_array_t& operator= (hb_array_t&&) = default;
 
-  constexpr hb_array_t (std::nullptr_t) : hb_array_t () {}
   constexpr hb_array_t (Type *array_, unsigned int length_) : arrayZ (array_), length (length_) {}
   template <unsigned int length_>
   constexpr hb_array_t (Type (&array_)[length_]) : hb_array_t (array_, length_) {}
@@ -101,10 +100,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   /* Ouch. The operator== compares the contents of the array.  For range-based for loops,
    * it's best if we can just compare arrayZ, though comparing contents is still fast,
    * but also would require that Type has operator==.  As such, we optimize this operator
-   * for range-based for loop and just compare arrayZ.  No need to compare length, as we
-   * assume we're only compared to .end(). */
+   * for range-based for loop and just compare arrayZ and length. */
   bool operator != (const hb_array_t& o) const
-  { return arrayZ != o.arrayZ; }
+  { return this->arrayZ != o.arrayZ || this->length != o.length; }
 
   /* Extra operators.
    */
@@ -221,11 +219,8 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
     if (end < start + 2)
       return;
 
-    for (unsigned lhs = start, rhs = end - 1; lhs < rhs; lhs++, rhs--) {
-      Type temp = arrayZ[rhs];
-      arrayZ[rhs] = arrayZ[lhs];
-      arrayZ[lhs] = temp;
-    }
+    for (unsigned lhs = start, rhs = end - 1; lhs < rhs; lhs++, rhs--)
+      hb_swap (arrayZ[rhs], arrayZ[lhs]);
   }
 
   hb_array_t sub_array (unsigned int start_offset = 0, unsigned int *seg_count = nullptr /* IN/OUT */) const
@@ -314,7 +309,6 @@ struct hb_sorted_array_t :
   hb_sorted_array_t& operator= (const hb_sorted_array_t&) = default;
   hb_sorted_array_t& operator= (hb_sorted_array_t&&) = default;
 
-  constexpr hb_sorted_array_t (std::nullptr_t) : hb_sorted_array_t () {}
   constexpr hb_sorted_array_t (Type *array_, unsigned int length_) : hb_array_t<Type> (array_, length_) {}
   template <unsigned int length_>
   constexpr hb_sorted_array_t (Type (&array_)[length_]) : hb_array_t<Type> (array_) {}
@@ -330,6 +324,8 @@ struct hb_sorted_array_t :
   { hb_array_t<Type> (*this) = o; return *this; }
 
   /* Iterator implementation. */
+
+  /* See comment in hb_array_of::operator != */
   bool operator != (const hb_sorted_array_t& o) const
   { return this->arrayZ != o.arrayZ || this->length != o.length; }
 
@@ -346,7 +342,7 @@ struct hb_sorted_array_t :
     unsigned int i;
     return bfind (x, &i) ? &this->arrayZ[i] : not_found;
   }
-  template <typename T>
+  template <typename T, typename ...Ts>
   const Type *bsearch (const T &x, const Type *not_found = nullptr) const
   {
     unsigned int i;
@@ -384,15 +380,16 @@ struct hb_sorted_array_t :
     }
     return false;
   }
-  template <typename T>
-  bool bsearch_impl (const T &x, unsigned *pos) const
+  template <typename T, typename ...Ts>
+  bool bsearch_impl (const T &x, unsigned *pos, Ts... ds) const
   {
     return hb_bsearch_impl (pos,
 			    x,
 			    this->arrayZ,
 			    this->length,
 			    sizeof (Type),
-			    _hb_cmp_method<T, Type>);
+			    _hb_cmp_method<T, Type, Ts...>,
+			    ds...);
   }
 };
 template <typename T> inline hb_sorted_array_t<T>
@@ -403,7 +400,7 @@ hb_sorted_array (T (&array_)[length_])
 { return hb_sorted_array_t<T> (array_); }
 
 template <typename T>
-bool hb_array_t<T>::operator == (const hb_array_t<T> &o) const
+inline bool hb_array_t<T>::operator == (const hb_array_t<T> &o) const
 {
   if (o.length != this->length) return false;
   for (unsigned int i = 0; i < this->length; i++) {
@@ -411,8 +408,18 @@ bool hb_array_t<T>::operator == (const hb_array_t<T> &o) const
   }
   return true;
 }
-
-/* TODO Specialize operator== for hb_bytes_t and hb_ubytes_t. */
+template <>
+inline bool hb_array_t<const char>::operator == (const hb_array_t<const char> &o) const
+{
+  if (o.length != this->length) return false;
+  return 0 == hb_memcmp (arrayZ, o.arrayZ, length);
+}
+template <>
+inline bool hb_array_t<const unsigned char>::operator == (const hb_array_t<const unsigned char> &o) const
+{
+  if (o.length != this->length) return false;
+  return 0 == hb_memcmp (arrayZ, o.arrayZ, length);
+}
 
 template <>
 inline uint32_t hb_array_t<const char>::hash () const {
@@ -421,7 +428,6 @@ inline uint32_t hb_array_t<const char>::hash () const {
     current = current * 31 + (uint32_t) (this->arrayZ[i] * 2654435761u);
   return current;
 }
-
 template <>
 inline uint32_t hb_array_t<const unsigned char>::hash () const {
   uint32_t current = 0;

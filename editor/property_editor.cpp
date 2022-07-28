@@ -43,7 +43,6 @@
 #include "editor/array_property_edit.h"
 #include "editor/create_dialog.h"
 #include "editor/dictionary_property_edit.h"
-#include "editor/editor_export.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
@@ -85,7 +84,7 @@ bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) co
 }
 
 Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	RES ret;
+	Ref<Resource> ret;
 	if (GDVIRTUAL_CALL(_convert, p_resource, ret)) {
 		return ret;
 	}
@@ -105,15 +104,16 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 	switch (type) {
 		case Variant::INT: {
 			if (hint == PROPERTY_HINT_FLAGS) {
-				int val = v;
-
-				if (val & (1 << p_which)) {
-					val &= ~(1 << p_which);
+				int idx = menu->get_item_index(p_which);
+				uint32_t item_value = menu->get_item_metadata(idx);
+				uint32_t value = v;
+				// If the item wasn't previously checked it means it was pressed,
+				// otherwise it was unpressed.
+				if (!menu->is_item_checked(idx)) {
+					v = value | item_value;
 				} else {
-					val |= (1 << p_which);
+					v = value & ~item_value;
 				}
-
-				v = val;
 				emit_signal(SNAME("variant_changed"));
 			} else if (hint == PROPERTY_HINT_ENUM) {
 				v = menu->get_item_metadata(p_which);
@@ -137,21 +137,21 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						ResourceLoader::get_recognized_extensions_for_type(type.get_slice(",", i), &extensions);
 					}
 
-					Set<String> valid_extensions;
+					HashSet<String> valid_extensions;
 					for (const String &E : extensions) {
 						valid_extensions.insert(E);
 					}
 
 					file->clear_filters();
-					for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
-						file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+					for (const String &E : valid_extensions) {
+						file->add_filter("*." + E, E.to_upper());
 					}
 
 					file->popup_file_dialog();
 				} break;
 
 				case OBJ_MENU_EDIT: {
-					REF r = v;
+					Ref<RefCounted> r = v;
 
 					if (!r.is_null()) {
 						emit_signal(SNAME("resource_edit_request"));
@@ -223,18 +223,18 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-					RES r = v;
+					Ref<Resource> r = v;
 					FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-					tab_container->set_current_tab(file_system_dock->get_index());
+					tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
 				} break;
 				default: {
 					if (p_which >= CONVERT_BASE_ID) {
 						int to_type = p_which - CONVERT_BASE_ID;
 
-						Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(RES(v));
+						Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(Ref<Resource>(v));
 
 						ERR_FAIL_INDEX(to_type, conversions.size());
 
@@ -486,15 +486,19 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				set_size(Size2(200, 150) * EDSCALE);
 			} else if (hint == PROPERTY_HINT_FLAGS) {
 				Vector<String> flags = hint_text.split(",");
+				uint32_t value = v;
 				for (int i = 0; i < flags.size(); i++) {
-					String flag = flags[i];
-					if (flag.is_empty()) {
-						continue;
+					uint32_t current_val;
+					Vector<String> text_split = flags[i].split(":");
+					if (text_split.size() != 1) {
+						current_val = text_split[1].to_int();
+					} else {
+						current_val = 1 << i;
 					}
-					menu->add_check_item(flag, i);
-					int f = v;
-					if (f & (1 << i)) {
-						menu->set_item_checked(menu->get_item_index(i), true);
+					menu->add_check_item(text_split[0], current_val);
+					menu->set_item_metadata(i, current_val);
+					if ((value & current_val) == current_val) {
+						menu->set_item_checked(menu->get_item_index(current_val), true);
 					}
 				}
 				menu->set_position(get_position());
@@ -768,7 +772,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			Transform2D basis = v;
 			for (int i = 0; i < 6; i++) {
-				value_editor[i]->set_text(String::num(basis.elements[i / 2][i % 2]));
+				value_editor[i]->set_text(String::num(basis.columns[i / 2][i % 2]));
 			}
 
 		} break;
@@ -786,7 +790,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			Basis basis = v;
 			for (int i = 0; i < 9; i++) {
-				value_editor[i]->set_text(String::num(basis.elements[i / 3][i % 3]));
+				value_editor[i]->set_text(String::num(basis.rows[i / 3][i % 3]));
 			}
 
 		} break;
@@ -807,7 +811,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			Transform3D tr = v;
 			for (int i = 0; i < 9; i++) {
-				value_editor[(i / 3) * 4 + i % 3]->set_text(String::num(tr.basis.elements[i / 3][i % 3]));
+				value_editor[(i / 3) * 4 + i % 3]->set_text(String::num(tr.basis.rows[i / 3][i % 3]));
 			}
 
 			value_editor[3]->set_text(String::num(tr.origin.x));
@@ -823,17 +827,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				value_vbox->add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
-
-				// get default color picker mode from editor settings
-				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-				if (default_color_mode == 1) {
-					color_picker->set_hsv_mode(true);
-				} else if (default_color_mode == 2) {
-					color_picker->set_raw_mode(true);
-				}
-
-				int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-				color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+				color_picker->connect("show", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(color_picker));
 			}
 
 			color_picker->show();
@@ -875,7 +869,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
 					String base = hint_text.get_slice(",", i);
 
-					Set<String> valid_inheritors;
+					HashSet<String> valid_inheritors;
 					valid_inheritors.insert(base);
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
@@ -890,8 +884,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						E = E->next();
 					}
 
-					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
-						const String &t = j->get();
+					for (const String &j : valid_inheritors) {
+						const String &t = j;
 
 						bool is_custom_resource = false;
 						Ref<Texture2D> icon;
@@ -907,7 +901,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 							}
 						}
 
-						if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
+						if (!is_custom_resource && (!ClassDB::can_instantiate(t) || ClassDB::is_virtual(t))) {
 							continue;
 						}
 
@@ -928,19 +922,19 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			menu->add_item(TTR("Load"), OBJ_MENU_LOAD);
 
-			if (!RES(v).is_null()) {
+			if (!Ref<Resource>(v).is_null()) {
 				menu->add_item(TTR("Edit"), OBJ_MENU_EDIT);
 				menu->add_item(TTR("Clear"), OBJ_MENU_CLEAR);
 				menu->add_item(TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
-				RES r = v;
+				Ref<Resource> r = v;
 				if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->add_separator();
 					menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
 			}
 
-			RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
+			Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 			bool paste_valid = false;
 			if (cb.is_valid()) {
 				if (hint_text.is_empty()) {
@@ -955,10 +949,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 			}
 
-			if (!RES(v).is_null() || paste_valid) {
+			if (!Ref<Resource>(v).is_null() || paste_valid) {
 				menu->add_separator();
 
-				if (!RES(v).is_null()) {
+				if (!Ref<Resource>(v).is_null()) {
 					menu->add_item(TTR("Copy"), OBJ_MENU_COPY);
 				}
 
@@ -967,8 +961,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 			}
 
-			if (!RES(v).is_null()) {
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(RES(v));
+			if (!Ref<Resource>(v).is_null()) {
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(Ref<Resource>(v));
 				if (conversions.size()) {
 					menu->add_separator();
 				}
@@ -1029,7 +1023,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 		case Variant::OBJECT: {
 			String type = (hint == PROPERTY_HINT_RESOURCE_TYPE) ? hint_text : String();
 
-			RES res = ResourceLoader::load(p_file, type);
+			Ref<Resource> res = ResourceLoader::load(p_file, type);
 			if (res.is_null()) {
 				error->set_text(TTR("Error loading file: Not a resource!"));
 				error->popup_centered();
@@ -1222,7 +1216,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 								filter = "*." + extensions[i];
 							}
 
-							file->add_filter(filter + " ; " + extensions[i].to_upper());
+							file->add_filter(filter, extensions[i].to_upper());
 						}
 					}
 					file->popup_file_dialog();
@@ -1306,13 +1300,13 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				ResourceLoader::get_recognized_extensions_for_type(type, &extensions);
 				file->clear_filters();
 				for (const String &E : extensions) {
-					file->add_filter("*." + E + " ; " + E.to_upper());
+					file->add_filter("*." + E, E.to_upper());
 				}
 
 				file->popup_file_dialog();
 
 			} else if (p_which == 2) {
-				RES r = v;
+				Ref<Resource> r = v;
 
 				if (!r.is_null()) {
 					emit_signal(SNAME("resource_edit_request"));
@@ -1469,7 +1463,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				v = value_editor[0]->get_text().to_int();
 				return;
 			} else {
-				v = expr->execute(Array(), nullptr, false);
+				v = expr->execute(Array(), nullptr, false, false);
 			}
 
 			if (v != prev_v) {
@@ -1568,7 +1562,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::TRANSFORM2D: {
 			Transform2D m;
 			for (int i = 0; i < 6; i++) {
-				m.elements[i / 2][i % 2] = _parse_real_expression(value_editor[i]->get_text());
+				m.columns[i / 2][i % 2] = _parse_real_expression(value_editor[i]->get_text());
 			}
 
 			v = m;
@@ -1580,7 +1574,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::BASIS: {
 			Basis m;
 			for (int i = 0; i < 9; i++) {
-				m.elements[i / 3][i % 3] = _parse_real_expression(value_editor[i]->get_text());
+				m.rows[i / 3][i % 3] = _parse_real_expression(value_editor[i]->get_text());
 			}
 
 			v = m;
@@ -1592,7 +1586,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::TRANSFORM3D: {
 			Basis basis;
 			for (int i = 0; i < 9; i++) {
-				basis.elements[i / 3][i % 3] = _parse_real_expression(value_editor[(i / 3) * 4 + i % 3]->get_text());
+				basis.rows[i / 3][i % 3] = _parse_real_expression(value_editor[(i / 3) * 4 + i % 3]->get_text());
 			}
 
 			Vector3 origin;
@@ -1645,7 +1639,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 	if (err != OK) {
 		out = value_editor[0]->get_text().to_float();
 	} else {
-		out = expr->execute(Array(), nullptr, false);
+		out = expr->execute(Array(), nullptr, false, true);
 	}
 	return out;
 }
@@ -1771,9 +1765,6 @@ void CustomPropertyEditor::_bind_methods() {
 }
 
 CustomPropertyEditor::CustomPropertyEditor() {
-	read_only = false;
-	updating = false;
-
 	value_vbox = memnew(VBoxContainer);
 	add_child(value_vbox);
 
@@ -1828,7 +1819,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	text_edit = memnew(TextEdit);
 	value_vbox->add_child(text_edit);
-	text_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	text_edit->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 5);
 	text_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	text_edit->set_offset(SIDE_BOTTOM, -30);
 
@@ -1884,12 +1875,12 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	spinbox = memnew(SpinBox);
 	value_vbox->add_child(spinbox);
-	spinbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	spinbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 5);
 	spinbox->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	slider = memnew(HSlider);
 	value_vbox->add_child(slider);
-	slider->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	slider->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 5);
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	action_hboxes = memnew(HBoxContainer);

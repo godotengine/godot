@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CurveXYZTexture" inherits="Texture2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A texture that shows 3 different curves (stored on the red, green and blue color channels).
 	</brief_description>
 	<description>
+		Renders 3 given [Curve]s provided to it, on the red, green and blue channels respectively. Compared to using separate [CurveTexture]s, this further simplifies the task of drawing curves and/or saving them as image files.
+		If you only need to store one curve within a single texture, use [CurveTexture] instead. See also [GradientTexture1D] and [GradientTexture2D].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="curve_x" type="Curve" setter="set_curve_x" getter="get_curve_x">
+			The [Curve] that is rendered onto the texture's red channel.
 		</member>
 		<member name="curve_y" type="Curve" setter="set_curve_y" getter="get_curve_y">
+			The [Curve] that is rendered onto the texture's green channel.
 		</member>
 		<member name="curve_z" type="Curve" setter="set_curve_z" getter="get_curve_z">
+			The [Curve] that is rendered onto the texture's blue channel.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="256">
+			The width of the texture (in pixels). Higher values make it possible to represent high-frequency data better (such as sudden direction changes), at the cost of increased generation time and memory usage.
 		</member>
 	</members>
 </class>

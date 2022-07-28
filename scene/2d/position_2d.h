@@ -36,6 +36,8 @@
 class Position2D : public Node2D {
 	GDCLASS(Position2D, Node2D);
 
+	real_t gizmo_extents = 10.0;
+
 	void _draw_cross();
 
 protected:

@@ -106,7 +106,7 @@ float OGGPacketSequence::get_length() const {
 	return granule_pos / sampling_rate;
 }
 
-Ref<OGGPacketSequencePlayback> OGGPacketSequence::instance_playback() {
+Ref<OGGPacketSequencePlayback> OGGPacketSequence::instantiate_playback() {
 	Ref<OGGPacketSequencePlayback> playback;
 	playback.instantiate();
 	playback->ogg_packet_sequence = Ref<OGGPacketSequence>(this);

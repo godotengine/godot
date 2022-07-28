@@ -32,9 +32,17 @@
 
 #include "ogg_packet_sequence.h"
 
-void register_ogg_types() {
+void initialize_ogg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	GDREGISTER_CLASS(OGGPacketSequence);
 	GDREGISTER_CLASS(OGGPacketSequencePlayback);
 }
 
-void unregister_ogg_types() {}
+void uninitialize_ogg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

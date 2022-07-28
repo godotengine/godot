@@ -32,26 +32,27 @@
 #define OPENXR_EXTENSION_WRAPPER_H
 
 #include "core/error/error_macros.h"
-#include "core/math/camera_matrix.h"
-#include "core/templates/map.h"
+#include "core/math/projection.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
 
 #include "thirdparty/openxr/src/common/xr_linear.h"
 #include <openxr/openxr.h>
 
 class OpenXRAPI;
+class OpenXRActionMap;
 
 class OpenXRExtensionWrapper {
 protected:
-	OpenXRAPI *openxr_api;
+	OpenXRAPI *openxr_api = nullptr;
 
 	// Store extension we require.
 	// If bool pointer is a nullptr this means this extension is mandatory and initialisation will fail if it is not available
 	// If bool pointer is set, value will be set to true or false depending on whether extension is available
-	Map<const char *, bool *> request_extensions;
+	HashMap<String, bool *> request_extensions;
 
 public:
-	virtual Map<const char *, bool *> get_request_extensions() {
+	virtual HashMap<String, bool *> get_request_extensions() {
 		return request_extensions;
 	}
 
@@ -96,11 +97,11 @@ public:
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const = 0;
 	virtual bool get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) = 0;
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) = 0;
-	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, CameraMatrix &r_camera_matrix) = 0;
+	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) = 0;
 	virtual bool copy_render_target_to_image(RID p_from_render_target, void *p_swapchain_graphics_data, int p_image_index) = 0;
 
 	OpenXRGraphicsExtensionWrapper(OpenXRAPI *p_openxr_api) :
 			OpenXRExtensionWrapper(p_openxr_api){};
 };
 
-#endif // ~OPENXR_EXTENSION_WRAPPER_H
+#endif // OPENXR_EXTENSION_WRAPPER_H

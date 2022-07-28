@@ -42,7 +42,7 @@ Size2 OptionButton::get_minimum_size() const {
 		const Size2 arrow_size = Control::get_theme_icon(SNAME("arrow"))->get_size();
 
 		Size2 content_size = minsize - padding;
-		content_size.width += arrow_size.width + get_theme_constant(SNAME("hseparation"));
+		content_size.width += arrow_size.width + get_theme_constant(SNAME("h_separation"));
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;
@@ -203,16 +203,18 @@ void OptionButton::pressed() {
 }
 
 void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
+	bool first_selectable = !has_selectable_items();
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
-	if (popup->get_item_count() == 1) {
-		select(0);
+	if (first_selectable) {
+		select(get_item_count() - 1);
 	}
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
+	bool first_selectable = !has_selectable_items();
 	popup->add_radio_check_item(p_label, p_id);
-	if (popup->get_item_count() == 1) {
-		select(0);
+	if (first_selectable) {
+		select(get_item_count() - 1);
 	}
 }
 
@@ -238,6 +240,10 @@ void OptionButton::set_item_id(int p_idx, int p_id) {
 
 void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
 	popup->set_item_metadata(p_idx, p_metadata);
+}
+
+void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
+	popup->set_item_tooltip(p_idx, p_tooltip);
 }
 
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
@@ -268,10 +274,17 @@ Variant OptionButton::get_item_metadata(int p_idx) const {
 	return popup->get_item_metadata(p_idx);
 }
 
+String OptionButton::get_item_tooltip(int p_idx) const {
+	return popup->get_item_tooltip(p_idx);
+}
+
 bool OptionButton::is_item_disabled(int p_idx) const {
 	return popup->is_item_disabled(p_idx);
 }
 
+bool OptionButton::is_item_separator(int p_idx) const {
+	return popup->is_item_separator(p_idx);
+}
 void OptionButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
 
@@ -291,12 +304,37 @@ void OptionButton::set_item_count(int p_count) {
 	notify_property_list_changed();
 }
 
+bool OptionButton::has_selectable_items() const {
+	for (int i = 0; i < get_item_count(); i++) {
+		if (!is_item_disabled(i) && !is_item_separator(i)) {
+			return true;
+		}
+	}
+	return false;
+}
+int OptionButton::get_selectable_item(bool p_from_last) const {
+	if (!p_from_last) {
+		for (int i = 0; i < get_item_count(); i++) {
+			if (!is_item_disabled(i) && !is_item_separator(i)) {
+				return i;
+			}
+		}
+	} else {
+		for (int i = get_item_count() - 1; i >= 0; i--) {
+			if (!is_item_disabled(i) && !is_item_separator(i)) {
+				return i;
+			}
+		}
+	}
+	return -1;
+}
+
 int OptionButton::get_item_count() const {
 	return popup->get_item_count();
 }
 
-void OptionButton::add_separator() {
-	popup->add_separator();
+void OptionButton::add_separator(const String &p_text) {
+	popup->add_separator(p_text);
 }
 
 void OptionButton::clear() {
@@ -377,6 +415,12 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
 
+void OptionButton::_validate_property(PropertyInfo &property) const {
+	if (property.name == "text" || property.name == "icon") {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
@@ -385,13 +429,16 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &OptionButton::set_item_disabled);
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
-	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
+	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
+	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
 	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
@@ -404,6 +451,8 @@ void OptionButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &OptionButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
+	ClassDB::bind_method(D_METHOD("has_selectable_items"), &OptionButton::has_selectable_items);
+	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &OptionButton::get_selectable_item, DEFVAL(false));
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
@@ -412,7 +461,8 @@ void OptionButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
-OptionButton::OptionButton() {
+OptionButton::OptionButton(const String &p_text) :
+		Button(p_text) {
 	set_toggle_mode(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {

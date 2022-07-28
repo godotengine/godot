@@ -175,6 +175,10 @@
 				    if argument.find("=") &gt; -1:
 				        var key_value = argument.split("=")
 				        arguments[key_value[0].lstrip("--")] = key_value[1]
+				    else:
+				        # Options without an argument will be present in the dictionary,
+				        # with the value set to an empty string.
+				        arguments[argument.lstrip("--")] = ""
 				[/gdscript]
 				[csharp]
 				var arguments = new Godot.Collections.Dictionary();
@@ -184,6 +188,12 @@
 				    {
 				        string[] keyValue = argument.Split("=");
 				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
+				    }
+				    else
+				    {
+				        // Options without an argument will be present in the dictionary,
+				        // with the value set to an empty string.
+				        arguments[keyValue[0].LStrip("--")] = "";
 				    }
 				}
 				[/csharp]
@@ -278,7 +288,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the host OS.
-				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] (Universal Windows Platform) if exported thereon.
+				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] if exported on Universal Windows Platform.
 				On macOS, this is [code]"macOS"[/code].
 				On Linux-based operating systems, this is [code]"Linux"[/code].
 				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
@@ -375,6 +385,23 @@
 				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
+		<method name="get_system_font_path" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="font_name" type="String" />
+			<argument index="1" name="bold" type="bool" default="false" />
+			<argument index="2" name="italic" type="bool" default="false" />
+			<description>
+				Returns path to the system font file with [code]font_name[/code] and style. Return empty string if no matching fonts found.
+				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_fonts" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of font family names available.
+				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -434,6 +461,15 @@
 				Returns [code]true[/code] if the input keycode corresponds to a Unicode character.
 			</description>
 		</method>
+		<method name="is_process_running" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="pid" type="int" />
+			<description>
+				Returns [code]true[/code] if the child process ID ([code]pid[/code]) is still running or [code]false[/code] if it has terminated.
+				Must be a valid ID generated from [method create_process].
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -453,6 +489,19 @@
 				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="move_to_trash" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Moves the file or directory to the system's recycle bin. See also [method Directory.remove].
+				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported project.
+				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
+				[codeblock]
+				var file_to_remove = "user://slot1.sav"
+				OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="open_midi_inputs">
@@ -533,7 +582,7 @@
 				Requests the OS to open a resource with the most appropriate program. For example:
 				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
-				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
+				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
 			</description>

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONOUTILS_H
-#define GD_MONOUTILS_H
+#ifndef GD_MONO_UTILS_H
+#define GD_MONO_UTILS_H
 
 #include <mono/metadata/threads.h>
 
@@ -61,6 +61,7 @@ bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
 bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
 bool type_is_generic_icollection(MonoReflectionType *p_reftype);
 bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
+bool type_has_flags_attribute(MonoReflectionType *p_reftype);
 
 void get_generic_type_definition(MonoReflectionType *p_reftype, MonoReflectionType **r_generic_reftype);
 
@@ -201,4 +202,4 @@ void add_internal_call(const char *p_name, R (*p_func)(P...)) {
 #define GD_MONO_ASSERT_THREAD_ATTACHED ((void)0)
 #endif
 
-#endif // GD_MONOUTILS_H
+#endif // GD_MONO_UTILS_H

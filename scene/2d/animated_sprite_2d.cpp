@@ -138,8 +138,11 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
-		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
+		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+		} else {
+			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
+			property.hint_string = "0,0,1";
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
@@ -388,6 +391,7 @@ void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backward
 		}
 	}
 
+	is_over = false;
 	set_playing(true);
 }
 
@@ -437,10 +441,21 @@ TypedArray<String> AnimatedSprite2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (frames.is_null()) {
-		warnings.push_back(TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames."));
 	}
 
 	return warnings;
+}
+
+void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (const StringName &name : al) {
+			r_options->push_back(String(name).quote());
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimatedSprite2D::_bind_methods() {
@@ -485,7 +500,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 }

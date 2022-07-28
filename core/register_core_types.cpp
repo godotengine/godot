@@ -49,6 +49,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/io/missing_resource.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -71,7 +72,9 @@
 #include "core/multiplayer/multiplayer_api.h"
 #include "core/multiplayer/multiplayer_peer.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
@@ -98,6 +101,8 @@ static IP *ip = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
+
+static WorkerThreadPool *worker_thread_pool = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -141,20 +146,25 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Object);
 
-	GDREGISTER_VIRTUAL_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
+
+	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
+	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
 	GDREGISTER_CLASS(Resource);
+	GDREGISTER_VIRTUAL_CLASS(MissingResource);
 	GDREGISTER_CLASS(Image);
 
 	GDREGISTER_CLASS(Shortcut);
-	GDREGISTER_VIRTUAL_CLASS(InputEvent);
-	GDREGISTER_VIRTUAL_CLASS(InputEventWithModifiers);
-	GDREGISTER_VIRTUAL_CLASS(InputEventFromWindow);
+	GDREGISTER_ABSTRACT_CLASS(InputEvent);
+	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
+	GDREGISTER_ABSTRACT_CLASS(InputEventFromWindow);
 	GDREGISTER_CLASS(InputEventKey);
 	GDREGISTER_CLASS(InputEventShortcut);
-	GDREGISTER_VIRTUAL_CLASS(InputEventMouse);
+	GDREGISTER_ABSTRACT_CLASS(InputEventMouse);
 	GDREGISTER_CLASS(InputEventMouseButton);
 	GDREGISTER_CLASS(InputEventMouseMotion);
 	GDREGISTER_CLASS(InputEventJoypadButton);
@@ -162,25 +172,27 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventScreenDrag);
 	GDREGISTER_CLASS(InputEventScreenTouch);
 	GDREGISTER_CLASS(InputEventAction);
-	GDREGISTER_VIRTUAL_CLASS(InputEventGesture);
+	GDREGISTER_ABSTRACT_CLASS(InputEventGesture);
 	GDREGISTER_CLASS(InputEventMagnifyGesture);
 	GDREGISTER_CLASS(InputEventPanGesture);
 	GDREGISTER_CLASS(InputEventMIDI);
 
 	// Network
-	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(IP);
 
-	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
 	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
-	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_ABSTRACT_CLASS(PacketPeer);
 	GDREGISTER_CLASS(PacketPeerExtension);
 	GDREGISTER_CLASS(PacketPeerStream);
 	GDREGISTER_CLASS(PacketPeerUDP);
 	GDREGISTER_CLASS(UDPServer);
+
+	GDREGISTER_ABSTRACT_CLASS(WorkerThreadPool);
 
 	ClassDB::register_custom_instance_class<HTTPClient>();
 
@@ -200,7 +212,7 @@ void register_core_types() {
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
+	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
@@ -226,19 +238,19 @@ void register_core_types() {
 	GDREGISTER_CLASS(PCKPacker);
 
 	GDREGISTER_CLASS(PackedDataContainer);
-	GDREGISTER_VIRTUAL_CLASS(PackedDataContainerRef);
-	GDREGISTER_CLASS(AStar);
+	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
+	GDREGISTER_CLASS(AStar3D);
 	GDREGISTER_CLASS(AStar2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
-	GDREGISTER_VIRTUAL_CLASS(ResourceImporter);
+	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
 	GDREGISTER_CLASS(NativeExtension);
 
-	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
+	GDREGISTER_ABSTRACT_CLASS(NativeExtensionManager);
 
-	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
+	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
 	GDREGISTER_CLASS(EngineProfiler);
 
@@ -261,6 +273,11 @@ void register_core_types() {
 	_classdb = memnew(core_bind::special::ClassDB);
 	_marshalls = memnew(core_bind::Marshalls);
 	_engine_debugger = memnew(core_bind::EngineDebugger);
+
+	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
+	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
+
+	worker_thread_pool = memnew(WorkerThreadPool);
 }
 
 void register_core_settings() {
@@ -269,14 +286,23 @@ void register_core_settings() {
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
-
 	GLOBAL_DEF("network/ssl/certificate_bundle_override", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/ssl/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
+
+	int worker_threads = GLOBAL_DEF("threading/worker_pool/max_threads", -1);
+	bool low_priority_use_system_threads = GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
+	float low_property_ratio = GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
+
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+		worker_thread_pool->init();
+	} else {
+		worker_thread_pool->init(worker_threads, low_priority_use_system_threads, low_property_ratio);
+	}
 }
 
 void register_core_singletons() {
 	GDREGISTER_CLASS(ProjectSettings);
-	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(IP);
 	GDREGISTER_CLASS(core_bind::Geometry2D);
 	GDREGISTER_CLASS(core_bind::Geometry3D);
 	GDREGISTER_CLASS(core_bind::ResourceLoader);
@@ -286,7 +312,7 @@ void register_core_singletons() {
 	GDREGISTER_CLASS(core_bind::special::ClassDB);
 	GDREGISTER_CLASS(core_bind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
-	GDREGISTER_VIRTUAL_CLASS(Input);
+	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
 	GDREGISTER_CLASS(core_bind::EngineDebugger);
@@ -309,6 +335,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
 }
 
 void register_core_extensions() {
@@ -339,6 +366,8 @@ void unregister_core_types() {
 
 	memdelete(_geometry_2d);
 	memdelete(_geometry_3d);
+
+	memdelete(worker_thread_pool);
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();

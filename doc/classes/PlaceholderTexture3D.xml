@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlaceholderTexture3D" inherits="Texture3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="size" type="Vector3i" setter="set_size" getter="get_size" default="Vector3i(1, 1, 1)">
+		</member>
+	</members>
+</class>

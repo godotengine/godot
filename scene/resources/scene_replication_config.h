@@ -73,6 +73,7 @@ public:
 
 	void add_property(const NodePath &p_path, int p_index = -1);
 	void remove_property(const NodePath &p_path);
+	bool has_property(const NodePath &p_path) const;
 
 	int property_get_index(const NodePath &p_path) const;
 	bool property_get_spawn(const NodePath &p_path);

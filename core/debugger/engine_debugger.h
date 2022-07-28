@@ -33,7 +33,7 @@
 
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
@@ -96,9 +96,11 @@ protected:
 	static EngineDebugger *singleton;
 	static ScriptDebugger *script_debugger;
 
-	static Map<StringName, Profiler> profilers;
-	static Map<StringName, Capture> captures;
-	static Map<String, CreatePeerFunc> protocols;
+	static HashMap<StringName, Profiler> profilers;
+	static HashMap<StringName, Capture> captures;
+	static HashMap<String, CreatePeerFunc> protocols;
+
+	static void (*allow_focus_steal_fn)();
 
 public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
@@ -106,7 +108,7 @@ public:
 
 	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; };
 
-	static void initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints);
+	static void initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)());
 	static void deinitialize();
 	static void register_profiler(const StringName &p_name, const Profiler &p_profiler);
 	static void unregister_profiler(const StringName &p_name);

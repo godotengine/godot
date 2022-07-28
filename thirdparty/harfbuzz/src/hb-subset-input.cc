@@ -32,7 +32,7 @@
  *
  * Creates a new subset input object.
  *
- * Return value: (transfer full): New subset input, or %NULL if failed. Destroy
+ * Return value: (transfer full): New subset input, or `NULL` if failed. Destroy
  * with hb_subset_input_destroy().
  *
  * Since: 1.8.0
@@ -48,7 +48,9 @@ hb_subset_input_create_or_fail (void)
   for (auto& set : input->sets_iter ())
     set = hb_set_create ();
 
-  if (input->in_error ())
+  input->axes_location = hb_hashmap_create<hb_tag_t, float> ();
+  
+  if (!input->axes_location || input->in_error ())
   {
     hb_subset_input_destroy (input);
     return nullptr;
@@ -96,7 +98,6 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('D', 'S', 'I', 'G'),
     HB_TAG ('M', 'V', 'A', 'R'),
     HB_TAG ('c', 'v', 'a', 'r'),
-    HB_TAG ('S', 'T', 'A', 'T'),
   };
   input->sets.no_subset_tables->add_array (default_no_subset_tables,
                                          ARRAY_LENGTH (default_no_subset_tables));
@@ -140,7 +141,20 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('r', 't', 'l', 'a'),
     HB_TAG ('r', 't', 'l', 'm'),
 
-    //Complex shapers
+    //random
+    HB_TAG ('r', 'a', 'n', 'd'),
+
+    //justify
+    HB_TAG ('j', 'a', 'l', 't'), // HarfBuzz doesn't use; others might
+
+    //private
+    HB_TAG ('H', 'a', 'r', 'f'),
+    HB_TAG ('H', 'A', 'R', 'F'),
+    HB_TAG ('B', 'u', 'z', 'z'),
+    HB_TAG ('B', 'U', 'Z', 'Z'),
+
+    //shapers
+
     //arabic
     HB_TAG ('i', 'n', 'i', 't'),
     HB_TAG ('m', 'e', 'd', 'i'),
@@ -190,6 +204,8 @@ hb_subset_input_create_or_fail (void)
 
   input->sets.layout_features->add_array (default_layout_features, ARRAY_LENGTH (default_layout_features));
 
+  input->sets.layout_scripts->invert (); // Default to all scripts.
+
   if (input->in_error ())
   {
     hb_subset_input_destroy (input);
@@ -230,6 +246,8 @@ hb_subset_input_destroy (hb_subset_input_t *input)
 
   for (hb_set_t* set : input->sets_iter ())
     hb_set_destroy (set);
+
+  hb_hashmap_destroy (input->axes_location);
 
   hb_free (input);
 }
@@ -329,7 +347,7 @@ hb_subset_input_set_flags (hb_subset_input_t *input,
  *
  * Attaches a user-data key/data pair to the given subset input object.
  *
- * Return value: %true if success, %false otherwise
+ * Return value: `true` if success, `false` otherwise
  *
  * Since: 2.9.0
  **/
@@ -361,3 +379,56 @@ hb_subset_input_get_user_data (const hb_subset_input_t *input,
 {
   return hb_object_get_user_data (input, key);
 }
+
+#ifdef HB_EXPERIMENTAL_API
+#ifndef HB_NO_VAR
+/**
+ * hb_subset_input_pin_axis_to_default: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: Tag of the axis to be pinned
+ *
+ * Pin an axis to its default location in the given subset input object.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: REPLACEME
+ **/
+hb_bool_t
+hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
+                                     hb_face_t          *face,
+                                     hb_tag_t            axis_tag)
+{
+  hb_ot_var_axis_info_t axis_info;
+  if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
+    return false;
+
+  return input->axes_location->set (axis_tag, axis_info.default_value);
+}
+
+/**
+ * hb_subset_input_pin_axis_location: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: Tag of the axis to be pinned
+ * @axis_value: Location on the axis to be pinned at
+ *
+ * Pin an axis to a fixed location in the given subset input object.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: REPLACEME
+ **/
+hb_bool_t
+hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
+                                   hb_face_t          *face,
+                                   hb_tag_t            axis_tag,
+                                   float               axis_value)
+{
+  hb_ot_var_axis_info_t axis_info;
+  if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
+    return false;
+
+  float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
+  return input->axes_location->set (axis_tag, val);
+}
+#endif
+#endif

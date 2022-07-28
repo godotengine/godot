@@ -35,7 +35,7 @@
 
 Size2 Button::get_minimum_size() const {
 	Size2 minsize = text_buf->get_size();
-	if (clip_text) {
+	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		minsize.width = 0;
 	}
 
@@ -53,18 +53,18 @@ Size2 Button::get_minimum_size() const {
 			if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
 				minsize.width += _icon->get_width();
 				if (!xl_text.is_empty()) {
-					minsize.width += get_theme_constant(SNAME("hseparation"));
+					minsize.width += get_theme_constant(SNAME("h_separation"));
 				}
 			} else {
 				minsize.width = MAX(minsize.width, _icon->get_width());
 			}
 		}
 	}
-
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
-
-	minsize.height = MAX(font_height, minsize.height);
+	if (!xl_text.is_empty()) {
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
+		minsize.height = MAX(font_height, minsize.height);
+	}
 
 	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
 }
@@ -244,21 +244,22 @@ void Button::_notification(int p_what) {
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 					style_offset.x = style->get_margin(SIDE_LEFT);
 					if (_internal_margin[SIDE_LEFT] > 0) {
-						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
+						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
 					}
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
 					style_offset.x = 0.0;
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_RIGHT) {
 					style_offset.x = -style->get_margin(SIDE_RIGHT);
 					if (_internal_margin[SIDE_RIGHT] > 0) {
-						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("hseparation"));
+						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("h_separation"));
 					}
 				}
 				style_offset.y = style->get_margin(SIDE_TOP);
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_theme_constant(SNAME("hseparation")) + icon_ofs_region;
+					int icon_text_separation = text.is_empty() ? 0 : get_theme_constant(SNAME("h_separation"));
+					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
@@ -286,20 +287,20 @@ void Button::_notification(int p_what) {
 				}
 			}
 
-			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant(SNAME("hseparation")), 0) : Point2();
+			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant(SNAME("h_separation")), 0) : Point2();
 			if (align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER && icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
 				icon_ofs.x = 0.0;
 			}
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-			text_buf->set_width(clip_text ? text_clip : -1);
+			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
 
-			int text_width = clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x;
+			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
-				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
+				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
 			}
 			if (_internal_margin[SIDE_RIGHT] > 0) {
-				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant(SNAME("hseparation"));
+				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant(SNAME("h_separation"));
 			}
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
@@ -313,7 +314,7 @@ void Button::_notification(int p_what) {
 						icon_ofs.x = 0.0;
 					}
 					if (_internal_margin[SIDE_LEFT] > 0) {
-						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
+						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
 					} else {
 						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
 					}
@@ -330,7 +331,7 @@ void Button::_notification(int p_what) {
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (_internal_margin[SIDE_RIGHT] > 0) {
-						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("hseparation"));
+						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("h_separation"));
 					} else {
 						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
 					}
@@ -346,7 +347,6 @@ void Button::_notification(int p_what) {
 			if (outline_size > 0 && font_outline_color.a > 0) {
 				text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 			}
-
 			text_buf->draw(ci, text_ofs, color);
 		} break;
 	}
@@ -362,7 +362,22 @@ void Button::_shape() {
 	} else {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	text_buf->add_string(xl_text, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text_buf->add_string(xl_text, font, font_size, language);
+	text_buf->set_text_overrun_behavior(overrun_behavior);
+}
+
+void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		_shape();
+
+		update();
+		update_minimum_size();
+	}
+}
+
+TextServer::OverrunBehavior Button::get_text_overrun_behavior() const {
+	return overrun_behavior;
 }
 
 void Button::set_text(const String &p_text) {
@@ -391,29 +406,6 @@ void Button::set_text_direction(Control::TextDirection p_text_direction) {
 
 Control::TextDirection Button::get_text_direction() const {
 	return text_direction;
-}
-
-void Button::clear_opentype_features() {
-	opentype_features.clear();
-	_shape();
-	update();
-}
-
-void Button::set_opentype_feature(const String &p_name, int p_value) {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
-		opentype_features[tag] = p_value;
-		_shape();
-		update();
-	}
-}
-
-int Button::get_opentype_feature(const String &p_name) const {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag)) {
-		return -1;
-	}
-	return opentype_features[tag];
 }
 
 void Button::set_language(const String &p_language) {
@@ -496,64 +488,13 @@ HorizontalAlignment Button::get_icon_alignment() const {
 	return icon_alignment;
 }
 
-bool Button::_set(const StringName &p_name, const Variant &p_value) {
-	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		int value = p_value;
-		if (value == -1) {
-			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
-				_shape();
-				update();
-			}
-		} else {
-			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
-				opentype_features[tag] = value;
-				_shape();
-				update();
-			}
-		}
-		notify_property_list_changed();
-		return true;
-	}
-
-	return false;
-}
-
-bool Button::_get(const StringName &p_name, Variant &r_ret) const {
-	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		if (opentype_features.has(tag)) {
-			r_ret = opentype_features[tag];
-			return true;
-		} else {
-			r_ret = -1;
-			return true;
-		}
-	}
-	return false;
-}
-
-void Button::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
-		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::INT, "opentype_features/" + name));
-	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-}
-
 void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Button::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Button::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Button::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
-	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &Button::set_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &Button::get_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &Button::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Button::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &Button::get_language);
 	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
@@ -570,21 +511,24 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_button_icon", "get_button_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
+
+	ADD_GROUP("BiDi", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 }
 
 Button::Button(const String &p_text) {
 	text_buf.instantiate();
-	text_buf->set_flags(TextServer::BREAK_MANDATORY);
-
+	text_buf->set_break_flags(TextServer::BREAK_MANDATORY);
 	set_mouse_filter(MOUSE_FILTER_STOP);
+
 	set_text(p_text);
 }
 

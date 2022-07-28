@@ -1,4 +1,4 @@
-supported_platforms = ["windows", "osx", "linuxbsd", "server", "android", "haiku", "javascript", "iphone"]
+supported_platforms = ["windows", "macos", "linuxbsd", "server", "android", "haiku", "javascript", "ios"]
 
 
 def can_build(env, platform):
@@ -15,7 +15,7 @@ def configure(env):
 
     from SCons.Script import BoolVariable, PathVariable, Variables, Help
 
-    default_mono_static = platform in ["iphone", "javascript"]
+    default_mono_static = platform in ["ios", "javascript"]
     default_mono_bundles_zlib = platform in ["javascript"]
 
     envvars = Variables()

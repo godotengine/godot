@@ -84,7 +84,7 @@ Error AudioDriverXAudio2::init() {
 }
 
 void AudioDriverXAudio2::thread_func(void *p_udata) {
-	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
+	AudioDriverXAudio2 *ad = static_cast<AudioDriverXAudio2 *>(p_udata);
 
 	while (!ad->exit_thread) {
 		if (!ad->active) {

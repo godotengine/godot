@@ -143,7 +143,7 @@ TypedArray<String> ParallaxLayer::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		warnings.push_back(TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
+		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
 	}
 
 	return warnings;
@@ -158,8 +158,8 @@ void ParallaxLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mirroring"), &ParallaxLayer::get_mirroring);
 
 	ADD_GROUP("Motion", "motion_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_scale"), "set_motion_scale", "get_motion_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_offset"), "set_motion_offset", "get_motion_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_scale", PROPERTY_HINT_LINK), "set_motion_scale", "get_motion_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_motion_offset", "get_motion_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_mirroring"), "set_mirroring", "get_mirroring");
 }
 

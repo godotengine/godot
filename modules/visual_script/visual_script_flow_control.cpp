@@ -70,7 +70,7 @@ PropertyInfo VisualScriptReturn::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptReturn::get_caption() const {
-	return TTR("Return");
+	return RTR("Return");
 }
 
 String VisualScriptReturn::get_text() const {
@@ -119,15 +119,15 @@ void VisualScriptReturn::_bind_methods() {
 
 class VisualScriptNodeInstanceReturn : public VisualScriptNodeInstance {
 public:
-	VisualScriptReturn *node;
-	VisualScriptInstance *instance;
-	bool with_value;
+	VisualScriptReturn *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
+	bool with_value = false;
 
-	virtual int get_working_memory_size() const { return 1; }
+	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (with_value) {
 			*p_working_mem = *p_inputs[0];
 			return STEP_EXIT_FUNCTION_BIT;
@@ -201,11 +201,11 @@ PropertyInfo VisualScriptCondition::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptCondition::get_caption() const {
-	return TTR("Condition");
+	return RTR("Condition");
 }
 
 String VisualScriptCondition::get_text() const {
-	return TTR("if (cond) is:");
+	return RTR("if (cond) is:");
 }
 
 void VisualScriptCondition::_bind_methods() {
@@ -213,14 +213,14 @@ void VisualScriptCondition::_bind_methods() {
 
 class VisualScriptNodeInstanceCondition : public VisualScriptNodeInstance {
 public:
-	VisualScriptCondition *node;
-	VisualScriptInstance *instance;
+	VisualScriptCondition *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
-	//virtual int get_working_memory_size() const { return 1; }
+	//virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE) {
 			return 2;
 		} else if (p_inputs[0]->operator bool()) {
@@ -281,11 +281,11 @@ PropertyInfo VisualScriptWhile::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptWhile::get_caption() const {
-	return TTR("While");
+	return RTR("While");
 }
 
 String VisualScriptWhile::get_text() const {
-	return TTR("while (cond):");
+	return RTR("while (cond):");
 }
 
 void VisualScriptWhile::_bind_methods() {
@@ -293,14 +293,14 @@ void VisualScriptWhile::_bind_methods() {
 
 class VisualScriptNodeInstanceWhile : public VisualScriptNodeInstance {
 public:
-	VisualScriptWhile *node;
-	VisualScriptInstance *instance;
+	VisualScriptWhile *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
-	//virtual int get_working_memory_size() const { return 1; }
+	//virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool keep_going = p_inputs[0]->operator bool();
 
 		if (keep_going) {
@@ -364,11 +364,11 @@ PropertyInfo VisualScriptIterator::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptIterator::get_caption() const {
-	return TTR("Iterator");
+	return RTR("Iterator");
 }
 
 String VisualScriptIterator::get_text() const {
-	return TTR("for (elem) in (input):");
+	return RTR("for (elem) in (input):");
 }
 
 void VisualScriptIterator::_bind_methods() {
@@ -376,14 +376,14 @@ void VisualScriptIterator::_bind_methods() {
 
 class VisualScriptNodeInstanceIterator : public VisualScriptNodeInstance {
 public:
-	VisualScriptIterator *node;
-	VisualScriptInstance *instance;
+	VisualScriptIterator *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
-	virtual int get_working_memory_size() const { return 2; }
+	virtual int get_working_memory_size() const override { return 2; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_BEGIN_SEQUENCE) {
 			p_working_mem[0] = *p_inputs[0];
 			bool valid;
@@ -391,7 +391,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Input type not iterable: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Input type not iterable:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -414,7 +414,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Iterator became invalid: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Iterator became invalid:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -478,11 +478,11 @@ PropertyInfo VisualScriptSequence::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSequence::get_caption() const {
-	return TTR("Sequence");
+	return RTR("Sequence");
 }
 
 String VisualScriptSequence::get_text() const {
-	return TTR("in order:");
+	return RTR("in order:");
 }
 
 void VisualScriptSequence::set_steps(int p_steps) {
@@ -508,15 +508,15 @@ void VisualScriptSequence::_bind_methods() {
 
 class VisualScriptNodeInstanceSequence : public VisualScriptNodeInstance {
 public:
-	VisualScriptSequence *node;
-	VisualScriptInstance *instance;
-	int steps;
+	VisualScriptSequence *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
+	int steps = 0;
 
-	virtual int get_working_memory_size() const { return 1; }
+	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_BEGIN_SEQUENCE) {
 			p_working_mem[0] = 0;
 		}
@@ -587,23 +587,23 @@ PropertyInfo VisualScriptSwitch::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSwitch::get_caption() const {
-	return TTR("Switch");
+	return RTR("Switch");
 }
 
 String VisualScriptSwitch::get_text() const {
-	return TTR("'input' is:");
+	return RTR("'input' is:");
 }
 
 class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
-	int case_count;
+	VisualScriptInstance *instance = nullptr;
+	int case_count = 0;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE) {
 			return case_count; //exit
 		}
@@ -720,14 +720,14 @@ PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptTypeCast::get_caption() const {
-	return TTR("Type Cast");
+	return RTR("Type Cast");
 }
 
 String VisualScriptTypeCast::get_text() const {
 	if (!script.is_empty()) {
-		return vformat(TTR("Is %s?"), script.get_file());
+		return vformat(RTR("Is %s?"), script.get_file());
 	} else {
-		return vformat(TTR("Is %s?"), base_type);
+		return vformat(RTR("Is %s?"), base_type);
 	}
 }
 
@@ -774,15 +774,15 @@ VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGues
 
 class VisualScriptNodeInstanceTypeCast : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName base_type;
 	String script;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Object *obj = *p_inputs[0];
 
 		*p_outputs[0] = Variant();
@@ -803,7 +803,7 @@ public:
 				//if the script is not in use by anyone, we can safely assume whatever we got is not casting to it.
 				return 1;
 			}
-			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));
+			Ref<Script> cast_script = ResourceCache::get_ref(script);
 			if (!cast_script.is_valid()) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				r_error_str = "Script path is not a script: " + script;

@@ -61,8 +61,8 @@ static int __bsr_clz32(uint32_t x) {
 
 class RandomPCG {
 	pcg32_random_t pcg;
-	uint64_t current_seed; // The seed the current generator state started from.
-	uint64_t current_inc;
+	uint64_t current_seed = 0; // The seed the current generator state started from.
+	uint64_t current_inc = 0;
 
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;

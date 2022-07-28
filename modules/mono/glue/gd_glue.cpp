@@ -90,6 +90,27 @@ void godot_icall_GD_print(MonoArray *p_what) {
 	print_line(str);
 }
 
+void godot_icall_GD_print_rich(MonoArray *p_what) {
+	String str;
+	int length = mono_array_length(p_what);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
+
+		MonoException *exc = nullptr;
+		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			return;
+		}
+
+		str += elem_str;
+	}
+
+	print_line_rich(str);
+}
+
 void godot_icall_GD_printerr(MonoArray *p_what) {
 	String str;
 	int length = mono_array_length(p_what);
@@ -300,6 +321,7 @@ void godot_register_gd_icalls() {
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_pusherror", godot_icall_GD_pusherror);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_pushwarning", godot_icall_GD_pushwarning);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_print", godot_icall_GD_print);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_print_rich", godot_icall_GD_print_rich);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printerr", godot_icall_GD_printerr);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printraw", godot_icall_GD_printraw);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_prints", godot_icall_GD_prints);

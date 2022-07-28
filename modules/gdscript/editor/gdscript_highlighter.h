@@ -45,7 +45,7 @@ private:
 		bool line_only = false;
 	};
 	Vector<ColorRegion> color_regions;
-	Map<int, int> color_region_cache;
+	HashMap<int, int> color_region_cache;
 
 	HashMap<StringName, Color> keywords;
 	HashMap<StringName, Color> member_keywords;
@@ -54,7 +54,9 @@ private:
 		NONE,
 		REGION,
 		NODE_PATH,
+		NODE_REF,
 		ANNOTATION,
+		STRING_NAME,
 		SYMBOL,
 		NUMBER,
 		FUNCTION,
@@ -74,7 +76,9 @@ private:
 	Color number_color;
 	Color member_color;
 	Color node_path_color;
+	Color node_ref_color;
 	Color annotation_color;
+	Color string_name_color;
 	Color type_color;
 
 	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);

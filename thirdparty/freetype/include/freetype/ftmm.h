@@ -4,7 +4,7 @@
  *
  *   FreeType Multiple Master font interface (specification).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -46,6 +46,9 @@ FT_BEGIN_HEADER
    *   OpenType variation fonts.  Some of the routines only work with Adobe
    *   MM fonts, others will work with all three types.  They are similar
    *   enough that a consistent interface makes sense.
+   *
+   *   For Adobe MM fonts, macro @FT_IS_SFNT returns false.  For GX and
+   *   OpenType variation fonts, it returns true.
    *
    */
 

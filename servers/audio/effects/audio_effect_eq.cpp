@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_effect_eq.h"
+
 #include "servers/audio_server.h"
 
 void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
@@ -90,9 +91,9 @@ int AudioEffectEQ::get_band_count() const {
 }
 
 bool AudioEffectEQ::_set(const StringName &p_name, const Variant &p_value) {
-	const Map<StringName, int>::Element *E = prop_band_map.find(p_name);
+	HashMap<StringName, int>::ConstIterator E = prop_band_map.find(p_name);
 	if (E) {
-		set_band_gain_db(E->get(), p_value);
+		set_band_gain_db(E->value, p_value);
 		return true;
 	}
 
@@ -100,9 +101,9 @@ bool AudioEffectEQ::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool AudioEffectEQ::_get(const StringName &p_name, Variant &r_ret) const {
-	const Map<StringName, int>::Element *E = prop_band_map.find(p_name);
+	HashMap<StringName, int>::ConstIterator E = prop_band_map.find(p_name);
 	if (E) {
-		r_ret = get_band_gain_db(E->get());
+		r_ret = get_band_gain_db(E->value);
 		return true;
 	}
 

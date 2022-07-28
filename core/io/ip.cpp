@@ -74,8 +74,7 @@ struct _IP_ResolverPrivate {
 	Semaphore sem;
 
 	Thread thread;
-	//Semaphore* semaphore;
-	bool thread_abort;
+	bool thread_abort = false;
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
@@ -109,7 +108,7 @@ struct _IP_ResolverPrivate {
 	}
 
 	static void _thread_function(void *self) {
-		_IP_ResolverPrivate *ipr = (_IP_ResolverPrivate *)self;
+		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(self);
 
 		while (!ipr->thread_abort) {
 			ipr->sem.wait();
@@ -186,7 +185,7 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String &p_hostname, IP::Typ
 }
 
 IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE);
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE, vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	IP::ResolverStatus res = resolver->queue[p_id].status.get();
 	if (res == IP::RESOLVER_STATUS_NONE) {
@@ -197,7 +196,7 @@ IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
 }
 
 IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IPAddress());
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, IPAddress(), vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	MutexLock lock(resolver->mutex);
 
@@ -217,7 +216,7 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 }
 
 Array IP::get_resolve_item_addresses(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, Array());
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, Array(), vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
@@ -237,7 +236,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 }
 
 void IP::erase_resolve_item(ResolverID p_id) {
-	ERR_FAIL_INDEX(p_id, IP::RESOLVER_MAX_QUERIES);
+	ERR_FAIL_INDEX_MSG(p_id, IP::RESOLVER_MAX_QUERIES, vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	resolver->queue[p_id].status.set(IP::RESOLVER_STATUS_NONE);
 }
@@ -268,7 +267,7 @@ Array IP::_get_local_addresses() const {
 
 Array IP::_get_local_interfaces() const {
 	Array results;
-	Map<String, Interface_Info> interfaces;
+	HashMap<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
 	for (KeyValue<String, Interface_Info> &E : interfaces) {
 		Interface_Info &c = E.value;
@@ -290,7 +289,7 @@ Array IP::_get_local_interfaces() const {
 }
 
 void IP::get_local_addresses(List<IPAddress> *r_addresses) const {
-	Map<String, Interface_Info> interfaces;
+	HashMap<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
 	for (const KeyValue<String, Interface_Info> &E : interfaces) {
 		for (const IPAddress &F : E.value.ip_addresses) {

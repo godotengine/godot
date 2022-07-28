@@ -59,10 +59,12 @@ struct _NO_DISCARD_ Vector3 {
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ real_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
@@ -95,14 +97,16 @@ struct _NO_DISCARD_ Vector3 {
 	void snap(const Vector3 p_val);
 	Vector3 snapped(const Vector3 p_val) const;
 
-	void rotate(const Vector3 &p_axis, const real_t p_phi);
-	Vector3 rotated(const Vector3 &p_axis, const real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, const real_t p_angle);
+	Vector3 rotated(const Vector3 &p_axis, const real_t p_angle) const;
 
 	/* Static Methods between 2 vector3s */
 
 	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
-	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
+
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	Vector2 octahedron_encode() const;
@@ -223,6 +227,27 @@ Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
 	real_t angle = angle_to(p_to);
 	return rotated(cross(p_to).normalized(), angle * p_weight) * (result_length / start_length);
+}
+
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
+	Vector3 res = *this;
+	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
+	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
+	return res;
+}
+
+Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+	Vector3 res = *this;
+
+	/* Formula from Wikipedia article on Bezier curves. */
+	real_t omt = (1.0 - p_t);
+	real_t omt2 = omt * omt;
+	real_t omt3 = omt2 * omt;
+	real_t t2 = p_t * p_t;
+	real_t t3 = t2 * p_t;
+
+	return res * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
 }
 
 real_t Vector3::distance_to(const Vector3 &p_to) const {

@@ -40,7 +40,7 @@
 
 
 /**
- * hb_set_create: (Xconstructor)
+ * hb_set_create:
  *
  * Creates a new, initially empty set.
  *
@@ -55,8 +55,6 @@ hb_set_create ()
 
   if (!(set = hb_object_create<hb_set_t> ()))
     return hb_set_get_empty ();
-
-  set->init_shallow ();
 
   return set;
 }
@@ -107,8 +105,6 @@ hb_set_destroy (hb_set_t *set)
 {
   if (!hb_object_destroy (set)) return;
 
-  set->fini_shallow ();
-
   hb_free (set);
 }
 
@@ -122,7 +118,7 @@ hb_set_destroy (hb_set_t *set)
  *
  * Attaches a user-data key/data pair to the specified set.
  *
- * Return value: %true if success, %false otherwise
+ * Return value: `true` if success, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -162,7 +158,7 @@ hb_set_get_user_data (hb_set_t           *set,
  *
  * Tests whether memory allocation for a set was successful.
  *
- * Return value: %true if allocation succeeded, %false otherwise
+ * Return value: `true` if allocation succeeded, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -186,6 +182,7 @@ hb_set_t *
 hb_set_copy (const hb_set_t *set)
 {
   hb_set_t *copy = hb_set_create ();
+  if (unlikely (!copy)) return nullptr;
   copy->set (*set);
   return copy;
 }
@@ -211,7 +208,7 @@ hb_set_clear (hb_set_t *set)
  *
  * Tests whether a set is empty (contains no elements).
  *
- * Return value: %true if @set is empty
+ * Return value: `true` if @set is empty
  *
  * Since: 0.9.7
  **/
@@ -228,7 +225,7 @@ hb_set_is_empty (const hb_set_t *set)
  *
  * Tests whether @codepoint belongs to @set.
  *
- * Return value: %true if @codepoint is in @set, %false otherwise
+ * Return value: `true` if @codepoint is in @set, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -254,6 +251,29 @@ hb_set_add (hb_set_t       *set,
 {
   /* Immutible-safe. */
   set->add (codepoint);
+}
+
+/**
+ * hb_set_add_sorted_array:
+ * @set: A set
+ * @sorted_codepoints: (array length=num_codepoints): Array of codepoints to add
+ * @num_codepoints: Length of @sorted_codepoints
+ *
+ * Adds @num_codepoints codepoints to a set at once.
+ * The codepoints array must be in increasing order,
+ * with size at least @num_codepoints.
+ *
+ * Since: 4.1.0
+ */
+HB_EXTERN void
+hb_set_add_sorted_array (hb_set_t             *set,
+		         const hb_codepoint_t *sorted_codepoints,
+		         unsigned int          num_codepoints)
+{
+  /* Immutible-safe. */
+  set->add_sorted_array (sorted_codepoints,
+		         num_codepoints,
+		         sizeof(hb_codepoint_t));
 }
 
 /**
@@ -324,7 +344,7 @@ hb_set_del_range (hb_set_t       *set,
  * Tests whether @set and @other are equal (contain the same
  * elements).
  *
- * Return value: %true if the two sets are equal, %false otherwise.
+ * Return value: `true` if the two sets are equal, `false` otherwise.
  *
  * Since: 0.9.7
  **/
@@ -336,13 +356,30 @@ hb_set_is_equal (const hb_set_t *set,
 }
 
 /**
+ * hb_set_hash:
+ * @set: A set
+ *
+ * Creates a hash representing @set.
+ *
+ * Return value:
+ * A hash of @set.
+ *
+ * Since: 4.4.0
+ **/
+HB_EXTERN unsigned int
+hb_set_hash (const hb_set_t *set)
+{
+  return set->hash ();
+}
+
+/**
  * hb_set_is_subset:
  * @set: A set
  * @larger_set: Another set
  *
  * Tests whether @set is a subset of @larger_set.
  *
- * Return value: %true if the @set is a subset of (or equal to) @larger_set, %false otherwise.
+ * Return value: `true` if the @set is a subset of (or equal to) @larger_set, `false` otherwise.
  *
  * Since: 1.8.1
  **/
@@ -512,7 +549,7 @@ hb_set_get_max (const hb_set_t *set)
  *
  * Set @codepoint to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a next value, %false otherwise
+ * Return value: `true` if there was a next value, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -533,7 +570,7 @@ hb_set_next (const hb_set_t *set,
  *
  * Set @codepoint to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a previous value, %false otherwise
+ * Return value: `true` if there was a previous value, `false` otherwise
  *
  * Since: 1.8.0
  **/
@@ -556,7 +593,7 @@ hb_set_previous (const hb_set_t *set,
  *
  * Set @last to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a next range, %false otherwise
+ * Return value: `true` if there was a next range, `false` otherwise
  *
  * Since: 0.9.7
  **/
@@ -580,7 +617,7 @@ hb_set_next_range (const hb_set_t *set,
  *
  * Set @first to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a previous range, %false otherwise
+ * Return value: `true` if there was a previous range, `false` otherwise
  *
  * Since: 1.8.0
  **/
@@ -590,4 +627,29 @@ hb_set_previous_range (const hb_set_t *set,
 		       hb_codepoint_t *last)
 {
   return set->previous_range (first, last);
+}
+
+/**
+ * hb_set_next_many:
+ * @set: A set
+ * @codepoint: Outputting codepoints starting after this one.
+ *             Use #HB_SET_VALUE_INVALID to get started.
+ * @out: (array length=size): An array of codepoints to write to.
+ * @size: The maximum number of codepoints to write out.
+ *
+ * Finds the next element in @set that is greater than @codepoint. Writes out
+ * codepoints to @out, until either the set runs out of elements, or @size
+ * codepoints are written, whichever comes first.
+ *
+ * Return value: the number of values written.
+ *
+ * Since: 4.2.0
+ **/
+unsigned int
+hb_set_next_many (const hb_set_t *set,
+		  hb_codepoint_t  codepoint,
+		  hb_codepoint_t *out,
+		  unsigned int    size)
+{
+  return set->next_many (codepoint, out, size);
 }

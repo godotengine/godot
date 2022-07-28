@@ -134,6 +134,16 @@ Color SpriteBase3D::get_modulate() const {
 	return modulate;
 }
 
+void SpriteBase3D::set_render_priority(int p_priority) {
+	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	render_priority = p_priority;
+	_queue_update();
+}
+
+int SpriteBase3D::get_render_priority() const {
+	return render_priority;
+}
+
 void SpriteBase3D::set_pixel_size(real_t p_amount) {
 	pixel_size = p_amount;
 	_queue_update();
@@ -175,10 +185,6 @@ void SpriteBase3D::_queue_update() {
 
 AABB SpriteBase3D::get_aabb() const {
 	return aabb;
-}
-
-Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
@@ -272,6 +278,17 @@ StandardMaterial3D::BillboardMode SpriteBase3D::get_billboard_mode() const {
 	return billboard_mode;
 }
 
+void SpriteBase3D::set_texture_filter(StandardMaterial3D::TextureFilter p_filter) {
+	if (texture_filter != p_filter) {
+		texture_filter = p_filter;
+		_queue_update();
+	}
+}
+
+StandardMaterial3D::TextureFilter SpriteBase3D::get_texture_filter() const {
+	return texture_filter;
+}
+
 void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &SpriteBase3D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &SpriteBase3D::is_centered);
@@ -288,6 +305,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &SpriteBase3D::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &SpriteBase3D::get_modulate);
 
+	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &SpriteBase3D::set_render_priority);
+	ClassDB::bind_method(D_METHOD("get_render_priority"), &SpriteBase3D::get_render_priority);
+
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &SpriteBase3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &SpriteBase3D::get_pixel_size);
 
@@ -303,6 +323,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpriteBase3D::set_billboard_mode);
 	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpriteBase3D::get_billboard_mode);
 
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "mode"), &SpriteBase3D::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &SpriteBase3D::get_texture_filter);
+
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
@@ -310,22 +333,28 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_im_update"), &SpriteBase3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shaded"), "set_draw_flag", "get_draw_flag", FLAG_SHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_draw_flag", "get_draw_flag", FLAG_DISABLE_DEPTH_TEST);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_draw_flag", "get_draw_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
 	BIND_ENUM_CONSTANT(FLAG_DOUBLE_SIDED);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_DEPTH_TEST);
+	BIND_ENUM_CONSTANT(FLAG_FIXED_SIZE);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(ALPHA_CUT_DISABLED);
@@ -548,7 +577,7 @@ void Sprite3D::_draw() {
 		value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 		value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
 		if (t.d > 0) {
-			value |= 3 << 30;
+			value |= 3UL << 30;
 		}
 		v_tangent = value;
 	}
@@ -590,7 +619,7 @@ void Sprite3D::_draw() {
 	set_aabb(aabb);
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), &shader_rid);
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;
@@ -598,6 +627,10 @@ void Sprite3D::_draw() {
 	if (last_texture != texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
 		last_texture = texture->get_rid();
+	}
+	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
 	}
 }
 
@@ -759,10 +792,10 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
@@ -911,7 +944,7 @@ void AnimatedSprite3D::_draw() {
 		value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 		value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
 		if (t.d > 0) {
-			value |= 3 << 30;
+			value |= 3UL << 30;
 		}
 		v_tangent = value;
 	}
@@ -952,7 +985,7 @@ void AnimatedSprite3D::_draw() {
 	set_aabb(aabb);
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), &shader_rid);
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;
@@ -960,6 +993,10 @@ void AnimatedSprite3D::_draw() {
 	if (last_texture != texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
 		last_texture = texture->get_rid();
+	}
+	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
 	}
 }
 
@@ -997,8 +1034,11 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
-		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
+		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+		} else {
+			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
+			property.hint_string = "0,0,1";
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
@@ -1204,10 +1244,21 @@ StringName AnimatedSprite3D::get_animation() const {
 TypedArray<String> AnimatedSprite3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = SpriteBase3D::get_configuration_warnings();
 	if (frames.is_null()) {
-		warnings.push_back(TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
 	}
 
 	return warnings;
+}
+
+void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (const StringName &name : al) {
+			r_options->push_back(String(name).quote());
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimatedSprite3D::_bind_methods() {

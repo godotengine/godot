@@ -36,6 +36,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/animation_library.h"
 
 #ifdef TOOLS_ENABLED
 class AnimatedValuesBackup : public RefCounted {
@@ -62,7 +63,6 @@ public:
 
 class AnimationPlayer : public Node {
 	GDCLASS(AnimationPlayer, Node);
-	OBJ_CATEGORY("Animation Nodes");
 
 public:
 	enum AnimationProcessCallback {
@@ -94,7 +94,7 @@ private:
 	struct TrackNodeCache {
 		NodePath path;
 		uint32_t id = 0;
-		RES resource;
+		Ref<Resource> resource;
 		Node *node = nullptr;
 		Node2D *node_2d = nullptr;
 #ifndef _3D_DISABLED
@@ -109,6 +109,9 @@ private:
 		bool loc_used = false;
 		bool rot_used = false;
 		bool scale_used = false;
+		Vector3 init_loc = Vector3(0, 0, 0);
+		Quaternion init_rot = Quaternion(0, 0, 0, 1);
+		Vector3 init_scale = Vector3(1, 1, 1);
 
 		Vector3 loc_accum;
 		Quaternion rot_accum;
@@ -132,7 +135,7 @@ private:
 			Variant capture;
 		};
 
-		Map<StringName, PropertyAnim> property_anim;
+		HashMap<StringName, PropertyAnim> property_anim;
 
 		struct BezierAnim {
 			Vector<StringName> bezier_property;
@@ -142,7 +145,7 @@ private:
 			uint64_t accum_pass = 0;
 		};
 
-		Map<StringName, BezierAnim> bezier_anim;
+		HashMap<StringName, BezierAnim> bezier_anim;
 
 		uint32_t last_setup_pass = 0;
 		TrackNodeCache() {}
@@ -152,6 +155,16 @@ private:
 		ObjectID id;
 		int bone_idx = -1;
 		int blend_shape_idx = -1;
+
+		static uint32_t hash(const TrackNodeCacheKey &p_key) {
+			uint32_t h = hash_one_uint64(p_key.id);
+			h = hash_murmur3_one_32(p_key.bone_idx, h);
+			return hash_fmix32(hash_murmur3_one_32(p_key.blend_shape_idx, h));
+		}
+
+		inline bool operator==(const TrackNodeCacheKey &p_right) const {
+			return id == p_right.id && bone_idx == p_right.bone_idx && blend_shape_idx == p_right.blend_shape_idx;
+		}
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
@@ -166,7 +179,7 @@ private:
 		}
 	};
 
-	Map<TrackNodeCacheKey, TrackNodeCache> node_cache_map;
+	HashMap<TrackNodeCacheKey, TrackNodeCache, TrackNodeCacheKey> node_cache_map;
 
 	TrackNodeCache *cache_update[NODE_CACHE_UPDATE_MAX];
 	int cache_update_size = 0;
@@ -174,7 +187,7 @@ private:
 	int cache_update_prop_size = 0;
 	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
 	int cache_update_bezier_size = 0;
-	Set<TrackNodeCache *> playing_caches;
+	HashSet<TrackNodeCache *> playing_caches;
 
 	uint64_t accum_pass = 1;
 	float speed_scale = 1.0;
@@ -185,16 +198,39 @@ private:
 		StringName next;
 		Vector<TrackNodeCache *> node_cache;
 		Ref<Animation> animation;
+		StringName animation_library;
+		uint64_t last_update = 0;
 	};
 
-	Map<StringName, AnimationData> animation_set;
+	HashMap<StringName, AnimationData> animation_set;
+
+	struct AnimationLibraryData {
+		StringName name;
+		Ref<AnimationLibrary> library;
+		bool operator<(const AnimationLibraryData &p_data) const { return name.operator String() < p_data.name.operator String(); }
+	};
+
+	LocalVector<AnimationLibraryData> animation_libraries;
+
 	struct BlendKey {
 		StringName from;
 		StringName to;
-		bool operator<(const BlendKey &bk) const { return from == bk.from ? String(to) < String(bk.to) : String(from) < String(bk.from); }
+		static uint32_t hash(const BlendKey &p_key) {
+			return hash_one_uint64((uint64_t(p_key.from.hash()) << 32) | uint32_t(p_key.to.hash()));
+		}
+		bool operator==(const BlendKey &bk) const {
+			return from == bk.from && to == bk.to;
+		}
+		bool operator<(const BlendKey &bk) const {
+			if (from == bk.from) {
+				return to < bk.to;
+			} else {
+				return from < bk.from;
+			}
+		}
 	};
 
-	Map<BlendKey, float> blend_times;
+	HashMap<BlendKey, float, BlendKey> blend_times;
 
 	struct PlaybackData {
 		AnimationData *from = nullptr;
@@ -226,6 +262,7 @@ private:
 	bool reset_on_save = true;
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
+	bool movie_quit_on_finish = false;
 	bool processing = false;
 	bool active = true;
 
@@ -262,6 +299,15 @@ private:
 
 	bool playing = false;
 
+	uint64_t animation_set_update_pass = 1;
+	void _animation_set_cache_update();
+	void _animation_added(const StringName &p_name, const StringName &p_library);
+	void _animation_removed(const StringName &p_name, const StringName &p_library);
+	void _animation_renamed(const StringName &p_name, const StringName &p_to_name, const StringName &p_library);
+	void _rename_animation(const StringName &p_from_name, const StringName &p_to_name);
+
+	TypedArray<StringName> _get_animation_library_list() const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -271,15 +317,22 @@ protected:
 
 	static void _bind_methods();
 
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
+
 public:
 	StringName find_animation(const Ref<Animation> &p_animation) const;
+	StringName find_animation_library(const Ref<Animation> &p_animation) const;
 
-	Error add_animation(const StringName &p_name, const Ref<Animation> &p_animation);
-	void remove_animation(const StringName &p_name);
-	void rename_animation(const StringName &p_name, const StringName &p_new_name);
-	bool has_animation(const StringName &p_name) const;
+	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
+	void remove_animation_library(const StringName &p_name);
+	void rename_animation_library(const StringName &p_name, const StringName &p_new_name);
+	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
+	void get_animation_library_list(List<StringName> *p_animations) const;
+	bool has_animation_library(const StringName &p_name) const;
+
 	Ref<Animation> get_animation(const StringName &p_name) const;
 	void get_animation_list(List<StringName> *p_animations) const;
+	bool has_animation(const StringName &p_name) const;
 
 	void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time);
 	float get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const;
@@ -321,6 +374,9 @@ public:
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
 
+	void set_movie_quit_on_finish_enabled(bool p_enabled);
+	bool is_movie_quit_on_finish_enabled() const;
+
 	void seek(double p_time, bool p_update = false);
 	void seek_delta(double p_time, float p_delta);
 	float get_current_animation_position() const;
@@ -348,4 +404,4 @@ public:
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
-#endif
+#endif // ANIMATION_PLAYER_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPLUGINSETTINGS_H
-#define EDITORPLUGINSETTINGS_H
+#ifndef EDITOR_PLUGIN_SETTINGS_H
+#define EDITOR_PLUGIN_SETTINGS_H
 
 #include "core/object/undo_redo.h"
 #include "editor/editor_data.h"
@@ -44,15 +44,13 @@ class EditorPluginSettings : public VBoxContainer {
 		BUTTON_PLUGIN_EDIT
 	};
 
-	PluginConfigDialog *plugin_config_dialog;
-	Button *create_plugin;
-	Button *update_list;
-	Tree *plugin_list;
-	bool updating;
+	PluginConfigDialog *plugin_config_dialog = nullptr;
+	Tree *plugin_list = nullptr;
+	bool updating = false;
 
 	void _plugin_activity_changed();
 	void _create_clicked();
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	static Vector<String> _get_plugins(const String &p_dir);
 
@@ -67,4 +65,4 @@ public:
 	EditorPluginSettings();
 };
 
-#endif // EDITORPLUGINSETTINGS_H
+#endif // EDITOR_PLUGIN_SETTINGS_H

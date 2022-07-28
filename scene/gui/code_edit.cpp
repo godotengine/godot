@@ -46,7 +46,7 @@ void CodeEdit::_notification(int p_what) {
 			line_spacing = get_theme_constant(SNAME("line_spacing"));
 
 			set_gutter_width(main_gutter, get_line_height());
-			set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
+			set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', font_size).width);
 			set_gutter_width(fold_gutter, get_line_height() / 1.2);
 
 			breakpoint_color = get_theme_color(SNAME("breakpoint_color"));
@@ -68,6 +68,7 @@ void CodeEdit::_notification(int p_what) {
 			code_completion_max_lines = get_theme_constant(SNAME("completion_lines"));
 			code_completion_scroll_width = get_theme_constant(SNAME("completion_scroll_width"));
 			code_completion_scroll_color = get_theme_color(SNAME("completion_scroll_color"));
+			code_completion_scroll_hovered_color = get_theme_color(SNAME("completion_scroll_hovered_color"));
 			code_completion_background_color = get_theme_color(SNAME("completion_background_color"));
 			code_completion_selected_color = get_theme_color(SNAME("completion_selected_color"));
 			code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
@@ -85,7 +86,7 @@ void CodeEdit::_notification(int p_what) {
 			if (line_length_guideline_columns.size() > 0) {
 				const int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
 				const int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-				const float char_size = font->get_char_size('0', 0, font_size).width;
+				const float char_size = font->get_char_size('0', font_size).width;
 
 				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
 					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
@@ -106,7 +107,7 @@ void CodeEdit::_notification(int p_what) {
 
 				const int code_completion_options_count = code_completion_options.size();
 				const int lines = MIN(code_completion_options_count, code_completion_max_lines);
-				const int icon_hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+				const int icon_hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 				const Size2 icon_area_size(row_height, row_height);
 
 				code_completion_rect.size.width = code_completion_longest_line + icon_hsep + icon_area_size.width + 2;
@@ -122,7 +123,7 @@ void CodeEdit::_notification(int p_what) {
 				}
 
 				const int scroll_width = code_completion_options_count > code_completion_max_lines ? code_completion_scroll_width : 0;
-				const int code_completion_base_width = font->get_string_size(code_completion_base, font_size).width;
+				const int code_completion_base_width = font->get_string_size(code_completion_base, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 				if (caret_pos.x - code_completion_base_width + code_completion_rect.size.width + scroll_width > get_size().width) {
 					code_completion_rect.position.x = get_size().width - code_completion_rect.size.width - scroll_width;
 				} else {
@@ -133,6 +134,9 @@ void CodeEdit::_notification(int p_what) {
 				if (code_completion_background_color.a > 0.01) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), code_completion_background_color);
 				}
+
+				code_completion_scroll_rect.position = code_completion_rect.position + Vector2(code_completion_rect.size.width, 0);
+				code_completion_scroll_rect.size = Vector2(scroll_width, code_completion_rect.size.height);
 
 				code_completion_line_ofs = CLAMP(code_completion_current_selected - lines / 2, 0, code_completion_options_count - lines);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), code_completion_selected_color);
@@ -174,8 +178,8 @@ void CodeEdit::_notification(int p_what) {
 
 					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
 						Pair<int, int> match = code_completion_options[l].matches[j];
-						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), font_size).width;
-						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), font_size).width;
+						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 
 						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), code_completion_existing_color);
 					}
@@ -185,9 +189,11 @@ void CodeEdit::_notification(int p_what) {
 
 				/* Draw a small scroll rectangle to show a position in the options. */
 				if (scroll_width) {
+					Color scroll_color = is_code_completion_scroll_hovered || is_code_completion_scroll_pressed ? code_completion_scroll_hovered_color : code_completion_scroll_color;
+
 					float r = (float)code_completion_max_lines / code_completion_options_count;
 					float o = (float)code_completion_line_ofs / code_completion_options_count;
-					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), code_completion_scroll_color);
+					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), scroll_color);
 				}
 			}
 
@@ -202,11 +208,11 @@ void CodeEdit::_notification(int p_what) {
 
 				int max_width = 0;
 				for (int i = 0; i < line_count; i++) {
-					max_width = MAX(max_width, font->get_string_size(code_hint_lines[i], font_size).x);
+					max_width = MAX(max_width, font->get_string_size(code_hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 				}
 				Size2 minsize = sb->get_minimum_size() + Size2(max_width, line_count * font_height + (line_spacing * line_count - 1));
 
-				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), font_size).x;
+				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 				if (code_hint_xpos == -0xFFFF) {
 					code_hint_xpos = get_caret_draw_pos().x - offset;
 				}
@@ -226,8 +232,8 @@ void CodeEdit::_notification(int p_what) {
 					int begin = 0;
 					int end = 0;
 					if (line.contains(String::chr(0xFFFF))) {
-						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), font_size).x;
-						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), font_size).x;
+						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 					}
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(font_size) + font_height * i + yofs);
@@ -260,6 +266,12 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
+		if (is_code_completion_scroll_pressed && mb->get_button_index() == MouseButton::LEFT) {
+			is_code_completion_scroll_pressed = false;
+			update();
+			return;
+		}
+
 		if (code_completion_active && code_completion_rect.has_point(mb->get_position())) {
 			if (!mb->is_pressed()) {
 				return;
@@ -289,7 +301,21 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 			}
 			return;
+		} else if (code_completion_active && code_completion_scroll_rect.has_point(mb->get_position())) {
+			if (mb->get_button_index() != MouseButton::LEFT) {
+				return;
+			}
+
+			if (mb->is_pressed()) {
+				is_code_completion_scroll_pressed = true;
+
+				_update_scroll_selected_line(mb->get_position().y);
+				update();
+			}
+
+			return;
 		}
+
 		cancel_code_completion();
 		set_code_hint("");
 
@@ -354,9 +380,26 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				set_symbol_lookup_word_as_valid(false);
 			}
 		}
+
+		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
+		if (is_code_completion_scroll_hovered != scroll_hovered) {
+			is_code_completion_scroll_hovered = scroll_hovered;
+			update();
+		}
+
+		if (is_code_completion_scroll_pressed) {
+			_update_scroll_selected_line(mpos.y);
+			update();
+			return;
+		}
 	}
 
 	Ref<InputEventKey> k = p_gui_input;
+	if (TextEdit::alt_input(p_gui_input)) {
+		accept_event();
+		return;
+	}
+
 	bool update_code_completion = false;
 	if (!k.is_valid()) {
 		TextEdit::gui_input(p_gui_input);
@@ -364,7 +407,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* Ctrl + Hover symbols */
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	if (k->get_keycode() == Key::META) {
 #else
 	if (k->get_keycode() == Key::CTRL) {
@@ -538,6 +581,10 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	}
 
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (!is_editable() && (!is_selecting_enabled() || get_line_count() == 0))) {
+		return CURSOR_ARROW;
+	}
+
+	if (code_completion_active && code_completion_scroll_rect.has_point(p_pos)) {
 		return CURSOR_ARROW;
 	}
 
@@ -735,8 +782,8 @@ void CodeEdit::set_auto_indent_prefixes(const TypedArray<String> &p_prefixes) {
 
 TypedArray<String> CodeEdit::get_auto_indent_prefixes() const {
 	TypedArray<String> prefixes;
-	for (const Set<char32_t>::Element *E = auto_indent_prefixes.front(); E; E = E->next()) {
-		prefixes.push_back(String::chr(E->get()));
+	for (const char32_t &E : auto_indent_prefixes) {
+		prefixes.push_back(String::chr(E));
 	}
 	return prefixes;
 }
@@ -994,7 +1041,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 			}
 
 			/* Make sure this is the last char, trailing whitespace or comments are okay. */
-			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, cc) == -1)) {
+			/* Increment column for comments because the delimiter (#) should be ignored. */
+			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, line_col + 1) == -1)) {
 				should_indent = false;
 			}
 		}
@@ -1622,7 +1670,7 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 	start_position.y = -1;
 	start_position.x = -1;
 
-	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value()) != -1;
+	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->get()) != -1;
 
 	/* Check the keys for this line. */
 	for (const KeyValue<int, int> &E : delimiter_cache[p_line]) {
@@ -1746,8 +1794,8 @@ void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes
 
 TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 	TypedArray<String> prefixes;
-	for (const Set<char32_t>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
-		prefixes.push_back(String::chr(E->get()));
+	for (const char32_t &E : code_completion_prefixes) {
+		prefixes.push_back(String::chr(E));
 	}
 	return prefixes;
 }
@@ -1782,10 +1830,10 @@ void CodeEdit::request_code_completion(bool p_force) {
 	/* Don't re-query if all existing options are quoted types, eg path, signal. */
 	bool ignored = code_completion_active && !code_completion_options.is_empty();
 	if (ignored) {
-		ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_PLAIN_TEXT;
-		const ScriptCodeCompletionOption *previous_option = nullptr;
+		ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT;
+		const ScriptLanguage::CodeCompletionOption *previous_option = nullptr;
 		for (int i = 0; i < code_completion_options.size(); i++) {
-			const ScriptCodeCompletionOption &current_option = code_completion_options[i];
+			const ScriptLanguage::CodeCompletionOption &current_option = code_completion_options[i];
 			if (!previous_option) {
 				previous_option = &current_option;
 				kind = current_option.kind;
@@ -1795,7 +1843,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 				break;
 			}
 		}
-		ignored = ignored && (kind == ScriptCodeCompletionOption::KIND_FILE_PATH || kind == ScriptCodeCompletionOption::KIND_NODE_PATH || kind == ScriptCodeCompletionOption::KIND_SIGNAL);
+		ignored = ignored && (kind == ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH || kind == ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH || kind == ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL);
 	}
 
 	if (ignored) {
@@ -1817,9 +1865,9 @@ void CodeEdit::request_code_completion(bool p_force) {
 	}
 }
 
-void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const RES &p_icon, const Variant &p_value) {
-	ScriptCodeCompletionOption completion_option;
-	completion_option.kind = (ScriptCodeCompletionOption::Kind)p_type;
+void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value) {
+	ScriptLanguage::CodeCompletionOption completion_option;
+	completion_option.kind = (ScriptLanguage::CodeCompletionKind)p_type;
 	completion_option.display = p_display_text;
 	completion_option.insert_text = p_insert_text;
 	completion_option.font_color = p_text_color;
@@ -2195,7 +2243,7 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
 	ClassDB::bind_method(D_METHOD("request_code_completion", "force"), &CodeEdit::request_code_completion, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(RES()), DEFVAL(Variant::NIL));
+	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL));
 	ClassDB::bind_method(D_METHOD("update_code_completion_options", "force"), &CodeEdit::update_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_options"), &CodeEdit::get_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_option", "index"), &CodeEdit::get_code_completion_option);
@@ -2261,7 +2309,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
-	ADD_GROUP("Auto brace completion", "auto_brace_completion_");
+	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
@@ -2396,7 +2444,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 			}
 		} else {
 			for (int i = start_line; i < end_line; i++) {
-				delimiter_cache.insert(i, Map<int, int>());
+				delimiter_cache.insert(i, RBMap<int, int>());
 			}
 		}
 	}
@@ -2533,7 +2581,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 
 	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
 	bool in_region = region != -1 && delimiters[region].type == p_type;
-	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
+	for (RBMap<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
 		/* If column is specified, loop until the key is larger then the column. */
 		if (p_column != -1) {
 			if (E->key() > p_column) {
@@ -2691,6 +2739,13 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 }
 
 /* Code Completion */
+void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
+	float percent = (float)(p_mouse_y - code_completion_scroll_rect.position.y) / code_completion_scroll_rect.size.height;
+	percent = CLAMP(percent, 0.0f, 1.0f);
+
+	code_completion_current_selected = (int)(percent * (code_completion_options.size() - 1));
+}
+
 void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
@@ -2702,7 +2757,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		TypedArray<Dictionary> completion_options_sources;
 		completion_options_sources.resize(code_completion_option_sources.size());
 		int i = 0;
-		for (const ScriptCodeCompletionOption &E : code_completion_option_sources) {
+		for (const ScriptLanguage::CodeCompletionOption &E : code_completion_option_sources) {
 			Dictionary option;
 			option["kind"] = E.kind;
 			option["display_text"] = E.display;
@@ -2727,8 +2782,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		/* Convert back into options. */
 		int max_width = 0;
 		for (i = 0; i < completion_options.size(); i++) {
-			ScriptCodeCompletionOption option;
-			option.kind = (ScriptCodeCompletionOption::Kind)(int)completion_options[i].get("kind");
+			ScriptLanguage::CodeCompletionOption option;
+			option.kind = (ScriptLanguage::CodeCompletionKind)(int)completion_options[i].get("kind");
 			option.display = completion_options[i].get("display_text");
 			option.insert_text = completion_options[i].get("insert_text");
 			option.font_color = completion_options[i].get("font_color");
@@ -2740,7 +2795,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				offset = line_height;
 			}
 
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 			code_completion_options.push_back(option);
 		}
 
@@ -2821,15 +2876,15 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options.clear();
 	code_completion_base = string_to_complete;
 
-	Vector<ScriptCodeCompletionOption> completion_options_casei;
-	Vector<ScriptCodeCompletionOption> completion_options_substr;
-	Vector<ScriptCodeCompletionOption> completion_options_substr_casei;
-	Vector<ScriptCodeCompletionOption> completion_options_subseq;
-	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_casei;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr_casei;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_subseq;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_subseq_casei;
 
 	int max_width = 0;
 	String string_to_complete_lower = string_to_complete.to_lower();
-	for (ScriptCodeCompletionOption &option : code_completion_option_sources) {
+	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
 		if (single_quote && option.display.is_quoted()) {
 			option.display = option.display.unquote().quote("'");
 		}
@@ -2851,7 +2906,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (string_to_complete.length() == 0) {
 			code_completion_options.push_back(option);
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 			continue;
 		}
 
@@ -2957,7 +3012,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_matches);
 				completion_options_subseq.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
 			option.matches.clear();
 
@@ -2974,7 +3029,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_lower_matches);
 				completion_options_subseq_casei.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 		}
 	}
 
@@ -3030,12 +3085,14 @@ void CodeEdit::_text_changed() {
 	}
 
 	if (font.is_valid()) {
-		set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
+		set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', font_size).width);
 	}
 
 	lc = get_line_count();
 	List<int> breakpoints;
-	breakpointed_lines.get_key_list(&breakpoints);
+	for (const KeyValue<int, bool> &E : breakpointed_lines) {
+		breakpoints.push_back(E.key);
+	}
 	for (const int &line : breakpoints) {
 		if (line < lines_edited_from || (line < lc && is_line_breakpointed(line))) {
 			continue;

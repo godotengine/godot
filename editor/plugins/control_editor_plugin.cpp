@@ -120,7 +120,7 @@ ControlPositioningWarning::ControlPositioningWarning() {
 	grid->add_child(title_icon);
 
 	title_label = memnew(Label);
-	title_label->set_autowrap_mode(Label::AutowrapMode::AUTOWRAP_WORD);
+	title_label->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD);
 	title_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 	grid->add_child(title_label);
@@ -135,7 +135,7 @@ ControlPositioningWarning::ControlPositioningWarning() {
 	grid->add_child(hint_filler_left);
 
 	hint_label = memnew(Label);
-	hint_label->set_autowrap_mode(Label::AutowrapMode::AUTOWRAP_WORD);
+	hint_label->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD);
 	hint_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hint_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 	hint_label->hide();
@@ -173,7 +173,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 
 	Vector<String> split_after;
 	split_after.append("Custom");
-	split_after.append("PresetWide");
+	split_after.append("PresetFullRect");
 	split_after.append("PresetBottomLeft");
 	split_after.append("PresetCenter");
 
@@ -181,24 +181,18 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
-		String humanized_name = text_split[0];
-		if (humanized_name.begins_with("Preset")) {
-			if (humanized_name == "PresetWide") {
-				humanized_name = "Full Rect";
-			} else {
-				humanized_name = humanized_name.trim_prefix("Preset");
-				humanized_name = humanized_name.capitalize();
-			}
-
-			String icon_name = text_split[0].trim_prefix("Preset");
-			icon_name = "ControlAlign" + icon_name;
+		String option_name = text_split[0];
+		if (option_name.begins_with("Preset")) {
+			String preset_name = option_name.trim_prefix("Preset");
+			String humanized_name = preset_name.capitalize();
+			String icon_name = "ControlAlign" + preset_name;
 			options->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(icon_name, "EditorIcons"), humanized_name);
 		} else {
-			options->add_item(humanized_name);
+			options->add_item(option_name);
 		}
 
 		options->set_item_metadata(j, current_val);
-		if (split_after.has(text_split[0])) {
+		if (split_after.has(option_name)) {
 			options->add_separator();
 			j++;
 		}
@@ -335,7 +329,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 		return;
 	}
 
-	Map<int, String> flags;
+	HashMap<int, String> flags;
 	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
@@ -479,7 +473,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_preset(Control::LayoutPreset
 				case PRESET_BOTTOM_WIDE:
 				case PRESET_VCENTER_WIDE:
 				case PRESET_HCENTER_WIDE:
-				case PRESET_WIDE:
+				case PRESET_FULL_RECT:
 					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_MINSIZE);
 					break;
 			}
@@ -509,7 +503,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_to_keep_ratio() {
 			undo_redo->add_do_method(control, "set_anchor", SIDE_BOTTOM, bottom_right_anchor.y, false, true);
 			undo_redo->add_do_method(control, "set_meta", "_edit_use_anchors_", true);
 
-			const bool use_anchors = control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_");
+			const bool use_anchors = control->get_meta("_edit_use_anchors_", false);
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 			if (use_anchors) {
 				undo_redo->add_undo_method(control, "set_meta", "_edit_use_anchors_", true);
@@ -617,7 +611,7 @@ void ControlEditorToolbar::_button_toggle_anchor_mode(bool p_status) {
 }
 
 bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
-	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+	return p_node->get_meta("_edit_lock_", false);
 }
 
 List<Control *> ControlEditorToolbar::_get_edited_controls(bool retrieve_locked, bool remove_controls_if_parent_in_selection) {
@@ -689,8 +683,8 @@ void ControlEditorToolbar::_popup_callback(int p_op) {
 		case ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE: {
 			_set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHORS_AND_OFFSETS_PRESET_WIDE: {
-			_set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+		case ANCHORS_AND_OFFSETS_PRESET_FULL_RECT: {
+			_set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		} break;
 		case ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO: {
 			_set_anchors_and_offsets_to_keep_ratio();
@@ -741,8 +735,8 @@ void ControlEditorToolbar::_popup_callback(int p_op) {
 		case ANCHORS_PRESET_HCENTER_WIDE: {
 			_set_anchors_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHORS_PRESET_WIDE: {
-			_set_anchors_preset(Control::PRESET_WIDE);
+		case ANCHORS_PRESET_FULL_RECT: {
+			_set_anchors_preset(Control::PRESET_FULL_RECT);
 		} break;
 
 		case CONTAINERS_H_PRESET_FILL: {
@@ -798,7 +792,7 @@ void ControlEditorToolbar::_selection_changed() {
 		}
 
 		nb_valid_controls++;
-		if (control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_")) {
+		if (control->get_meta("_edit_use_anchors_", false)) {
 			nb_anchors_mode++;
 		}
 	}
@@ -818,7 +812,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			anchor_layouts_icon->set_texture(get_theme_icon(SNAME("ControlLayout"), SNAME("EditorIcons")));
+			anchor_presets_menu->set_icon(get_theme_icon(SNAME("ControlLayout"), SNAME("EditorIcons")));
 
 			PopupMenu *p = anchor_presets_menu->get_popup();
 			p->clear();
@@ -840,7 +834,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 			p->add_icon_item(get_theme_icon(SNAME("ControlAlignVCenterWide"), SNAME("EditorIcons")), TTR("VCenter Wide"), ANCHORS_AND_OFFSETS_PRESET_VCENTER_WIDE);
 			p->add_icon_item(get_theme_icon(SNAME("ControlAlignHCenterWide"), SNAME("EditorIcons")), TTR("HCenter Wide"), ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE);
 			p->add_separator();
-			p->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_AND_OFFSETS_PRESET_WIDE);
+			p->add_icon_item(get_theme_icon(SNAME("ControlAlignFullRect"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_AND_OFFSETS_PRESET_FULL_RECT);
 			p->add_icon_item(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")), TTR("Keep Current Ratio"), ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO);
 			p->set_item_tooltip(19, TTR("Adjust anchors and offsets to match the current rect size."));
 
@@ -867,11 +861,12 @@ void ControlEditorToolbar::_notification(int p_what) {
 			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignVCenterWide"), SNAME("EditorIcons")), TTR("VCenter Wide"), ANCHORS_PRESET_VCENTER_WIDE);
 			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignHCenterWide"), SNAME("EditorIcons")), TTR("HCenter Wide"), ANCHORS_PRESET_HCENTER_WIDE);
 			anchors_popup->add_separator();
-			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
+			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignFullRect"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_FULL_RECT);
 
 			anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
 
-			container_layouts_icon->set_texture(get_theme_icon(SNAME("Container"), SNAME("EditorIcons")));
+			container_h_presets_menu->set_icon(get_theme_icon(SNAME("Container"), SNAME("EditorIcons")));
+			container_v_presets_menu->set_icon(get_theme_icon(SNAME("Container"), SNAME("EditorIcons")));
 
 			p = container_h_presets_menu->get_popup();
 			p->clear();
@@ -925,27 +920,19 @@ void ControlEditorToolbar::_notification(int p_what) {
 				}
 
 				if (enable_anchors) {
-					anchor_presets_menu->set_disabled(false);
-					anchor_presets_menu->set_tooltip(TTR("Presets for the anchor and offset values of a Control node."));
-					anchor_mode_button->set_disabled(false);
-					anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
+					anchor_presets_menu->set_visible(true);
+					anchor_mode_button->set_visible(true);
 				} else {
-					anchor_presets_menu->set_disabled(true);
-					anchor_presets_menu->set_tooltip(TTR("Children of containers have their anchors and offsets values controlled by their parent."));
-					anchor_mode_button->set_disabled(true);
-					anchor_mode_button->set_tooltip(TTR("Children of containers have their anchors and offsets values controlled by their parent."));
+					anchor_presets_menu->set_visible(false);
+					anchor_mode_button->set_visible(false);
 				}
 
 				if (enable_containers) {
-					container_h_presets_menu->set_disabled(false);
-					container_h_presets_menu->set_tooltip(TTR("Horizontal sizing setting for children of a Container node."));
-					container_v_presets_menu->set_disabled(false);
-					container_v_presets_menu->set_tooltip(TTR("Vertical sizing setting for children of a Container node."));
+					container_h_presets_menu->set_visible(true);
+					container_v_presets_menu->set_visible(true);
 				} else {
-					container_h_presets_menu->set_disabled(true);
-					container_h_presets_menu->set_tooltip(TTR("Children of regular controls are controlled by their anchors and offsets."));
-					container_v_presets_menu->set_disabled(true);
-					container_v_presets_menu->set_tooltip(TTR("Children of regular controls are controlled by their anchors and offsets."));
+					container_h_presets_menu->set_visible(false);
+					container_v_presets_menu->set_visible(false);
 				}
 			} else {
 				set_visible(false);
@@ -955,18 +942,10 @@ void ControlEditorToolbar::_notification(int p_what) {
 }
 
 ControlEditorToolbar::ControlEditorToolbar() {
-	anchor_layouts_icon = memnew(TextureRect);
-	anchor_layouts_icon->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
-	add_child(anchor_layouts_icon);
-
-	Label *l = memnew(Label);
-	l->set_text(TTR("Anchors"));
-	l->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
-	add_child(l);
-
 	anchor_presets_menu = memnew(MenuButton);
 	anchor_presets_menu->set_shortcut_context(this);
-	anchor_presets_menu->set_text(TTR("Preset"));
+	anchor_presets_menu->set_text(TTR("Anchors"));
+	anchor_presets_menu->set_tooltip(TTR("Presets for the anchor and offset values of a Control node."));
 	add_child(anchor_presets_menu);
 	anchor_presets_menu->set_switch_on_hover(true);
 
@@ -981,23 +960,16 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	anchor_mode_button = memnew(Button);
 	anchor_mode_button->set_flat(true);
 	anchor_mode_button->set_toggle_mode(true);
+	anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
 	add_child(anchor_mode_button);
 	anchor_mode_button->connect("toggled", callable_mp(this, &ControlEditorToolbar::_button_toggle_anchor_mode));
 
 	add_child(memnew(VSeparator));
 
-	container_layouts_icon = memnew(TextureRect);
-	container_layouts_icon->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
-	add_child(container_layouts_icon);
-
-	l = memnew(Label);
-	l->set_text(TTR("Containers"));
-	l->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
-	add_child(l);
-
 	container_h_presets_menu = memnew(MenuButton);
 	container_h_presets_menu->set_shortcut_context(this);
 	container_h_presets_menu->set_text(TTR("Horizontal"));
+	container_h_presets_menu->set_tooltip(TTR("Horizontal sizing setting for children of a Container node."));
 	add_child(container_h_presets_menu);
 	container_h_presets_menu->set_switch_on_hover(true);
 
@@ -1007,6 +979,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	container_v_presets_menu = memnew(MenuButton);
 	container_v_presets_menu->set_shortcut_context(this);
 	container_v_presets_menu->set_text(TTR("Vertical"));
+	container_v_presets_menu->set_tooltip(TTR("Vertical sizing setting for children of a Container node."));
 	add_child(container_v_presets_menu);
 	container_v_presets_menu->set_switch_on_hover(true);
 

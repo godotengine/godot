@@ -100,7 +100,7 @@
 		<method name="_get_minimum_size" qualifiers="virtual const">
 			<return type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
+				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member custom_minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
 				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
 			</description>
@@ -137,7 +137,7 @@
 				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside the parent's rectangle and the parent has either [member rect_clip_content] enabled.
+				* it happens outside the parent's rectangle and the parent has either [member clip_contents] enabled.
 				[b]Note:[/b] Event position is relative to the control origin.
 			</description>
 		</method>
@@ -157,7 +157,7 @@
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance). When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
 				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
-				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
+				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member custom_minimum_size] to some non-zero value.
 				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise, the viewport that instantiates it will not be able to calculate its minimum size reliably.
 				Example of usage with a custom-constructed node:
 				[codeblocks]
@@ -351,13 +351,13 @@
 		<method name="get_begin" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns [member offset_left] and [member offset_top]. See also [member rect_position].
+				Returns [member offset_left] and [member offset_top]. See also [member position].
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns combined minimum size from [member rect_min_size] and [method get_minimum_size].
+				Returns combined minimum size from [member custom_minimum_size] and [method get_minimum_size].
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
@@ -383,13 +383,13 @@
 		<method name="get_global_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
+				Returns the position and size of the control relative to the top-left corner of the screen. See [member position] and [member size].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the minimum size for this control. See [member rect_min_size].
+				Returns the minimum size for this control. See [member custom_minimum_size].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -414,7 +414,20 @@
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
+				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member position] and [member size].
+			</description>
+		</method>
+		<method name="get_screen_position" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the position of this [Control] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
+				Equals to [member global_position] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Example usage for showing a popup:
+				[codeblock]
+				popup_menu.position = get_screen_position() + get_local_mouse_position()
+				popup_menu.reset_size()
+				popup_menu.popup()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
@@ -652,7 +665,8 @@
 		<method name="is_drag_successful" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if drag operation is successful.
+				Returns [code]true[/code] if a drag operation is successful. Alternative to [method Viewport.gui_is_drag_successful].
+				Best used with [constant Node.NOTIFICATION_DRAG_END].
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
@@ -759,7 +773,7 @@
 			<return type="void" />
 			<argument index="0" name="position" type="Vector2" />
 			<description>
-				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member rect_position].
+				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member position].
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
@@ -840,7 +854,7 @@
 				    # Use a control that is not in the tree
 				    var cpb = ColorPickerButton.new()
 				    cpb.color = color
-				    cpb.rect_size = Vector2(50, 50)
+				    cpb.size = Vector2(50, 50)
 				    set_drag_preview(cpb)
 				    return color
 				[/gdscript]
@@ -881,7 +895,7 @@
 			<argument index="0" name="position" type="Vector2" />
 			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the [member rect_global_position] to given [code]position[/code].
+				Sets the [member global_position] to given [code]position[/code].
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
@@ -909,7 +923,7 @@
 			<argument index="0" name="position" type="Vector2" />
 			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the [member rect_position] to given [code]position[/code].
+				Sets the [member position] to given [code]position[/code].
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
@@ -918,21 +932,21 @@
 			<argument index="0" name="size" type="Vector2" />
 			<argument index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the size (see [member rect_size]).
+				Sets the size (see [member size]).
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="update_minimum_size">
 			<return type="void" />
 			<description>
-				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
+				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member custom_minimum_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<argument index="0" name="to_position" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
-				Moves the mouse cursor to [code]to_position[/code], relative to [member rect_position] of this [Control].
+				Moves the mouse cursor to [code]position[/code], relative to [member position] of this [Control].
 			</description>
 		</method>
 	</methods>
@@ -952,6 +966,12 @@
 		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
 			Toggles if any text should automatically change to its translated version depending on the current locale. Note that this will not affect any internal nodes (e.g. the popup of a [MenuButton]).
 			Also decides if the node's strings should be parsed for POT generation.
+		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
+			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
+		</member>
+		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
+			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
@@ -975,6 +995,9 @@
 		<member name="focus_previous" type="NodePath" setter="set_focus_previous" getter="get_focus_previous" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give keyboard focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [code]ui_focus_prev[/code] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
+		</member>
+		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
+			The node's global position, relative to the world (usually to the top-left corner of the window).
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
@@ -1014,6 +1037,10 @@
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
 		</member>
+		<member name="mouse_force_pass_scroll_events" type="bool" setter="set_force_pass_scroll_events" getter="is_force_pass_scroll_events" default="true">
+			When enabled, scroll wheel events processed by [method _gui_input] will be passed to the parent control even if [member mouse_filter] is set to [constant MOUSE_FILTER_STOP]. As it defaults to true, this allows nested scrollable containers to work out of the box.
+			You should disable it on the root of your UI if you do not want scroll events to go to the [code]_unhandled_input[/code] processing.
+		</member>
 		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
@@ -1030,30 +1057,21 @@
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
-			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
+		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
+			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
 		</member>
-		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
-			The node's global position, relative to the world (usually to the top-left corner of the window).
+		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
+			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].
 		</member>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
-			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
+		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
+			The node's rotation around its pivot, in radians. See [member pivot_offset] to change the pivot's position.
 		</member>
-		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
-			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
-		</member>
-		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
-			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
-		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
-			The node's rotation around its pivot, in radians. See [member rect_pivot_offset] to change the pivot's position.
-		</member>
-		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
-			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
+		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
+			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
-			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member rect_scale] property.
+			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member scale] property.
 		</member>
-		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
+		<member name="size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" default="1">
@@ -1110,7 +1128,7 @@
 				If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
 				[codeblock]
 				func _on_mouse_exited():
-				    if not Rect2(Vector2(), rect_size).has_point(get_local_mouse_position()):
+				    if not Rect2(Vector2(), size).has_point(get_local_mouse_position()):
 				        # Not hovering over area.
 				[/codeblock]
 			</description>
@@ -1141,7 +1159,7 @@
 			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member focus_mode].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
-			Sent when the node changes size. Use [member rect_size] to get the new size.
+			Sent when the node changes size. Use [member size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
 			Sent when the mouse pointer enters the node.
@@ -1180,10 +1198,10 @@
 			Show the system's cross mouse cursor when the user hovers the node.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Show the system's wait mouse cursor, often an hourglass, when the user hovers the node.
+			Show the system's wait mouse cursor when the user hovers the node. Often an hourglass.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Show the system's busy mouse cursor when the user hovers the node. Often an hourglass.
+			Show the system's busy mouse cursor when the user hovers the node. Often an arrow with a small hourglass.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Show the system's drag mouse cursor, often a closed fist or a cross symbol, when the user hovers the node. It tells the user they're currently dragging an item, like a node in the Scene dock.
@@ -1263,8 +1281,8 @@
 		<constant name="PRESET_HCENTER_WIDE" value="14" enum="LayoutPreset">
 			Snap all 4 anchors to a horizontal line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
-			Snap all 4 anchors to the respective corners of the parent control. Set all 4 offsets to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
+		<constant name="PRESET_FULL_RECT" value="15" enum="LayoutPreset">
+			Snap all 4 anchors to the respective corners of the parent control. Set all 4 offsets to 0 after you applied this preset and the [Control] will fit its parent control. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 			The control will be resized to its minimum size.
@@ -1301,7 +1319,7 @@
 			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. If this control does not handle the event, the parent control (if any) will be considered, and so on until there is no more parent control to potentially handle it. This also allows signals to fire in other controls. Even if no control handled it at all, the event will still be handled automatically, so unhandled input will not be fired.
+			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. If this control does not handle the event, the parent control (if any) will be considered, and so on until there is no more parent control to potentially handle it. This also allows signals to fire in other controls. If no control handled it, the event will be passed to `_unhandled_input` for further processing.
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 			The control will not receive mouse button input events through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
@@ -1344,28 +1362,6 @@
 		</constant>
 		<constant name="TEXT_DIRECTION_RTL" value="2" enum="TextDirection">
 			Right-to-left text writing direction.
-		</constant>
-		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
-			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
-		</constant>
-		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
-			BiDi override for URI.
-		</constant>
-		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
-			BiDi override for file path.
-		</constant>
-		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
-			BiDi override for email.
-		</constant>
-		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
-			BiDi override for lists.
-			Structured text options: list separator [code]String[/code].
-		</constant>
-		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
-			Use default Unicode BiDi algorithm.
-		</constant>
-		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
-			User defined structured text BiDi override function.
 		</constant>
 	</constants>
 </class>

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_REGION_H
-#define NAVIGATION_REGION_H
+#ifndef NAVIGATION_REGION_3D_H
+#define NAVIGATION_REGION_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -40,6 +40,9 @@ class NavigationRegion3D : public Node3D {
 	bool enabled = true;
 	RID region;
 	Ref<NavigationMesh> navmesh;
+
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
 
 	Node *debug_view = nullptr;
 	Thread bake_thread;
@@ -54,15 +57,26 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_layers(uint32_t p_layers);
-	uint32_t get_layers() const;
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
+
+	RID get_region_rid() const;
+
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const;
+
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const;
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 
-	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// Bakes the navigation mesh; once done, automatically
 	/// sets the new navigation mesh and emits a signal
-	void bake_navigation_mesh();
+	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
 	TypedArray<String> get_configuration_warnings() const override;
@@ -71,4 +85,4 @@ public:
 	~NavigationRegion3D();
 };
 
-#endif // NAVIGATION_REGION_H
+#endif // NAVIGATION_REGION_3D_H

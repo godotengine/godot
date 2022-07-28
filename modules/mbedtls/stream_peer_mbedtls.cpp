@@ -34,11 +34,11 @@
 #include "core/io/stream_peer_tcp.h"
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
+	StreamPeerMbedTLS *sp = static_cast<StreamPeerMbedTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
@@ -54,11 +54,11 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 }
 
 int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
+	StreamPeerMbedTLS *sp = static_cast<StreamPeerMbedTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
@@ -296,6 +296,10 @@ void StreamPeerMbedTLS::disconnect_from_stream() {
 
 StreamPeerMbedTLS::Status StreamPeerMbedTLS::get_status() const {
 	return status;
+}
+
+Ref<StreamPeer> StreamPeerMbedTLS::get_stream() const {
+	return base;
 }
 
 StreamPeerSSL *StreamPeerMbedTLS::_create_func() {

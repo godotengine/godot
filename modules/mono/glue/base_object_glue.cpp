@@ -68,7 +68,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	void *data = CSharpLanguage::get_existing_instance_binding(p_ptr);
 
 	if (data) {
-		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited) {
 			MonoGCHandleData &gchandle = script_binding.gchandle;
 			if (!gchandle.is_released()) {
@@ -115,7 +115,7 @@ void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoole
 		void *data = CSharpLanguage::get_existing_instance_binding(rc);
 
 		if (data) {
-			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
 				MonoGCHandleData &gchandle = script_binding.gchandle;
 				if (!gchandle.is_released()) {
@@ -148,7 +148,7 @@ MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 
 	if (rc) {
-		REF r = rc;
+		Ref<RefCounted> r = rc;
 		if (!r.is_valid()) {
 			return nullptr;
 		}
@@ -199,7 +199,7 @@ MonoBoolean godot_icall_DynamicGodotObject_InvokeMember(Object *p_ptr, MonoStrin
 	}
 
 	Callable::CallError error;
-	Variant result = p_ptr->call(StringName(name), args.ptr(), argc, error);
+	Variant result = p_ptr->callp(StringName(name), args.ptr(), argc, error);
 
 	*r_result = GDMonoMarshal::variant_to_mono_object(result);
 

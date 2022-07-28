@@ -77,10 +77,10 @@ protected:
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 
-	bool _is_focus_owner_in_shorcut_context() const;
+	bool _is_focus_owner_in_shortcut_context() const;
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)
@@ -143,7 +143,7 @@ VARIANT_ENUM_CAST(BaseButton::ActionMode)
 class ButtonGroup : public Resource {
 	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
-	Set<BaseButton *> buttons;
+	HashSet<BaseButton *> buttons;
 
 protected:
 	static void _bind_methods();
@@ -155,4 +155,4 @@ public:
 	ButtonGroup();
 };
 
-#endif
+#endif // BASE_BUTTON_H

@@ -74,21 +74,16 @@
 				[b]Note:[/b] This method has an abnormally high amount of floating-point error, so methods such as [code]is_zero_approx[/code] will not work reliably.
 			</description>
 		</method>
-		<method name="cubic_slerp" qualifiers="const">
-			<return type="Quaternion" />
-			<argument index="0" name="b" type="Quaternion" />
-			<argument index="1" name="pre_a" type="Quaternion" />
-			<argument index="2" name="post_b" type="Quaternion" />
-			<argument index="3" name="weight" type="float" />
-			<description>
-				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
-			</description>
-		</method>
 		<method name="dot" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="with" type="Quaternion" />
 			<description>
 				Returns the dot product of two quaternions.
+			</description>
+		</method>
+		<method name="exp" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
 			</description>
 		</method>
 		<method name="get_angle" qualifiers="const">
@@ -138,6 +133,11 @@
 				Returns the length of the quaternion, squared.
 			</description>
 		</method>
+		<method name="log" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+			</description>
+		</method>
 		<method name="normalized" qualifiers="const">
 			<return type="Quaternion" />
 			<description>
@@ -159,6 +159,16 @@
 			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.
+			</description>
+		</method>
+		<method name="spherical_cubic_interpolate" qualifiers="const">
+			<return type="Quaternion" />
+			<argument index="0" name="b" type="Quaternion" />
+			<argument index="1" name="pre_a" type="Quaternion" />
+			<argument index="2" name="post_b" type="Quaternion" />
+			<argument index="3" name="weight" type="float" />
+			<description>
+				Performs a spherical cubic interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
 			</description>
 		</method>
 	</methods>
@@ -186,11 +196,6 @@
 		</constant>
 	</constants>
 	<operators>
-		<operator name="operator !=">
-			<return type="bool" />
-			<description>
-			</description>
-		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="Quaternion" />
@@ -253,11 +258,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Divides each component of the [Quaternion] by the given value. This operation is not meaningful on its own, but it can be used as a part of a larger expression.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

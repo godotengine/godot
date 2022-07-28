@@ -33,18 +33,25 @@
 #if defined(WINDOWS_ENABLED)
 #include "camera_win.h"
 #endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
+#if defined(MACOS_ENABLED)
+#include "camera_macos.h"
 #endif
 
-void register_camera_types() {
+void initialize_camera_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #if defined(WINDOWS_ENABLED)
 	CameraServer::make_default<CameraWindows>();
 #endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
+#if defined(MACOS_ENABLED)
+	CameraServer::make_default<CameraMacOS>();
 #endif
 }
 
-void unregister_camera_types() {
+void uninitialize_camera_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

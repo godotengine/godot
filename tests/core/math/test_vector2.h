@@ -90,6 +90,9 @@ TEST_CASE("[Vector2] Interpolation methods") {
 			Vector2(5, 0).slerp(Vector2(0, 5), 0.5).is_equal_approx(Vector2(5, 5) * Math_SQRT12),
 			"Vector2 slerp with non-normalized values should work as expected.");
 	CHECK_MESSAGE(
+			Vector2(1, 1).slerp(Vector2(2, 2), 0.5).is_equal_approx(Vector2(1.5, 1.5)),
+			"Vector2 slerp with colinear inputs should behave as expected.");
+	CHECK_MESSAGE(
 			Vector2().slerp(Vector2(), 0.5) == Vector2(),
 			"Vector2 slerp with both inputs as zero vectors should return a zero vector.");
 	CHECK_MESSAGE(

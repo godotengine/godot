@@ -148,11 +148,11 @@ void FogMaterial::_update_shader() {
 shader_type fog;
 
 uniform float density : hint_range(0, 1, 0.0001) = 1.0;
-uniform vec4 albedo : hint_color = vec4(1.0);
-uniform vec4 emission : hint_color = vec4(0, 0, 0, 1);
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform vec4 emission : source_color = vec4(0, 0, 0, 1);
 uniform float height_falloff = 0.0;
 uniform float edge_fade = 0.1;
-uniform sampler3D density_texture: hint_white;
+uniform sampler3D density_texture: hint_default_white;
 
 
 void fog() {

@@ -205,6 +205,9 @@ struct XrGeneratedDispatchTable {
 
     // ---- XR_MSFT_spatial_graph_bridge extension commands
     PFN_xrCreateSpatialGraphNodeSpaceMSFT CreateSpatialGraphNodeSpaceMSFT;
+    PFN_xrTryCreateSpatialGraphStaticNodeBindingMSFT TryCreateSpatialGraphStaticNodeBindingMSFT;
+    PFN_xrDestroySpatialGraphNodeBindingMSFT DestroySpatialGraphNodeBindingMSFT;
+    PFN_xrGetSpatialGraphNodeBindingPropertiesMSFT GetSpatialGraphNodeBindingPropertiesMSFT;
 
     // ---- XR_EXT_hand_tracking extension commands
     PFN_xrCreateHandTrackerEXT CreateHandTrackerEXT;
@@ -272,6 +275,13 @@ struct XrGeneratedDispatchTable {
     // ---- XR_FB_hand_tracking_mesh extension commands
     PFN_xrGetHandMeshFB GetHandMeshFB;
 
+    // ---- XR_FB_spatial_entity extension commands
+    PFN_xrCreateSpatialAnchorFB CreateSpatialAnchorFB;
+    PFN_xrGetSpaceUuidFB GetSpaceUuidFB;
+    PFN_xrEnumerateSpaceSupportedComponentsFB EnumerateSpaceSupportedComponentsFB;
+    PFN_xrSetSpaceComponentStatusFB SetSpaceComponentStatusFB;
+    PFN_xrGetSpaceComponentStatusFB GetSpaceComponentStatusFB;
+
     // ---- XR_FB_foveation extension commands
     PFN_xrCreateFoveationProfileFB CreateFoveationProfileFB;
     PFN_xrDestroyFoveationProfileFB DestroyFoveationProfileFB;
@@ -319,6 +329,9 @@ struct XrGeneratedDispatchTable {
     PFN_xrGetMarkerSizeVARJO GetMarkerSizeVARJO;
     PFN_xrCreateMarkerSpaceVARJO CreateMarkerSpaceVARJO;
 
+    // ---- XR_VARJO_view_offset extension commands
+    PFN_xrSetViewOffsetVARJO SetViewOffsetVARJO;
+
     // ---- XR_MSFT_spatial_anchor_persistence extension commands
     PFN_xrCreateSpatialAnchorStoreConnectionMSFT CreateSpatialAnchorStoreConnectionMSFT;
     PFN_xrDestroySpatialAnchorStoreConnectionMSFT DestroySpatialAnchorStoreConnectionMSFT;
@@ -327,6 +340,14 @@ struct XrGeneratedDispatchTable {
     PFN_xrCreateSpatialAnchorFromPersistedNameMSFT CreateSpatialAnchorFromPersistedNameMSFT;
     PFN_xrUnpersistSpatialAnchorMSFT UnpersistSpatialAnchorMSFT;
     PFN_xrClearSpatialAnchorStoreMSFT ClearSpatialAnchorStoreMSFT;
+
+    // ---- XR_FB_spatial_entity_query extension commands
+    PFN_xrQuerySpacesFB QuerySpacesFB;
+    PFN_xrRetrieveSpaceQueryResultsFB RetrieveSpaceQueryResultsFB;
+
+    // ---- XR_FB_spatial_entity_storage extension commands
+    PFN_xrSaveSpaceFB SaveSpaceFB;
+    PFN_xrEraseSpaceFB EraseSpaceFB;
 
     // ---- XR_OCULUS_audio_device_guid extension commands
 #if defined(XR_USE_PLATFORM_WIN32)
@@ -339,8 +360,17 @@ struct XrGeneratedDispatchTable {
     // ---- XR_ALMALENCE_digital_lens_control extension commands
     PFN_xrSetDigitalLensControlALMALENCE SetDigitalLensControlALMALENCE;
 
+    // ---- XR_FB_spatial_entity_container extension commands
+    PFN_xrGetSpaceContainerFB GetSpaceContainerFB;
+
     // ---- XR_FB_passthrough_keyboard_hands extension commands
     PFN_xrPassthroughLayerSetKeyboardHandsIntensityFB PassthroughLayerSetKeyboardHandsIntensityFB;
+
+    // ---- XR_META_performance_metrics extension commands
+    PFN_xrEnumeratePerformanceMetricsCounterPathsMETA EnumeratePerformanceMetricsCounterPathsMETA;
+    PFN_xrSetPerformanceMetricsStateMETA SetPerformanceMetricsStateMETA;
+    PFN_xrGetPerformanceMetricsStateMETA GetPerformanceMetricsStateMETA;
+    PFN_xrQueryPerformanceMetricsCounterMETA QueryPerformanceMetricsCounterMETA;
 };
 
 

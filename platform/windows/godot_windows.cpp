@@ -39,7 +39,18 @@
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
 #pragma section("pck", read)
-__declspec(allocate("pck")) static const char dummy[8] = { 0 };
+__declspec(allocate("pck")) static char dummy[8] = { 0 };
+
+// Dummy function to prevent LTO from discarding "pck" section.
+extern "C" char *__cdecl pck_section_dummy_call() {
+	return &dummy[0];
+};
+#if defined _AMD64_
+#pragma comment(linker, "/include:pck_section_dummy_call")
+#elif defined _X86_
+#pragma comment(linker, "/include:_pck_section_dummy_call")
+#endif
+
 #elif defined __GNUC__
 static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
@@ -140,11 +151,6 @@ int widechar_main(int argc, wchar_t **argv) {
 
 	setlocale(LC_CTYPE, "");
 
-#ifndef TOOLS_ENABLED
-	// Workaround to prevent LTCG (MSVC LTO) from removing "pck" section
-	const char *dummy_guard = dummy;
-#endif
-
 	char **argv_utf8 = new char *[argc];
 
 	for (int i = 0; i < argc; ++i) {
@@ -160,6 +166,10 @@ int widechar_main(int argc, wchar_t **argv) {
 			delete[] argv_utf8[i];
 		}
 		delete[] argv_utf8;
+
+		if (err == ERR_HELP) { // Returned by --help and --version, so success.
+			return 0;
+		}
 		return 255;
 	}
 

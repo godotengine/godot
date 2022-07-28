@@ -74,7 +74,7 @@ private:
 		KEY_EVENT_BUFFER_SIZE = 512
 	};
 
-	FILE *stdo;
+	FILE *stdo = nullptr;
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
@@ -87,16 +87,16 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	RenderingServer *rendering_server;
+	RenderingServer *rendering_server = nullptr;
 	int pressrc;
 
-	ContextEGL_UWP *gl_context;
+	ContextEGL_UWP *gl_context = nullptr;
 	Windows::UI::Core::CoreWindow ^ window;
 
 	VideoMode video_mode;
 	int video_driver_index;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	AudioDriverXAudio2 audio_driver;
 
@@ -111,7 +111,7 @@ private:
 
 	CursorShape cursor_shape;
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	JoypadUWP ^ joypad;
 
@@ -198,6 +198,7 @@ public:
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false);
 	virtual Error kill(const ProcessID &p_pid);
+	virtual bool is_process_running(const ProcessID &p_pid) const;
 
 	virtual bool has_environment(const String &p_var) const;
 	virtual String get_environment(const String &p_var) const;
@@ -208,7 +209,7 @@ public:
 
 	void set_cursor_shape(CursorShape p_shape);
 	CursorShape get_cursor_shape() const;
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
+	virtual void set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 	void set_icon(const Ref<Image> &p_icon);
 
 	virtual String get_executable_path() const;
@@ -233,7 +234,7 @@ public:
 	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr);
 	virtual Error close_dynamic_library(void *p_library_handle);
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
 
@@ -251,4 +252,4 @@ public:
 	~OS_UWP();
 };
 
-#endif
+#endif // OS_UWP_H

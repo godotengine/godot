@@ -37,7 +37,7 @@
 class Line2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Line2DEditor, AbstractPolygon2DEditor);
 
-	Line2D *node;
+	Line2D *node = nullptr;
 
 protected:
 	virtual Node2D *_get_node() const override;

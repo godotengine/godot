@@ -46,7 +46,7 @@ class GraphEditFilter : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 	virtual bool has_point(const Point2 &p_point) const override;
 
 public:
@@ -58,7 +58,7 @@ class GraphEditMinimap : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditFilter;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 
 protected:
 public:
@@ -109,23 +109,23 @@ public:
 	};
 
 private:
-	Label *zoom_label;
-	Button *zoom_minus;
-	Button *zoom_reset;
-	Button *zoom_plus;
+	Label *zoom_label = nullptr;
+	Button *zoom_minus = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_plus = nullptr;
 
-	Button *snap_button;
-	SpinBox *snap_amount;
+	Button *snap_button = nullptr;
+	SpinBox *snap_amount = nullptr;
 
-	Button *minimap_button;
+	Button *minimap_button = nullptr;
 
-	Button *layout_button;
+	Button *layout_button = nullptr;
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
-	float port_grab_distance_horizontal = 0.0;
-	float port_grab_distance_vertical;
+	float port_hotzone_inner_extent = 0.0;
+	float port_hotzone_outer_extent = 0.0;
 
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
@@ -142,7 +142,7 @@ private:
 	bool connecting_target = false;
 	Vector2 connecting_to;
 	String connecting_target_to;
-	int connecting_target_index;
+	int connecting_target_index = 0;
 	bool just_disconnected = false;
 	bool connecting_valid = false;
 	Vector2 click_pos;
@@ -155,8 +155,9 @@ private:
 
 	float zoom = 1.0;
 	float zoom_step = 1.2;
-	float zoom_min;
-	float zoom_max;
+	// Proper values set in constructor.
+	float zoom_min = 0.0;
+	float zoom_max = 0.0;
 
 	void _zoom_minus();
 	void _zoom_reset();
@@ -177,6 +178,7 @@ private:
 	List<Connection> connections;
 
 	float lines_thickness = 2.0f;
+	float lines_curvature = 0.5f;
 	bool lines_antialiased = true;
 
 	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
@@ -190,9 +192,9 @@ private:
 	void _scroll_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
-	Control *connections_layer;
-	GraphEditFilter *top_layer;
-	GraphEditMinimap *minimap;
+	Control *connections_layer = nullptr;
+	GraphEditFilter *top_layer = nullptr;
+	GraphEditMinimap *minimap = nullptr;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
 	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
@@ -206,7 +208,7 @@ private:
 
 	Array _get_connection_list() const;
 
-	bool lines_on_bg;
+	bool lines_on_bg = false;
 
 	struct ConnType {
 		union {
@@ -217,8 +219,11 @@ private:
 			uint64_t key = 0;
 		};
 
-		bool operator<(const ConnType &p_type) const {
-			return key < p_type.key;
+		static uint32_t hash(const ConnType &p_conn) {
+			return hash_one_uint64(p_conn.key);
+		}
+		bool operator==(const ConnType &p_type) const {
+			return key == p_type.key;
 		}
 
 		ConnType(uint32_t a = 0, uint32_t b = 0) {
@@ -227,16 +232,16 @@ private:
 		}
 	};
 
-	Set<ConnType> valid_connection_types;
-	Set<int> valid_left_disconnect_types;
-	Set<int> valid_right_disconnect_types;
+	HashSet<ConnType, ConnType> valid_connection_types;
+	HashSet<int> valid_left_disconnect_types;
+	HashSet<int> valid_right_disconnect_types;
 
 	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
 	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
 	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
 	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
 
-	HBoxContainer *zoom_hb;
+	HBoxContainer *zoom_hb = nullptr;
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
@@ -246,7 +251,7 @@ private:
 	friend class GraphEditMinimap;
 	void _minimap_toggled();
 
-	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
+	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
 
 	bool arranging_graph = false;
 
@@ -257,12 +262,12 @@ private:
 		UNION,
 	};
 
-	int _set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u, const Set<StringName> &r_v);
-	HashMap<int, Vector<StringName>> _layering(const Set<StringName> &r_selected_nodes, const HashMap<StringName, Set<StringName>> &r_upper_neighbours);
+	int _set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v);
+	HashMap<int, Vector<StringName>> _layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
 	Vector<StringName> _split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings);
-	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours, const Set<StringName> &r_selected_nodes);
-	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours);
-	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const Set<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
+	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours, const HashSet<StringName> &r_selected_nodes);
+	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
+	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const HashSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
 	float _calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions);
 	void _place_block(StringName p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions);
 
@@ -340,6 +345,9 @@ public:
 	int get_snap() const;
 	void set_snap(int p_snap);
 
+	void set_connection_lines_curvature(float p_curvature);
+	float get_connection_lines_curvature() const;
+
 	void set_connection_lines_thickness(float p_thickness);
 	float get_connection_lines_thickness() const;
 
@@ -357,4 +365,4 @@ public:
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 
-#endif // GRAPHEdit_H
+#endif // GRAPH_EDIT_H

@@ -1,13 +1,20 @@
 public:
-BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
+BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p_subindex, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_invisible = false) {
 #ifdef BVH_VERBOSE_TREE
 	VERBOSE_PRINT("\nitem_add BEFORE");
-	_debug_recursive_print_tree(0);
+	_debug_recursive_print_tree(p_tree_id);
 	VERBOSE_PRINT("\n");
 #endif
 
 	BVHABB_CLASS abb;
 	abb.from(p_aabb);
+
+	// NOTE that we do not expand the AABB for the first create even if
+	// leaf expansion is switched on. This is for two reasons:
+	// (1) We don't know if this object will move in future, in which case a non-expanded
+	// bound would be better...
+	// (2) We don't yet know how many objects will be paired, which is used to modify
+	// the expansion margin.
 
 	// handle to be filled with the new item ref
 	BVHHandle handle;
@@ -40,29 +47,17 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 	extra->active_ref_id = _active_refs.size();
 	_active_refs.push_back(ref_id);
 
-	if (USE_PAIRS) {
-		extra->pairable_mask = p_pairable_mask;
-		extra->pairable_type = p_pairable_type;
-		extra->pairable = p_pairable;
-	} else {
-		// just for safety, in case this gets queried etc
-		extra->pairable = 0;
-		p_pairable = false;
-	}
+	extra->tree_id = p_tree_id;
+	extra->tree_collision_mask = p_tree_collision_mask;
 
 	// assign to handle to return
 	handle.set_id(ref_id);
 
-	uint32_t tree_id = 0;
-	if (p_pairable) {
-		tree_id = 1;
-	}
-
-	create_root_node(tree_id);
+	create_root_node(p_tree_id);
 
 	// we must choose where to add to tree
 	if (p_active) {
-		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
+		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[p_tree_id], abb);
 
 		bool refit = _node_add_item(ref->tnode_id, ref_id, abb);
 
@@ -70,7 +65,7 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 			// only need to refit from the parent
 			const TNode &add_node = _nodes[ref->tnode_id];
 			if (add_node.parent_id != BVHCommon::INVALID) {
-				refit_upward_and_balance(add_node.parent_id, tree_id);
+				refit_upward_and_balance(add_node.parent_id, p_tree_id);
 			}
 		}
 	} else {
@@ -83,8 +78,8 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 	mem += _nodes.estimate_memory_use();
 
 	String sz = _debug_aabb_to_string(abb);
-	VERBOSE_PRINT("\titem_add [" + itos(ref_id) + "] " + itos(_refs.size()) + " refs,\t" + itos(_nodes.size()) + " nodes " + sz);
-	VERBOSE_PRINT("mem use : " + itos(mem) + ", num nodes : " + itos(_nodes.size()));
+	VERBOSE_PRINT("\titem_add [" + itos(ref_id) + "] " + itos(_refs.used_size()) + " refs,\t" + itos(_nodes.used_size()) + " nodes " + sz);
+	VERBOSE_PRINT("mem use : " + itos(mem) + ", num nodes reserved : " + itos(_nodes.reserved_size()));
 
 #endif
 
@@ -103,7 +98,7 @@ void _debug_print_refs() {
 }
 
 // returns false if noop
-bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
+bool item_move(BVHHandle p_handle, const BOUNDS &p_aabb) {
 	uint32_t ref_id = p_handle.id();
 
 	// get the reference
@@ -115,10 +110,19 @@ bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
 	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
+#ifdef BVH_EXPAND_LEAF_AABBS
+	if (USE_PAIRS) {
+		// scale the pairing expansion by the number of pairs.
+		abb.expand(_pairs[ref_id].scale_expansion_margin(_pairing_expansion));
+	} else {
+		abb.expand(_pairing_expansion);
+	}
+#endif
+
 	BVH_ASSERT(ref.tnode_id != BVHCommon::INVALID);
 	TNode &tnode = _nodes[ref.tnode_id];
 
-	// does it fit within the current aabb?
+	// does it fit within the current leaf aabb?
 	if (tnode.aabb.is_other_within(abb)) {
 		// do nothing .. fast path .. not moved enough to need refit
 
@@ -129,15 +133,34 @@ bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
 		BVHABB_CLASS &leaf_abb = leaf.get_aabb(ref.item_id);
 
 		// no change?
+#ifdef BVH_EXPAND_LEAF_AABBS
+		BOUNDS leaf_aabb;
+		leaf_abb.to(leaf_aabb);
+
+		// This test should pass in a lot of cases, and by returning false we can avoid
+		// collision pairing checks later, which greatly reduces processing.
+		if (expanded_aabb_encloses_not_shrink(leaf_aabb, p_aabb)) {
+			return false;
+		}
+#else
 		if (leaf_abb == abb) {
 			return false;
 		}
+#endif
+
+#ifdef BVH_VERBOSE_MOVES
+		print_line("item_move " + itos(p_handle.id()) + "(within tnode aabb) : " + _debug_aabb_to_string(abb));
+#endif
 
 		leaf_abb = abb;
 		_integrity_check_all();
 
 		return true;
 	}
+
+#ifdef BVH_VERBOSE_MOVES
+	print_line("item_move " + itos(p_handle.id()) + "(outside tnode aabb) : " + _debug_aabb_to_string(abb));
+#endif
 
 	uint32_t tree_id = _handle_get_tree_id(p_handle);
 
@@ -206,7 +229,7 @@ void item_remove(BVHHandle p_handle) {
 }
 
 // returns success
-bool item_activate(BVHHandle p_handle, const Bounds &p_aabb) {
+bool item_activate(BVHHandle p_handle, const BOUNDS &p_aabb) {
 	uint32_t ref_id = p_handle.id();
 	ItemRef &ref = _refs[ref_id];
 	if (ref.is_active()) {
@@ -260,12 +283,14 @@ void item_fill_cullparams(BVHHandle p_handle, CullParams &r_params) const {
 	uint32_t ref_id = p_handle.id();
 	const ItemExtra &extra = _extra[ref_id];
 
-	// testing from a non pairable item, we only want to test pairable items
-	r_params.test_pairable_only = extra.pairable == 0;
+	// which trees does this item want to collide detect against?
+	r_params.tree_collision_mask = extra.tree_collision_mask;
 
-	// we take into account the mask of the item testing from
-	r_params.mask = extra.pairable_mask;
-	r_params.pairable_type = extra.pairable_type;
+	// The testing user defined object is passed to the user defined cull check function
+	// for masks etc. This is usually a dummy object of type T with masks set.
+	// However, if not using the cull_check callback (i.e. returning true), you can pass
+	// a nullptr instead of dummy object, as it will not be used.
+	r_params.tester = extra.userdata;
 }
 
 bool item_is_pairable(const BVHHandle &p_handle) {
@@ -285,7 +310,7 @@ void item_get_ABB(const BVHHandle &p_handle, BVHABB_CLASS &r_abb) {
 	r_abb = leaf.get_aabb(ref.item_id);
 }
 
-bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+bool item_set_tree(const BVHHandle &p_handle, uint32_t p_tree_id, uint32_t p_tree_collision_mask) {
 	// change tree?
 	uint32_t ref_id = p_handle.id();
 
@@ -293,13 +318,15 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 	ItemRef &ref = _refs[ref_id];
 
 	bool active = ref.is_active();
-	bool pairable_changed = (ex.pairable != 0) != p_pairable;
-	bool state_changed = pairable_changed || (ex.pairable_type != p_pairable_type) || (ex.pairable_mask != p_pairable_mask);
+	bool tree_changed = ex.tree_id != p_tree_id;
+	bool mask_changed = ex.tree_collision_mask != p_tree_collision_mask;
+	bool state_changed = tree_changed | mask_changed;
 
-	ex.pairable_type = p_pairable_type;
-	ex.pairable_mask = p_pairable_mask;
+	// Keep an eye on this for bugs of not noticing changes to objects,
+	// especially when changing client user masks that will not be detected as a change
+	// in the BVH. You may need to force a collision check in this case with recheck_pairs().
 
-	if (active && pairable_changed) {
+	if (active && (tree_changed | mask_changed)) {
 		// record abb
 		TNode &tnode = _nodes[ref.tnode_id];
 		TLeaf &leaf = _node_get_leaf(tnode);
@@ -313,7 +340,8 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 
 		// we must set the pairable AFTER getting the current tree
 		// because the pairable status determines which tree
-		ex.pairable = p_pairable;
+		ex.tree_id = p_tree_id;
+		ex.tree_collision_mask = p_tree_collision_mask;
 
 		// add to new tree
 		tree_id = _handle_get_tree_id(p_handle);
@@ -333,7 +361,8 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		}
 	} else {
 		// always keep this up to date
-		ex.pairable = p_pairable;
+		ex.tree_id = p_tree_id;
+		ex.tree_collision_mask = p_tree_collision_mask;
 	}
 
 	return state_changed;
@@ -403,7 +432,7 @@ void update() {
 
 		// if there are no nodes, do nothing, but if there are...
 		if (bound_valid) {
-			Bounds bb;
+			BOUNDS bb;
 			world_bound.to(bb);
 			real_t size = bb.get_longest_axis_size();
 
@@ -420,4 +449,51 @@ void update() {
 		}
 	}
 #endif
+}
+
+void params_set_pairing_expansion(real_t p_value) {
+	if (p_value < 0.0) {
+#ifdef BVH_ALLOW_AUTO_EXPANSION
+		_auto_pairing_expansion = true;
+#endif
+		return;
+	}
+#ifdef BVH_ALLOW_AUTO_EXPANSION
+	_auto_pairing_expansion = false;
+#endif
+
+	_pairing_expansion = p_value;
+
+	// calculate shrinking threshold
+	const real_t fudge_factor = 1.1;
+	_aabb_shrinkage_threshold = _pairing_expansion * POINT::AXIS_COUNT * 2.0 * fudge_factor;
+}
+
+// This routine is not just an enclose check, it also checks for special case of shrinkage
+bool expanded_aabb_encloses_not_shrink(const BOUNDS &p_expanded_aabb, const BOUNDS &p_aabb) const {
+	if (!p_expanded_aabb.encloses(p_aabb)) {
+		return false;
+	}
+
+	// Check for special case of shrinkage. If the aabb has shrunk
+	// significantly we want to create a new expanded bound, because
+	// the previous expanded bound will have diverged significantly.
+	const POINT &exp_size = p_expanded_aabb.size;
+	const POINT &new_size = p_aabb.size;
+
+	real_t exp_l = 0.0;
+	real_t new_l = 0.0;
+
+	for (int i = 0; i < POINT::AXIS_COUNT; ++i) {
+		exp_l += exp_size[i];
+		new_l += new_size[i];
+	}
+
+	// is difference above some metric
+	real_t diff = exp_l - new_l;
+	if (diff < _aabb_shrinkage_threshold) {
+		return true;
+	}
+
+	return false;
 }

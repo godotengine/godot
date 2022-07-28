@@ -131,7 +131,7 @@ private:
 	void _make_transient();
 	Window *transient_parent = nullptr;
 	Window *exclusive_child = nullptr;
-	Set<Window *> transient_children;
+	HashSet<Window *> transient_children;
 
 	friend class Control;
 	Ref<Theme> theme;
@@ -290,6 +290,8 @@ public:
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
+
+	virtual Transform2D get_screen_transform() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;

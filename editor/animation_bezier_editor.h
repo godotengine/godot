@@ -32,6 +32,7 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
+#include "core/templates/rb_set.h"
 
 class ViewPanner;
 
@@ -49,11 +50,11 @@ class AnimationBezierTrackEdit : public Control {
 	AnimationTimelineEdit *timeline = nullptr;
 	UndoRedo *undo_redo = nullptr;
 	Node *root = nullptr;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos = 0;
 
 	Ref<Animation> animation;
-	int selected_track;
+	int selected_track = 0;
 
 	Vector<Rect2> view_rects;
 
@@ -61,7 +62,7 @@ class AnimationBezierTrackEdit : public Control {
 	Ref<Texture2D> bezier_handle_icon;
 	Ref<Texture2D> selected_icon;
 
-	Map<int, Rect2> subtracks;
+	RBMap<int, Rect2> subtracks;
 
 	enum {
 		REMOVE_ICON,
@@ -70,9 +71,9 @@ class AnimationBezierTrackEdit : public Control {
 		VISIBILITY_ICON
 	};
 
-	Map<int, Map<int, Rect2>> subtrack_icons;
-	Set<int> locked_tracks;
-	Set<int> hidden_tracks;
+	RBMap<int, RBMap<int, Rect2>> subtrack_icons;
+	HashSet<int> locked_tracks;
+	HashSet<int> hidden_tracks;
 	int solo_track = -1;
 	bool is_filtered = false;
 
@@ -98,8 +99,8 @@ class AnimationBezierTrackEdit : public Control {
 	bool moving_selection_attempt = false;
 	IntPair select_single_attempt;
 	bool moving_selection = false;
-	int moving_selection_from_key;
-	int moving_selection_from_track;
+	int moving_selection_from_key = 0;
+	int moving_selection_from_track = 0;
 
 	Vector2 moving_selection_offset;
 
@@ -114,7 +115,7 @@ class AnimationBezierTrackEdit : public Control {
 	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
-	int moving_handle_mode; // value from Animation::HandleMode
+	int moving_handle_mode = 0; // value from Animation::HandleMode
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
@@ -130,14 +131,14 @@ class AnimationBezierTrackEdit : public Control {
 		float transition = 0;
 	};
 
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 	struct EditPoint {
 		Rect2 point_rect;
 		Rect2 in_rect;
 		Rect2 out_rect;
-		int track;
-		int key;
+		int track = 0;
+		int key = 0;
 	};
 
 	Vector<EditPoint> edit_points;
@@ -152,7 +153,7 @@ class AnimationBezierTrackEdit : public Control {
 		}
 	};
 
-	typedef Set<IntPair, SelectionCompare> SelectionSet;
+	typedef RBSet<IntPair, SelectionCompare> SelectionSet;
 
 	SelectionSet selection;
 

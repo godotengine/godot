@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_WARNINGS
-#define SHADER_WARNINGS
+#ifndef SHADER_WARNINGS_H
+#define SHADER_WARNINGS_H
 
 #ifdef DEBUG_ENABLED
 
 #include "core/string/string_name.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 class ShaderWarning {
@@ -82,11 +83,11 @@ public:
 
 	static String get_name_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
-	static CodeFlags get_flags_from_codemap(const Map<Code, bool> &p_map);
+	static CodeFlags get_flags_from_codemap(const HashMap<Code, bool> &p_map);
 
 	ShaderWarning(Code p_code = WARNING_MAX, int p_line = -1, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>());
 };
 
 #endif // DEBUG_ENABLED
 
-#endif // SHADER_WARNINGS
+#endif // SHADER_WARNINGS_H

@@ -11,12 +11,6 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -32,13 +26,6 @@
 				If there're no lines returns font size in pixels.
 			</description>
 		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
-			</description>
-		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -51,24 +38,18 @@
 				Returns the number of lines shown. Useful if the [Label]'s height cannot currently display all lines.
 			</description>
 		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="Label.AutowrapMode" default="0">
-			If set to something other than [constant AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. To see how each mode behaves, see [enum AutowrapMode].
+		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="0">
+			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. To see how each mode behaves, see [enum TextServer.AutowrapMode].
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle and will clip text horizontally.
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+		</member>
+		<member name="label_settings" type="LabelSettings" setter="set_label_settings" getter="get_label_settings">
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -85,7 +66,7 @@
 			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="4" />
-		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
 		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
@@ -97,8 +78,8 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
 		</member>
-		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="Label.OverrunBehavior" default="0">
-			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum OverrunBehavior] for a description of all modes.
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
@@ -110,60 +91,16 @@
 			Restricts the number of characters to display. Set to -1 to disable.
 			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
-		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="Label.VisibleCharactersBehavior" default="0">
-			Sets the clipping behavior when [member visible_characters] or [member percent_visible] is set. See [enum VisibleCharactersBehavior] for more info.
+		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="TextServer.VisibleCharactersBehavior" default="0">
+			Sets the clipping behavior when [member visible_characters] or [member percent_visible] is set. See [enum TextServer.VisibleCharactersBehavior] for more info.
 		</member>
 	</members>
-	<constants>
-		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
-			Autowrap is disabled.
-		</constant>
-		<constant name="AUTOWRAP_ARBITRARY" value="1" enum="AutowrapMode">
-			Wraps the text inside the node's bounding rectangle by allowing to break lines at arbitrary positions, which is useful when very limited space is available.
-		</constant>
-		<constant name="AUTOWRAP_WORD" value="2" enum="AutowrapMode">
-			Wraps the text inside the node's bounding rectangle by soft-breaking between words.
-		</constant>
-		<constant name="AUTOWRAP_WORD_SMART" value="3" enum="AutowrapMode">
-			Behaves similarly to [constant AUTOWRAP_WORD], but force-breaks a word if that single word does not fit in one line.
-		</constant>
-		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
-			No text trimming is performed.
-		</constant>
-		<constant name="OVERRUN_TRIM_CHAR" value="1" enum="OverrunBehavior">
-			Trims the text per character.
-		</constant>
-		<constant name="OVERRUN_TRIM_WORD" value="2" enum="OverrunBehavior">
-			Trims the text per word.
-		</constant>
-		<constant name="OVERRUN_TRIM_ELLIPSIS" value="3" enum="OverrunBehavior">
-			Trims the text per character and adds an ellipsis to indicate that parts are hidden.
-		</constant>
-		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
-			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
-		</constant>
-		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
-			Trims text before the shaping. e.g, increasing [member visible_characters] value is visually identical to typing the text.
-		</constant>
-		<constant name="VC_CHARS_AFTER_SHAPING" value="1" enum="VisibleCharactersBehavior">
-			Displays glyphs that are mapped to the first [member visible_characters] characters from the beginning of the text.
-		</constant>
-		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
-			Displays [member percent_visible] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
-		</constant>
-		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
-			Displays [member percent_visible] glyphs, starting from the left.
-		</constant>
-		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
-			Displays [member percent_visible] glyphs, starting from the right.
-		</constant>
-	</constants>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Default text [Color] of the [Label].
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of [Font]'s outline.
+			The tint of text outline.
 		</theme_item>
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			[Color] of the text's shadow effect.

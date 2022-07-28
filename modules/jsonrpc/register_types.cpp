@@ -32,9 +32,16 @@
 #include "core/object/class_db.h"
 #include "jsonrpc.h"
 
-void register_jsonrpc_types() {
+void initialize_jsonrpc_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	GDREGISTER_CLASS(JSONRPC);
 }
 
-void unregister_jsonrpc_types() {
+void uninitialize_jsonrpc_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

@@ -49,7 +49,7 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 	}
 
 	for (const KeyValue<GodotConstraint3D *, int> &E : p_body->get_constraint_map()) {
-		GodotConstraint3D *constraint = (GodotConstraint3D *)E.key;
+		GodotConstraint3D *constraint = const_cast<GodotConstraint3D *>(E.key);
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -87,8 +87,8 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 void GodotStep3D::_populate_island_soft_body(GodotSoftBody3D *p_soft_body, LocalVector<GodotBody3D *> &p_body_island, LocalVector<GodotConstraint3D *> &p_constraint_island) {
 	p_soft_body->set_island_step(_step);
 
-	for (Set<GodotConstraint3D *>::Element *E = p_soft_body->get_constraints().front(); E; E = E->next()) {
-		GodotConstraint3D *constraint = (GodotConstraint3D *)E->get();
+	for (const GodotConstraint3D *E : p_soft_body->get_constraints()) {
+		GodotConstraint3D *constraint = const_cast<GodotConstraint3D *>(E);
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -236,8 +236,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	const SelfList<GodotArea3D>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<GodotConstraint3D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-			GodotConstraint3D *constraint = E->get();
+		for (GodotConstraint3D *E : aml.first()->self()->get_constraints()) {
+			GodotConstraint3D *constraint = E;
 			if (constraint->get_island_step() == _step) {
 				continue;
 			}
@@ -343,7 +343,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	/* SETUP CONSTRAINTS / PROCESS COLLISIONS */
 
 	uint32_t total_contraint_count = all_constraints.size();
-	work_pool.do_work(total_contraint_count, this, &GodotStep3D::_setup_contraint, nullptr);
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep3D::_setup_contraint, nullptr, total_contraint_count, -1, true, SNAME("Physics3DConstraintSetup"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
@@ -362,7 +363,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	// Warning: _solve_island modifies the constraint islands for optimization purpose,
 	// their content is not reliable after these calls and shouldn't be used anymore.
-	work_pool.do_work(island_count, this, &GodotStep3D::_solve_island, nullptr);
+	group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep3D::_solve_island, nullptr, island_count, -1, true, SNAME("Physics3DConstraintSolveIslands"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
@@ -409,10 +411,7 @@ GodotStep3D::GodotStep3D() {
 	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
 	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);
-
-	work_pool.init();
 }
 
 GodotStep3D::~GodotStep3D() {
-	work_pool.finish();
 }

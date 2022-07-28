@@ -7,6 +7,8 @@
 		[PopupMenu] is a modal window used to display a list of options. They are popular in toolbars or context menus.
 		The size of a [PopupMenu] can be limited by using [member Window.max_size]. If the height of the list of items is larger than the maximum height of the [PopupMenu], a [ScrollContainer] within the popup will allow the user to scroll the contents.
 		If no maximum size is set, or if it is set to 0, the [PopupMenu] height will be limited by its parent rect.
+		All [code]set_*[/code] methods allow negative item index, which makes the item accessed from the last one.
+		[b]Incremental search:[/b] Like [ItemList] and [Tree], [PopupMenu] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -180,13 +182,6 @@
 				Removes all items from the [PopupMenu].
 			</description>
 		</method>
-		<method name="clear_item_opentype_features">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<description>
-				Removes all OpenType features form the item's text.
-			</description>
-		</method>
 		<method name="get_current_index" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -198,6 +193,13 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the accelerator of the item at the given [code]index[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+			</description>
+		</method>
+		<method name="get_item_horizontal_offset" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the horizontal offset of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -233,14 +235,6 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
-			</description>
-		</method>
-		<method name="get_item_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
@@ -394,6 +388,14 @@
 				Enables/disables the item at the given [code]index[/code]. When it is disabled, it can't be selected and its action can't be invoked.
 			</description>
 		</method>
+		<method name="set_item_horizontal_offset">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="offset" type="int" />
+			<description>
+				Sets the horizontal offset of the item at the given [code]index[/code].
+			</description>
+		</method>
 		<method name="set_item_icon">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
@@ -433,15 +435,6 @@
 			<argument index="1" name="state" type="int" />
 			<description>
 				Sets the state of a multistate item. See [method add_multistate_item] for details.
-			</description>
-		</method>
-		<method name="set_item_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the item's text. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_item_shortcut">
@@ -567,8 +560,11 @@
 		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="4">
-			The horizontal space between the item's name and the shortcut text/submenu arrow.
+		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			The tint of text outline of the labeled separator.
+		</theme_item>
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+			The horizontal space between the item's elements.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
 		</theme_item>
@@ -577,11 +573,20 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
 		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="4">
+		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
+			The size of the labeled separator text outline.
+		</theme_item>
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical space between each menu item.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] used for the menu items.
+		</theme_item>
+		<theme_item name="font_separator" data_type="font" type="Font">
+			[Font] used for the labeled separator.
+		</theme_item>
+		<theme_item name="font_separator_size" data_type="font_size" type="int">
+			Font size of the labeled separator.
 		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the menu items.

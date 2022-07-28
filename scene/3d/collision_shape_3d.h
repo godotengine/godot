@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_SHAPE_H
-#define COLLISION_SHAPE_H
+#ifndef COLLISION_SHAPE_3D_H
+#define COLLISION_SHAPE_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/shape_3d.h"
@@ -37,14 +37,13 @@
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
 	GDCLASS(CollisionShape3D, Node3D);
-	OBJ_CATEGORY("3D Physics Nodes");
 
 	Ref<Shape3D> shape;
 
 	uint32_t owner_id = 0;
 	CollisionObject3D *parent = nullptr;
 
-	void resource_changed(RES res);
+	void resource_changed(Ref<Resource> res);
 	bool disabled = false;
 
 protected:
@@ -69,4 +68,4 @@ public:
 	~CollisionShape3D();
 };
 
-#endif // BODY_VOLUME_H
+#endif // COLLISION_SHAPE_3D_H

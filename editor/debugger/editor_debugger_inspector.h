@@ -30,6 +30,7 @@
 
 #ifndef EDITOR_DEBUGGER_INSPECTOR_H
 #define EDITOR_DEBUGGER_INSPECTOR_H
+
 #include "editor/editor_inspector.h"
 
 class EditorDebuggerRemoteObject : public Object {
@@ -46,7 +47,7 @@ public:
 	ObjectID remote_object_id;
 	String type_name;
 	List<PropertyInfo> prop_list;
-	Map<StringName, Variant> prop_values;
+	HashMap<StringName, Variant> prop_values;
 
 	ObjectID get_remote_object_id() { return remote_object_id; };
 	String get_title();
@@ -68,9 +69,9 @@ class EditorDebuggerInspector : public EditorInspector {
 
 private:
 	ObjectID inspected_object_id;
-	Map<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
-	Set<RES> remote_dependencies;
-	EditorDebuggerRemoteObject *variables;
+	HashMap<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
+	HashSet<Ref<Resource>> remote_dependencies;
+	EditorDebuggerRemoteObject *variables = nullptr;
 
 	void _object_selected(ObjectID p_object);
 	void _object_edited(ObjectID p_id, const String &p_prop, const Variant &p_value);

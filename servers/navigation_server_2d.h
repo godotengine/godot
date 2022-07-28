@@ -53,6 +53,8 @@ public:
 	/// MUST be used in single thread!
 	static NavigationServer2D *get_singleton_mut() { return singleton; }
 
+	virtual Array get_maps() const;
+
 	/// Create a new map.
 	virtual RID map_create() const;
 
@@ -75,20 +77,36 @@ public:
 	virtual real_t map_get_edge_connection_margin(RID p_map) const;
 
 	/// Returns the navigation path to reach the destination from the origin.
-	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_layers = 1) const;
+	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
 
+	virtual Array map_get_regions(RID p_map) const;
+	virtual Array map_get_agents(RID p_map) const;
+
+	virtual void map_force_update(RID p_map);
+
 	/// Creates a new region.
 	virtual RID region_create() const;
 
+	/// Set the enter_cost of a region
+	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) const;
+	virtual real_t region_get_enter_cost(RID p_region) const;
+
+	/// Set the travel_cost of a region
+	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const;
+	virtual real_t region_get_travel_cost(RID p_region) const;
+
+	virtual bool region_owns_point(RID p_region, const Vector2 &p_point) const;
+
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const;
+	virtual RID region_get_map(RID p_region) const;
 
 	/// Set the region's layers
-	virtual void region_set_layers(RID p_region, uint32_t p_layers) const;
-	virtual uint32_t region_get_layers(RID p_region) const;
+	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) const;
+	virtual uint32_t region_get_navigation_layers(RID p_region) const;
 
 	/// Set the global transformation of this region.
 	virtual void region_set_transform(RID p_region, Transform2D p_transform) const;
@@ -106,6 +124,7 @@ public:
 
 	/// Put the agent in the map.
 	virtual void agent_set_map(RID p_agent, RID p_map) const;
+	virtual RID agent_get_map(RID p_agent) const;
 
 	/// The maximum distance (center point to
 	/// center point) to other agents this agent

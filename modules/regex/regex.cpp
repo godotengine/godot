@@ -52,9 +52,9 @@ int RegExMatch::_find(const Variant &p_name) const {
 		return i;
 
 	} else if (p_name.get_type() == Variant::STRING) {
-		const Map<String, int>::Element *found = names.find((String)p_name);
+		HashMap<String, int>::ConstIterator found = names.find((String)p_name);
 		if (found) {
-			return found->value();
+			return found->value;
 		}
 	}
 
@@ -75,8 +75,8 @@ int RegExMatch::get_group_count() const {
 Dictionary RegExMatch::get_names() const {
 	Dictionary result;
 
-	for (const Map<String, int>::Element *i = names.front(); i != nullptr; i = i->next()) {
-		result[i->key()] = i->value();
+	for (const KeyValue<String, int> &E : names) {
+		result[E.key] = E.value;
 	}
 
 	return result;

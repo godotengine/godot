@@ -14,12 +14,11 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
-		<method name="add_animation">
+		<method name="add_animation_library">
 			<return type="int" enum="Error" />
 			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="animation" type="Animation" />
+			<argument index="1" name="library" type="AnimationLibrary" />
 			<description>
-				Adds [code]animation[/code] to the player accessible with the key [code]name[/code].
 			</description>
 		</method>
 		<method name="advance">
@@ -63,11 +62,28 @@
 				Returns the name of [code]animation[/code] or an empty string if not found.
 			</description>
 		</method>
+		<method name="find_animation_library" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="animation" type="Animation" />
+			<description>
+			</description>
+		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns the [Animation] with key [code]name[/code] or [code]null[/code] if not found.
+			</description>
+		</method>
+		<method name="get_animation_library" qualifiers="const">
+			<return type="AnimationLibrary" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_library_list" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
@@ -101,6 +117,12 @@
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
+			</description>
+		</method>
+		<method name="has_animation_library" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -138,19 +160,17 @@
 				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
 			</description>
 		</method>
-		<method name="remove_animation">
+		<method name="remove_animation_library">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
-				Removes the animation with key [code]name[/code].
 			</description>
 		</method>
-		<method name="rename_animation">
+		<method name="rename_animation_library">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="newname" type="StringName" />
 			<description>
-				Renames an existing animation with key [code]name[/code] to [code]newname[/code].
 			</description>
 		</method>
 		<method name="seek">
@@ -159,6 +179,7 @@
 			<argument index="1" name="update" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [code]seconds[/code] are skipped.
+				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].
 			</description>
 		</method>
 		<method name="set_blend_time">
@@ -199,6 +220,10 @@
 		<member name="method_call_mode" type="int" setter="set_method_call_mode" getter="get_method_call_mode" enum="AnimationPlayer.AnimationMethodCallMode" default="0">
 			The call mode to use for Call Method tracks.
 		</member>
+		<member name="movie_quit_on_finish" type="bool" setter="set_movie_quit_on_finish_enabled" getter="is_movie_quit_on_finish_enabled" default="false">
+			If [code]true[/code] and the engine is running in Movie Maker mode (see [MovieWriter]), exits the engine with [method SceneTree.quit] as soon as an animation is done playing in this [AnimationPlayer]. A message is printed when the engine quits for this reason.
+			[b]Note:[/b] This obeys the same logic as the [signal animation_finished] signal, so it will not quit the engine if the animation is set to be looping.
+		</member>
 		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
 			If [code]true[/code], updates animations in response to process-related notifications.
 		</member>
@@ -232,6 +257,7 @@
 			<argument index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation finished playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="animation_started">

@@ -158,7 +158,7 @@ _hb_graphite2_shaper_face_data_destroy (hb_graphite2_face_data_t *data)
 }
 
 /**
- * hb_graphite2_face_get_gr_face:
+ * hb_graphite2_face_get_gr_face: (skip)
  * @face: @hb_face_t to query
  *
  * Fetches the Graphite2 gr_face corresponding to the specified
@@ -195,10 +195,10 @@ _hb_graphite2_shaper_font_data_destroy (hb_graphite2_font_data_t *data HB_UNUSED
 
 #ifndef HB_DISABLE_DEPRECATED
 /**
- * hb_graphite2_font_get_gr_font:
+ * hb_graphite2_font_get_gr_font: (skip)
  * @font: An #hb_font_t
  *
- * Always returns %NULL. Use hb_graphite2_face_get_gr_face() instead.
+ * Always returns `NULL`. Use hb_graphite2_face_get_gr_face() instead.
  *
  * Return value: (nullable): Graphite2 font associated with @font.
  *
@@ -223,7 +223,7 @@ struct hb_graphite2_cluster_t {
   unsigned int base_glyph;
   unsigned int num_glyphs;
   unsigned int cluster;
-  unsigned int advance;
+  int advance;
 };
 
 hb_bool_t

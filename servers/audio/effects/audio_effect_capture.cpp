@@ -70,7 +70,7 @@ void AudioEffectCapture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer_length_frames"), &AudioEffectCapture::get_buffer_length_frames);
 	ClassDB::bind_method(D_METHOD("get_pushed_frames"), &AudioEffectCapture::get_pushed_frames);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_buffer_length", "get_buffer_length");
 }
 
 Ref<AudioEffectInstance> AudioEffectCapture::instantiate() {

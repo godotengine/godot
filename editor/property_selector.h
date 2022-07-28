@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROPERTYSELECTOR_H
-#define PROPERTYSELECTOR_H
+#ifndef PROPERTY_SELECTOR_H
+#define PROPERTY_SELECTOR_H
 
 #include "editor/editor_help.h"
 #include "editor/property_editor.h"
@@ -38,8 +38,8 @@
 class PropertySelector : public ConfirmationDialog {
 	GDCLASS(PropertySelector, ConfirmationDialog);
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 
 	void _text_changed(const String &p_newtext);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
@@ -48,15 +48,15 @@ class PropertySelector : public ConfirmationDialog {
 	void _item_selected();
 	void _hide_requested();
 
-	EditorHelpBit *help_bit;
+	EditorHelpBit *help_bit = nullptr;
 
-	bool properties;
+	bool properties = false;
 	String selected;
 	Variant::Type type;
 	String base_type;
 	ObjectID script;
-	Object *instance;
-	bool virtuals_only;
+	Object *instance = nullptr;
+	bool virtuals_only = false;
 
 	Vector<Variant::Type> type_filter;
 
@@ -80,4 +80,4 @@ public:
 	PropertySelector();
 };
 
-#endif // PROPERTYSELECTOR_H
+#endif // PROPERTY_SELECTOR_H

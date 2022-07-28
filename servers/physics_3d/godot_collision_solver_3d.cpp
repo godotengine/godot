@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "godot_collision_solver_3d.h"
+
 #include "godot_collision_solver_3d_sat.h"
 #include "godot_soft_body_3d.h"
 
@@ -93,7 +94,7 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 	const GodotSeparationRayShape3D *ray = static_cast<const GodotSeparationRayShape3D *>(p_shape_A);
 
 	Vector3 from = p_transform_A.origin;
-	Vector3 to = from + p_transform_A.basis.get_axis(2) * (ray->get_length() + p_margin);
+	Vector3 to = from + p_transform_A.basis.get_column(2) * (ray->get_length() + p_margin);
 	Vector3 support_A = to;
 
 	Transform3D ai = p_transform_B.affine_inverse();
@@ -141,7 +142,7 @@ struct _SoftBodyContactCollisionInfo {
 };
 
 void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-	_SoftBodyContactCollisionInfo &cinfo = *(_SoftBodyContactCollisionInfo *)(p_userdata);
+	_SoftBodyContactCollisionInfo &cinfo = *(static_cast<_SoftBodyContactCollisionInfo *>(p_userdata));
 
 	++cinfo.contact_count;
 
@@ -170,7 +171,7 @@ struct _SoftBodyQueryInfo {
 };
 
 bool GodotCollisionSolver3D::soft_body_query_callback(uint32_t p_node_index, void *p_userdata) {
-	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
+	_SoftBodyQueryInfo &query_cinfo = *(static_cast<_SoftBodyQueryInfo *>(p_userdata));
 
 	Vector3 node_position = query_cinfo.soft_body->get_node_position(p_node_index);
 
@@ -189,7 +190,7 @@ bool GodotCollisionSolver3D::soft_body_query_callback(uint32_t p_node_index, voi
 }
 
 bool GodotCollisionSolver3D::soft_body_concave_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
+	_SoftBodyQueryInfo &query_cinfo = *(static_cast<_SoftBodyQueryInfo *>(p_userdata));
 
 	query_cinfo.shape_A = p_convex;
 
@@ -251,7 +252,7 @@ bool GodotCollisionSolver3D::solve_soft_body(const GodotShape3D *p_shape_A, cons
 		// Calculate AABB for internal concave shape query (in local space).
 		AABB local_aabb;
 		for (int i = 0; i < 3; i++) {
-			Vector3 axis(p_transform_A.basis.get_axis(i));
+			Vector3 axis(p_transform_A.basis.get_column(i));
 			real_t axis_scale = 1.0 / axis.length();
 
 			real_t smin = soft_body_aabb.position[i];
@@ -276,23 +277,24 @@ bool GodotCollisionSolver3D::solve_soft_body(const GodotShape3D *p_shape_A, cons
 }
 
 struct _ConcaveCollisionInfo {
-	const Transform3D *transform_A;
-	const GodotShape3D *shape_A;
-	const Transform3D *transform_B;
-	GodotCollisionSolver3D::CallbackResult result_callback;
-	void *userdata;
-	bool swap_result;
-	bool collided;
-	int aabb_tests;
-	int collisions;
-	bool tested;
-	real_t margin_A;
-	real_t margin_B;
-	Vector3 close_A, close_B;
+	const Transform3D *transform_A = nullptr;
+	const GodotShape3D *shape_A = nullptr;
+	const Transform3D *transform_B = nullptr;
+	GodotCollisionSolver3D::CallbackResult result_callback = nullptr;
+	void *userdata = nullptr;
+	bool swap_result = false;
+	bool collided = false;
+	int aabb_tests = 0;
+	int collisions = 0;
+	bool tested = false;
+	real_t margin_A = 0.0f;
+	real_t margin_B = 0.0f;
+	Vector3 close_A;
+	Vector3 close_B;
 };
 
 bool GodotCollisionSolver3D::concave_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
+	_ConcaveCollisionInfo &cinfo = *(static_cast<_ConcaveCollisionInfo *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, nullptr, cinfo.margin_A, cinfo.margin_B);
@@ -331,7 +333,7 @@ bool GodotCollisionSolver3D::solve_concave(const GodotShape3D *p_shape_A, const 
 
 	AABB local_aabb;
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis(p_transform_B.basis.get_axis(i));
+		Vector3 axis(p_transform_B.basis.get_column(i));
 		real_t axis_scale = 1.0 / axis.length();
 		axis *= axis_scale;
 
@@ -422,7 +424,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 }
 
 bool GodotCollisionSolver3D::concave_distance_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
+	_ConcaveCollisionInfo &cinfo = *(static_cast<_ConcaveCollisionInfo *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	Vector3 close_A, close_B;
@@ -540,7 +542,7 @@ bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const
 
 		AABB local_aabb;
 		for (int i = 0; i < 3; i++) {
-			Vector3 axis(p_transform_B.basis.get_axis(i));
+			Vector3 axis(p_transform_B.basis.get_column(i));
 			real_t axis_scale = ((real_t)1.0) / axis.length();
 			axis *= axis_scale;
 

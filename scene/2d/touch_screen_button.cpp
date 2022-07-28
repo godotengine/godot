@@ -131,7 +131,7 @@ void TouchScreenButton::_notification(int p_what) {
 					pos = texture_normal->get_size() * 0.5;
 				}
 
-				draw_set_transform_matrix(get_canvas_transform().translated(pos));
+				draw_set_transform_matrix(get_canvas_transform().translated_local(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
 		} break;
@@ -190,15 +190,13 @@ String TouchScreenButton::get_action() const {
 void TouchScreenButton::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!get_tree()) {
+	if (!is_visible_in_tree()) {
 		return;
 	}
 
 	if (p_event->get_device() != 0) {
 		return;
 	}
-
-	ERR_FAIL_COND(!is_visible_in_tree());
 
 	const InputEventScreenTouch *st = Object::cast_to<InputEventScreenTouch>(*p_event);
 
@@ -260,7 +258,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 			pos = texture_normal->get_size() * 0.5;
 		}
 
-		touched = shape->collide(Transform2D().translated(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
+		touched = shape->collide(Transform2D().translated_local(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
 	if (bitmask.is_valid()) {

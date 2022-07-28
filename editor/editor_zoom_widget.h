@@ -37,9 +37,9 @@
 class EditorZoomWidget : public HBoxContainer {
 	GDCLASS(EditorZoomWidget, HBoxContainer);
 
-	Button *zoom_minus;
-	Button *zoom_reset;
-	Button *zoom_plus;
+	Button *zoom_minus = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_plus = nullptr;
 
 	float zoom = 1.0;
 	void _update_zoom_label();

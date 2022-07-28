@@ -76,6 +76,21 @@ bool ResourceFormatLoader::handles_type(const String &p_type) const {
 	return false;
 }
 
+void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Vector<String> ret;
+	if (GDVIRTUAL_CALL(_get_classes_used, p_path, ret)) {
+		for (int i = 0; i < ret.size(); i++) {
+			r_classes->insert(ret[i]);
+		}
+		return;
+	}
+
+	String res = get_resource_type(p_path);
+	if (!res.is_empty()) {
+		r_classes->insert(res);
+	}
+}
+
 String ResourceFormatLoader::get_resource_type(const String &p_path) const {
 	String ret;
 
@@ -125,14 +140,14 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 	}
 }
 
-RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Variant res;
 	if (GDVIRTUAL_CALL(_load, p_path, p_original_path, p_use_sub_threads, p_cache_mode, res)) {
 		if (res.get_type() == Variant::INT) { // Error code, abort.
 			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
 			}
-			return RES();
+			return Ref<Resource>();
 		} else { // Success, pass on result.
 			if (r_error) {
 				*r_error = OK;
@@ -141,7 +156,7 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 		}
 	}
 
-	ERR_FAIL_V_MSG(RES(), "Failed to load resource '" + p_path + "'. ResourceFormatLoader::load was not implemented for this resource type.");
+	ERR_FAIL_V_MSG(Ref<Resource>(), "Failed to load resource '" + p_path + "'. ResourceFormatLoader::load was not implemented for this resource type.");
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -154,7 +169,7 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 	}
 }
 
-Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceFormatLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Dictionary deps_dict;
 	for (KeyValue<String, String> E : p_map) {
 		deps_dict[E.key] = E.value;
@@ -180,12 +195,13 @@ void ResourceFormatLoader::_bind_methods() {
 	GDVIRTUAL_BIND(_get_dependencies, "path", "add_types");
 	GDVIRTUAL_BIND(_rename_dependencies, "path", "renames");
 	GDVIRTUAL_BIND(_exists, "path");
+	GDVIRTUAL_BIND(_get_classes_used, "path");
 	GDVIRTUAL_BIND(_load, "path", "original_path", "use_sub_threads", "cache_mode");
 }
 
 ///////////////////////////////////
 
-RES ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	bool found = false;
 
 	// Try all loaders and pick the first match for the type hint
@@ -194,7 +210,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 			continue;
 		}
 		found = true;
-		RES res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+		Ref<Resource> res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (res.is_null()) {
 			continue;
 		}
@@ -202,15 +218,15 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 		return res;
 	}
 
-	ERR_FAIL_COND_V_MSG(found, RES(),
+	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
 			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
 
 #ifdef TOOLS_ENABLED
-	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), RES(), "Resource file not found: " + p_path + ".");
+	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), Ref<Resource>(), "Resource file not found: " + p_path + ".");
 #endif
 
-	ERR_FAIL_V_MSG(RES(), "No loader found for resource: " + p_path + ".");
+	ERR_FAIL_V_MSG(Ref<Resource>(), "No loader found for resource: " + p_path + ".");
 }
 
 void ResourceLoader::_thread_load_function(void *p_userdata) {
@@ -335,23 +351,15 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 				thread_load_mutex->unlock();
 				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
 			}
-			//lock first if possible
-			ResourceCache::lock.read_lock();
 
-			//get ptr
-			Resource **rptr = ResourceCache::resources.getptr(local_path);
+			Ref<Resource> existing = ResourceCache::get_ref(local_path);
 
-			if (rptr) {
-				RES res(*rptr);
-				//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
-				if (res.is_valid()) {
-					//referencing is fine
-					load_task.resource = res;
-					load_task.status = THREAD_LOAD_LOADED;
-					load_task.progress = 1.0;
-				}
+			if (existing.is_valid()) {
+				//referencing is fine
+				load_task.resource = existing;
+				load_task.status = THREAD_LOAD_LOADED;
+				load_task.progress = 1.0;
 			}
-			ResourceCache::lock.read_unlock();
 		}
 
 		if (!p_source_resource.is_empty()) {
@@ -391,8 +399,8 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
 			float dep_progress = 0;
-			for (Set<String>::Element *E = load_task.sub_tasks.front(); E; E = E->next()) {
-				dep_progress += _dependency_get_progress(E->get());
+			for (const String &E : load_task.sub_tasks) {
+				dep_progress += _dependency_get_progress(E);
 			}
 			dep_progress /= float(dep_count);
 			dep_progress *= 0.5;
@@ -427,7 +435,7 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 	return status;
 }
 
-RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
+Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	String local_path = _validate_local_path(p_path);
 
 	thread_load_mutex->lock();
@@ -436,7 +444,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 		if (r_error) {
 			*r_error = ERR_INVALID_PARAMETER;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
@@ -480,11 +488,11 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
 			}
-			return RES();
+			return Ref<Resource>();
 		}
 	}
 
-	RES resource = load_task.resource;
+	Ref<Resource> resource = load_task.resource;
 	if (r_error) {
 		*r_error = load_task.error;
 	}
@@ -504,7 +512,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	return resource;
 }
 
-RES ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
+Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -522,7 +530,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 					*r_error = err;
 				}
 				thread_load_mutex->unlock();
-				return RES();
+				return Ref<Resource>();
 			}
 			thread_load_mutex->unlock();
 
@@ -530,27 +538,18 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 		}
 
 		//Is it cached?
-		ResourceCache::lock.read_lock();
 
-		Resource **rptr = ResourceCache::resources.getptr(local_path);
+		Ref<Resource> existing = ResourceCache::get_ref(local_path);
 
-		if (rptr) {
-			RES res(*rptr);
+		if (existing.is_valid()) {
+			thread_load_mutex->unlock();
 
-			//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
-			if (res.is_valid()) {
-				ResourceCache::lock.read_unlock();
-				thread_load_mutex->unlock();
-
-				if (r_error) {
-					*r_error = OK;
-				}
-
-				return res; //use cached
+			if (r_error) {
+				*r_error = OK;
 			}
-		}
 
-		ResourceCache::lock.read_unlock();
+			return existing; //use cached
+		}
 
 		//load using task (but this thread)
 		ThreadLoadTask load_task;
@@ -575,16 +574,16 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 		String path = _path_remap(local_path, &xl_remapped);
 
 		if (path.is_empty()) {
-			ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
+			ERR_FAIL_V_MSG(Ref<Resource>(), "Remapping '" + local_path + "' failed.");
 		}
 
 		print_verbose("Loading resource: " + path);
 		float p;
-		RES res = _load(path, local_path, p_type_hint, p_cache_mode, r_error, false, &p);
+		Ref<Resource> res = _load(path, local_path, p_type_hint, p_cache_mode, r_error, false, &p);
 
 		if (res.is_null()) {
 			print_verbose("Failed loading resource: " + path);
-			return RES();
+			return Ref<Resource>();
 		}
 
 		if (xl_remapped) {
@@ -733,7 +732,7 @@ void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_depe
 	}
 }
 
-Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	String local_path = _path_remap(_validate_local_path(p_path));
 
 	for (int i = 0; i < loader_count; i++) {
@@ -745,6 +744,18 @@ Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String
 	}
 
 	return OK; // ??
+}
+
+void ResourceLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+
+		return loader[i]->get_classes_used(p_path, r_classes);
+	}
 }
 
 String ResourceLoader::get_resource_type(const String &p_path) {
@@ -817,9 +828,8 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 	if (new_path == p_path) { // Did not remap.
 		// Try file remap.
 		Error err;
-		FileAccess *f = FileAccess::open(p_path + ".remap", FileAccess::READ, &err);
-
-		if (f) {
+		Ref<FileAccess> f = FileAccess::open(p_path + ".remap", FileAccess::READ, &err);
+		if (f.is_valid()) {
 			VariantParser::StreamFile stream;
 			stream.f = f;
 
@@ -849,8 +859,6 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 					break;
 				}
 			}
-
-			memdelete(f);
 		}
 	}
 
@@ -870,7 +878,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 }
 
 void ResourceLoader::reload_translation_remaps() {
-	ResourceCache::lock.read_lock();
+	ResourceCache::lock.lock();
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -880,7 +888,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	ResourceCache::lock.read_unlock();
+	ResourceCache::lock.unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
@@ -982,6 +990,10 @@ void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
 	}
 }
 
+void ResourceLoader::set_create_missing_resources_if_class_unavailable(bool p_enable) {
+	create_missing_resources_if_class_unavailable = p_enable;
+}
+
 void ResourceLoader::add_custom_loaders() {
 	// Custom loaders registration exploits global class names
 
@@ -1033,6 +1045,7 @@ void *ResourceLoader::err_notify_ud = nullptr;
 DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
 void *ResourceLoader::dep_err_notify_ud = nullptr;
 
+bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
 

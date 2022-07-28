@@ -75,14 +75,16 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				StaticBody3D *body = memnew(StaticBody3D);
-				body->add_child(cshape);
+				body->add_child(cshape, true);
 
-				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->create_action(TTR("Create Static Trimesh Body"));
 				ur->add_do_method(node, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(node, "remove_child", body);
 				ur->commit_action();
@@ -110,13 +112,15 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				StaticBody3D *body = memnew(StaticBody3D);
-				body->add_child(cshape);
+				body->add_child(cshape, true);
 
-				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->add_do_method(instance, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(instance, "remove_child", body);
 			}
@@ -141,7 +145,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
-			Node *owner = node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -150,6 +154,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			ur->commit_action();
@@ -184,11 +189,12 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
-			Node *owner = node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 
@@ -217,14 +223,17 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			for (int i = 0; i < shapes.size(); i++) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
+				cshape->set_name("CollisionShape3D");
+
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
 
-				Node *owner = node->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->add_do_method(node->get_parent(), "add_child", cshape);
 				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 				ur->add_do_reference(cshape);
 				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			}
@@ -243,13 +252,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 			nmi->set_navigation_mesh(nmesh);
 
-			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Navigation Mesh"));
 
 			ur->add_do_method(node, "add_child", nmi, true);
 			ur->add_do_method(nmi, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", nmi);
 
 			ur->add_do_reference(nmi);
 			ur->add_undo_method(node, "remove_child", nmi);
@@ -267,12 +277,51 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Error err = mesh2->lightmap_unwrap(node->get_global_transform());
+			String path = mesh2->get_path();
+			int srpos = path.find("::");
+			if (srpos != -1) {
+				String base = path.substr(0, srpos);
+				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it does not belong to the edited scene. Make it unique first."));
+						err_dialog->popup_centered();
+						return;
+					}
+				} else {
+					if (FileAccess::exists(path + ".import")) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it belongs to another resource which was imported from another file type. Make it unique first."));
+						err_dialog->popup_centered();
+						return;
+					}
+				}
+			} else {
+				if (FileAccess::exists(path + ".import")) {
+					err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it was imported from another file type. Make it unique first."));
+					err_dialog->popup_centered();
+					return;
+				}
+			}
+
+			Ref<ArrayMesh> unwrapped_mesh = mesh2->duplicate(false);
+
+			Error err = unwrapped_mesh->lightmap_unwrap(node->get_global_transform());
 			if (err != OK) {
 				err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
 				err_dialog->popup_centered();
 				return;
 			}
+
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Unwrap UV2"));
+
+			ur->add_do_method(node, "set_mesh", unwrapped_mesh);
+			ur->add_do_reference(node);
+			ur->add_do_reference(mesh2.ptr());
+
+			ur->add_undo_method(node, "set_mesh", mesh2);
+			ur->add_undo_reference(unwrapped_mesh.ptr());
+
+			ur->commit_action();
 
 		} break;
 		case MENU_OPTION_DEBUG_UV1: {
@@ -300,12 +349,13 @@ struct MeshInstance3DEditorEdgeSort {
 	Vector2 a;
 	Vector2 b;
 
-	bool operator<(const MeshInstance3DEditorEdgeSort &p_b) const {
-		if (a == p_b.a) {
-			return b < p_b.b;
-		} else {
-			return a < p_b.a;
-		}
+	static uint32_t hash(const MeshInstance3DEditorEdgeSort &p_edge) {
+		uint32_t h = hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.a));
+		return hash_fmix32(hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.b), h));
+	}
+
+	bool operator==(const MeshInstance3DEditorEdgeSort &p_b) const {
+		return a == p_b.a && b == p_b.b;
 	}
 
 	MeshInstance3DEditorEdgeSort() {}
@@ -324,7 +374,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 	Ref<Mesh> mesh = node->get_mesh();
 	ERR_FAIL_COND(!mesh.is_valid());
 
-	Set<MeshInstance3DEditorEdgeSort> edges;
+	HashSet<MeshInstance3DEditorEdgeSort, MeshInstance3DEditorEdgeSort> edges;
 	uv_lines.clear();
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -418,10 +468,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	MeshInstance3D *mi = memnew(MeshInstance3D);
 	mi->set_mesh(mesho);
-	Node *owner = node->get_owner();
-	if (get_tree()->get_edited_scene_root() == node) {
-		owner = node;
-	}
+	Node *owner = get_tree()->get_edited_scene_root();
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -429,6 +476,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	ur->add_do_method(node, "add_child", mi, true);
 	ur->add_do_method(mi, "set_owner", owner);
+	ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", mi);
 
 	ur->add_do_reference(mi);
 	ur->add_undo_method(node, "remove_child", mi);
@@ -447,16 +495,16 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Single Convex Collision Sibling"), MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a single convex collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a single convex collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Simplified Convex Collision Sibling"), MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between a single convex collision and a polygon-based collision."));
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between a single convex collision and a polygon-based collision."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
@@ -471,7 +519,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));
-	outline_dialog->get_ok_button()->set_text(TTR("Create"));
+	outline_dialog->set_ok_button_text(TTR("Create"));
 
 	VBoxContainer *outline_dialog_vbc = memnew(VBoxContainer);
 	outline_dialog->add_child(outline_dialog_vbc);

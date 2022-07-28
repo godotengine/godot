@@ -28,22 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDMONOFIELD_H
-#define GDMONOFIELD_H
+#ifndef GD_MONO_FIELD_H
+#define GD_MONO_FIELD_H
 
 #include "gd_mono.h"
 #include "gd_mono_header.h"
 #include "i_mono_class_member.h"
 
 class GDMonoField : public IMonoClassMember {
-	GDMonoClass *owner;
-	MonoClassField *mono_field;
+	GDMonoClass *owner = nullptr;
+	MonoClassField *mono_field = nullptr;
 
 	StringName name;
 	ManagedType type;
 
 	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+	MonoCustomAttrInfo *attributes = nullptr;
 
 public:
 	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
@@ -75,4 +75,4 @@ public:
 	~GDMonoField();
 };
 
-#endif // GDMONOFIELD_H
+#endif // GD_MONO_FIELD_H

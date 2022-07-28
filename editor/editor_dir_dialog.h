@@ -39,15 +39,15 @@
 class EditorDirDialog : public ConfirmationDialog {
 	GDCLASS(EditorDirDialog, ConfirmationDialog);
 
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
-	AcceptDialog *mkdirerr;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
 
-	Button *makedir;
-	Set<String> opened_paths;
+	Button *makedir = nullptr;
+	HashSet<String> opened_paths;
 
-	Tree *tree;
-	bool updating;
+	Tree *tree = nullptr;
+	bool updating = false;
 
 	void _item_collapsed(Object *p_item);
 	void _item_activated();
@@ -58,7 +58,7 @@ class EditorDirDialog : public ConfirmationDialog {
 
 	void ok_pressed() override;
 
-	bool must_reload;
+	bool must_reload = false;
 
 protected:
 	void _notification(int p_what);

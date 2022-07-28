@@ -264,6 +264,8 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
+	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	graph->set_connection_lines_curvature(graph_lines_curvature);
 }
 
 void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
@@ -459,15 +461,21 @@ void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
+void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<StringName> &p_nodes) {
 	List<StringName> to_erase;
 
-	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name());
+	if (p_nodes.is_empty()) {
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn) {
+				if (gn->is_selected() && gn->is_close_button_visible()) {
+					to_erase.push_back(gn->get_name());
+				}
 			}
+		}
+	} else {
+		for (int i = 0; i < p_nodes.size(); i++) {
+			to_erase.push_back(p_nodes[i]);
 		}
 	}
 
@@ -557,8 +565,8 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	updating = true;
 
-	Set<String> paths;
-	HashMap<String, Set<String>> types;
+	HashSet<String> paths;
+	HashMap<String, RBSet<String>> types;
 	{
 		List<StringName> animations;
 		player->get_animation_list(&animations);
@@ -595,10 +603,10 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	filters->clear();
 	TreeItem *root = filters->create_item();
 
-	Map<String, TreeItem *> parenthood;
+	HashMap<String, TreeItem *> parenthood;
 
-	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
-		NodePath path = E->get();
+	for (const String &E : paths) {
+		NodePath path = E;
 		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
@@ -692,11 +700,12 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 				//just a node, not a property track
 				String types_text = "[";
 				if (types.has(path)) {
-					Set<String>::Element *F = types[path].front();
-					types_text += F->get();
-					while (F->next()) {
-						F = F->next();
-						types_text += " / " + F->get();
+					RBSet<String>::Iterator F = types[path].begin();
+					types_text += *F;
+					while (F) {
+						types_text += " / " + *F;
+						;
+						++F;
 					}
 				}
 				types_text += "]";
@@ -903,8 +912,8 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	}
 
 	//update animations
-	for (Map<StringName, ProgressBar *>::Element *E = animations.front(); E; E = E->next()) {
-		if (E->key() == prev_name) {
+	for (const KeyValue<StringName, ProgressBar *> &E : animations) {
+		if (E.key == prev_name) {
 			animations[new_name] = animations[prev_name];
 			animations.erase(prev_name);
 			break;
@@ -962,6 +971,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("connection_from_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_from_empty));
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
+	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	graph->set_connection_lines_curvature(graph_lines_curvature);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);

@@ -47,7 +47,7 @@ class GodotPhysicsDirectSpaceState3D : public PhysicsDirectSpaceState3D {
 	GDCLASS(GodotPhysicsDirectSpaceState3D, PhysicsDirectSpaceState3D);
 
 public:
-	GodotSpace3D *space;
+	GodotSpace3D *space = nullptr;
 
 	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override;
@@ -89,7 +89,7 @@ private:
 	static void *_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A, GodotCollisionObject3D *B, int p_subindex_B, void *p_self);
 	static void _broadphase_unpair(GodotCollisionObject3D *A, int p_subindex_A, GodotCollisionObject3D *B, int p_subindex_B, void *p_data, void *p_self);
 
-	Set<GodotCollisionObject3D *> objects;
+	HashSet<GodotCollisionObject3D *> objects;
 
 	GodotArea3D *area = nullptr;
 
@@ -158,7 +158,7 @@ public:
 
 	void add_object(GodotCollisionObject3D *p_object);
 	void remove_object(GodotCollisionObject3D *p_object);
-	const Set<GodotCollisionObject3D *> &get_objects() const;
+	const HashSet<GodotCollisionObject3D *> &get_objects() const;
 
 	_FORCE_INLINE_ int get_solver_iterations() const { return solver_iterations; }
 	_FORCE_INLINE_ real_t get_contact_recycle_radius() const { return contact_recycle_radius; }

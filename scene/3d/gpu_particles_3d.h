@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_H
-#define PARTICLES_H
+#ifndef GPU_PARTICLES_3D_H
+#define GPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/skin.h"
@@ -61,16 +61,16 @@ private:
 	RID particles;
 
 	bool one_shot;
-	int amount;
-	double lifetime;
-	double pre_process_time;
-	real_t explosiveness_ratio;
-	real_t randomness_ratio;
-	double speed_scale;
+	int amount = 0;
+	double lifetime = 0.0;
+	double pre_process_time = 0.0;
+	real_t explosiveness_ratio = 0.0;
+	real_t randomness_ratio = 0.0;
+	double speed_scale = 0.0;
 	AABB visibility_aabb;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	bool local_coords = false;
+	int fixed_fps = 0;
+	bool fractional_delta = false;
 	bool interpolate = true;
 	NodePath sub_emitter;
 	real_t collision_base_size = 0.01;
@@ -98,7 +98,6 @@ protected:
 
 public:
 	AABB get_aabb() const override;
-	Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
@@ -180,4 +179,4 @@ VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign)
 VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
 
-#endif // PARTICLES_H
+#endif // GPU_PARTICLES_3D_H

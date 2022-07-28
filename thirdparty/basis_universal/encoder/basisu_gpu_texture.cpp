@@ -15,7 +15,9 @@
 #include "basisu_gpu_texture.h"
 #include "basisu_enc.h"
 #include "basisu_pvrtc1_4.h"
+#if BASISU_USE_ASTC_DECOMPRESS
 #include "basisu_astc_decomp.h"
+#endif
 #include "basisu_bc7enc.h"
 
 namespace basisu
@@ -1150,8 +1152,12 @@ namespace basisu
 		}
 		case texture_format::cASTC4x4:
 		{
+#if BASISU_USE_ASTC_DECOMPRESS
 			const bool astc_srgb = false;
 			basisu_astc::astc::decompress(reinterpret_cast<uint8_t*>(pPixels), static_cast<const uint8_t*>(pBlock), astc_srgb, 4, 4);
+#else
+			memset(pPixels, 255, 16 * sizeof(color_rgba));
+#endif
 			break;
 		}
 		case texture_format::cATC_RGB:
@@ -1498,6 +1504,8 @@ namespace basisu
 		
 		header.m_pixelWidth = width;
 		header.m_pixelHeight = height;
+				
+		header.m_glTypeSize = 1;
 		
 		header.m_glInternalFormat = internal_fmt;
 		header.m_glBaseInternalFormat = base_internal_fmt;

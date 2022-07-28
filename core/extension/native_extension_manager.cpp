@@ -90,9 +90,9 @@ Vector<String> NativeExtensionManager::get_loaded_extensions() const {
 	return ret;
 }
 Ref<NativeExtension> NativeExtensionManager::get_extension(const String &p_path) {
-	Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.find(p_path);
+	HashMap<String, Ref<NativeExtension>>::Iterator E = native_extension_map.find(p_path);
 	ERR_FAIL_COND_V(!E, Ref<NativeExtension>());
-	return E->get();
+	return E->value;
 }
 
 void NativeExtensionManager::initialize_extensions(NativeExtension::InitializationLevel p_level) {
@@ -112,8 +112,8 @@ void NativeExtensionManager::deinitialize_extensions(NativeExtension::Initializa
 }
 
 void NativeExtensionManager::load_extensions() {
-	FileAccessRef f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
-	while (f && !f->eof_reached()) {
+	Ref<FileAccess> f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
+	while (f.is_valid() && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
 		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);

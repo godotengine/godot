@@ -7,6 +7,7 @@
 		Adds a chorus audio effect. The effect applies a filter with voices to duplicate the audio source and manipulate it through the filter.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_voice_cutoff_hz" qualifiers="const">

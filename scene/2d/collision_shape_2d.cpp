@@ -31,6 +31,7 @@
 #include "collision_shape_2d.h"
 
 #include "collision_object_2d.h"
+#include "scene/2d/area_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -171,16 +172,19 @@ TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		warnings.push_back(TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
+		warnings.push_back(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 	if (!shape.is_valid()) {
-		warnings.push_back(TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
+		warnings.push_back(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
+	}
+	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
+		warnings.push_back(RTR("The One Way Collision property will be ignored when the parent is an Area2D."));
 	}
 
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
 	if (convex.is_valid() || concave.is_valid()) {
-		warnings.push_back(TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
+		warnings.push_back(RTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
 	}
 
 	return warnings;
@@ -204,6 +208,7 @@ void CollisionShape2D::set_one_way_collision(bool p_enable) {
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
+	update_configuration_warnings();
 }
 
 bool CollisionShape2D::is_one_way_collision_enabled() const {
@@ -234,7 +239,7 @@ void CollisionShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 }
 
 CollisionShape2D::CollisionShape2D() {

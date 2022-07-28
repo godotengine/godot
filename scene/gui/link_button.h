@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINKBUTTON_H
-#define LINKBUTTON_H
+#ifndef LINK_BUTTON_H
+#define LINK_BUTTON_H
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/text_line.h"
@@ -50,10 +50,9 @@ private:
 	Ref<TextLine> text_buf;
 	UnderlineMode underline_mode = UNDERLINE_MODE_ALWAYS;
 
-	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	void _shape();
@@ -63,16 +62,12 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
@@ -80,19 +75,15 @@ public:
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
 
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
-
 	void set_language(const String &p_language);
 	String get_language() const;
 
 	void set_underline_mode(UnderlineMode p_underline_mode);
 	UnderlineMode get_underline_mode() const;
 
-	LinkButton();
+	LinkButton(const String &p_text = String());
 };
 
 VARIANT_ENUM_CAST(LinkButton::UnderlineMode);
 
-#endif // LINKBUTTON_H
+#endif // LINK_BUTTON_H

@@ -55,7 +55,7 @@ String ResourceImporterCSVTranslation::get_resource_type() const {
 	return "Translation";
 }
 
-bool ResourceImporterCSVTranslation::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterCSVTranslation::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -72,7 +72,7 @@ void ResourceImporterCSVTranslation::get_import_options(const String &p_path, Li
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab"), 0));
 }
 
-Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool compress = p_options["compress"];
 
 	String delimiter;
@@ -88,9 +88,8 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 			break;
 	}
 
-	FileAccessRef f = FileAccess::open(p_source_file, FileAccess::READ);
-
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open file from path '" + p_source_file + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open file from path '" + p_source_file + "'.");
 
 	Vector<String> line = f->get_csv_line(delimiter);
 	ERR_FAIL_COND_V(line.size() <= 1, ERR_PARSE_ERROR);

@@ -61,9 +61,9 @@ class CollisionShape2DEditor : public Control {
 		Point2(1, -1),
 	};
 
-	UndoRedo *undo_redo;
-	CanvasItemEditor *canvas_item_editor;
-	CollisionShape2D *node;
+	UndoRedo *undo_redo = nullptr;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	CollisionShape2D *node = nullptr;
 
 	Vector<Point2> handles;
 
@@ -96,7 +96,7 @@ public:
 class CollisionShape2DEditorPlugin : public EditorPlugin {
 	GDCLASS(CollisionShape2DEditorPlugin, EditorPlugin);
 
-	CollisionShape2DEditor *collision_shape_2d_editor;
+	CollisionShape2DEditor *collision_shape_2d_editor = nullptr;
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return collision_shape_2d_editor->forward_canvas_gui_input(p_event); }
@@ -112,4 +112,4 @@ public:
 	~CollisionShape2DEditorPlugin();
 };
 
-#endif //COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
+#endif // COLLISION_SHAPE_2D_EDITOR_PLUGIN_H

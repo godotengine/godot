@@ -78,7 +78,7 @@ static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r
 	ERR_FAIL_COND_V(strlen < 0 || strlen + pad > len, ERR_FILE_EOF);
 
 	String str;
-	ERR_FAIL_COND_V(str.parse_utf8((const char *)buf, strlen), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(str.parse_utf8((const char *)buf, strlen) != OK, ERR_INVALID_DATA);
 	r_string = str;
 
 	// Add padding
@@ -285,13 +285,53 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
+		case Variant::VECTOR4: {
+			Vector4 val;
+			if (type & ENCODE_FLAG_64) {
+				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
+				val.x = decode_double(&buf[0]);
+				val.y = decode_double(&buf[sizeof(double)]);
+				val.z = decode_double(&buf[sizeof(double) * 2]);
+				val.w = decode_double(&buf[sizeof(double) * 3]);
+
+				if (r_len) {
+					(*r_len) += sizeof(double) * 4;
+				}
+			} else {
+				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 4, ERR_INVALID_DATA);
+				val.x = decode_float(&buf[0]);
+				val.y = decode_float(&buf[sizeof(float)]);
+				val.z = decode_float(&buf[sizeof(float) * 2]);
+				val.w = decode_float(&buf[sizeof(float) * 3]);
+
+				if (r_len) {
+					(*r_len) += sizeof(float) * 4;
+				}
+			}
+			r_variant = val;
+
+		} break;
+		case Variant::VECTOR4I: {
+			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
+			Vector4i val;
+			val.x = decode_uint32(&buf[0]);
+			val.y = decode_uint32(&buf[4]);
+			val.z = decode_uint32(&buf[8]);
+			val.w = decode_uint32(&buf[12]);
+			r_variant = val;
+
+			if (r_len) {
+				(*r_len) += 4 * 4;
+			}
+
+		} break;
 		case Variant::TRANSFORM2D: {
 			Transform2D val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 6, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						val.elements[i][j] = decode_double(&buf[(i * 2 + j) * sizeof(double)]);
+						val.columns[i][j] = decode_double(&buf[(i * 2 + j) * sizeof(double)]);
 					}
 				}
 
@@ -302,7 +342,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 6, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						val.elements[i][j] = decode_float(&buf[(i * 2 + j) * sizeof(float)]);
+						val.columns[i][j] = decode_float(&buf[(i * 2 + j) * sizeof(float)]);
 					}
 				}
 
@@ -401,7 +441,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 9, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						val.elements[i][j] = decode_double(&buf[(i * 3 + j) * sizeof(double)]);
+						val.rows[i][j] = decode_double(&buf[(i * 3 + j) * sizeof(double)]);
 					}
 				}
 
@@ -412,7 +452,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 9, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						val.elements[i][j] = decode_float(&buf[(i * 3 + j) * sizeof(float)]);
+						val.rows[i][j] = decode_float(&buf[(i * 3 + j) * sizeof(float)]);
 					}
 				}
 
@@ -429,7 +469,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 12, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						val.basis.elements[i][j] = decode_double(&buf[(i * 3 + j) * sizeof(double)]);
+						val.basis.rows[i][j] = decode_double(&buf[(i * 3 + j) * sizeof(double)]);
 					}
 				}
 				val.origin[0] = decode_double(&buf[sizeof(double) * 9]);
@@ -443,7 +483,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 12, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						val.basis.elements[i][j] = decode_float(&buf[(i * 3 + j) * sizeof(float)]);
+						val.basis.rows[i][j] = decode_float(&buf[(i * 3 + j) * sizeof(float)]);
 					}
 				}
 				val.origin[0] = decode_float(&buf[sizeof(float) * 9]);
@@ -452,6 +492,33 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				if (r_len) {
 					(*r_len) += sizeof(float) * 12;
+				}
+			}
+			r_variant = val;
+
+		} break;
+		case Variant::PROJECTION: {
+			Projection val;
+			if (type & ENCODE_FLAG_64) {
+				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 16, ERR_INVALID_DATA);
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						val.matrix[i][j] = decode_double(&buf[(i * 4 + j) * sizeof(double)]);
+					}
+				}
+				if (r_len) {
+					(*r_len) += sizeof(double) * 16;
+				}
+			} else {
+				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 62, ERR_INVALID_DATA);
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						val.matrix[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);
+					}
+				}
+
+				if (r_len) {
+					(*r_len) += sizeof(float) * 16;
 				}
 			}
 			r_variant = val;
@@ -532,7 +599,13 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 		} break;
 		case Variant::RID: {
-			r_variant = RID();
+			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
+			uint64_t id = decode_uint64(buf);
+			if (r_len) {
+				(*r_len) += 8;
+			}
+
+			r_variant = RID::from_uint64(id);
 		} break;
 		case Variant::OBJECT: {
 			if (type & ENCODE_FLAG_OBJECT_AS_ID) {
@@ -601,7 +674,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					}
 
 					if (Object::cast_to<RefCounted>(obj)) {
-						REF ref = REF(Object::cast_to<RefCounted>(obj));
+						Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 						r_variant = ref;
 					} else {
 						r_variant = obj;
@@ -614,9 +687,20 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = Callable();
 		} break;
 		case Variant::SIGNAL: {
-			r_variant = Signal();
-		} break;
+			String name;
+			Error err = _decode_string(buf, len, r_len, name);
+			if (err) {
+				return err;
+			}
 
+			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
+			ObjectID id = ObjectID(decode_uint64(buf));
+			if (r_len) {
+				(*r_len) += 8;
+			}
+
+			r_variant = Signal(id, StringName(name));
+		} break;
 		case Variant::DICTIONARY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
@@ -1261,12 +1345,36 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Transform2D val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						memcpy(&buf[(i * 2 + j) * sizeof(real_t)], &val.elements[i][j], sizeof(real_t));
+						memcpy(&buf[(i * 2 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
 					}
 				}
 			}
 
 			r_len += 6 * sizeof(real_t);
+
+		} break;
+		case Variant::VECTOR4: {
+			if (buf) {
+				Vector4 v4 = p_variant;
+				encode_real(v4.x, &buf[0]);
+				encode_real(v4.y, &buf[sizeof(real_t)]);
+				encode_real(v4.z, &buf[sizeof(real_t) * 2]);
+				encode_real(v4.w, &buf[sizeof(real_t) * 3]);
+			}
+
+			r_len += 4 * sizeof(real_t);
+
+		} break;
+		case Variant::VECTOR4I: {
+			if (buf) {
+				Vector4i v4 = p_variant;
+				encode_uint32(v4.x, &buf[0]);
+				encode_uint32(v4.y, &buf[4]);
+				encode_uint32(v4.z, &buf[8]);
+				encode_uint32(v4.w, &buf[12]);
+			}
+
+			r_len += 4 * 4;
 
 		} break;
 		case Variant::PLANE: {
@@ -1312,7 +1420,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Basis val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.elements[i][j], sizeof(real_t));
+						memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.rows[i][j], sizeof(real_t));
 					}
 				}
 			}
@@ -1325,7 +1433,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Transform3D val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
-						memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.basis.elements[i][j], sizeof(real_t));
+						memcpy(&buf[(i * 3 + j) * sizeof(real_t)], &val.basis.rows[i][j], sizeof(real_t));
 					}
 				}
 
@@ -1335,6 +1443,19 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += 12 * sizeof(real_t);
+
+		} break;
+		case Variant::PROJECTION: {
+			if (buf) {
+				Projection val = p_variant;
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.matrix[i][j], sizeof(real_t));
+					}
+				}
+			}
+
+			r_len += 16 * sizeof(real_t);
 
 		} break;
 
@@ -1352,10 +1473,12 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		} break;
 		case Variant::RID: {
-		} break;
-		case Variant::CALLABLE: {
-		} break;
-		case Variant::SIGNAL: {
+			RID rid = p_variant;
+
+			if (buf) {
+				encode_uint64(rid.get_id(), buf);
+			}
+			r_len += 8;
 		} break;
 		case Variant::OBJECT: {
 			if (p_full_objects) {
@@ -1418,6 +1541,18 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				r_len += 8;
 			}
 
+		} break;
+		case Variant::CALLABLE: {
+		} break;
+		case Variant::SIGNAL: {
+			Signal signal = p_variant;
+
+			_encode_string(signal.get_name(), buf, r_len);
+
+			if (buf) {
+				encode_uint64(signal.get_object_id(), buf);
+			}
+			r_len += 8;
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;

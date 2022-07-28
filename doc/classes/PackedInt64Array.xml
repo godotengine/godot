@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedInt64Array" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of 64-bit integers.
+		A packed array of 64-bit integers.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold 64-bit integer values. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 64-bit integer values. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type stores signed 64-bit integers, which means it can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around. If you only need to pack 32-bit integers tightly, see [PackedInt32Array] for a more memory-friendly alternative.
 	</description>
 	<tutorials>
@@ -55,6 +55,13 @@
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<description>
+				Returns the number of times an element is in the array.
+			</description>
+		</method>
 		<method name="duplicate">
 			<return type="PackedInt64Array" />
 			<description>
@@ -66,6 +73,14 @@
 			<argument index="0" name="value" type="int" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -116,6 +131,14 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+			</description>
+		</method>
 		<method name="set">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
@@ -157,11 +180,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="PackedInt64Array" />
 			<description>
 			</description>
@@ -169,11 +187,6 @@
 		<operator name="operator +">
 			<return type="PackedInt64Array" />
 			<argument index="0" name="right" type="PackedInt64Array" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>

@@ -104,6 +104,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_display_cutouts" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
+				[b]Note:[/b] Currently only implemented on Android. Other platforms will return an empty array even if they do have display cutouts or notches.
+			</description>
+		</method>
+		<method name="get_display_safe_area" qualifiers="const">
+			<return type="Rect2i" />
+			<description>
+				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
+			</description>
+		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -136,7 +149,74 @@
 			<argument index="1" name="label" type="String" />
 			<argument index="2" name="callback" type="Callable" />
 			<argument index="3" name="tag" type="Variant" default="null" />
+			<argument index="4" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="5" name="index" type="int" default="-1" />
 			<description>
+				Adds a new checkable item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_icon_check_item">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="icon" type="Texture2D" />
+			<argument index="2" name="label" type="String" />
+			<argument index="3" name="callback" type="Callable" />
+			<argument index="4" name="tag" type="Variant" default="null" />
+			<argument index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="6" name="index" type="int" default="-1" />
+			<description>
+				Adds a new checkable item with text [code]label[/code] and icon [code]icon[/code] to the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_icon_item">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="icon" type="Texture2D" />
+			<argument index="2" name="label" type="String" />
+			<argument index="3" name="callback" type="Callable" />
+			<argument index="4" name="tag" type="Variant" default="null" />
+			<argument index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="6" name="index" type="int" default="-1" />
+			<description>
+				Adds a new item with text [code]label[/code] and icon [code]icon[/code] to the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_icon_radio_check_item">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="icon" type="Texture2D" />
+			<argument index="2" name="label" type="String" />
+			<argument index="3" name="callback" type="Callable" />
+			<argument index="4" name="tag" type="Variant" default="null" />
+			<argument index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="6" name="index" type="int" default="-1" />
+			<description>
+				Adds a new radio-checkable item with text [code]label[/code] and icon [code]icon[/code] to the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_item">
@@ -145,13 +225,70 @@
 			<argument index="1" name="label" type="String" />
 			<argument index="2" name="callback" type="Callable" />
 			<argument index="3" name="tag" type="Variant" default="null" />
+			<argument index="4" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="5" name="index" type="int" default="-1" />
 			<description>
+				Adds a new item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_multistate_item">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="labe" type="String" />
+			<argument index="2" name="max_states" type="int" />
+			<argument index="3" name="default_state" type="int" />
+			<argument index="4" name="callback" type="Callable" />
+			<argument index="5" name="tag" type="Variant" default="null" />
+			<argument index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="7" name="index" type="int" default="-1" />
+			<description>
+				Adds a new item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [code]max_states[/code]. Each press or activate of the item will increase the state by one. The default value is defined by [code]default_state[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_radio_check_item">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="callback" type="Callable" />
+			<argument index="3" name="tag" type="Variant" default="null" />
+			<argument index="4" name="accelerator" type="int" enum="Key" default="0" />
+			<argument index="5" name="index" type="int" default="-1" />
+			<description>
+				Adds a new radio-checkable item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_separator">
 			<return type="void" />
 			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="index" type="int" default="-1" />
 			<description>
+				Adds a separator between items to the global menu with ID [code]menu_root[/code]. Separators also occupy an index.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_submenu_item">
@@ -159,41 +296,127 @@
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="label" type="String" />
 			<argument index="2" name="submenu" type="String" />
+			<argument index="3" name="index" type="int" default="-1" />
 			<description>
+				Adds an item that will act as a submenu of the global menu [code]menu_root[/code]. The [code]submenu[/code] argument is the ID of the global menu root that will be shown when the item is clicked.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_clear">
 			<return type="void" />
 			<argument index="0" name="menu_root" type="String" />
 			<description>
+				Removes all items from the global menu with ID [code]menu_root[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu IDs:[/b]
+				[codeblock]
+				"" - Main menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_get_item_callback">
+		<method name="global_menu_get_item_accelerator" qualifiers="const">
+			<return type="int" enum="Key" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_callback" qualifiers="const">
 			<return type="Callable" />
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Returns the callback of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_submenu">
+		<method name="global_menu_get_item_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns the icon of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_index_from_tag" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="tag" type="Variant" />
+			<description>
+				Returns the index of the item with the specified [code]tag[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_index_from_text" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="text" type="String" />
+			<description>
+				Returns the index of the item with the specified [code]text[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_max_states" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns number of states of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_state" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns the state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_submenu" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Returns the submenu ID of the item at index [code]idx[/code]. See [method global_menu_add_submenu_item] for more info on how to add a submenu.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_tag">
+		<method name="global_menu_get_item_tag" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Returns the metadata of the specified item, which might be of any type. You can set it with [method global_menu_set_item_tag], which provides a simple way of assigning context data to items.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_text">
+		<method name="global_menu_get_item_text" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Returns the text of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_tooltip" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns the tooltip associated with the specified index index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_is_item_checkable" qualifiers="const">
@@ -201,6 +424,8 @@
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is checkable in some way, i.e. if it has a checkbox or radio button.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_is_item_checked" qualifiers="const">
@@ -208,6 +433,28 @@
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is checked.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_is_item_disabled" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled. When it is disabled it can't be selected, or its action invoked.
+				See [method global_menu_set_item_disabled] for more info on how to disable an item.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] has radio button-style checkability.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_remove_item">
@@ -215,6 +462,19 @@
 			<argument index="0" name="menu_root" type="String" />
 			<argument index="1" name="idx" type="int" />
 			<description>
+				Removes the item at index [code]idx[/code] from the global menu [code]menu_root[/code].
+				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_accelerator">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="keycode" type="int" enum="Key" />
+			<description>
+				Sets the accelerator of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_callback">
@@ -223,6 +483,8 @@
 			<argument index="1" name="idx" type="int" />
 			<argument index="2" name="callback" type="Callable" />
 			<description>
+				Sets the callback of the item at index [code]idx[/code]. Callback is emitted when an item is pressed or its accelerator is activated.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_checkable">
@@ -231,6 +493,8 @@
 			<argument index="1" name="idx" type="int" />
 			<argument index="2" name="checkable" type="bool" />
 			<description>
+				Sets whether the item at index [code]idx[/code] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_checked">
@@ -239,6 +503,60 @@
 			<argument index="1" name="idx" type="int" />
 			<argument index="2" name="checked" type="bool" />
 			<description>
+				Sets the checkstate status of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_disabled">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="disabled" type="bool" />
+			<description>
+				Enables/disables the item at index [code]idx[/code]. When it is disabled, it can't be selected and its action can't be invoked.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_icon">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="icon" type="Texture2D" />
+			<description>
+				Replaces the [Texture2D] icon of the specified [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Note:[/b] This method is not supported by macOS "_dock" menu items.
+			</description>
+		</method>
+		<method name="global_menu_set_item_max_states">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="max_states" type="int" />
+			<description>
+				Sets number of state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_radio_checkable">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="checkable" type="bool" />
+			<description>
+				Sets the type of the item at the specified index [code]idx[/code] to radio button. If [code]false[/code], sets the type of the item to plain text
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_state">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="state" type="int" />
+			<description>
+				Sets the state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_submenu">
@@ -247,6 +565,8 @@
 			<argument index="1" name="idx" type="int" />
 			<argument index="2" name="submenu" type="String" />
 			<description>
+				Sets the submenu of the item at index [code]idx[/code]. The submenu is the ID of a global menu root that would be shown when the item is clicked.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_tag">
@@ -255,6 +575,8 @@
 			<argument index="1" name="idx" type="int" />
 			<argument index="2" name="tag" type="Variant" />
 			<description>
+				Sets the metadata of an item, which may be of any type. You can later get it with [method global_menu_get_item_tag], which provides a simple way of assigning context data to items.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_text">
@@ -263,6 +585,18 @@
 			<argument index="1" name="idx" type="int" />
 			<argument index="2" name="text" type="String" />
 			<description>
+				Sets the text of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_tooltip">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="tooltip" type="String" />
+			<description>
+				Sets the [String] tooltip of the item at the specified index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -347,13 +681,6 @@
 			<return type="void" />
 			<argument index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode" />
 			<description>
-			</description>
-		</method>
-		<method name="mouse_warp_to_position">
-			<return type="void" />
-			<argument index="0" name="position" type="Vector2i" />
-			<description>
-				Sets the mouse cursor position to the given [code]position[/code].
 			</description>
 		</method>
 		<method name="process_events">
@@ -500,6 +827,93 @@
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
+		<method name="tts_get_voices" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] of voice information dictionaries.
+				Each [Dictionary] contains two [String] entries:
+				- [code]name[/code] is voice name.
+				- [code]id[/code] is voice identifier.
+				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_get_voices_for_language" qualifiers="const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="language" type="String" />
+			<description>
+				Returns an [PackedStringArray] of voice identifiers for the [code]language[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_is_paused" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the synthesizer is in a paused state.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_is_speaking" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the synthesizer is generating speech, or have utterance waiting in the queue.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_pause">
+			<return type="void" />
+			<description>
+				Puts the synthesizer into a paused state.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_resume">
+			<return type="void" />
+			<description>
+				Resumes the synthesizer if it was paused.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_set_utterance_callback">
+			<return type="void" />
+			<argument index="0" name="event" type="int" enum="DisplayServer.TTSUtteranceEvent" />
+			<argument index="1" name="callable" type="Callable" />
+			<description>
+				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
+				- [code]TTS_UTTERANCE_STARTED[/code], [code]TTS_UTTERANCE_ENDED[/code], and [code]TTS_UTTERANCE_CANCELED[/code] callable's method should take one [int] parameter, the utterance id.
+				- [code]TTS_UTTERANCE_BOUNDARY[/code] callable's method should take two [int] parameters, the index of the character and the utterance id.
+				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_speak">
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<argument index="1" name="voice" type="String" />
+			<argument index="2" name="volume" type="int" default="50" />
+			<argument index="3" name="pitch" type="float" default="1.0" />
+			<argument index="4" name="rate" type="float" default="1.0" />
+			<argument index="5" name="utterance_id" type="int" default="0" />
+			<argument index="6" name="interrupt" type="bool" default="false" />
+			<description>
+				Adds an utterance to the queue. If [code]interrupt[/code] is [code]true[/code], the queue is cleared first.
+				- [code]voice[/code] identifier is one of the [code]"id"[/code] values returned by [method tts_get_voices] or one of the values returned by [method tts_get_voices_for_language].
+				- [code]volume[/code] ranges from [code]0[/code] (lowest) to [code]100[/code] (highest).
+				- [code]pitch[/code] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
+				- [code]rate[/code] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
+				- [code]utterance_id[/code] is passed as a parameter to the callback functions.
+				[b]Note:[/b] On Windows and Linux, utterance [code]text[/code] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
+				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_stop">
+			<return type="void" />
+			<description>
+				Stops synthesis in progress and removes all utterances from the queue.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -529,6 +943,13 @@
 				[code]cursor_start[/code] can optionally define the current text cursor position if [code]cursor_end[/code] is not set.
 				[code]cursor_start[/code] and [code]cursor_end[/code] can optionally define the current text selection.
 				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
+			</description>
+		</method>
+		<method name="warp_mouse">
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2i" />
+			<description>
+				Sets the mouse cursor position to the given [code]position[/code] relative to an origin at the upper left corner of the currently focused game Window Manager window.
 			</description>
 		</method>
 		<method name="window_attach_instance_id">
@@ -863,6 +1284,9 @@
 		</constant>
 		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18" enum="Feature">
 		</constant>
+		<constant name="FEATURE_TEXT_TO_SPEECH" value="19" enum="Feature">
+			Display server supports text-to-speech. See [code]tts_*[/code] methods.
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -966,7 +1390,7 @@
 			Window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when window is visible. An active popup window will exclusivly receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [constant WINDOW_FLAG_TRANSPARENT] set.
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [constant WINDOW_FLAG_TRANSPARENT] set.
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="6" enum="WindowFlags">
 		</constant>
@@ -1013,6 +1437,18 @@
 			Window view:
 			- MacOS: [code]NSView*[/code] for the window main view.
 			- iOS: [code]UIView*[/code] for the window main view.
+		</constant>
+		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
+			Utterance has begun to be spoken.
+		</constant>
+		<constant name="TTS_UTTERANCE_ENDED" value="1" enum="TTSUtteranceEvent">
+			Utterance was successfully finished.
+		</constant>
+		<constant name="TTS_UTTERANCE_CANCELED" value="2" enum="TTSUtteranceEvent">
+			Utterance was canceled, or TTS service was unable to process it.
+		</constant>
+		<constant name="TTS_UTTERANCE_BOUNDARY" value="3" enum="TTSUtteranceEvent">
+			Utterance reached a word or sentence boundary.
 		</constant>
 	</constants>
 </class>

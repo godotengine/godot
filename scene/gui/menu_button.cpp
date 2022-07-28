@@ -33,10 +33,10 @@
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
-void MenuButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shorcut_context()) {
+	if (!_is_focus_owner_in_shortcut_context()) {
 		return;
 	}
 
@@ -187,7 +187,7 @@ void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button");
 		pi.usage &= ~(!popup->is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
@@ -227,11 +227,12 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
 
-MenuButton::MenuButton() {
+MenuButton::MenuButton(const String &p_text) :
+		Button(p_text) {
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 

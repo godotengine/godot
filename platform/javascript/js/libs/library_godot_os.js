@@ -305,7 +305,9 @@ const GodotOS = {
 
 	godot_js_os_hw_concurrency_get__sig: 'i',
 	godot_js_os_hw_concurrency_get: function () {
-		return navigator.hardwareConcurrency || 1;
+		// TODO Godot core needs fixing to avoid spawning too many threads (> 24).
+		const concurrency = navigator.hardwareConcurrency || 1;
+		return concurrency < 2 ? concurrency : 2;
 	},
 
 	godot_js_os_download_buffer__sig: 'viiii',

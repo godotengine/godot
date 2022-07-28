@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SOFT_DYNAMIC_BODY_H
-#define SOFT_DYNAMIC_BODY_H
+#ifndef SOFT_DYNAMIC_BODY_3D_H
+#define SOFT_DYNAMIC_BODY_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
 class SoftDynamicBody3D;
 
-class SoftDynamicBodyRenderingServerHandler : public RenderingServerHandler {
+class SoftDynamicBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
 	friend class SoftDynamicBody3D;
 
 	RID mesh;
@@ -84,7 +84,7 @@ public:
 	};
 
 private:
-	SoftDynamicBodyRenderingServerHandler rendering_server_handler;
+	SoftDynamicBodyRenderingServerHandler *rendering_server_handler = nullptr;
 
 	RID physics_rid;
 
@@ -199,4 +199,4 @@ private:
 
 VARIANT_ENUM_CAST(SoftDynamicBody3D::DisableMode);
 
-#endif // SOFT_DYNAMIC_BODY_H
+#endif // SOFT_DYNAMIC_BODY_3D_H

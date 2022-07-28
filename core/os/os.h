@@ -54,13 +54,11 @@ class OS {
 	bool _single_window = false;
 	String _local_clipboard;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
-	int _orientation;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
-
-	char *last_error;
+	bool _writing_movie = false;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -70,7 +68,7 @@ class OS {
 	// for the user interface we keep a record of the current display driver
 	// so we can retrieve the rendering drivers available
 	int _display_driver_id = -1;
-	String _current_rendering_driver_name = "";
+	String _current_rendering_driver_name;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -85,11 +83,6 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 
-	enum RenderMainThreadMode {
-		RENDER_MAIN_THREAD_ONLY,
-		RENDER_ANY_THREAD,
-	};
-
 protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
@@ -97,7 +90,6 @@ protected:
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
-	RenderMainThreadMode _render_main_thread_mode = RENDER_ANY_THREAD;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
@@ -128,6 +120,7 @@ public:
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
 	virtual String get_stdin_string(bool p_block = true) = 0;
@@ -140,7 +133,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
 
@@ -149,12 +142,15 @@ public:
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
+	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const { return String(); };
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
@@ -166,6 +162,7 @@ public:
 
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
+	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 
 	bool is_layered_allowed() const { return _allow_layered; }
@@ -260,11 +257,11 @@ public:
 	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
-	RenderMainThreadMode get_render_main_thread_mode() const { return _render_main_thread_mode; }
-	void set_render_main_thread_mode(RenderMainThreadMode p_thread_mode) { _render_main_thread_mode = p_thread_mode; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
+
+	virtual uint64_t get_embedded_pck_offset() const;
 
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;

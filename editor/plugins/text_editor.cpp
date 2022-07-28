@@ -43,11 +43,11 @@ void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlight
 void TextEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
 
-	Map<String, Ref<EditorSyntaxHighlighter>>::Element *el = highlighters.front();
-	while (el != nullptr) {
-		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key());
-		highlighter_menu->set_item_checked(highlighter_index, el->value() == p_highlighter);
-		el = el->next();
+	HashMap<String, Ref<EditorSyntaxHighlighter>>::Iterator el = highlighters.begin();
+	while (el) {
+		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key);
+		highlighter_menu->set_item_checked(highlighter_index, el->value == p_highlighter);
+		++el;
 	}
 
 	CodeEdit *te = code_editor->get_text_editor();
@@ -89,11 +89,11 @@ Ref<Texture2D> TextEditor::get_theme_icon() {
 	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
 }
 
-RES TextEditor::get_edited_resource() const {
+Ref<Resource> TextEditor::get_edited_resource() const {
 	return text_file;
 }
 
-void TextEditor::set_edited_resource(const RES &p_res) {
+void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	ERR_FAIL_COND(text_file.is_valid());
 	ERR_FAIL_COND(p_res.is_null());
 
@@ -179,7 +179,7 @@ void TextEditor::_update_bookmark_list() {
 		}
 
 		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
-		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
+		bookmarks_menu->set_item_metadata(-1, bookmark_list[i]);
 	}
 }
 
@@ -412,7 +412,7 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
 
-static ScriptEditorBase *create_editor(const RES &p_resource) {
+static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);
 	}
@@ -524,7 +524,7 @@ TextEditor::TextEditor() {
 	code_editor->add_theme_constant_override("separation", 0);
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditor::_load_theme_settings));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
-	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	code_editor->show_toggle_scripts_button();
 

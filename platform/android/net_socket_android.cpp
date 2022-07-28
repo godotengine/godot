@@ -32,10 +32,10 @@
 
 #include "thread_jandroid.h"
 
-jobject NetSocketAndroid::net_utils = 0;
-jclass NetSocketAndroid::cls = 0;
-jmethodID NetSocketAndroid::_multicast_lock_acquire = 0;
-jmethodID NetSocketAndroid::_multicast_lock_release = 0;
+jobject NetSocketAndroid::net_utils = nullptr;
+jclass NetSocketAndroid::cls = nullptr;
+jmethodID NetSocketAndroid::_multicast_lock_acquire = nullptr;
+jmethodID NetSocketAndroid::_multicast_lock_release = nullptr;
 
 void NetSocketAndroid::setup(jobject p_net_utils) {
 	JNIEnv *env = get_jni_env();

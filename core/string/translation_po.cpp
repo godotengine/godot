@@ -35,7 +35,7 @@
 #ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
 	Error err;
-	FileAccess *file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
 	if (err != OK) {
 		ERR_PRINT("Failed to open translation_map_print_test.txt");
 		return;
@@ -62,7 +62,6 @@ void TranslationPO::print_translation_map() {
 			file->store_line("");
 		}
 	}
-	file->close();
 }
 #endif
 
@@ -71,21 +70,14 @@ Dictionary TranslationPO::_get_messages() const {
 
 	Dictionary d;
 
-	List<StringName> context_l;
-	translation_map.get_key_list(&context_l);
-	for (const StringName &ctx : context_l) {
-		const HashMap<StringName, Vector<StringName>> &id_str_map = translation_map[ctx];
-
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
 		Dictionary d2;
-		List<StringName> id_l;
-		id_str_map.get_key_list(&id_l);
-		// Save list of id and strs associated with a context in a temporary dictionary.
-		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
-			d2[id] = id_str_map[id];
+
+		for (const KeyValue<StringName, Vector<StringName>> &E2 : E.value) {
+			d2[E2.key] = E2.value;
 		}
 
-		d[ctx] = d2;
+		d[E.key] = d2;
 	}
 
 	return d;
@@ -275,31 +267,24 @@ void TranslationPO::get_message_list(List<StringName> *r_messages) const {
 	// OptimizedTranslation uses this function to get the list of msgid.
 	// Return all the keys of translation_map under "" context.
 
-	List<StringName> context_l;
-	translation_map.get_key_list(&context_l);
-
-	for (const StringName &E : context_l) {
-		if (String(E) != "") {
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		if (E.key != StringName()) {
 			continue;
 		}
 
-		List<StringName> msgid_l;
-		translation_map[E].get_key_list(&msgid_l);
-
-		for (List<StringName>::Element *E2 = msgid_l.front(); E2; E2 = E2->next()) {
-			r_messages->push_back(E2->get());
+		for (const KeyValue<StringName, Vector<StringName>> &E2 : E.value) {
+			r_messages->push_back(E2.key);
 		}
 	}
 }
 
 int TranslationPO::get_message_count() const {
-	List<StringName> context_l;
-	translation_map.get_key_list(&context_l);
-
 	int count = 0;
-	for (const StringName &E : context_l) {
-		count += translation_map[E].size();
+
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		count += E.value.size();
 	}
+
 	return count;
 }
 

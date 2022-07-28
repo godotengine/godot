@@ -83,12 +83,12 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		for (const StringName &E : classes) {
 			String name = String(E).replace_first("AnimationNode", "");
-			if (name == "Animation") {
+			if (name == "Animation" || name == "StartState" || name == "EndState") {
 				continue;
 			}
 
 			int idx = menu->get_item_count();
-			menu->add_item(vformat("Add %s", name), idx);
+			menu->add_item(vformat(TTR("Add %s"), name), idx);
 			menu->set_item_metadata(idx, E);
 		}
 
@@ -215,7 +215,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}
 
-	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor);
+	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
 
 	if (blend_space->get_min_space() < 0) {
 		float point = 0.0;
@@ -224,9 +224,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		float x = point;
 
-		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
+		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor, Math::round(EDSCALE));
 		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
-		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
+		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft, Math::round(EDSCALE));
 	}
 
 	if (snap->is_pressed()) {
@@ -240,7 +240,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 				int idx = int(v / blend_space->get_snap());
 
 				if (i > 0 && prev_idx != idx) {
-					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft);
+					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft, Math::round(EDSCALE));
 				}
 
 				prev_idx = idx;
@@ -297,10 +297,10 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		float mind = 5 * EDSCALE;
 		float maxd = 15 * EDSCALE;
-		blend_space_draw->draw_line(gui_point + Vector2(mind, 0), gui_point + Vector2(maxd, 0), color, 2);
-		blend_space_draw->draw_line(gui_point + Vector2(-mind, 0), gui_point + Vector2(-maxd, 0), color, 2);
-		blend_space_draw->draw_line(gui_point + Vector2(0, mind), gui_point + Vector2(0, maxd), color, 2);
-		blend_space_draw->draw_line(gui_point + Vector2(0, -mind), gui_point + Vector2(0, -maxd), color, 2);
+		blend_space_draw->draw_line(gui_point + Vector2(mind, 0), gui_point + Vector2(maxd, 0), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(gui_point + Vector2(-mind, 0), gui_point + Vector2(-maxd, 0), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(gui_point + Vector2(0, mind), gui_point + Vector2(0, maxd), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(gui_point + Vector2(0, -mind), gui_point + Vector2(0, -maxd), color, Math::round(2 * EDSCALE));
 	}
 }
 
@@ -313,6 +313,8 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 
 	max_value->set_value(blend_space->get_max_space());
 	min_value->set_value(blend_space->get_min_space());
+
+	sync->set_pressed(blend_space->is_using_sync());
 
 	label_value->set_text(blend_space->get_value_label());
 
@@ -329,13 +331,15 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	}
 
 	updating = true;
-	undo_redo->create_action(TTR("Change BlendSpace1D Limits"));
+	undo_redo->create_action(TTR("Change BlendSpace1D Config"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", max_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", min_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_snap", snap_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
+	undo_redo->add_do_method(blend_space.ptr(), "set_use_sync", sync->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -594,7 +598,6 @@ AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nu
 
 AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	singleton = this;
-	updating = false;
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
@@ -650,6 +653,12 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	snap_value->set_min(0.01);
 	snap_value->set_step(0.01);
 	snap_value->set_max(1000);
+
+	top_hb->add_child(memnew(VSeparator));
+	top_hb->add_child(memnew(Label(TTR("Sync:"))));
+	sync = memnew(CheckBox);
+	top_hb->add_child(sync);
+	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
@@ -744,10 +753,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
-
-	selected_point = -1;
-	dragging_selected = false;
-	dragging_selected_attempt = false;
 
 	set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 }

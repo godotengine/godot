@@ -114,7 +114,7 @@ void VideoStreamPlaybackTheora::video_write() {
 }
 
 void VideoStreamPlaybackTheora::clear() {
-	if (!file) {
+	if (file.is_null()) {
 		return;
 	}
 
@@ -152,10 +152,7 @@ void VideoStreamPlaybackTheora::clear() {
 	theora_eos = false;
 	vorbis_eos = false;
 
-	if (file) {
-		memdelete(file);
-	}
-	file = nullptr;
+	file.unref();
 	playing = false;
 };
 
@@ -165,11 +162,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	th_setup_info *ts = nullptr;
 
 	file_name = p_file;
-	if (file) {
-		memdelete(file);
-	}
 	file = FileAccess::open(p_file, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!file, "Cannot open file '" + p_file + "'.");
+	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_file + "'.");
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = false;
@@ -337,7 +331,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		Ref<Image> img;
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8);
-		texture->create_from_image(img);
+		texture->set_image(img);
 
 	} else {
 		/* tear down the partial theora setup */
@@ -375,7 +369,7 @@ Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 }
 
 void VideoStreamPlaybackTheora::update(float p_delta) {
-	if (!file) {
+	if (file.is_null()) {
 		return;
 	}
 
@@ -506,9 +500,9 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		}
 
 #ifdef THEORA_USE_THREAD_STREAMING
-		if (file && thread_eof && no_theora && theora_eos && ring_buffer.data_left() == 0) {
+		if (file.is_valid() && thread_eof && no_theora && theora_eos && ring_buffer.data_left() == 0) {
 #else
-		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
+		if (file.is_valid() && /*!videobuf_ready && */ no_theora && theora_eos) {
 #endif
 			//printf("video done, stopping\n");
 			stop();
@@ -604,7 +598,7 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
-	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDNative-provided video streams).");
+	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDExtension-provided video streams).");
 }
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -627,7 +621,7 @@ int VideoStreamPlaybackTheora::get_mix_rate() const {
 #ifdef THEORA_USE_THREAD_STREAMING
 
 void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
-	VideoStreamPlaybackTheora *vs = (VideoStreamPlaybackTheora *)ud;
+	VideoStreamPlaybackTheora *vs = static_cast<VideoStreamPlaybackTheora *>(ud);
 
 	while (!vs->thread_exit) {
 		//just fill back the buffer
@@ -664,10 +658,6 @@ VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 	memdelete(thread_sem);
 #endif
 	clear();
-
-	if (file) {
-		memdelete(file);
-	}
 };
 
 void VideoStreamTheora::_bind_methods() {
@@ -679,13 +669,13 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	VideoStreamTheora *stream = memnew(VideoStreamTheora);
@@ -697,8 +687,6 @@ RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_origi
 		*r_error = OK;
 	}
 
-	f->close();
-	memdelete(f);
 	return ogv_stream;
 }
 

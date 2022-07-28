@@ -43,10 +43,10 @@ class Skeleton2DEditor : public Control {
 		MENU_OPTION_MAKE_REST,
 	};
 
-	Skeleton2D *node;
+	Skeleton2D *node = nullptr;
 
-	MenuButton *options;
-	AcceptDialog *err_dialog;
+	MenuButton *options = nullptr;
+	AcceptDialog *err_dialog = nullptr;
 
 	void _menu_option(int p_option);
 
@@ -65,7 +65,7 @@ public:
 class Skeleton2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton2DEditorPlugin, EditorPlugin);
 
-	Skeleton2DEditor *sprite_editor;
+	Skeleton2DEditor *sprite_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "Skeleton2D"; }

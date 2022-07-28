@@ -38,7 +38,6 @@
 
 class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);
-	OBJ_CATEGORY("Main Loop");
 
 	Ref<Script> initialize_script;
 

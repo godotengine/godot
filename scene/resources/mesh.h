@@ -42,11 +42,37 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
 	mutable Vector<Vector3> debug_lines;
 	Size2i lightmap_size_hint;
 
+public:
+	enum PrimitiveType {
+		PRIMITIVE_POINTS = RenderingServer::PRIMITIVE_POINTS,
+		PRIMITIVE_LINES = RenderingServer::PRIMITIVE_LINES,
+		PRIMITIVE_LINE_STRIP = RenderingServer::PRIMITIVE_LINE_STRIP,
+		PRIMITIVE_TRIANGLES = RenderingServer::PRIMITIVE_TRIANGLES,
+		PRIMITIVE_TRIANGLE_STRIP = RenderingServer::PRIMITIVE_TRIANGLE_STRIP,
+		PRIMITIVE_MAX = RenderingServer::PRIMITIVE_MAX,
+	};
+
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL0RC(int, _get_surface_count)
+	GDVIRTUAL1RC(int, _surface_get_array_len, int)
+	GDVIRTUAL1RC(int, _surface_get_array_index_len, int)
+	GDVIRTUAL1RC(Array, _surface_get_arrays, int)
+	GDVIRTUAL1RC(Array, _surface_get_blend_shape_arrays, int)
+	GDVIRTUAL1RC(Dictionary, _surface_get_lods, int)
+	GDVIRTUAL1RC(uint32_t, _surface_get_format, int)
+	GDVIRTUAL1RC(uint32_t, _surface_get_primitive_type, int)
+	GDVIRTUAL2(_surface_set_material, int, Ref<Material>)
+	GDVIRTUAL1RC(Ref<Material>, _surface_get_material, int)
+	GDVIRTUAL0RC(int, _get_blend_shape_count)
+	GDVIRTUAL1RC(StringName, _get_blend_shape_name, int)
+	GDVIRTUAL2(_set_blend_shape_name, int, StringName)
+	GDVIRTUAL0RC(AABB, _get_aabb)
 
 public:
 	enum {
@@ -120,31 +146,25 @@ public:
 
 	};
 
-	enum PrimitiveType {
-		PRIMITIVE_POINTS = RenderingServer::PRIMITIVE_POINTS,
-		PRIMITIVE_LINES = RenderingServer::PRIMITIVE_LINES,
-		PRIMITIVE_LINE_STRIP = RenderingServer::PRIMITIVE_LINE_STRIP,
-		PRIMITIVE_TRIANGLES = RenderingServer::PRIMITIVE_TRIANGLES,
-		PRIMITIVE_TRIANGLE_STRIP = RenderingServer::PRIMITIVE_TRIANGLE_STRIP,
-		PRIMITIVE_MAX = RenderingServer::PRIMITIVE_MAX,
-	};
-
-	virtual int get_surface_count() const = 0;
-	virtual int surface_get_array_len(int p_idx) const = 0;
-	virtual int surface_get_array_index_len(int p_idx) const = 0;
-	virtual Array surface_get_arrays(int p_surface) const = 0;
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
-	virtual Dictionary surface_get_lods(int p_surface) const = 0;
-	virtual uint32_t surface_get_format(int p_idx) const = 0;
-	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
-	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) = 0;
-	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
-	virtual int get_blend_shape_count() const = 0;
-	virtual StringName get_blend_shape_name(int p_index) const = 0;
-	virtual void set_blend_shape_name(int p_index, const StringName &p_name) = 0;
+	virtual int get_surface_count() const;
+	virtual int surface_get_array_len(int p_idx) const;
+	virtual int surface_get_array_index_len(int p_idx) const;
+	virtual Array surface_get_arrays(int p_surface) const;
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const;
+	virtual Dictionary surface_get_lods(int p_surface) const;
+	virtual uint32_t surface_get_format(int p_idx) const;
+	virtual PrimitiveType surface_get_primitive_type(int p_idx) const;
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);
+	virtual Ref<Material> surface_get_material(int p_idx) const;
+	virtual int get_blend_shape_count() const;
+	virtual StringName get_blend_shape_name(int p_index) const;
+	virtual void set_blend_shape_name(int p_index, const StringName &p_name);
+	virtual AABB get_aabb() const;
 
 	Vector<Face3> get_faces() const;
+	Vector<Face3> get_surface_faces(int p_surface) const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
+	Ref<TriangleMesh> generate_surface_triangle_mesh(int p_surface) const;
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
@@ -152,8 +172,6 @@ public:
 	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
-
-	virtual AABB get_aabb() const = 0;
 
 	void set_lightmap_size_hint(const Size2i &p_size);
 	Size2i get_lightmap_size_hint() const;
@@ -313,4 +331,38 @@ VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 
-#endif
+class PlaceholderMesh : public Mesh {
+	GDCLASS(PlaceholderMesh, Mesh);
+
+	RID rid;
+	AABB aabb;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_surface_count() const override { return 0; }
+	virtual int surface_get_array_len(int p_idx) const override { return 0; }
+	virtual int surface_get_array_index_len(int p_idx) const override { return 0; }
+	virtual Array surface_get_arrays(int p_surface) const override { return Array(); }
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const override { return Array(); }
+	virtual Dictionary surface_get_lods(int p_surface) const override { return Dictionary(); }
+	virtual uint32_t surface_get_format(int p_idx) const override { return 0; }
+	virtual PrimitiveType surface_get_primitive_type(int p_idx) const override { return PRIMITIVE_TRIANGLES; }
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override {}
+	virtual Ref<Material> surface_get_material(int p_idx) const override { return Ref<Material>(); }
+	virtual int get_blend_shape_count() const override { return 0; }
+	virtual StringName get_blend_shape_name(int p_index) const override { return StringName(); }
+	virtual void set_blend_shape_name(int p_index, const StringName &p_name) override {}
+	virtual RID get_rid() const override { return rid; }
+	virtual AABB get_aabb() const override { return aabb; }
+	void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
+
+	virtual int get_builtin_bind_pose_count() const override { return 0; }
+	virtual Transform3D get_builtin_bind_pose(int p_index) const override { return Transform3D(); }
+
+	PlaceholderMesh();
+	~PlaceholderMesh();
+};
+
+#endif // MESH_H

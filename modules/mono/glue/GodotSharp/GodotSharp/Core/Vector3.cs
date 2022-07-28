@@ -96,6 +96,16 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Helper method for deconstruction into a tuple.
+        /// </summary>
+        public void Deconstruct(out real_t x, out real_t y, out real_t z)
+        {
+            x = this.x;
+            y = this.y;
+            z = this.z;
+        }
+
         internal void Normalize()
         {
             real_t lengthsq = LengthSquared();
@@ -201,6 +211,27 @@ namespace Godot
                 Mathf.CubicInterpolate(y, b.y, preA.y, postB.y, weight),
                 Mathf.CubicInterpolate(z, b.z, preA.z, postB.z, weight)
             );
+        }
+
+        /// <summary>
+        /// Returns the point at the given <paramref name="t"/> on a one-dimensional Bezier curve defined by this vector
+        /// and the given <paramref name="control1"/>, <paramref name="control2"/> and <paramref name="end"/> points.
+        /// </summary>
+        /// <param name="control1">Control point that defines the bezier curve.</param>
+        /// <param name="control2">Control point that defines the bezier curve.</param>
+        /// <param name="end">The destination vector.</param>
+        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The interpolated vector.</returns>
+        public Vector3 BezierInterpolate(Vector3 control1, Vector3 control2, Vector3 end, real_t t)
+        {
+            // Formula from Wikipedia article on Bezier curves
+            real_t omt = 1 - t;
+            real_t omt2 = omt * omt;
+            real_t omt3 = omt2 * omt;
+            real_t t2 = t * t;
+            real_t t3 = t2 * t;
+
+            return this * omt3 + control1 * omt2 * t * 3 + control2 * omt * t2 * 3 + end * t3;
         }
 
         /// <summary>
@@ -478,11 +509,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates this vector around a given <paramref name="axis"/> vector by <paramref name="phi"/> radians.
+        /// Rotates this vector around a given <paramref name="axis"/> vector by <paramref name="angle"/> (in radians).
         /// The <paramref name="axis"/> vector must be a normalized vector.
         /// </summary>
         /// <param name="axis">The vector to rotate around. Must be normalized.</param>
-        /// <param name="phi">The angle to rotate by, in radians.</param>
+        /// <param name="angle">The angle to rotate by, in radians.</param>
         /// <returns>The rotated vector.</returns>
         public Vector3 Rotated(Vector3 axis, real_t phi)
         {
@@ -541,8 +572,9 @@ namespace Godot
         /// Returns the result of the spherical linear interpolation between
         /// this vector and <paramref name="to"/> by amount <paramref name="weight"/>.
         ///
-        /// This method also handles interpolating the lengths if the input vectors have different lengths.
-        /// For the special case of one or both input vectors having zero length, this method behaves like [method lerp].
+        /// This method also handles interpolating the lengths if the input vectors
+        /// have different lengths. For the special case of one or both input vectors
+        /// having zero length, this method behaves like <see cref="Lerp"/>.
         /// </summary>
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
@@ -551,9 +583,10 @@ namespace Godot
         {
             real_t startLengthSquared = LengthSquared();
             real_t endLengthSquared = to.LengthSquared();
-            if (startLengthSquared == 0.0 || endLengthSquared == 0.0) {
-              // Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
-              return Lerp(to, weight);
+            if (startLengthSquared == 0.0 || endLengthSquared == 0.0)
+            {
+                // Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+                return Lerp(to, weight);
             }
             real_t startLength = Mathf.Sqrt(startLengthSquared);
             real_t resultLength = Mathf.Lerp(startLength, Mathf.Sqrt(endLengthSquared), weight);

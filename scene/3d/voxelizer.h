@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VOXEL_LIGHT_BAKER_H
-#define VOXEL_LIGHT_BAKER_H
+#ifndef VOXELIZER_H
+#define VOXELIZER_H
 
 #include "scene/resources/multimesh.h"
 
@@ -86,7 +86,7 @@ private:
 		Vector<Color> emission;
 	};
 
-	Map<Ref<Material>, MaterialCache> material_cache;
+	HashMap<Ref<Material>, MaterialCache> material_cache;
 	AABB original_bounds;
 	AABB po2_bounds;
 	int axis_cell_size[3] = {};
@@ -129,4 +129,4 @@ public:
 	Voxelizer();
 };
 
-#endif // VOXEL_LIGHT_BAKER_H
+#endif // VOXELIZER_H

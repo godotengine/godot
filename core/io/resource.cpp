@@ -52,41 +52,36 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
+	if (p_path.is_empty()) {
+		p_take_over = false; // Can't take over an empty path
+	}
+
+	ResourceCache::lock.lock();
+
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.write_unlock();
 	}
 
 	path_cache = "";
 
-	ResourceCache::lock.read_lock();
-	bool has_path = ResourceCache::resources.has(p_path);
-	ResourceCache::lock.read_unlock();
+	Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (has_path) {
+	if (existing.is_valid()) {
 		if (p_take_over) {
-			ResourceCache::lock.write_lock();
-			Resource **res = ResourceCache::resources.getptr(p_path);
-			if (res) {
-				(*res)->set_name("");
-			}
-			ResourceCache::lock.write_unlock();
+			existing->path_cache = String();
+			ResourceCache::resources.erase(p_path);
 		} else {
-			ResourceCache::lock.read_lock();
-			bool exists = ResourceCache::resources.has(p_path);
-			ResourceCache::lock.read_unlock();
-
-			ERR_FAIL_COND_MSG(exists, "Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			ResourceCache::lock.unlock();
+			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
 		}
 	}
+
 	path_cache = p_path;
 
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
-		ResourceCache::lock.write_unlock();
 	}
+	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -100,14 +95,14 @@ String Resource::generate_scene_unique_id() {
 	// If it's not unique it does not matter because the saver will try again.
 	OS::Date date = OS::get_singleton()->get_date();
 	OS::Time time = OS::get_singleton()->get_time();
-	uint32_t hash = hash_djb2_one_32(OS::get_singleton()->get_ticks_usec());
-	hash = hash_djb2_one_32(date.year, hash);
-	hash = hash_djb2_one_32(date.month, hash);
-	hash = hash_djb2_one_32(date.day, hash);
-	hash = hash_djb2_one_32(time.hour, hash);
-	hash = hash_djb2_one_32(time.minute, hash);
-	hash = hash_djb2_one_32(time.second, hash);
-	hash = hash_djb2_one_32(Math::rand(), hash);
+	uint32_t hash = hash_murmur3_one_32(OS::get_singleton()->get_ticks_usec());
+	hash = hash_murmur3_one_32(date.year, hash);
+	hash = hash_murmur3_one_32(date.month, hash);
+	hash = hash_murmur3_one_32(date.day, hash);
+	hash = hash_murmur3_one_32(time.hour, hash);
+	hash = hash_murmur3_one_32(time.minute, hash);
+	hash = hash_murmur3_one_32(time.second, hash);
+	hash = hash_murmur3_one_32(Math::rand(), hash);
 
 	static constexpr uint32_t characters = 5;
 	static constexpr uint32_t char_count = ('z' - 'a');
@@ -193,7 +188,7 @@ void Resource::reload_from_file() {
 	copy_from(s);
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -208,13 +203,13 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 		}
 		Variant p = get(E.name);
 		if (p.get_type() == Variant::OBJECT) {
-			RES sr = p;
+			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
 				if (sr->is_local_to_scene()) {
 					if (remap_cache.has(sr)) {
 						p = remap_cache[sr];
 					} else {
-						RES dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
+						Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
 						p = dupe;
 						remap_cache[sr] = dupe;
 					}
@@ -228,7 +223,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return r;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
+void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -240,7 +235,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 		}
 		Variant p = get(E.name);
 		if (p.get_type() == Variant::OBJECT) {
-			RES sr = p;
+			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
 				if (sr->is_local_to_scene()) {
 					if (!remap_cache.has(sr)) {
@@ -257,7 +252,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = (Resource *)ClassDB::instantiate(get_class());
+	Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(get_class()));
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	for (const PropertyInfo &E : plist) {
@@ -269,7 +264,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
 			r->set(E.name, p.duplicate(p_subresources));
 		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
-			RES sr = p;
+			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
 				r->set(E.name, sr->duplicate(p_subresources));
 			}
@@ -290,6 +285,21 @@ void Resource::_take_over_path(const String &p_path) {
 }
 
 RID Resource::get_rid() const {
+	if (get_script_instance()) {
+		Callable::CallError ce;
+		RID ret = get_script_instance()->callp(SNAME("_get_rid"), nullptr, 0, ce);
+		if (ce.error == Callable::CallError::CALL_OK && ret.is_valid()) {
+			return ret;
+		}
+	}
+	if (_get_extension() && _get_extension()->get_rid) {
+		RID ret;
+		ret.from_uint64(_get_extension()->get_rid(_get_extension_instance()));
+		if (ret.is_valid()) {
+			return ret;
+		}
+	}
+
 	return RID();
 }
 
@@ -302,27 +312,27 @@ void Resource::unregister_owner(Object *p_owner) {
 }
 
 void Resource::notify_change_to_owners() {
-	for (Set<ObjectID>::Element *E = owners.front(); E; E = E->next()) {
-		Object *obj = ObjectDB::get_instance(E->get());
+	for (const ObjectID &E : owners) {
+		Object *obj = ObjectDB::get_instance(E);
 		ERR_CONTINUE_MSG(!obj, "Object was deleted, while still owning a resource."); //wtf
 		//TODO store string
-		obj->call("resource_changed", RES(this));
+		obj->call("resource_changed", Ref<Resource>(this));
 	}
 }
 
 #ifdef TOOLS_ENABLED
 
 uint32_t Resource::hash_edited_version() const {
-	uint32_t hash = hash_djb2_one_32(get_edited_version());
+	uint32_t hash = hash_murmur3_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
 	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			RES res = get(E.name);
+			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
-				hash = hash_djb2_one_32(res->hash_edited_version(), hash);
+				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
 			}
 		}
 	}
@@ -365,7 +375,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.write_lock();
+	ResourceCache::lock.lock();
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
@@ -373,7 +383,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
 
-	ResourceCache::lock.write_unlock();
+	ResourceCache::lock.unlock();
 }
 
 bool Resource::is_translation_remapped() const {
@@ -428,6 +438,11 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
+
+	MethodInfo get_rid_bind("_get_rid");
+	get_rid_bind.return_val.type = Variant::RID;
+
+	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
 }
 
 Resource::Resource() :
@@ -435,9 +450,9 @@ Resource::Resource() :
 
 Resource::~Resource() {
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.write_lock();
+		ResourceCache::lock.lock();
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.write_unlock();
+		ResourceCache::lock.unlock();
 	}
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned.");
@@ -449,7 +464,7 @@ HashMap<String, Resource *> ResourceCache::resources;
 HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
 
-RWLock ResourceCache::lock;
+Mutex ResourceCache::lock;
 #ifdef TOOLS_ENABLED
 RWLock ResourceCache::path_cache_lock;
 #endif
@@ -458,10 +473,8 @@ void ResourceCache::clear() {
 	if (resources.size()) {
 		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			const String *K = nullptr;
-			while ((K = resources.next(K))) {
-				Resource *r = resources[*K];
-				print_line(vformat("Resource still in use: %s (%s)", *K, r->get_class()));
+			for (const KeyValue<String, Resource *> &E : resources) {
+				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class()));
 			}
 		}
 	}
@@ -473,60 +486,78 @@ void ResourceCache::reload_externals() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.read_lock();
-	bool b = resources.has(p_path);
-	lock.read_unlock();
-
-	return b;
-}
-
-Resource *ResourceCache::get(const String &p_path) {
-	lock.read_lock();
+	lock.lock();
 
 	Resource **res = resources.getptr(p_path);
 
-	lock.read_unlock();
-
-	if (!res) {
-		return nullptr;
+	if (res && (*res)->reference_get_count() == 0) {
+		// This resource is in the process of being deleted, ignore its existence.
+		(*res)->path_cache = String();
+		resources.erase(p_path);
+		res = nullptr;
 	}
 
-	return *res;
+	lock.unlock();
+
+	if (!res) {
+		return false;
+	}
+
+	return true;
+}
+
+Ref<Resource> ResourceCache::get_ref(const String &p_path) {
+	Ref<Resource> ref;
+	lock.lock();
+
+	Resource **res = resources.getptr(p_path);
+
+	if (res) {
+		ref = Ref<Resource>(*res);
+	}
+
+	if (res && !ref.is_valid()) {
+		// This resource is in the process of being deleted, ignore its existence
+		(*res)->path_cache = String();
+		resources.erase(p_path);
+		res = nullptr;
+	}
+
+	lock.unlock();
+
+	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.read_lock();
-	const String *K = nullptr;
-	while ((K = resources.next(K))) {
-		Resource *r = resources[*K];
-		p_resources->push_back(Ref<Resource>(r));
+	lock.lock();
+	for (KeyValue<String, Resource *> &E : resources) {
+		p_resources->push_back(Ref<Resource>(E.value));
 	}
-	lock.read_unlock();
+	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.read_lock();
+	lock.lock();
 	int rc = resources.size();
-	lock.read_unlock();
+	lock.unlock();
 
 	return rc;
 }
 
 void ResourceCache::dump(const char *p_file, bool p_short) {
 #ifdef DEBUG_ENABLED
-	lock.read_lock();
+	lock.lock();
 
-	Map<String, int> type_count;
+	HashMap<String, int> type_count;
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	if (p_file) {
 		f = FileAccess::open(String::utf8(p_file), FileAccess::WRITE);
-		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String::utf8(p_file) + "'.");
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file at path '" + String::utf8(p_file) + "'.");
 	}
 
-	const String *K = nullptr;
-	while ((K = resources.next(K))) {
-		Resource *r = resources[*K];
+	for (KeyValue<String, Resource *> &E : resources) {
+		Resource *r = E.value;
 
 		if (!type_count.has(r->get_class())) {
 			type_count[r->get_class()] = 0;
@@ -535,23 +566,19 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		type_count[r->get_class()]++;
 
 		if (!p_short) {
-			if (f) {
+			if (f.is_valid()) {
 				f->store_line(r->get_class() + ": " + r->get_path());
 			}
 		}
 	}
 
 	for (const KeyValue<String, int> &E : type_count) {
-		if (f) {
+		if (f.is_valid()) {
 			f->store_line(E.key + " count: " + itos(E.value));
 		}
 	}
-	if (f) {
-		f->close();
-		memdelete(f);
-	}
 
-	lock.read_unlock();
+	lock.unlock();
 #else
 	WARN_PRINT("ResourceCache::dump only with in debug builds.");
 #endif

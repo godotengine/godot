@@ -8,6 +8,7 @@
 		Soft clipping starts to reduce the peaks a little below the threshold level and progressively increases its effect as the input level increases such that the threshold is never exceeded.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<members>
 		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db" default="-0.1">

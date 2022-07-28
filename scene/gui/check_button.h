@@ -42,7 +42,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	CheckButton();
+	CheckButton(const String &p_text = String());
 	~CheckButton();
 };
 

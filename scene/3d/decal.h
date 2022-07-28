@@ -57,8 +57,8 @@ private:
 	real_t upper_fade = 0.3;
 	real_t lower_fade = 0.3;
 	bool distance_fade_enabled = false;
-	real_t distance_fade_begin = 10.0;
-	real_t distance_fade_length = 1.0;
+	real_t distance_fade_begin = 40.0;
+	real_t distance_fade_length = 10.0;
 
 protected:
 	static void _bind_methods();
@@ -104,7 +104,6 @@ public:
 	uint32_t get_cull_mask() const;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	Decal();
 	~Decal();

@@ -81,6 +81,9 @@ private:
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
 
+	float panning_strength = 1.0f;
+	float cached_global_panning_strength = 1.0f;
+
 protected:
 	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
@@ -123,10 +126,13 @@ public:
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;
 
+	void set_panning_strength(float p_panning_strength);
+	float get_panning_strength() const;
+
 	Ref<AudioStreamPlayback> get_stream_playback();
 
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();
 };
 
-#endif
+#endif // AUDIO_STREAM_PLAYER_2D_H

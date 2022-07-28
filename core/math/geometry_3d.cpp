@@ -36,7 +36,7 @@
 #include "thirdparty/misc/polypartition.h"
 
 void Geometry3D::MeshData::optimize_vertices() {
-	Map<int, int> vtx_remap;
+	HashMap<int, int> vtx_remap;
 
 	for (int i = 0; i < faces.size(); i++) {
 		for (int j = 0; j < faces[i].indices.size(); j++) {
@@ -904,8 +904,8 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
 	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
-	int *v = (int *)&(d[n]);
-	float *z = (float *)&v[n];
+	int *v = reinterpret_cast<int *>(&(d[n]));
+	float *z = reinterpret_cast<float *>(&v[n]);
 
 	int k = 0;
 	v[0] = 0;

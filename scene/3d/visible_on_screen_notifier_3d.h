@@ -57,8 +57,6 @@ public:
 	virtual AABB get_aabb() const override;
 	bool is_on_screen() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
-
 	VisibleOnScreenNotifier3D();
 	~VisibleOnScreenNotifier3D();
 };
@@ -98,4 +96,4 @@ public:
 
 VARIANT_ENUM_CAST(VisibleOnScreenEnabler3D::EnableMode);
 
-#endif // VISIBILITY_NOTIFIER_H
+#endif // VISIBLE_ON_SCREEN_NOTIFIER_3D_H

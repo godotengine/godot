@@ -81,14 +81,14 @@ bool Bone2D::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void Bone2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "auto_calculate_length_and_angle", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("auto_calculate_length_and_angle"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	if (!autocalculate_length_and_angle) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1, 1024, 1", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "bone_angle", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("length"), PROPERTY_HINT_RANGE, "1, 1024, 1", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("bone_angle"), PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
 	}
 
 #ifdef TOOLS_ENABLED
-	p_list->push_back(PropertyInfo(Variant::BOOL, "editor_settings/show_bone_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("editor_settings/show_bone_gizmo"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 #endif // TOOLS_ENABLED
 }
 
@@ -390,7 +390,7 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_angle", "angle"), &Bone2D::set_bone_angle);
 	ClassDB::bind_method(D_METHOD("get_bone_angle"), &Bone2D::get_bone_angle);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest"), "set_rest", "get_rest");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest", PROPERTY_HINT_NONE, "suffix:px"), "set_rest", "get_rest");
 }
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
@@ -438,14 +438,14 @@ TypedArray<String> Bone2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 	if (!skeleton) {
 		if (parent_bone) {
-			warnings.push_back(TTR("This Bone2D chain should end at a Skeleton2D node."));
+			warnings.push_back(RTR("This Bone2D chain should end at a Skeleton2D node."));
 		} else {
-			warnings.push_back(TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node."));
+			warnings.push_back(RTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node."));
 		}
 	}
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
-		warnings.push_back(TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."));
+		warnings.push_back(RTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."));
 	}
 
 	return warnings;
@@ -560,7 +560,7 @@ bool Skeleton2D::_get(const StringName &p_path, Variant &r_ret) const {
 
 void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(
-			PropertyInfo(Variant::OBJECT, "modification_stack",
+			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack2D",
 					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));

@@ -680,7 +680,7 @@ void AudioDriverWASAPI::write_sample(WORD format_tag, int bits_per_sample, BYTE 
 }
 
 void AudioDriverWASAPI::thread_func(void *p_udata) {
-	AudioDriverWASAPI *ad = (AudioDriverWASAPI *)p_udata;
+	AudioDriverWASAPI *ad = static_cast<AudioDriverWASAPI *>(p_udata);
 	uint32_t avail_frames = 0;
 	uint32_t write_ofs = 0;
 

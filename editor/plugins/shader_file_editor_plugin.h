@@ -48,10 +48,10 @@ class ShaderFileEditor : public PanelContainer {
 
 	Ref<RDShaderFile> shader_file;
 
-	HBoxContainer *stage_hb;
-	ItemList *versions;
+	HBoxContainer *stage_hb = nullptr;
+	ItemList *versions = nullptr;
 	Button *stages[RD::SHADER_STAGE_MAX];
-	RichTextLabel *error_text;
+	RichTextLabel *error_text = nullptr;
 
 	void _update_version(const StringName &p_version_txt, const RenderingDevice::ShaderStage p_stage);
 	void _version_selected(int p_stage);
@@ -74,8 +74,8 @@ public:
 class ShaderFileEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderFileEditorPlugin, EditorPlugin);
 
-	ShaderFileEditor *shader_editor;
-	Button *button;
+	ShaderFileEditor *shader_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "ShaderFile"; }

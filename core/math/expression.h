@@ -85,6 +85,7 @@ private:
 		TK_OP_MUL,
 		TK_OP_DIV,
 		TK_OP_MOD,
+		TK_OP_POW,
 		TK_OP_SHIFT_LEFT,
 		TK_OP_SHIFT_RIGHT,
 		TK_OP_BIT_AND,
@@ -147,7 +148,7 @@ private:
 		bool is_op = false;
 		union {
 			Variant::Operator op;
-			ENode *node;
+			ENode *node = nullptr;
 		};
 	};
 
@@ -256,14 +257,14 @@ private:
 	Vector<String> input_names;
 
 	bool execution_error = false;
-	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str);
+	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str);
 
 protected:
 	static void _bind_methods();
 
 public:
 	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>());
-	Variant execute(Array p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true);
+	Variant execute(Array p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true, bool p_const_calls_only = false);
 	bool has_execute_failed() const;
 	String get_error_text() const;
 

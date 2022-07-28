@@ -40,37 +40,169 @@
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
+int Mesh::get_surface_count() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_surface_count, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Mesh::surface_get_array_len(int p_idx) const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_array_len, p_idx, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Mesh::surface_get_array_index_len(int p_idx) const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_array_index_len, p_idx, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+Array Mesh::surface_get_arrays(int p_surface) const {
+	Array ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_arrays, p_surface, ret)) {
+		return ret;
+	}
+	return Array();
+}
+
+Array Mesh::surface_get_blend_shape_arrays(int p_surface) const {
+	Array ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_blend_shape_arrays, p_surface, ret)) {
+		return ret;
+	}
+
+	return Array();
+}
+
+Dictionary Mesh::surface_get_lods(int p_surface) const {
+	Dictionary ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_lods, p_surface, ret)) {
+		return ret;
+	}
+
+	return Dictionary();
+}
+
+uint32_t Mesh::surface_get_format(int p_idx) const {
+	uint32_t ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_format, p_idx, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+Mesh::PrimitiveType Mesh::surface_get_primitive_type(int p_idx) const {
+	uint32_t ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_primitive_type, p_idx, ret)) {
+		return (Mesh::PrimitiveType)ret;
+	}
+
+	return PRIMITIVE_MAX;
+}
+
+void Mesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_set_material, p_idx, p_material)) {
+		return;
+	}
+}
+
+Ref<Material> Mesh::surface_get_material(int p_idx) const {
+	Ref<Material> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_material, p_idx, ret)) {
+		return ret;
+	}
+
+	return Ref<Material>();
+}
+
+int Mesh::get_blend_shape_count() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_blend_shape_count, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+StringName Mesh::get_blend_shape_name(int p_index) const {
+	StringName ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_blend_shape_name, p_index, ret)) {
+		return ret;
+	}
+
+	return StringName();
+}
+
+void Mesh::set_blend_shape_name(int p_index, const StringName &p_name) {
+	if (GDVIRTUAL_REQUIRED_CALL(_set_blend_shape_name, p_index, p_name)) {
+		return;
+	}
+}
+
+AABB Mesh::get_aabb() const {
+	AABB ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_aabb, ret)) {
+		return ret;
+	}
+
+	return AABB();
+}
+
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;
 	}
 
-	int facecount = 0;
+	int faces_size = 0;
 
 	for (int i = 0; i < get_surface_count(); i++) {
-		if (surface_get_primitive_type(i) != PRIMITIVE_TRIANGLES) {
-			continue;
-		}
-
-		if (surface_get_format(i) & ARRAY_FORMAT_INDEX) {
-			facecount += surface_get_array_index_len(i);
-		} else {
-			facecount += surface_get_array_len(i);
+		switch (surface_get_primitive_type(i)) {
+			case PRIMITIVE_TRIANGLES: {
+				int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
+				// Don't error if zero, it's valid (we'll just skip it later).
+				ERR_CONTINUE_MSG((len % 3) != 0, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLES).", i, (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
+				faces_size += len;
+			} break;
+			case PRIMITIVE_TRIANGLE_STRIP: {
+				int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
+				// Don't error if zero, it's valid (we'll just skip it later).
+				ERR_CONTINUE_MSG(len != 0 && len < 3, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLE_STRIP).", i, (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
+				faces_size += (len == 0) ? 0 : (len - 2) * 3;
+			} break;
+			default: {
+			} break;
 		}
 	}
 
-	if (facecount == 0 || (facecount % 3) != 0) {
+	if (faces_size == 0) {
 		return triangle_mesh;
 	}
 
 	Vector<Vector3> faces;
-	faces.resize(facecount);
+	faces.resize(faces_size);
+	Vector<int32_t> surface_indices;
+	surface_indices.resize(faces_size / 3);
 	Vector3 *facesw = faces.ptrw();
+	int32_t *surface_indicesw = surface_indices.ptrw();
 
 	int widx = 0;
 
 	for (int i = 0; i < get_surface_count(); i++) {
-		if (surface_get_primitive_type(i) != PRIMITIVE_TRIANGLES) {
+		Mesh::PrimitiveType primitive = surface_get_primitive_type(i);
+		if (primitive != PRIMITIVE_TRIANGLES && primitive != PRIMITIVE_TRIANGLE_STRIP) {
+			continue;
+		}
+		int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
+		if ((primitive == PRIMITIVE_TRIANGLES && (len == 0 || (len % 3) != 0)) || (primitive == PRIMITIVE_TRIANGLE_STRIP && len < 3)) {
+			// Error was already shown, just skip (including zero).
 			continue;
 		}
 
@@ -81,25 +213,107 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		Vector<Vector3> vertices = a[ARRAY_VERTEX];
 		const Vector3 *vr = vertices.ptr();
 
+		int32_t from_index = widx / 3;
+
 		if (surface_get_format(i) & ARRAY_FORMAT_INDEX) {
 			int ic = surface_get_array_index_len(i);
 			Vector<int> indices = a[ARRAY_INDEX];
 			const int *ir = indices.ptr();
 
-			for (int j = 0; j < ic; j++) {
-				int index = ir[j];
-				facesw[widx++] = vr[index];
+			if (primitive == PRIMITIVE_TRIANGLES) {
+				for (int j = 0; j < ic; j++) {
+					int index = ir[j];
+					facesw[widx++] = vr[index];
+				}
+			} else { // PRIMITIVE_TRIANGLE_STRIP
+				for (int j = 2; j < ic; j++) {
+					facesw[widx++] = vr[ir[j - 2]];
+					facesw[widx++] = vr[ir[j - 1]];
+					facesw[widx++] = vr[ir[j]];
+				}
 			}
 
 		} else {
-			for (int j = 0; j < vc; j++) {
-				facesw[widx++] = vr[j];
+			if (primitive == PRIMITIVE_TRIANGLES) {
+				for (int j = 0; j < vc; j++) {
+					facesw[widx++] = vr[j];
+				}
+			} else { // PRIMITIVE_TRIANGLE_STRIP
+				for (int j = 2; j < vc; j++) {
+					facesw[widx++] = vr[j - 2];
+					facesw[widx++] = vr[j - 1];
+					facesw[widx++] = vr[j];
+				}
 			}
+		}
+
+		int32_t to_index = widx / 3;
+
+		for (int j = from_index; j < to_index; j++) {
+			surface_indicesw[j] = i;
 		}
 	}
 
 	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
 	triangle_mesh->create(faces);
+
+	return triangle_mesh;
+}
+
+Ref<TriangleMesh> Mesh::generate_surface_triangle_mesh(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, get_surface_count(), Ref<TriangleMesh>());
+
+	if (surface_triangle_meshes.size() != get_surface_count()) {
+		surface_triangle_meshes.resize(get_surface_count());
+	}
+
+	if (surface_triangle_meshes[p_surface].is_valid()) {
+		return surface_triangle_meshes[p_surface];
+	}
+
+	int facecount = 0;
+
+	if (surface_get_primitive_type(p_surface) != PRIMITIVE_TRIANGLES) {
+		return Ref<TriangleMesh>();
+	}
+
+	if (surface_get_format(p_surface) & ARRAY_FORMAT_INDEX) {
+		facecount += surface_get_array_index_len(p_surface);
+	} else {
+		facecount += surface_get_array_len(p_surface);
+	}
+
+	Vector<Vector3> faces;
+	faces.resize(facecount);
+	Vector3 *facesw = faces.ptrw();
+
+	Array a = surface_get_arrays(p_surface);
+	ERR_FAIL_COND_V(a.is_empty(), Ref<TriangleMesh>());
+
+	int vc = surface_get_array_len(p_surface);
+	Vector<Vector3> vertices = a[ARRAY_VERTEX];
+	const Vector3 *vr = vertices.ptr();
+	int widx = 0;
+
+	if (surface_get_format(p_surface) & ARRAY_FORMAT_INDEX) {
+		int ic = surface_get_array_index_len(p_surface);
+		Vector<int> indices = a[ARRAY_INDEX];
+		const int *ir = indices.ptr();
+
+		for (int j = 0; j < ic; j++) {
+			int index = ir[j];
+			facesw[widx++] = vr[index];
+		}
+
+	} else {
+		for (int j = 0; j < vc; j++) {
+			facesw[widx++] = vr[j];
+		}
+	}
+
+	Ref<TriangleMesh> triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh->create(faces);
+	surface_triangle_meshes.set(p_surface, triangle_mesh);
 
 	return triangle_mesh;
 }
@@ -158,6 +372,14 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 
 Vector<Face3> Mesh::get_faces() const {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
+	if (tm.is_valid()) {
+		return tm->get_faces();
+	}
+	return Vector<Face3>();
+}
+
+Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
+	Ref<TriangleMesh> tm = generate_surface_triangle_mesh(p_surface);
 	if (tm.is_valid()) {
 		return tm->get_faces();
 	}
@@ -339,7 +561,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			has_indices = true;
 		}
 
-		Map<Vector3, Vector3> normal_accum;
+		HashMap<Vector3, Vector3> normal_accum;
 
 		//fill normals with triangle normals
 		for (int i = 0; i < vc; i += 3) {
@@ -358,13 +580,13 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			Vector3 n = Plane(t[0], t[1], t[2]).normal;
 
 			for (int j = 0; j < 3; j++) {
-				Map<Vector3, Vector3>::Element *E = normal_accum.find(t[j]);
+				HashMap<Vector3, Vector3>::Iterator E = normal_accum.find(t[j]);
 				if (!E) {
 					normal_accum[t[j]] = n;
 				} else {
-					float d = n.dot(E->get());
+					float d = n.dot(E->value);
 					if (d < 1.0) {
-						E->get() += n * (1.0 - d);
+						E->value += n * (1.0 - d);
 					}
 					//E->get()+=n;
 				}
@@ -383,10 +605,10 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		for (int i = 0; i < vc2; i++) {
 			Vector3 t = r[i];
 
-			Map<Vector3, Vector3>::Element *E = normal_accum.find(t);
+			HashMap<Vector3, Vector3>::Iterator E = normal_accum.find(t);
 			ERR_CONTINUE(!E);
 
-			t += E->get() * p_margin;
+			t += E->value * p_margin;
 			r[i] = t;
 		}
 
@@ -502,6 +724,21 @@ void Mesh::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
+
+	GDVIRTUAL_BIND(_get_surface_count)
+	GDVIRTUAL_BIND(_surface_get_array_len, "index")
+	GDVIRTUAL_BIND(_surface_get_array_index_len, "index")
+	GDVIRTUAL_BIND(_surface_get_arrays, "index")
+	GDVIRTUAL_BIND(_surface_get_blend_shape_arrays, "index")
+	GDVIRTUAL_BIND(_surface_get_lods, "index")
+	GDVIRTUAL_BIND(_surface_get_format, "index")
+	GDVIRTUAL_BIND(_surface_get_primitive_type, "index")
+	GDVIRTUAL_BIND(_surface_set_material, "index", "material")
+	GDVIRTUAL_BIND(_surface_get_material, "index")
+	GDVIRTUAL_BIND(_get_blend_shape_count)
+	GDVIRTUAL_BIND(_get_blend_shape_name, "index")
+	GDVIRTUAL_BIND(_set_blend_shape_name, "index", "name")
+	GDVIRTUAL_BIND(_get_aabb)
 }
 
 void Mesh::clear_cache() const {
@@ -1696,7 +1933,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 
 	// Keep only the scale
 	Basis basis = p_base_transform.get_basis();
-	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
+	Vector3 scale = Vector3(basis.get_column(0).length(), basis.get_column(1).length(), basis.get_column(2).length());
 
 	Transform3D transform;
 	transform.scale(scale);
@@ -1936,7 +2173,7 @@ void ArrayMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");
 }
 
@@ -1960,4 +2197,18 @@ ArrayMesh::~ArrayMesh() {
 	if (mesh.is_valid()) {
 		RenderingServer::get_singleton()->free(mesh);
 	}
+}
+///////////////
+
+void PlaceholderMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PlaceholderMesh::set_aabb);
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
+}
+
+PlaceholderMesh::PlaceholderMesh() {
+	rid = RS::get_singleton()->mesh_create();
+}
+
+PlaceholderMesh::~PlaceholderMesh() {
+	RS::get_singleton()->free(rid);
 }

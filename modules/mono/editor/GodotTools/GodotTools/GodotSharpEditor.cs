@@ -263,16 +263,16 @@ namespace GodotTools
 
                     var args = new List<string>();
 
-                    bool osxAppBundleInstalled = false;
+                    bool macOSAppBundleInstalled = false;
 
                     if (OS.IsMacOS)
                     {
                         // The package path is '/Applications/Visual Studio Code.app'
                         const string vscodeBundleId = "com.microsoft.VSCode";
 
-                        osxAppBundleInstalled = Internal.IsOsxAppBundleInstalled(vscodeBundleId);
+                        macOSAppBundleInstalled = Internal.IsMacOSAppBundleInstalled(vscodeBundleId);
 
-                        if (osxAppBundleInstalled)
+                        if (macOSAppBundleInstalled)
                         {
                             args.Add("-b");
                             args.Add(vscodeBundleId);
@@ -307,13 +307,13 @@ namespace GodotTools
 
                     if (OS.IsMacOS)
                     {
-                        if (!osxAppBundleInstalled && string.IsNullOrEmpty(_vsCodePath))
+                        if (!macOSAppBundleInstalled && string.IsNullOrEmpty(_vsCodePath))
                         {
                             GD.PushError("Cannot find code editor: VSCode");
                             return Error.FileNotFound;
                         }
 
-                        command = osxAppBundleInstalled ? "/usr/bin/open" : _vsCodePath;
+                        command = macOSAppBundleInstalled ? "/usr/bin/open" : _vsCodePath;
                     }
                     else
                     {

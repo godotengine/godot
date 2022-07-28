@@ -63,13 +63,6 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
-Files: ./modules/fbx/fbx_parser/
-Comment: Open Asset Import Library (FBX parser)
-Copyright: 2006-2020, assimp team
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
-License: BSD-3-clause
-
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
@@ -78,6 +71,11 @@ Files: ./platform/android/java/lib/aidl/com/android/*
 Comment: The Android Open Source Project
 Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
+License: Apache-2.0
+
+Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
 License: Apache-2.0
 
 Files: ./scene/animation/easing_equations.h
@@ -120,6 +118,24 @@ Copyright: 2007, Starbreeze Studios
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil.glsl
+Comment: Intel ASSAO and related files
+Copyright: 2016, Intel Corporation
+License: Expat
+
+Files: ./servers/rendering/renderer_rd/shaders/taa_resolve.glsl
+Comment: Temporal Anti-Aliasing resolve implementation
+Copyright: 2016, Panos Karabelas
+License: Expat
+
 Files: ./thirdparty/amd-fsr/
 Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
@@ -127,13 +143,13 @@ License: Expat
 
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
-Copyright: 2019, Binomial LLC.
+Copyright: 2022, Binomial LLC.
 License: Apache-2.0
 
-Files: ./thirdparty/bullet/
-Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2013, Erwin Coumans
-License: Zlib
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
 
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
@@ -163,27 +179,27 @@ License: Expat
 
 Files: ./thirdparty/etcpak/
 Comment: etcpak
-Copyright: 2013-2021, Bartosz Taudul
+Copyright: 2013-2022, Bartosz Taudul
 License: BSD-3-clause
 
-Files: ./thirdparty/fonts/DroidSans*.ttf
+Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/JetBrainsMono_Regular.ttf
+Files: ./thirdparty/fonts/JetBrainsMono_Regular.woff2
 Comment: JetBrains Mono font
 Copyright: 2020, JetBrains s.r.o.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/NotoSans*.ttf
+Files: ./thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2021, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2022, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glslang/
@@ -310,11 +326,16 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
-Files: ./thirdparty/misc/open-simplex-noise.c
- ./thirdparty/misc/open-simplex-noise.h
-Comment: OpenSimplex Noise
-Copyright: 2014, Stephen M. Cameron
-License: public-domain or Unlicense
+Files: ./thirdparty/misc/ok_color.h
+ ./thirdparty/misc/ok_color_shader.h
+Comment: OK Lab color space
+Copyright: 2021, Björn Ottosson
+License: Expat
+
+Files: ./thirdparty/noise/FastNoiseLite.h
+Comment: FastNoise Lite
+Copyright: 2020, Jordan Peck and contributors
+License: MIT
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
@@ -373,8 +394,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2021, University of Cambridge
- 2009-2021, Zoltan Herczeg
+Copyright: 1997-2022, University of Cambridge
+ 2009-2022, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
@@ -399,7 +420,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2021, Samsung Electronics Co., Ltd.
+Copyright: 2020-2022, Samsung Electronics Co., Ltd.
 License: Expat
 
 Files: ./thirdparty/tinyexr/

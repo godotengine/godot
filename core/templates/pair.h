@@ -31,8 +31,8 @@
 #ifndef PAIR_H
 #define PAIR_H
 
+#include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
-
 template <class F, class S>
 struct Pair {
 	F first;
@@ -66,6 +66,15 @@ struct PairSort {
 			return A.first < B.first;
 		}
 		return A.second < B.second;
+	}
+};
+
+template <class F, class S>
+struct PairHash {
+	static uint32_t hash(const Pair<F, S> &P) {
+		uint64_t h1 = HashMapHasherDefault::hash(P.first);
+		uint64_t h2 = HashMapHasherDefault::hash(P.second);
+		return hash_one_uint64((h1 << 32) | h2);
 	}
 };
 

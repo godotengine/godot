@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIEWPORTCONTAINER_H
-#define VIEWPORTCONTAINER_H
+#ifndef SUBVIEWPORT_CONTAINER_H
+#define SUBVIEWPORT_CONTAINER_H
 
 #include "scene/gui/container.h"
 
@@ -58,7 +58,9 @@ public:
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
+	TypedArray<String> get_configuration_warnings() const override;
+
 	SubViewportContainer();
 };
 
-#endif // VIEWPORTCONTAINER_H
+#endif // SUBVIEWPORT_CONTAINER_H

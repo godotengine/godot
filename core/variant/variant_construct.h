@@ -63,12 +63,15 @@ MAKE_PTRCONSTRUCT(Rect2);
 MAKE_PTRCONSTRUCT(Rect2i);
 MAKE_PTRCONSTRUCT(Vector3);
 MAKE_PTRCONSTRUCT(Vector3i);
+MAKE_PTRCONSTRUCT(Vector4);
+MAKE_PTRCONSTRUCT(Vector4i);
 MAKE_PTRCONSTRUCT(Transform2D);
 MAKE_PTRCONSTRUCT(Plane);
 MAKE_PTRCONSTRUCT(Quaternion);
 MAKE_PTRCONSTRUCT(AABB);
 MAKE_PTRCONSTRUCT(Basis);
 MAKE_PTRCONSTRUCT(Transform3D);
+MAKE_PTRCONSTRUCT(Projection);
 MAKE_PTRCONSTRUCT(Color);
 MAKE_PTRCONSTRUCT(StringName);
 MAKE_PTRCONSTRUCT(NodePath);
@@ -344,7 +347,7 @@ public:
 			return;
 		}
 
-		VariantTypeChanger<Array>::change(&r_ret);
+		r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
@@ -356,7 +359,7 @@ public:
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantTypeChanger<Array>::change(r_ret);
+		*r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
@@ -543,14 +546,12 @@ public:
 class VariantConstructNoArgsObject {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+		r_ret = (Object *)nullptr; // Must construct a TYPE_OBJECT containing nullptr.
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantInternal::clear(r_ret);
-		VariantInternal::object_assign_null(r_ret);
+		*r_ret = (Object *)nullptr; // Must construct a TYPE_OBJECT containing nullptr.
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrConstruct<Object *>::construct(nullptr, base);

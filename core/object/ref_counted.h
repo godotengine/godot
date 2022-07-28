@@ -234,8 +234,6 @@ public:
 	}
 };
 
-typedef Ref<RefCounted> REF;
-
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);
 
@@ -247,7 +245,7 @@ protected:
 public:
 	Variant get_ref() const;
 	void set_obj(Object *p_object);
-	void set_ref(const REF &p_ref);
+	void set_ref(const Ref<RefCounted> &p_ref);
 
 	WeakRef() {}
 };
@@ -261,7 +259,7 @@ struct PtrToArg<Ref<T>> {
 	typedef Ref<T> EncodeT;
 
 	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
-		*(Ref<RefCounted> *)p_ptr = p_val;
+		*(const_cast<Ref<RefCounted> *>(reinterpret_cast<const Ref<RefCounted> *>(p_ptr))) = p_val;
 	}
 };
 

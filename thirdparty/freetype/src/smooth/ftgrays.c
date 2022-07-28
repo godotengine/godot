@@ -4,7 +4,7 @@
  *
  *   A new `perfect' anti-aliasing renderer (body).
  *
- * Copyright (C) 2000-2021 by
+ * Copyright (C) 2000-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -333,7 +333,9 @@ typedef ptrdiff_t  FT_PtrDist;
 #define PIXEL_BITS  8
 
 #define ONE_PIXEL       ( 1 << PIXEL_BITS )
+#undef TRUNC
 #define TRUNC( x )      (TCoord)( (x) >> PIXEL_BITS )
+#undef FRACT
 #define FRACT( x )      (TCoord)( (x) & ( ONE_PIXEL - 1 ) )
 
 #if PIXEL_BITS >= 6
@@ -1905,6 +1907,9 @@ typedef ptrdiff_t  FT_PtrDist;
     0                                        /* delta    */
   )
 
+// -- GODOT start --
+  static volatile int _lto_dummy = 0;
+// -- GODOT end --
 
   static int
   gray_convert_glyph_inner( RAS_ARG,
@@ -1926,6 +1931,9 @@ typedef ptrdiff_t  FT_PtrDist;
                   ras.max_ey,
                   ras.cell_null - ras.cell_free,
                   ras.cell_null - ras.cell_free == 1 ? "" : "s" ));
+// -- GODOT start --
+      _lto_dummy = error; // Prevents LTO from removing this branch.
+// -- GODOT end --
     }
     else
     {
@@ -1933,6 +1941,9 @@ typedef ptrdiff_t  FT_PtrDist;
 
       FT_TRACE7(( "band [%d..%d]: to be bisected\n",
                   ras.min_ey, ras.max_ey ));
+// -- GODOT start --
+      _lto_dummy = error; // Prevents LTO from removing this branch.
+// -- GODOT end --
     }
 
     return error;

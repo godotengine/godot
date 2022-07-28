@@ -125,9 +125,21 @@ def update_version(module_version_string=""):
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
         head = open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8").readline().strip()
         if head.startswith("ref: "):
-            head = os.path.join(gitfolder, head[5:])
+            ref = head[5:]
+            head = os.path.join(gitfolder, ref)
+            packedrefs = os.path.join(gitfolder, "packed-refs")
             if os.path.isfile(head):
                 githash = open(head, "r").readline().strip()
+            elif os.path.isfile(packedrefs):
+                # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
+                # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
+                for line in open(packedrefs, "r").read().splitlines():
+                    if line.startswith("#"):
+                        continue
+                    (line_hash, line_ref) = line.split(" ")
+                    if ref == line_ref:
+                        githash = line_hash
+                        break
         else:
             githash = head
 
@@ -266,25 +278,19 @@ def write_disabled_classes(class_list):
 
 def write_modules(modules):
     includes_cpp = ""
-    preregister_cpp = ""
-    register_cpp = ""
-    unregister_cpp = ""
+    initialize_cpp = ""
+    uninitialize_cpp = ""
 
     for name, path in modules.items():
         try:
             with open(os.path.join(path, "register_types.h")):
                 includes_cpp += '#include "' + path + '/register_types.h"\n'
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_PREREGISTER\n"
-                preregister_cpp += "\tpreregister_" + name + "_types();\n"
-                preregister_cpp += "#endif\n"
-                preregister_cpp += "#endif\n"
-                register_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                register_cpp += "\tregister_" + name + "_types();\n"
-                register_cpp += "#endif\n"
-                unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                unregister_cpp += "\tunregister_" + name + "_types();\n"
-                unregister_cpp += "#endif\n"
+                initialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                initialize_cpp += "\tinitialize_" + name + "_module(p_level);\n"
+                initialize_cpp += "#endif\n"
+                uninitialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                uninitialize_cpp += "\tuninitialize_" + name + "_module(p_level);\n"
+                uninitialize_cpp += "#endif\n"
         except OSError:
             pass
 
@@ -296,22 +302,17 @@ def write_modules(modules):
 
 %s
 
-void preregister_module_types() {
+void initialize_modules(ModuleInitializationLevel p_level) {
 %s
 }
 
-void register_module_types() {
-%s
-}
-
-void unregister_module_types() {
+void uninitialize_modules(ModuleInitializationLevel p_level) {
 %s
 }
 """ % (
         includes_cpp,
-        preregister_cpp,
-        register_cpp,
-        unregister_cpp,
+        initialize_cpp,
+        uninitialize_cpp,
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -844,15 +845,15 @@ def Run(env, function, short_message, subprocess=True):
 
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
-    if platform == "osx":
+    if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
-    elif platform == "iphone":
+    elif platform == "ios":
         sdk_name = "iphoneos"
-        var_name = "IPHONESDK"
-    elif platform == "iphonesimulator":
+        var_name = "IOS_SDK_PATH"
+    elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
-        var_name = "IPHONESDK"
+        var_name = "IOS_SDK_PATH"
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 

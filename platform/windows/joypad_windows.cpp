@@ -250,7 +250,7 @@ void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_
 }
 
 BOOL CALLBACK JoypadWindows::enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context) {
-	JoypadWindows *self = (JoypadWindows *)p_context;
+	JoypadWindows *self = static_cast<JoypadWindows *>(p_context);
 	if (self->is_xinput_device(&p_instance->guidProduct)) {
 		return DIENUM_CONTINUE;
 	}
@@ -258,9 +258,9 @@ BOOL CALLBACK JoypadWindows::enumCallback(const DIDEVICEINSTANCE *p_instance, vo
 	return DIENUM_CONTINUE;
 }
 
-BOOL CALLBACK JoypadWindows::objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context) {
-	JoypadWindows *self = (JoypadWindows *)context;
-	self->setup_joypad_object(instance, self->id_to_change);
+BOOL CALLBACK JoypadWindows::objectsCallback(const DIDEVICEOBJECTINSTANCE *p_instance, void *p_context) {
+	JoypadWindows *self = static_cast<JoypadWindows *>(p_context);
+	self->setup_joypad_object(p_instance, self->id_to_change);
 
 	return DIENUM_CONTINUE;
 }
@@ -404,7 +404,7 @@ void JoypadWindows::process_joypads() {
 
 		// on mingw, these constants are not constants
 		int count = 8;
-		LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
+		const LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz, js.rglSlider[0], js.rglSlider[1] };
 
 		for (int j = 0; j < joy->joy_axis.size(); j++) {

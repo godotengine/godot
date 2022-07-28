@@ -91,6 +91,7 @@ void WSLClient::_do_handshake() {
 				data->id = 1;
 				_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 				_peer->set_no_delay(true);
+				_status = CONNECTION_CONNECTED;
 				_on_connect(protocol);
 				break;
 			}
@@ -103,15 +104,16 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 	String s = (char *)_resp_buf;
 	Vector<String> psa = s.split("\r\n");
 	int len = psa.size();
-	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
+	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers. Got: " + itos(len) + ", expected >= 4.");
 
 	Vector<String> req = psa[0].split(" ", false);
-	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code.");
+	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code. Got '" + psa[0] + "', expected 'HTTP/1.1 101'.");
 
 	// Wrong protocol
-	ERR_FAIL_COND_V_MSG(req[0] != "HTTP/1.1" || req[1] != "101", false, "Invalid protocol or status code.");
+	ERR_FAIL_COND_V_MSG(req[0] != "HTTP/1.1", false, "Invalid protocol. Got: '" + req[0] + "', expected 'HTTP/1.1'.");
+	ERR_FAIL_COND_V_MSG(req[1] != "101", false, "Invalid status code. Got: '" + req[1] + "', expected '101'.");
 
-	Map<String, String> headers;
+	HashMap<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
 		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i] + ".");
@@ -137,9 +139,11 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 #undef WSL_CHECK
 	if (_protocols.size() == 0) {
 		// We didn't request a custom protocol
-		ERR_FAIL_COND_V(headers.has("sec-websocket-protocol"), false);
+		ERR_FAIL_COND_V_MSG(headers.has("sec-websocket-protocol"), false, "Received unrequested sub-protocol -> " + headers["sec-websocket-protocol"]);
 	} else {
-		ERR_FAIL_COND_V(!headers.has("sec-websocket-protocol"), false);
+		// We requested at least one custom protocol but didn't receive one
+		ERR_FAIL_COND_V_MSG(!headers.has("sec-websocket-protocol"), false, "Requested sub-protocol(s) but received none.");
+		// Check received sub-protocol was one of those requested.
 		r_protocol = headers["sec-websocket-protocol"];
 		bool valid = false;
 		for (int i = 0; i < _protocols.size(); i++) {
@@ -150,6 +154,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 			break;
 		}
 		if (!valid) {
+			ERR_FAIL_V_MSG(false, "Received unrequested sub-protocol -> " + r_protocol);
 			return false;
 		}
 	}
@@ -227,6 +232,7 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	}
 	request += "\r\n";
 	_request = request.utf8();
+	_status = CONNECTION_CONNECTING;
 
 	return OK;
 }
@@ -273,6 +279,7 @@ void WSLClient::poll() {
 		return; // Not connected.
 	}
 
+	_tcp->poll();
 	switch (_tcp->get_status()) {
 		case StreamPeerTCP::STATUS_NONE:
 			// Clean close
@@ -332,21 +339,19 @@ Ref<WebSocketPeer> WSLClient::get_peer(int p_peer_id) const {
 }
 
 MultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() const {
+	// This is surprising, but keeps the current behaviour to allow clean close requests.
+	// TODO Refactor WebSocket and split Client/Server/Multiplayer like done in other peers.
 	if (_peer->is_connected_to_host()) {
 		return CONNECTION_CONNECTED;
 	}
-
-	if (_tcp->is_connected_to_host() || _resolver_id != IP::RESOLVER_INVALID_ID) {
-		return CONNECTION_CONNECTING;
-	}
-
-	return CONNECTION_DISCONNECTED;
+	return _status;
 }
 
 void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 	_peer->close(p_code, p_reason);
 	_connection = Ref<StreamPeer>(nullptr);
 	_tcp = Ref<StreamPeerTCP>(memnew(StreamPeerTCP));
+	_status = CONNECTION_DISCONNECTED;
 
 	_key = "";
 	_host = "";

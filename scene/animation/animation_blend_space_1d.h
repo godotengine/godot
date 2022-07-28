@@ -63,6 +63,8 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	StringName blend_position = "blend_position";
 
 protected:
+	bool sync = false;
+
 	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
@@ -93,7 +95,10 @@ public:
 	void set_value_label(const String &p_label);
 	String get_value_label() const;
 
-	double process(double p_time, bool p_seek) override;
+	void set_use_sync(bool p_sync);
+	bool is_using_sync() const;
+
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

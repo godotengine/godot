@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
 #include "core/version.h"
 #include "main/main.h"
 
@@ -129,12 +130,27 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	fprintf(stderr, "\n================================================================\n");
-	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
+	String msg;
+	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+	if (proj_settings) {
+		msg = proj_settings->get("debug/settings/crash_handler/message");
+	}
 
+	// Tell MainLoop about the crash. This can be handled by users too in Node.
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
+
+	print_error("\n================================================================");
+	print_error(vformat("%s: Program crashed", __FUNCTION__));
+
+	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
+	if (String(VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	} else {
+		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+	}
+	print_error(vformat("Dumping the backtrace. %s", msg));
 
 	// Load the symbols:
 	if (!SymInitialize(process, nullptr, false)) {
@@ -174,20 +190,6 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	IMAGE_NT_HEADERS *h = ImageNtHeader(base);
 	DWORD image_type = h->FileHeader.Machine;
 
-	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
-	}
-
-	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		fprintf(stderr, "Engine version: %s\n", VERSION_FULL_NAME);
-	} else {
-		fprintf(stderr, "Engine version: %s (%s)\n", VERSION_FULL_NAME, VERSION_HASH);
-	}
-	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
-
 	int n = 0;
 	do {
 		if (skip_first) {
@@ -197,12 +199,12 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					fprintf(stderr, "[%d] %s (%s:%d)\n", n, fnName.c_str(), line.FileName, line.LineNumber);
+					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
 				} else {
-					fprintf(stderr, "[%d] %s\n", n, fnName.c_str());
+					print_error(vformat("[%d] %s", n, fnName.c_str()));
 				}
 			} else {
-				fprintf(stderr, "[%d] ???\n", n);
+				print_error(vformat("[%d] ???", n));
 			}
 
 			n++;
@@ -213,8 +215,8 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		}
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 
-	fprintf(stderr, "-- END OF BACKTRACE --\n");
-	fprintf(stderr, "================================================================\n");
+	print_error("-- END OF BACKTRACE --");
+	print_error("================================================================");
 
 	SymCleanup(process);
 

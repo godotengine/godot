@@ -107,7 +107,7 @@ namespace GodotTools.Export
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
                     // The Godot exporter expects us to pass the abi in the tags parameter
-                    exporter.AddSharedObject(soFilePath, tags: new[] { abi });
+                    exporter.AddSharedObject(soFilePath, tags: new[] { abi }, "");
                 }
             }
         }
@@ -134,7 +134,7 @@ namespace GodotTools.Export
 
                 if (platform == OS.Platforms.MacOS)
                 {
-                    exporter.AddSharedObject(tempOutputFilePath, tags: null);
+                    exporter.AddSharedObject(tempOutputFilePath, tags: null, "");
                 }
                 else
                 {
@@ -336,10 +336,10 @@ MONO_AOT_MODE_LAST = 1000,
 
             // Add the required Mono libraries to the Xcode project
 
-            string MonoLibFile(string libFileName) => libFileName + ".iphone.fat.a";
+            string MonoLibFile(string libFileName) => libFileName + ".ios.fat.a";
 
             string MonoLibFromTemplate(string libFileName) =>
-                Path.Combine(Internal.FullTemplatesDir, "iphone-mono-libs", MonoLibFile(libFileName));
+                Path.Combine(Internal.FullExportTemplatesDir, "ios-mono-libs", MonoLibFile(libFileName));
 
             exporter.AddIosProjectStaticLib(MonoLibFromTemplate("libmonosgen-2.0"));
 

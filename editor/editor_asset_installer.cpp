@@ -62,10 +62,10 @@ void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int column) 
 
 void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	package_path = p_path;
-	Set<String> files_sorted;
+	HashSet<String> files_sorted;
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
@@ -87,7 +87,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		ret = unzGoToNextFile(pkg);
 	}
 
-	Map<String, Ref<Texture2D>> extension_guess;
+	HashMap<String, Ref<Texture2D>> extension_guess;
 	{
 		extension_guess["bmp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["dds"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
@@ -100,7 +100,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["tga"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["webp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 
-		extension_guess["wav"] = tree->get_theme_icon(SNAME("AudioStreamSample"), SNAME("EditorIcons"));
+		extension_guess["wav"] = tree->get_theme_icon(SNAME("AudioStreamWAV"), SNAME("EditorIcons"));
 		extension_guess["ogg"] = tree->get_theme_icon(SNAME("AudioStreamOGGVorbis"), SNAME("EditorIcons"));
 		extension_guess["mp3"] = tree->get_theme_icon(SNAME("AudioStreamMP3"), SNAME("EditorIcons"));
 
@@ -112,6 +112,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["glb"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 
 		extension_guess["gdshader"] = tree->get_theme_icon(SNAME("Shader"), SNAME("EditorIcons"));
+		extension_guess["gdshaderinc"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
 		extension_guess["gd"] = tree->get_theme_icon(SNAME("GDScript"), SNAME("EditorIcons"));
 		if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 			extension_guess["cs"] = tree->get_theme_icon(SNAME("CSharpScript"), SNAME("EditorIcons"));
@@ -150,12 +151,12 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	root->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	root->set_text(0, "res://");
 	root->set_editable(0, true);
-	Map<String, TreeItem *> dir_map;
+	HashMap<String, TreeItem *> dir_map;
 
 	int num_file_conflicts = 0;
 
-	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
-		String path = E->get();
+	for (const String &E : files_sorted) {
+		String path = E;
 		int depth = p_depth;
 		bool skip = false;
 		while (depth > 0) {
@@ -224,7 +225,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			ti->set_metadata(0, res_path);
 		}
 
-		status_map[E->get()] = ti;
+		status_map[E] = ti;
 	}
 
 	if (num_file_conflicts >= 1) {
@@ -238,8 +239,8 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 }
 
 void EditorAssetInstaller::ok_pressed() {
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
@@ -259,6 +260,9 @@ void EditorAssetInstaller::ok_pressed() {
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String name = String::utf8(fname);
 
@@ -277,10 +281,8 @@ void EditorAssetInstaller::ok_pressed() {
 					dirpath = dirpath.substr(0, dirpath.length() - 1);
 				}
 
-				DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
-				memdelete(da);
-
 			} else {
 				Vector<uint8_t> data;
 				data.resize(info.uncompressed_size);
@@ -290,10 +292,9 @@ void EditorAssetInstaller::ok_pressed() {
 				unzReadCurrentFile(pkg, data.ptrw(), data.size());
 				unzCloseCurrentFile(pkg);
 
-				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
-				if (f) {
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
-					memdelete(f);
 				} else {
 					failed_files.push_back(path);
 				}
@@ -355,10 +356,8 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-	get_ok_button()->set_text(TTR("Install"));
+	set_ok_button_text(TTR("Install"));
 	set_title(TTR("Asset Installer"));
-
-	updating = false;
 
 	set_hide_on_ok(true);
 }

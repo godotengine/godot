@@ -11,9 +11,11 @@
 		<method name="add_filter">
 			<return type="void" />
 			<argument index="0" name="filter" type="String" />
+			<argument index="1" name="description" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a comma-delimited file extension filter option to the [EditorFileDialog] with an optional semi-colon-delimited label.
-				For example, [code]"*.tscn, *.scn; Scenes"[/code] results in filter text "Scenes (*.tscn, *.scn)".
+				Adds a comma-delimited file name [code]filter[/code] option to the [EditorFileDialog] with an optional [code]description[/code], which restricts what files can be picked.
+				A [code]filter[/code] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
+				For example, a [code]filter[/code] of [code]"*.tscn, *.scn"[/code] and a [code]description[/code] of [code]"Scenes"[/code] results in filter text "Scenes (*.tscn, *.scn)".
 			</description>
 		</method>
 		<method name="clear_filters">
@@ -40,13 +42,13 @@
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="EditorFileDialog.Access" default="0">
 			The location from which the user may select a file, including [code]res://[/code], [code]user://[/code], and the local file system.
 		</member>
-		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The currently occupied directory.
 		</member>
-		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file" default="&quot;&quot;">
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
 			The currently selected file.
 		</member>
-		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
 			The file system path in the address bar.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />

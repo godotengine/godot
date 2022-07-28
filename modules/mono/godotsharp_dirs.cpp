@@ -76,7 +76,7 @@ String _get_mono_user_dir() {
 			exe_dir = exe_dir.plus_file("../../..").simplify_path();
 		}
 
-		DirAccessRef d = DirAccess::create_for_path(exe_dir);
+		Ref<DirAccess> d = DirAccess::create_for_path(exe_dir);
 
 		if (d->file_exists("._sc_") || d->file_exists("_sc_")) {
 			// contain yourself
@@ -184,7 +184,7 @@ private:
 		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
 #endif
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		if (!DirAccess::exists(data_editor_tools_dir)) {
 			data_editor_tools_dir = exe_dir.plus_file("../Resources/GodotSharp/Tools");
 		}
@@ -222,7 +222,7 @@ private:
 		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
 #endif
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		if (!DirAccess::exists(data_mono_root_dir)) {
 			data_mono_etc_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/etc");
 			data_mono_lib_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/lib");

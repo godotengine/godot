@@ -557,6 +557,7 @@ uint64_t OS_UWP::get_ticks_usec() const {
 void OS_UWP::process_events() {
 	joypad->process_controllers();
 	process_key_events();
+	input->flush_buffered_events();
 }
 
 void OS_UWP::process_key_events() {
@@ -631,7 +632,7 @@ OS::CursorShape OS_UWP::get_cursor_shape() const {
 	return cursor_shape;
 }
 
-void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void OS_UWP::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
 }
 
@@ -645,6 +646,10 @@ Error OS_UWP::create_process(const String &p_path, const List<String> &p_argumen
 
 Error OS_UWP::kill(const ProcessID &p_pid) {
 	return FAILED;
+}
+
+bool OS_UWP::is_process_running(const ProcessID &p_pid) const {
+	return false;
 }
 
 Error OS_UWP::set_cwd(const String &p_cwd) {
@@ -733,10 +738,15 @@ static String format_error_message(DWORD id) {
 	return msg;
 }
 
-Error OS_UWP::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_UWP::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String full_path = "game/" + p_path;
 	p_library_handle = (void *)LoadPackagedLibrary((LPCWSTR)(full_path.utf16().get_data()), 0);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + full_path + ", error: " + format_error_message(GetLastError()) + ".");
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = full_path;
+	}
+
 	return OK;
 }
 

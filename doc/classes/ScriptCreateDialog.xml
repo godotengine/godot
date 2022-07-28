@@ -40,6 +40,7 @@
 	</methods>
 	<members>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Create&quot;" />
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Attach Node Script&quot;" />
 	</members>
 	<signals>

@@ -35,15 +35,20 @@
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "platform/android/display_server_android.h"
+#include "scene/main/scene_tree.h"
+#include "servers/rendering_server.h"
 
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
+#include "file_access_filesystem_jandroid.h"
 #include "net_socket_android.h"
 
 #include <dlfcn.h>
 
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
+
+const char *OS_Android::ANDROID_EXEC_PATH = "apk";
 
 String _remove_symlink(const String &dir) {
 	// Workaround for Android 6.0+ using a symlink.
@@ -72,29 +77,36 @@ public:
 };
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
-	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
-
+	ERR_FAIL_NULL(godot_java);
 	godot_java->alert(p_alert, p_title);
 }
 
 void OS_Android::initialize_core() {
 	OS_Unix::initialize_core();
 
+#ifdef TOOLS_ENABLED
+	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+#else
 	if (use_apk_expansion) {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	} else {
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
+#endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
-	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_FILESYSTEM);
+
+#ifdef TOOLS_ENABLED
+	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+#else
 	if (use_apk_expansion) {
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	} else {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	}
+#endif
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
-	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_FILESYSTEM);
 
 	NetSocketAndroid::make_default();
 }
@@ -125,7 +137,7 @@ void OS_Android::finalize() {
 }
 
 OS_Android *OS_Android::get_singleton() {
-	return (OS_Android *)OS::get_singleton();
+	return static_cast<OS_Android *>(OS::get_singleton());
 }
 
 GodotJavaWrapper *OS_Android::get_godot_java() {
@@ -148,9 +160,14 @@ Vector<String> OS_Android::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = p_path;
+	}
+
 	return OK;
 }
 
@@ -168,16 +185,27 @@ void OS_Android::main_loop_begin() {
 	}
 }
 
-bool OS_Android::main_loop_iterate() {
+bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop) {
 		return false;
 	}
 	DisplayServerAndroid::get_singleton()->process_events();
-	return Main::iteration();
+	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
+	bool exit = Main::iteration();
+
+	if (r_should_swap_buffers) {
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || RenderingServer::get_singleton()->has_changed() || current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
+	}
+
+	return exit;
 }
 
 void OS_Android::main_loop_end() {
 	if (main_loop) {
+		SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
+		if (scene_tree) {
+			scene_tree->quit();
+		}
 		main_loop->finalize();
 	}
 }
@@ -197,7 +225,11 @@ Error OS_Android::shell_open(String p_uri) {
 }
 
 String OS_Android::get_resource_dir() const {
+#ifdef TOOLS_ENABLED
+	return OS_Unix::get_resource_dir();
+#else
 	return "/"; //android has its own filesystem for resources inside the APK
+#endif
 }
 
 String OS_Android::get_locale() const {
@@ -220,6 +252,14 @@ String OS_Android::get_model_name() const {
 
 String OS_Android::get_data_path() const {
 	return get_user_data_dir();
+}
+
+String OS_Android::get_executable_path() const {
+	// Since unix process creation is restricted on Android, we bypass
+	// OS_Unix::get_executable_path() so we can return ANDROID_EXEC_PATH.
+	// Detection of ANDROID_EXEC_PATH allows to handle process creation in an Android compliant
+	// manner.
+	return OS::get_executable_path();
 }
 
 String OS_Android::get_user_data_dir() const {
@@ -261,6 +301,33 @@ String OS_Android::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	return godot_io_java->get_system_dir(p_dir, p_shared_storage);
 }
 
+Error OS_Android::move_to_trash(const String &p_path) {
+	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
+	if (da_ref.is_null()) {
+		return FAILED;
+	}
+
+	// Check if it's a directory
+	if (da_ref->dir_exists(p_path)) {
+		Error err = da_ref->change_dir(p_path);
+		if (err) {
+			return err;
+		}
+		// This is directory, let's erase its contents
+		err = da_ref->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+		// Remove the top directory
+		return da_ref->remove(p_path);
+	} else if (da_ref->file_exists(p_path)) {
+		// This is a file, let's remove it.
+		return da_ref->remove(p_path);
+	} else {
+		return FAILED;
+	}
+}
+
 void OS_Android::set_display_size(const Size2i &p_size) {
 	display_size = p_size;
 }
@@ -271,7 +338,7 @@ Size2i OS_Android::get_display_size() const {
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 #if defined(GLES3_ENABLED)
-	ERR_FAIL_COND(!p_gl_extensions);
+	ERR_FAIL_NULL(p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 #endif
 }
@@ -292,6 +359,10 @@ ANativeWindow *OS_Android::get_native_window() const {
 
 void OS_Android::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
+}
+
+String OS_Android::get_config_path() const {
+	return get_user_data_dir().plus_file("config");
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
@@ -341,6 +412,27 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	AudioDriverManager::add_driver(&audio_driver_android);
 
 	DisplayServerAndroid::register_android_driver();
+}
+
+Error OS_Android::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+	if (p_path == ANDROID_EXEC_PATH) {
+		return create_instance(p_arguments);
+	} else {
+		return OS_Unix::execute(p_path, p_arguments, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
+	}
+}
+
+Error OS_Android::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+	if (p_path == ANDROID_EXEC_PATH) {
+		return create_instance(p_arguments, r_child_id);
+	} else {
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
+	}
+}
+
+Error OS_Android::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	godot_java->create_new_godot_instance(p_arguments);
+	return OK;
 }
 
 OS_Android::~OS_Android() {

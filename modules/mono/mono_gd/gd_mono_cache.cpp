@@ -108,9 +108,12 @@ void CachedData::clear_godot_api_cache() {
 	class_Transform2D = nullptr;
 	class_Vector3 = nullptr;
 	class_Vector3i = nullptr;
+	class_Vector4 = nullptr;
+	class_Vector4i = nullptr;
 	class_Basis = nullptr;
 	class_Quaternion = nullptr;
 	class_Transform3D = nullptr;
+	class_Projection = nullptr;
 	class_AABB = nullptr;
 	class_Color = nullptr;
 	class_Plane = nullptr;
@@ -140,8 +143,11 @@ void CachedData::clear_godot_api_cache() {
 	field_ExportAttribute_hintString = nullptr;
 	class_SignalAttribute = nullptr;
 	class_ToolAttribute = nullptr;
-	class_AnyPeerAttribute = nullptr;
-	class_AuthorityAttribute = nullptr;
+	class_RPCAttribute = nullptr;
+	property_RPCAttribute_Mode = nullptr;
+	property_RPCAttribute_CallLocal = nullptr;
+	property_RPCAttribute_TransferMode = nullptr;
+	property_RPCAttribute_TransferChannel = nullptr;
 	class_GodotMethodAttribute = nullptr;
 	field_GodotMethodAttribute_methodName = nullptr;
 	class_ScriptPathAttribute = nullptr;
@@ -176,6 +182,7 @@ void CachedData::clear_godot_api_cache() {
 	methodthunk_MarshalUtils_TypeIsGenericIEnumerable.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
+	methodthunk_MarshalUtils_TypeHasFlagsAttribute.nullify();
 
 	methodthunk_MarshalUtils_GetGenericTypeDefinition.nullify();
 
@@ -235,9 +242,12 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(Transform2D, GODOT_API_CLASS(Transform2D));
 	CACHE_CLASS_AND_CHECK(Vector3, GODOT_API_CLASS(Vector3));
 	CACHE_CLASS_AND_CHECK(Vector3i, GODOT_API_CLASS(Vector3i));
+	CACHE_CLASS_AND_CHECK(Vector4, GODOT_API_CLASS(Vector4));
+	CACHE_CLASS_AND_CHECK(Vector4i, GODOT_API_CLASS(Vector4i));
 	CACHE_CLASS_AND_CHECK(Basis, GODOT_API_CLASS(Basis));
 	CACHE_CLASS_AND_CHECK(Quaternion, GODOT_API_CLASS(Quaternion));
 	CACHE_CLASS_AND_CHECK(Transform3D, GODOT_API_CLASS(Transform3D));
+	CACHE_CLASS_AND_CHECK(Projection, GODOT_API_CLASS(Projection));
 	CACHE_CLASS_AND_CHECK(AABB, GODOT_API_CLASS(AABB));
 	CACHE_CLASS_AND_CHECK(Color, GODOT_API_CLASS(Color));
 	CACHE_CLASS_AND_CHECK(Plane, GODOT_API_CLASS(Plane));
@@ -267,8 +277,11 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hintString, CACHED_CLASS(ExportAttribute)->get_field("hintString"));
 	CACHE_CLASS_AND_CHECK(SignalAttribute, GODOT_API_CLASS(SignalAttribute));
 	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
-	CACHE_CLASS_AND_CHECK(AnyPeerAttribute, GODOT_API_CLASS(AnyPeerAttribute));
-	CACHE_CLASS_AND_CHECK(AuthorityAttribute, GODOT_API_CLASS(AuthorityAttribute));
+	CACHE_CLASS_AND_CHECK(RPCAttribute, GODOT_API_CLASS(RPCAttribute));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, Mode, CACHED_CLASS(RPCAttribute)->get_property("Mode"));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, CallLocal, CACHED_CLASS(RPCAttribute)->get_property("CallLocal"));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, TransferMode, CACHED_CLASS(RPCAttribute)->get_property("TransferMode"));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, TransferChannel, CACHED_CLASS(RPCAttribute)->get_property("TransferChannel"));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));
@@ -300,6 +313,7 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeHasFlagsAttribute, GODOT_API_CLASS(MarshalUtils)->get_method("TypeHasFlagsAttribute", 1));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GetGenericTypeDefinition, GODOT_API_CLASS(MarshalUtils)->get_method("GetGenericTypeDefinition", 2));
 

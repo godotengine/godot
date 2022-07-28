@@ -33,14 +33,14 @@
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "lsp.hpp"
+#include "godot_lsp.h"
 
 class GDScriptTextDocument : public RefCounted {
 	GDCLASS(GDScriptTextDocument, RefCounted)
 protected:
 	static void _bind_methods();
 
-	FileAccess *file_checker;
+	Ref<FileAccess> file_checker;
 
 	void didOpen(const Variant &p_param);
 	void didClose(const Variant &p_param);
@@ -75,7 +75,6 @@ public:
 	void initialize();
 
 	GDScriptTextDocument();
-	virtual ~GDScriptTextDocument();
 };
 
-#endif
+#endif // GDSCRIPT_TEXT_DOCUMENT_H

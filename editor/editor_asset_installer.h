@@ -28,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORASSETINSTALLER_H
-#define EDITORASSETINSTALLER_H
+#ifndef EDITOR_ASSET_INSTALLER_H
+#define EDITOR_ASSET_INSTALLER_H
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
 
-	Tree *tree;
-	Label *asset_contents;
+	Tree *tree = nullptr;
+	Label *asset_contents = nullptr;
 	String package_path;
 	String asset_name;
-	AcceptDialog *error;
-	Map<String, TreeItem *> status_map;
-	bool updating;
+	AcceptDialog *error = nullptr;
+	HashMap<String, TreeItem *> status_map;
+	bool updating = false;
 	void _item_edited();
 	void _check_propagated_to_item(Object *p_obj, int column);
 	virtual void ok_pressed() override;
@@ -59,4 +59,4 @@ public:
 	EditorAssetInstaller();
 };
 
-#endif // EDITORASSETINSTALLER_H
+#endif // EDITOR_ASSET_INSTALLER_H

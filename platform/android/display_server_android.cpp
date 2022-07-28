@@ -34,6 +34,7 @@
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 #include "os_android.h"
+#include "tts_android.h"
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
@@ -42,7 +43,7 @@
 #endif
 
 DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
-	return (DisplayServerAndroid *)DisplayServer::get_singleton();
+	return static_cast<DisplayServerAndroid *>(DisplayServer::get_singleton());
 }
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
@@ -63,6 +64,7 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		case FEATURE_ORIENTATION:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_VIRTUAL_KEYBOARD:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default:
 			return false;
@@ -73,9 +75,37 @@ String DisplayServerAndroid::get_name() const {
 	return "Android";
 }
 
+bool DisplayServerAndroid::tts_is_speaking() const {
+	return TTS_Android::is_speaking();
+}
+
+bool DisplayServerAndroid::tts_is_paused() const {
+	return TTS_Android::is_paused();
+}
+
+Array DisplayServerAndroid::tts_get_voices() const {
+	return TTS_Android::get_voices();
+}
+
+void DisplayServerAndroid::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	TTS_Android::speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void DisplayServerAndroid::tts_pause() {
+	TTS_Android::pause();
+}
+
+void DisplayServerAndroid::tts_resume() {
+	TTS_Android::resume();
+}
+
+void DisplayServerAndroid::tts_stop() {
+	TTS_Android::stop();
+}
+
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
+	ERR_FAIL_NULL(godot_java);
 
 	if (godot_java->has_set_clipboard()) {
 		godot_java->set_clipboard(p_text);
@@ -86,7 +116,7 @@ void DisplayServerAndroid::clipboard_set(const String &p_text) {
 
 String DisplayServerAndroid::clipboard_get() const {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND_V(!godot_java, String());
+	ERR_FAIL_NULL_V(godot_java, String());
 
 	if (godot_java->has_get_clipboard()) {
 		return godot_java->get_clipboard();
@@ -97,7 +127,7 @@ String DisplayServerAndroid::clipboard_get() const {
 
 bool DisplayServerAndroid::clipboard_has() const {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND_V(!godot_java, false);
+	ERR_FAIL_NULL_V(godot_java, false);
 
 	if (godot_java->has_has_clipboard()) {
 		return godot_java->has_clipboard();
@@ -106,9 +136,21 @@ bool DisplayServerAndroid::clipboard_has() const {
 	}
 }
 
+Array DisplayServerAndroid::get_display_cutouts() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, Array());
+	return godot_io_java->get_display_cutouts();
+}
+
+Rect2i DisplayServerAndroid::get_display_safe_area() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, Rect2i());
+	return godot_io_java->get_display_safe_area();
+}
+
 void DisplayServerAndroid::screen_set_keep_on(bool p_enable) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
+	ERR_FAIL_NULL(godot_java);
 
 	godot_java->set_keep_screen_on(p_enable);
 	keep_screen_on = p_enable;
@@ -120,14 +162,14 @@ bool DisplayServerAndroid::screen_is_kept_on() const {
 
 void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND(!godot_io_java);
+	ERR_FAIL_NULL(godot_io_java);
 
 	godot_io_java->set_screen_orientation(p_orientation);
 }
 
 DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(int p_screen) const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND_V(!godot_io_java, SCREEN_LANDSCAPE);
+	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
 
 	const int orientation = godot_io_java->get_screen_orientation();
 	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
@@ -147,18 +189,22 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
-	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND_V(!godot_io_java, Rect2i());
-	int xywh[4];
-	godot_io_java->screen_get_usable_rect(xywh);
-	return Rect2i(xywh[0], xywh[1], xywh[2], xywh[3]);
+	Size2i display_size = OS_Android::get_singleton()->get_display_size();
+	return Rect2i(0, 0, display_size.width, display_size.height);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND_V(!godot_io_java, 0);
+	ERR_FAIL_NULL_V(godot_io_java, 0);
 
 	return godot_io_java->get_screen_dpi();
+}
+
+float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 1.0f);
+
+	return godot_io_java->get_scaled_density();
 }
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
@@ -177,7 +223,7 @@ bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
 
 void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND(!godot_io_java);
+	ERR_FAIL_NULL(godot_io_java);
 
 	if (godot_io_java->has_vk()) {
 		godot_io_java->show_vk(p_existing_text, p_multiline, p_max_length, p_cursor_start, p_cursor_end);
@@ -188,7 +234,7 @@ void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, 
 
 void DisplayServerAndroid::virtual_keyboard_hide() {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND(!godot_io_java);
+	ERR_FAIL_NULL(godot_io_java);
 
 	if (godot_io_java->has_vk()) {
 		godot_io_java->hide_vk();
@@ -199,7 +245,7 @@ void DisplayServerAndroid::virtual_keyboard_hide() {
 
 int DisplayServerAndroid::virtual_keyboard_get_height() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND_V(!godot_io_java, 0);
+	ERR_FAIL_NULL_V(godot_io_java, 0);
 
 	return godot_io_java->get_vk_height();
 }
@@ -270,7 +316,7 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 			return 0; // Not supported.
 		}
 		case WINDOW_HANDLE: {
-			return (int64_t)((OS_Android *)OS::get_singleton())->get_godot_java()->get_activity();
+			return reinterpret_cast<int64_t>(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 		}
 		case WINDOW_VIEW: {
 			return 0; // Not supported.
@@ -410,9 +456,9 @@ void DisplayServerAndroid::reset_window() {
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
-		ERR_FAIL_COND(!native_window);
+		ERR_FAIL_NULL(native_window);
 
-		ERR_FAIL_COND(!context_vulkan);
+		ERR_FAIL_NULL(context_vulkan);
 		VSyncMode last_vsync_mode = context_vulkan->get_vsync_mode(MAIN_WINDOW_ID);
 		context_vulkan->window_destroy(MAIN_WINDOW_ID);
 
@@ -473,7 +519,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	if (rendering_driver == "vulkan") {
 		ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
-		ERR_FAIL_COND(!native_window);
+		ERR_FAIL_NULL(native_window);
 
 		context_vulkan = memnew(VulkanContextAndroid);
 		if (context_vulkan->initialize() != OK) {

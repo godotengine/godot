@@ -33,6 +33,9 @@
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
 
 class PhysicsDirectSpaceState3D;
 
@@ -130,7 +133,7 @@ public:
 	struct RayParameters {
 		Vector3 from;
 		Vector3 to;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -162,7 +165,7 @@ public:
 
 	struct PointParameters {
 		Vector3 position;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -176,7 +179,7 @@ public:
 		Transform3D transform;
 		Vector3 motion;
 		real_t margin = 0.0;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -202,13 +205,21 @@ public:
 	PhysicsDirectSpaceState3D();
 };
 
-class RenderingServerHandler {
-public:
-	virtual void set_vertex(int p_vertex_id, const void *p_vector3) = 0;
-	virtual void set_normal(int p_vertex_id, const void *p_vector3) = 0;
-	virtual void set_aabb(const AABB &p_aabb) = 0;
+class PhysicsServer3DRenderingServerHandler : public Object {
+	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
+protected:
+	GDVIRTUAL2(_set_vertex, int, GDNativeConstPtr<void>)
+	GDVIRTUAL2(_set_normal, int, GDNativeConstPtr<void>)
+	GDVIRTUAL1(_set_aabb, const AABB &)
 
-	virtual ~RenderingServerHandler() {}
+	static void _bind_methods();
+
+public:
+	virtual void set_vertex(int p_vertex_id, const void *p_vector3);
+	virtual void set_normal(int p_vertex_id, const void *p_vector3);
+	virtual void set_aabb(const AABB &p_aabb);
+
+	virtual ~PhysicsServer3DRenderingServerHandler() {}
 };
 
 class PhysicsTestMotionParameters3D;
@@ -509,8 +520,9 @@ public:
 		real_t margin = 0.001;
 		int max_collisions = 1;
 		bool collide_separation_ray = false;
-		Set<RID> exclude_bodies;
-		Set<ObjectID> exclude_objects;
+		HashSet<RID> exclude_bodies;
+		HashSet<ObjectID> exclude_objects;
+		bool recovery_as_collision = false;
 
 		MotionParameters() {}
 
@@ -552,7 +564,7 @@ public:
 
 	virtual RID soft_body_create() = 0;
 
-	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) = 0;
+	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) = 0;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID soft_body_get_space(RID p_body) const = 0;
@@ -624,7 +636,7 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) = 0;
 	virtual int joint_get_solver_priority(RID p_joint) const = 0;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) = 0;
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) = 0;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const = 0;
 
 	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) = 0;
@@ -863,7 +875,7 @@ class PhysicsShapeQueryParameters3D : public RefCounted {
 
 	PhysicsDirectSpaceState3D::ShapeParameters parameters;
 
-	RES shape_ref;
+	Ref<Resource> shape_ref;
 
 protected:
 	static void _bind_methods();
@@ -871,8 +883,8 @@ protected:
 public:
 	const PhysicsDirectSpaceState3D::ShapeParameters &get_parameters() const { return parameters; }
 
-	void set_shape(const RES &p_shape_ref);
-	RES get_shape() const { return shape_ref; }
+	void set_shape(const Ref<Resource> &p_shape_ref);
+	Ref<Resource> get_shape() const { return shape_ref; }
 
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const { return parameters.shape_rid; }
@@ -930,6 +942,9 @@ public:
 
 	Array get_exclude_objects() const;
 	void set_exclude_objects(const Array &p_exclude);
+
+	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
+	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }
 };
 
 class PhysicsTestMotionResult3D : public RefCounted {

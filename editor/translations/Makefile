@@ -25,7 +25,7 @@ check:
 # First number can be 0, second and third numbers are only present if non-zero.
 include-list:
 	@list=""; \
-	threshold=0.30; \
+	threshold=0.20; \
 	for po in $(POFILES); do \
 	  res=`msgfmt --statistics $$po -o /dev/null 2>&1 | sed 's/[^0-9,]*//g'`; \
 	  complete=`cut -d',' -f1 <<< $$res`; \

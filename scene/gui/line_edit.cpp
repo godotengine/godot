@@ -215,6 +215,27 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 	}
 }
 
+void LineEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			return;
+		}
+		// Handle Unicode (with modifiers active, process after shortcuts).
+		if (has_focus() && editable && (k->get_unicode() >= 32)) {
+			selection_delete();
+			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
+			int prev_len = text.length();
+			insert_text_at_caret(ucodestr);
+			if (text.length() != prev_len) {
+				_text_changed();
+			}
+			accept_event();
+		}
+	}
+}
+
 void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -291,7 +312,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						selection.end = text.length();
 						selection.double_click = true;
 						last_dblclk = 0;
-						caret_column = selection.begin;
+						set_caret_column(selection.begin);
 						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(text);
 						}
@@ -306,7 +327,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 								selection.begin = words[i];
 								selection.end = words[i + 1];
 								selection.double_click = true;
-								caret_column = selection.end;
+								set_caret_column(selection.end);
 								break;
 							}
 						}
@@ -385,7 +406,43 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid()) {
 		if (!k->is_pressed()) {
+			if (alt_start && k->get_keycode() == Key::ALT) {
+				alt_start = false;
+				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+					insert_text_at_caret(ucodestr);
+				}
+				accept_event();
+				return;
+			}
 			return;
+		}
+
+		// Alt+ Unicode input:
+		if (k->is_alt_pressed()) {
+			if (!alt_start) {
+				if (k->get_keycode() == Key::KP_ADD) {
+					alt_start = true;
+					alt_code = 0;
+					accept_event();
+					return;
+				}
+			} else {
+				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+				}
+				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+				}
+				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+				}
+				accept_event();
+				return;
+			}
 		}
 
 		if (context_menu_enabled) {
@@ -638,7 +695,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 		return false;
 	}
 	Ref<Texture2D> icon = Control::get_theme_icon(SNAME("clear"));
-	int x_ofs = get_theme_stylebox(SNAME("normal"))->get_offset().x;
+	int x_ofs = get_theme_stylebox(SNAME("normal"))->get_margin(SIDE_RIGHT);
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
 
@@ -647,8 +704,8 @@ void LineEdit::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
 			if (Engine::get_singleton()->is_editor_hint() && !get_tree()->is_node_being_edited(this)) {
-				set_caret_blink_enabled(EDITOR_DEF("text_editor/appearance/caret/caret_blink", false));
-				set_caret_blink_speed(EDITOR_DEF("text_editor/appearance/caret/caret_blink_speed", 0.65));
+				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
+				set_caret_blink_speed(EDITOR_GET("text_editor/appearance/caret/caret_blink_speed"));
 
 				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed))) {
 					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed));
@@ -687,6 +744,17 @@ void LineEdit::_notification(int p_what) {
 			update();
 		} break;
 
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (caret_blinking) {
+				caret_blink_timer += get_process_delta_time();
+
+				if (caret_blink_timer >= caret_blink_speed) {
+					caret_blink_timer = 0.0;
+					_toggle_draw_caret();
+				}
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
 				draw_caret = false;
@@ -719,7 +787,7 @@ void LineEdit::_notification(int p_what) {
 			int x_ofs = 0;
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
-			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM);
+			float text_height = TS->shaped_text_get_size(text_rid).y;
 
 			switch (alignment) {
 				case HORIZONTAL_ALIGNMENT_FILL:
@@ -847,7 +915,8 @@ void LineEdit::_notification(int p_what) {
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
 			if (draw_caret || drag_caret_force_displayed) {
-				const int caret_width = get_theme_constant(SNAME("caret_width")) * get_theme_default_base_scale();
+				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
+				const int caret_width = get_theme_constant(SNAME("caret_width")) * MAX(1, get_theme_default_base_scale());
 
 				if (ime_text.length() == 0) {
 					// Normal caret.
@@ -933,8 +1002,9 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (!caret_force_displayed) {
 				if (caret_blink_enabled) {
-					if (caret_blink_timer->is_stopped()) {
-						caret_blink_timer->start();
+					if (!caret_blinking) {
+						caret_blinking = true;
+						caret_blink_timer = 0.0;
 					}
 				} else {
 					draw_caret = true;
@@ -952,7 +1022,7 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (caret_blink_enabled && !caret_force_displayed) {
-				caret_blink_timer->stop();
+				caret_blinking = false;
 			}
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
@@ -1260,14 +1330,16 @@ bool LineEdit::is_caret_blink_enabled() const {
 
 void LineEdit::set_caret_blink_enabled(const bool p_enabled) {
 	caret_blink_enabled = p_enabled;
+	set_process_internal(p_enabled);
 
 	if (has_focus() || caret_force_displayed) {
 		if (p_enabled) {
-			if (caret_blink_timer->is_stopped()) {
-				caret_blink_timer->start();
+			if (!caret_blinking) {
+				caret_blinking = true;
+				caret_blink_timer = 0.0;
 			}
 		} else {
-			caret_blink_timer->stop();
+			caret_blinking = false;
 		}
 	}
 
@@ -1287,20 +1359,19 @@ void LineEdit::set_caret_force_displayed(const bool p_enabled) {
 }
 
 float LineEdit::get_caret_blink_speed() const {
-	return caret_blink_timer->get_wait_time();
+	return caret_blink_speed;
 }
 
 void LineEdit::set_caret_blink_speed(const float p_speed) {
 	ERR_FAIL_COND(p_speed <= 0);
-	caret_blink_timer->set_wait_time(p_speed);
+	caret_blink_speed = p_speed;
 }
 
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
 		draw_caret = true;
 		if (has_focus()) {
-			caret_blink_timer->stop();
-			caret_blink_timer->start();
+			caret_blink_timer = 0.0;
 			update();
 		}
 	}
@@ -1380,29 +1451,6 @@ Control::TextDirection LineEdit::get_text_direction() const {
 	return text_direction;
 }
 
-void LineEdit::clear_opentype_features() {
-	opentype_features.clear();
-	_shape();
-	update();
-}
-
-void LineEdit::set_opentype_feature(const String &p_name, int p_value) {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
-		opentype_features[tag] = p_value;
-		_shape();
-		update();
-	}
-}
-
-int LineEdit::get_opentype_feature(const String &p_name) const {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag)) {
-		return -1;
-	}
-	return opentype_features[tag];
-}
-
 void LineEdit::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
@@ -1430,7 +1478,7 @@ bool LineEdit::get_draw_control_chars() const {
 	return draw_control_chars;
 }
 
-void LineEdit::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void LineEdit::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		_shape();
@@ -1438,7 +1486,7 @@ void LineEdit::set_structured_text_bidi_override(Control::StructuredTextParser p
 	}
 }
 
-Control::StructuredTextParser LineEdit::get_structured_text_bidi_override() const {
+TextServer::StructuredTextParser LineEdit::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 
@@ -1617,7 +1665,7 @@ Size2 LineEdit::get_minimum_size() const {
 	Size2 min_size;
 
 	// Minimum size of text.
-	float em_space_size = font->get_char_size('M', 0, font_size).x;
+	float em_space_size = font->get_char_size('M', font_size).x;
 	min_size.width = get_theme_constant(SNAME("minimum_character_width")) * em_space_size;
 
 	if (expand_to_text_length) {
@@ -1625,16 +1673,20 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + em_space_size);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM), font->get_height(font_size));
+	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
 
 	// Take icons into account.
-	bool using_placeholder = text.is_empty() && ime_text.is_empty();
-	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
-		min_size.width += r_icon->get_width();
-		min_size.height = MAX(min_size.height, r_icon->get_height());
+	int icon_max_width = 0;
+	if (right_icon.is_valid()) {
+		min_size.height = MAX(min_size.height, right_icon->get_height());
+		icon_max_width = right_icon->get_width();
 	}
+	if (clear_button_enabled) {
+		Ref<Texture2D> clear_icon = Control::get_theme_icon(SNAME("clear"));
+		min_size.height = MAX(min_size.height, clear_icon->get_height());
+		icon_max_width = MAX(icon_max_width, clear_icon->get_width());
+	}
+	min_size.width += icon_max_width;
 
 	return style->get_minimum_size() + min_size;
 }
@@ -1943,8 +1995,8 @@ PopupMenu *LineEdit::get_menu() const {
 
 void LineEdit::_editor_settings_changed() {
 #ifdef TOOLS_ENABLED
-	set_caret_blink_enabled(EDITOR_DEF("text_editor/appearance/caret/caret_blink", false));
-	set_caret_blink_speed(EDITOR_DEF("text_editor/appearance/caret/caret_blink_speed", 0.65));
+	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
+	set_caret_blink_speed(EDITOR_GET("text_editor/appearance/caret/caret_blink_speed"));
 #endif
 }
 
@@ -2080,7 +2132,10 @@ void LineEdit::_shape() {
 	const Ref<Font> &font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 	ERR_FAIL_COND(font.is_null());
-	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
+	}
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
 	full_width = TS->shaped_text_get_size(text_rid).x;
@@ -2161,56 +2216,6 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
-bool LineEdit::_set(const StringName &p_name, const Variant &p_value) {
-	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		int value = p_value;
-		if (value == -1) {
-			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
-				_shape();
-				update();
-			}
-		} else {
-			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
-				opentype_features[tag] = value;
-				_shape();
-				update();
-			}
-		}
-		notify_property_list_changed();
-		return true;
-	}
-
-	return false;
-}
-
-bool LineEdit::_get(const StringName &p_name, Variant &r_ret) const {
-	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		if (opentype_features.has(tag)) {
-			r_ret = opentype_features[tag];
-			return true;
-		} else {
-			r_ret = -1;
-			return true;
-		}
-	}
-	return false;
-}
-
-void LineEdit::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
-		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::INT, "opentype_features/" + name));
-	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-}
-
 void LineEdit::_validate_property(PropertyInfo &property) const {
 	if (!caret_blink_enabled && property.name == "caret_blink_speed") {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -2236,9 +2241,6 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_control_chars", "enable"), &LineEdit::set_draw_control_chars);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &LineEdit::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &LineEdit::get_text_direction);
-	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &LineEdit::set_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &LineEdit::get_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &LineEdit::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LineEdit::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &LineEdit::get_language);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &LineEdit::set_structured_text_bidi_override);
@@ -2344,18 +2346,20 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
-	ADD_GROUP("Structured Text", "structured_text_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_caret_column", "get_caret_column");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "set_caret_force_displayed", "is_caret_force_displayed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
+
+	ADD_GROUP("BiDi", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 }
 
 void LineEdit::_ensure_menu() {
@@ -2436,7 +2440,7 @@ void LineEdit::_ensure_menu() {
 	}
 }
 
-LineEdit::LineEdit() {
+LineEdit::LineEdit(const String &p_placeholder) {
 	text_rid = TS->create_shaped_text();
 	_create_undo_state();
 
@@ -2444,16 +2448,15 @@ LineEdit::LineEdit() {
 	set_focus_mode(FOCUS_ALL);
 	set_default_cursor_shape(CURSOR_IBEAM);
 	set_mouse_filter(MOUSE_FILTER_STOP);
+	set_process_unhandled_key_input(true);
 
-	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer, false, INTERNAL_MODE_FRONT);
-	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
 	set_caret_blink_enabled(false);
+
+	set_placeholder(p_placeholder);
 
 	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
 }
 
 LineEdit::~LineEdit() {
-	TS->free(text_rid);
+	TS->free_rid(text_rid);
 }

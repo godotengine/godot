@@ -249,8 +249,8 @@ void GodotGeneric6DOFJoint3D::calculateAngleInfo() {
 	// easier to take the euler rate expression for d(angle[2])/dt with respect
 	// to the components of w and set that to 0.
 
-	Vector3 axis0 = m_calculatedTransformB.basis.get_axis(0);
-	Vector3 axis2 = m_calculatedTransformA.basis.get_axis(2);
+	Vector3 axis0 = m_calculatedTransformB.basis.get_column(0);
+	Vector3 axis2 = m_calculatedTransformA.basis.get_column(2);
 
 	m_calculatedAxis[1] = axis2.cross(axis0);
 	m_calculatedAxis[0] = m_calculatedAxis[1].cross(axis2);
@@ -345,9 +345,9 @@ bool GodotGeneric6DOFJoint3D::setup(real_t p_timestep) {
 	for (i = 0; i < 3; i++) {
 		if (m_linearLimits.enable_limit[i] && m_linearLimits.isLimited(i)) {
 			if (m_useLinearReferenceFrameA) {
-				normalWorld = m_calculatedTransformA.basis.get_axis(i);
+				normalWorld = m_calculatedTransformA.basis.get_column(i);
 			} else {
-				normalWorld = m_calculatedTransformB.basis.get_axis(i);
+				normalWorld = m_calculatedTransformB.basis.get_column(i);
 			}
 
 			buildLinearJacobian(
@@ -388,9 +388,9 @@ void GodotGeneric6DOFJoint3D::solve(real_t p_timestep) {
 			jacDiagABInv = real_t(1.) / m_jacLinear[i].getDiagonal();
 
 			if (m_useLinearReferenceFrameA) {
-				linear_axis = m_calculatedTransformA.basis.get_axis(i);
+				linear_axis = m_calculatedTransformA.basis.get_column(i);
 			} else {
-				linear_axis = m_calculatedTransformB.basis.get_axis(i);
+				linear_axis = m_calculatedTransformB.basis.get_column(i);
 			}
 
 			m_linearLimits.solveLinearAxis(

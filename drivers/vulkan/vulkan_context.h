@@ -34,7 +34,7 @@
 #include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -67,6 +67,15 @@ public:
 		bool tessellation_shader_is_supported;
 		uint32_t max_view_count;
 		uint32_t max_instance_count;
+	};
+
+	struct VRSCapabilities {
+		bool pipeline_vrs_supported; // We can specify our fragment rate on a pipeline level
+		bool primitive_vrs_supported; // We can specify our fragment rate on each drawcall
+		bool attachment_vrs_supported; // We can provide a density map attachment on our framebuffer
+
+		Size2i min_texel_size;
+		Size2i max_texel_size;
 	};
 
 	struct ShaderCapabilities {
@@ -104,6 +113,7 @@ private:
 	uint32_t vulkan_patch = 0;
 	SubgroupCapabilities subgroup_capabilities;
 	MultiviewCapabilities multiview_capabilities;
+	VRSCapabilities vrs_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 
@@ -117,8 +127,8 @@ private:
 
 	// Present queue.
 	bool queues_initialized = false;
-	uint32_t graphics_queue_family_index = 0;
-	uint32_t present_queue_family_index = 0;
+	uint32_t graphics_queue_family_index = UINT32_MAX;
+	uint32_t present_queue_family_index = UINT32_MAX;
 	bool separate_present_queue = false;
 	VkQueue graphics_queue = VK_NULL_HANDLE;
 	VkQueue present_queue = VK_NULL_HANDLE;
@@ -161,7 +171,7 @@ private:
 
 	RID_Owner<LocalDevice, true> local_device_owner;
 
-	Map<DisplayServer::WindowID, Window> windows;
+	HashMap<DisplayServer::WindowID, Window> windows;
 	uint32_t swapchainImageCount = 0;
 
 	// Commands.
@@ -185,27 +195,28 @@ private:
 	 */
 	bool enabled_debug_report = false;
 
-	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
-	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT;
-	PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT;
-	PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT;
-	PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
-	PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT;
-	PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
-	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
-	PFN_vkDebugReportMessageEXT DebugReportMessageEXT;
-	PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
-	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
-	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
-	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
-	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
-	PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
-	PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR;
-	PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
-	PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR;
-	PFN_vkQueuePresentKHR fpQueuePresentKHR;
-	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE;
-	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
+	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT = nullptr;
+	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;
+	PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT = nullptr;
+	PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
+	PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
+	PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
+	PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
+	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
+	PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
+	PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT = nullptr;
+	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR = nullptr;
+	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR = nullptr;
+	PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR = nullptr;
+	PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR = nullptr;
+	PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR = nullptr;
+	PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR = nullptr;
+	PFN_vkQueuePresentKHR fpQueuePresentKHR = nullptr;
+	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE = nullptr;
+	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE = nullptr;
+	PFN_vkCreateRenderPass2KHR fpCreateRenderPass2KHR = nullptr;
 
 	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
 	VkDebugReportCallbackEXT dbg_debug_report = VK_NULL_HANDLE;
@@ -256,12 +267,16 @@ protected:
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
 public:
+	// Extension calls
+	VkResult vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
+
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
-	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
-	MultiviewCapabilities get_multiview_capabilities() const { return multiview_capabilities; };
-	ShaderCapabilities get_shader_capabilities() const { return shader_capabilities; };
-	StorageBufferCapabilities get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
+	const SubgroupCapabilities &get_subgroup_capabilities() const { return subgroup_capabilities; };
+	const MultiviewCapabilities &get_multiview_capabilities() const { return multiview_capabilities; };
+	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
+	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
+	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
@@ -289,8 +304,8 @@ public:
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;
 
-	void set_setup_buffer(const VkCommandBuffer &pCommandBuffer);
-	void append_command_buffer(const VkCommandBuffer &pCommandBuffer);
+	void set_setup_buffer(VkCommandBuffer p_command_buffer);
+	void append_command_buffer(VkCommandBuffer p_command_buffer);
 	void resize_notify();
 	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
 	Error prepare_buffers();
@@ -305,6 +320,7 @@ public:
 	String get_device_vendor_name() const;
 	String get_device_name() const;
 	RenderingDevice::DeviceType get_device_type() const;
+	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
 
 	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);
@@ -314,4 +330,4 @@ public:
 	virtual ~VulkanContext();
 };
 
-#endif // VULKAN_DEVICE_H
+#endif // VULKAN_CONTEXT_H

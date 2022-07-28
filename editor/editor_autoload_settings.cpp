@@ -35,6 +35,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/filesystem_dock.h"
 #include "project_settings_editor.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -52,7 +53,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				file_dialog->add_filter("*." + E);
 			}
 
-			for (const AutoLoadInfo &info : autoload_cache) {
+			for (const AutoloadInfo &info : autoload_cache) {
 				if (info.node && info.in_editor) {
 					get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 				}
@@ -62,6 +63,28 @@ void EditorAutoloadSettings::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			FileSystemDock *dock = FileSystemDock::get_singleton();
+
+			if (dock != nullptr) {
+				ScriptCreateDialog *dialog = dock->get_script_create_dialog();
+
+				if (dialog != nullptr) {
+					Callable script_created = callable_mp(this, &EditorAutoloadSettings::_script_created);
+
+					if (is_visible_in_tree()) {
+						if (!dialog->is_connected(SNAME("script_created"), script_created)) {
+							dialog->connect("script_created", script_created);
+						}
+					} else {
+						if (dialog->is_connected(SNAME("script_created"), script_created)) {
+							dialog->disconnect("script_created", script_created);
+						}
+					}
+				}
+			}
 		} break;
 	}
 }
@@ -122,7 +145,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		for (const String &E : keywords) {
 			if (E == p_name) {
 				if (r_error) {
-					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an AutoLoad name.");
+					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an Autoload name.");
 				}
 
 				return false;
@@ -134,12 +157,22 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 }
 
 void EditorAutoloadSettings::_autoload_add() {
-	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
-		autoload_add_path->set_text("");
-	}
+	if (autoload_add_path->get_text().is_empty()) {
+		ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
+		String fpath = path;
+		if (!fpath.ends_with("/")) {
+			fpath = fpath.get_base_dir();
+		}
+		dialog->config("Node", fpath.plus_file(vformat("%s.gd", autoload_add_name->get_text().camelcase_to_underscore())), false, false);
+		dialog->popup_centered();
+	} else {
+		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
+			autoload_add_path->set_text("");
+		}
 
-	autoload_add_name->set_text("");
-	add_autoload->set_disabled(true);
+		autoload_add_name->set_text("");
+		add_autoload->set_disabled(true);
+	}
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
@@ -227,7 +260,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 			path = "*" + path;
 		}
 
-		undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
+		undo_redo->create_action(TTR("Toggle Autoload Globals"));
 
 		undo_redo->add_do_property(ProjectSettings::get_singleton(), base, path);
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), base, ProjectSettings::get_singleton()->get(base));
@@ -247,7 +280,10 @@ void EditorAutoloadSettings::_autoload_edited() {
 	updating_autoload = false;
 }
 
-void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button) {
+void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String name = "autoload/" + ti->get_text(0);
@@ -351,20 +387,19 @@ void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
 }
 
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
-	add_autoload->set_disabled(
-			p_path.is_empty() || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
+	add_autoload->set_disabled(!_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	String error_string;
 	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
-	add_autoload->set_disabled(autoload_add_path->get_text().is_empty() || !is_name_valid);
+	add_autoload->set_disabled(!is_name_valid);
 	error_message->set_text(error_string);
 	error_message->set_visible(!autoload_add_name->get_text().is_empty() && !is_name_valid);
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
-	RES res = ResourceLoader::load(p_path);
+	Ref<Resource> res = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
 	Node *n = nullptr;
 	Ref<PackedScene> scn = res;
@@ -374,17 +409,17 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	} else if (script.is_valid()) {
 		StringName ibt = script->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
+		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit from Node: " + p_path + ".");
 
 		Object *obj = ClassDB::instantiate(ibt);
 
-		ERR_FAIL_COND_V_MSG(!obj, nullptr, "Cannot instance script for AutoLoad, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		ERR_FAIL_COND_V_MSG(!obj, nullptr, "Cannot instance script for Autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
 		n->set_script(script);
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in AutoLoad not a node or script: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in Autoload not a node or script: " + p_path + ".");
 
 	return n;
 }
@@ -396,10 +431,10 @@ void EditorAutoloadSettings::update_autoload() {
 
 	updating_autoload = true;
 
-	Map<String, AutoLoadInfo> to_remove;
-	List<AutoLoadInfo *> to_add;
+	HashMap<String, AutoloadInfo> to_remove;
+	List<AutoloadInfo *> to_add;
 
-	for (const AutoLoadInfo &info : autoload_cache) {
+	for (const AutoloadInfo &info : autoload_cache) {
 		to_remove.insert(info.name, info);
 	}
 
@@ -423,7 +458,7 @@ void EditorAutoloadSettings::update_autoload() {
 			continue;
 		}
 
-		AutoLoadInfo info;
+		AutoloadInfo info;
 		info.is_singleton = path.begins_with("*");
 
 		if (info.is_singleton) {
@@ -436,7 +471,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 		bool need_to_add = true;
 		if (to_remove.has(name)) {
-			AutoLoadInfo &old_info = to_remove[name];
+			AutoloadInfo &old_info = to_remove[name];
 			if (old_info.path == info.path) {
 				// Still the same resource, check status
 				info.node = old_info.node;
@@ -478,8 +513,8 @@ void EditorAutoloadSettings::update_autoload() {
 	}
 
 	// Remove deleted/changed autoloads
-	for (KeyValue<String, AutoLoadInfo> &E : to_remove) {
-		AutoLoadInfo &info = E.value;
+	for (KeyValue<String, AutoloadInfo> &E : to_remove) {
+		AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->remove_named_global_constant(info.name);
@@ -500,7 +535,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 	// Load new/changed autoloads
 	List<Node *> nodes_to_add;
-	for (AutoLoadInfo *info : to_add) {
+	for (AutoloadInfo *info : to_add) {
 		info->node = _create_autoload(info->path);
 
 		ERR_CONTINUE(!info->node);
@@ -538,6 +573,14 @@ void EditorAutoloadSettings::update_autoload() {
 	}
 
 	updating_autoload = false;
+}
+
+void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
+	FileSystemDock::get_singleton()->get_script_create_dialog()->hide();
+	path = p_script->get_path().get_base_dir();
+	autoload_add_path->set_text(p_script->get_path());
+	autoload_add_name->set_text(p_script->get_path().get_file().get_basename().capitalize().replace(" ", ""));
+	_autoload_add();
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
@@ -632,8 +675,8 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	int order = ProjectSettings::get_singleton()->get_order("autoload/" + name);
 
-	AutoLoadInfo aux;
-	List<AutoLoadInfo>::Element *E = nullptr;
+	AutoloadInfo aux;
+	List<AutoloadInfo>::Element *E = nullptr;
 
 	if (!move_to_back) {
 		aux.order = order;
@@ -649,7 +692,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	for (int i = 0; i < autoloads.size(); i++) {
 		aux.order = ProjectSettings::get_singleton()->get_order("autoload/" + autoloads[i]);
 
-		List<AutoLoadInfo>::Element *I = autoload_cache.find(aux);
+		List<AutoloadInfo>::Element *I = autoload_cache.find(aux);
 
 		if (move_to_back) {
 			autoload_cache.move_to_back(I);
@@ -664,7 +707,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	int i = 0;
 
-	for (const AutoLoadInfo &F : autoload_cache) {
+	for (const AutoloadInfo &F : autoload_cache) {
 		orders.write[i++] = F.order;
 	}
 
@@ -676,7 +719,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	i = 0;
 
-	for (const AutoLoadInfo &F : autoload_cache) {
+	for (const AutoloadInfo &F : autoload_cache) {
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
@@ -697,18 +740,18 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	String error;
 	if (!_autoload_name_is_valid(name, &error)) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + error);
+		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + error);
 		return false;
 	}
 
 	const String &path = p_path;
 	if (!FileAccess::exists(path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + vformat(TTR("%s is an invalid path. File does not exist."), path));
+		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + vformat(TTR("%s is an invalid path. File does not exist."), path));
 		return false;
 	}
 
 	if (!path.begins_with("res://")) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + vformat(TTR("%s is an invalid path. Not in resource path (res://)."), path));
+		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + vformat(TTR("%s is an invalid path. Not in resource path (res://)."), path));
 		return false;
 	}
 
@@ -716,7 +759,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
-	undo_redo->create_action(TTR("Add AutoLoad"));
+	undo_redo->create_action(TTR("Add Autoload"));
 	// Singleton autoloads are represented with a leading "*" in their path.
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
 
@@ -791,7 +834,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			continue;
 		}
 
-		AutoLoadInfo info;
+		AutoloadInfo info;
 		info.is_singleton = path.begins_with("*");
 
 		if (info.is_singleton) {
@@ -812,7 +855,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		autoload_cache.push_back(info);
 	}
 
-	for (AutoLoadInfo &info : autoload_cache) {
+	for (AutoloadInfo &info : autoload_cache) {
 		info.node = _create_autoload(info.path);
 
 		if (info.node) {
@@ -833,11 +876,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 	}
 
-	autoload_changed = "autoload_changed";
-
-	updating_autoload = false;
-	selected_autoload = "";
-
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
@@ -854,6 +892,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	autoload_add_path->set_clear_button_enabled(true);
+	autoload_add_path->set_placeholder(vformat(TTR(R"(Set path or press "%s" to create a script.)"), TTR("Add")));
 	autoload_add_path->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
 
 	browse_button = memnew(Button);
@@ -913,7 +953,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	tree->connect("cell_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_selected));
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
-	tree->connect("button_pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -921,7 +961,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {
-	for (const AutoLoadInfo &info : autoload_cache) {
+	for (const AutoloadInfo &info : autoload_cache) {
 		if (info.node && !info.in_editor) {
 			memdelete(info.node);
 		}

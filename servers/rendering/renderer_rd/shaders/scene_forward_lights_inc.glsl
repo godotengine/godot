@@ -1,9 +1,9 @@
 // Functions related to lighting
 
 float D_GGX(float cos_theta_m, float alpha) {
-	float alpha2 = alpha * alpha;
-	float d = 1.0 + (alpha2 - 1.0) * cos_theta_m * cos_theta_m;
-	return alpha2 / (M_PI * d * d);
+	float a = cos_theta_m * alpha;
+	float k = alpha / (1.0 - cos_theta_m * cos_theta_m + a * a);
+	return k * k * (1.0 / M_PI);
 }
 
 // From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
@@ -262,7 +262,7 @@ float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, ve
 	float avg = 0.0;
 
 	for (uint i = 0; i < sc_directional_soft_shadow_samples; i++) {
-		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data.directional_soft_shadow_kernel[i].xy), depth, 1.0));
+		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data_block.data.directional_soft_shadow_kernel[i].xy), depth, 1.0));
 	}
 
 	return avg * (1.0 / float(sc_directional_soft_shadow_samples));
@@ -288,7 +288,7 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord) {
 	float avg = 0.0;
 
 	for (uint i = 0; i < sc_soft_shadow_samples; i++) {
-		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data.soft_shadow_kernel[i].xy), depth, 1.0));
+		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data_block.data.soft_shadow_kernel[i].xy), depth, 1.0));
 	}
 
 	return avg * (1.0 / float(sc_soft_shadow_samples));
@@ -311,10 +311,10 @@ float sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec
 	}
 
 	float avg = 0.0;
-	vec2 offset_scale = blur_scale * 2.0 * scene_data.shadow_atlas_pixel_size / uv_rect.zw;
+	vec2 offset_scale = blur_scale * 2.0 * scene_data_block.data.shadow_atlas_pixel_size / uv_rect.zw;
 
 	for (uint i = 0; i < sc_soft_shadow_samples; i++) {
-		vec2 offset = offset_scale * (disk_rotation * scene_data.soft_shadow_kernel[i].xy);
+		vec2 offset = offset_scale * (disk_rotation * scene_data_block.data.soft_shadow_kernel[i].xy);
 		vec2 sample_coord = coord + offset;
 
 		float sample_coord_length_sqaured = dot(sample_coord, sample_coord);
@@ -351,7 +351,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	}
 
 	for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
-		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
+		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 		float d = textureLod(sampler2D(shadow, material_samplers[SAMPLER_LINEAR_CLAMP]), suv, 0.0).r;
 		if (d < pssm_coord.z) {
 			blocker_average += d;
@@ -367,7 +367,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 
 		float s = 0.0;
 		for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
-			vec2 suv = pssm_coord.xy + (disk_rotation * scene_data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
+			vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 			s += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(suv, pssm_coord.z, 1.0));
 		}
 
@@ -394,7 +394,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 #ifndef SHADOWS_DISABLED
 	if (omni_lights.data[idx].shadow_enabled) {
 		// there is a shadowmap
-		vec2 texel_size = scene_data.shadow_atlas_pixel_size;
+		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
 		vec4 base_uv_rect = omni_lights.data[idx].atlas_rect;
 		base_uv_rect.xy += texel_size;
 		base_uv_rect.zw -= texel_size * 2.0;
@@ -438,7 +438,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			bitangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
 
 			for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
-				vec2 disk = disk_rotation * scene_data.penumbra_shadow_kernel[i].xy;
+				vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
 
 				vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
 
@@ -474,7 +474,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 
 				shadow = 0.0;
 				for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
-					vec2 disk = disk_rotation * scene_data.penumbra_shadow_kernel[i].xy;
+					vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
 					vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
 
 					pos = normalize(pos);
@@ -579,7 +579,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		splane.xy = splane.xy * 0.5 + 0.5;
 		splane.z = shadow_len * omni_lights.data[idx].inv_radius;
 		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
-		//		splane.xy = clamp(splane.xy,clamp_rect.xy + scene_data.shadow_atlas_pixel_size,clamp_rect.xy + clamp_rect.zw - scene_data.shadow_atlas_pixel_size );
+		//		splane.xy = clamp(splane.xy,clamp_rect.xy + scene_data_block.data.shadow_atlas_pixel_size,clamp_rect.xy + clamp_rect.zw - scene_data_block.data.shadow_atlas_pixel_size );
 		splane.w = 1.0; //needed? i think it should be 1 already
 
 		float shadow_z = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), splane.xy, 0.0).r;
@@ -709,7 +709,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 			float uv_size = spot_lights.data[idx].soft_shadow_size * z_norm * spot_lights.data[idx].soft_shadow_scale;
 			vec2 clamp_max = spot_lights.data[idx].atlas_rect.xy + spot_lights.data[idx].atlas_rect.zw;
 			for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
-				vec2 suv = shadow_uv + (disk_rotation * scene_data.penumbra_shadow_kernel[i].xy) * uv_size;
+				vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 				float d = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), suv, 0.0).r;
 				if (d < splane.z) {
@@ -726,7 +726,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 
 				shadow = 0.0;
 				for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
-					vec2 suv = shadow_uv + (disk_rotation * scene_data.penumbra_shadow_kernel[i].xy) * uv_size;
+					vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 					suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(suv, splane.z, 1.0));
 				}
@@ -740,7 +740,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		} else {
 			//hard shadow
 			vec3 shadow_uv = vec3(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z);
-			shadow = sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data.shadow_atlas_pixel_size, shadow_uv);
+			shadow = sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data_block.data.shadow_atlas_pixel_size, shadow_uv);
 		}
 
 		return shadow;
@@ -869,7 +869,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			diffuse_light, specular_light);
 }
 
-void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
+void reflection_process(uint ref_index, vec3 view, vec3 vertex, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
 	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
 
@@ -877,7 +877,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughnes
 		return;
 	}
 
-	vec3 ref_vec = normalize(reflect(vertex, normal));
+	vec3 ref_vec = normalize(reflect(-view, normal));
 
 	vec3 inner_pos = abs(local_pos / box_extents);
 	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));

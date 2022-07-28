@@ -69,6 +69,7 @@ public:
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
+		EMISSION_SHAPE_SPHERE_SURFACE,
 		EMISSION_SHAPE_RECTANGLE,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
@@ -136,7 +137,7 @@ private:
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
 	double speed_scale = 1.0;
-	bool local_coords;
+	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
 

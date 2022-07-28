@@ -106,15 +106,7 @@ static Vector<String> _get_hierarchy(String p_class_name) {
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
-				if (language_icon.is_valid()) {
-					language_menu->set_item_icon(i, language_icon);
-				}
-			}
-
+		case NOTIFICATION_ENTER_TREE: {
 			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
 			if (!last_language.is_empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
@@ -127,9 +119,15 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
-			if (EditorSettings::get_singleton()->has_meta("script_setup/use_script_templates")) {
-				is_using_templates = bool(EditorSettings::get_singleton()->get_meta("script_setup/use_script_templates"));
-				use_templates->set_pressed(is_using_templates);
+
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
+				if (language_icon.is_valid()) {
+					language_menu->set_item_icon(i, language_icon);
+				}
 			}
 
 			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
@@ -247,23 +245,22 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		return TTR("Path is not local.");
 	}
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (d->change_dir(p.get_base_dir()) != OK) {
-		memdelete(d);
-		return TTR("Base path is invalid.");
+	{
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->change_dir(p.get_base_dir()) != OK) {
+			return TTR("Base path is invalid.");
+		}
 	}
-	memdelete(d);
 
-	// Check if file exists.
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->dir_exists(p)) {
-		memdelete(f);
-		return TTR("A directory with the same name exists.");
-	} else if (p_file_must_exist && !f->file_exists(p)) {
-		memdelete(f);
-		return TTR("File does not exist.");
+	{
+		// Check if file exists.
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->dir_exists(p)) {
+			return TTR("A directory with the same name exists.");
+		} else if (p_file_must_exist && !da->file_exists(p)) {
+			return TTR("File does not exist.");
+		}
 	}
-	memdelete(f);
 
 	// Check file extension.
 	String extension = p.get_extension();
@@ -333,13 +330,8 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 			dic_templates_project[parent_name->get_text()] = sinfo.get_hash();
 			EditorSettings::get_singleton()->set_project_metadata("script_setup", "templates_dictionary", dic_templates_project);
 		} else {
-			// Save template into to editor dictionary (not a project template).
-			Dictionary dic_templates;
-			if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {
-				dic_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup/templates_dictionary");
-			}
-			dic_templates[parent_name->get_text()] = sinfo.get_hash();
-			EditorSettings::get_singleton()->set_meta("script_setup/templates_dictionary", dic_templates);
+			// Save template info to editor dictionary (not a project template).
+			templates_dictionary[parent_name->get_text()] = sinfo.get_hash();
 			// Remove template from project dictionary as we last used an editor level template.
 			Dictionary dic_templates_project = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
 			if (dic_templates_project.has(parent_name->get_text())) {
@@ -406,7 +398,7 @@ void ScriptCreateDialog::_create_new() {
 
 void ScriptCreateDialog::_load_exist() {
 	String path = file_path->get_text();
-	RES p_script = ResourceLoader::load(path, "Script");
+	Ref<Resource> p_script = ResourceLoader::load(path, "Script");
 	if (p_script.is_null()) {
 		alert->set_text(vformat(TTR("Error loading script from %s"), path));
 		alert->popup_centered();
@@ -480,7 +472,6 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
-	EditorSettings::get_singleton()->set_meta("script_setup/use_script_templates", is_using_templates);
 	_update_dialog();
 }
 
@@ -490,7 +481,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	if (p_save) {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 		file_browse->set_title(TTR("Open Script / Choose Location"));
-		file_browse->get_ok_button()->set_text(TTR("Open"));
+		file_browse->set_ok_button_text(TTR("Open"));
 	} else {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 		file_browse->set_title(TTR("Open Script"));
@@ -537,7 +528,7 @@ void ScriptCreateDialog::_browse_class_in_tree() {
 	select_class->set_base_type(base_type);
 	select_class->popup_create(true);
 	select_class->set_title(vformat(TTR("Inherit %s"), base_type));
-	select_class->get_ok_button()->set_text(TTR("Inherit"));
+	select_class->set_ok_button_text(TTR("Inherit"));
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
@@ -556,13 +547,12 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	}
 
 	// Check if file exists.
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
-	if (f->file_exists(p)) {
+	if (da->file_exists(p)) {
 		is_new_script_created = false;
 		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
-	memdelete(f);
 
 	is_path_valid = true;
 	_update_dialog();
@@ -599,10 +589,6 @@ void ScriptCreateDialog::_update_template_menu() {
 	if (is_language_using_templates) {
 		// Get the latest templates used for each type of node from project settings then global settings.
 		Dictionary last_local_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
-		Dictionary last_global_templates;
-		if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {
-			last_global_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup/templates_dictionary");
-		}
 		String inherits_base_type = parent_name->get_text();
 
 		// If it inherits from a script, get its parent class first.
@@ -643,7 +629,7 @@ void ScriptCreateDialog::_update_template_menu() {
 				if (!templates_found.is_empty()) {
 					if (!separator) {
 						template_menu->add_separator();
-						template_menu->set_item_text(template_menu->get_item_count() - 1, display_name);
+						template_menu->set_item_text(-1, display_name);
 						separator = true;
 					}
 					for (ScriptLanguage::ScriptTemplate &t : templates_found) {
@@ -657,7 +643,7 @@ void ScriptCreateDialog::_update_template_menu() {
 						// Check for last used template for this node in project settings then in global settings.
 						if (last_local_templates.has(parent_name->get_text()) && t.get_hash() == String(last_local_templates[parent_name->get_text()])) {
 							last_used_template = id;
-						} else if (last_used_template == -1 && last_global_templates.has(parent_name->get_text()) && t.get_hash() == String(last_global_templates[parent_name->get_text()])) {
+						} else if (last_used_template == -1 && templates_dictionary.has(parent_name->get_text()) && t.get_hash() == String(templates_dictionary[parent_name->get_text()])) {
 							last_used_template = id;
 						}
 						t.id = id;
@@ -764,7 +750,7 @@ void ScriptCreateDialog::_update_dialog() {
 	parent_browse_button->set_disabled(!is_new_file || !can_inherit_from_file);
 	template_inactive_message = "";
 	String button_text = is_new_file ? TTR("Create") : TTR("Load");
-	get_ok_button()->set_text(button_text);
+	set_ok_button_text(button_text);
 
 	if (is_new_file) {
 		if (is_built_in) {
@@ -838,8 +824,8 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 
 	String dir_path = p_dir.plus_file(p_object);
 
-	DirAccess *d = DirAccess::open(dir_path);
-	if (d) {
+	Ref<DirAccess> d = DirAccess::open(dir_path);
+	if (d.is_valid()) {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (file != String()) {
@@ -849,7 +835,6 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 	}
 	return user_templates;
 }
@@ -873,7 +858,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 
 	// Parse file for meta-information and script content
 	Error err;
-	FileAccess *file = FileAccess::open(p_path.plus_file(p_filename), FileAccess::READ, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path.plus_file(p_filename), FileAccess::READ, &err);
 	if (!err) {
 		while (!file->eof_reached()) {
 			String line = file->get_line();
@@ -905,8 +890,6 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 				script_template.content += line.replace("\t", "_TS_") + "\n";
 			}
 		}
-		file->close();
-		memdelete(file);
 	}
 
 	script_template.content = script_template.content.lstrip("\n");
@@ -957,7 +940,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	builtin_warning_label->hide();
 
 	script_name_warning_label = memnew(Label);
@@ -965,12 +948,12 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
 	vb->add_child(script_name_warning_label);
 	script_name_warning_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
-	script_name_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	script_name_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	script_name_warning_label->hide();
 
 	template_info_label = memnew(Label);
 	vb->add_child(template_info_label);
-	template_info_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	template_info_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
@@ -1029,7 +1012,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
-	is_browsing_parent = false;
 
 	/* Class Name */
 
@@ -1040,8 +1022,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(class_name);
 
 	/* Templates */
-
-	is_using_templates = true;
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	HBoxContainer *template_hb = memnew(HBoxContainer);
 	template_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1082,7 +1062,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);
 	gc->add_child(hb);
-	re_check_path = false;
 	path_controls[0] = label;
 	path_controls[1] = hb;
 
@@ -1109,9 +1088,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_browse->connect("file_selected", callable_mp(this, &ScriptCreateDialog::_file_selected));
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_browse);
-	get_ok_button()->set_text(TTR("Create"));
+	set_ok_button_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
@@ -1119,17 +1098,4 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	set_hide_on_ok(false);
 	set_title(TTR("Attach Node Script"));
-
-	is_parent_name_valid = false;
-	is_class_name_valid = false;
-	is_path_valid = false;
-
-	has_named_classes = false;
-	supports_built_in = false;
-	can_inherit_from_file = false;
-	is_built_in = false;
-	built_in_enabled = true;
-	load_enabled = true;
-
-	is_new_script_created = true;
 }

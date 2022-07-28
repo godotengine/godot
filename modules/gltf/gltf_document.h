@@ -31,55 +31,19 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
-#include "gltf_animation.h"
+#include "gltf_defines.h"
+#include "structures/gltf_animation.h"
 
-#include "core/error/error_list.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
-#include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
-#include <cstdint>
-
-class GLTFState;
-class GLTFSkin;
-class GLTFNode;
-class GLTFSpecGloss;
-class GLTFSkeleton;
-class CSGShape3D;
-class GridMap;
-class MultiMeshInstance3D;
-class GLTFDocumentExtension;
-
-using GLTFAccessorIndex = int;
-using GLTFAnimationIndex = int;
-using GLTFBufferIndex = int;
-using GLTFBufferViewIndex = int;
-using GLTFCameraIndex = int;
-using GLTFImageIndex = int;
-using GLTFMaterialIndex = int;
-using GLTFMeshIndex = int;
-using GLTFLightIndex = int;
-using GLTFNodeIndex = int;
-using GLTFSkeletonIndex = int;
-using GLTFSkinIndex = int;
-using GLTFTextureIndex = int;
-
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
-	friend class GLTFState;
-	friend class GLTFSkin;
-	friend class GLTFSkeleton;
 	TypedArray<GLTFDocumentExtension> document_extensions;
 
 private:
@@ -88,15 +52,6 @@ private:
 public:
 	GLTFDocument();
 	const int32_t JOINT_GROUP_SIZE = 4;
-	enum GLTFType {
-		TYPE_SCALAR,
-		TYPE_VEC2,
-		TYPE_VEC3,
-		TYPE_VEC4,
-		TYPE_MAT2,
-		TYPE_MAT3,
-		TYPE_MAT4,
-	};
 
 	enum {
 		ARRAY_BUFFER = 34962,
@@ -125,58 +80,6 @@ public:
 	TypedArray<GLTFDocumentExtension> get_extensions() const;
 
 private:
-	template <class T>
-	static Array to_array(const Vector<T> &p_inp) {
-		Array ret;
-		for (int i = 0; i < p_inp.size(); i++) {
-			ret.push_back(p_inp[i]);
-		}
-		return ret;
-	}
-
-	template <class T>
-	static Array to_array(const Set<T> &p_inp) {
-		Array ret;
-		typename Set<T>::Element *elem = p_inp.front();
-		while (elem) {
-			ret.push_back(elem->get());
-			elem = elem->next();
-		}
-		return ret;
-	}
-
-	template <class T>
-	static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
-		r_out.clear();
-		for (int i = 0; i < p_inp.size(); i++) {
-			r_out.push_back(p_inp[i]);
-		}
-	}
-
-	template <class T>
-	static void set_from_array(Set<T> &r_out, const Array &p_inp) {
-		r_out.clear();
-		for (int i = 0; i < p_inp.size(); i++) {
-			r_out.insert(p_inp[i]);
-		}
-	}
-	template <class K, class V>
-	static Dictionary to_dict(const Map<K, V> &p_inp) {
-		Dictionary ret;
-		for (typename Map<K, V>::Element *E = p_inp.front(); E; E = E->next()) {
-			ret[E->key()] = E->value();
-		}
-		return ret;
-	}
-
-	template <class K, class V>
-	static void set_from_dict(Map<K, V> &r_out, const Dictionary &p_inp) {
-		r_out.clear();
-		Array keys = p_inp.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			r_out[keys[i]] = p_inp[keys[i]];
-		}
-	}
 	void _build_parent_hierachy(Ref<GLTFState> state);
 	double _filter_number(double p_float);
 	String _get_component_type_name(const uint32_t p_component);
@@ -184,7 +87,7 @@ private:
 	Error _parse_scenes(Ref<GLTFState> state);
 	Error _parse_nodes(Ref<GLTFState> state);
 	String _get_type_name(const GLTFType p_component);
-	String _get_accessor_type_name(const GLTFDocument::GLTFType p_type);
+	String _get_accessor_type_name(const GLTFType p_type);
 	String _gen_unique_name(Ref<GLTFState> state, const String &p_name);
 	String _sanitize_animation_name(const String &name);
 	String _gen_unique_animation_name(Ref<GLTFState> state, const String &p_name);
@@ -196,7 +99,7 @@ private:
 	Ref<Texture2D> _get_texture(Ref<GLTFState> state,
 			const GLTFTextureIndex p_texture);
 	Error _parse_json(const String &p_path, Ref<GLTFState> state);
-	Error _parse_glb(FileAccess *f, Ref<GLTFState> state);
+	Error _parse_glb(Ref<FileAccess> f, Ref<GLTFState> state);
 	void _compute_node_heights(Ref<GLTFState> state);
 	Error _parse_buffers(Ref<GLTFState> state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> state);
@@ -381,7 +284,7 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30, String p_base_path = String());
 	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
 	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
 
@@ -457,7 +360,7 @@ public:
 	void _convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			String p_animation_track_name);
 	Error _serialize(Ref<GLTFState> state, const String &p_path);
-	Error _parse(Ref<GLTFState> state, String p_path, FileAccess *f, int p_bake_fps);
+	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps);
 };
 
 #endif // GLTF_DOCUMENT_H

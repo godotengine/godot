@@ -278,6 +278,20 @@ String OpenXRUtil::get_session_state_name(XrSessionState p_session_state) {
 	}
 }
 
+String OpenXRUtil::get_action_type_name(XrActionType p_action_type) {
+	switch (p_action_type) {
+		ENUM_TO_STRING_CASE(XR_ACTION_TYPE_BOOLEAN_INPUT)
+		ENUM_TO_STRING_CASE(XR_ACTION_TYPE_FLOAT_INPUT)
+		ENUM_TO_STRING_CASE(XR_ACTION_TYPE_VECTOR2F_INPUT)
+		ENUM_TO_STRING_CASE(XR_ACTION_TYPE_POSE_INPUT)
+		ENUM_TO_STRING_CASE(XR_ACTION_TYPE_VIBRATION_OUTPUT)
+		ENUM_TO_STRING_CASE(XR_ACTION_TYPE_MAX_ENUM)
+		default: {
+			return String("Action type ") + String::num_int64(int64_t(p_action_type));
+		} break;
+	}
+}
+
 String OpenXRUtil::make_xr_version_string(XrVersion p_version) {
 	String version;
 

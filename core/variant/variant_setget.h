@@ -281,6 +281,16 @@ SETGET_NUMBER_STRUCT(Vector3i, int64_t, x)
 SETGET_NUMBER_STRUCT(Vector3i, int64_t, y)
 SETGET_NUMBER_STRUCT(Vector3i, int64_t, z)
 
+SETGET_NUMBER_STRUCT(Vector4, double, x)
+SETGET_NUMBER_STRUCT(Vector4, double, y)
+SETGET_NUMBER_STRUCT(Vector4, double, z)
+SETGET_NUMBER_STRUCT(Vector4, double, w)
+
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, x)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, y)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, z)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, w)
+
 SETGET_STRUCT(Rect2, Vector2, position)
 SETGET_STRUCT(Rect2, Vector2, size)
 SETGET_STRUCT_FUNC(Rect2, Vector2, end, set_end, get_end)
@@ -293,9 +303,9 @@ SETGET_STRUCT(AABB, Vector3, position)
 SETGET_STRUCT(AABB, Vector3, size)
 SETGET_STRUCT_FUNC(AABB, Vector3, end, set_end, get_end)
 
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, elements[0])
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, y, elements[1])
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, origin, elements[2])
+SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, columns[0])
+SETGET_STRUCT_CUSTOM(Transform2D, Vector2, y, columns[1])
+SETGET_STRUCT_CUSTOM(Transform2D, Vector2, origin, columns[2])
 
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, x, normal.x)
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, y, normal.y)
@@ -308,12 +318,17 @@ SETGET_NUMBER_STRUCT(Quaternion, double, y)
 SETGET_NUMBER_STRUCT(Quaternion, double, z)
 SETGET_NUMBER_STRUCT(Quaternion, double, w)
 
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_axis, get_axis, 0)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_axis, get_axis, 1)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_axis, get_axis, 2)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_column, get_column, 0)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_column, get_column, 1)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_column, get_column, 2)
 
 SETGET_STRUCT(Transform3D, Basis, basis)
 SETGET_STRUCT(Transform3D, Vector3, origin)
+
+SETGET_STRUCT_CUSTOM(Projection, Vector4, x, matrix[0])
+SETGET_STRUCT_CUSTOM(Projection, Vector4, y, matrix[1])
+SETGET_STRUCT_CUSTOM(Projection, Vector4, z, matrix[2])
+SETGET_STRUCT_CUSTOM(Projection, Vector4, w, matrix[3])
 
 SETGET_NUMBER_STRUCT(Color, double, r)
 SETGET_NUMBER_STRUCT(Color, double, g)
@@ -328,5 +343,9 @@ SETGET_NUMBER_STRUCT_FUNC(Color, int64_t, a8, set_a8, get_a8)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, h, set_h, get_h)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, s, set_s, get_s)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, v, set_v, get_v)
+
+SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_h, set_ok_hsl_h, get_ok_hsl_h)
+SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_s, set_ok_hsl_s, get_ok_hsl_s)
+SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_l, set_ok_hsl_l, get_ok_hsl_l)
 
 #endif // VARIANT_SETGET_H

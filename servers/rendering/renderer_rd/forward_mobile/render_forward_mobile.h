@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
-#define RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
+#ifndef RENDER_FORWARD_MOBILE_H
+#define RENDER_FORWARD_MOBILE_H
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -131,12 +131,14 @@ protected:
 		RID depth_msaa;
 		// RID normal_roughness_buffer_msaa;
 
+		RID vrs;
+
 		RID color_fbs[FB_CONFIG_MAX];
 		int width, height;
 		uint32_t view_count;
 
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture);
 
 		~RenderBufferDataForwardMobile();
 	};
@@ -158,7 +160,7 @@ protected:
 		// PASS_MODE_SDF,
 	};
 
-	struct GeometryInstanceForwardMobile;
+	class GeometryInstanceForwardMobile;
 	struct GeometryInstanceSurfaceDataCache;
 	struct RenderElementInfo;
 
@@ -210,20 +212,21 @@ protected:
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
 
 	virtual void _render_shadow_begin() override;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) override;
+	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) override;
 	virtual void _render_shadow_process() override;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) override;
 
-	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) override;
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) override;
+	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) override;
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
 	virtual void _base_uniforms_changed() override;
 	void _update_render_base_uniform_set();
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) override;
 
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _fill_element_info(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1);
@@ -254,11 +257,12 @@ protected:
 		struct UBO {
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+			float inv_view_matrix[16];
+			float view_matrix[16];
 
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
 
 			float viewport_size[2];
 			float screen_pixel_size[2];
@@ -328,7 +332,7 @@ protected:
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 
@@ -514,14 +518,8 @@ protected:
 		GeometryInstanceForwardMobile *owner = nullptr;
 	};
 
-	// !BAS! GeometryInstanceForwardClustered and GeometryInstanceForwardMobile will likely have a lot of overlap
-	// may need to think about making this its own class like GeometryInstanceRD?
-
-	struct GeometryInstanceForwardMobile : public GeometryInstance {
-		// setup
-		uint32_t base_flags = 0;
-		uint32_t flags_cache = 0;
-
+	class GeometryInstanceForwardMobile : public RenderGeometryInstanceBase {
+	public:
 		// this structure maps to our push constant in our shader and is populated right before our draw call
 		struct PushConstant {
 			float transform[16];
@@ -539,28 +537,18 @@ protected:
 		// PushConstant push_constant; // we populate this from our instance data
 
 		//used during rendering
-		uint32_t layer_mask = 1;
 		RID transforms_uniform_set;
-		float depth = 0;
-		bool mirror = false;
 		bool use_projector = false;
 		bool use_soft_shadow = false;
-		Transform3D transform;
 		bool store_transform_cache = true; // if true we copy our transform into our PushConstant, if false we use our transforms UBO and clear our PushConstants transform
-		bool non_uniform_scale = false;
-		AABB transformed_aabb; //needed for LOD
-		float lod_bias = 0.0;
-		float lod_model_scale = 1.0;
-		int32_t shader_parameters_offset = -1;
 		uint32_t instance_count = 0;
 		uint32_t trail_steps = 1;
-		RID mesh_instance;
 
 		// lightmap
 		uint32_t gi_offset_cache = 0; // !BAS! Should rename this to lightmap_offset_cache, in forward clustered this was shared between gi and lightmap
-		uint32_t lightmap_slice_index;
-		Rect2 lightmap_uv_scale;
 		RID lightmap_instance;
+		Rect2 lightmap_uv_scale;
+		uint32_t lightmap_slice_index;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
 		// culled light info
@@ -578,30 +566,20 @@ protected:
 		// do we use this?
 		SelfList<GeometryInstanceForwardMobile> dirty_list_element;
 
-		struct Data {
-			//data used less often goes into regular heap
-			RID base;
-			RS::InstanceType base_type;
-
-			RID skeleton;
-			Vector<RID> surface_materials;
-			RID material_override;
-			RID material_overlay;
-			AABB aabb;
-
-			bool use_baked_light = false;
-			bool cast_double_sided_shadows = false;
-			// bool mirror = false; // !BAS! Does not seem used, we already have this in the main struct
-
-			bool dirty_dependencies = false;
-
-			RendererStorage::DependencyTracker dependency_tracker;
-		};
-
-		Data *data = nullptr;
-
 		GeometryInstanceForwardMobile() :
 				dirty_list_element(this) {}
+
+		virtual void _mark_dirty() override;
+
+		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
+		virtual void set_lightmap_capture(const Color *p_sh9) override;
+
+		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override;
+		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
+		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
+
+		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override;
 	};
 
 	_FORCE_INLINE_ void _fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance);
@@ -609,10 +587,12 @@ protected:
 	void _update_shader_quality_settings() override;
 
 public:
+	static RenderForwardMobile *get_singleton() { return singleton; }
+
 	virtual RID reflection_probe_create_framebuffer(RID p_color, RID p_depth) override;
 
-	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
-	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 	SelfList<GeometryInstanceForwardMobile>::List geometry_instance_dirty_list;
 
@@ -623,41 +603,13 @@ public:
 	void _geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
 	void _geometry_instance_add_surface_with_material_chain(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, RID p_mat_src, RID p_mesh);
 	void _geometry_instance_add_surface(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
-	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
-	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
+	void _geometry_instance_update(RenderGeometryInstance *p_geometry_instance);
 	void _update_dirty_geometry_instances();
 
-	virtual GeometryInstance *geometry_instance_create(RID p_base) override;
-	virtual void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
-	virtual void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override;
-	virtual void geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_overlay) override;
-	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) override;
-	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override;
-	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
-	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override;
-	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override;
-	virtual void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override;
-	virtual void geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) override;
-	virtual void geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) override;
-	virtual void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) override;
-	virtual void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) override;
-	virtual void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
-	virtual void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) override;
-	virtual void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) override;
-	virtual void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) override;
-
-	virtual Transform3D geometry_instance_get_transform(GeometryInstance *p_instance) override;
-	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance) override;
-
-	virtual void geometry_instance_free(GeometryInstance *p_geometry_instance) override;
+	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) override;
+	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
 	virtual uint32_t geometry_instance_get_pair_mask() override;
-	virtual void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override;
-	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
-	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
-	virtual void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override;
-
-	virtual void geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) override;
 
 	virtual bool free(RID p_rid) override;
 
@@ -666,8 +618,9 @@ public:
 	virtual bool is_volumetric_supported() const override;
 	virtual uint32_t get_max_elements() const override;
 
-	RenderForwardMobile(RendererStorageRD *p_storage);
+	RenderForwardMobile();
 	~RenderForwardMobile();
 };
 } // namespace RendererSceneRenderImplementation
-#endif // !RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
+
+#endif // RENDER_FORWARD_MOBILE_H

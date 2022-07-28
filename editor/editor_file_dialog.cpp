@@ -106,7 +106,7 @@ void EditorFileDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				set_process_unhandled_input(false);
+				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -126,7 +126,7 @@ void EditorFileDialog::_notification(int p_what) {
 	}
 }
 
-void EditorFileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -214,7 +214,7 @@ void EditorFileDialog::update_dir() {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
 			drives->add_item(RTR("Network"));
-			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->set_item_disabled(-1, true);
 			drives->select(drives->get_item_count() - 1);
 		} else {
 			drives->select(dir_access->get_current_drive());
@@ -227,10 +227,10 @@ void EditorFileDialog::update_dir() {
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(TTR("Select Current Folder"));
+			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_SAVE_FILE:
@@ -314,8 +314,8 @@ void EditorFileDialog::_post_popup() {
 				recentd.remove_at(i--);
 			} else {
 				recent->add_item(name, folder);
-				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
-				recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+				recent->set_item_metadata(-1, recentd[i]);
+				recent->set_item_icon_modulate(-1, folder_color);
 			}
 		}
 		EditorSettings::get_singleton()->set_recent_dirs(recentd);
@@ -327,7 +327,7 @@ void EditorFileDialog::_post_popup() {
 		_update_favorites();
 	}
 
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 }
 
 void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -394,7 +394,8 @@ void EditorFileDialog::_action_pressed() {
 		return;
 	}
 
-	String f = dir_access->get_current_dir().plus_file(file->get_text());
+	String file_text = file->get_text();
+	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().plus_file(file_text);
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		_save_to_recent();
@@ -506,7 +507,7 @@ void EditorFileDialog::_item_selected(int p_item) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	} else if (mode == FILE_MODE_OPEN_DIR) {
-		get_ok_button()->set_text(TTR("Select This Folder"));
+		set_ok_button_text(TTR("Select This Folder"));
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -528,20 +529,24 @@ void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 }
 
-void EditorFileDialog::_items_clear_selection() {
+void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::LEFT) {
+		return;
+	}
+
 	item_list->deselect_all();
 
 	// If nothing is selected, then block Open button.
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			get_ok_button()->set_disabled(!item_list->is_anything_selected());
 			break;
 
 		case FILE_MODE_OPEN_DIR:
 			get_ok_button()->set_disabled(false);
-			get_ok_button()->set_text(TTR("Select Current Folder"));
+			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 
 		case FILE_MODE_OPEN_ANY:
@@ -582,7 +587,11 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 	}
 }
 
-void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p_pos) {
+void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	// Right click on specific file(s) or folder(s).
 	item_menu->clear();
 	item_menu->reset_size();
@@ -623,10 +632,18 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 }
 
-void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
-	// Right click on folder background. Deselect all files so that actions are applied on the current folder.
+void EditorFileDialog::_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT && p_mouse_button_index != MouseButton::LEFT) {
+		return;
+	}
+
+	// Left or right click on folder background. Deselect all files so that actions are applied on the current folder.
 	for (int i = 0; i < item_list->get_item_count(); i++) {
 		item_list->deselect(i);
+	}
+
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
 	}
 
 	item_menu->clear();
@@ -714,9 +731,9 @@ void EditorFileDialog::update_file_name() {
 		String base_name = file_str.get_basename();
 		Vector<String> filter_substr = filter_str.split(";");
 		if (filter_substr.size() >= 2) {
-			file_str = base_name + "." + filter_substr[0].strip_edges().lstrip("*.").to_lower();
+			file_str = base_name + "." + filter_substr[0].strip_edges().get_extension().to_lower();
 		} else {
-			file_str = base_name + "." + filter_str.get_extension().strip_edges().to_lower();
+			file_str = base_name + "." + filter_str.strip_edges().get_extension().to_lower();
 		}
 		file->set_text(file_str);
 	}
@@ -739,7 +756,7 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 		item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 		item_list->set_max_text_lines(2);
-		item_list->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
+		item_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
@@ -780,11 +797,18 @@ void EditorFileDialog::update_file_list() {
 			continue;
 		}
 
-		if (show_hidden_files || !dir_access->current_is_hidden()) {
+		if (show_hidden_files) {
 			if (!dir_access->current_is_dir()) {
 				files.push_back(item);
 			} else {
 				dirs.push_back(item);
+			}
+		} else if (!dir_access->current_is_hidden()) {
+			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
+			if (dir_access->current_is_dir() && (!EditorFileSystem::_should_skip_directory(full_path) || Engine::get_singleton()->is_project_manager_hint())) {
+				dirs.push_back(item);
+			} else {
+				files.push_back(item);
 			}
 		}
 		item = dir_access->get_next();
@@ -799,9 +823,9 @@ void EditorFileDialog::update_file_list() {
 		item_list->add_item(dir_name);
 
 		if (display_mode == DISPLAY_THUMBNAILS) {
-			item_list->set_item_icon(item_list->get_item_count() - 1, folder_thumbnail);
+			item_list->set_item_icon(-1, folder_thumbnail);
 		} else {
-			item_list->set_item_icon(item_list->get_item_count() - 1, folder);
+			item_list->set_item_icon(-1, folder);
 		}
 
 		Dictionary d;
@@ -809,8 +833,8 @@ void EditorFileDialog::update_file_list() {
 		d["path"] = cdir.plus_file(dir_name);
 		d["dir"] = true;
 
-		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
-		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
+		item_list->set_item_metadata(-1, d);
+		item_list->set_item_icon_modulate(-1, folder_color);
 
 		dirs.pop_front();
 	}
@@ -857,10 +881,10 @@ void EditorFileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(cdir.plus_file(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
-					item_list->set_item_icon(item_list->get_item_count() - 1, file_thumbnail);
-					item_list->set_item_tag_icon(item_list->get_item_count() - 1, icon);
+					item_list->set_item_icon(-1, file_thumbnail);
+					item_list->set_item_tag_icon(-1, icon);
 				} else {
-					item_list->set_item_icon(item_list->get_item_count() - 1, icon);
+					item_list->set_item_icon(-1, icon);
 				}
 			}
 
@@ -869,7 +893,7 @@ void EditorFileDialog::update_file_list() {
 			d["dir"] = false;
 			String fullpath = cdir.plus_file(files.front()->get());
 			d["path"] = fullpath;
-			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+			item_list->set_item_metadata(-1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
@@ -952,8 +976,12 @@ void EditorFileDialog::clear_filters() {
 	invalidate();
 }
 
-void EditorFileDialog::add_filter(const String &p_filter) {
-	filters.push_back(p_filter);
+void EditorFileDialog::add_filter(const String &p_filter, const String &p_description) {
+	if (p_description.is_empty()) {
+		filters.push_back(p_filter);
+	} else {
+		filters.push_back(vformat("%s ; %s", p_filter, p_description));
+	}
 	update_filters();
 	invalidate();
 }
@@ -1009,27 +1037,27 @@ void EditorFileDialog::set_file_mode(FileMode p_mode) {
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open a File"));
 			can_create_dir = false;
 			break;
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open File(s)"));
 			can_create_dir = false;
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open a Directory"));
 			can_create_dir = true;
 			break;
 		case FILE_MODE_OPEN_ANY:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open a File or Directory"));
 			can_create_dir = true;
 			break;
 		case FILE_MODE_SAVE_FILE:
-			get_ok_button()->set_text(TTR("Save"));
+			set_ok_button_text(TTR("Save"));
 			set_title(TTR("Save a File"));
 			can_create_dir = true;
 			break;
@@ -1057,7 +1085,6 @@ void EditorFileDialog::set_access(Access p_access) {
 	if (access == p_access) {
 		return;
 	}
-	memdelete(dir_access);
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1091,9 +1118,18 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 }
 
 void EditorFileDialog::_make_dir_confirm() {
-	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
+	const String stripped_dirname = makedirname->get_text().strip_edges();
+
+	if (dir_access->dir_exists(stripped_dirname)) {
+		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
+		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		makedirname->set_text(""); // Reset label.
+		return;
+	}
+
+	Error err = dir_access->make_dir(stripped_dirname);
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text().strip_edges());
+		dir_access->change_dir(stripped_dirname);
 		invalidate();
 		update_filters();
 		update_dir();
@@ -1293,6 +1329,18 @@ void EditorFileDialog::_update_favorites() {
 	favorite->set_pressed(false);
 
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
+
+	bool fav_changed = false;
+	for (int i = favorited.size() - 1; i >= 0; i--) {
+		if (!dir_access->dir_exists(favorited[i])) {
+			favorited.remove_at(i);
+			fav_changed = true;
+		}
+	}
+	if (fav_changed) {
+		EditorSettings::get_singleton()->set_favorites(favorited);
+	}
+
 	for (int i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res) {
@@ -1320,8 +1368,8 @@ void EditorFileDialog::_update_favorites() {
 			continue; // We don't handle favorite files here.
 		}
 
-		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
-		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
+		favorites->set_item_metadata(-1, favorited[i]);
+		favorites->set_item_icon_modulate(-1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);
@@ -1437,7 +1485,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &EditorFileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
-	ClassDB::bind_method(D_METHOD("add_filter", "filter"), &EditorFileDialog::add_filter);
+	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &EditorFileDialog::add_filter, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &EditorFileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &EditorFileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorFileDialog::get_current_path);
@@ -1470,9 +1518,9 @@ void EditorFileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_file_mode", "get_file_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR), "set_current_dir", "get_current_dir");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*"), "set_current_file", "get_current_file");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path"), "set_current_path", "get_current_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_overwrite_warning"), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
 
@@ -1555,12 +1603,9 @@ bool EditorFileDialog::are_previews_enabled() {
 EditorFileDialog::EditorFileDialog() {
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
-	local_history_pos = 0;
-	disable_overwrite_warning = false;
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
-	mode = FILE_MODE_SAVE_FILE;
 	set_title(TTR("Save a File"));
 
 	ED_SHORTCUT("file_dialog/go_back", TTR("Go Back"), KeyModifierMask::ALT | Key::LEFT);
@@ -1604,7 +1649,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(drives_container);
 
 	dir = memnew(LineEdit);
-	dir->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	dir->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1728,8 +1773,8 @@ EditorFileDialog::EditorFileDialog() {
 
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
-	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
+	item_list->connect("item_clicked", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_clicked));
+	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_item_list_empty_clicked));
 	item_list->set_allow_rmb_select(true);
 
 	list_vb->add_child(item_list);
@@ -1755,7 +1800,7 @@ EditorFileDialog::EditorFileDialog() {
 	file_box->add_child(l);
 
 	file = memnew(LineEdit);
-	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	file->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
@@ -1768,20 +1813,18 @@ EditorFileDialog::EditorFileDialog() {
 	item_vb->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	access = ACCESS_RESOURCES;
 	_update_drives();
 
 	connect("confirmed", callable_mp(this, &EditorFileDialog::_action_pressed));
 	item_list->connect("item_selected", callable_mp(this, &EditorFileDialog::_item_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected), varray());
-	item_list->connect("nothing_selected", callable_mp(this, &EditorFileDialog::_items_clear_selection));
+	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
 	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//confirm_save->set_as_top_level(true);
 	add_child(confirm_save);
 	confirm_save->connect("confirmed", callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
 
@@ -1799,7 +1842,7 @@ EditorFileDialog::EditorFileDialog() {
 	makedialog->add_child(makevb);
 
 	makedirname = memnew(LineEdit);
-	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	makedirname->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
@@ -1813,20 +1856,13 @@ EditorFileDialog::EditorFileDialog() {
 	set_hide_on_ok(false);
 	vbox = vbc;
 
-	invalidated = true;
 	if (register_func) {
 		register_func(this);
 	}
-
-	previews_enabled = true;
-	preview_wheel_timeout = 0;
-	preview_wheel_index = 0;
-	preview_waiting = false;
 }
 
 EditorFileDialog::~EditorFileDialog() {
 	if (unregister_func) {
 		unregister_func(this);
 	}
-	memdelete(dir_access);
 }

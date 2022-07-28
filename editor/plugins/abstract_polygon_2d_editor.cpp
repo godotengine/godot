@@ -292,15 +292,14 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							_commit_action();
 							return true;
 						} else {
-							Vector<Vector2> vertices2 = _get_polygon(insert.polygon);
-							pre_move_edit = vertices2;
+							pre_move_edit = vertices;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
-							vertices2.insert(edited_point.vertex, edited_point.pos);
+							vertices.insert(edited_point.vertex, edited_point.pos);
 							selected_point = Vertex(edited_point.polygon, edited_point.vertex);
 							edge_point = PosVertex();
 
 							undo_redo->create_action(TTR("Insert Point"));
-							_action_set_polygon(insert.polygon, vertices2);
+							_action_set_polygon(insert.polygon, vertices);
 							_commit_action();
 							return true;
 						}
@@ -566,7 +565,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 				String num = String::num(vertex.vertex);
-				Size2 num_size = font->get_string_size(num, font_size);
+				Size2 num_size = font->get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 				p_overlay->draw_string(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 			}
 		}
@@ -704,10 +703,8 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 }
 
 AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
-	canvas_item_editor = nullptr;
 	undo_redo = EditorNode::get_undo_redo();
 
-	wip_active = false;
 	edited_point = PosVertex();
 	wip_destructive = p_wip_destructive;
 
@@ -736,9 +733,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
-	create_resource->get_ok_button()->set_text(TTR("Create"));
-
-	mode = MODE_EDIT;
+	create_resource->set_ok_button_text(TTR("Create"));
 }
 
 void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {

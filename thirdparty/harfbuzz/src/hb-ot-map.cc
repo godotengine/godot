@@ -43,7 +43,7 @@ void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t *lookups_o
 
 
 hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
-					  const hb_segment_properties_t *props_)
+					  const hb_segment_properties_t &props_)
 {
   memset (this, 0, sizeof (*this));
 
@@ -52,7 +52,7 @@ hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
     stages[table_index].init ();
 
   face = face_;
-  props = *props_;
+  props = props_;
 
   /* Fetch script/language indices for GSUB/GPOS.  We need these later to skip
    * features not available in either table and not waste precious bits for them. */
@@ -109,6 +109,21 @@ void hb_ot_map_builder_t::add_feature (hb_tag_t tag,
   info->stage[1] = current_stage[1];
 }
 
+bool hb_ot_map_builder_t::has_feature (hb_tag_t tag)
+{
+  for (unsigned int table_index = 0; table_index < 2; table_index++)
+  {
+    if (hb_ot_layout_language_find_feature (face,
+					    table_tags[table_index],
+					    script_index[table_index],
+					    language_index[table_index],
+					    tag,
+					    nullptr))
+      return true;
+  }
+  return false;
+}
+
 void
 hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
 				  unsigned int  table_index,
@@ -117,7 +132,8 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
 				  hb_mask_t     mask,
 				  bool          auto_zwnj,
 				  bool          auto_zwj,
-				  bool          random)
+				  bool          random,
+				  bool          per_syllable)
 {
   unsigned int lookup_indices[32];
   unsigned int offset, len;
@@ -145,6 +161,7 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
       lookup->auto_zwnj = auto_zwnj;
       lookup->auto_zwj = auto_zwj;
       lookup->random = random;
+      lookup->per_syllable = per_syllable;
     }
 
     offset += len;
@@ -277,6 +294,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     map->auto_zwnj = !(info->flags & F_MANUAL_ZWNJ);
     map->auto_zwj = !(info->flags & F_MANUAL_ZWJ);
     map->random = !!(info->flags & F_RANDOM);
+    map->per_syllable = !!(info->flags & F_PER_SYLLABLE);
     if ((info->flags & F_GLOBAL) && info->max_value == 1) {
       /* Uses the global bit */
       map->shift = global_bit_shift;
@@ -319,7 +337,8 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
 		       m.features[i].mask,
 		       m.features[i].auto_zwnj,
 		       m.features[i].auto_zwj,
-		       m.features[i].random);
+		       m.features[i].random,
+		       m.features[i].per_syllable);
 
       /* Sort lookups and merge duplicates */
       if (last_num_lookups < m.lookups[table_index].length)

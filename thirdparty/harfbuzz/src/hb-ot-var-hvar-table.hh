@@ -319,23 +319,27 @@ struct HVARVVAR
 						hvar_plan.index_map_plans.as_array ()));
   }
 
-  float get_advance_var (hb_codepoint_t glyph, hb_font_t *font) const
+  float get_advance_delta_unscaled (hb_codepoint_t  glyph,
+				    const int *coords, unsigned int coord_count,
+				    VariationStore::cache_t *store_cache = nullptr) const
   {
     uint32_t varidx = (this+advMap).map (glyph);
-    return (this+varStore).get_delta (varidx, font->coords, font->num_coords);
+    return (this+varStore).get_delta (varidx,
+				      coords, coord_count,
+				      store_cache);
   }
 
-  float get_side_bearing_var (hb_codepoint_t glyph,
-			      const int *coords, unsigned int coord_count) const
+  bool get_lsb_delta_unscaled (hb_codepoint_t glyph,
+			       const int *coords, unsigned int coord_count,
+			       float *lsb) const
   {
-    if (!has_side_bearing_deltas ()) return 0.f;
+    if (!lsbMap) return false;
     uint32_t varidx = (this+lsbMap).map (glyph);
-    return (this+varStore).get_delta (varidx, coords, coord_count);
+    *lsb = (this+varStore).get_delta (varidx, coords, coord_count);
+    return true;
   }
 
-  bool has_side_bearing_deltas () const { return lsbMap && rsbMap; }
-
-  protected:
+  public:
   FixedVersion<>version;	/* Version of the metrics variation table
 				 * initially set to 0x00010000u */
   Offset32To<VariationStore>
@@ -386,6 +390,16 @@ struct VVAR : HVARVVAR {
   }
 
   bool subset (hb_subset_context_t *c) const { return HVARVVAR::_subset<VVAR> (c); }
+
+  bool get_vorg_delta_unscaled (hb_codepoint_t glyph,
+				const int *coords, unsigned int coord_count,
+				float *delta) const
+  {
+    if (!vorgMap) return false;
+    uint32_t varidx = (this+vorgMap).map (glyph);
+    *delta = (this+varStore).get_delta (varidx, coords, coord_count);
+    return true;
+  }
 
   protected:
   Offset32To<DeltaSetIndexMap>

@@ -48,6 +48,7 @@
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
+#include <dwrite.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <regstr.h>
@@ -129,8 +130,33 @@ void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
 
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
+	String err_str;
+	if (p_errorexp && p_errorexp[0]) {
+		err_str = String::utf8(p_errorexp);
+	} else {
+		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
+	}
+
+	if (p_editor_notify) {
+		err_str += " (User)\n";
+	} else {
+		err_str += "\n";
+	}
+
+	OutputDebugStringW((LPCWSTR)err_str.utf16().ptr());
+}
+#endif
+
 void OS_Windows::initialize() {
 	crash_handler.initialize();
+
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	error_handlers.errfunc = _error_handler;
+	error_handlers.userdata = this;
+	add_error_handler(&error_handlers);
+#endif
 
 #ifndef WINDOWS_SUBSYSTEM_CONSOLE
 	RedirectIOToConsole();
@@ -153,7 +179,7 @@ void OS_Windows::initialize() {
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	timeBeginPeriod(1);
 
-	process_map = memnew((Map<ProcessID, ProcessInfo>));
+	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	// Add current Godot PID to the list of known PIDs
 	ProcessInfo current_pi = {};
@@ -194,6 +220,10 @@ void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
+
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	remove_error_handler(&error_handlers);
+#endif
 }
 
 Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
@@ -202,7 +232,7 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	return OK;
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
@@ -228,6 +258,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	if (cookie) {
 		remove_dll_directory(cookie);
+	}
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
 	}
 
 	return OK;
@@ -264,12 +298,19 @@ OS::Date OS_Windows::get_date(bool p_utc) const {
 		GetLocalTime(&systemtime);
 	}
 
+	//Get DST information from Windows, but only if p_utc is false.
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (!p_utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
+		daylight = true;
+	}
+
 	Date date;
 	date.day = systemtime.wDay;
 	date.month = Month(systemtime.wMonth);
 	date.weekday = Weekday(systemtime.wDayOfWeek);
 	date.year = systemtime.wYear;
-	date.dst = false;
+	date.dst = daylight;
 	return date;
 }
 
@@ -295,16 +336,19 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 		daylight = true;
 	}
 
+	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
 	if (daylight) {
 		ret.name = info.DaylightName;
+		ret.bias = info.Bias + info.DaylightBias;
 	} else {
 		ret.name = info.StandardName;
+		ret.bias = info.Bias + info.StandardBias;
 	}
 
 	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
 	// For example, on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
-	ret.bias = -info.Bias;
+	ret.bias = -ret.bias;
 	return ret;
 }
 
@@ -373,6 +417,31 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
+static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_pipe_mutex) {
+	// Try to convert from default ANSI code page to Unicode.
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, nullptr, 0);
+	if (total_wchars > 0) {
+		wchars.resize(total_wchars);
+		if (MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, wchars.ptr(), total_wchars) == 0) {
+			wchars.clear();
+		}
+	}
+
+	if (p_pipe_mutex) {
+		p_pipe_mutex->lock();
+	}
+	if (wchars.is_empty()) {
+		// Let's hope it's compatible with UTF-8.
+		(*r_pipe) += String::utf8(p_bytes, p_size);
+	} else {
+		(*r_pipe) += String(wchars.ptr(), total_wchars);
+	}
+	if (p_pipe_mutex) {
+		p_pipe_mutex->unlock();
+	}
+}
+
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
@@ -421,21 +490,44 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	if (r_pipe) {
 		CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
-		char buf[4096];
+
+		LocalVector<char> bytes;
+		int bytes_in_buffer = 0;
+
+		const int CHUNK_SIZE = 4096;
 		DWORD read = 0;
 		for (;;) { // Read StdOut and StdErr from pipe.
-			bool success = ReadFile(pipe[0], buf, 4096, &read, NULL);
+			bytes.resize(bytes_in_buffer + CHUNK_SIZE);
+			const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, NULL);
 			if (!success || read == 0) {
 				break;
 			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
+
+			// Assume that all possible encodings are ASCII-compatible.
+			// Break at newline to allow receiving long output in portions.
+			int newline_index = -1;
+			for (int i = read - 1; i >= 0; i--) {
+				if (bytes[bytes_in_buffer + i] == '\n') {
+					newline_index = i;
+					break;
+				}
 			}
-			(*r_pipe) += String::utf8(buf, read);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
+			if (newline_index == -1) {
+				bytes_in_buffer += read;
+				continue;
 			}
+
+			const int bytes_to_convert = bytes_in_buffer + (newline_index + 1);
+			_append_to_pipe(bytes.ptr(), bytes_to_convert, r_pipe, p_pipe_mutex);
+
+			bytes_in_buffer = read - (newline_index + 1);
+			memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
 		}
+
+		if (bytes_in_buffer > 0) {
+			_append_to_pipe(bytes.ptr(), bytes_in_buffer, r_pipe, p_pipe_mutex);
+		}
+
 		CloseHandle(pipe[0]); // Close pipe read handle.
 	} else {
 		WaitForSingleObject(pi.pi.hProcess, INFINITE);
@@ -503,12 +595,160 @@ int OS_Windows::get_process_id() const {
 	return _getpid();
 }
 
+bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	if (!process_map->has(p_pid)) {
+		return false;
+	}
+
+	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return false;
+	}
+
+	if (dw_exit_code != STILL_ACTIVE) {
+		return false;
+	}
+
+	return true;
+}
+
 Error OS_Windows::set_cwd(const String &p_cwd) {
 	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0) {
 		return ERR_CANT_OPEN;
 	}
 
 	return OK;
+}
+
+Vector<String> OS_Windows::get_system_fonts() const {
+	Vector<String> ret;
+	HashSet<String> font_names;
+
+	ComAutoreleaseRef<IDWriteFactory> dwrite_factory;
+	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory.reference));
+	ERR_FAIL_COND_V(FAILED(hr) || dwrite_factory.is_null(), ret);
+
+	ComAutoreleaseRef<IDWriteFontCollection> font_collection;
+	hr = dwrite_factory->GetSystemFontCollection(&font_collection.reference, false);
+	ERR_FAIL_COND_V(FAILED(hr) || font_collection.is_null(), ret);
+
+	UINT32 family_count = font_collection->GetFontFamilyCount();
+	for (UINT32 i = 0; i < family_count; i++) {
+		ComAutoreleaseRef<IDWriteFontFamily> family;
+		hr = font_collection->GetFontFamily(i, &family.reference);
+		ERR_CONTINUE(FAILED(hr) || family.is_null());
+
+		ComAutoreleaseRef<IDWriteLocalizedStrings> family_names;
+		hr = family->GetFamilyNames(&family_names.reference);
+		ERR_CONTINUE(FAILED(hr) || family_names.is_null());
+
+		UINT32 index = 0;
+		BOOL exists = false;
+		UINT32 length = 0;
+		Char16String name;
+
+		hr = family_names->FindLocaleName(L"en-us", &index, &exists);
+		ERR_CONTINUE(FAILED(hr));
+
+		hr = family_names->GetStringLength(index, &length);
+		ERR_CONTINUE(FAILED(hr));
+
+		name.resize(length + 1);
+		hr = family_names->GetString(index, (WCHAR *)name.ptrw(), length + 1);
+		ERR_CONTINUE(FAILED(hr));
+
+		font_names.insert(String::utf16(name.ptr(), length));
+	}
+
+	for (const String &E : font_names) {
+		ret.push_back(E);
+	}
+	return ret;
+}
+
+String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	String font_name = p_font_name;
+	if (font_name.to_lower() == "sans-serif") {
+		font_name = "Arial";
+	} else if (font_name.to_lower() == "serif") {
+		font_name = "Times New Roman";
+	} else if (font_name.to_lower() == "monospace") {
+		font_name = "Courier New";
+	} else if (font_name.to_lower() == "cursive") {
+		font_name = "Comic Sans MS";
+	} else if (font_name.to_lower() == "fantasy") {
+		font_name = "Gabriola";
+	}
+
+	ComAutoreleaseRef<IDWriteFactory> dwrite_factory;
+	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory.reference));
+	ERR_FAIL_COND_V(FAILED(hr) || dwrite_factory.is_null(), String());
+
+	ComAutoreleaseRef<IDWriteFontCollection> font_collection;
+	hr = dwrite_factory->GetSystemFontCollection(&font_collection.reference, false);
+	ERR_FAIL_COND_V(FAILED(hr) || font_collection.is_null(), String());
+
+	UINT32 index = 0;
+	BOOL exists = false;
+	font_collection->FindFamilyName((const WCHAR *)font_name.utf16().get_data(), &index, &exists);
+	if (FAILED(hr)) {
+		return String();
+	}
+
+	ComAutoreleaseRef<IDWriteFontFamily> family;
+	hr = font_collection->GetFontFamily(index, &family.reference);
+	if (FAILED(hr) || family.is_null()) {
+		return String();
+	}
+
+	ComAutoreleaseRef<IDWriteFont> dwrite_font;
+	hr = family->GetFirstMatchingFont(p_bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, p_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL, &dwrite_font.reference);
+	if (FAILED(hr) || dwrite_font.is_null()) {
+		return String();
+	}
+
+	ComAutoreleaseRef<IDWriteFontFace> dwrite_face;
+	hr = dwrite_font->CreateFontFace(&dwrite_face.reference);
+	if (FAILED(hr) || dwrite_face.is_null()) {
+		return String();
+	}
+
+	UINT32 number_of_files = 0;
+	hr = dwrite_face->GetFiles(&number_of_files, nullptr);
+	if (FAILED(hr)) {
+		return String();
+	}
+	Vector<ComAutoreleaseRef<IDWriteFontFile>> files;
+	files.resize(number_of_files);
+	hr = dwrite_face->GetFiles(&number_of_files, (IDWriteFontFile **)files.ptrw());
+	if (FAILED(hr)) {
+		return String();
+	}
+
+	for (UINT32 i = 0; i < number_of_files; i++) {
+		void const *reference_key = nullptr;
+		UINT32 reference_key_size = 0;
+		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
+
+		hr = files.write[i]->GetLoader((IDWriteFontFileLoader **)&loader.reference);
+		if (FAILED(hr) || loader.is_null()) {
+			continue;
+		}
+		hr = files.write[i]->GetReferenceKey(&reference_key, &reference_key_size);
+		if (FAILED(hr)) {
+			continue;
+		}
+
+		WCHAR file_path[MAX_PATH];
+		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
+		if (FAILED(hr)) {
+			continue;
+		}
+		return String::utf16((const char16_t *)&file_path[0]);
+	}
+	return String();
 }
 
 String OS_Windows::get_executable_path() const {
@@ -676,6 +916,58 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+uint64_t OS_Windows::get_embedded_pck_offset() const {
+	Ref<FileAccess> f = FileAccess::open(get_executable_path(), FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+
+	// Process header.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return 0;
+		}
+	}
+
+	int num_sections;
+	{
+		int64_t header_pos = f->get_position();
+
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(f->get_position() + 2 + opt_header_size);
+	}
+	int64_t section_table_pos = f->get_position();
+
+	// Search for the "pck" section.
+	int64_t off = 0;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (strcmp((char *)section_name, "pck") == 0) {
+			f->seek(section_header_pos + 20);
+			off = f->get_32();
+			break;
+		}
+	}
+
+	return off;
+}
+
 String OS_Windows::get_config_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CONFIG_HOME")) {
@@ -789,9 +1081,9 @@ String OS_Windows::get_user_data_dir() const {
 }
 
 String OS_Windows::get_unique_id() const {
-	HW_PROFILE_INFO HwProfInfo;
-	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
-	return String::utf16((const char16_t *)(HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
+	HW_PROFILE_INFOA HwProfInfo;
+	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
+	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {

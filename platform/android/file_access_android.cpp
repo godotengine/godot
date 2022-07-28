@@ -34,12 +34,20 @@
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
-FileAccess *FileAccessAndroid::create_android() {
-	return memnew(FileAccessAndroid);
+String FileAccessAndroid::get_path() const {
+	return path_src;
+}
+
+String FileAccessAndroid::get_path_absolute() const {
+	return absolute_path;
 }
 
 Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
+	_close();
+
+	path_src = p_path;
 	String path = fix_path(p_path).simplify_path();
+	absolute_path = path;
 	if (path.begins_with("/")) {
 		path = path.substr(1, path.length());
 	} else if (path.begins_with("res://")) {
@@ -47,33 +55,33 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	}
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, ERR_UNAVAILABLE); //can't write on android..
-	a = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
-	if (!a) {
+	asset = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
+	if (!asset) {
 		return ERR_CANT_OPEN;
 	}
-	len = AAsset_getLength(a);
+	len = AAsset_getLength(asset);
 	pos = 0;
 	eof = false;
 
 	return OK;
 }
 
-void FileAccessAndroid::close() {
-	if (!a) {
+void FileAccessAndroid::_close() {
+	if (!asset) {
 		return;
 	}
-	AAsset_close(a);
-	a = nullptr;
+	AAsset_close(asset);
+	asset = nullptr;
 }
 
 bool FileAccessAndroid::is_open() const {
-	return a != nullptr;
+	return asset != nullptr;
 }
 
 void FileAccessAndroid::seek(uint64_t p_position) {
-	ERR_FAIL_COND(!a);
+	ERR_FAIL_NULL(asset);
 
-	AAsset_seek(a, p_position, SEEK_SET);
+	AAsset_seek(asset, p_position, SEEK_SET);
 	pos = p_position;
 	if (pos > len) {
 		pos = len;
@@ -84,8 +92,8 @@ void FileAccessAndroid::seek(uint64_t p_position) {
 }
 
 void FileAccessAndroid::seek_end(int64_t p_position) {
-	ERR_FAIL_COND(!a);
-	AAsset_seek(a, p_position, SEEK_END);
+	ERR_FAIL_NULL(asset);
+	AAsset_seek(asset, p_position, SEEK_END);
 	pos = len + p_position;
 }
 
@@ -108,7 +116,7 @@ uint8_t FileAccessAndroid::get_8() const {
 	}
 
 	uint8_t byte;
-	AAsset_read(a, &byte, 1);
+	AAsset_read(asset, &byte, 1);
 	pos++;
 	return byte;
 }
@@ -116,7 +124,7 @@ uint8_t FileAccessAndroid::get_8() const {
 uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
-	int r = AAsset_read(a, p_dst, p_length);
+	int r = AAsset_read(asset, p_dst, p_length);
 
 	if (pos + p_length > len) {
 		eof = true;
@@ -132,7 +140,7 @@ uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 }
 
 Error FileAccessAndroid::get_error() const {
-	return eof ? ERR_FILE_EOF : OK; //not sure what else it may happen
+	return eof ? ERR_FILE_EOF : OK; // not sure what else it may happen
 }
 
 void FileAccessAndroid::flush() {
@@ -162,5 +170,5 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 }
 
 FileAccessAndroid::~FileAccessAndroid() {
-	close();
+	_close();
 }

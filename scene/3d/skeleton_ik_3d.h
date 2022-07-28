@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_IK_H
-#define SKELETON_IK_H
+#ifndef SKELETON_IK_3D_H
+#define SKELETON_IK_3D_H
 
 #ifndef _3D_DISABLED
 
@@ -103,7 +103,7 @@ private:
 
 	static void solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos);
 	/// Special solvers that solve only chains with one end effector
-	static void solve_simple_backwards(Chain &r_chain, bool p_solve_magnet);
+	static void solve_simple_backwards(const Chain &r_chain, bool p_solve_magnet);
 	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos);
 
 public:
@@ -192,4 +192,4 @@ private:
 
 #endif // _3D_DISABLED
 
-#endif // SKELETON_IK_H
+#endif // SKELETON_IK_3D_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LIGHTOCCLUDER2D_H
-#define LIGHTOCCLUDER2D_H
+#ifndef LIGHT_OCCLUDER_2D_H
+#define LIGHT_OCCLUDER_2D_H
 
 #include "scene/2d/node_2d.h"
 
@@ -81,10 +81,9 @@ class LightOccluder2D : public Node2D {
 	GDCLASS(LightOccluder2D, Node2D);
 
 	RID occluder;
-	bool enabled;
-	int mask;
+	int mask = 1;
 	Ref<OccluderPolygon2D> occluder_polygon;
-	bool sdf_collision;
+	bool sdf_collision = false;
 	void _poly_changed();
 
 protected:
@@ -112,4 +111,4 @@ public:
 	~LightOccluder2D();
 };
 
-#endif // LIGHTOCCLUDER2D_H
+#endif // LIGHT_OCCLUDER_2D_H

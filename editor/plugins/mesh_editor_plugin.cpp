@@ -112,7 +112,7 @@ MeshEditor::MeshEditor() {
 	viewport->set_world_3d(world_3d); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
-	viewport->set_msaa(Viewport::MSAA_2X);
+	viewport->set_msaa(Viewport::MSAA_4X);
 	set_stretch(true);
 	camera = memnew(Camera3D);
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
@@ -137,7 +137,7 @@ MeshEditor::MeshEditor() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
-	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
 	hb->add_spacer();
 

@@ -34,11 +34,19 @@
 
 static ImageLoaderBMP *image_loader_bmp = nullptr;
 
-void register_bmp_types() {
+void initialize_bmp_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	image_loader_bmp = memnew(ImageLoaderBMP);
 	ImageLoader::add_image_format_loader(image_loader_bmp);
 }
 
-void unregister_bmp_types() {
+void uninitialize_bmp_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	memdelete(image_loader_bmp);
 }

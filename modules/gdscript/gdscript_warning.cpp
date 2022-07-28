@@ -163,6 +163,18 @@ String GDScriptWarning::get_message() const {
 #undef CHECK_SYMBOLS
 }
 
+int GDScriptWarning::get_default_value(Code p_code) {
+	if (get_name_from_code(p_code).to_lower().begins_with("unsafe_")) {
+		return WarnLevel::IGNORE;
+	}
+	return WarnLevel::WARN;
+}
+
+PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
+	// Making this a separate function in case a warning needs different PropertyInfo in the future.
+	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
+}
+
 String GDScriptWarning::get_name() const {
 	return get_name_from_code(code);
 }
@@ -208,6 +220,10 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
 
 	return names[(int)p_code];
+}
+
+String GDScriptWarning::get_settings_path_from_code(Code p_code) {
+	return "debug/gdscript/warnings/" + get_name_from_code(p_code).to_lower();
 }
 
 GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) {

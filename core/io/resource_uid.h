@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_UUID_H
-#define RESOURCE_UUID_H
+#ifndef RESOURCE_UID_H
+#define RESOURCE_UID_H
 
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
@@ -46,14 +46,14 @@ public:
 	static String get_cache_file();
 
 private:
-	void *crypto; // CryptoCore::RandomGenerator (avoid including crypto_core.h)
+	void *crypto = nullptr; // CryptoCore::RandomGenerator (avoid including crypto_core.h)
 	Mutex mutex;
 	struct Cache {
 		CharString cs;
 		bool saved_to_cache = false;
 	};
 
-	OrderedHashMap<ID, Cache> unique_ids; //unique IDs and utf8 paths (less memory used)
+	HashMap<ID, Cache> unique_ids; //unique IDs and utf8 paths (less memory used)
 	static ResourceUID *singleton;
 
 	uint32_t cache_entries = 0;
@@ -85,4 +85,4 @@ public:
 	~ResourceUID();
 };
 
-#endif // RESOURCEUUID_H
+#endif // RESOURCE_UID_H

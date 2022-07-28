@@ -43,9 +43,7 @@
 		</constant>
 		<constant name="INITIALIZATION_LEVEL_SCENE" value="2" enum="InitializationLevel">
 		</constant>
-		<constant name="INITIALIZATION_LEVEL_DRIVER" value="3" enum="InitializationLevel">
-		</constant>
-		<constant name="INITIALIZATION_LEVEL_EDITOR" value="4" enum="InitializationLevel">
+		<constant name="INITIALIZATION_LEVEL_EDITOR" value="3" enum="InitializationLevel">
 		</constant>
 	</constants>
 </class>

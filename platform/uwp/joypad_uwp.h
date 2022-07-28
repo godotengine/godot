@@ -68,7 +68,7 @@ private:
 
 	ControllerDevice controllers[MAX_CONTROLLERS];
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
@@ -78,4 +78,4 @@ private:
 	void joypad_vibration_stop(int p_device, uint64_t p_timestamp);
 };
 
-#endif
+#endif // JOYPAD_UWP_H

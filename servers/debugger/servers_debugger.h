@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SERVER_DEBUGGER_H
-#define SERVER_DEBUGGER_H
+#ifndef SERVERS_DEBUGGER_H
+#define SERVERS_DEBUGGER_H
 
 #include "core/debugger/debugger_marshalls.h"
 
@@ -85,7 +85,7 @@ public:
 	struct ServersProfilerFrame {
 		int frame_number = 0;
 		double frame_time = 0;
-		double idle_time = 0;
+		double process_time = 0;
 		double physics_time = 0;
 		double physics_frame_time = 0;
 		double script_time = 0;

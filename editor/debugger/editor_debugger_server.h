@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_CONNECTION_H
-#define EDITOR_DEBUGGER_CONNECTION_H
+#ifndef EDITOR_DEBUGGER_SERVER_H
+#define EDITOR_DEBUGGER_SERVER_H
 
 #include "core/debugger/remote_debugger_peer.h"
 #include "core/object/ref_counted.h"
@@ -39,7 +39,7 @@ public:
 	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
 
 private:
-	static Map<StringName, CreateServerFunc> protocols;
+	static HashMap<StringName, CreateServerFunc> protocols;
 
 public:
 	static void initialize();
@@ -57,4 +57,4 @@ public:
 	virtual Ref<RemoteDebuggerPeer> take_connection() = 0;
 };
 
-#endif // EDITOR_DEBUGGER_CONNECTION_H
+#endif // EDITOR_DEBUGGER_SERVER_H

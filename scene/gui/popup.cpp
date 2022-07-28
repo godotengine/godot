@@ -111,8 +111,9 @@ void Popup::_close_pressed() {
 	call_deferred(SNAME("hide"));
 }
 
-void Popup::set_as_minsize() {
-	set_size(get_contents_minimum_size());
+void Popup::_post_popup() {
+	Window::_post_popup();
+	popped_up = true;
 }
 
 void Popup::_bind_methods() {

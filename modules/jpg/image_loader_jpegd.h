@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_JPG_H
-#define IMAGE_LOADER_JPG_H
+#ifndef IMAGE_LOADER_JPEGD_H
+#define IMAGE_LOADER_JPEGD_H
 
 #include "core/io/image_loader.h"
 
 class ImageLoaderJPG : public ImageFormatLoader {
 public:
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
+	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderJPG();
 };
 
-#endif
+#endif // IMAGE_LOADER_JPEGD_H

@@ -30,5 +30,6 @@
 		See also [AudioEffectEQ], [AudioEffectEQ6], [AudioEffectEQ10].
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 </class>

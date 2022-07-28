@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_LIGHTMAP_EDITOR_PLUGIN_H
-#define BAKED_LIGHTMAP_EDITOR_PLUGIN_H
+#ifndef LIGHTMAP_GI_EDITOR_PLUGIN_H
+#define LIGHTMAP_GI_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
@@ -41,11 +41,11 @@ class EditorFileDialog;
 class LightmapGIEditorPlugin : public EditorPlugin {
 	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);
 
-	LightmapGI *lightmap;
+	LightmapGI *lightmap = nullptr;
 
-	Button *bake;
+	Button *bake = nullptr;
 
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 	static EditorProgress *tmp_progress;
 	static bool bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh);
 	static void bake_func_end(uint64_t p_time_started);
@@ -67,4 +67,4 @@ public:
 	~LightmapGIEditorPlugin();
 };
 
-#endif
+#endif // LIGHTMAP_GI_EDITOR_PLUGIN_H

@@ -50,7 +50,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	Control *ec = memnew(Control);
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
-	t.progress->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	t.progress->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	ec->add_child(t.progress);
 	ec->set_custom_minimum_size(Size2(80, 5) * EDSCALE);
 	t.hb->add_child(ec);
@@ -235,7 +235,7 @@ void ProgressDialog::_bind_methods() {
 ProgressDialog::ProgressDialog() {
 	main = memnew(VBoxContainer);
 	add_child(main);
-	main->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	main->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	set_exclusive(true);
 	last_progress_tick = 0;
 	singleton = this;

@@ -67,7 +67,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 
 	updating_frame = true;
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0));
+	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0u));
 
 	if (!seeking) {
 		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
@@ -93,7 +93,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 
 void EditorVisualProfiler::clear() {
 	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
-	metric_size = CLAMP(metric_size, 60, 1024);
+	metric_size = CLAMP(metric_size, 60, 10000);
 	frame_metrics.clear();
 	frame_metrics.resize(metric_size);
 	last_metric = -1;
@@ -143,12 +143,12 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-	int w = graph->get_size().width;
-	int h = graph->get_size().height;
+	const int w = graph->get_size().width;
+	const int h = graph->get_size().height;
 
 	bool reset_texture = false;
 
-	int desired_len = w * h * 4;
+	const int desired_len = w * h * 4;
 
 	if (graph_image.size() != desired_len) {
 		reset_texture = true;
@@ -156,12 +156,13 @@ void EditorVisualProfiler::_update_plot() {
 	}
 
 	uint8_t *wr = graph_image.ptrw();
+	const Color background_color = get_theme_color("dark_color_2", "Editor");
 
-	//clear
+	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
-		wr[i + 0] = 0;
-		wr[i + 1] = 0;
-		wr[i + 2] = 0;
+		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
+		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
+		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
 		wr[i + 3] = 255;
 	}
 
@@ -259,9 +260,9 @@ void EditorVisualProfiler::_update_plot() {
 				uint8_t r, g, b;
 
 				if (column_cpu[j].a == 0) {
-					r = 0;
-					g = 0;
-					b = 0;
+					r = Math::fast_ftoi(background_color.r * 255);
+					g = Math::fast_ftoi(background_color.g * 255);
+					b = Math::fast_ftoi(background_color.b * 255);
 				} else {
 					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0, 255);
@@ -279,9 +280,9 @@ void EditorVisualProfiler::_update_plot() {
 				uint8_t r, g, b;
 
 				if (column_gpu[j].a == 0) {
-					r = 0;
-					g = 0;
-					b = 0;
+					r = Math::fast_ftoi(background_color.r * 255);
+					g = Math::fast_ftoi(background_color.g * 255);
+					b = Math::fast_ftoi(background_color.b * 255);
 				} else {
 					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
@@ -305,7 +306,7 @@ void EditorVisualProfiler::_update_plot() {
 		if (graph_texture.is_null()) {
 			graph_texture.instantiate();
 		}
-		graph_texture->create_from_image(img);
+		graph_texture->set_image(img);
 	}
 
 	graph_texture->update(img);
@@ -425,6 +426,7 @@ void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_layout_rtl()) {
 				activate->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
@@ -440,8 +442,11 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	if (last_metric < 0) {
 		return;
 	}
+
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	const Color color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -451,10 +456,9 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
-		//cur_x /= 2.0;
 
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
-		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), Color(1, 1, 1, 0.8));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color(1, 1, 1));
+		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color(1, 1, 1));
 	}
 
 	if (graph_height_cpu > 0) {
@@ -462,10 +466,10 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 
-		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), Color(1, 1, 1, 0.3));
+		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), color * Color(1, 1, 1, 0.5));
 
-		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
+		const String limit_str = String::num(graph_limit, 2) + " ms";
+		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
 	if (graph_height_gpu > 0) {
@@ -473,14 +477,14 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 
-		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), Color(1, 1, 1, 0.3));
+		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), color * Color(1, 1, 1, 0.5));
 
-		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
+		const String limit_str = String::num(graph_limit, 2) + " ms";
+		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
@@ -724,7 +728,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
-	display_mode->add_item(TTR("Frame Time (msec)"));
+	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->connect("item_selected", callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
@@ -778,7 +782,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	graph = memnew(TextureRect);
 	graph->set_ignore_texture_size(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	//graph->set_ignore_mouse(false);
 	graph->connect("draw", callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
 	graph->connect("gui_input", callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
 	graph->connect("mouse_exited", callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
@@ -786,13 +789,8 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
+	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
-	last_metric = -1;
-	//cursor_metric=-1;
-	hover_metric = -1;
-
-	//display_mode=DISPLAY_FRAME_TIME;
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);
@@ -805,12 +803,4 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
 	plot_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_plot));
-
-	seeking = false;
-	graph_height_cpu = 1;
-	graph_height_gpu = 1;
-
-	graph_limit = 1000 / 60.0;
-
-	//activate->set_disabled(true);
 }

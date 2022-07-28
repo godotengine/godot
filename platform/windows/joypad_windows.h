@@ -105,10 +105,10 @@ private:
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
 	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
-	HWND *hWnd;
+	HWND *hWnd = nullptr;
 	HANDLE xinput_dll;
 	LPDIRECTINPUT8 dinput;
-	Input *input;
+	Input *input = nullptr;
 
 	int id_to_change;
 	int slider_count;

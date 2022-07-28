@@ -37,8 +37,8 @@
 #include "core/math/aabb.h"
 #include "core/math/dynamic_bvh.h"
 #include "core/math/vector3.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/set.h"
 #include "core/templates/vset.h"
 
 class GodotConstraint3D;
@@ -103,7 +103,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	SelfList<GodotSoftBody3D> active_list;
 
-	Set<GodotConstraint3D *> constraints;
+	HashSet<GodotConstraint3D *> constraints;
 
 	Vector<AreaCMP> areas;
 
@@ -123,7 +123,7 @@ public:
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<GodotConstraint3D *> &get_constraints() const { return constraints; }
+	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
@@ -153,11 +153,11 @@ public:
 		}
 	}
 
-	virtual void set_space(GodotSpace3D *p_space);
+	virtual void set_space(GodotSpace3D *p_space) override;
 
 	void set_mesh(RID p_mesh);
 
-	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
+	void update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler);
 
 	Vector3 get_vertex_position(int p_index) const;
 	void set_vertex_position(int p_index, const Vector3 &p_position);
@@ -204,8 +204,8 @@ public:
 	void predict_motion(real_t p_delta);
 	void solve_constraints(real_t p_delta);
 
-	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return ((Node *)p_node)->index; }
-	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return ((Face *)p_face)->index; }
+	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return static_cast<Node *>(p_node)->index; }
+	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return static_cast<Face *>(p_face)->index; }
 
 	// Return true to stop the query.
 	// p_index is the node index for AABB query, face index for Ray query.
@@ -215,7 +215,7 @@ public:
 	void query_ray(const Vector3 &p_from, const Vector3 &p_to, QueryResultCallback p_result_callback, void *p_userdata);
 
 protected:
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 
 private:
 	void update_normals_and_centroids();

@@ -208,9 +208,9 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
-	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
+	HashMap<StringName, Object *>::ConstIterator E = singleton_ptrs.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
-	return E->get();
+	return E->value;
 }
 
 bool Engine::is_singleton_user_created(const StringName &p_name) const {
@@ -244,6 +244,14 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	for (const Singleton &E : singletons) {
 		p_singletons->push_back(E);
 	}
+}
+
+String Engine::get_write_movie_path() const {
+	return write_movie_path;
+}
+
+void Engine::set_write_movie_path(const String &p_path) {
+	write_movie_path = p_path;
 }
 
 void Engine::set_shader_cache_path(const String &p_path) {

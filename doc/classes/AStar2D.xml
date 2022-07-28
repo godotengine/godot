@@ -4,7 +4,7 @@
 		AStar class representation that uses 2D vectors as edges.
 	</brief_description>
 	<description>
-		This is a wrapper for the [AStar] class which uses 2D vectors instead of 3D vectors.
+		This is a wrapper for the [AStar3D] class which uses 2D vectors instead of 3D vectors.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -33,7 +33,7 @@
 			<argument index="1" name="position" type="Vector2" />
 			<argument index="2" name="weight_scale" type="float" default="1.0" />
 			<description>
-				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 0.0 or greater.
 				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
 				[codeblocks]
 				[gdscript]
@@ -52,8 +52,9 @@
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="to_id" type="int" />
+			<argument index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Returns whether there is a connection/segment between the given points.
+				Returns whether there is a connection/segment between the given points. If [code]bidirectional[/code] is [code]false[/code], returns whether movement from [code]id[/code] to [code]to_id[/code] is possible through this segment.
 			</description>
 		</method>
 		<method name="clear">
@@ -89,8 +90,9 @@
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="to_id" type="int" />
+			<argument index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Deletes the segment between the given points.
+				Deletes the segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is prevented, and a unidirectional segment possibly remains.
 			</description>
 		</method>
 		<method name="get_available_point_id" qualifiers="const">
@@ -133,7 +135,7 @@
 			</description>
 		</method>
 		<method name="get_id_path">
-			<return type="PackedInt32Array" />
+			<return type="PackedInt64Array" />
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
 			<description>
@@ -177,7 +179,7 @@
 			</description>
 		</method>
 		<method name="get_point_connections">
-			<return type="PackedInt32Array" />
+			<return type="PackedInt64Array" />
 			<argument index="0" name="id" type="int" />
 			<description>
 				Returns an array with the IDs of the points that form the connection with the given point.

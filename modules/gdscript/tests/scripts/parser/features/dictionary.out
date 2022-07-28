@@ -7,8 +7,8 @@ null
 false
 empty array
 zero Vector2i
-{22:{4:[nesting, arrays]}}
-{4:[nesting, arrays]}
-[nesting, arrays]
+{22:{4:["nesting", "arrays"]}}
+{4:["nesting", "arrays"]}
+["nesting", "arrays"]
 nesting
 arrays

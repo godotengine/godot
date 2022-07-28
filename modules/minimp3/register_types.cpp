@@ -37,7 +37,11 @@
 #include "resource_importer_mp3.h"
 #endif
 
-void register_minimp3_types() {
+void initialize_minimp3_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		Ref<ResourceImporterMP3> mp3_import;
@@ -48,5 +52,8 @@ void register_minimp3_types() {
 	GDREGISTER_CLASS(AudioStreamMP3);
 }
 
-void unregister_minimp3_types() {
+void uninitialize_minimp3_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

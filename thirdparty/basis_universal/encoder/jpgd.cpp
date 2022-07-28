@@ -23,17 +23,6 @@
 // v1.04, May. 19, 2012: Code tweaks to fix VS2008 static code analysis warnings
 // v2.00, March 20, 2020: Fuzzed with zzuf and afl. Fixed several issues, converted most assert()'s to run-time checks. Added chroma upsampling. Removed freq. domain upsampling. gcc/clang warnings.
 //
-#ifdef _MSC_VER
-#ifndef BASISU_NO_ITERATOR_DEBUG_LEVEL
-#if defined(_DEBUG) || defined(DEBUG)
-#define _ITERATOR_DEBUG_LEVEL 1
-#define _SECURE_SCL 1
-#else
-#define _SECURE_SCL 0
-#define _ITERATOR_DEBUG_LEVEL 0
-#endif
-#endif
-#endif
 
 #include "jpgd.h"
 #include <string.h>
@@ -2085,7 +2074,7 @@ namespace jpgd {
 		if (setjmp(m_jmp_state))
 			return JPGD_FAILED;
 
-		const bool chroma_y_filtering = (m_flags & cFlagLinearChromaFiltering) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2));
+		const bool chroma_y_filtering = (m_flags & cFlagLinearChromaFiltering) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2)) && (m_image_x_size >= 2) && (m_image_y_size >= 2);
 		if (chroma_y_filtering)
 		{
 			std::swap(m_pSample_buf, m_pSample_buf_prev);
@@ -2114,7 +2103,7 @@ namespace jpgd {
 		if (m_total_lines_left == 0)
 			return JPGD_DONE;
 
-		const bool chroma_y_filtering = (m_flags & cFlagLinearChromaFiltering) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2));
+		const bool chroma_y_filtering = (m_flags & cFlagLinearChromaFiltering) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2)) && (m_image_x_size >= 2) && (m_image_y_size >= 2);
 
 		bool get_another_mcu_row = false;
 		bool got_mcu_early = false;
@@ -2144,7 +2133,7 @@ namespace jpgd {
 		{
 		case JPGD_YH2V2:
 		{
-			if (m_flags & cFlagLinearChromaFiltering)
+			if ((m_flags & cFlagLinearChromaFiltering) && (m_image_x_size >= 2) && (m_image_y_size >= 2))
 			{
 				if (m_num_buffered_scanlines == 1)
 				{
@@ -2173,7 +2162,7 @@ namespace jpgd {
 		}
 		case JPGD_YH2V1:
 		{
-			if (m_flags & cFlagLinearChromaFiltering)
+			if ((m_flags & cFlagLinearChromaFiltering) && (m_image_x_size >= 2) && (m_image_y_size >= 2))
 				H2V1ConvertFiltered();
 			else
 				H2V1Convert();

@@ -32,29 +32,67 @@
 
 #include "core/core_string_names.h"
 #include "core/io/image_loader.h"
+#include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/os.h"
 #include "mesh.h"
 #include "scene/resources/bit_map.h"
 #include "servers/camera/camera_feed.h"
+int Texture2D::get_width() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Texture2D::get_height() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
+		return ret;
+	}
+	return 0;
+}
 
 Size2 Texture2D::get_size() const {
 	return Size2(get_width(), get_height());
 }
 
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret)) {
+		return ret;
+	}
+
+	return true;
+}
+bool Texture2D::has_alpha() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_alpha, ret)) {
+		return ret;
+	}
+
 	return true;
 }
 
 void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	if (GDVIRTUAL_CALL(_draw, p_canvas_item, p_pos, p_modulate, p_transpose)) {
+		return;
+	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose);
 }
 
 void Texture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+	if (GDVIRTUAL_CALL(_draw_rect, p_canvas_item, p_rect, p_tile, p_modulate, p_transpose)) {
+		return;
+	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose);
 }
 
 void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+	if (GDVIRTUAL_CALL(_draw_rect_region, p_canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv)) {
+		return;
+	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
@@ -75,6 +113,15 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_image"), &Texture2D::get_image);
 
 	ADD_GROUP("", "");
+
+	GDVIRTUAL_BIND(_get_width);
+	GDVIRTUAL_BIND(_get_height);
+	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y");
+	GDVIRTUAL_BIND(_has_alpha);
+
+	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
+	GDVIRTUAL_BIND(_draw_rect, "to_canvas_item", "rect", "tile", "modulate", "transpose")
+	GDVIRTUAL_BIND(_draw_rect_region, "tp_canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv");
 }
 
 Texture2D::Texture2D() {
@@ -92,7 +139,7 @@ void ImageTexture::reload_from_file() {
 	img.instantiate();
 
 	if (ImageLoader::load_image(path, img) == OK) {
-		create_from_image(img);
+		set_image(img);
 	} else {
 		Resource::reload_from_file();
 		notify_property_list_changed();
@@ -102,37 +149,34 @@ void ImageTexture::reload_from_file() {
 
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "image") {
-		create_from_image(p_value);
-	} else if (p_name == "size") {
-		Size2 s = p_value;
-		w = s.width;
-		h = s.height;
-		RenderingServer::get_singleton()->texture_set_size_override(texture, w, h);
-	} else {
-		return false;
+		set_image(p_value);
+		return true;
 	}
-
-	return true;
+	return false;
 }
 
 bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "image") {
 		r_ret = get_image();
-	} else if (p_name == "size") {
-		r_ret = Size2(w, h);
-	} else {
-		return false;
+		return true;
 	}
-
-	return true;
+	return false;
 }
 
 void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("image"), PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 }
 
-void ImageTexture::create_from_image(const Ref<Image> &p_image) {
+Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
+	ERR_FAIL_COND_V_MSG(p_image.is_null() || p_image->is_empty(), Ref<ImageTexture>(), "Invalid image");
+
+	Ref<ImageTexture> image_texture;
+	image_texture.instantiate();
+	image_texture->set_image(p_image);
+	return image_texture;
+}
+
+void ImageTexture::set_image(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
 	w = p_image->get_width();
 	h = p_image->get_height();
@@ -165,7 +209,7 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
 			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
 
-	RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
+	RS::get_singleton()->texture_2d_update(texture, p_image);
 
 	notify_property_list_changed();
 	emit_changed();
@@ -256,8 +300,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void ImageTexture::set_size_override(const Size2 &p_size) {
-	Size2 s = p_size;
+void ImageTexture::set_size_override(const Size2i &p_size) {
+	Size2i s = p_size;
 	if (s.x != 0) {
 		w = s.x;
 	}
@@ -276,9 +320,10 @@ void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 }
 
 void ImageTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
+	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
+	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 }
@@ -291,9 +336,315 @@ ImageTexture::~ImageTexture() {
 	}
 }
 
+/////////////////////
+
+void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
+	if (p_data.size() == 0) {
+		return; //nothing to do
+	}
+
+	const uint8_t *data = p_data.ptr();
+	uint32_t data_size = p_data.size();
+	ERR_FAIL_COND(data_size < 20);
+	compression_mode = CompressionMode(decode_uint32(data + 0));
+	format = Image::Format(decode_uint32(data + 4));
+	uint32_t mipmap_count = decode_uint32(data + 8);
+	size.width = decode_uint32(data + 12);
+	size.height = decode_uint32(data + 16);
+	mipmaps = mipmap_count > 1;
+
+	data += 20;
+	data_size -= 20;
+
+	Ref<Image> image;
+
+	switch (compression_mode) {
+		case COMPRESSION_MODE_LOSSLESS:
+		case COMPRESSION_MODE_LOSSY: {
+			Vector<uint8_t> image_data;
+
+			ERR_FAIL_COND(data_size < 4);
+			for (uint32_t i = 0; i < mipmap_count; i++) {
+				uint32_t mipsize = decode_uint32(data);
+				data += 4;
+				data_size -= 4;
+				ERR_FAIL_COND(mipsize < data_size);
+				Ref<Image> img = memnew(Image(data, data_size));
+				ERR_FAIL_COND(img->is_empty());
+				if (img->get_format() != format) { // May happen due to webp/png in the tiny mipmaps.
+					img->convert(format);
+				}
+				image_data.append_array(img->get_data());
+
+				data += mipsize;
+				data_size -= mipsize;
+			}
+
+			image = Ref<Image>(memnew(Image(size.width, size.height, mipmap_count > 1, format, image_data)));
+
+		} break;
+		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
+			ERR_FAIL_COND(!Image::basis_universal_unpacker_ptr);
+			image = Image::basis_universal_unpacker_ptr(data, data_size);
+
+		} break;
+		case COMPRESSION_MODE_S3TC:
+		case COMPRESSION_MODE_ETC2:
+		case COMPRESSION_MODE_BPTC: {
+			image = Ref<Image>(memnew(Image(size.width, size.height, mipmap_count > 1, format, p_data.slice(20))));
+		} break;
+	}
+	ERR_FAIL_COND(image.is_null());
+
+	if (texture.is_null()) {
+		texture = RenderingServer::get_singleton()->texture_2d_create(image);
+	} else {
+		RID new_texture = RenderingServer::get_singleton()->texture_2d_create(image);
+		RenderingServer::get_singleton()->texture_replace(texture, new_texture);
+	}
+
+	image_stored = true;
+	RenderingServer::get_singleton()->texture_set_size_override(texture, size_override.width, size_override.height);
+	alpha_cache.unref();
+
+	if (keep_all_compressed_buffers || keep_compressed_buffer) {
+		compressed_buffer = p_data;
+	} else {
+		compressed_buffer.clear();
+	}
+}
+
+PortableCompressedTexture2D::CompressionMode PortableCompressedTexture2D::get_compression_mode() const {
+	return compression_mode;
+}
+Vector<uint8_t> PortableCompressedTexture2D::_get_data() const {
+	return compressed_buffer;
+}
+
+void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map, float p_lossy_quality) {
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
+
+	Vector<uint8_t> buffer;
+
+	buffer.resize(20);
+	encode_uint32(p_compression_mode, buffer.ptrw());
+	encode_uint32(p_image->get_format(), buffer.ptrw() + 4);
+	encode_uint32(p_image->get_mipmap_count() + 1, buffer.ptrw() + 8);
+	encode_uint32(p_image->get_width(), buffer.ptrw() + 12);
+	encode_uint32(p_image->get_height(), buffer.ptrw() + 16);
+
+	switch (p_compression_mode) {
+		case COMPRESSION_MODE_LOSSLESS:
+		case COMPRESSION_MODE_LOSSY: {
+			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
+				Vector<uint8_t> data;
+				if (p_compression_mode == COMPRESSION_MODE_LOSSY) {
+					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				} else {
+					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+				}
+				int data_len = data.size();
+				buffer.resize(buffer.size() + 4);
+				encode_uint32(data_len, buffer.ptrw() + buffer.size() - 4);
+				buffer.append_array(data);
+			}
+		} break;
+		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
+			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
+			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc);
+			buffer.append_array(budata);
+
+		} break;
+		case COMPRESSION_MODE_S3TC:
+		case COMPRESSION_MODE_ETC2:
+		case COMPRESSION_MODE_BPTC: {
+			Ref<Image> copy = p_image->duplicate();
+			switch (p_compression_mode) {
+				case COMPRESSION_MODE_S3TC:
+					copy->compress(Image::COMPRESS_S3TC);
+					break;
+				case COMPRESSION_MODE_ETC2:
+					copy->compress(Image::COMPRESS_ETC2);
+					break;
+				case COMPRESSION_MODE_BPTC:
+					copy->compress(Image::COMPRESS_BPTC);
+					break;
+				default: {
+				};
+			}
+
+			buffer.append_array(copy->get_data());
+
+		} break;
+	}
+
+	_set_data(buffer);
+}
+
+Image::Format PortableCompressedTexture2D::get_format() const {
+	return format;
+}
+
+Ref<Image> PortableCompressedTexture2D::get_image() const {
+	if (image_stored) {
+		return RenderingServer::get_singleton()->texture_2d_get(texture);
+	} else {
+		return Ref<Image>();
+	}
+}
+
+int PortableCompressedTexture2D::get_width() const {
+	return size.width;
+}
+
+int PortableCompressedTexture2D::get_height() const {
+	return size.height;
+}
+
+RID PortableCompressedTexture2D::get_rid() const {
+	if (texture.is_null()) {
+		//we are in trouble, create something temporary
+		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	}
+	return texture;
+}
+
+bool PortableCompressedTexture2D::has_alpha() const {
+	return (format == Image::FORMAT_LA8 || format == Image::FORMAT_RGBA8);
+}
+
+void PortableCompressedTexture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	if (size.width == 0 || size.height == 0) {
+		return;
+	}
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), texture, false, p_modulate, p_transpose);
+}
+
+void PortableCompressedTexture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+	if (size.width == 0 || size.height == 0) {
+		return;
+	}
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose);
+}
+
+void PortableCompressedTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+	if (size.width == 0 || size.height == 0) {
+		return;
+	}
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, p_clip_uv);
+}
+
+bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
+	if (!alpha_cache.is_valid()) {
+		Ref<Image> img = get_image();
+		if (img.is_valid()) {
+			if (img->is_compressed()) { //must decompress, if compressed
+				Ref<Image> decom = img->duplicate();
+				decom->decompress();
+				img = decom;
+			}
+			alpha_cache.instantiate();
+			alpha_cache->create_from_image_alpha(img);
+		}
+	}
+
+	if (alpha_cache.is_valid()) {
+		int aw = int(alpha_cache->get_size().width);
+		int ah = int(alpha_cache->get_size().height);
+		if (aw == 0 || ah == 0) {
+			return true;
+		}
+
+		int x = p_x * aw / size.width;
+		int y = p_y * ah / size.height;
+
+		x = CLAMP(x, 0, aw);
+		y = CLAMP(y, 0, ah);
+
+		return alpha_cache->get_bit(Point2(x, y));
+	}
+
+	return true;
+}
+
+void PortableCompressedTexture2D::set_size_override(const Size2 &p_size) {
+	size_override = p_size;
+	RenderingServer::get_singleton()->texture_set_size_override(texture, size_override.width, size_override.height);
+}
+
+Size2 PortableCompressedTexture2D::get_size_override() const {
+	return size_override;
+}
+
+void PortableCompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
+
+bool PortableCompressedTexture2D::keep_all_compressed_buffers = false;
+
+void PortableCompressedTexture2D::set_keep_all_compressed_buffers(bool p_keep) {
+	keep_all_compressed_buffers = p_keep;
+}
+
+bool PortableCompressedTexture2D::is_keeping_all_compressed_buffers() {
+	return keep_all_compressed_buffers;
+}
+
+void PortableCompressedTexture2D::set_keep_compressed_buffer(bool p_keep) {
+	keep_compressed_buffer = p_keep;
+	if (!p_keep) {
+		compressed_buffer.clear();
+	}
+}
+
+bool PortableCompressedTexture2D::is_keeping_compressed_buffer() const {
+	return keep_compressed_buffer;
+}
+
+void PortableCompressedTexture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create_from_image", "image", "compression_mode", "normal_map", "lossy_quality"), &PortableCompressedTexture2D::create_from_image, DEFVAL(false), DEFVAL(0.8));
+	ClassDB::bind_method(D_METHOD("get_format"), &PortableCompressedTexture2D::get_format);
+	ClassDB::bind_method(D_METHOD("get_compression_mode"), &PortableCompressedTexture2D::get_compression_mode);
+
+	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &PortableCompressedTexture2D::set_size_override);
+	ClassDB::bind_method(D_METHOD("get_size_override"), &PortableCompressedTexture2D::get_size_override);
+
+	ClassDB::bind_method(D_METHOD("set_keep_compressed_buffer", "keep"), &PortableCompressedTexture2D::set_keep_compressed_buffer);
+	ClassDB::bind_method(D_METHOD("is_keeping_compressed_buffer"), &PortableCompressedTexture2D::is_keeping_compressed_buffer);
+
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &PortableCompressedTexture2D::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"), &PortableCompressedTexture2D::_get_data);
+
+	ClassDB::bind_static_method("PortableCompressedTexture2D", D_METHOD("set_keep_all_compressed_buffers", "keep"), &PortableCompressedTexture2D::set_keep_all_compressed_buffers);
+	ClassDB::bind_static_method("PortableCompressedTexture2D", D_METHOD("is_keeping_all_compressed_buffers"), &PortableCompressedTexture2D::is_keeping_all_compressed_buffers);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_override", "get_size_override");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_compressed_buffer"), "set_keep_compressed_buffer", "is_keeping_compressed_buffer");
+
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_LOSSLESS);
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_LOSSY);
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_BASIS_UNIVERSAL);
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_S3TC);
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_ETC2);
+	BIND_ENUM_CONSTANT(COMPRESSION_MODE_BPTC);
+}
+
+PortableCompressedTexture2D::PortableCompressedTexture2D() {}
+
+PortableCompressedTexture2D::~PortableCompressedTexture2D() {
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->free(texture);
+	}
+}
+
 //////////////////////////////////////////
 
-Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit) {
+Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_size_limit) {
 	uint32_t data_format = f->get_32();
 	uint32_t w = f->get_16();
 	uint32_t h = f->get_16();
@@ -426,7 +777,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 	return Ref<Image>();
 }
 
-void StreamTexture2D::set_path(const String &p_path, bool p_take_over) {
+void CompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -434,55 +785,53 @@ void StreamTexture2D::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
-void StreamTexture2D::_requested_3d(void *p_ud) {
-	StreamTexture2D *st = (StreamTexture2D *)p_ud;
-	Ref<StreamTexture2D> stex(st);
+void CompressedTexture2D::_requested_3d(void *p_ud) {
+	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
+	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_COND(!request_3d_callback);
-	request_3d_callback(stex);
+	request_3d_callback(ctex);
 }
 
-void StreamTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel) {
-	StreamTexture2D *st = (StreamTexture2D *)p_ud;
-	Ref<StreamTexture2D> stex(st);
+void CompressedTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel) {
+	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
+	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_COND(!request_roughness_callback);
-	request_roughness_callback(stex, p_normal_path, p_roughness_channel);
+	request_roughness_callback(ctex, p_normal_path, p_roughness_channel);
 }
 
-void StreamTexture2D::_requested_normal(void *p_ud) {
-	StreamTexture2D *st = (StreamTexture2D *)p_ud;
-	Ref<StreamTexture2D> stex(st);
+void CompressedTexture2D::_requested_normal(void *p_ud) {
+	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
+	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_COND(!request_normal_callback);
-	request_normal_callback(stex);
+	request_normal_callback(ctex);
 }
 
-StreamTexture2D::TextureFormatRequestCallback StreamTexture2D::request_3d_callback = nullptr;
-StreamTexture2D::TextureFormatRoughnessRequestCallback StreamTexture2D::request_roughness_callback = nullptr;
-StreamTexture2D::TextureFormatRequestCallback StreamTexture2D::request_normal_callback = nullptr;
+CompressedTexture2D::TextureFormatRequestCallback CompressedTexture2D::request_3d_callback = nullptr;
+CompressedTexture2D::TextureFormatRoughnessRequestCallback CompressedTexture2D::request_roughness_callback = nullptr;
+CompressedTexture2D::TextureFormatRequestCallback CompressedTexture2D::request_normal_callback = nullptr;
 
-Image::Format StreamTexture2D::get_format() const {
+Image::Format CompressedTexture2D::get_format() const {
 	return format;
 }
 
-Error StreamTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
+Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != '2') {
-		memdelete(f);
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is corrupt (Bad header).");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is corrupt (Bad header).");
 	}
 
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
-		memdelete(f);
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 	r_width = f->get_32();
 	r_height = f->get_32();
@@ -514,8 +863,6 @@ Error StreamTexture2D::_load_data(const String &p_path, int &r_width, int &r_hei
 
 	image = load_image_from_file(f, p_size_limit);
 
-	memdelete(f);
-
 	if (image.is_null() || image->is_empty()) {
 		return ERR_CANT_OPEN;
 	}
@@ -523,7 +870,7 @@ Error StreamTexture2D::_load_data(const String &p_path, int &r_width, int &r_hei
 	return OK;
 }
 
-Error StreamTexture2D::load(const String &p_path) {
+Error CompressedTexture2D::load(const String &p_path) {
 	int lw, lh;
 	Ref<Image> image;
 	image.instantiate();
@@ -590,51 +937,51 @@ Error StreamTexture2D::load(const String &p_path) {
 	return OK;
 }
 
-String StreamTexture2D::get_load_path() const {
+String CompressedTexture2D::get_load_path() const {
 	return path_to_file;
 }
 
-int StreamTexture2D::get_width() const {
+int CompressedTexture2D::get_width() const {
 	return w;
 }
 
-int StreamTexture2D::get_height() const {
+int CompressedTexture2D::get_height() const {
 	return h;
 }
 
-RID StreamTexture2D::get_rid() const {
+RID CompressedTexture2D::get_rid() const {
 	if (!texture.is_valid()) {
 		texture = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 	return texture;
 }
 
-void StreamTexture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+void CompressedTexture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
 	if ((w | h) == 0) {
 		return;
 	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose);
 }
 
-void StreamTexture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+void CompressedTexture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
 	if ((w | h) == 0) {
 		return;
 	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose);
 }
 
-void StreamTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+void CompressedTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
 	if ((w | h) == 0) {
 		return;
 	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
-bool StreamTexture2D::has_alpha() const {
+bool CompressedTexture2D::has_alpha() const {
 	return false;
 }
 
-Ref<Image> StreamTexture2D::get_image() const {
+Ref<Image> CompressedTexture2D::get_image() const {
 	if (texture.is_valid()) {
 		return RS::get_singleton()->texture_2d_get(texture);
 	} else {
@@ -642,7 +989,7 @@ Ref<Image> StreamTexture2D::get_image() const {
 	}
 }
 
-bool StreamTexture2D::is_pixel_opaque(int p_x, int p_y) const {
+bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
@@ -676,7 +1023,7 @@ bool StreamTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void StreamTexture2D::reload_from_file() {
+void CompressedTexture2D::reload_from_file() {
 	String path = get_path();
 	if (!path.is_resource_file()) {
 		return;
@@ -691,56 +1038,56 @@ void StreamTexture2D::reload_from_file() {
 	load(path);
 }
 
-void StreamTexture2D::_validate_property(PropertyInfo &property) const {
+void CompressedTexture2D::_validate_property(PropertyInfo &property) const {
 }
 
-void StreamTexture2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTexture2D::load);
-	ClassDB::bind_method(D_METHOD("get_load_path"), &StreamTexture2D::get_load_path);
+void CompressedTexture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTexture2D::load);
+	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTexture2D::get_load_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
-StreamTexture2D::StreamTexture2D() {}
+CompressedTexture2D::CompressedTexture2D() {}
 
-StreamTexture2D::~StreamTexture2D() {
+CompressedTexture2D::~CompressedTexture2D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
 }
 
-RES ResourceFormatLoaderStreamTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<StreamTexture2D> st;
+Ref<Resource> ResourceFormatLoaderCompressedTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<CompressedTexture2D> st;
 	st.instantiate();
 	Error err = st->load(p_path);
 	if (r_error) {
 		*r_error = err;
 	}
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return st;
 }
 
-void ResourceFormatLoaderStreamTexture2D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("stex");
+void ResourceFormatLoaderCompressedTexture2D::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("ctex");
 }
 
-bool ResourceFormatLoaderStreamTexture2D::handles_type(const String &p_type) const {
-	return p_type == "StreamTexture2D";
+bool ResourceFormatLoaderCompressedTexture2D::handles_type(const String &p_type) const {
+	return p_type == "CompressedTexture2D";
 }
 
-String ResourceFormatLoaderStreamTexture2D::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "stex") {
-		return "StreamTexture2D";
+String ResourceFormatLoaderCompressedTexture2D::get_resource_type(const String &p_path) const {
+	if (p_path.get_extension().to_lower() == "ctex") {
+		return "CompressedTexture2D";
 	}
 	return "";
 }
 
 ////////////////////////////////////
 
-TypedArray<Image> Texture3D::_get_data() const {
+TypedArray<Image> Texture3D::_get_datai() const {
 	Vector<Ref<Image>> data = get_data();
 
 	TypedArray<Image> ret;
@@ -751,13 +1098,73 @@ TypedArray<Image> Texture3D::_get_data() const {
 	return ret;
 }
 
+Image::Format Texture3D::get_format() const {
+	Image::Format ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
+		return ret;
+	}
+	return Image::FORMAT_MAX;
+}
+
+int Texture3D::get_width() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Texture3D::get_height() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Texture3D::get_depth() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_depth, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+bool Texture3D::has_mipmaps() const {
+	bool ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+Vector<Ref<Image>> Texture3D::get_data() const {
+	TypedArray<Image> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_data, ret)) {
+		Vector<Ref<Image>> data;
+		data.resize(ret.size());
+		for (int i = 0; i < data.size(); i++) {
+			data.write[i] = ret[i];
+		}
+		return data;
+	}
+	return Vector<Ref<Image>>();
+}
 void Texture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &Texture3D::get_format);
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture3D::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture3D::get_height);
 	ClassDB::bind_method(D_METHOD("get_depth"), &Texture3D::get_depth);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture3D::has_mipmaps);
-	ClassDB::bind_method(D_METHOD("get_data"), &Texture3D::_get_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &Texture3D::_get_datai);
+
+	GDVIRTUAL_BIND(_get_format);
+	GDVIRTUAL_BIND(_get_width);
+	GDVIRTUAL_BIND(_get_height);
+	GDVIRTUAL_BIND(_get_depth);
+	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_data);
 }
 //////////////////////////////////////////
 
@@ -846,7 +1253,7 @@ ImageTexture3D::~ImageTexture3D() {
 
 ////////////////////////////////////////////
 
-void StreamTexture3D::set_path(const String &p_path, bool p_take_over) {
+void CompressedTexture3D::set_path(const String &p_path, bool p_take_over) {
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -854,23 +1261,23 @@ void StreamTexture3D::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
-Image::Format StreamTexture3D::get_format() const {
+Image::Format CompressedTexture3D::get_format() const {
 	return format;
 }
 
-Error StreamTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
+Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L', ERR_FILE_UNRECOGNIZED);
 
-	//stored as stream textures (used for lossless and lossy compression)
+	//stored as compressed textures (used for lossless and lossy compression)
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 
 	r_depth = f->get_32(); //depth
@@ -887,7 +1294,7 @@ Error StreamTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_da
 	r_data.clear();
 
 	for (int i = 0; i < (r_depth + mipmaps); i++) {
-		Ref<Image> image = StreamTexture2D::load_image_from_file(f, 0);
+		Ref<Image> image = CompressedTexture2D::load_image_from_file(f, 0);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		if (i == 0) {
 			r_format = image->get_format();
@@ -900,7 +1307,7 @@ Error StreamTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_da
 	return OK;
 }
 
-Error StreamTexture3D::load(const String &p_path) {
+Error CompressedTexture3D::load(const String &p_path) {
 	Vector<Ref<Image>> data;
 
 	int tw, th, td;
@@ -937,34 +1344,34 @@ Error StreamTexture3D::load(const String &p_path) {
 	return OK;
 }
 
-String StreamTexture3D::get_load_path() const {
+String CompressedTexture3D::get_load_path() const {
 	return path_to_file;
 }
 
-int StreamTexture3D::get_width() const {
+int CompressedTexture3D::get_width() const {
 	return w;
 }
 
-int StreamTexture3D::get_height() const {
+int CompressedTexture3D::get_height() const {
 	return h;
 }
 
-int StreamTexture3D::get_depth() const {
+int CompressedTexture3D::get_depth() const {
 	return d;
 }
 
-bool StreamTexture3D::has_mipmaps() const {
+bool CompressedTexture3D::has_mipmaps() const {
 	return mipmaps;
 }
 
-RID StreamTexture3D::get_rid() const {
+RID CompressedTexture3D::get_rid() const {
 	if (!texture.is_valid()) {
 		texture = RS::get_singleton()->texture_3d_placeholder_create();
 	}
 	return texture;
 }
 
-Vector<Ref<Image>> StreamTexture3D::get_data() const {
+Vector<Ref<Image>> CompressedTexture3D::get_data() const {
 	if (texture.is_valid()) {
 		return RS::get_singleton()->texture_3d_get(texture);
 	} else {
@@ -972,7 +1379,7 @@ Vector<Ref<Image>> StreamTexture3D::get_data() const {
 	}
 }
 
-void StreamTexture3D::reload_from_file() {
+void CompressedTexture3D::reload_from_file() {
 	String path = get_path();
 	if (!path.is_resource_file()) {
 		return;
@@ -987,19 +1394,19 @@ void StreamTexture3D::reload_from_file() {
 	load(path);
 }
 
-void StreamTexture3D::_validate_property(PropertyInfo &property) const {
+void CompressedTexture3D::_validate_property(PropertyInfo &property) const {
 }
 
-void StreamTexture3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTexture3D::load);
-	ClassDB::bind_method(D_METHOD("get_load_path"), &StreamTexture3D::get_load_path);
+void CompressedTexture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTexture3D::load);
+	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTexture3D::get_load_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
-StreamTexture3D::StreamTexture3D() {}
+CompressedTexture3D::CompressedTexture3D() {}
 
-StreamTexture3D::~StreamTexture3D() {
+CompressedTexture3D::~CompressedTexture3D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
@@ -1007,31 +1414,31 @@ StreamTexture3D::~StreamTexture3D() {
 
 /////////////////////////////
 
-RES ResourceFormatLoaderStreamTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<StreamTexture3D> st;
+Ref<Resource> ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<CompressedTexture3D> st;
 	st.instantiate();
 	Error err = st->load(p_path);
 	if (r_error) {
 		*r_error = err;
 	}
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return st;
 }
 
-void ResourceFormatLoaderStreamTexture3D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("stex3d");
+void ResourceFormatLoaderCompressedTexture3D::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("ctex3d");
 }
 
-bool ResourceFormatLoaderStreamTexture3D::handles_type(const String &p_type) const {
-	return p_type == "StreamTexture3D";
+bool ResourceFormatLoaderCompressedTexture3D::handles_type(const String &p_type) const {
+	return p_type == "CompressedTexture3D";
 }
 
-String ResourceFormatLoaderStreamTexture3D::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "stex3d") {
-		return "StreamTexture3D";
+String ResourceFormatLoaderCompressedTexture3D::get_resource_type(const String &p_path) const {
+	if (p_path.get_extension().to_lower() == "ctex3d") {
+		return "CompressedTexture3D";
 	}
 	return "";
 }
@@ -1136,8 +1543,8 @@ void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_filter_clip"), &AtlasTexture::has_filter_clip);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_atlas", "get_atlas");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region"), "set_region", "get_region");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region", PROPERTY_HINT_NONE, "suffix:px"), "set_region", "get_region");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin", PROPERTY_HINT_NONE, "suffix:px"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
 }
 
@@ -1308,8 +1715,8 @@ void MeshTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_mo
 	Transform2D xform;
 	xform.set_origin(p_pos);
 	if (p_transpose) {
-		SWAP(xform.elements[0][1], xform.elements[1][0]);
-		SWAP(xform.elements[0][0], xform.elements[1][1]);
+		SWAP(xform.columns[0][1], xform.columns[1][0]);
+		SWAP(xform.columns[0][0], xform.columns[1][1]);
 	}
 	RenderingServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid());
 }
@@ -1330,8 +1737,8 @@ void MeshTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile,
 	xform.set_scale(p_rect.size / size);
 
 	if (p_transpose) {
-		SWAP(xform.elements[0][1], xform.elements[1][0]);
-		SWAP(xform.elements[0][0], xform.elements[1][1]);
+		SWAP(xform.columns[0][1], xform.columns[1][0]);
+		SWAP(xform.columns[0][0], xform.columns[1][1]);
 	}
 	RenderingServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid());
 }
@@ -1352,8 +1759,8 @@ void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const
 	xform.set_scale(p_rect.size / size);
 
 	if (p_transpose) {
-		SWAP(xform.elements[0][1], xform.elements[1][0]);
-		SWAP(xform.elements[0][0], xform.elements[1][1]);
+		SWAP(xform.columns[0][1], xform.columns[1][0]);
+		SWAP(xform.columns[0][0], xform.columns[1][1]);
 	}
 	RenderingServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid());
 }
@@ -1378,7 +1785,7 @@ void MeshTexture::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_base_texture", "get_base_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "image_size", PROPERTY_HINT_RANGE, "0,16384,1"), "set_image_size", "get_image_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "image_size", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_image_size", "get_image_size");
 }
 
 MeshTexture::MeshTexture() {
@@ -1397,7 +1804,7 @@ void CurveTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "RGB,Red"), "set_texture_mode", "get_texture_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 
@@ -1545,7 +1952,7 @@ void CurveXYZTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &CurveXYZTexture::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_x", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_x", "get_curve_x");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_y", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_y", "get_curve_y");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_z", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_z", "get_curve_z");
@@ -1751,8 +2158,8 @@ void GradientTexture1D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture1D::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_gradient", "get_gradient");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,16384,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 }
 
@@ -1840,7 +2247,7 @@ void GradientTexture1D::_update() {
 }
 
 void GradientTexture1D::set_width(int p_width) {
-	ERR_FAIL_COND(p_width <= 0);
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_width > 16384, "Texture dimensions have to be within 1 to 16384 range.");
 	width = p_width;
 	_queue_update();
 }
@@ -1869,6 +2276,8 @@ Ref<Image> GradientTexture1D::get_image() const {
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
 
+//////////////////
+
 GradientTexture2D::GradientTexture2D() {
 	_queue_update();
 }
@@ -1890,7 +2299,8 @@ void GradientTexture2D::set_gradient(Ref<Gradient> p_gradient) {
 	if (gradient.is_valid()) {
 		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture2D::_queue_update));
 	}
-	_queue_update();
+	_update();
+	emit_changed();
 }
 
 Ref<Gradient> GradientTexture2D::get_gradient() const {
@@ -2001,6 +2411,7 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 }
 
 void GradientTexture2D::set_width(int p_width) {
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_width > 16384, "Texture dimensions have to be within 1 to 16384 range.");
 	width = p_width;
 	_queue_update();
 }
@@ -2010,6 +2421,7 @@ int GradientTexture2D::get_width() const {
 }
 
 void GradientTexture2D::set_height(int p_height) {
+	ERR_FAIL_COND_MSG(p_height <= 0 || p_height > 16384, "Texture dimensions have to be within 1 to 16384 range.");
 	height = p_height;
 	_queue_update();
 }
@@ -2103,8 +2515,8 @@ void GradientTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture2D::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,or_greater,suffix:px"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,or_greater,suffix:px"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 
 	ADD_GROUP("Fill", "fill_");
@@ -2424,7 +2836,7 @@ void AnimatedTexture::_bind_methods() {
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_delay", "get_frame_delay", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_delay", "get_frame_delay", i);
 	}
 
 	BIND_CONSTANT(MAX_FRAMES);
@@ -2446,6 +2858,63 @@ AnimatedTexture::~AnimatedTexture() {
 
 ///////////////////////////////
 
+Image::Format TextureLayered::get_format() const {
+	Image::Format ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
+		return ret;
+	}
+	return Image::FORMAT_MAX;
+}
+
+TextureLayered::LayeredType TextureLayered::get_layered_type() const {
+	uint32_t ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_layered_type, ret)) {
+		return (LayeredType)ret;
+	}
+	return LAYERED_TYPE_2D_ARRAY;
+}
+
+int TextureLayered::get_width() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int TextureLayered::get_height() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int TextureLayered::get_layers() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_layers, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+bool TextureLayered::has_mipmaps() const {
+	bool ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
+	Ref<Image> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_layer_data, p_layer, ret)) {
+		return ret;
+	}
+	return Ref<Image>();
+}
+
 void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &TextureLayered::get_format);
 	ClassDB::bind_method(D_METHOD("get_layered_type"), &TextureLayered::get_layered_type);
@@ -2458,6 +2927,14 @@ void TextureLayered::_bind_methods() {
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_2D_ARRAY);
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_CUBEMAP);
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_CUBEMAP_ARRAY);
+
+	GDVIRTUAL_BIND(_get_format);
+	GDVIRTUAL_BIND(_get_layered_type);
+	GDVIRTUAL_BIND(_get_width);
+	GDVIRTUAL_BIND(_get_height);
+	GDVIRTUAL_BIND(_get_layers);
+	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_layer_data, "layer_index");
 }
 
 ///////////////////////////////
@@ -2549,12 +3026,12 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 }
 
 void ImageTextureLayered::update_layer(const Ref<Image> &p_image, int p_layer) {
-	ERR_FAIL_COND(texture.is_valid());
-	ERR_FAIL_COND(p_image.is_null());
-	ERR_FAIL_COND(p_image->get_format() != format);
-	ERR_FAIL_COND(p_image->get_width() != width || p_image->get_height() != height);
-	ERR_FAIL_INDEX(p_layer, layers);
-	ERR_FAIL_COND(p_image->has_mipmaps() != mipmaps);
+	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image.");
+	ERR_FAIL_COND_MSG(p_image->get_format() != format, "Image format must match texture's image format.");
+	ERR_FAIL_COND_MSG(p_image->get_width() != width || p_image->get_height() != height, "Image size must match texture's image size.");
+	ERR_FAIL_COND_MSG(p_image->has_mipmaps() != mipmaps, "Image mipmap configuration must match texture's image mipmap configuration.");
+	ERR_FAIL_INDEX_MSG(p_layer, layers, "Layer index is out of bounds.");
 	RS::get_singleton()->texture_2d_update(texture, p_image, p_layer);
 }
 
@@ -2599,7 +3076,7 @@ ImageTextureLayered::~ImageTextureLayered() {
 
 ///////////////////////////////////////////
 
-void StreamTextureLayered::set_path(const String &p_path, bool p_take_over) {
+void CompressedTextureLayered::set_path(const String &p_path, bool p_take_over) {
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -2607,26 +3084,26 @@ void StreamTextureLayered::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
-Image::Format StreamTextureLayered::get_format() const {
+Image::Format CompressedTextureLayered::get_format() const {
 	return format;
 }
 
-Error StreamTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit) {
+Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit) {
 	ERR_FAIL_COND_V(images.size() != 0, ERR_INVALID_PARAMETER);
 
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L') {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture layered file is corrupt (Bad header).");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture layered file is corrupt (Bad header).");
 	}
 
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 
 	uint32_t layer_count = f->get_32(); //layer count
@@ -2647,7 +3124,7 @@ Error StreamTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> 
 	images.resize(layer_count);
 
 	for (uint32_t i = 0; i < layer_count; i++) {
-		Ref<Image> image = StreamTexture2D::load_image_from_file(f, p_size_limit);
+		Ref<Image> image = CompressedTexture2D::load_image_from_file(f, p_size_limit);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		images.write[i] = image;
 	}
@@ -2655,7 +3132,7 @@ Error StreamTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> 
 	return OK;
 }
 
-Error StreamTextureLayered::load(const String &p_path) {
+Error CompressedTextureLayered::load(const String &p_path) {
 	Vector<Ref<Image>> images;
 
 	int mipmap_limit;
@@ -2690,38 +3167,38 @@ Error StreamTextureLayered::load(const String &p_path) {
 	return OK;
 }
 
-String StreamTextureLayered::get_load_path() const {
+String CompressedTextureLayered::get_load_path() const {
 	return path_to_file;
 }
 
-int StreamTextureLayered::get_width() const {
+int CompressedTextureLayered::get_width() const {
 	return w;
 }
 
-int StreamTextureLayered::get_height() const {
+int CompressedTextureLayered::get_height() const {
 	return h;
 }
 
-int StreamTextureLayered::get_layers() const {
+int CompressedTextureLayered::get_layers() const {
 	return layers;
 }
 
-bool StreamTextureLayered::has_mipmaps() const {
+bool CompressedTextureLayered::has_mipmaps() const {
 	return mipmaps;
 }
 
-TextureLayered::LayeredType StreamTextureLayered::get_layered_type() const {
+TextureLayered::LayeredType CompressedTextureLayered::get_layered_type() const {
 	return layered_type;
 }
 
-RID StreamTextureLayered::get_rid() const {
+RID CompressedTextureLayered::get_rid() const {
 	if (!texture.is_valid()) {
 		texture = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
 	}
 	return texture;
 }
 
-Ref<Image> StreamTextureLayered::get_layer_data(int p_layer) const {
+Ref<Image> CompressedTextureLayered::get_layer_data(int p_layer) const {
 	if (texture.is_valid()) {
 		return RS::get_singleton()->texture_2d_layer_get(texture, p_layer);
 	} else {
@@ -2729,7 +3206,7 @@ Ref<Image> StreamTextureLayered::get_layer_data(int p_layer) const {
 	}
 }
 
-void StreamTextureLayered::reload_from_file() {
+void CompressedTextureLayered::reload_from_file() {
 	String path = get_path();
 	if (!path.is_resource_file()) {
 		return;
@@ -2744,21 +3221,21 @@ void StreamTextureLayered::reload_from_file() {
 	load(path);
 }
 
-void StreamTextureLayered::_validate_property(PropertyInfo &property) const {
+void CompressedTextureLayered::_validate_property(PropertyInfo &property) const {
 }
 
-void StreamTextureLayered::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTextureLayered::load);
-	ClassDB::bind_method(D_METHOD("get_load_path"), &StreamTextureLayered::get_load_path);
+void CompressedTextureLayered::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTextureLayered::load);
+	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTextureLayered::get_load_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
-StreamTextureLayered::StreamTextureLayered(LayeredType p_type) {
+CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {
 	layered_type = p_type;
 }
 
-StreamTextureLayered::~StreamTextureLayered() {
+CompressedTextureLayered::~CompressedTextureLayered() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
@@ -2766,56 +3243,56 @@ StreamTextureLayered::~StreamTextureLayered() {
 
 /////////////////////////////////////////////////
 
-RES ResourceFormatLoaderStreamTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<StreamTextureLayered> st;
-	if (p_path.get_extension().to_lower() == "stexarray") {
-		Ref<StreamTexture2DArray> s;
-		s.instantiate();
-		st = s;
-	} else if (p_path.get_extension().to_lower() == "scube") {
-		Ref<StreamCubemap> s;
-		s.instantiate();
-		st = s;
-	} else if (p_path.get_extension().to_lower() == "scubearray") {
-		Ref<StreamCubemapArray> s;
-		s.instantiate();
-		st = s;
+Ref<Resource> ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<CompressedTextureLayered> ct;
+	if (p_path.get_extension().to_lower() == "ctexarray") {
+		Ref<CompressedTexture2DArray> c;
+		c.instantiate();
+		ct = c;
+	} else if (p_path.get_extension().to_lower() == "ccube") {
+		Ref<CompressedCubemap> c;
+		c.instantiate();
+		ct = c;
+	} else if (p_path.get_extension().to_lower() == "ccubearray") {
+		Ref<CompressedCubemapArray> c;
+		c.instantiate();
+		ct = c;
 	} else {
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
-	Error err = st->load(p_path);
+	Error err = ct->load(p_path);
 	if (r_error) {
 		*r_error = err;
 	}
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
-	return st;
+	return ct;
 }
 
-void ResourceFormatLoaderStreamTextureLayered::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("stexarray");
-	p_extensions->push_back("scube");
-	p_extensions->push_back("scubearray");
+void ResourceFormatLoaderCompressedTextureLayered::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("ctexarray");
+	p_extensions->push_back("ccube");
+	p_extensions->push_back("ccubearray");
 }
 
-bool ResourceFormatLoaderStreamTextureLayered::handles_type(const String &p_type) const {
-	return p_type == "StreamTexture2DArray" || p_type == "StreamCubemap" || p_type == "StreamCubemapArray";
+bool ResourceFormatLoaderCompressedTextureLayered::handles_type(const String &p_type) const {
+	return p_type == "CompressedTexture2DArray" || p_type == "CompressedCubemap" || p_type == "CompressedCubemapArray";
 }
 
-String ResourceFormatLoaderStreamTextureLayered::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "stexarray") {
-		return "StreamTexture2DArray";
+String ResourceFormatLoaderCompressedTextureLayered::get_resource_type(const String &p_path) const {
+	if (p_path.get_extension().to_lower() == "ctexarray") {
+		return "CompressedTexture2DArray";
 	}
-	if (p_path.get_extension().to_lower() == "scube") {
-		return "StreamCubemap";
+	if (p_path.get_extension().to_lower() == "ccube") {
+		return "CompressedCubemap";
 	}
-	if (p_path.get_extension().to_lower() == "scubearray") {
-		return "StreamCubemapArray";
+	if (p_path.get_extension().to_lower() == "ccubearray") {
+		return "CompressedCubemapArray";
 	}
 	return "";
 }
@@ -2917,4 +3394,149 @@ CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
 		RenderingServer::get_singleton()->free(_texture);
 	}
+}
+
+///////////////////////////
+
+void PlaceholderTexture2D::set_size(Size2 p_size) {
+	size = p_size;
+}
+
+int PlaceholderTexture2D::get_width() const {
+	return size.width;
+}
+
+int PlaceholderTexture2D::get_height() const {
+	return size.height;
+}
+
+bool PlaceholderTexture2D::has_alpha() const {
+	return false;
+}
+
+Ref<Image> PlaceholderTexture2D::get_image() const {
+	return Ref<Image>();
+}
+
+RID PlaceholderTexture2D::get_rid() const {
+	return rid;
+}
+
+void PlaceholderTexture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture2D::set_size);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+}
+
+PlaceholderTexture2D::PlaceholderTexture2D() {
+	rid = RS::get_singleton()->texture_2d_placeholder_create();
+}
+
+PlaceholderTexture2D::~PlaceholderTexture2D() {
+	RS::get_singleton()->free(rid);
+}
+
+///////////////////////////////////////////////
+
+void PlaceholderTexture3D::set_size(const Vector3i &p_size) {
+	size = p_size;
+}
+
+Vector3i PlaceholderTexture3D::get_size() const {
+	return size;
+}
+
+Image::Format PlaceholderTexture3D::get_format() const {
+	return Image::FORMAT_RGB8;
+}
+
+int PlaceholderTexture3D::get_width() const {
+	return size.x;
+}
+
+int PlaceholderTexture3D::get_height() const {
+	return size.y;
+}
+
+int PlaceholderTexture3D::get_depth() const {
+	return size.z;
+}
+
+bool PlaceholderTexture3D::has_mipmaps() const {
+	return false;
+}
+
+Vector<Ref<Image>> PlaceholderTexture3D::get_data() const {
+	return Vector<Ref<Image>>();
+}
+
+void PlaceholderTexture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTexture3D::get_size);
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+}
+
+PlaceholderTexture3D::PlaceholderTexture3D() {
+	rid = RS::get_singleton()->texture_3d_placeholder_create();
+}
+PlaceholderTexture3D::~PlaceholderTexture3D() {
+	RS::get_singleton()->free(rid);
+}
+
+/////////////////////////////////////////////////
+
+void PlaceholderTextureLayered::set_size(const Size2i &p_size) {
+	size = p_size;
+}
+
+Size2i PlaceholderTextureLayered::get_size() const {
+	return size;
+}
+
+void PlaceholderTextureLayered::set_layers(int p_layers) {
+	layers = p_layers;
+}
+
+Image::Format PlaceholderTextureLayered::get_format() const {
+	return Image::FORMAT_RGB8;
+}
+
+TextureLayered::LayeredType PlaceholderTextureLayered::get_layered_type() const {
+	return layered_type;
+}
+
+int PlaceholderTextureLayered::get_width() const {
+	return size.x;
+}
+
+int PlaceholderTextureLayered::get_height() const {
+	return size.y;
+}
+
+int PlaceholderTextureLayered::get_layers() const {
+	return layers;
+}
+
+bool PlaceholderTextureLayered::has_mipmaps() const {
+	return false;
+}
+
+Ref<Image> PlaceholderTextureLayered::get_layer_data(int p_layer) const {
+	return Ref<Image>();
+}
+
+void PlaceholderTextureLayered::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTextureLayered::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTextureLayered::get_size);
+	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &PlaceholderTextureLayered::set_layers);
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_RANGE, "1,4096"), "set_layers", "get_layers");
+}
+
+PlaceholderTextureLayered::PlaceholderTextureLayered(LayeredType p_type) {
+	layered_type = p_type;
+	rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
+}
+PlaceholderTextureLayered::~PlaceholderTextureLayered() {
+	RS::get_singleton()->free(rid);
 }

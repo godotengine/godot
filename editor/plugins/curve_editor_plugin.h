@@ -99,8 +99,8 @@ private:
 	Transform2D _world_to_view;
 
 	Ref<Curve> _curve_ref;
-	PopupMenu *_context_menu;
-	PopupMenu *_presets_menu;
+	PopupMenu *_context_menu = nullptr;
+	PopupMenu *_presets_menu = nullptr;
 
 	Array _undo_data;
 	bool _has_undo_data;

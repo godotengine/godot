@@ -90,19 +90,20 @@ private:
 	Window *root = nullptr;
 
 	uint64_t tree_version = 1;
-	double physics_process_time = 1.0;
-	double process_time = 1.0;
+	double physics_process_time = 0.0;
+	double process_time = 0.0;
 	bool accept_quit = true;
 	bool quit_on_go_back = true;
 
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint = false;
+	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
 	int root_lock = 0;
 
-	Map<StringName, Group> group_map;
+	HashMap<StringName, Group> group_map;
 	bool _quit = false;
 	bool initialized = false;
 
@@ -115,22 +116,26 @@ private:
 	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
-	Node *edited_scene_root;
+	Node *edited_scene_root = nullptr;
 #endif
 	struct UGCall {
 		StringName group;
 		StringName call;
 
+		static uint32_t hash(const UGCall &p_val) {
+			return p_val.group.hash() ^ p_val.call.hash();
+		}
+		bool operator==(const UGCall &p_with) const { return group == p_with.group && call == p_with.call; }
 		bool operator<(const UGCall &p_with) const { return group == p_with.group ? call < p_with.call : group < p_with.group; }
 	};
 
 	// Safety for when a node is deleted while a group is being called.
 	int call_lock = 0;
-	Set<Node *> call_skip; // Skip erased nodes.
+	HashSet<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 
-	Map<UGCall, Vector<Variant>> unique_group_calls;
+	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
 	void _flush_ugc();
 
@@ -138,20 +143,22 @@ private:
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
-	Node *current_scene;
+	Node *current_scene = nullptr;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
+	Color debug_paths_color;
+	float debug_paths_width = 1.0f;
 	Color debug_navigation_color;
 	Color debug_navigation_disabled_color;
 	Ref<ArrayMesh> debug_contact_mesh;
+	Ref<Material> debug_paths_material;
 	Ref<Material> navigation_material;
 	Ref<Material> navigation_disabled_material;
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
 	void _change_scene(Node *p_to);
-	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 	List<Ref<SceneTreeTimer>> timers;
 	List<Ref<Tween>> tweens;
@@ -159,6 +166,7 @@ private:
 	///network///
 
 	Ref<MultiplayerAPI> multiplayer;
+	HashMap<NodePath, Ref<MultiplayerAPI>> custom_multiplayers;
 	bool multiplayer_poll = true;
 
 	static SceneTree *singleton;
@@ -175,8 +183,8 @@ private:
 	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
-	Variant _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
 	// Optimization.
@@ -204,6 +212,7 @@ private:
 
 	enum CallInputType {
 		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_SHORTCUT_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
 	};
@@ -223,19 +232,41 @@ public:
 	enum GroupCallFlags {
 		GROUP_CALL_DEFAULT = 0,
 		GROUP_CALL_REVERSE = 1,
-		GROUP_CALL_REALTIME = 2,
+		GROUP_CALL_DEFERRED = 2,
 		GROUP_CALL_UNIQUE = 4,
 	};
 
 	_FORCE_INLINE_ Window *get_root() const { return root; }
 
-	void call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
+	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
 	void set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value);
 
-	void call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
+	// `notify_group()` is immediate by default since Godot 4.0.
 	void notify_group(const StringName &p_group, int p_notification);
+	// `set_group()` is immediate by default since Godot 4.0.
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
+
+	template <typename... VarArgs>
+	// `call_group()` is immediate by default since Godot 4.0.
+	void call_group(const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_group_flagsp(GROUP_CALL_DEFAULT, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename... VarArgs>
+	void call_group_flags(uint32_t p_flags, const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_group_flagsp(p_flags, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
 
 	void flush_transform_notifications();
 
@@ -246,7 +277,10 @@ public:
 
 	virtual void finalize() override;
 
+	bool is_auto_accept_quit() const;
 	void set_auto_accept_quit(bool p_enable);
+
+	bool is_quit_on_go_back() const;
 	void set_quit_on_go_back(bool p_enable);
 
 	void quit(int p_exit_code = EXIT_SUCCESS);
@@ -267,11 +301,17 @@ public:
 	void set_debug_collisions_hint(bool p_enabled);
 	bool is_debugging_collisions_hint() const;
 
+	void set_debug_paths_hint(bool p_enabled);
+	bool is_debugging_paths_hint() const;
+
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
+
+	void set_debug_paths_hint(bool p_enabled) {}
+	bool is_debugging_paths_hint() const { return false; }
 
 	void set_debug_navigation_hint(bool p_enabled) {}
 	bool is_debugging_navigation_hint() const { return false; }
@@ -283,12 +323,19 @@ public:
 	void set_debug_collision_contact_color(const Color &p_color);
 	Color get_debug_collision_contact_color() const;
 
+	void set_debug_paths_color(const Color &p_color);
+	Color get_debug_paths_color() const;
+
+	void set_debug_paths_width(float p_width);
+	float get_debug_paths_width() const;
+
 	void set_debug_navigation_color(const Color &p_color);
 	Color get_debug_navigation_color() const;
 
 	void set_debug_navigation_disabled_color(const Color &p_color);
 	Color get_debug_navigation_disabled_color() const;
 
+	Ref<Material> get_debug_paths_material();
 	Ref<Material> get_debug_navigation_material();
 	Ref<Material> get_debug_navigation_disabled_material();
 	Ref<Material> get_debug_collision_material();
@@ -331,10 +378,10 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer() const;
+	Ref<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
+	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
-	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 
 	static void add_idle_callback(IdleCallback p_callback);
 

@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_OPENGL_H
-#define SHADER_OPENGL_H
+#ifndef SHADER_GLES3_H
+#define SHADER_GLES3_H
 
+#include "core/math/projection.h"
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/variant.h"
 #include "servers/rendering_server.h"
@@ -73,16 +74,17 @@ private:
 	//versions
 	CharString general_defines;
 
-	// A version is a high-level construct which is a combination of built-in and user-defined shader code
-	// Variants use #idefs to toggle behaviour on and off to change behaviour of the shader
+	// A version is a high-level construct which is a combination of built-in and user-defined shader code, Each user-created Shader makes one version
+	// Variants use #ifdefs to toggle behaviour on and off to change behaviour of the shader
+	// All variants are compiled each time a new version is created
 	// Specializations use #ifdefs to toggle behaviour on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
-	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler)
+	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
 	struct Version {
 		Vector<StringName> texture_uniforms;
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString fragment_globals;
-		Map<StringName, CharString> code_sections;
+		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 
 		struct Specialization {
@@ -91,7 +93,7 @@ private:
 			GLuint frag_id;
 			LocalVector<GLint> uniform_location;
 			LocalVector<GLint> texture_uniform_locations;
-			Map<StringName, GLint> custom_uniform_locations;
+			HashMap<StringName, GLint> custom_uniform_locations;
 			bool build_queued = false;
 			bool ok = false;
 			Specialization() {
@@ -111,7 +113,7 @@ private:
 	void _clear_version(Version *p_version);
 	void _initialize_version(Version *p_version);
 
-	RID_Owner<Version> version_owner;
+	RID_Owner<Version, true> version_owner;
 
 	struct StageTemplate {
 		struct Chunk {
@@ -141,7 +143,7 @@ private:
 	static bool shader_cache_save_debug;
 	bool shader_cache_dir_valid = false;
 
-	GLint max_image_units;
+	GLint max_image_units = 0;
 
 	enum StageType {
 		STAGE_TYPE_VERTEX,
@@ -217,7 +219,11 @@ protected:
 		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_COND_V(!version, -1);
-		return version->variants[p_variant].lookup_ptr(p_specialization)->uniform_location[p_which];
+		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
+		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		ERR_FAIL_COND_V(!spec, -1);
+		ERR_FAIL_INDEX_V(p_which, int(spec->uniform_location.size()), -1);
+		return spec->uniform_location[p_which];
 	}
 
 	virtual void _init() = 0;
@@ -225,7 +231,7 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
 
 	bool version_is_valid(RID p_version);
 
@@ -242,5 +248,6 @@ public:
 	virtual ~ShaderGLES3();
 };
 
-#endif // SHADER_OPENGL_H
-#endif
+#endif // GLES3_ENABLED
+
+#endif // SHADER_GLES3_H

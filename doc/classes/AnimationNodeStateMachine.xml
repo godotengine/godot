@@ -39,12 +39,6 @@
 				Adds a transition between the given nodes.
 			</description>
 		</method>
-		<method name="get_end_node" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the graph's end node.
-			</description>
-		</method>
 		<method name="get_graph_offset" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -70,12 +64,6 @@
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns the given node's coordinates. Used for display in the editor.
-			</description>
-		</method>
-		<method name="get_start_node" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the graph's end node.
 			</description>
 		</method>
 		<method name="get_transition" qualifiers="const">
@@ -157,13 +145,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_end_node">
-			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<description>
-				Sets the given node as the graph end point.
-			</description>
-		</method>
 		<method name="set_graph_offset">
 			<return type="void" />
 			<argument index="0" name="offset" type="Vector2" />
@@ -177,13 +158,6 @@
 			<argument index="1" name="position" type="Vector2" />
 			<description>
 				Sets the node's coordinates. Used for display in the editor.
-			</description>
-		</method>
-		<method name="set_start_node">
-			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<description>
-				Sets the given node as the graph start point.
 			</description>
 		</method>
 	</methods>

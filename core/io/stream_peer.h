@@ -39,7 +39,6 @@
 
 class StreamPeer : public RefCounted {
 	GDCLASS(StreamPeer, RefCounted);
-	OBJ_CATEGORY("Networking");
 
 protected:
 	static void _bind_methods();

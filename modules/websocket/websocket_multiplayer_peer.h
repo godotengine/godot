@@ -62,7 +62,7 @@ protected:
 	};
 
 	List<Packet> _incoming_packets;
-	Map<int, Ref<WebSocketPeer>> _peer_map;
+	HashMap<int, Ref<WebSocketPeer>> _peer_map;
 	Packet _current_packet;
 
 	bool _is_multiplayer = false;

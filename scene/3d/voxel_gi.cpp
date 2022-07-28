@@ -272,7 +272,8 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 }
 
 void VoxelGI::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
+	// Prevent very small extents as these break baking if other extents are set very high.
+	extents = Vector3(MAX(1.0, p_extents.x), MAX(1.0, p_extents.y), MAX(1.0, p_extents.z));
 	update_gizmos();
 }
 
@@ -450,17 +451,13 @@ AABB VoxelGI::get_aabb() const {
 	return AABB(-extents, extents * 2);
 }
 
-Vector<Face3> VoxelGI::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 TypedArray<String> VoxelGI::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("VoxelGIs are not supported by the OpenGL video driver.\nUse a LightmapGI instead."));
+		warnings.push_back(RTR("VoxelGIs are not supported by the OpenGL video driver.\nUse a LightmapGI instead."));
 	} else if (probe_data.is_null()) {
-		warnings.push_back(TTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
+		warnings.push_back(RTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}
 	return warnings;
 }
@@ -480,7 +477,7 @@ void VoxelGI::_bind_methods() {
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_NONE, "suffix:m"), "set_extents", "get_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_probe_data", "get_probe_data");
 
 	BIND_ENUM_CONSTANT(SUBDIV_64);

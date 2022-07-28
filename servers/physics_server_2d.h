@@ -127,7 +127,7 @@ public:
 	struct RayParameters {
 		Vector2 from;
 		Vector2 to;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -157,7 +157,7 @@ public:
 	struct PointParameters {
 		Vector2 position;
 		ObjectID canvas_instance_id;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -173,7 +173,7 @@ public:
 		Transform2D transform;
 		Vector2 motion;
 		real_t margin = 0.0;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -483,8 +483,9 @@ public:
 		Vector2 motion;
 		real_t margin = 0.08;
 		bool collide_separation_ray = false;
-		Set<RID> exclude_bodies;
-		Set<ObjectID> exclude_objects;
+		HashSet<RID> exclude_bodies;
+		HashSet<ObjectID> exclude_objects;
+		bool recovery_as_collision = false;
 
 		MotionParameters() {}
 
@@ -663,7 +664,7 @@ class PhysicsShapeQueryParameters2D : public RefCounted {
 
 	PhysicsDirectSpaceState2D::ShapeParameters parameters;
 
-	RES shape_ref;
+	Ref<Resource> shape_ref;
 
 protected:
 	static void _bind_methods();
@@ -671,8 +672,8 @@ protected:
 public:
 	const PhysicsDirectSpaceState2D::ShapeParameters &get_parameters() const { return parameters; }
 
-	void set_shape(const RES &p_shape_ref);
-	RES get_shape() const { return shape_ref; }
+	void set_shape(const Ref<Resource> &p_shape_ref);
+	Ref<Resource> get_shape() const { return shape_ref; }
 
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const { return parameters.shape_rid; }
@@ -727,6 +728,9 @@ public:
 
 	Array get_exclude_objects() const;
 	void set_exclude_objects(const Array &p_exclude);
+
+	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
+	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }
 };
 
 class PhysicsTestMotionResult2D : public RefCounted {

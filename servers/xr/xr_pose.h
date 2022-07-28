@@ -78,4 +78,4 @@ public:
 
 VARIANT_ENUM_CAST(XRPose::TrackingConfidence);
 
-#endif
+#endif // XR_POSE_H

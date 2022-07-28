@@ -32,6 +32,7 @@
 
 #include "collision_object_2d.h"
 #include "core/math/geometry_2d.h"
+#include "scene/2d/area_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -238,21 +239,24 @@ TypedArray<String> CollisionPolygon2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		warnings.push_back(TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
+		warnings.push_back(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 
 	int polygon_count = polygon.size();
 	if (polygon_count == 0) {
-		warnings.push_back(TTR("An empty CollisionPolygon2D has no effect on collision."));
+		warnings.push_back(RTR("An empty CollisionPolygon2D has no effect on collision."));
 	} else {
 		bool solids = build_mode == BUILD_SOLIDS;
 		if (solids) {
 			if (polygon_count < 3) {
-				warnings.push_back(TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
+				warnings.push_back(RTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
 			}
 		} else if (polygon_count < 2) {
-			warnings.push_back(TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
+			warnings.push_back(RTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
 		}
+	}
+	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
+		warnings.push_back(RTR("The One Way Collision property will be ignored when the parent is an Area2D."));
 	}
 
 	return warnings;
@@ -276,6 +280,7 @@ void CollisionPolygon2D::set_one_way_collision(bool p_enable) {
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
+	update_configuration_warnings();
 }
 
 bool CollisionPolygon2D::is_one_way_collision_enabled() const {
@@ -310,7 +315,7 @@ void CollisionPolygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);
 	BIND_ENUM_CONSTANT(BUILD_SEGMENTS);

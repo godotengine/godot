@@ -56,11 +56,12 @@ public:
 private:
 	XRServer::TrackerType type; // type of tracker
 	StringName name; // (unique) name of the tracker
-	String description; // description of the tracker, this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
+	String description; // description of the tracker
+	String profile; // this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
 	TrackerHand hand; // if known, the hand this tracker is held in
 
-	Map<StringName, Ref<XRPose>> poses;
-	Map<StringName, Variant> inputs;
+	HashMap<StringName, Ref<XRPose>> poses;
+	HashMap<StringName, Variant> inputs;
 
 protected:
 	static void _bind_methods();
@@ -72,6 +73,8 @@ public:
 	StringName get_tracker_name() const;
 	void set_tracker_desc(const String &p_desc);
 	String get_tracker_desc() const;
+	void set_tracker_profile(const String &p_profile);
+	String get_tracker_profile() const;
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
 	void set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand);
 

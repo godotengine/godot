@@ -63,9 +63,8 @@ private:
 		String text;
 		String suffix;
 		Ref<TextLine> text_buf;
-		Dictionary opentype_features;
 		String language;
-		Control::StructuredTextParser st_parser = Control::STRUCTURED_TEXT_DEFAULT;
+		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		Array st_args;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		bool dirty = true;
@@ -124,6 +123,7 @@ private:
 	Vector<Cell> cells;
 
 	bool collapsed = false; // won't show children
+	bool visible = true;
 	bool disable_folding = false;
 	int custom_min_height = 0;
 
@@ -134,7 +134,7 @@ private:
 
 	Vector<TreeItem *> children_cache;
 	bool is_root = false; // for tree root
-	Tree *tree; // tree (for reference)
+	Tree *tree = nullptr; // tree (for reference)
 
 	TreeItem(Tree *p_tree);
 
@@ -189,7 +189,7 @@ protected:
 		return d;
 	}
 
-	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 public:
 	/* cell mode */
@@ -209,6 +209,9 @@ private:
 	void _propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal);
 	void _propagate_check_through_parents(int p_column, bool p_emit_signal);
 
+	TreeItem *_get_prev_visible(bool p_wrap = false);
+	TreeItem *_get_next_visible(bool p_wrap = false);
+
 public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
@@ -216,12 +219,8 @@ public:
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_text_direction(int p_column) const;
 
-	void set_opentype_feature(int p_column, const String &p_name, int p_value);
-	int get_opentype_feature(int p_column, const String &p_name) const;
-	void clear_opentype_features(int p_column);
-
-	void set_structured_text_bidi_override(int p_column, Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
+	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 
 	void set_structured_text_bidi_override_options(int p_column, Array p_args);
 	Array get_structured_text_bidi_override_options(int p_column) const;
@@ -272,6 +271,9 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
+
+	void set_visible(bool p_visible);
+	bool is_visible();
 
 	void uncollapse_tree();
 
@@ -335,6 +337,7 @@ public:
 	TreeItem *get_next_visible(bool p_wrap = false);
 
 	TreeItem *get_child(int p_idx);
+	int get_visible_child_count();
 	int get_child_count();
 	Array get_children();
 	int get_index();
@@ -379,6 +382,9 @@ private:
 	TreeItem *selected_item = nullptr;
 	TreeItem *edited_item = nullptr;
 
+	TreeItem *popup_pressing_edited_item = nullptr; // Candidate.
+	int popup_pressing_edited_item_column = -1;
+
 	TreeItem *drop_mode_over = nullptr;
 	int drop_mode_section = 0;
 
@@ -418,7 +424,6 @@ private:
 		bool clip_content = false;
 		String title;
 		Ref<TextLine> text_buf;
-		Dictionary opentype_features;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		ColumnInfo() {
@@ -428,18 +433,18 @@ private:
 
 	bool show_column_titles = false;
 
-	VBoxContainer *popup_editor_vb;
+	VBoxContainer *popup_editor_vb = nullptr;
 
-	Popup *popup_editor;
+	Popup *popup_editor = nullptr;
 	LineEdit *text_editor = nullptr;
-	HSlider *value_editor;
+	HSlider *value_editor = nullptr;
 	bool updating_value_editor = false;
 	uint64_t focus_in_id = 0;
 	PopupMenu *popup_menu = nullptr;
 
 	Vector<ColumnInfo> columns;
 
-	Timer *range_click_timer;
+	Timer *range_click_timer = nullptr;
 	TreeItem *range_item_last = nullptr;
 	bool range_up_last = false;
 	void _range_click_timeout();
@@ -463,7 +468,7 @@ private:
 
 	void _notification(int p_what);
 
-	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
+	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
 	void item_deselected(int p_column, TreeItem *p_item);
@@ -553,8 +558,8 @@ private:
 	int _get_title_button_height() const;
 
 	void _scroll_moved(float p_value);
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	bool h_scroll_enabled = true;
 	bool v_scroll_enabled = true;
@@ -604,6 +609,8 @@ private:
 	void _go_right();
 	void _go_down();
 	void _go_up();
+
+	bool _scroll(bool p_horizontal, float p_pages);
 
 protected:
 	static void _bind_methods();
@@ -655,10 +662,6 @@ public:
 	void set_column_title_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_column_title_direction(int p_column) const;
 
-	void set_column_title_opentype_feature(int p_column, const String &p_name, int p_value);
-	int get_column_title_opentype_feature(int p_column, const String &p_name) const;
-	void clear_column_title_opentype_features(int p_column);
-
 	void set_column_title_language(int p_column, const String &p_language);
 	String get_column_title_language(int p_column) const;
 
@@ -673,7 +676,7 @@ public:
 	Rect2 get_custom_popup_rect() const;
 
 	int get_item_offset(TreeItem *p_item) const;
-	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1) const;
+	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
 	bool edit_selected();
 	bool is_editing();
 
@@ -716,4 +719,5 @@ public:
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
 VARIANT_ENUM_CAST(Tree::DropModeFlags);
-#endif
+
+#endif // TREE_H

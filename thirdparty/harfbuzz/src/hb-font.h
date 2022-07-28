@@ -198,7 +198,7 @@ typedef hb_font_get_font_extents_func_t hb_font_get_font_v_extents_func_t;
  * This method should retrieve the nominal glyph ID for a specified Unicode code
  * point. Glyph IDs must be returned in a #hb_codepoint_t output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_nominal_glyph_func_t) (hb_font_t *font, void *font_data,
@@ -221,7 +221,7 @@ typedef hb_bool_t (*hb_font_get_nominal_glyph_func_t) (hb_font_t *font, void *fo
  * followed by a specified Variation Selector code point. Glyph IDs must be
  * returned in a #hb_codepoint_t output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_variation_glyph_func_t) (hb_font_t *font, void *font_data,
@@ -362,7 +362,7 @@ typedef hb_font_get_glyph_advances_func_t hb_font_get_glyph_v_advances_func_t;
  * origin for a glyph. Each coordinate must be returned in an #hb_position_t
  * output parameter.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  * 
  **/
 typedef hb_bool_t (*hb_font_get_glyph_origin_func_t) (hb_font_t *font, void *font_data,
@@ -434,7 +434,7 @@ typedef hb_font_get_glyph_kerning_func_t hb_font_get_glyph_h_kerning_func_t;
  * This method should retrieve the extents for a specified glyph. Extents must be 
  * returned in an #hb_glyph_extents output parameter.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  * 
  **/
 typedef hb_bool_t (*hb_font_get_glyph_extents_func_t) (hb_font_t *font, void *font_data,
@@ -458,7 +458,7 @@ typedef hb_bool_t (*hb_font_get_glyph_extents_func_t) (hb_font_t *font, void *fo
  * specified contour point in a glyph. Each coordinate must be returned as
  * an #hb_position_t output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_glyph_contour_point_func_t) (hb_font_t *font, void *font_data,
@@ -481,7 +481,7 @@ typedef hb_bool_t (*hb_font_get_glyph_contour_point_func_t) (hb_font_t *font, vo
  * This method should retrieve the glyph name that corresponds to a
  * glyph ID. The name should be returned in a string output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_glyph_name_func_t) (hb_font_t *font, void *font_data,
@@ -503,13 +503,32 @@ typedef hb_bool_t (*hb_font_get_glyph_name_func_t) (hb_font_t *font, void *font_
  * This method should retrieve the glyph ID that corresponds to a glyph-name
  * string. 
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *font_data,
 							 const char *name, int len, /* -1 means nul-terminated */
 							 hb_codepoint_t *glyph,
 							 void *user_data);
+
+/**
+ * hb_font_get_glyph_shape_func_t:
+ * @font: #hb_font_t to work upon
+ * @font_data: @font user data pointer
+ * @glyph: The glyph ID to query
+ * @draw_funcs: The draw functions to send the shape data to
+ * @draw_data: The data accompanying the draw functions
+ * @user_data: User data pointer passed by the caller
+ *
+ * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
+ *
+ * Since: 4.0.0
+ *
+ **/
+typedef void (*hb_font_get_glyph_shape_func_t) (hb_font_t *font, void *font_data,
+						hb_codepoint_t glyph,
+						hb_draw_funcs_t *draw_funcs, void *draw_data,
+						void *user_data);
 
 
 /* func setters */
@@ -770,6 +789,22 @@ hb_font_funcs_set_glyph_from_name_func (hb_font_funcs_t *ffuncs,
 					hb_font_get_glyph_from_name_func_t func,
 					void *user_data, hb_destroy_func_t destroy);
 
+/**
+ * hb_font_funcs_set_glyph_shape_func:
+ * @ffuncs: A font-function structure
+ * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): The function to call when @user_data is not needed anymore
+ *
+ * Sets the implementation function for #hb_font_get_glyph_shape_func_t.
+ *
+ * Since: 4.0.0
+ **/
+HB_EXTERN void
+hb_font_funcs_set_glyph_shape_func (hb_font_funcs_t *ffuncs,
+				    hb_font_get_glyph_shape_func_t func,
+				    void *user_data, hb_destroy_func_t destroy);
+
 /* func dispatch */
 
 HB_EXTERN hb_bool_t
@@ -849,6 +884,11 @@ HB_EXTERN hb_bool_t
 hb_font_get_glyph_from_name (hb_font_t *font,
 			     const char *name, int len, /* -1 means nul-terminated */
 			     hb_codepoint_t *glyph);
+
+HB_EXTERN void
+hb_font_get_glyph_shape (hb_font_t *font,
+			 hb_codepoint_t glyph,
+			 hb_draw_funcs_t *dfuncs, void *draw_data);
 
 
 /* high-level funcs, with fallback */
@@ -962,6 +1002,12 @@ hb_font_make_immutable (hb_font_t *font);
 HB_EXTERN hb_bool_t
 hb_font_is_immutable (hb_font_t *font);
 
+HB_EXTERN unsigned int
+hb_font_get_serial (hb_font_t *font);
+
+HB_EXTERN void
+hb_font_changed (hb_font_t *font);
+
 HB_EXTERN void
 hb_font_set_parent (hb_font_t *font,
 		    hb_font_t *parent);
@@ -1056,11 +1102,6 @@ HB_EXTERN void
 hb_font_set_var_named_instance (hb_font_t *font,
 				unsigned instance_index);
 
-#ifdef HB_EXPERIMENTAL_API
-HB_EXTERN hb_bool_t
-hb_font_draw_glyph (hb_font_t *font, hb_codepoint_t glyph,
-		    const hb_draw_funcs_t *funcs, void *user_data);
-#endif
 
 HB_END_DECLS
 

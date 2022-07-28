@@ -96,6 +96,8 @@ struct AxisRecord
     info->reserved = 0;
   }
 
+  hb_tag_t get_axis_tag () const { return axisTag; }
+
   int normalize_axis_value (float v) const
   {
     float min_value, default_value, max_value;
@@ -133,13 +135,17 @@ struct AxisRecord
     return_trace (c->check_struct (this));
   }
 
-  protected:
   void get_coordinates (float &min, float &default_, float &max) const
   {
     default_ = defaultValue / 65536.f;
     /* Ensure order, to simplify client math. */
     min = hb_min (default_, minValue / 65536.f);
     max = hb_max (default_, maxValue / 65536.f);
+  }
+
+  float get_default () const
+  {
+    return defaultValue / 65536.f;
   }
 
   public:
@@ -213,7 +219,7 @@ struct fvar
     if (!axis_index) axis_index = &i;
     *axis_index = HB_OT_VAR_NO_AXIS_INDEX;
     auto axes = get_axes ();
-    return axes.lfind (tag, axis_index) && (axes[*axis_index].get_axis_deprecated (info), true);
+    return axes.lfind (tag, axis_index) && ((void) axes[*axis_index].get_axis_deprecated (info), true);
   }
 #endif
   bool
@@ -221,7 +227,7 @@ struct fvar
   {
     unsigned i;
     auto axes = get_axes ();
-    return axes.lfind (tag, &i) && (axes[i].get_axis_info (i, info), true);
+    return axes.lfind (tag, &i) && ((void) axes[i].get_axis_info (i, info), true);
   }
 
   int normalize_axis_value (unsigned int axis_index, float v) const
@@ -270,24 +276,49 @@ struct fvar
     return axisCount;
   }
 
-  void collect_name_ids (hb_set_t *nameids) const
+  void collect_name_ids (hb_hashmap_t<hb_tag_t, float> *user_axes_location,
+			 hb_set_t *nameids  /* IN/OUT */) const
   {
     if (!has_data ()) return;
+    hb_map_t pinned_axes;
 
-    + get_axes ()
-    | hb_map (&AxisRecord::get_name_id)
-    | hb_sink (nameids)
-    ;
+    auto axis_records = get_axes ();
+    for (unsigned i = 0 ; i < (unsigned)axisCount; i++)
+    {
+      hb_tag_t axis_tag = axis_records[i].get_axis_tag ();
+      if (user_axes_location->has (axis_tag))
+      {
+        pinned_axes.set (i, axis_tag);
+        continue;
+      }
 
-    + hb_range ((unsigned) instanceCount)
-    | hb_map ([this] (const unsigned _) { return get_instance_subfamily_name_id (_); })
-    | hb_sink (nameids)
-    ;
+      nameids->add (axis_records[i].get_name_id ());
+    }
 
-    + hb_range ((unsigned) instanceCount)
-    | hb_map ([this] (const unsigned _) { return get_instance_postscript_name_id (_); })
-    | hb_sink (nameids)
-    ;
+    for (unsigned i = 0 ; i < (unsigned)instanceCount; i++)
+    {
+      const InstanceRecord *instance = get_instance (i);
+
+      if (hb_any (+ hb_zip (instance->get_coordinates (axisCount), hb_range ((unsigned)axisCount))
+                  | hb_filter (pinned_axes, hb_second)
+                  | hb_map ([&] (const hb_pair_t<const HBFixed&, unsigned>& _)
+                            {
+                              hb_tag_t axis_tag = pinned_axes.get (_.second);
+                              float location = user_axes_location->get (axis_tag);
+                              if (fabs ((double)location - (double)_.first.to_float ()) > 0.001) return true;
+                              return false;
+                            })
+                  ))
+        continue;
+
+      nameids->add (instance->subfamilyNameID);
+
+      if (instanceSize >= axisCount * 4 + 6)
+      {
+        unsigned post_script_name_id = StructAfter<NameID> (instance->get_coordinates (axisCount));
+        if (post_script_name_id != HB_OT_NAME_ID_INVALID) nameids->add (post_script_name_id);
+      }
+    }
   }
 
   public:

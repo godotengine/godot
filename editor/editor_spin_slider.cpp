@@ -37,7 +37,7 @@
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		Key key = Key::META;
 #else
 		Key key = Key::CTRL;
@@ -81,7 +81,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				if (grabbing_spinner_attempt) {
 					if (grabbing_spinner) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 						update();
 					} else {
 						_focus_entered();
@@ -286,7 +286,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int sep_base = 4 * EDSCALE;
 	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
-	int label_width = font->get_string_size(label, font_size).width;
+	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
 	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
@@ -300,19 +300,14 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
-	Color lc;
-	if (use_custom_label_color) {
-		lc = custom_label_color;
-	} else {
-		lc = fc;
-	}
+	Color lc = get_theme_color(is_read_only() ? SNAME("read_only_label_color") : SNAME("label_color"));
 
 	if (flat && !label.is_empty()) {
-		Color label_bg_color = get_theme_color(SNAME("dark_color_3"), SNAME("Editor"));
+		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
 		if (rtl) {
-			draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
+			draw_style_box(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		} else {
-			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
+			draw_style_box(label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		}
 	}
 
@@ -329,7 +324,10 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int suffix_start = numstr.length();
 	RID num_rid = TS->create_shaped_text();
-	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size);
+	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size, font->get_opentype_features());
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		TS->shaped_text_set_spacing(num_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
+	}
 
 	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
 	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
@@ -351,7 +349,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			text_ofs.x += glyphs[i].advance;
 		}
 	}
-	TS->free(num_rid);
+	TS->free_rid(num_rid);
 
 	if (get_step() == 1) {
 		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
@@ -419,7 +417,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 			if (mousewheel_over_grabber) {
-				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+				Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
 			}
 
 			grabber_range = width;
@@ -448,10 +446,12 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		case NOTIFICATION_WM_CLOSE_REQUEST:
 		case NOTIFICATION_EXIT_TREE: {
 			if (grabbing_spinner) {
 				grabber->hide();
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
 			}
@@ -533,7 +533,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 		return;
 	}
 
-	Variant v = expr->execute(Array(), nullptr, false);
+	Variant v = expr->execute(Array(), nullptr, false, true);
 	if (v.get_type() == Variant::NIL) {
 		return;
 	}
@@ -605,11 +605,6 @@ bool EditorSpinSlider::is_flat() const {
 	return flat;
 }
 
-void EditorSpinSlider::set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color) {
-	use_custom_label_color = p_use_custom_label_color;
-	custom_label_color = p_custom_label_color;
-}
-
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
 	Rect2 gr = get_screen_rect();
@@ -636,10 +631,14 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flat", "flat"), &EditorSpinSlider::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
 
+	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
+	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 }
 
 void EditorSpinSlider::_ensure_input_popup() {
@@ -653,7 +652,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
 	value_input_popup->set_wrap_controls(true);
-	value_input->set_anchors_and_offsets_preset(PRESET_WIDE);
+	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
@@ -665,14 +664,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 }
 
 EditorSpinSlider::EditorSpinSlider() {
-	flat = false;
-	grabbing_spinner_attempt = false;
-	grabbing_spinner = false;
-	grabbing_spinner_dist_cache = 0;
-	pre_grab_value = 0;
 	set_focus_mode(FOCUS_ALL);
-	updown_offset = -1;
-	hover_updown = false;
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
@@ -681,13 +673,4 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber->connect("mouse_entered", callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect("mouse_exited", callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));
 	grabber->connect("gui_input", callable_mp(this, &EditorSpinSlider::_grabber_gui_input));
-	mouse_over_spin = false;
-	mouse_over_grabber = false;
-	mousewheel_over_grabber = false;
-	grabbing_grabber = false;
-	grabber_range = 1;
-	value_input_just_closed = false;
-	hide_slider = false;
-	read_only = false;
-	use_custom_label_color = false;
 }

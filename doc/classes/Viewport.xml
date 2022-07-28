@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Viewport" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Creates a sub-view into the screen.
+		Base class for viewports.
 	</brief_description>
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera3D 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
-		If a viewport is a child of a [SubViewportContainer], it will automatically take up its size, otherwise it must be set manually.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
@@ -58,6 +57,13 @@
 				Returns the mouse's position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
+		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
+			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
+			<argument index="0" name="quadrant" type="int" />
+			<description>
+				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
+			</description>
+		</method>
 		<method name="get_render_info">
 			<return type="int" />
 			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
@@ -65,28 +71,16 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
-			<argument index="0" name="quadrant" type="int" />
-			<description>
-				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
-			</description>
-		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture" />
 			<description>
 				Returns the viewport's texture.
-				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
-				[codeblocks]
-				[gdscript]
-				var img = get_viewport().get_texture().get_image()
-				img.flip_y()
-				[/gdscript]
-				[csharp]
-				Image img = GetViewport().GetTexture().GetImage();
-				img.FlipY();
-				[/csharp]
-				[/codeblocks]
+				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
+				[codeblock]
+				func _ready():
+				    await RenderingServer.frame_post_draw
+				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
@@ -123,17 +117,13 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
+				Alternative to [constant Node.NOTIFICATION_DRAG_BEGIN] and [constant Node.NOTIFICATION_DRAG_END] when you prefer polling the value.
 			</description>
 		</method>
 		<method name="gui_release_focus">
 			<return type="void" />
 			<description>
 				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
-			</description>
-		</method>
-		<method name="is_embedding_subwindows" qualifiers="const">
-			<return type="bool" />
-			<description>
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
@@ -168,17 +158,17 @@
 				Stops the input from propagating further down the [SceneTree].
 			</description>
 		</method>
-		<method name="set_shadow_atlas_quadrant_subdiv">
+		<method name="set_positional_shadow_atlas_quadrant_subdiv">
 			<return type="void" />
 			<argument index="0" name="quadrant" type="int" />
-			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
+			<argument index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<argument index="0" name="to_position" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
@@ -206,10 +196,6 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			Disable 3D rendering (but keep 2D rendering).
 		</member>
-		<member name="fsr_mipmap_bias" type="float" setter="set_fsr_mipmap_bias" getter="get_fsr_mipmap_bias" default="0.0">
-			Affects the final texture sharpness by reading from a lower or higher mipmap when using FSR. Mipmap bias does nothing when FSR is not being used. Negative values make textures sharper, while positive values make textures blurrier. This value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]. This updates the rendering server's mipmap bias when called
-			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_mipmap_bias] project setting.
-		</member>
 		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_sharpness] project setting.
@@ -220,7 +206,8 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
-		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
+		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
+			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
@@ -236,10 +223,28 @@
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also bilinear scaling 3d [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
-			If [code]true[/code], the viewport will use the [World3D] defined in [member world_3d].
+			If [code]true[/code], the viewport will use a unique copy of the [World3D] defined in [member world_3d].
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
+		</member>
+		<member name="positional_shadow_atlas_16_bits" type="bool" setter="set_positional_shadow_atlas_16_bits" getter="get_positional_shadow_atlas_16_bits" default="true">
+		</member>
+		<member name="positional_shadow_atlas_quad_0" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="2">
+			The subdivision amount of the first quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_quad_1" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="2">
+			The subdivision amount of the second quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_quad_2" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="3">
+			The subdivision amount of the third quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_quad_3" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="4">
+			The subdivision amount of the fourth quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_size" type="int" setter="set_positional_shadow_atlas_size" getter="get_positional_shadow_atlas_size" default="2048">
+			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+			[b]Note:[/b] If this is set to [code]0[/code], no shadows will be visible at all (including directional shadows).
 		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">
 			Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
@@ -257,27 +262,14 @@
 		</member>
 		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
 		</member>
-		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
-		</member>
-		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of the first quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of the second quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="3">
-			The subdivision amount of the third quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
-			The subdivision amount of the fourth quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
-			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible.
-		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
 		</member>
 		<member name="snap_2d_vertices_to_pixel" type="bool" setter="set_snap_2d_vertices_to_pixel" getter="is_snap_2d_vertices_to_pixel_enabled" default="false">
+		</member>
+		<member name="texture_mipmap_bias" type="float" setter="set_texture_mipmap_bias" getter="get_texture_mipmap_bias" default="0.0">
+			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member ProjectSettings.rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
+			[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/textures/default_filters/texture_mipmap_bias] project setting.
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
@@ -288,8 +280,18 @@
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.
 			[b]Note:[/b] Enabling occlusion culling has a cost on the CPU. Only enable occlusion culling if you actually plan to use it, and think whether your scene can actually benefit from occlusion culling. Large, open scenes with few or no objects blocking the view will generally not benefit much from occlusion culling. Large open scenes generally benefit more from mesh LOD and visibility ranges ([member GeometryInstance3D.visibility_range_begin] and [member GeometryInstance3D.visibility_range_end]) compared to occlusion culling.
 		</member>
+		<member name="use_taa" type="bool" setter="set_use_taa" getter="is_using_taa" default="false">
+			Enables Temporal Anti-Aliasing for this viewport. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion.
+			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
+		</member>
 		<member name="use_xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
 			If [code]true[/code], the viewport will use the primary XR interface to render XR output. When applicable this can result in a stereoscopic image and the resulting render being output to a headset.
+		</member>
+		<member name="vrs_mode" type="int" setter="set_vrs_mode" getter="get_vrs_mode" enum="Viewport.VRSMode" default="0">
+			The Variable Rate Shading (VRS) mode that is used for this viewport. Note, if hardware does not support VRS this property is ignored.
+		</member>
+		<member name="vrs_texture" type="Texture2D" setter="set_vrs_texture" getter="get_vrs_texture">
+			Texture to use when [member vrs_mode] is set to [constant Viewport.VRS_TEXTURE].
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
@@ -312,35 +314,35 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will not be used.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will only be used by one shadow map.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will be split in 4 and used by up to 4 shadow maps.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will be split 16 ways and used by up to 16 shadow maps.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will be split 64 ways and used by up to 64 shadow maps.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="ShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="PositionalShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="ShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="PositionalShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
-			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="PositionalShadowAtlasQuadrantSubdiv">
+			Represents the size of the [enum PositionalShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="SCALING_3D_MODE_BILINEAR" value="0" enum="Scaling3DMode">
-			Enables bilinear scaling on 3D viewports. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="SCALING_3D_MODE_FSR" value="1" enum="Scaling3DMode">
-			Enables FSR upscaling on 3D viewports. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear supersampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="SCALING_3D_MODE_MAX" value="2" enum="Scaling3DMode">
 			Represents the size of the [enum Scaling3DMode] enum.
@@ -450,6 +452,8 @@
 		</constant>
 		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
 		</constant>
+		<constant name="DEBUG_DRAW_MOTION_VECTORS" value="25" enum="DebugDraw">
+		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
@@ -494,6 +498,18 @@
 		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
 		</constant>
 		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
+		</constant>
+		<constant name="VRS_DISABLED" value="0" enum="VRSMode">
+			VRS is disabled.
+		</constant>
+		<constant name="VRS_TEXTURE" value="1" enum="VRSMode">
+			VRS uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+		</constant>
+		<constant name="VRS_XR" value="2" enum="VRSMode">
+			VRS texture is supplied by the primary [XRInterface].
+		</constant>
+		<constant name="VRS_MAX" value="3" enum="VRSMode">
+			Represents the size of the [enum VRSMode] enum.
 		</constant>
 	</constants>
 </class>

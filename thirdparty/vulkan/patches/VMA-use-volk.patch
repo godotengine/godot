@@ -1,5 +1,5 @@
 diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
-index 52b403bede..7c450be211 100644
+index 44affc5ca4..d96f2dacc0 100644
 --- a/thirdparty/vulkan/vk_mem_alloc.h
 +++ b/thirdparty/vulkan/vk_mem_alloc.h
 @@ -127,7 +127,11 @@ extern "C" {

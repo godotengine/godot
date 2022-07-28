@@ -103,7 +103,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	bool can_sleep = true;
 	bool first_time_kinematic = false;
 	void _mass_properties_changed();
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 	Transform2D new_transform;
 
 	List<Pair<GodotConstraint2D *, int>> constraint_list;
@@ -302,7 +302,7 @@ public:
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PhysicsServer2D::CCDMode p_mode) { continuous_cd_mode = p_mode; }
 	_FORCE_INLINE_ PhysicsServer2D::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
 
-	void set_space(GodotSpace2D *p_space);
+	void set_space(GodotSpace2D *p_space) override;
 
 	void update_mass_properties();
 	void reset_mass_properties();

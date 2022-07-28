@@ -478,7 +478,7 @@
 		<member name="indent_automatic" type="bool" setter="set_auto_indent_enabled" getter="is_auto_indent_enabled" default="false">
 			Sets whether automatic indent are enabled, this will add an extra indent if a prefix or brace is found.
 		</member>
-		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;(&quot;, &quot;:&quot;, &quot;[&quot;, &quot;{&quot;]">
+		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;:&quot;, &quot;{&quot;, &quot;[&quot;, &quot;(&quot;]">
 			Prefixes to trigger an automatic indent.
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
@@ -591,6 +591,9 @@
 		</theme_item>
 		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.29)">
 			[Color] of the scrollbar in the code completion popup.
+		</theme_item>
+		<theme_item name="completion_scroll_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
+			[Color] of the scrollbar in the code completion popup when hovered.
 		</theme_item>
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
 			Background highlight [Color] for the current selected option item in the code completion popup.

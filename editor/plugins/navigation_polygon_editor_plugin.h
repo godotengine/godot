@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATIONPOLYGONEDITORPLUGIN_H
-#define NAVIGATIONPOLYGONEDITORPLUGIN_H
+#ifndef NAVIGATION_POLYGON_EDITOR_PLUGIN_H
+#define NAVIGATION_POLYGON_EDITOR_PLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/navigation_region_2d.h"
@@ -37,7 +37,7 @@
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
-	NavigationRegion2D *node;
+	NavigationRegion2D *node = nullptr;
 
 	Ref<NavigationPolygon> _ensure_navpoly() const;
 
@@ -67,4 +67,4 @@ public:
 	NavigationPolygonEditorPlugin();
 };
 
-#endif // NAVIGATIONPOLYGONEDITORPLUGIN_H
+#endif // NAVIGATION_POLYGON_EDITOR_PLUGIN_H

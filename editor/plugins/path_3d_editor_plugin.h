@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PATH_EDITOR_PLUGIN_H
-#define PATH_EDITOR_PLUGIN_H
+#ifndef PATH_3D_EDITOR_PLUGIN_H
+#define PATH_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
@@ -40,7 +40,7 @@
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
-	Path3D *path;
+	Path3D *path = nullptr;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
@@ -70,21 +70,21 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
-	Separator *sep;
-	Button *curve_create;
-	Button *curve_edit;
-	Button *curve_del;
-	Button *curve_close;
-	MenuButton *handle_menu;
+	Separator *sep = nullptr;
+	Button *curve_create = nullptr;
+	Button *curve_edit = nullptr;
+	Button *curve_del = nullptr;
+	Button *curve_close = nullptr;
+	MenuButton *handle_menu = nullptr;
 
-	Path3D *path;
+	Path3D *path = nullptr;
 
 	void _update_theme();
 
 	void _mode_changed(int p_idx);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
-	bool handle_clicked;
+	bool handle_clicked = false;
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
 
@@ -118,4 +118,4 @@ public:
 	~Path3DEditorPlugin();
 };
 
-#endif // PATH_EDITOR_PLUGIN_H
+#endif // PATH_3D_EDITOR_PLUGIN_H

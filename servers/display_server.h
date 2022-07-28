@@ -80,7 +80,7 @@ private:
 	static Input::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
 	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
+	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();
@@ -121,34 +121,91 @@ public:
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
 		FEATURE_CLIPBOARD_PRIMARY,
+		FEATURE_TEXT_TO_SPEECH,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 
-	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant());
-	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant());
-	virtual void global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu);
-	virtual void global_menu_add_separator(const String &p_menu_root);
+	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual void global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
+	virtual void global_menu_add_separator(const String &p_menu_root, int p_index = -1);
+
+	virtual int global_menu_get_item_index_from_text(const String &p_menu_root, const String &p_text) const;
+	virtual int global_menu_get_item_index_from_tag(const String &p_menu_root, const Variant &p_tag) const;
 
 	virtual bool global_menu_is_item_checked(const String &p_menu_root, int p_idx) const;
 	virtual bool global_menu_is_item_checkable(const String &p_menu_root, int p_idx) const;
-	virtual Callable global_menu_get_item_callback(const String &p_menu_root, int p_idx);
-	virtual Variant global_menu_get_item_tag(const String &p_menu_root, int p_idx);
-	virtual String global_menu_get_item_text(const String &p_menu_root, int p_idx);
-	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx);
+	virtual bool global_menu_is_item_radio_checkable(const String &p_menu_root, int p_idx) const;
+	virtual Callable global_menu_get_item_callback(const String &p_menu_root, int p_idx) const;
+	virtual Variant global_menu_get_item_tag(const String &p_menu_root, int p_idx) const;
+	virtual String global_menu_get_item_text(const String &p_menu_root, int p_idx) const;
+	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx) const;
+	virtual Key global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) const;
+	virtual bool global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const;
+	virtual String global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) const;
+	virtual int global_menu_get_item_state(const String &p_menu_root, int p_idx) const;
+	virtual int global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const;
+	virtual Ref<Texture2D> global_menu_get_item_icon(const String &p_menu_root, int p_idx) const;
 
 	virtual void global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked);
 	virtual void global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
+	virtual void global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
 	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback);
 	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag);
 	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text);
 	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu);
+	virtual void global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, Key p_keycode);
+	virtual void global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled);
+	virtual void global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip);
+	virtual void global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state);
+	virtual void global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states);
+	virtual void global_menu_set_item_icon(const String &p_menu_root, int p_idx, const Ref<Texture2D> &p_icon);
 
 	virtual int global_menu_get_item_count(const String &p_menu_root) const;
 
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
+
+	struct TTSUtterance {
+		String text;
+		String voice;
+		int volume = 50;
+		float pitch = 1.f;
+		float rate = 1.f;
+		int id = 0;
+	};
+
+	enum TTSUtteranceEvent {
+		TTS_UTTERANCE_STARTED,
+		TTS_UTTERANCE_ENDED,
+		TTS_UTTERANCE_CANCELED,
+		TTS_UTTERANCE_BOUNDARY,
+		TTS_UTTERANCE_MAX,
+	};
+
+private:
+	Callable utterance_callback[TTS_UTTERANCE_MAX];
+
+public:
+	virtual bool tts_is_speaking() const;
+	virtual bool tts_is_paused() const;
+	virtual Array tts_get_voices() const;
+	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_pause();
+	virtual void tts_resume();
+	virtual void tts_stop();
+
+	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
+	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
 
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
@@ -161,7 +218,7 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode);
 	virtual MouseMode mouse_get_mode() const;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to);
+	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;
 	virtual MouseButton mouse_get_button_state() const;
 
@@ -170,6 +227,9 @@ public:
 	virtual bool clipboard_has() const;
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
+
+	virtual Array get_display_cutouts() const { return Array(); }
+	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {
 		SCREEN_OF_MAIN_WINDOW = -1
@@ -350,7 +410,7 @@ public:
 	};
 	virtual void cursor_set_shape(CursorShape p_shape);
 	virtual CursorShape cursor_get_shape() const;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	virtual bool get_swap_cancel_ok();
 
@@ -409,5 +469,6 @@ VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::HandleType)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
+VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 
 #endif // DISPLAY_SERVER_H

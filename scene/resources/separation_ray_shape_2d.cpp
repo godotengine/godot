@@ -57,7 +57,7 @@ void SeparationRayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	Transform2D xf;
 	xf.rotate(target_position.angle());
-	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
+	xf.translate_local(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
 	Vector<Vector2> pts = {
 		xf.xform(Vector2(arrow_size, 0)),
@@ -89,7 +89,7 @@ void SeparationRayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &SeparationRayShape2D::set_slide_on_slope);
 	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &SeparationRayShape2D::get_slide_on_slope);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:px"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
 }
 

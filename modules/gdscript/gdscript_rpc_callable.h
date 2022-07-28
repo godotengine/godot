@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_RPC_CALLABLE
-#define GDSCRIPT_RPC_CALLABLE
+#ifndef GDSCRIPT_RPC_CALLABLE_H
+#define GDSCRIPT_RPC_CALLABLE_H
 
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -58,4 +58,4 @@ public:
 	virtual ~GDScriptRPCCallable() = default;
 };
 
-#endif // GDSCRIPT_RPC_CALLABLE
+#endif // GDSCRIPT_RPC_CALLABLE_H

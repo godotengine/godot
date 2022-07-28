@@ -7,65 +7,52 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="export_post">
-			<return type="int" enum="Error" />
-			<argument index="0" name="document" type="GLTFDocument" />
+		<method name="_export_node" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="state" type="GLTFState" />
+			<argument index="1" name="gltf_node" type="GLTFNode" />
+			<argument index="2" name="json" type="Dictionary" />
+			<argument index="3" name="node" type="Node" />
 			<description>
 			</description>
 		</method>
-		<method name="export_preflight">
-			<return type="int" enum="Error" />
-			<argument index="0" name="document" type="GLTFDocument" />
-			<argument index="1" name="node" type="Node" />
+		<method name="_export_post" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="state" type="GLTFState" />
 			<description>
 			</description>
 		</method>
-		<method name="get_export_setting" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="key" type="StringName" />
+		<method name="_export_preflight" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="root" type="Node" />
 			<description>
 			</description>
 		</method>
-		<method name="get_export_setting_keys" qualifiers="const">
-			<return type="Array" />
+		<method name="_import_node" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="state" type="GLTFState" />
+			<argument index="1" name="gltf_node" type="GLTFNode" />
+			<argument index="2" name="json" type="Dictionary" />
+			<argument index="3" name="node" type="Node" />
 			<description>
 			</description>
 		</method>
-		<method name="get_import_setting" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="key" type="StringName" />
+		<method name="_import_post" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="state" type="GLTFState" />
+			<argument index="1" name="root" type="Node" />
 			<description>
 			</description>
 		</method>
-		<method name="get_import_setting_keys" qualifiers="const">
-			<return type="Array" />
+		<method name="_import_post_parse" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="state" type="GLTFState" />
 			<description>
 			</description>
 		</method>
-		<method name="import_post">
-			<return type="int" enum="Error" />
-			<argument index="0" name="document" type="GLTFDocument" />
-			<argument index="1" name="node" type="Node" />
-			<description>
-			</description>
-		</method>
-		<method name="import_preflight">
-			<return type="int" enum="Error" />
-			<argument index="0" name="document" type="GLTFDocument" />
-			<description>
-			</description>
-		</method>
-		<method name="set_export_setting">
-			<return type="void" />
-			<argument index="0" name="key" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
-			<description>
-			</description>
-		</method>
-		<method name="set_import_setting">
-			<return type="void" />
-			<argument index="0" name="key" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+		<method name="_import_preflight" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="state" type="GLTFState" />
 			<description>
 			</description>
 		</method>

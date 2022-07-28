@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_EDITOR_PLUGIN_H
-#define PARTICLES_2D_EDITOR_PLUGIN_H
+#ifndef GPU_PARTICLES_2D_EDITOR_PLUGIN_H
+#define GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
@@ -56,26 +56,26 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 		EMISSION_MODE_BORDER_DIRECTED
 	};
 
-	GPUParticles2D *particles;
+	GPUParticles2D *particles = nullptr;
 	List<GPUParticles2D *> selected_particles;
 
-	EditorFileDialog *file;
+	EditorFileDialog *file = nullptr;
 
-	HBoxContainer *toolbar;
-	MenuButton *menu;
+	HBoxContainer *toolbar = nullptr;
+	MenuButton *menu = nullptr;
 
-	SpinBox *epoints;
+	SpinBox *epoints = nullptr;
 
-	ConfirmationDialog *generate_visibility_rect;
-	SpinBox *generate_seconds;
+	ConfirmationDialog *generate_visibility_rect = nullptr;
+	SpinBox *generate_seconds = nullptr;
 
-	ConfirmationDialog *emission_mask;
-	OptionButton *emission_mask_mode;
-	CheckBox *emission_colors;
+	ConfirmationDialog *emission_mask = nullptr;
+	OptionButton *emission_mask_mode = nullptr;
+	CheckBox *emission_colors = nullptr;
 
 	String source_emission_file;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_visibility_rect();
@@ -97,4 +97,4 @@ public:
 	~GPUParticles2DEditorPlugin();
 };
 
-#endif // PARTICLES_2D_EDITOR_PLUGIN_H
+#endif // GPU_PARTICLES_2D_EDITOR_PLUGIN_H

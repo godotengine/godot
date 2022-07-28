@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#ifndef HTTP_REQUEST_H
+#define HTTP_REQUEST_H
 
 #include "core/io/http_client.h"
 #include "core/os/thread.h"
@@ -84,7 +84,7 @@ private:
 
 	String download_to_file;
 
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 
 	int body_len = -1;
 	SafeNumeric<int> downloaded;
@@ -96,7 +96,7 @@ private:
 
 	int max_redirects = 8;
 
-	int timeout = 0;
+	double timeout = 0;
 
 	void _redirect_request(const String &p_new_url);
 
@@ -144,10 +144,10 @@ public:
 	void set_max_redirects(int p_max);
 	int get_max_redirects() const;
 
-	Timer *timer;
+	Timer *timer = nullptr;
 
-	void set_timeout(int p_timeout);
-	int get_timeout();
+	void set_timeout(double p_timeout);
+	double get_timeout();
 
 	void _timeout();
 
@@ -158,9 +158,8 @@ public:
 	void set_https_proxy(const String &p_host, int p_port);
 
 	HTTPRequest();
-	~HTTPRequest();
 };
 
 VARIANT_ENUM_CAST(HTTPRequest::Result);
 
-#endif // HTTPREQUEST_H
+#endif // HTTP_REQUEST_H

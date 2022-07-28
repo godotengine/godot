@@ -4,7 +4,7 @@
  *
  *   The FreeType glyph rasterizer (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -2269,7 +2269,7 @@
         /* This is due to the fact that, in the vast majority of cases,  */
         /* the span length in bytes is relatively small.                 */
         while ( --c2 > 0 )
-          *(++target) = 0xFF;
+          *( ++target ) = 0xFF;
 
         target[1] |= f2;
       }

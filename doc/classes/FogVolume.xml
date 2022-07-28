@@ -11,14 +11,15 @@
 	</tutorials>
 	<members>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
-			Sets the size of the [FogVolume] when [member shape] is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
+			Sets the size of the [FogVolume] when [member shape] is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
 			[b]Note:[/b] Thin fog volumes may appear to flicker when the camera moves or rotates. This can be alleviated by increasing [member ProjectSettings.rendering/environment/volumetric_fog/volume_depth] (at a performance cost) or by decreasing [member Environment.volumetric_fog_length] (at no performance cost, but at the cost of lower fog range). Alternatively, the [FogVolume] can be made thicker and use a lower density in the [member material].
+			[b]Note:[/b] If [member shape] is [constant RenderingServer.FOG_VOLUME_SHAPE_CONE] or [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], the cone/cylinder will be adjusted to fit within the extents. Non-uniform scaling of cone/cylinder shapes via the [member extents] property is not supported, but you can scale the [FogVolume] node instead.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			Sets the [Material] to be used by the [FogVolume]. Can be either a [FogMaterial] or a custom [ShaderMaterial].
 		</member>
-		<member name="shape" type="int" setter="set_shape" getter="get_shape" enum="RenderingServer.FogVolumeShape" default="1">
-			Sets the shape of the [FogVolume] to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX], or [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+		<member name="shape" type="int" setter="set_shape" getter="get_shape" enum="RenderingServer.FogVolumeShape" default="3">
+			Sets the shape of the [FogVolume] to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
 		</member>
 	</members>
 </class>

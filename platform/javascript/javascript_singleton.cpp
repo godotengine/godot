@@ -81,7 +81,7 @@ protected:
 public:
 	Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const override;
 	void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr) override;
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) override;
 	JavaScriptObjectImpl() {}
 	JavaScriptObjectImpl(int p_id) { _js_id = p_id; }
 	~JavaScriptObjectImpl() {
@@ -207,7 +207,7 @@ int JavaScriptObjectImpl::_variant2js(const void **p_args, int p_pos, godot_js_w
 			break;
 		case Variant::INT: {
 			const int64_t tmp = v->operator int64_t();
-			if (tmp >= 1 << 31) {
+			if (tmp >= 1LL << 31) {
 				r_val->r = (double)tmp;
 				return Variant::FLOAT;
 			}
@@ -231,7 +231,7 @@ int JavaScriptObjectImpl::_variant2js(const void **p_args, int p_pos, godot_js_w
 	return type;
 }
 
-Variant JavaScriptObjectImpl::call(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) {
+Variant JavaScriptObjectImpl::callp(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) {
 	godot_js_wrapper_ex exchange;
 	const String method = p_method;
 	void *lock = nullptr;

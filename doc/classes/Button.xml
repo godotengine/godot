@@ -40,29 +40,6 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
-	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" enum="HorizontalAlignment" default="1">
 			Text alignment policy for the button's text, use one of the [enum @GlobalScope.HorizontalAlignment] constants.
@@ -78,7 +55,7 @@
 		</member>
 		<member name="icon" type="Texture2D" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
-			To edit margin and spacing of the icon, use [theme_item hseparation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
+			To edit margin and spacing of the icon, use [theme_item h_separation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
 		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
 			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum @GlobalScope.HorizontalAlignment] constants as the text alignment. If centered, text will draw on top of the icon.
@@ -91,6 +68,9 @@
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
 		</member>
 	</members>
 	<theme_items>
@@ -133,7 +113,7 @@
 		<theme_item name="icon_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Icon modulate [Color] used when the [Button] is being pressed.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="2">
+		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal space between [Button]'s icon and text.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">

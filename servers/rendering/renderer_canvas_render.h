@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERINGSERVERCANVASRENDER_H
-#define RENDERINGSERVERCANVASRENDER_H
+#ifndef RENDERER_CANVAS_RENDER_H
+#define RENDERER_CANVAS_RENDER_H
 
-#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering_server.h"
 
 class RendererCanvasRender {
 public:
@@ -77,15 +77,15 @@ public:
 		Rect2 rect_cache;
 		Transform2D xform_cache;
 		float radius_cache; //used for shadow far plane
-		//CameraMatrix shadow_matrix_cache;
+		//Projection shadow_matrix_cache;
 
 		Transform2D light_shader_xform;
 		//Vector2 light_shader_pos;
 
-		Light *shadows_next_ptr;
-		Light *filter_next_ptr;
-		Light *next_ptr;
-		Light *directional_next_ptr;
+		Light *shadows_next_ptr = nullptr;
+		Light *filter_next_ptr = nullptr;
+		Light *next_ptr = nullptr;
+		Light *directional_next_ptr = nullptr;
 
 		RID light_internal;
 		uint64_t version;
@@ -167,7 +167,7 @@ public:
 				MAX_SIZE = 4096
 			};
 			uint32_t usage;
-			uint8_t *memory;
+			uint8_t *memory = nullptr;
 		};
 
 		struct Command {
@@ -184,7 +184,7 @@ public:
 				TYPE_ANIMATION_SLICE,
 			};
 
-			Command *next;
+			Command *next = nullptr;
 			Type type;
 			virtual ~Command() {}
 		};
@@ -257,11 +257,7 @@ public:
 			RID texture;
 
 			CommandMesh() { type = TYPE_MESH; }
-			~CommandMesh() {
-				if (mesh_instance.is_valid()) {
-					RendererStorage::base_singleton->free(mesh_instance);
-				}
-			}
+			~CommandMesh();
 		};
 
 		struct CommandMultiMesh : public Command {
@@ -304,8 +300,8 @@ public:
 		};
 
 		struct ViewportRender {
-			RenderingServer *owner;
-			void *udata;
+			RenderingServer *owner = nullptr;
+			void *udata = nullptr;
 			Rect2 rect;
 		};
 
@@ -333,133 +329,37 @@ public:
 		RID material;
 		RID skeleton;
 
-		Item *next;
+		Item *next = nullptr;
 
 		struct CopyBackBuffer {
 			Rect2 rect;
 			Rect2 screen_rect;
 			bool full;
 		};
-		CopyBackBuffer *copy_back_buffer;
+		CopyBackBuffer *copy_back_buffer = nullptr;
 
 		Color final_modulate;
 		Transform2D final_transform;
 		Rect2 final_clip_rect;
-		Item *final_clip_owner;
-		Item *material_owner;
-		Item *canvas_group_owner;
-		ViewportRender *vp_render;
+		Item *final_clip_owner = nullptr;
+		Item *material_owner = nullptr;
+		Item *canvas_group_owner = nullptr;
+		ViewportRender *vp_render = nullptr;
 		bool distance_field;
 		bool light_masked;
 
 		Rect2 global_rect_cache;
 
-		const Rect2 &get_rect() const {
-			if (custom_rect || (!rect_dirty && !update_when_visible)) {
-				return rect;
-			}
+		const Rect2 &get_rect() const;
 
-			//must update rect
-
-			if (commands == nullptr) {
-				rect = Rect2();
-				rect_dirty = false;
-				return rect;
-			}
-
-			Transform2D xf;
-			bool found_xform = false;
-			bool first = true;
-
-			const Item::Command *c = commands;
-
-			while (c) {
-				Rect2 r;
-
-				switch (c->type) {
-					case Item::Command::TYPE_RECT: {
-						const Item::CommandRect *crect = static_cast<const Item::CommandRect *>(c);
-						r = crect->rect;
-
-					} break;
-					case Item::Command::TYPE_NINEPATCH: {
-						const Item::CommandNinePatch *style = static_cast<const Item::CommandNinePatch *>(c);
-						r = style->rect;
-					} break;
-
-					case Item::Command::TYPE_POLYGON: {
-						const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
-						r = polygon->polygon.rect_cache;
-					} break;
-					case Item::Command::TYPE_PRIMITIVE: {
-						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
-						for (uint32_t j = 0; j < primitive->point_count; j++) {
-							if (j == 0) {
-								r.position = primitive->points[0];
-							} else {
-								r.expand_to(primitive->points[j]);
-							}
-						}
-					} break;
-					case Item::Command::TYPE_MESH: {
-						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-						AABB aabb = RendererStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
-
-						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
-
-					} break;
-					case Item::Command::TYPE_MULTIMESH: {
-						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
-						AABB aabb = RendererStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
-
-						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
-
-					} break;
-					case Item::Command::TYPE_PARTICLES: {
-						const Item::CommandParticles *particles_cmd = static_cast<const Item::CommandParticles *>(c);
-						if (particles_cmd->particles.is_valid()) {
-							AABB aabb = RendererStorage::base_singleton->particles_get_aabb(particles_cmd->particles);
-							r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
-						}
-
-					} break;
-					case Item::Command::TYPE_TRANSFORM: {
-						const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
-						xf = transform->xform;
-						found_xform = true;
-						[[fallthrough]];
-					}
-					default: {
-						c = c->next;
-						continue;
-					}
-				}
-
-				if (found_xform) {
-					r = xf.xform(r);
-				}
-
-				if (first) {
-					rect = r;
-					first = false;
-				} else {
-					rect = rect.merge(r);
-				}
-				c = c->next;
-			}
-
-			rect_dirty = false;
-			return rect;
-		}
-
-		Command *commands;
-		Command *last_command;
+		Command *commands = nullptr;
+		Command *last_command = nullptr;
 		Vector<CommandBlock> blocks;
 		uint32_t current_block;
 
 		template <class T>
 		T *alloc_command() {
-			T *command;
+			T *command = nullptr;
 			if (commands == nullptr) {
 				// As the most common use case of canvas items is to
 				// use only one command, the first is done with it's
@@ -589,7 +489,7 @@ public:
 		bool sdf_collision;
 		RS::CanvasOccluderPolygonCullMode cull_cache;
 
-		LightOccluderInstance *next;
+		LightOccluderInstance *next = nullptr;
 
 		LightOccluderInstance() {
 			enabled = true;
@@ -620,4 +520,4 @@ public:
 	virtual ~RendererCanvasRender() {}
 };
 
-#endif // RENDERINGSERVERCANVASRENDER_H
+#endif // RENDERER_CANVAS_RENDER_H

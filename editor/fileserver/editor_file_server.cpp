@@ -46,14 +46,13 @@ void EditorFileServer::_close_client(ClientData *cd) {
 		cd->efs->to_wait.insert(cd->thread);
 	}
 	while (cd->files.size()) {
-		memdelete(cd->files.front()->get());
-		cd->files.erase(cd->files.front());
+		cd->files.remove(cd->files.begin());
 	}
 	memdelete(cd);
 }
 
 void EditorFileServer::_subthread_start(void *s) {
-	ClientData *cd = (ClientData *)s;
+	ClientData *cd = static_cast<ClientData *>(s);
 
 	cd->connection->set_no_delay(true);
 	uint8_t buf4[8];
@@ -181,8 +180,8 @@ void EditorFileServer::_subthread_start(void *s) {
 					break;
 				}
 
-				FileAccess *fa = FileAccess::open(s2, FileAccess::READ);
-				if (!fa) {
+				Ref<FileAccess> fa = FileAccess::open(s2, FileAccess::READ);
+				if (fa.is_null()) {
 					//not found, continue
 					encode_uint32(id, buf4);
 					cd->connection->put_data(buf4, 4);
@@ -249,7 +248,6 @@ void EditorFileServer::_subthread_start(void *s) {
 			case FileAccessNetwork::COMMAND_CLOSE: {
 				print_verbose("CLOSED");
 				ERR_CONTINUE(!cd->files.has(id));
-				memdelete(cd->files[id]);
 				cd->files.erase(id);
 			} break;
 		}
@@ -259,7 +257,7 @@ void EditorFileServer::_subthread_start(void *s) {
 }
 
 void EditorFileServer::_thread_start(void *s) {
-	EditorFileServer *self = (EditorFileServer *)s;
+	EditorFileServer *self = static_cast<EditorFileServer *>(s);
 	while (!self->quit) {
 		if (self->cmd == CMD_ACTIVATE) {
 			self->server->listen(self->port);
@@ -284,7 +282,7 @@ void EditorFileServer::_thread_start(void *s) {
 
 		self->wait_mutex.lock();
 		while (self->to_wait.size()) {
-			Thread *w = self->to_wait.front()->get();
+			Thread *w = *self->to_wait.begin();
 			self->to_wait.erase(w);
 			self->wait_mutex.unlock();
 			w->wait_to_finish();
@@ -298,8 +296,8 @@ void EditorFileServer::_thread_start(void *s) {
 
 void EditorFileServer::start() {
 	stop();
-	port = EDITOR_DEF("filesystem/file_server/port", 6010);
-	password = EDITOR_DEF("filesystem/file_server/password", "");
+	port = EDITOR_GET("filesystem/file_server/port");
+	password = EDITOR_GET("filesystem/file_server/password");
 	cmd = CMD_ACTIVATE;
 }
 
@@ -313,9 +311,6 @@ void EditorFileServer::stop() {
 
 EditorFileServer::EditorFileServer() {
 	server.instantiate();
-	quit = false;
-	active = false;
-	cmd = CMD_NONE;
 	thread.start(_thread_start, this);
 
 	EDITOR_DEF("filesystem/file_server/port", 6010);

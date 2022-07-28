@@ -394,13 +394,12 @@ void TileSetScenesCollectionSourceEditor::_drop_data_fw(const Point2 &p_point, c
 
 	if (p_from == scene_tiles_list) {
 		// Handle dropping a texture in the list of atlas resources.
-		int scene_id = -1;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
 		for (int i = 0; i < files.size(); i++) {
 			Ref<PackedScene> resource = ResourceLoader::load(files[i]);
 			if (resource.is_valid()) {
-				scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
+				int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
 				undo_redo->create_action(TTR("Add a Scene Tile"));
 				undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", resource, scene_id);
 				undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);

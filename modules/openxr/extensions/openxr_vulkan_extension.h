@@ -63,7 +63,7 @@ public:
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const override;
 	virtual bool get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) override;
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
-	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, CameraMatrix &r_camera_matrix) override;
+	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
 	virtual bool copy_render_target_to_image(RID p_from_render_target, void *p_swapchain_graphics_data, int p_image_index) override;
 
 private:
@@ -78,11 +78,11 @@ private:
 
 	bool check_graphics_api_support(XrVersion p_desired_version);
 
-	VkInstance vulkan_instance;
-	VkPhysicalDevice vulkan_physical_device;
-	VkDevice vulkan_device;
-	uint32_t vulkan_queue_family_index;
-	uint32_t vulkan_queue_index;
+	VkInstance vulkan_instance = nullptr;
+	VkPhysicalDevice vulkan_physical_device = nullptr;
+	VkDevice vulkan_device = nullptr;
+	uint32_t vulkan_queue_family_index = 0;
+	uint32_t vulkan_queue_index = 0;
 
 	XrResult xrGetVulkanGraphicsRequirements2KHR(XrInstance p_instance, XrSystemId p_system_id, XrGraphicsRequirementsVulkanKHR *p_graphics_requirements);
 	XrResult xrCreateVulkanInstanceKHR(XrInstance p_instance, const XrVulkanInstanceCreateInfoKHR *p_create_info, VkInstance *r_vulkan_instance, VkResult *r_vulkan_result);
@@ -90,4 +90,4 @@ private:
 	XrResult xrCreateVulkanDeviceKHR(XrInstance p_instance, const XrVulkanDeviceCreateInfoKHR *p_create_info, VkDevice *r_device, VkResult *r_result);
 };
 
-#endif // !OPENXR_VULKAN_EXTENSION_H
+#endif // OPENXR_VULKAN_EXTENSION_H

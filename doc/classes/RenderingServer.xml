@@ -149,6 +149,17 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="canvas_item_add_animation_slice">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="animation_length" type="float" />
+			<argument index="2" name="slice_begin" type="float" />
+			<argument index="3" name="slice_end" type="float" />
+			<argument index="4" name="offset" type="float" default="0.0" />
+			<description>
+				Subsequent drawing commands will be ignored unless they fall within the specified animation slice. This is a faster way to implement animations that loop on background rather than redrawing constantly.
+			</description>
+		</method>
 		<method name="canvas_item_add_circle">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />
@@ -172,6 +183,7 @@
 			<argument index="2" name="to" type="Vector2" />
 			<argument index="3" name="color" type="Color" />
 			<argument index="4" name="width" type="float" default="1.0" />
+			<argument index="5" name="antialiased" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -878,7 +890,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="directional_shadow_quality_set">
+		<method name="directional_soft_shadow_filter_set_quality">
 			<return type="void" />
 			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
 			<description>
@@ -1174,7 +1186,7 @@
 			<argument index="0" name="fog_volume" type="RID" />
 			<argument index="1" name="extents" type="Vector3" />
 			<description>
-				Sets the size of the fog volume when shape is [constant FOG_VOLUME_SHAPE_ELLIPSOID] or [constant FOG_VOLUME_SHAPE_BOX].
+				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
 			</description>
 		</method>
 		<method name="fog_volume_set_material">
@@ -1190,7 +1202,7 @@
 			<argument index="0" name="fog_volume" type="RID" />
 			<argument index="1" name="shape" type="int" enum="RenderingServer.FogVolumeShape" />
 			<description>
-				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX], or [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
 			</description>
 		</method>
 		<method name="force_draw">
@@ -1240,6 +1252,13 @@
 				Returns the id of the test texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="get_video_adapter_api_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the version of the graphics video adapter [i]currently in use[/i] (e.g. "1.2.189" for Vulkan, "3.3.0 NVIDIA 510.60.02" for OpenGL). This version may be different from the actual latest version supported by the hardware, as Godot may not always request the latest version.
+				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+			</description>
+		</method>
 		<method name="get_video_adapter_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -1274,45 +1293,45 @@
 				If [code]half_resolution[/code] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
-		<method name="global_variable_add">
+		<method name="global_shader_uniform_add">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="type" type="int" enum="RenderingServer.GlobalVariableType" />
+			<argument index="1" name="type" type="int" enum="RenderingServer.GlobalShaderUniformType" />
 			<argument index="2" name="default_value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_get" qualifiers="const">
+		<method name="global_shader_uniform_get" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_get_list" qualifiers="const">
+		<method name="global_shader_uniform_get_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_get_type" qualifiers="const">
-			<return type="int" enum="RenderingServer.GlobalVariableType" />
+		<method name="global_shader_uniform_get_type" qualifiers="const">
+			<return type="int" enum="RenderingServer.GlobalShaderUniformType" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_remove">
+		<method name="global_shader_uniform_remove">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_set">
+		<method name="global_shader_uniform_set">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_set_override">
+		<method name="global_shader_uniform_set_override">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="value" type="Variant" />
@@ -1605,10 +1624,10 @@
 				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_mode]. See [enum LightDirectionalShadowMode] for options.
 			</description>
 		</method>
-		<method name="light_directional_set_sky_only">
+		<method name="light_directional_set_sky_mode">
 			<return type="void" />
 			<argument index="0" name="light" type="RID" />
-			<argument index="1" name="enable" type="bool" />
+			<argument index="1" name="mode" type="int" enum="RenderingServer.LightDirectionalSkyMode" />
 			<description>
 				If [code]true[/code], this light will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
 			</description>
@@ -1648,6 +1667,17 @@
 			<argument index="1" name="mask" type="int" />
 			<description>
 				Sets the cull mask for this Light3D. Lights only affect objects in the selected layers. Equivalent to [member Light3D.light_cull_mask].
+			</description>
+		</method>
+		<method name="light_set_distance_fade">
+			<return type="void" />
+			<argument index="0" name="decal" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
+			<argument index="2" name="begin" type="float" />
+			<argument index="3" name="shadow" type="float" />
+			<argument index="4" name="length" type="float" />
+			<description>
+				Sets the distance fade for this Light3D. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member Light3D.distance_fade_enabled], [member Light3D.distance_fade_begin], [member Light3D.distance_fade_shadow], and [member Light3D.distance_fade_length].
 			</description>
 		</method>
 		<method name="light_set_max_sdfgi_cascade">
@@ -1696,14 +1726,6 @@
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], light will cast shadows. Equivalent to [member Light3D.shadow_enabled].
-			</description>
-		</method>
-		<method name="light_set_shadow_color">
-			<return type="void" />
-			<argument index="0" name="light" type="RID" />
-			<argument index="1" name="color" type="Color" />
-			<description>
-				Sets the color of the shadow cast by the light. Equivalent to [member Light3D.shadow_color].
 			</description>
 		</method>
 		<method name="lightmap_create">
@@ -2497,6 +2519,12 @@
 				If [code]true[/code], particles use local coordinates. If [code]false[/code] they use global coordinates. Equivalent to [member GPUParticles3D.local_coords].
 			</description>
 		</method>
+		<method name="positional_soft_shadow_filter_set_quality">
+			<return type="void" />
+			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
+			<description>
+			</description>
+		</method>
 		<method name="reflection_probe_create">
 			<return type="RID" />
 			<description>
@@ -2720,6 +2748,13 @@
 				Returns the parameters of a shader.
 			</description>
 		</method>
+		<method name="shader_set_code">
+			<return type="void" />
+			<argument index="0" name="shader" type="RID" />
+			<argument index="1" name="code" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="shader_set_default_texture_param">
 			<return type="void" />
 			<argument index="0" name="shader" type="RID" />
@@ -2731,9 +2766,10 @@
 				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
 			</description>
 		</method>
-		<method name="shadows_quality_set">
+		<method name="shader_set_path_hint">
 			<return type="void" />
-			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
+			<argument index="0" name="shader" type="RID" />
+			<argument index="1" name="path" type="String" />
 			<description>
 			</description>
 		</method>
@@ -3013,7 +3049,7 @@
 				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
 				[/gdscript]
 				[/codeblocks]
-				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
+				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For further optimization, see [method viewport_set_render_direct_to_screen].
 			</description>
 		</method>
 		<method name="viewport_create">
@@ -3139,14 +3175,6 @@
 				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
-		<method name="viewport_set_fsr_mipmap_bias">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="mipmap_bias" type="float" />
-			<description>
-				Affects the final texture sharpness by reading from a lower or higher mipmap. Negative values make textures sharper, while positive values make textures blurrier. When using FSR, this value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]
-			</description>
-		</method>
 		<method name="viewport_set_fsr_sharpness">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3198,6 +3226,25 @@
 				Sets the viewport's parent to another viewport.
 			</description>
 		</method>
+		<method name="viewport_set_positional_shadow_atlas_quadrant_subdivision">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="quadrant" type="int" />
+			<argument index="2" name="subdivision" type="int" />
+			<description>
+				Sets the shadow atlas quadrant's subdivision.
+			</description>
+		</method>
+		<method name="viewport_set_positional_shadow_atlas_size">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="use_16_bits" type="bool" default="false" />
+			<description>
+				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+				[b]Note:[/b] If this is set to [code]0[/code], no shadows will be visible at all (including directional shadows).
+			</description>
+		</method>
 		<method name="viewport_set_render_direct_to_screen">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3247,24 +3294,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="viewport_set_shadow_atlas_quadrant_subdivision">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="quadrant" type="int" />
-			<argument index="2" name="subdivision" type="int" />
-			<description>
-				Sets the shadow atlas quadrant's subdivision.
-			</description>
-		</method>
-		<method name="viewport_set_shadow_atlas_size">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="use_16_bits" type="bool" default="false" />
-			<description>
-				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			</description>
-		</method>
 		<method name="viewport_set_size">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3286,6 +3315,15 @@
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="enabled" type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="viewport_set_texture_mipmap_bias">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mipmap_bias" type="float" />
+			<description>
+				Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member ProjectSettings.rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
+				[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
 			</description>
 		</method>
 		<method name="viewport_set_transparent_background">
@@ -3318,12 +3356,36 @@
 			<description>
 			</description>
 		</method>
+		<method name="viewport_set_use_taa">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], use Temporal Anti-Aliasing.
+			</description>
+		</method>
 		<method name="viewport_set_use_xr">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="use_xr" type="bool" />
 			<description>
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [XRInterface].
+			</description>
+		</method>
+		<method name="viewport_set_vrs_mode">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mode" type="int" enum="RenderingServer.ViewportVRSMode" />
+			<description>
+				Sets the Variable Rate Shading (VRS) mode for the viewport. Note, if hardware does not support VRS this property is ignored.
+			</description>
+		</method>
+		<method name="viewport_set_vrs_texture">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="texture" type="RID" />
+			<description>
+				Texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE].
 			</description>
 		</method>
 		<method name="visibility_notifier_create">
@@ -3781,6 +3843,15 @@
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
 			Use 4 splits for shadow projection when using directional light.
 		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY" value="0" enum="LightDirectionalSkyMode">
+			Use DirectionalLight3D in both sky rendering and scene lighting.
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY" value="1" enum="LightDirectionalSkyMode">
+			Only use DirectionalLight3D in scene lighting.
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY" value="2" enum="LightDirectionalSkyMode">
+			Only use DirectionalLight3D in sky rendering.
+		</constant>
 		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
 			Lowest shadow filtering quality (fastest). Soft shadows are not available with this quality setting, which means the [member Light3D.shadow_blur] property is ignored if [member Light3D.light_size] and [member Light3D.light_angular_distance] is [code]0.0[/code].
 			[b]Note:[/b] The variable shadow blur performed by [member Light3D.light_size] and [member Light3D.light_angular_distance] is still effective when using hard shadow filtering. In this case, [member Light3D.shadow_blur] [i]is[/i] taken into account. However, the results will not be blurred, instead the blur amount is treated as a maximum radius for the penumbra.
@@ -3900,19 +3971,27 @@
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX" value="6" enum="ParticlesCollisionHeightfieldResolution">
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_ELLIPSOID" value="0" enum="FogVolumeShape">
-			[FogVolume] will be shaped like an ellipsoid.
+			[FogVolume] will be shaped like an ellipsoid (stretched sphere).
 		</constant>
-		<constant name="FOG_VOLUME_SHAPE_BOX" value="1" enum="FogVolumeShape">
+		<constant name="FOG_VOLUME_SHAPE_CONE" value="1" enum="FogVolumeShape">
+			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the extents. The cone will be adjusted to fit within the extents. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_CYLINDER" value="2" enum="FogVolumeShape">
+			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the extents. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_BOX" value="3" enum="FogVolumeShape">
 			[FogVolume] will be shaped like a box.
 		</constant>
-		<constant name="FOG_VOLUME_SHAPE_WORLD" value="2" enum="FogVolumeShape">
+		<constant name="FOG_VOLUME_SHAPE_WORLD" value="4" enum="FogVolumeShape">
 			[FogVolume] will have no shape, will cover the whole world and will not be culled.
 		</constant>
+		<constant name="FOG_VOLUME_SHAPE_MAX" value="5" enum="FogVolumeShape">
+		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
-			Enables bilinear scaling on 3D viewports. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
-			Enables FSR upscaling on 3D viewports. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear supersampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
 		</constant>
@@ -4066,6 +4145,20 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
+			VRS is disabled.
+		</constant>
+		<constant name="VIEWPORT_VRS_TEXTURE" value="1" enum="ViewportVRSMode">
+			VRS uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+		</constant>
+		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
+			VRS texture is supplied by the primary [XRInterface].
+		</constant>
+		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
+			Represents the size of the [enum ViewportVRSMode] enum.
+		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>
 		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
@@ -4135,16 +4228,17 @@
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
-			Output color as they came in.
+			Output color as they came in. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_REINHARD" value="1" enum="EnvironmentToneMapper">
-			Use the Reinhard tonemapper.
+			Use the Reinhard tonemapper. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
-			Use the filmic tonemapper.
+			Use the filmic tonemapper. This avoids clipping bright highlights, with a resulting image that usually looks more vivid than [constant ENV_TONE_MAPPER_REINHARD].
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
-			Use the ACES tonemapper.
+			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant ENV_TONE_MAPPER_REINHARD] and [constant ENV_TONE_MAPPER_FILMIC].
+			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.
@@ -4443,63 +4537,63 @@
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is counterclockwise.
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalShaderUniformType">
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
 		</constant>

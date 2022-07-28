@@ -68,7 +68,7 @@ PropertyInfo VisualScriptYield::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptYield::get_caption() const {
-	return yield_mode == YIELD_RETURN ? TTR("Yield") : TTR("Wait");
+	return yield_mode == YIELD_RETURN ? RTR("Yield") : RTR("Wait");
 }
 
 String VisualScriptYield::get_text() const {
@@ -77,13 +77,13 @@ String VisualScriptYield::get_text() const {
 			return "";
 			break;
 		case YIELD_FRAME:
-			return TTR("Next Frame");
+			return RTR("Next Frame");
 			break;
 		case YIELD_PHYSICS_FRAME:
-			return TTR("Next Physics Frame");
+			return RTR("Next Physics Frame");
 			break;
 		case YIELD_WAIT:
-			return vformat(TTR("%s sec(s)"), rtos(wait_time));
+			return vformat(RTR("%s sec(s)"), rtos(wait_time));
 			break;
 	}
 
@@ -93,13 +93,13 @@ String VisualScriptYield::get_text() const {
 class VisualScriptNodeInstanceYield : public VisualScriptNodeInstance {
 public:
 	VisualScriptYield::YieldMode mode;
-	double wait_time;
+	double wait_time = 0.0;
 
-	virtual int get_working_memory_size() const { return 1; } //yield needs at least 1
+	virtual int get_working_memory_size() const override { return 1; } //yield needs at least 1
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
 		} else {
@@ -335,13 +335,18 @@ PropertyInfo VisualScriptYieldSignal::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptYieldSignal::get_caption() const {
-	static const char *cname[3] = {
-		TTRC("WaitSignal"),
-		TTRC("WaitNodeSignal"),
-		TTRC("WaitInstanceSignal"),
-	};
-
-	return TTRGET(cname[call_mode]);
+	switch (call_mode) {
+		case CALL_MODE_SELF: {
+			return RTR("WaitSignal");
+		} break;
+		case CALL_MODE_NODE_PATH: {
+			return RTR("WaitNodeSignal");
+		} break;
+		case CALL_MODE_INSTANCE: {
+			return RTR("WaitInstanceSignal");
+		} break;
+	}
+	return String();
 }
 
 String VisualScriptYieldSignal::get_text() const {
@@ -495,17 +500,17 @@ class VisualScriptNodeInstanceYieldSignal : public VisualScriptNodeInstance {
 public:
 	VisualScriptYieldSignal::CallMode call_mode;
 	NodePath node_path;
-	int output_args;
+	int output_args = 0;
 	StringName signal;
 
-	VisualScriptYieldSignal *node;
-	VisualScriptInstance *instance;
+	VisualScriptYieldSignal *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
-	virtual int get_working_memory_size() const { return 1; }
+	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
 		} else {

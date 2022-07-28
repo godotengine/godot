@@ -60,6 +60,8 @@ struct _NO_DISCARD_ Quaternion {
 	Quaternion normalized() const;
 	bool is_normalized() const;
 	Quaternion inverse() const;
+	Quaternion log() const;
+	Quaternion exp() const;
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
 	real_t angle_to(const Quaternion &p_to) const;
 
@@ -69,10 +71,10 @@ struct _NO_DISCARD_ Quaternion {
 
 	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
-	Quaternion cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
+	Quaternion spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
 
 	Vector3 get_axis() const;
-	float get_angle() const;
+	real_t get_angle() const;
 
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);

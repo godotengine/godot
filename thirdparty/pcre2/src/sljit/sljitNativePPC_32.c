@@ -86,11 +86,6 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		SLJIT_ASSERT(src1 == TMP_REG1);
 		return push_inst(compiler, NOR | RC(flags) | S(src2) | A(dst) | B(src2));
 
-	case SLJIT_NEG:
-		SLJIT_ASSERT(src1 == TMP_REG1);
-		/* Setting XER SO is not enough, CR SO is also needed. */
-		return push_inst(compiler, NEG | OE((flags & ALT_FORM1) ? ALT_SET_FLAGS : 0) | RC(flags) | D(dst) | A(src2));
-
 	case SLJIT_CLZ:
 		SLJIT_ASSERT(src1 == TMP_REG1);
 		return push_inst(compiler, CNTLZW | S(src2) | A(dst));
@@ -158,7 +153,9 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 
 		if (flags & ALT_FORM3) {
 			/* Setting XER SO is not enough, CR SO is also needed. */
-			return push_inst(compiler, SUBF | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
+			if (src1 != TMP_ZERO)
+				return push_inst(compiler, SUBF | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
+			return push_inst(compiler, NEG | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src2));
 		}
 
 		if (flags & ALT_FORM4) {
@@ -167,11 +164,17 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			return push_inst(compiler, SUBFIC | D(dst) | A(src1) | compiler->imm);
 		}
 
-		if (!(flags & ALT_SET_FLAGS))
+		if (!(flags & ALT_SET_FLAGS)) {
+			SLJIT_ASSERT(src1 != TMP_ZERO);
 			return push_inst(compiler, SUBF | D(dst) | A(src2) | B(src1));
+		}
+
 		if (flags & ALT_FORM5)
 			return push_inst(compiler, SUBFC | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
-		return push_inst(compiler, SUBF | RC(flags) | D(dst) | A(src2) | B(src1));
+
+		if (src1 != TMP_ZERO)
+			return push_inst(compiler, SUBF | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
+		return push_inst(compiler, NEG | RC(ALT_SET_FLAGS) | D(dst) | A(src2));
 
 	case SLJIT_SUBC:
 		return push_inst(compiler, SUBFE | D(dst) | A(src2) | B(src1));
@@ -277,5 +280,5 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_ta
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant, sljit_sw executable_offset)
 {
-	sljit_set_jump_addr(addr, new_constant, executable_offset);
+	sljit_set_jump_addr(addr, (sljit_uw)new_constant, executable_offset);
 }

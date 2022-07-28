@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION3D_H
-#define SKELETONMODIFICATION3D_H
+#ifndef SKELETON_MODIFICATION_3D_H
+#define SKELETON_MODIFICATION_3D_H
 
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_stack_3d.h"
@@ -44,7 +44,7 @@ class SkeletonModification3D : public Resource {
 protected:
 	static void _bind_methods();
 
-	SkeletonModificationStack3D *stack;
+	SkeletonModificationStack3D *stack = nullptr;
 	int execution_mode = 0; // 0 = process
 
 	bool enabled = true;
@@ -76,4 +76,4 @@ public:
 	SkeletonModification3D();
 };
 
-#endif // SKELETONMODIFICATION3D_H
+#endif // SKELETON_MODIFICATION_3D_H

@@ -33,6 +33,16 @@
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
 
+XRServer::XRMode XRServer::xr_mode = XRMODE_DEFAULT;
+
+XRServer::XRMode XRServer::get_xr_mode() {
+	return xr_mode;
+}
+
+void XRServer::set_xr_mode(XRServer::XRMode p_mode) {
+	xr_mode = p_mode;
+}
+
 XRServer *XRServer::singleton = nullptr;
 
 XRServer *XRServer::get_singleton() {
@@ -131,13 +141,13 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	// remove our tilt
 	if (p_rotation_mode == 1) {
 		// take the Y out of our Z
-		new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.elements[0][2], 0.0, new_reference_frame.basis.elements[2][2]).normalized());
+		new_reference_frame.basis.set_column(2, Vector3(new_reference_frame.basis.rows[0][2], 0.0, new_reference_frame.basis.rows[2][2]).normalized());
 
 		// Y is straight up
-		new_reference_frame.basis.set_axis(1, Vector3(0.0, 1.0, 0.0));
+		new_reference_frame.basis.set_column(1, Vector3(0.0, 1.0, 0.0));
 
 		// and X is our cross reference
-		new_reference_frame.basis.set_axis(0, new_reference_frame.basis.get_axis(1).cross(new_reference_frame.basis.get_axis(2)).normalized());
+		new_reference_frame.basis.set_column(0, new_reference_frame.basis.get_column(1).cross(new_reference_frame.basis.get_column(2)).normalized());
 	} else if (p_rotation_mode == 2) {
 		// remove our rotation, we're only interesting in centering on position
 		new_reference_frame.basis = Basis();
@@ -184,7 +194,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 		};
 	};
 
-	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
 
 	print_verbose("XR: Removed interface" + p_interface->get_name());
 
@@ -211,7 +221,7 @@ Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, nullptr);
+	ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "Interface not found.");
 
 	return interfaces[idx];
 };

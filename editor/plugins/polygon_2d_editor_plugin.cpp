@@ -455,7 +455,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 
 	Transform2D mtx;
-	mtx.elements[2] = -uv_draw_ofs;
+	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
 	Ref<InputEventMouseButton> mb = p_input;
@@ -970,7 +970,7 @@ void Polygon2DEditor::_uv_draw() {
 	String warning;
 
 	Transform2D mtx;
-	mtx.elements[2] = -uv_draw_ofs;
+	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
 	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx);
@@ -1062,7 +1062,7 @@ void Polygon2DEditor::_uv_draw() {
 	for (int i = 0; i < uvs.size(); i++) {
 		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
 
-		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_DEF("editors/polygon_editor/show_previous_outline", true)) {
+		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
 			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, Math::round(EDSCALE));
 		}
 
@@ -1228,9 +1228,7 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
-Polygon2DEditor::Polygon2DEditor() :
-		AbstractPolygon2DEditor() {
-	node = nullptr;
+Polygon2DEditor::Polygon2DEditor() {
 	snap_offset = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
 	snap_step = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(10, 10));
 	use_snap = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);

@@ -2,12 +2,12 @@
 <class name="AudioEffectAmplify" inherits="AudioEffect" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds an amplifying audio effect to an audio bus.
-		Increases or decreases the volume of the selected audio bus.
 	</brief_description>
 	<description>
 		Increases or decreases the volume being routed through the audio bus.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<members>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">

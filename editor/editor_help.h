@@ -47,16 +47,16 @@
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
-	LineEdit *search_text;
-	Button *find_prev;
-	Button *find_next;
-	Label *matches_label;
-	TextureButton *hide_button;
+	LineEdit *search_text = nullptr;
+	Button *find_prev = nullptr;
+	Button *find_next = nullptr;
+	Label *matches_label = nullptr;
+	TextureButton *hide_button = nullptr;
 	String prev_search;
 
-	RichTextLabel *rich_text_label;
+	RichTextLabel *rich_text_label = nullptr;
 
-	int results_count;
+	int results_count = 0;
 
 	void _hide_bar();
 
@@ -98,31 +98,32 @@ class EditorHelp : public VBoxContainer {
 
 	};
 
-	bool select_locked;
+	bool select_locked = false;
 
 	String prev_search;
 
 	String edited_class;
 
 	Vector<Pair<String, int>> section_line;
-	Map<String, int> method_line;
-	Map<String, int> signal_line;
-	Map<String, int> property_line;
-	Map<String, int> theme_property_line;
-	Map<String, int> constant_line;
-	Map<String, int> enum_line;
-	Map<String, Map<String, int>> enum_values_line;
-	int description_line;
+	HashMap<String, int> method_line;
+	HashMap<String, int> signal_line;
+	HashMap<String, int> property_line;
+	HashMap<String, int> theme_property_line;
+	HashMap<String, int> constant_line;
+	HashMap<String, int> annotation_line;
+	HashMap<String, int> enum_line;
+	HashMap<String, HashMap<String, int>> enum_values_line;
+	int description_line = 0;
 
-	RichTextLabel *class_desc;
-	HSplitContainer *h_split;
+	RichTextLabel *class_desc = nullptr;
+	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
 
-	ConfirmationDialog *search_dialog;
-	LineEdit *search;
-	FindBar *find_bar;
-	HBoxContainer *status_bar;
-	Button *toggle_scripts_button;
+	ConfirmationDialog *search_dialog = nullptr;
+	LineEdit *search = nullptr;
+	FindBar *find_bar = nullptr;
+	HBoxContainer *status_bar = nullptr;
+	Button *toggle_scripts_button = nullptr;
 
 	String base_path;
 
@@ -140,11 +141,15 @@ class EditorHelp : public VBoxContainer {
 	Ref<Font> doc_title_font;
 	Ref<Font> doc_code_font;
 
+	int doc_title_font_size;
+
+	int scroll_to = -1;
+
 	void _update_theme();
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
-	bool scroll_locked;
+	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());
@@ -152,6 +157,7 @@ class EditorHelp : public VBoxContainer {
 
 	void _add_bulletpoint();
 
+	void _class_desc_finished();
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);
@@ -210,7 +216,7 @@ public:
 class EditorHelpBit : public MarginContainer {
 	GDCLASS(EditorHelpBit, MarginContainer);
 
-	RichTextLabel *rich_text;
+	RichTextLabel *rich_text = nullptr;
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
 

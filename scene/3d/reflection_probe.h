@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REFLECTIONPROBE_H
-#define REFLECTIONPROBE_H
+#ifndef REFLECTION_PROBE_H
+#define REFLECTION_PROBE_H
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -113,7 +113,6 @@ public:
 	UpdateMode get_update_mode() const;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	ReflectionProbe();
 	~ReflectionProbe();
@@ -122,4 +121,4 @@ public:
 VARIANT_ENUM_CAST(ReflectionProbe::AmbientMode);
 VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
 
-#endif // REFLECTIONPROBE_H
+#endif // REFLECTION_PROBE_H

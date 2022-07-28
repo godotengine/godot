@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CPU_PARTICLES_EDITOR_PLUGIN_H
-#define CPU_PARTICLES_EDITOR_PLUGIN_H
+#ifndef CPU_PARTICLES_3D_EDITOR_PLUGIN_H
+#define CPU_PARTICLES_3D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "scene/3d/cpu_particles_3d.h"
@@ -44,7 +44,7 @@ class CPUParticles3DEditor : public GPUParticles3DEditorBase {
 
 	};
 
-	CPUParticles3D *node;
+	CPUParticles3D *node = nullptr;
 
 	void _menu_option(int);
 
@@ -65,7 +65,7 @@ public:
 class CPUParticles3DEditorPlugin : public EditorPlugin {
 	GDCLASS(CPUParticles3DEditorPlugin, EditorPlugin);
 
-	CPUParticles3DEditor *particles_editor;
+	CPUParticles3DEditor *particles_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "CPUParticles3D"; }
@@ -78,4 +78,4 @@ public:
 	~CPUParticles3DEditorPlugin();
 };
 
-#endif // CPU_PARTICLES_EDITOR_PLUGIN_H
+#endif // CPU_PARTICLES_3D_EDITOR_PLUGIN_H

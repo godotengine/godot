@@ -36,17 +36,18 @@ uint32_t MultiplayerPeer::generate_unique_id() const {
 	uint32_t hash = 0;
 
 	while (hash == 0 || hash == 1) {
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)OS::get_singleton()->get_ticks_usec());
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
 
+		hash = hash_fmix32(hash);
 		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
 	}
 
@@ -129,6 +130,20 @@ Error MultiplayerPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buff
 	if (GDVIRTUAL_CALL(_get_packet, r_buffer, &r_buffer_size, err)) {
 		return (Error)err;
 	}
+	if (GDVIRTUAL_IS_OVERRIDDEN(_get_packet_script)) {
+		if (!GDVIRTUAL_CALL(_get_packet_script, script_buffer)) {
+			return FAILED;
+		}
+
+		if (script_buffer.size() == 0) {
+			return Error::ERR_UNAVAILABLE;
+		}
+
+		*r_buffer = script_buffer.ptr();
+		r_buffer_size = script_buffer.size();
+
+		return Error::OK;
+	}
 	WARN_PRINT_ONCE("MultiplayerPeerExtension::_get_packet_native is unimplemented!");
 	return FAILED;
 }
@@ -136,6 +151,16 @@ Error MultiplayerPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buff
 Error MultiplayerPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	int err;
 	if (GDVIRTUAL_CALL(_put_packet, p_buffer, p_buffer_size, err)) {
+		return (Error)err;
+	}
+	if (GDVIRTUAL_IS_OVERRIDDEN(_put_packet_script)) {
+		PackedByteArray a;
+		a.resize(p_buffer_size);
+		memcpy(a.ptrw(), p_buffer, p_buffer_size);
+
+		if (!GDVIRTUAL_CALL(_put_packet_script, a, err)) {
+			return FAILED;
+		}
 		return (Error)err;
 	}
 	WARN_PRINT_ONCE("MultiplayerPeerExtension::_put_packet_native is unimplemented!");
@@ -252,6 +277,9 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
 	GDVIRTUAL_BIND(_get_available_packet_count);
 	GDVIRTUAL_BIND(_get_max_packet_size);
+
+	GDVIRTUAL_BIND(_get_packet_script)
+	GDVIRTUAL_BIND(_put_packet_script, "p_buffer");
 
 	GDVIRTUAL_BIND(_set_transfer_channel, "p_channel");
 	GDVIRTUAL_BIND(_get_transfer_channel);

@@ -4,4 +4,6 @@ Import("env")
 
 env.add_source_files(env.servers_sources, "*.cpp")
 
+SConscript("dummy/SCsub")
 SConscript("renderer_rd/SCsub")
+SConscript("storage/SCsub")

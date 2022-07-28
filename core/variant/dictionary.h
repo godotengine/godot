@@ -62,6 +62,7 @@ public:
 	int size() const;
 	bool is_empty() const;
 	void clear();
+	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
@@ -83,6 +84,9 @@ public:
 
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
+
+	void set_read_only(bool p_enable);
+	bool is_read_only() const;
 
 	const void *id() const;
 

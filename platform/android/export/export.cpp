@@ -30,17 +30,12 @@
 
 #include "export.h"
 
-#include "export_plugin.h"
-
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
+#include "export_plugin.h"
 
 void register_android_exporter() {
-	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = "*.exe";
-	}
-
 	EDITOR_DEF("export/android/android_sdk_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/debug_keystore", "");

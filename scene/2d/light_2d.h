@@ -73,6 +73,8 @@ private:
 
 	void _update_light_visibility();
 
+	virtual void owner_changed_notify() override;
+
 protected:
 	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
 	void _notification(int p_what);

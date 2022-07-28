@@ -40,8 +40,8 @@ class EditorCommandPalette : public ConfirmationDialog {
 	GDCLASS(EditorCommandPalette, ConfirmationDialog);
 
 	static EditorCommandPalette *singleton;
-	LineEdit *command_search_box;
-	Tree *search_options;
+	LineEdit *command_search_box = nullptr;
+	Tree *search_options = nullptr;
 
 	struct Command {
 		Callable callable;
@@ -101,4 +101,4 @@ public:
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode = Key::NONE, String p_command = "");
 
-#endif //EDITOR_COMMAND_PALETTE_H
+#endif // EDITOR_COMMAND_PALETTE_H

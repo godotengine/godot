@@ -28,12 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERINGSERVERSCENERENDER_H
-#define RENDERINGSERVERSCENERENDER_H
+#ifndef RENDERER_SCENE_RENDER_H
+#define RENDERER_SCENE_RENDER_H
 
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/templates/paged_array.h"
+#include "servers/rendering/renderer_geometry_instance.h"
 #include "servers/rendering/renderer_scene.h"
+#include "storage/utilities.h"
 
 class RendererSceneRender {
 public:
@@ -43,38 +45,11 @@ public:
 		MAX_RENDER_VIEWS = 2
 	};
 
-	struct GeometryInstance {
-		virtual ~GeometryInstance() {}
-	};
+	/* Geometry Instance */
 
-	virtual GeometryInstance *geometry_instance_create(RID p_base) = 0;
-	virtual void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) = 0;
-	virtual void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) = 0;
-	virtual void geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_override) = 0;
-	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) = 0;
-	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) = 0;
-	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) = 0;
-	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) = 0;
-	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) = 0;
-	virtual void geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) = 0;
-	virtual void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) = 0;
-	virtual void geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) = 0;
-	virtual void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) = 0;
-	virtual void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) = 0;
-	virtual void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) = 0;
-	virtual void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) = 0;
-	virtual void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) = 0;
-	virtual void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) = 0;
-
+	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) = 0;
+	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) = 0;
 	virtual uint32_t geometry_instance_get_pair_mask() = 0;
-	virtual void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) = 0;
-	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) = 0;
-	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) = 0;
-	virtual void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) = 0;
-
-	virtual void geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) = 0;
-
-	virtual void geometry_instance_free(GeometryInstance *p_geometry_instance) = 0;
 
 	/* SHADOW ATLAS API */
 
@@ -166,13 +141,13 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
-	virtual void shadows_quality_set(RS::ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
+	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
+	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
 
 	virtual RID light_instance_create(RID p_light) = 0;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) = 0;
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) = 0;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const {
 		return true;
@@ -205,25 +180,25 @@ public:
 	virtual RID voxel_gi_instance_create(RID p_voxel_gi) = 0;
 	virtual void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) = 0;
 	virtual bool voxel_gi_needs_update(RID p_probe) const = 0;
-	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) = 0;
+	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) = 0;
 
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality) = 0;
 
 	struct RenderShadowData {
 		RID light;
 		int pass = 0;
-		PagedArray<GeometryInstance *> instances;
+		PagedArray<RenderGeometryInstance *> instances;
 	};
 
 	struct RenderSDFGIData {
 		int region = 0;
-		PagedArray<GeometryInstance *> instances;
+		PagedArray<RenderGeometryInstance *> instances;
 	};
 
 	struct RenderSDFGIUpdateData {
 		bool update_static = false;
 		uint32_t static_cascade_count;
-		uint32_t *static_cascade_indices;
+		uint32_t *static_cascade_indices = nullptr;
 		PagedArray<RID> *static_positional_lights;
 
 		const Vector<RID> *directional_lights;
@@ -234,31 +209,32 @@ public:
 	struct CameraData {
 		// flags
 		uint32_t view_count;
-		bool is_ortogonal;
+		bool is_orthogonal;
 		bool vaspect;
 
 		// Main/center projection
 		Transform3D main_transform;
-		CameraMatrix main_projection;
+		Projection main_projection;
 
 		Transform3D view_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-		CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+		Projection view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+		Vector2 taa_jitter;
 
-		void set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_ortogonal, bool p_vaspect);
-		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const CameraMatrix *p_projections, bool p_is_ortogonal, bool p_vaspect);
+		void set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2());
+		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect);
 	};
 
-	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) = 0;
+	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) = 0;
 
-	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
-	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) = 0;
+	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time, double p_step) = 0;
 	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) = 0;
 
 	virtual RID render_buffers_create() = 0;
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) = 0;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) = 0;
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
 
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) = 0;
@@ -280,4 +256,4 @@ public:
 	virtual ~RendererSceneRender() {}
 };
 
-#endif // RENDERINGSERVERSCENERENDER_H
+#endif // RENDERER_SCENE_RENDER_H

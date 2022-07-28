@@ -4,7 +4,7 @@
  *
  *   FreeType convenience functions to handle glyphs (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -34,6 +34,7 @@
 #include <freetype/ftoutln.h>
 #include <freetype/ftbitmap.h>
 #include <freetype/internal/ftobjs.h>
+#include <freetype/otsvg.h>
 
 #include "ftbase.h"
 
@@ -277,6 +278,240 @@
   )
 
 
+#ifdef FT_CONFIG_OPTION_SVG
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /****                                                                 ****/
+  /****   FT_SvgGlyph support                                           ****/
+  /****                                                                 ****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  ft_svg_glyph_init( FT_Glyph      svg_glyph,
+                     FT_GlyphSlot  slot )
+  {
+    FT_ULong         doc_length;
+    FT_SVG_Document  document;
+    FT_SvgGlyph      glyph = (FT_SvgGlyph)svg_glyph;
+
+    FT_Error   error  = FT_Err_Ok;
+    FT_Memory  memory = FT_GLYPH( glyph )->library->memory;
+
+
+    if ( slot->format != FT_GLYPH_FORMAT_SVG )
+    {
+      error = FT_THROW( Invalid_Glyph_Format );
+      goto Exit;
+    }
+
+    if ( slot->other == NULL )
+    {
+      error = FT_THROW( Invalid_Slot_Handle );
+      goto Exit;
+    }
+
+    document = (FT_SVG_Document)slot->other;
+
+    if ( document->svg_document_length == 0 )
+    {
+      error = FT_THROW( Invalid_Slot_Handle );
+      goto Exit;
+    }
+
+    /* allocate a new document */
+    doc_length = document->svg_document_length;
+    if ( FT_QALLOC( glyph->svg_document, doc_length ) )
+      goto Exit;
+    glyph->svg_document_length = doc_length;
+
+    glyph->glyph_index = slot->glyph_index;
+
+    glyph->metrics      = document->metrics;
+    glyph->units_per_EM = document->units_per_EM;
+
+    glyph->start_glyph_id = document->start_glyph_id;
+    glyph->end_glyph_id   = document->end_glyph_id;
+
+    glyph->transform = document->transform;
+    glyph->delta     = document->delta;
+
+    /* copy the document into glyph */
+    FT_MEM_COPY( glyph->svg_document, document->svg_document, doc_length );
+
+  Exit:
+    return error;
+  }
+
+
+  FT_CALLBACK_DEF( void )
+  ft_svg_glyph_done( FT_Glyph  svg_glyph )
+  {
+    FT_SvgGlyph  glyph  = (FT_SvgGlyph)svg_glyph;
+    FT_Memory    memory = svg_glyph->library->memory;
+
+
+    /* just free the memory */
+    FT_FREE( glyph->svg_document );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  ft_svg_glyph_copy( FT_Glyph  svg_source,
+                     FT_Glyph  svg_target )
+  {
+    FT_SvgGlyph  source = (FT_SvgGlyph)svg_source;
+    FT_SvgGlyph  target = (FT_SvgGlyph)svg_target;
+
+    FT_Error   error  = FT_Err_Ok;
+    FT_Memory  memory = FT_GLYPH( source )->library->memory;
+
+
+    if ( svg_source->format != FT_GLYPH_FORMAT_SVG )
+    {
+      error = FT_THROW( Invalid_Glyph_Format );
+      goto Exit;
+    }
+
+    if ( source->svg_document_length == 0 )
+    {
+      error = FT_THROW( Invalid_Slot_Handle );
+      goto Exit;
+    }
+
+    target->glyph_index = source->glyph_index;
+
+    target->svg_document_length = source->svg_document_length;
+
+    target->metrics      = source->metrics;
+    target->units_per_EM = source->units_per_EM;
+
+    target->start_glyph_id = source->start_glyph_id;
+    target->end_glyph_id   = source->end_glyph_id;
+
+    target->transform = source->transform;
+    target->delta     = source->delta;
+
+    /* allocate space for the SVG document */
+    if ( FT_QALLOC( target->svg_document, target->svg_document_length ) )
+      goto Exit;
+
+    /* copy the document */
+    FT_MEM_COPY( target->svg_document,
+                 source->svg_document,
+                 target->svg_document_length );
+
+  Exit:
+    return error;
+  }
+
+
+  FT_CALLBACK_DEF( void )
+  ft_svg_glyph_transform( FT_Glyph          svg_glyph,
+                          const FT_Matrix*  _matrix,
+                          const FT_Vector*  _delta )
+  {
+    FT_SvgGlyph  glyph  = (FT_SvgGlyph)svg_glyph;
+    FT_Matrix*   matrix = (FT_Matrix*)_matrix;
+    FT_Vector*   delta  = (FT_Vector*)_delta;
+
+    FT_Matrix  tmp_matrix;
+    FT_Vector  tmp_delta;
+
+    FT_Matrix  a, b;
+    FT_Pos     x, y;
+
+
+    if ( !matrix )
+    {
+      tmp_matrix.xx = 0x10000;
+      tmp_matrix.xy = 0;
+      tmp_matrix.yx = 0;
+      tmp_matrix.yy = 0x10000;
+
+      matrix = &tmp_matrix;
+    }
+
+    if ( !delta )
+    {
+      tmp_delta.x = 0;
+      tmp_delta.y = 0;
+
+      delta = &tmp_delta;
+    }
+
+    a = glyph->transform;
+    b = *matrix;
+    FT_Matrix_Multiply( &b, &a );
+
+    x = ADD_LONG( ADD_LONG( FT_MulFix( matrix->xx, glyph->delta.x ),
+                            FT_MulFix( matrix->xy, glyph->delta.y ) ),
+                  delta->x );
+    y = ADD_LONG( ADD_LONG( FT_MulFix( matrix->yx, glyph->delta.x ),
+                            FT_MulFix( matrix->yy, glyph->delta.y ) ),
+                  delta->y );
+
+    glyph->delta.x = x;
+    glyph->delta.y = y;
+
+    glyph->transform = a;
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  ft_svg_glyph_prepare( FT_Glyph      svg_glyph,
+                        FT_GlyphSlot  slot )
+  {
+    FT_SvgGlyph  glyph = (FT_SvgGlyph)svg_glyph;
+
+    FT_Error   error  = FT_Err_Ok;
+    FT_Memory  memory = svg_glyph->library->memory;
+
+    FT_SVG_Document  document = NULL;
+
+
+    if ( FT_NEW( document ) )
+      return error;
+
+    document->svg_document        = glyph->svg_document;
+    document->svg_document_length = glyph->svg_document_length;
+
+    document->metrics      = glyph->metrics;
+    document->units_per_EM = glyph->units_per_EM;
+
+    document->start_glyph_id = glyph->start_glyph_id;
+    document->end_glyph_id   = glyph->end_glyph_id;
+
+    document->transform = glyph->transform;
+    document->delta     = glyph->delta;
+
+    slot->format      = FT_GLYPH_FORMAT_SVG;
+    slot->glyph_index = glyph->glyph_index;
+    slot->other       = document;
+
+    return error;
+  }
+
+
+  FT_DEFINE_GLYPH(
+    ft_svg_glyph_class,
+
+    sizeof ( FT_SvgGlyphRec ),
+    FT_GLYPH_FORMAT_SVG,
+
+    ft_svg_glyph_init,      /* FT_Glyph_InitFunc       glyph_init      */
+    ft_svg_glyph_done,      /* FT_Glyph_DoneFunc       glyph_done      */
+    ft_svg_glyph_copy,      /* FT_Glyph_CopyFunc       glyph_copy      */
+    ft_svg_glyph_transform, /* FT_Glyph_TransformFunc  glyph_transform */
+    NULL,                   /* FT_Glyph_GetBBoxFunc    glyph_bbox      */
+    ft_svg_glyph_prepare    /* FT_Glyph_PrepareFunc    glyph_prepare   */
+  )
+
+#endif /* FT_CONFIG_OPTION_SVG */
+
+
   /*************************************************************************/
   /*************************************************************************/
   /****                                                                 ****/
@@ -376,6 +611,12 @@
     /* if it is an outline */
     else if ( format == FT_GLYPH_FORMAT_OUTLINE )
       clazz = &ft_outline_glyph_class;
+
+#ifdef FT_CONFIG_OPTION_SVG
+    /* if it is an SVG glyph */
+    else if ( format == FT_GLYPH_FORMAT_SVG )
+      clazz = &ft_svg_glyph_class;
+#endif
 
     else
     {
@@ -594,6 +835,16 @@
     error = clazz->glyph_prepare( glyph, &dummy );
     if ( !error )
       error = FT_Render_Glyph_Internal( glyph->library, &dummy, render_mode );
+
+#ifdef FT_CONFIG_OPTION_SVG
+    if ( clazz == &ft_svg_glyph_class )
+    {
+      FT_Memory  memory = library->memory;
+
+
+      FT_FREE( dummy.other );
+    }
+#endif
 
 #if 1
     if ( !destroy && origin )

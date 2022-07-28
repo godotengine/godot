@@ -71,6 +71,25 @@ float ProceduralSkyMaterial::get_sky_energy() const {
 	return sky_energy;
 }
 
+void ProceduralSkyMaterial::set_sky_cover(const Ref<Texture2D> &p_sky_cover) {
+	sky_cover = p_sky_cover;
+	RID tex_rid = p_sky_cover.is_valid() ? p_sky_cover->get_rid() : RID();
+	RS::get_singleton()->material_set_param(_get_material(), "sky_cover", tex_rid);
+}
+
+Ref<Texture2D> ProceduralSkyMaterial::get_sky_cover() const {
+	return sky_cover;
+}
+
+void ProceduralSkyMaterial::set_sky_cover_modulate(const Color &p_sky_cover_modulate) {
+	sky_cover_modulate = p_sky_cover_modulate;
+	RS::get_singleton()->material_set_param(_get_material(), "sky_cover_modulate", sky_cover_modulate);
+}
+
+Color ProceduralSkyMaterial::get_sky_cover_modulate() const {
+	return sky_cover_modulate;
+}
+
 void ProceduralSkyMaterial::set_ground_bottom_color(const Color &p_ground_bottom) {
 	ground_bottom_color = p_ground_bottom;
 	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color);
@@ -125,6 +144,15 @@ float ProceduralSkyMaterial::get_sun_curve() const {
 	return sun_curve;
 }
 
+void ProceduralSkyMaterial::set_use_debanding(bool p_use_debanding) {
+	use_debanding = p_use_debanding;
+	RS::get_singleton()->material_set_param(_get_material(), "use_debanding", use_debanding);
+}
+
+bool ProceduralSkyMaterial::get_use_debanding() const {
+	return use_debanding;
+}
+
 Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -156,6 +184,12 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sky_energy", "energy"), &ProceduralSkyMaterial::set_sky_energy);
 	ClassDB::bind_method(D_METHOD("get_sky_energy"), &ProceduralSkyMaterial::get_sky_energy);
 
+	ClassDB::bind_method(D_METHOD("set_sky_cover", "sky_cover"), &ProceduralSkyMaterial::set_sky_cover);
+	ClassDB::bind_method(D_METHOD("get_sky_cover"), &ProceduralSkyMaterial::get_sky_cover);
+
+	ClassDB::bind_method(D_METHOD("set_sky_cover_modulate", "color"), &ProceduralSkyMaterial::set_sky_cover_modulate);
+	ClassDB::bind_method(D_METHOD("get_sky_cover_modulate"), &ProceduralSkyMaterial::get_sky_cover_modulate);
+
 	ClassDB::bind_method(D_METHOD("set_ground_bottom_color", "color"), &ProceduralSkyMaterial::set_ground_bottom_color);
 	ClassDB::bind_method(D_METHOD("get_ground_bottom_color"), &ProceduralSkyMaterial::get_ground_bottom_color);
 
@@ -174,11 +208,16 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sun_curve", "curve"), &ProceduralSkyMaterial::set_sun_curve);
 	ClassDB::bind_method(D_METHOD("get_sun_curve"), &ProceduralSkyMaterial::get_sun_curve);
 
+	ClassDB::bind_method(D_METHOD("set_use_debanding", "use_debanding"), &ProceduralSkyMaterial::set_use_debanding);
+	ClassDB::bind_method(D_METHOD("get_use_debanding"), &ProceduralSkyMaterial::get_use_debanding);
+
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_top_color", "get_sky_top_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_horizon_color", "get_sky_horizon_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_curve", PROPERTY_HINT_EXP_EASING), "set_sky_curve", "get_sky_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sky_energy", "get_sky_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky_cover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_sky_cover", "get_sky_cover");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_cover_modulate"), "set_sky_cover_modulate", "get_sky_cover_modulate");
 
 	ADD_GROUP("Ground", "ground_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_bottom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_bottom_color", "get_ground_bottom_color");
@@ -187,8 +226,11 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_ground_energy", "get_ground_energy");
 
 	ADD_GROUP("Sun", "sun_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_max", "get_sun_angle_max");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01,degrees"), "set_sun_angle_max", "get_sun_angle_max");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
+
+	ADD_GROUP("", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "get_use_debanding");
 }
 
 void ProceduralSkyMaterial::cleanup_shader() {
@@ -208,16 +250,26 @@ void ProceduralSkyMaterial::_update_shader() {
 
 shader_type sky;
 
-uniform vec4 sky_top_color : hint_color = vec4(0.385, 0.454, 0.55, 1.0);
-uniform vec4 sky_horizon_color : hint_color = vec4(0.646, 0.656, 0.67, 1.0);
+uniform vec4 sky_top_color : source_color = vec4(0.385, 0.454, 0.55, 1.0);
+uniform vec4 sky_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float sky_curve : hint_range(0, 1) = 0.15;
 uniform float sky_energy = 1.0;
-uniform vec4 ground_bottom_color : hint_color = vec4(0.2, 0.169, 0.133, 1.0);
-uniform vec4 ground_horizon_color : hint_color = vec4(0.646, 0.656, 0.67, 1.0);
+uniform sampler2D sky_cover : source_color, hint_default_black;
+uniform vec4 sky_cover_modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 ground_bottom_color : source_color = vec4(0.2, 0.169, 0.133, 1.0);
+uniform vec4 ground_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float ground_curve : hint_range(0, 1) = 0.02;
 uniform float ground_energy = 1.0;
 uniform float sun_angle_max = 30.0;
 uniform float sun_curve : hint_range(0, 1) = 0.15;
+uniform bool use_debanding = true;
+
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+vec3 interleaved_gradient_noise(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
+	return vec3(res, -res, res) / 255.0;
+}
 
 void sky() {
 	float v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));
@@ -265,11 +317,17 @@ void sky() {
 		}
 	}
 
+	vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);
+	sky += (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a * sky_energy;
+
 	c = (v_angle - (PI * 0.5)) / (PI * 0.5);
 	vec3 ground = mix(ground_horizon_color.rgb, ground_bottom_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / ground_curve), 0.0, 1.0));
 	ground *= ground_energy;
 
 	COLOR = mix(ground, sky, step(0.0, EYEDIR.y));
+	if (use_debanding) {
+		COLOR += interleaved_gradient_noise(FRAGCOORD.xy);
+	}
 }
 )");
 	}
@@ -281,6 +339,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_sky_horizon_color(Color(0.6463, 0.6558, 0.6708));
 	set_sky_curve(0.15);
 	set_sky_energy(1.0);
+	set_sky_cover_modulate(Color(1, 1, 1));
 
 	set_ground_bottom_color(Color(0.2, 0.169, 0.133));
 	set_ground_horizon_color(Color(0.6463, 0.6558, 0.6708));
@@ -289,6 +348,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 
 	set_sun_angle_max(30.0);
 	set_sun_curve(0.15);
+	set_use_debanding(true);
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
@@ -371,8 +431,11 @@ void PanoramaSkyMaterial::_update_shader() {
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
 // NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+
 shader_type sky;
-uniform sampler2D source_panorama : %s, hint_albedo;
+
+uniform sampler2D source_panorama : %s, source_color, hint_default_black;
+
 void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb;
 }
@@ -474,13 +537,13 @@ float PhysicalSkyMaterial::get_exposure() const {
 	return exposure;
 }
 
-void PhysicalSkyMaterial::set_dither_strength(float p_dither_strength) {
-	dither_strength = p_dither_strength;
-	RS::get_singleton()->material_set_param(_get_material(), "dither_strength", dither_strength);
+void PhysicalSkyMaterial::set_use_debanding(bool p_use_debanding) {
+	use_debanding = p_use_debanding;
+	RS::get_singleton()->material_set_param(_get_material(), "use_debanding", use_debanding);
 }
 
-float PhysicalSkyMaterial::get_dither_strength() const {
-	return dither_strength;
+bool PhysicalSkyMaterial::get_use_debanding() const {
+	return use_debanding;
 }
 
 void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
@@ -542,8 +605,8 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exposure", "exposure"), &PhysicalSkyMaterial::set_exposure);
 	ClassDB::bind_method(D_METHOD("get_exposure"), &PhysicalSkyMaterial::get_exposure);
 
-	ClassDB::bind_method(D_METHOD("set_dither_strength", "strength"), &PhysicalSkyMaterial::set_dither_strength);
-	ClassDB::bind_method(D_METHOD("get_dither_strength"), &PhysicalSkyMaterial::get_dither_strength);
+	ClassDB::bind_method(D_METHOD("set_use_debanding", "use_debanding"), &PhysicalSkyMaterial::set_use_debanding);
+	ClassDB::bind_method(D_METHOD("get_use_debanding"), &PhysicalSkyMaterial::get_use_debanding);
 
 	ClassDB::bind_method(D_METHOD("set_night_sky", "night_sky"), &PhysicalSkyMaterial::set_night_sky);
 	ClassDB::bind_method(D_METHOD("get_night_sky"), &PhysicalSkyMaterial::get_night_sky);
@@ -561,7 +624,7 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_disk_scale", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_disk_scale", "get_sun_disk_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_color", "get_ground_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_exposure", "get_exposure");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dither_strength", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_dither_strength", "get_dither_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "get_use_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "night_sky", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_night_sky", "get_night_sky");
 }
 
@@ -583,18 +646,18 @@ void PhysicalSkyMaterial::_update_shader() {
 shader_type sky;
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
-uniform vec4 rayleigh_color : hint_color = vec4(0.3, 0.405, 0.6, 1.0);
+uniform vec4 rayleigh_color : source_color = vec4(0.3, 0.405, 0.6, 1.0);
 uniform float mie : hint_range(0, 1) = 0.005;
 uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;
-uniform vec4 mie_color : hint_color = vec4(0.69, 0.729, 0.812, 1.0);
+uniform vec4 mie_color : source_color = vec4(0.69, 0.729, 0.812, 1.0);
 
 uniform float turbidity : hint_range(0, 1000) = 10.0;
 uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
-uniform vec4 ground_color : hint_color = vec4(0.1, 0.07, 0.034, 1.0);
+uniform vec4 ground_color : source_color = vec4(0.1, 0.07, 0.034, 1.0);
 uniform float exposure : hint_range(0, 128) = 0.1;
-uniform float dither_strength : hint_range(0, 10) = 1.0;
+uniform bool use_debanding = true;
 
-uniform sampler2D night_sky : hint_black_albedo;
+uniform sampler2D night_sky : source_color, hint_default_black;
 
 const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 
@@ -610,11 +673,11 @@ float henyey_greenstein(float cos_theta, float g) {
 	return k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));
 }
 
-// From: https://www.shadertoy.com/view/4sfGzS credit to iq
-float hash(vec3 p) {
-	p  = fract( p * 0.3183099 + 0.1 );
-	p *= 17.0;
-	return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+vec3 interleaved_gradient_noise(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
+	return vec3(res, -res, res) / 255.0;
 }
 
 void sky() {
@@ -664,8 +727,9 @@ void sky() {
 		vec3 color = (Lin + L0) * 0.04;
 		COLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));
 		COLOR *= exposure;
-		// Make optional, eliminates banding.
-		COLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.016 * dither_strength;
+		if (use_debanding) {
+			COLOR += interleaved_gradient_noise(FRAGCOORD.xy);
+		}
 	} else {
 		// There is no sun, so display night_sky and nothing else.
 		COLOR = texture(night_sky, SKY_COORDS).xyz * 0.04;
@@ -688,7 +752,7 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	set_sun_disk_scale(1.0);
 	set_ground_color(Color(0.1, 0.07, 0.034));
 	set_exposure(0.1);
-	set_dither_strength(1.0);
+	set_use_debanding(true);
 }
 
 PhysicalSkyMaterial::~PhysicalSkyMaterial() {

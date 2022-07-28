@@ -40,20 +40,20 @@
 	A* pathfinding algorithm.
 */
 
-class AStar : public RefCounted {
-	GDCLASS(AStar, RefCounted);
+class AStar3D : public RefCounted {
+	GDCLASS(AStar3D, RefCounted);
 	friend class AStar2D;
 
 	struct Point {
 		Point() {}
 
-		int id = 0;
+		int64_t id = 0;
 		Vector3 pos;
 		real_t weight_scale = 0;
 		bool enabled = false;
 
-		OAHashMap<int, Point *> neighbours = 4u;
-		OAHashMap<int, Point *> unlinked_neighbours = 4u;
+		OAHashMap<int64_t, Point *> neighbours = 4u;
+		OAHashMap<int64_t, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
@@ -76,13 +76,7 @@ class AStar : public RefCounted {
 	};
 
 	struct Segment {
-		union {
-			struct {
-				int32_t u;
-				int32_t v;
-			};
-			uint64_t key = 0;
-		};
+		Pair<int64_t, int64_t> key;
 
 		enum {
 			NONE = 0,
@@ -92,119 +86,122 @@ class AStar : public RefCounted {
 		};
 		unsigned char direction = NONE;
 
-		bool operator<(const Segment &p_s) const { return key < p_s.key; }
+		static uint32_t hash(const Segment &p_seg) {
+			return PairHash<int64_t, int64_t>().hash(p_seg.key);
+		}
+		bool operator==(const Segment &p_s) const { return key == p_s.key; }
 
 		Segment() {}
-		Segment(int p_from, int p_to) {
+		Segment(int64_t p_from, int64_t p_to) {
 			if (p_from < p_to) {
-				u = p_from;
-				v = p_to;
+				key.first = p_from;
+				key.second = p_to;
 				direction = FORWARD;
 			} else {
-				u = p_to;
-				v = p_from;
+				key.first = p_to;
+				key.second = p_from;
 				direction = BACKWARD;
 			}
 		}
 	};
 
-	int last_free_id = 0;
+	int64_t last_free_id = 0;
 	uint64_t pass = 1;
 
-	OAHashMap<int, Point *> points;
-	Set<Segment> segments;
+	OAHashMap<int64_t, Point *> points;
+	HashSet<Segment, Segment> segments;
 
 	bool _solve(Point *begin_point, Point *end_point);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
-	virtual real_t _compute_cost(int p_from_id, int p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
 public:
-	int get_available_point_id() const;
+	int64_t get_available_point_id() const;
 
-	void add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
-	Vector3 get_point_position(int p_id) const;
-	void set_point_position(int p_id, const Vector3 &p_pos);
-	real_t get_point_weight_scale(int p_id) const;
-	void set_point_weight_scale(int p_id, real_t p_weight_scale);
-	void remove_point(int p_id);
-	bool has_point(int p_id) const;
-	Vector<int> get_point_connections(int p_id);
+	void add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
+	Vector3 get_point_position(int64_t p_id) const;
+	void set_point_position(int64_t p_id, const Vector3 &p_pos);
+	real_t get_point_weight_scale(int64_t p_id) const;
+	void set_point_weight_scale(int64_t p_id, real_t p_weight_scale);
+	void remove_point(int64_t p_id);
+	bool has_point(int64_t p_id) const;
+	Vector<int64_t> get_point_connections(int64_t p_id);
 	Array get_point_ids();
 
-	void set_point_disabled(int p_id, bool p_disabled = true);
-	bool is_point_disabled(int p_id) const;
+	void set_point_disabled(int64_t p_id, bool p_disabled = true);
+	bool is_point_disabled(int64_t p_id) const;
 
-	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
-	void disconnect_points(int p_id, int p_with_id, bool bidirectional = true);
-	bool are_points_connected(int p_id, int p_with_id, bool bidirectional = true) const;
+	void connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional = true);
+	void disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectional = true);
+	bool are_points_connected(int64_t p_id, int64_t p_with_id, bool bidirectional = true) const;
 
-	int get_point_count() const;
-	int get_point_capacity() const;
-	void reserve_space(int p_num_nodes);
+	int64_t get_point_count() const;
+	int64_t get_point_capacity() const;
+	void reserve_space(int64_t p_num_nodes);
 	void clear();
 
-	int get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
+	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	Vector<Vector3> get_point_path(int p_from_id, int p_to_id);
-	Vector<int> get_id_path(int p_from_id, int p_to_id);
+	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
 
-	AStar() {}
-	~AStar();
+	AStar3D() {}
+	~AStar3D();
 };
 
 class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
-	AStar astar;
+	AStar3D astar;
 
-	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
+	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
-	virtual real_t _compute_cost(int p_from_id, int p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
 public:
-	int get_available_point_id() const;
+	int64_t get_available_point_id() const;
 
-	void add_point(int p_id, const Vector2 &p_pos, real_t p_weight_scale = 1);
-	Vector2 get_point_position(int p_id) const;
-	void set_point_position(int p_id, const Vector2 &p_pos);
-	real_t get_point_weight_scale(int p_id) const;
-	void set_point_weight_scale(int p_id, real_t p_weight_scale);
-	void remove_point(int p_id);
-	bool has_point(int p_id) const;
-	Vector<int> get_point_connections(int p_id);
+	void add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale = 1);
+	Vector2 get_point_position(int64_t p_id) const;
+	void set_point_position(int64_t p_id, const Vector2 &p_pos);
+	real_t get_point_weight_scale(int64_t p_id) const;
+	void set_point_weight_scale(int64_t p_id, real_t p_weight_scale);
+	void remove_point(int64_t p_id);
+	bool has_point(int64_t p_id) const;
+	Vector<int64_t> get_point_connections(int64_t p_id);
 	Array get_point_ids();
 
-	void set_point_disabled(int p_id, bool p_disabled = true);
-	bool is_point_disabled(int p_id) const;
+	void set_point_disabled(int64_t p_id, bool p_disabled = true);
+	bool is_point_disabled(int64_t p_id) const;
 
-	void connect_points(int p_id, int p_with_id, bool p_bidirectional = true);
-	void disconnect_points(int p_id, int p_with_id);
-	bool are_points_connected(int p_id, int p_with_id) const;
+	void connect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional = true);
+	void disconnect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional = true);
+	bool are_points_connected(int64_t p_id, int64_t p_with_id, bool p_bidirectional = true) const;
 
-	int get_point_count() const;
-	int get_point_capacity() const;
-	void reserve_space(int p_num_nodes);
+	int64_t get_point_count() const;
+	int64_t get_point_capacity() const;
+	void reserve_space(int64_t p_num_nodes);
 	void clear();
 
-	int get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
+	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
-	Vector<Vector2> get_point_path(int p_from_id, int p_to_id);
-	Vector<int> get_id_path(int p_from_id, int p_to_id);
+	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
 
 	AStar2D() {}
 	~AStar2D() {}

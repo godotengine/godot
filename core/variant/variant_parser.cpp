@@ -162,6 +162,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						return OK;
 					}
 					if (ch == '\n') {
+						line++;
 						break;
 					}
 				}
@@ -344,7 +345,6 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
 					r_token.value = StringName(str);
-					string_name = false; //reset
 				} else {
 					r_token.type = TK_STRING;
 					r_token.value = str;
@@ -649,6 +649,32 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Vector3i(args[0], args[1], args[2]);
+		} else if (id == "Vector4") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 4) {
+				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Vector4(args[0], args[1], args[2], args[3]);
+		} else if (id == "Vector4i") {
+			Vector<int32_t> args;
+			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 4) {
+				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Vector4i(args[0], args[1], args[2], args[3]);
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -731,6 +757,19 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
+		} else if (id == "Projection") { // "Transform" kept for compatibility with Godot <4.
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 16) {
+				r_err_str = "Expected 16 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Projection(Vector4(args[0], args[1], args[2], args[3]), Vector4(args[4], args[5], args[6], args[7]), Vector4(args[8], args[9], args[10], args[11]), Vector4(args[12], args[13], args[14], args[15]));
 		} else if (id == "Color") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -807,7 +846,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			REF ref = REF(Object::cast_to<RefCounted>(obj));
+			Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {
@@ -888,7 +927,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			if (p_res_parser && id == "Resource" && p_res_parser->func) {
-				RES res;
+				Ref<Resource> res;
 				Error err = p_res_parser->func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
 					return err;
@@ -896,7 +935,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				value = res;
 			} else if (p_res_parser && id == "ExtResource" && p_res_parser->ext_func) {
-				RES res;
+				Ref<Resource> res;
 				Error err = p_res_parser->ext_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
 					return err;
@@ -904,7 +943,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				value = res;
 			} else if (p_res_parser && id == "SubResource" && p_res_parser->sub_func) {
-				RES res;
+				Ref<Resource> res;
 				Error err = p_res_parser->sub_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
 					return err;
@@ -915,7 +954,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type == TK_STRING) {
 					String path = token.value;
-					RES res = ResourceLoader::load(path);
+					Ref<Resource> res = ResourceLoader::load(path);
 					if (res.is_null()) {
 						r_err_str = "Can't load resource at path: '" + path + "'.";
 						return ERR_PARSE_ERROR;
@@ -1402,6 +1441,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return ERR_FILE_EOF;
 				}
 				if (ch == '\n') {
+					line++;
 					break;
 				}
 			}
@@ -1533,6 +1573,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			Vector3i v = p_variant;
 			p_store_string_func(p_store_string_ud, "Vector3i(" + itos(v.x) + ", " + itos(v.y) + ", " + itos(v.z) + ")");
 		} break;
+		case Variant::VECTOR4: {
+			Vector4 v = p_variant;
+			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ")");
+		} break;
+		case Variant::VECTOR4I: {
+			Vector4i v = p_variant;
+			p_store_string_func(p_store_string_ud, "Vector4i(" + itos(v.x) + ", " + itos(v.y) + ", " + itos(v.z) + ")");
+		} break;
 		case Variant::PLANE: {
 			Plane p = p_variant;
 			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x) + ", " + rtos_fix(p.normal.y) + ", " + rtos_fix(p.normal.z) + ", " + rtos_fix(p.d) + ")");
@@ -1556,7 +1604,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.columns[i][j]);
 				}
 			}
 
@@ -1571,7 +1619,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.rows[i][j]);
 				}
 			}
 
@@ -1587,11 +1635,25 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.rows[i][j]);
 				}
 			}
 
 			s = s + ", " + rtos_fix(t.origin.x) + ", " + rtos_fix(t.origin.y) + ", " + rtos_fix(t.origin.z);
+
+			p_store_string_func(p_store_string_ud, s + ")");
+		} break;
+		case Variant::PROJECTION: {
+			String s = "Projection(";
+			Projection t = p_variant;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					if (i != 0 || j != 0) {
+						s += ", ";
+					}
+					s += rtos_fix(t.matrix[i][j]);
+				}
+			}
 
 			p_store_string_func(p_store_string_ud, s + ")");
 		} break;
@@ -1625,7 +1687,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				break; // don't save it
 			}
 
-			RES res = p_variant;
+			Ref<Resource> res = p_variant;
 			if (res.is_valid()) {
 				//is resource
 				String res_text;

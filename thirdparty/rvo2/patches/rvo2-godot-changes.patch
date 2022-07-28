@@ -1,0 +1,282 @@
+diff --git a/thirdparty/rvo2/Agent.cpp b/thirdparty/rvo2/Agent.cpp
+index 5e49a3554c..b35eee9c12 100644
+--- a/thirdparty/rvo2/Agent.cpp
++++ b/thirdparty/rvo2/Agent.cpp
+@@ -105,18 +105,17 @@ namespace RVO {
+ 	 */
+ 	void linearProgram4(const std::vector<Plane> &planes, size_t beginPlane, float radius, Vector3 &result);
+ 
+-	Agent::Agent(RVOSimulator *sim) : sim_(sim), id_(0), maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f) { }
++	Agent::Agent() : id_(0), maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f), ignore_y_(false) { }
+ 
+-	void Agent::computeNeighbors()
++	void Agent::computeNeighbors(KdTree *kdTree_)
+ 	{
+ 		agentNeighbors_.clear();
+-
+ 		if (maxNeighbors_ > 0) {
+-			sim_->kdTree_->computeAgentNeighbors(this, neighborDist_ * neighborDist_);
++			kdTree_->computeAgentNeighbors(this, neighborDist_ * neighborDist_);
+ 		}
+ 	}
+ 
+-	void Agent::computeNewVelocity()
++	void Agent::computeNewVelocity(float timeStep)
+ 	{
+ 		orcaPlanes_.clear();
+ 		const float invTimeHorizon = 1.0f / timeHorizon_;
+@@ -124,10 +123,24 @@ namespace RVO {
+ 		/* Create agent ORCA planes. */
+ 		for (size_t i = 0; i < agentNeighbors_.size(); ++i) {
+ 			const Agent *const other = agentNeighbors_[i].second;
+-			const Vector3 relativePosition = other->position_ - position_;
+-			const Vector3 relativeVelocity = velocity_ - other->velocity_;
+-			const float distSq = absSq(relativePosition);
++
++			Vector3 relativePosition = other->position_ - position_;
++			Vector3 relativeVelocity = velocity_ - other->velocity_;
+ 			const float combinedRadius = radius_ + other->radius_;
++
++			// This is a Godot feature that allow the agents to avoid the collision
++			// by moving only on the horizontal plane relative to the player velocity.
++			if (ignore_y_) {
++				// Skip if these are in two different heights
++#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
++				if (ABS(relativePosition[1]) > combinedRadius * 2) {
++					continue;
++				}
++				relativePosition[1] = 0;
++				relativeVelocity[1] = 0;
++			}
++
++			const float distSq = absSq(relativePosition);
+ 			const float combinedRadiusSq = sqr(combinedRadius);
+ 
+ 			Plane plane;
+@@ -165,7 +178,7 @@ namespace RVO {
+ 			}
+ 			else {
+ 				/* Collision. */
+-				const float invTimeStep = 1.0f / sim_->timeStep_;
++				const float invTimeStep = 1.0f / timeStep;
+ 				const Vector3 w = relativeVelocity - invTimeStep * relativePosition;
+ 				const float wLength = abs(w);
+ 				const Vector3 unitW = w / wLength;
+@@ -183,6 +196,11 @@ namespace RVO {
+ 		if (planeFail < orcaPlanes_.size()) {
+ 			linearProgram4(orcaPlanes_, planeFail, maxSpeed_, newVelocity_);
+ 		}
++
++		if (ignore_y_) {
++			// Not 100% necessary, but better to have.
++			newVelocity_[1] = prefVelocity_[1];
++		}
+ 	}
+ 
+ 	void Agent::insertAgentNeighbor(const Agent *agent, float &rangeSq)
+@@ -211,12 +229,6 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void Agent::update()
+-	{
+-		velocity_ = newVelocity_;
+-		position_ += velocity_ * sim_->timeStep_;
+-	}
+-
+ 	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result)
+ 	{
+ 		const float dotProduct = line.point * line.direction;
+diff --git a/thirdparty/rvo2/Agent.h b/thirdparty/rvo2/Agent.h
+index d3922ec645..45fbead2f5 100644
+--- a/thirdparty/rvo2/Agent.h
++++ b/thirdparty/rvo2/Agent.h
+@@ -41,30 +41,52 @@
+ #include <utility>
+ #include <vector>
+ 
+-#include "RVOSimulator.h"
+ #include "Vector3.h"
+ 
++// Note: Slightly modified to work better in Godot.
++// - The agent can be created by anyone.
++// - The simulator pointer is removed.
++// - The update function is removed.
++// - The compute velocity function now need the timeStep.
++// - Moved the `Plane` class here.
++// - Added a new parameter `ignore_y_` in the `Agent`. This parameter is used to control a godot feature that allows to avoid collisions by moving on the horizontal plane.
+ namespace RVO {
++	/**
++	 * \brief   Defines a plane.
++	 */
++	class Plane {
++	public:
++		/**
++		 * \brief   A point on the plane.
++		 */
++		Vector3 point;
++
++		/**
++		 * \brief   The normal to the plane.
++		 */
++		Vector3 normal;
++	};
++
+ 	/**
+ 	 * \brief   Defines an agent in the simulation.
+ 	 */
+ 	class Agent {
+-	private:
++	public:
+ 		/**
+ 		 * \brief   Constructs an agent instance.
+ 		 * \param   sim  The simulator instance.
+ 		 */
+-		explicit Agent(RVOSimulator *sim);
++		explicit Agent();
+ 
+ 		/**
+ 		 * \brief   Computes the neighbors of this agent.
+ 		 */
+-		void computeNeighbors();
++		void computeNeighbors(class KdTree *kdTree_);
+ 
+ 		/**
+ 		 * \brief   Computes the new velocity of this agent.
+ 		 */
+-		void computeNewVelocity();
++		void computeNewVelocity(float timeStep);
+ 
+ 		/**
+ 		 * \brief   Inserts an agent neighbor into the set of neighbors of this agent.
+@@ -73,16 +95,10 @@ namespace RVO {
+ 		 */
+ 		void insertAgentNeighbor(const Agent *agent, float &rangeSq);
+ 
+-		/**
+-		 * \brief   Updates the three-dimensional position and three-dimensional velocity of this agent.
+-		 */
+-		void update();
+-
+ 		Vector3 newVelocity_;
+ 		Vector3 position_;
+ 		Vector3 prefVelocity_;
+ 		Vector3 velocity_;
+-		RVOSimulator *sim_;
+ 		size_t id_;
+ 		size_t maxNeighbors_;
+ 		float maxSpeed_;
+@@ -91,9 +107,11 @@ namespace RVO {
+ 		float timeHorizon_;
+ 		std::vector<std::pair<float, const Agent *> > agentNeighbors_;
+ 		std::vector<Plane> orcaPlanes_;
++		/// This is a godot feature that allows the Agent to avoid collision by mooving
++		/// on the horizontal plane.
++		bool ignore_y_;
+ 
+ 		friend class KdTree;
+-		friend class RVOSimulator;
+ 	};
+ }
+ 
+diff --git a/thirdparty/rvo2/KdTree.cpp b/thirdparty/rvo2/KdTree.cpp
+index 5e9e9777a6..c857f299df 100644
+--- a/thirdparty/rvo2/KdTree.cpp
++++ b/thirdparty/rvo2/KdTree.cpp
+@@ -36,16 +36,15 @@
+ 
+ #include "Agent.h"
+ #include "Definitions.h"
+-#include "RVOSimulator.h"
+ 
+ namespace RVO {
+ 	const size_t RVO3D_MAX_LEAF_SIZE = 10;
+ 
+-	KdTree::KdTree(RVOSimulator *sim) : sim_(sim) { }
++	KdTree::KdTree() { }
+ 
+-	void KdTree::buildAgentTree()
++	void KdTree::buildAgentTree(std::vector<Agent *> agents)
+ 	{
+-		agents_ = sim_->agents_;
++		agents_.swap(agents);
+ 
+ 		if (!agents_.empty()) {
+ 			agentTree_.resize(2 * agents_.size() - 1);
+diff --git a/thirdparty/rvo2/KdTree.h b/thirdparty/rvo2/KdTree.h
+index a09384c20f..69d8920ce0 100644
+--- a/thirdparty/rvo2/KdTree.h
++++ b/thirdparty/rvo2/KdTree.h
+@@ -41,6 +41,9 @@
+ 
+ #include "Vector3.h"
+ 
++// Note: Slightly modified to work better with Godot.
++// - Removed `sim_`.
++// - KdTree things are public
+ namespace RVO {
+ 	class Agent;
+ 	class RVOSimulator;
+@@ -49,7 +52,7 @@ namespace RVO {
+ 	 * \brief   Defines <i>k</i>d-trees for agents in the simulation.
+ 	 */
+ 	class KdTree {
+-	private:
++	public:
+ 		/**
+ 		 * \brief   Defines an agent <i>k</i>d-tree node.
+ 		 */
+@@ -90,12 +93,12 @@ namespace RVO {
+ 		 * \brief   Constructs a <i>k</i>d-tree instance.
+ 		 * \param   sim  The simulator instance.
+ 		 */
+-		explicit KdTree(RVOSimulator *sim);
++		explicit KdTree();
+ 
+ 		/**
+ 		 * \brief   Builds an agent <i>k</i>d-tree.
+ 		 */
+-		void buildAgentTree();
++		void buildAgentTree(std::vector<Agent *> agents);
+ 
+ 		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
+ 
+@@ -110,7 +113,6 @@ namespace RVO {
+ 
+ 		std::vector<Agent *> agents_;
+ 		std::vector<AgentTreeNode> agentTree_;
+-		RVOSimulator *sim_;
+ 
+ 		friend class Agent;
+ 		friend class RVOSimulator;
+diff --git a/thirdparty/rvo2/Vector3.h b/thirdparty/rvo2/Vector3.h
+index 6c3223bb87..f44e311f29 100644
+--- a/thirdparty/rvo2/Vector3.h
++++ b/thirdparty/rvo2/Vector3.h
+@@ -41,7 +41,7 @@
+ #include <cstddef>
+ #include <ostream>
+ 
+-#include "Export.h"
++#define RVO3D_EXPORT
+ 
+ namespace RVO {
+ 	/**
+@@ -59,17 +59,6 @@ namespace RVO {
+ 			val_[2] = 0.0f;
+ 		}
+ 
+-		/**
+-		 * \brief   Constructs and initializes a three-dimensional vector from the specified three-dimensional vector.
+-		 * \param   vector  The three-dimensional vector containing the xyz-coordinates.
+-		 */
+-		inline Vector3(const Vector3 &vector)
+-		{
+-			val_[0] = vector[0];
+-			val_[1] = vector[1];
+-			val_[2] = vector[2];
+-		}
+-
+ 		/**
+ 		 * \brief   Constructs and initializes a three-dimensional vector from the specified three-element array.
+ 		 * \param   val  The three-element array containing the xyz-coordinates.

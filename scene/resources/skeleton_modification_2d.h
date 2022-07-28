@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2D_H
-#define SKELETONMODIFICATION2D_H
+#ifndef SKELETON_MODIFICATION_2D_H
+#define SKELETON_MODIFICATION_2D_H
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_stack_2d.h"
@@ -49,7 +49,7 @@ class SkeletonModification2D : public Resource {
 protected:
 	static void _bind_methods();
 
-	SkeletonModificationStack2D *stack;
+	SkeletonModificationStack2D *stack = nullptr;
 	int execution_mode = 0; // 0 = process
 
 	bool enabled = true;
@@ -86,4 +86,4 @@ public:
 	SkeletonModification2D();
 };
 
-#endif // SKELETONMODIFICATION2D_H
+#endif // SKELETON_MODIFICATION_2D_H

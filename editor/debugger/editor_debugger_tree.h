@@ -48,7 +48,7 @@ private:
 	ObjectID inspected_object_id;
 	int debugger_id = 0;
 	bool updating_scene_tree = false;
-	Set<ObjectID> unfold_cache;
+	HashSet<ObjectID> unfold_cache;
 	PopupMenu *item_menu = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 	String last_filter;
@@ -56,7 +56,7 @@ private:
 	String _get_path(TreeItem *p_item);
 	void _scene_tree_folded(Object *p_obj);
 	void _scene_tree_selected();
-	void _scene_tree_rmb_selected(const Vector2 &p_position);
+	void _scene_tree_rmb_selected(const Vector2 &p_position, MouseButton p_button);
 	void _item_menu_id_pressed(int p_option);
 	void _file_selected(const String &p_file);
 
@@ -71,4 +71,5 @@ public:
 	void update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger);
 	EditorDebuggerTree();
 };
+
 #endif // EDITOR_DEBUGGER_TREE_H

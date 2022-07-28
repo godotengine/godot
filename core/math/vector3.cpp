@@ -35,13 +35,13 @@
 #include "core/math/vector3i.h"
 #include "core/string/ustring.h"
 
-void Vector3::rotate(const Vector3 &p_axis, const real_t p_phi) {
-	*this = Basis(p_axis, p_phi).xform(*this);
+void Vector3::rotate(const Vector3 &p_axis, const real_t p_angle) {
+	*this = Basis(p_axis, p_angle).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_angle) const {
 	Vector3 r = *this;
-	r.rotate(p_axis, p_phi);
+	r.rotate(p_axis, p_angle);
 	return r;
 }
 
@@ -83,14 +83,6 @@ Vector3 Vector3::limit_length(const real_t p_len) const {
 	}
 
 	return v;
-}
-
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
-	Vector3 res = *this;
-	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
-	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
-	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
-	return res;
 }
 
 Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {

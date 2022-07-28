@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GPUParticlesAttractorVectorField3D" inherits="GPUParticlesAttractor3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Box-shaped 3D particle attractor with strength varying within the box, affecting [GPUParticles3D] nodes.
 	</brief_description>
 	<description>
+		Box-shaped 3D particle attractor with strength varying within the box, affecting [GPUParticles3D] nodes.
+		Unlike [GPUParticlesAttractorBox3D], [GPUParticlesAttractorVectorField3D] uses a [member texture] to affect attraction strength within the box. This can be used to create complex attraction scenarios where particles travel in different directions depending on their location. This can be useful for weather effects such as sandstorms.
+		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
+			The extents of the vector field box in 3D units.
 		</member>
 		<member name="texture" type="Texture3D" setter="set_texture" getter="get_texture">
+			The 3D texture to be used. Values are linearly interpolated between the texture's pixels.
+			[b]Note:[/b] To get better performance, the 3D texture's resolution should reflect the [member extents] of the attractor. Since particle attraction is usually low-frequency data, the texture can be kept at a low resolution such as 64×64×64.
 		</member>
 	</members>
 </class>

@@ -40,14 +40,14 @@ class CanvasItemEditor;
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
-	CanvasItemEditor *canvas_item_editor;
-	Panel *panel;
-	Path2D *node;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	Panel *panel = nullptr;
+	Path2D *node = nullptr;
 
-	HBoxContainer *base_hb;
-	Separator *sep;
+	HBoxContainer *base_hb = nullptr;
+	Separator *sep = nullptr;
 
 	enum Mode {
 		MODE_CREATE,
@@ -58,12 +58,12 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Mode mode;
-	Button *curve_create;
-	Button *curve_edit;
-	Button *curve_edit_curve;
-	Button *curve_del;
-	Button *curve_close;
-	MenuButton *handle_menu;
+	Button *curve_create = nullptr;
+	Button *curve_edit = nullptr;
+	Button *curve_edit_curve = nullptr;
+	Button *curve_del = nullptr;
+	Button *curve_close = nullptr;
+	MenuButton *handle_menu = nullptr;
 
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
@@ -82,11 +82,11 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Action action;
-	int action_point;
+	int action_point = 0;
 	Point2 moving_from;
 	Point2 moving_screen_from;
-	float orig_in_length;
-	float orig_out_length;
+	float orig_in_length = 0.0f;
+	float orig_out_length = 0.0f;
 	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);
@@ -110,7 +110,7 @@ public:
 class Path2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path2DEditorPlugin, EditorPlugin);
 
-	Path2DEditor *path2d_editor;
+	Path2DEditor *path2d_editor = nullptr;
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return path2d_editor->forward_gui_input(p_event); }

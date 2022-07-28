@@ -39,6 +39,7 @@ class NavigationObstacle2D : public Node {
 
 	Node2D *parent_node2d = nullptr;
 	RID agent;
+	RID map_before_pause;
 
 	bool estimate_radius = true;
 	real_t radius = 1.0;
@@ -73,4 +74,4 @@ private:
 	real_t estimate_agent_radius() const;
 };
 
-#endif
+#endif // NAVIGATION_OBSTACLE_2D_H

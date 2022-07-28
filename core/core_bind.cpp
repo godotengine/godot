@@ -58,15 +58,15 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 	return (ThreadLoadStatus)tls;
 }
 
-RES ResourceLoader::load_threaded_get(const String &p_path) {
+Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path) {
 	Error error;
-	RES res = ::ResourceLoader::load_threaded_get(p_path, &error);
+	Ref<Resource> res = ::ResourceLoader::load_threaded_get(p_path, &error);
 	return res;
 }
 
-RES ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
+Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
 	Error err = OK;
-	RES ret = ::ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
+	Ref<Resource> ret = ::ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, ret, "Error loading resource: '" + p_path + "'.");
 	return ret;
@@ -81,6 +81,14 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	}
 
 	return ret;
+}
+
+void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
+}
+
+void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+	::ResourceLoader::remove_resource_format_loader(p_format_loader);
 }
 
 void ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
@@ -119,6 +127,8 @@ void ResourceLoader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
+	ClassDB::bind_method(D_METHOD("add_resource_format_loader", "format_loader", "at_front"), &ResourceLoader::add_resource_format_loader, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_resource_format_loader", "format_loader"), &ResourceLoader::remove_resource_format_loader);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &ResourceLoader::get_dependencies);
 	ClassDB::bind_method(D_METHOD("has_cached", "path"), &ResourceLoader::has_cached);
@@ -137,12 +147,12 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
+Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
 	return ::ResourceSaver::save(p_path, p_resource, p_flags);
 }
 
-Vector<String> ResourceSaver::get_recognized_extensions(const RES &p_resource) {
+Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), Vector<String>(), "It's not a reference to a valid Resource object.");
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
@@ -153,19 +163,30 @@ Vector<String> ResourceSaver::get_recognized_extensions(const RES &p_resource) {
 	return ret;
 }
 
+void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
+}
+
+void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+	::ResourceSaver::remove_resource_format_saver(p_format_saver);
+}
+
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
 
-	BIND_ENUM_CONSTANT(FLAG_RELATIVE_PATHS);
-	BIND_ENUM_CONSTANT(FLAG_BUNDLE_RESOURCES);
-	BIND_ENUM_CONSTANT(FLAG_CHANGE_PATH);
-	BIND_ENUM_CONSTANT(FLAG_OMIT_EDITOR_PROPERTIES);
-	BIND_ENUM_CONSTANT(FLAG_SAVE_BIG_ENDIAN);
-	BIND_ENUM_CONSTANT(FLAG_COMPRESS);
-	BIND_ENUM_CONSTANT(FLAG_REPLACE_SUBRESOURCE_PATHS);
+	BIND_BITFIELD_FLAG(FLAG_NONE);
+	BIND_BITFIELD_FLAG(FLAG_RELATIVE_PATHS);
+	BIND_BITFIELD_FLAG(FLAG_BUNDLE_RESOURCES);
+	BIND_BITFIELD_FLAG(FLAG_CHANGE_PATH);
+	BIND_BITFIELD_FLAG(FLAG_OMIT_EDITOR_PROPERTIES);
+	BIND_BITFIELD_FLAG(FLAG_SAVE_BIG_ENDIAN);
+	BIND_BITFIELD_FLAG(FLAG_COMPRESS);
+	BIND_BITFIELD_FLAG(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
 ////// OS //////
@@ -208,6 +229,14 @@ void OS::alert(const String &p_alert, const String &p_title) {
 
 void OS::crash(const String &p_message) {
 	CRASH_NOW_MSG(p_message);
+}
+
+Vector<String> OS::get_system_fonts() const {
+	return ::OS::get_singleton()->get_system_fonts();
+}
+
+String OS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_bold, p_italic);
 }
 
 String OS::get_executable_path() const {
@@ -266,6 +295,10 @@ int OS::create_process(const String &p_path, const Vector<String> &p_arguments, 
 
 Error OS::kill(int p_pid) {
 	return ::OS::get_singleton()->kill(p_pid);
+}
+
+bool OS::is_process_running(int p_pid) const {
+	return ::OS::get_singleton()->is_process_running(p_pid);
 }
 
 int OS::get_process_id() const {
@@ -434,7 +467,7 @@ void OS::print_resources_by_type(const Vector<String> &p_types) {
 
 	print_line(vformat("Resources currently in use for the following types: %s", p_types));
 
-	Map<String, int> type_count;
+	RBMap<String, int> type_count;
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
@@ -480,6 +513,10 @@ void OS::print_resources_in_use(bool p_short) {
 
 void OS::dump_resources_to_file(const String &p_file) {
 	::OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
+}
+
+Error OS::move_to_trash(const String &p_path) const {
+	return ::OS::get_singleton()->move_to_trash(p_path);
 }
 
 String OS::get_user_data_dir() const {
@@ -560,12 +597,15 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
+	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
 	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
@@ -596,6 +636,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
 
+	ClassDB::bind_method(D_METHOD("move_to_trash", "path"), &OS::move_to_trash);
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir", "shared_storage"), &OS::get_system_dir, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &OS::get_config_dir);
@@ -1026,10 +1067,10 @@ Error File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const V
 		return err;
 	}
 
-	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	Ref<FileAccessEncrypted> fae;
+	fae.instantiate();
 	err = fae->open_and_parse(f, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
 	if (err) {
-		memdelete(fae);
 		close();
 		return err;
 	}
@@ -1043,10 +1084,10 @@ Error File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, co
 		return err;
 	}
 
-	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	Ref<FileAccessEncrypted> fae;
+	fae.instantiate();
 	err = fae->open_and_parse_password(f, p_pass, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
 	if (err) {
-		memdelete(fae);
 		close();
 		return err;
 	}
@@ -1056,14 +1097,13 @@ Error File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, co
 }
 
 Error File::open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode) {
-	FileAccessCompressed *fac = memnew(FileAccessCompressed);
-
+	Ref<FileAccessCompressed> fac;
+	fac.instantiate();
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
 
 	Error err = fac->_open(p_path, p_mode_flags);
 
 	if (err) {
-		memdelete(fac);
 		return err;
 	}
 
@@ -1072,25 +1112,22 @@ Error File::open_compressed(const String &p_path, ModeFlags p_mode_flags, Compre
 }
 
 Error File::open(const String &p_path, ModeFlags p_mode_flags) {
-	close();
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
-	if (f) {
+	if (f.is_valid()) {
 		f->set_big_endian(big_endian);
 	}
 	return err;
 }
 
 void File::flush() {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before flushing.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before flushing.");
 	f->flush();
 }
 
 void File::close() {
-	if (f) {
-		memdelete(f);
-	}
-	f = nullptr;
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened.");
+	f.unref();
 }
 
 bool File::is_open() const {
@@ -1098,79 +1135,79 @@ bool File::is_open() const {
 }
 
 String File::get_path() const {
-	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", "File must be opened before use, or is lacking read-write permission.");
 	return f->get_path();
 }
 
 String File::get_path_absolute() const {
-	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", "File must be opened before use, or is lacking read-write permission.");
 	return f->get_path_absolute();
 }
 
 void File::seek(int64_t p_position) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 	ERR_FAIL_COND_MSG(p_position < 0, "Seek position must be a positive integer.");
 	f->seek(p_position);
 }
 
 void File::seek_end(int64_t p_position) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 	f->seek_end(p_position);
 }
 
 uint64_t File::get_position() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_position();
 }
 
 uint64_t File::get_length() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_length();
 }
 
 bool File::eof_reached() const {
-	ERR_FAIL_COND_V_MSG(!f, false, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), false, "File must be opened before use, or is lacking read-write permission.");
 	return f->eof_reached();
 }
 
 uint8_t File::get_8() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_8();
 }
 
 uint16_t File::get_16() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_16();
 }
 
 uint32_t File::get_32() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_32();
 }
 
 uint64_t File::get_64() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_64();
 }
 
 float File::get_float() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_float();
 }
 
 double File::get_double() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_double();
 }
 
 real_t File::get_real() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_real();
 }
 
 Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
-	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), data, "File must be opened before use, or is lacking read-write permission.");
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
 	if (p_length == 0) {
@@ -1191,20 +1228,14 @@ Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 }
 
 String File::get_as_text() const {
-	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), String(), "File must be opened before use, or is lacking read-write permission.");
 
-	String text;
 	uint64_t original_pos = f->get_position();
-	f->seek(0);
+	const_cast<FileAccess *>(*f)->seek(0);
 
-	String l = get_line();
-	while (!eof_reached()) {
-		text += l + "\n";
-		l = get_line();
-	}
-	text += l;
+	String text = f->get_as_utf8_string();
 
-	f->seek(original_pos);
+	const_cast<FileAccess *>(*f)->seek(original_pos);
 
 	return text;
 }
@@ -1218,12 +1249,12 @@ String File::get_sha256(const String &p_path) const {
 }
 
 String File::get_line() const {
-	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), String(), "File must be opened before use, or is lacking read-write permission.");
 	return f->get_line();
 }
 
 Vector<String> File::get_csv_line(const String &p_delim) const {
-	ERR_FAIL_COND_V_MSG(!f, Vector<String>(), "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), Vector<String>(), "File must be opened before use, or is lacking read-write permission.");
 	return f->get_csv_line(p_delim);
 }
 
@@ -1234,7 +1265,7 @@ Vector<String> File::get_csv_line(const String &p_delim) const {
 
 void File::set_big_endian(bool p_big_endian) {
 	big_endian = p_big_endian;
-	if (f) {
+	if (f.is_valid()) {
 		f->set_big_endian(p_big_endian);
 	}
 }
@@ -1244,84 +1275,84 @@ bool File::is_big_endian() {
 }
 
 Error File::get_error() const {
-	if (!f) {
+	if (f.is_null()) {
 		return ERR_UNCONFIGURED;
 	}
 	return f->get_error();
 }
 
 void File::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_8(p_dest);
 }
 
 void File::store_16(uint16_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_16(p_dest);
 }
 
 void File::store_32(uint32_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_32(p_dest);
 }
 
 void File::store_64(uint64_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_64(p_dest);
 }
 
 void File::store_float(float p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_float(p_dest);
 }
 
 void File::store_double(double p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_double(p_dest);
 }
 
 void File::store_real(real_t p_real) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_real(p_real);
 }
 
 void File::store_string(const String &p_string) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_string(p_string);
 }
 
 void File::store_pascal_string(const String &p_string) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_pascal_string(p_string);
 }
 
 String File::get_pascal_string() {
-	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", "File must be opened before use, or is lacking read-write permission.");
 
 	return f->get_pascal_string();
 }
 
 void File::store_line(const String &p_string) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 	f->store_line(p_string);
 }
 
 void File::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 	f->store_csv_line(p_values, p_delim);
 }
 
 void File::store_buffer(const Vector<uint8_t> &p_buffer) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 
 	uint64_t len = p_buffer.size();
 	if (len == 0) {
@@ -1333,12 +1364,12 @@ void File::store_buffer(const Vector<uint8_t> &p_buffer) {
 	f->store_buffer(&r[0], len);
 }
 
-bool File::file_exists(const String &p_name) const {
+bool File::file_exists(const String &p_name) {
 	return FileAccess::exists(p_name);
 }
 
 void File::store_var(const Variant &p_var, bool p_full_objects) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use, or is lacking read-write permission.");
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
@@ -1355,7 +1386,7 @@ void File::store_var(const Variant &p_var, bool p_full_objects) {
 }
 
 Variant File::get_var(bool p_allow_objects) const {
-	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use, or is lacking read-write permission.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), Variant(), "File must be opened before use, or is lacking read-write permission.");
 	uint32_t len = get_32();
 	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
@@ -1423,7 +1454,7 @@ void File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &File::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &File::get_pascal_string);
 
-	ClassDB::bind_method(D_METHOD("file_exists", "path"), &File::file_exists);
+	ClassDB::bind_static_method("File", D_METHOD("file_exists", "path"), &File::file_exists);
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &File::get_modified_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
@@ -1439,23 +1470,13 @@ void File::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_GZIP);
 }
 
-File::~File() {
-	if (f) {
-		memdelete(f);
-	}
-}
-
 ////// Directory //////
 
 Error Directory::open(const String &p_path) {
 	Error err;
-	DirAccess *alt = DirAccess::open(p_path, &err);
-
-	if (!alt) {
+	Ref<DirAccess> alt = DirAccess::open(p_path, &err);
+	if (alt.is_null()) {
 		return err;
-	}
-	if (d) {
-		memdelete(d);
 	}
 	d = alt;
 	dir_open = true;
@@ -1464,7 +1485,7 @@ Error Directory::open(const String &p_path) {
 }
 
 bool Directory::is_open() const {
-	return d && dir_open;
+	return d.is_valid() && dir_open;
 }
 
 Error Directory::list_dir_begin() {
@@ -1549,7 +1570,7 @@ int Directory::get_current_drive() {
 }
 
 Error Directory::change_dir(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
+	ERR_FAIL_COND_V_MSG(d.is_null(), ERR_UNCONFIGURED, "Directory is not configured properly.");
 	Error err = d->change_dir(p_dir);
 
 	if (err != OK) {
@@ -1566,50 +1587,41 @@ String Directory::get_current_dir() {
 }
 
 Error Directory::make_dir(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
+	ERR_FAIL_COND_V_MSG(d.is_null(), ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		Error err = d->make_dir(p_dir);
-		memdelete(d);
-		return err;
+		Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+		return da->make_dir(p_dir);
 	}
 	return d->make_dir(p_dir);
 }
 
 Error Directory::make_dir_recursive(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
+	ERR_FAIL_COND_V_MSG(d.is_null(), ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		Error err = d->make_dir_recursive(p_dir);
-		memdelete(d);
-		return err;
+		Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+		return da->make_dir_recursive(p_dir);
 	}
 	return d->make_dir_recursive(p_dir);
 }
 
 bool Directory::file_exists(String p_file) {
-	ERR_FAIL_COND_V_MSG(!d, false, "Directory is not configured properly.");
+	ERR_FAIL_COND_V_MSG(d.is_null(), false, "Directory is not configured properly.");
 	if (!p_file.is_relative_path()) {
 		return FileAccess::exists(p_file);
 	}
-
 	return d->file_exists(p_file);
 }
 
 bool Directory::dir_exists(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!d, false, "Directory is not configured properly.");
+	ERR_FAIL_COND_V_MSG(d.is_null(), false, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		bool exists = d->dir_exists(p_dir);
-		memdelete(d);
-		return exists;
+		return DirAccess::exists(p_dir);
 	}
-
 	return d->dir_exists(p_dir);
 }
 
 uint64_t Directory::get_space_left() {
-	ERR_FAIL_COND_V_MSG(!d, 0, "Directory must be opened before use.");
+	ERR_FAIL_COND_V_MSG(d.is_null(), 0, "Directory must be opened before use.");
 	return d->get_space_left() / 1024 * 1024; // Truncate to closest MiB.
 }
 
@@ -1623,11 +1635,9 @@ Error Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(p_from.is_empty() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
 
 	if (!p_from.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_from);
-		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
-		Error err = d->rename(p_from, p_to);
-		memdelete(d);
-		return err;
+		Ref<DirAccess> da = DirAccess::create_for_path(p_from);
+		ERR_FAIL_COND_V_MSG(!da->file_exists(p_from) && !da->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
+		return da->rename(p_from, p_to);
 	}
 
 	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
@@ -1637,10 +1647,8 @@ Error Directory::rename(String p_from, String p_to) {
 Error Directory::remove(String p_name) {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_name.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_name);
-		Error err = d->remove(p_name);
-		memdelete(d);
-		return err;
+		Ref<DirAccess> da = DirAccess::create_for_path(p_name);
+		return da->remove(p_name);
 	}
 
 	return d->remove(p_name);
@@ -1663,7 +1671,6 @@ void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &Directory::make_dir_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &Directory::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &Directory::dir_exists);
-	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&Directory::get_modified_time);
 	ClassDB::bind_method(D_METHOD("get_space_left"), &Directory::get_space_left);
 	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &Directory::copy);
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &Directory::rename);
@@ -1680,12 +1687,6 @@ void Directory::_bind_methods() {
 
 Directory::Directory() {
 	d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-}
-
-Directory::~Directory() {
-	if (d) {
-		memdelete(d);
-	}
 }
 
 ////// Marshalls //////
@@ -1843,60 +1844,26 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
+	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	::Thread::set_name(func_name);
+
 	Callable::CallError ce;
-	const Variant *arg[1] = { &t->userdata };
-	int argc = 0;
-	if (arg[0]->get_type() != Variant::NIL) {
-		// Just pass to the target function whatever came as user data
-		argc = 1;
-	} else {
-		// There are two cases of null user data:
-		// a) The target function has zero parameters and the caller is just honoring that.
-		// b) The target function has at least one parameter with no default and the caller is
-		//    leveraging the fact that user data defaults to null in Thread.start().
-		//    We care about the case of more than one parameter because, even if a thread
-		//    function can have one at most, out mindset here is to do our best with the
-		//    only/first one and let the call handle any other error conditions, like too
-		//    much arguments.
-		// We must check if we are in case b).
-		int target_param_count = 0;
-		int target_default_arg_count = 0;
-		Ref<Script> script = target_instance->get_script();
-		if (script.is_valid()) {
-			MethodInfo mi = script->get_method_info(t->target_callable.get_method());
-			target_param_count = mi.arguments.size();
-			target_default_arg_count = mi.default_arguments.size();
-		} else {
-			MethodBind *method = ClassDB::get_method(target_instance->get_class_name(), t->target_callable.get_method());
-			if (method) {
-				target_param_count = method->get_argument_count();
-				target_default_arg_count = method->get_default_argument_count();
-			}
-		}
-		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
-			argc = 1;
-		}
-	}
-
-	::Thread::set_name(t->target_callable.get_method());
-
-	t->target_callable.call(arg, argc, t->ret, ce);
+	t->target_callable.call(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, arg, argc, ce) + ".");
+		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
 	}
 
 	t->running.clear();
 }
 
-Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
+Error Thread::start(const Callable &p_callable, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_callable.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
 	target_callable = p_callable;
-	userdata = p_userdata;
 	running.set();
 
 	Ref<Thread> *ud = memnew(Ref<Thread>(this));
@@ -1925,13 +1892,12 @@ Variant Thread::wait_to_finish() {
 	thread.wait_to_finish();
 	Variant r = ret;
 	target_callable = Callable();
-	userdata = Variant();
 
 	return r;
 }
 
 void Thread::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("start", "callable", "userdata", "priority"), &Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
+	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
@@ -1998,7 +1964,7 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 
 	RefCounted *r = Object::cast_to<RefCounted>(obj);
 	if (r) {
-		return REF(r);
+		return Ref<RefCounted>(r);
 	} else {
 		return obj;
 	}
@@ -2099,15 +2065,11 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	return success;
 }
 
-int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
+int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool found;
-	int c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
+	int64_t c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
-}
-
-StringName ClassDB::get_category(const StringName &p_node) const {
-	return ::ClassDB::get_category(p_node);
 }
 
 bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
@@ -2181,7 +2143,6 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::get_integer_constant_enum, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_category", "class"), &ClassDB::get_category);
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }
 
@@ -2309,12 +2270,28 @@ Vector<String> Engine::get_singleton_list() const {
 	return ret;
 }
 
+void Engine::register_script_language(ScriptLanguage *p_language) {
+	ScriptServer::register_language(p_language);
+}
+
+int Engine::get_script_language_count() {
+	return ScriptServer::get_language_count();
+}
+
+ScriptLanguage *Engine::get_script_language(int p_index) const {
+	return ScriptServer::get_language(p_index);
+}
+
 void Engine::set_editor_hint(bool p_enabled) {
 	::Engine::get_singleton()->set_editor_hint(p_enabled);
 }
 
 bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
+}
+
+String Engine::get_write_movie_path() const {
+	return ::Engine::get_singleton()->get_write_movie_path();
 }
 
 void Engine::set_print_error_messages(bool p_enabled) {
@@ -2360,7 +2337,13 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_singleton", "name"), &Engine::unregister_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton_list"), &Engine::get_singleton_list);
 
+	ClassDB::bind_method(D_METHOD("register_script_language", "language"), &Engine::register_script_language);
+	ClassDB::bind_method(D_METHOD("get_script_language_count"), &Engine::get_script_language_count);
+	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
+
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+
+	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);

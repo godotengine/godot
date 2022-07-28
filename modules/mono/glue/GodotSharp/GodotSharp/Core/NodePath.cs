@@ -170,6 +170,21 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns all names concatenated with a slash character (<c>/</c>).
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var nodepath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
+        /// GD.Print(nodepath.GetConcatenatedNames()); // Path2D/PathFollow2D/Sprite2D
+        /// </code>
+        /// </example>
+        /// <returns>The names concatenated with <c>/</c>.</returns>
+        public string GetConcatenatedNames()
+        {
+            return godot_icall_NodePath_get_concatenated_names(GetPtr(this));
+        }
+
+        /// <summary>
         /// Returns all subnames concatenated with a colon character (<c>:</c>)
         /// as separator, i.e. the right side of the first colon in a node path.
         /// </summary>
@@ -267,6 +282,9 @@ namespace Godot
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern IntPtr godot_icall_NodePath_get_as_property_path(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern string godot_icall_NodePath_get_concatenated_names(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string godot_icall_NodePath_get_concatenated_subnames(IntPtr ptr);

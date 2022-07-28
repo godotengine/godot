@@ -39,6 +39,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
+#include "scene/resources/packed_scene.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
@@ -60,7 +61,6 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
 	add_child(tabs);
@@ -103,6 +103,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated), varray(id));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated), varray(id));
 	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested), varray(id));
+	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -118,8 +119,8 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	}
 
 	if (!debugger_plugins.is_empty()) {
-		for (Set<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
-			node->add_debugger_plugin(i->get());
+		for (const Ref<Script> &i : debugger_plugins) {
+			node->add_debugger_plugin(i);
 		}
 	}
 
@@ -141,11 +142,22 @@ void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p
 }
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
-	const String file = p_debugger->get_stack_script_file();
+	String file = p_debugger->get_stack_script_file();
 	if (file.is_empty()) {
 		return;
 	}
-	stack_script = ResourceLoader::load(file);
+	if (file.is_resource_file()) {
+		stack_script = ResourceLoader::load(file);
+	} else {
+		// If the script is built-in, it can be opened only if the scene is loaded in memory.
+		int i = file.find("::");
+		int j = file.rfind("(", i);
+		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
+			file = file.substr(j + 1, file.find(")", i) - j - 1);
+		}
+		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
+		stack_script = ResourceLoader::load(file);
+	}
 	const int line = p_debugger->get_stack_script_line() - 1;
 	emit_signal(SNAME("goto_script_line"), stack_script, line);
 	emit_signal(SNAME("set_execution"), stack_script, line);
@@ -170,7 +182,7 @@ void EditorDebuggerNode::_bind_methods() {
 }
 
 EditorDebuggerRemoteObject *EditorDebuggerNode::get_inspected_remote_object() {
-	return Object::cast_to<EditorDebuggerRemoteObject>(ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_current()));
+	return Object::cast_to<EditorDebuggerRemoteObject>(ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_current()));
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::get_debugger(int p_id) const {
@@ -256,40 +268,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			}
 			server->poll();
 
-			// Errors and warnings
-			int error_count = 0;
-			int warning_count = 0;
-			_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-				error_count += dbg->get_error_count();
-				warning_count += dbg->get_warning_count();
-			});
-
-			if (error_count != last_error_count || warning_count != last_warning_count) {
-				_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-					dbg->update_tabs();
-				});
-
-				if (error_count == 0 && warning_count == 0) {
-					debugger_button->set_text(TTR("Debugger"));
-					debugger_button->remove_theme_color_override("font_color");
-					debugger_button->set_icon(Ref<Texture2D>());
-				} else {
-					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-					if (error_count >= 1 && warning_count >= 1) {
-						debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
-						// Use error color to represent the highest level of severity reported.
-						debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-					} else if (error_count >= 1) {
-						debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-						debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-					} else {
-						debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
-						debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-					}
-				}
-				last_error_count = error_count;
-				last_warning_count = warning_count;
-			}
+			_update_errors();
 
 			// Remote scene tree update
 			remote_scene_tree_timeout -= get_process_delta_time();
@@ -347,6 +326,42 @@ void EditorDebuggerNode::_notification(int p_what) {
 				debugger->update_live_edit_root();
 			}
 		} break;
+	}
+}
+
+void EditorDebuggerNode::_update_errors() {
+	int error_count = 0;
+	int warning_count = 0;
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		error_count += dbg->get_error_count();
+		warning_count += dbg->get_warning_count();
+	});
+
+	if (error_count != last_error_count || warning_count != last_warning_count) {
+		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+			dbg->update_tabs();
+		});
+
+		if (error_count == 0 && warning_count == 0) {
+			debugger_button->set_text(TTR("Debugger"));
+			debugger_button->remove_theme_color_override("font_color");
+			debugger_button->set_icon(Ref<Texture2D>());
+		} else {
+			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+			if (error_count >= 1 && warning_count >= 1) {
+				debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
+				// Use error color to represent the highest level of severity reported.
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			} else if (error_count >= 1) {
+				debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			} else {
+				debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			}
+		}
+		last_error_count = error_count;
+		last_warning_count = warning_count;
 	}
 }
 
@@ -598,12 +613,12 @@ void EditorDebuggerNode::_save_node_requested(ObjectID p_id, const String &p_fil
 }
 
 // Remote inspector/edit.
-void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
+void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!singleton) {
 		return;
 	}
 	_for_all(singleton->tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->_method_changed(p_base, p_name, VARIANT_ARG_PASS);
+		dbg->_method_changed(p_base, p_name, p_args, p_argcount);
 	});
 }
 

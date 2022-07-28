@@ -31,9 +31,9 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
-#include "core/templates/set.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
@@ -78,6 +78,7 @@ public:
 			PLUS,
 			MINUS,
 			STAR,
+			STAR_STAR,
 			SLASH,
 			PERCENT,
 			// Assignment
@@ -85,6 +86,7 @@ public:
 			PLUS_EQUAL,
 			MINUS_EQUAL,
 			STAR_EQUAL,
+			STAR_STAR_EQUAL,
 			SLASH_EQUAL,
 			PERCENT_EQUAL,
 			LESS_LESS_EQUAL,
@@ -191,7 +193,7 @@ public:
 			new_line = p_new_line;
 		}
 	};
-	const Map<int, CommentData> &get_comments() const {
+	const HashMap<int, CommentData> &get_comments() const {
 		return comments;
 	}
 #endif // TOOLS_ENABLED
@@ -224,7 +226,7 @@ private:
 	int length = 0;
 
 #ifdef TOOLS_ENABLED
-	Map<int, CommentData> comments;
+	HashMap<int, CommentData> comments;
 #endif // TOOLS_ENABLED
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
@@ -271,4 +273,4 @@ public:
 	GDScriptTokenizer();
 };
 
-#endif
+#endif // GDSCRIPT_TOKENIZER_H

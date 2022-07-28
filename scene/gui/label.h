@@ -32,42 +32,19 @@
 #define LABEL_H
 
 #include "scene/gui/control.h"
+#include "scene/resources/label_settings.h"
 
 class Label : public Control {
 	GDCLASS(Label, Control);
-
-public:
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
-
-	enum VisibleCharactersBehavior {
-		VC_CHARS_BEFORE_SHAPING,
-		VC_CHARS_AFTER_SHAPING,
-		VC_GLYPHS_AUTO,
-		VC_GLYPHS_LTR,
-		VC_GLYPHS_RTL,
-	};
 
 private:
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
-	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	bool clip = false;
-	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	Size2 minsize;
 	bool uppercase = false;
 
@@ -77,30 +54,28 @@ private:
 	RID text_rid;
 	Vector<RID> lines_rid;
 
-	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	float percent_visible = 1.0;
 
-	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 	int visible_chars = -1;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
 
+	Ref<LabelSettings> settings;
+
 	void _update_visible();
 	void _shape();
+	void _invalidate();
 
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -114,30 +89,29 @@ public:
 	void set_text(const String &p_string);
 	String get_text() const;
 
+	void set_label_settings(const Ref<LabelSettings> &p_settings);
+	Ref<LabelSettings> get_label_settings() const;
+
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
 
-	VisibleCharactersBehavior get_visible_characters_behavior() const;
-	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
@@ -146,8 +120,8 @@ public:
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
@@ -166,8 +140,4 @@ public:
 	~Label();
 };
 
-VARIANT_ENUM_CAST(Label::AutowrapMode);
-VARIANT_ENUM_CAST(Label::OverrunBehavior);
-VARIANT_ENUM_CAST(Label::VisibleCharactersBehavior);
-
-#endif
+#endif // LABEL_H

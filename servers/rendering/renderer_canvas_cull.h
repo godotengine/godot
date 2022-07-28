@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_CANVAS_CULL_H
-#define RENDERING_SERVER_CANVAS_CULL_H
+#ifndef RENDERER_CANVAS_CULL_H
+#define RENDERER_CANVAS_CULL_H
 
 #include "core/templates/paged_allocator.h"
 #include "renderer_compositor.h"
@@ -53,6 +53,7 @@ public:
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 		int ysort_index;
+		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
 
 		Vector<Item *> child_items;
 
@@ -84,6 +85,7 @@ public:
 			ysort_xform = Transform2D();
 			ysort_pos = Vector2();
 			ysort_index = 0;
+			ysort_parent_abs_z_index = 0;
 		}
 	};
 
@@ -108,7 +110,7 @@ public:
 		Rect2 aabb;
 		RS::CanvasOccluderPolygonCullMode cull_mode;
 		RID occluder;
-		Set<RendererCanvasRender::LightOccluderInstance *> owners;
+		HashSet<RendererCanvasRender::LightOccluderInstance *> owners;
 
 		LightOccluderPolygon() {
 			active = false;
@@ -121,19 +123,19 @@ public:
 	RID_Owner<RendererCanvasRender::LightOccluderInstance, true> canvas_light_occluder_owner;
 
 	struct Canvas : public RendererViewport::CanvasBase {
-		Set<RID> viewports;
+		HashSet<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
-			Item *item;
+			Item *item = nullptr;
 			bool operator<(const ChildItem &p_item) const {
 				return item->index < p_item.item->index;
 			}
 		};
 
-		Set<RendererCanvasRender::Light *> lights;
-		Set<RendererCanvasRender::Light *> directional_lights;
+		HashSet<RendererCanvasRender::Light *> lights;
+		HashSet<RendererCanvasRender::Light *> directional_lights;
 
-		Set<RendererCanvasRender::LightOccluderInstance *> occluders;
+		HashSet<RendererCanvasRender::LightOccluderInstance *> occluders;
 
 		bool children_order_dirty;
 		Vector<ChildItem> child_items;
@@ -215,7 +217,7 @@ public:
 
 	void canvas_item_set_update_when_visible(RID p_item, bool p_update);
 
-	void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0);
+	void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0, bool p_antialiased = false);
 	void canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false);
 	void canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
 	void canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color);
@@ -315,4 +317,4 @@ public:
 	~RendererCanvasCull();
 };
 
-#endif // RENDERING_SERVER_CANVAS_CULL_H
+#endif // RENDERER_CANVAS_CULL_H

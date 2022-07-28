@@ -33,7 +33,7 @@
 
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
-#include "core/templates/set.h"
+#include "core/templates/hash_set.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
 
@@ -42,7 +42,7 @@ class GDScriptAnalyzer {
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
-	List<const GDScriptParser::LambdaNode *> lambda_stack;
+	List<GDScriptParser::LambdaNode *> lambda_stack;
 
 	// Tests for detecting invalid overloading of script members
 	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node);
@@ -105,7 +105,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type) const;
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
-	bool get_function_signature(GDScriptParser::CallNode *p_source, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
+	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
 	bool validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);
@@ -115,6 +115,7 @@ class GDScriptAnalyzer {
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
+	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 #ifdef DEBUG_ENABLED

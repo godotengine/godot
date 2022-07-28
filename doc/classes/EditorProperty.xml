@@ -38,7 +38,7 @@
 				Gets the edited object.
 			</description>
 		</method>
-		<method name="get_edited_property">
+		<method name="get_edited_property" qualifiers="const">
 			<return type="StringName" />
 			<description>
 				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.

@@ -13,6 +13,7 @@
 		- Accentuates transients by using a wider attack, making effects sound more punchy.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<members>
 		<member name="attack_us" type="float" setter="set_attack_us" getter="get_attack_us" default="20.0">

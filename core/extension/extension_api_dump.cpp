@@ -46,8 +46,11 @@ static String get_type_name(const PropertyInfo &p_info) {
 			return p_info.hint_string + "*";
 		}
 	}
-	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM)) {
+	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
 		return String("enum::") + String(p_info.class_name);
+	}
+	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_BITFIELD))) {
+		return String("bitfield::") + String(p_info.class_name);
 	}
 	if (p_info.class_name != StringName()) {
 		return p_info.class_name;
@@ -128,11 +131,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::VECTOR3, vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
 			{ Variant::VECTOR3I, 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
 			{ Variant::TRANSFORM2D, 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
+			{ Variant::VECTOR4, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::VECTOR4I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
 			{ Variant::PLANE, (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(double), (vec3_elems + 1) * sizeof(double) },
 			{ Variant::QUATERNION, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
 			{ Variant::AABB, (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(double), (vec3_elems * 2) * sizeof(double) },
 			{ Variant::BASIS, (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
 			{ Variant::TRANSFORM3D, (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(double), (vec3_elems * 4) * sizeof(double) },
+			{ Variant::PROJECTION, 4 * 4 * sizeof(float), 4 * 4 * sizeof(float), 4 * 4 * sizeof(double), 4 * 4 * sizeof(double) },
 			{ Variant::COLOR, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float) },
 			{ Variant::STRING_NAME, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::NODE_PATH, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
@@ -166,11 +172,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		static_assert(type_size_array[Variant::VECTOR3][sizeof(void *)] == sizeof(Vector3), "Size of Vector3 mismatch");
 		static_assert(type_size_array[Variant::VECTOR3I][sizeof(void *)] == sizeof(Vector3i), "Size of Vector3i mismatch");
 		static_assert(type_size_array[Variant::TRANSFORM2D][sizeof(void *)] == sizeof(Transform2D), "Size of Transform2D mismatch");
+		static_assert(type_size_array[Variant::VECTOR4][sizeof(void *)] == sizeof(Vector4), "Size of Vector4 mismatch");
+		static_assert(type_size_array[Variant::VECTOR4I][sizeof(void *)] == sizeof(Vector4i), "Size of Vector4i mismatch");
 		static_assert(type_size_array[Variant::PLANE][sizeof(void *)] == sizeof(Plane), "Size of Plane mismatch");
 		static_assert(type_size_array[Variant::QUATERNION][sizeof(void *)] == sizeof(Quaternion), "Size of Quaternion mismatch");
 		static_assert(type_size_array[Variant::AABB][sizeof(void *)] == sizeof(AABB), "Size of AABB mismatch");
 		static_assert(type_size_array[Variant::BASIS][sizeof(void *)] == sizeof(Basis), "Size of Basis mismatch");
 		static_assert(type_size_array[Variant::TRANSFORM3D][sizeof(void *)] == sizeof(Transform3D), "Size of Transform3D mismatch");
+		static_assert(type_size_array[Variant::PROJECTION][sizeof(void *)] == sizeof(Projection), "Size of Projection mismatch");
 		static_assert(type_size_array[Variant::COLOR][sizeof(void *)] == sizeof(Color), "Size of Color mismatch");
 		static_assert(type_size_array[Variant::STRING_NAME][sizeof(void *)] == sizeof(StringName), "Size of StringName mismatch");
 		static_assert(type_size_array[Variant::NODE_PATH][sizeof(void *)] == sizeof(NodePath), "Size of NodePath mismatch");
@@ -253,6 +262,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::TRANSFORM2D, "x", 0, 0, 0, 0 },
 			{ Variant::TRANSFORM2D, "y", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
 			{ Variant::TRANSFORM2D, "origin", 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::VECTOR4, "x", 0, 0, 0, 0 },
+			{ Variant::VECTOR4, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
+			{ Variant::VECTOR4, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ Variant::VECTOR4, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
+			{ Variant::VECTOR4I, "x", 0, 0, 0, 0 },
+			{ Variant::VECTOR4I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
+			{ Variant::VECTOR4I, "z", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
+			{ Variant::VECTOR4I, "w", 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
 			{ Variant::PLANE, "normal", 0, 0, 0, 0 },
 			{ Variant::PLANE, "d", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
 			{ Variant::QUATERNION, "x", 0, 0, 0, 0 },
@@ -267,10 +284,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::BASIS, "z", vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(double), vec3_elems * 2 * sizeof(double) },
 			{ Variant::TRANSFORM3D, "basis", 0, 0, 0, 0 },
 			{ Variant::TRANSFORM3D, "origin", (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
-			{ Variant::COLOR, "x", 0, 0, 0, 0 },
-			{ Variant::COLOR, "y", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
-			{ Variant::COLOR, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },
-			{ Variant::COLOR, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float) },
+			{ Variant::COLOR, "r", 0, 0, 0, 0 },
+			{ Variant::COLOR, "g", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
+			{ Variant::COLOR, "b", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },
+			{ Variant::COLOR, "a", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float) },
 			{ Variant::NIL, nullptr, 0, 0, 0, 0 },
 		};
 
@@ -334,14 +351,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		// Global enums and constants.
 		Array constants;
-		Map<String, List<Pair<String, int>>> enum_list;
+		HashMap<String, List<Pair<String, int64_t>>> enum_list;
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
-			int value = CoreConstants::get_global_constant_value(i);
+			int64_t value = CoreConstants::get_global_constant_value(i);
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
 			if (!enum_name.is_empty()) {
-				enum_list[enum_name].push_back(Pair<String, int>(name, value));
+				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
 			} else {
 				Dictionary d;
 				d["name"] = name;
@@ -353,11 +370,11 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		api_dump["global_constants"] = constants;
 
 		Array enums;
-		for (const KeyValue<String, List<Pair<String, int>>> &E : enum_list) {
+		for (const KeyValue<String, List<Pair<String, int64_t>>> &E : enum_list) {
 			Dictionary d1;
 			d1["name"] = E.key;
 			Array values;
-			for (const Pair<String, int> &F : E.value) {
+			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;
@@ -471,6 +488,38 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				}
 				if (constants.size()) {
 					d["constants"] = constants;
+				}
+			}
+			{
+				//enums
+				Array enums;
+
+				List<StringName> enum_names;
+				Variant::get_enums_for_type(type, &enum_names);
+				for (const StringName &enum_name : enum_names) {
+					Dictionary enum_dict;
+					enum_dict["name"] = String(enum_name);
+
+					List<StringName> enumeration_names;
+					Variant::get_enumerations_for_enum(type, enum_name, &enumeration_names);
+
+					Array values;
+
+					for (const StringName &enumeration : enumeration_names) {
+						Dictionary values_dict;
+						values_dict["name"] = String(enumeration);
+						values_dict["value"] = Variant::get_enum_value(type, enum_name, enumeration);
+						values.push_back(values_dict);
+					}
+
+					if (values.size()) {
+						enum_dict["values"] = values;
+					}
+					enums.push_back(enum_dict);
+				}
+
+				if (enums.size()) {
+					d["enums"] = enums;
 				}
 			}
 			{
@@ -633,6 +682,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				for (const StringName &F : enum_list) {
 					Dictionary d2;
 					d2["name"] = String(F);
+					d2["is_bitfield"] = ClassDB::is_enum_bitfield(class_name, F);
 
 					Array values;
 					List<StringName> enum_constant_list;
@@ -666,6 +716,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						Dictionary d2;
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
+						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
@@ -708,6 +759,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 						d2["is_const"] = method->is_const();
 						d2["is_vararg"] = method->is_vararg();
+						d2["is_static"] = method->is_static();
 						d2["is_virtual"] = false;
 						d2["hash"] = method->get_hash();
 
@@ -841,27 +893,16 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		Array native_structures;
 
-		// AudioStream structures
-		{
-			Dictionary d;
-			d["name"] = "AudioFrame";
-			d["format"] = "float left,float right";
+		List<StringName> native_structs;
+		ClassDB::get_native_struct_list(&native_structs);
+		native_structs.sort_custom<StringName::AlphCompare>();
 
-			native_structures.push_back(d);
-		}
+		for (const StringName &E : native_structs) {
+			String code = ClassDB::get_native_struct_code(E);
 
-		// TextServer structures
-		{
 			Dictionary d;
-			d["name"] = "Glyph";
-			d["format"] = "int start,int end,uint8_t count,uint8_t repeat,uint16_t flags,float x_off,float y_off,float advance,RID font_rid,int font_size,int32_t index";
-
-			native_structures.push_back(d);
-		}
-		{
-			Dictionary d;
-			d["name"] = "CaretInfo";
-			d["format"] = "Rect2 leading_caret,Rect2 trailing_caret,TextServer::Direction leading_direction,TextServer::Direction trailing_direction";
+			d["name"] = String(E);
+			d["format"] = code;
 
 			native_structures.push_back(d);
 		}
@@ -878,9 +919,8 @@ void NativeExtensionAPIDump::generate_extension_json_file(const String &p_path) 
 	json.instantiate();
 
 	String text = json->stringify(api, "\t", false);
-	FileAccessRef fa = FileAccess::open(p_path, FileAccess::WRITE);
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	CharString cs = text.ascii();
 	fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
-	fa->close();
 }
 #endif

@@ -56,6 +56,7 @@
 			<argument index="0" name="inputs" type="Array" default="[]" />
 			<argument index="1" name="base_instance" type="Object" default="null" />
 			<argument index="2" name="show_error" type="bool" default="true" />
+			<argument index="3" name="const_calls_only" type="bool" default="false" />
 			<description>
 				Executes the expression that was previously parsed by [method parse] and returns the result. Before you use the returned object, you should check if the method failed by calling [method has_execute_failed].
 				If you defined input variables in [method parse], you can specify their values in the inputs array, in the same order.

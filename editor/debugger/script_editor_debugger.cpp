@@ -44,6 +44,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -135,15 +136,15 @@ void ScriptEditorDebugger::debug_continue() {
 void ScriptEditorDebugger::update_tabs() {
 	if (error_count == 0 && warning_count == 0) {
 		errors_tab->set_name(TTR("Errors"));
-		tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture2D>());
+		tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), Ref<Texture2D>());
 	} else {
 		errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 		if (error_count >= 1 && warning_count >= 1) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
 		} else if (error_count >= 1) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 		} else {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
 		}
 	}
 }
@@ -163,7 +164,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 	switch (file_dialog_purpose) {
 		case SAVE_MONITORS_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -208,7 +209,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 		} break;
 		case SAVE_VRAM_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -392,7 +393,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			stack_dump_info.push_back(d);
 			s->set_metadata(0, d);
 
-			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + d["function"];
+			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + String(d["function"]);
 			s->set_text(0, line);
 
 			if (i == 0) {
@@ -426,6 +427,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			switch (type) {
 				case RemoteDebugger::MESSAGE_TYPE_LOG: {
 					msg_type = EditorLog::MSG_TYPE_STD;
+				} break;
+				case RemoteDebugger::MESSAGE_TYPE_LOG_RICH: {
+					msg_type = EditorLog::MSG_TYPE_STD_RICH;
 				} break;
 				case RemoteDebugger::MESSAGE_TYPE_ERROR: {
 					msg_type = EditorLog::MSG_TYPE_ERROR;
@@ -605,7 +609,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		metric.valid = true;
 		metric.frame_number = frame.frame_number;
 		metric.frame_time = frame.frame_time;
-		metric.idle_time = frame.idle_time;
+		metric.process_time = frame.process_time;
 		metric.physics_time = frame.physics_time;
 		metric.physics_frame_time = frame.physics_frame_time;
 
@@ -626,10 +630,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			frame_time.items.push_back(item);
 
-			item.name = "Idle Time";
-			item.total = metric.idle_time;
+			item.name = "Process Time";
+			item.total = metric.process_time;
 			item.self = item.total;
-			item.signature = "idle_time";
+			item.signature = "process_time";
 
 			frame_time.items.push_back(item);
 
@@ -647,7 +651,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			const ServersDebugger::ServerInfo &srv = frame.servers[i];
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
-			c.name = name.capitalize();
+			c.name = EditorPropertyNameProcessor::get_singleton()->process_name(name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			c.items.resize(srv.functions.size());
 			c.total_time = 0;
 			c.signature = "categ::" + name;
@@ -659,7 +663,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				item.self = srv.functions[j].time;
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
-				item.name = item.name.capitalize();
+				item.name = EditorPropertyNameProcessor::get_singleton()->process_name(item.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 				c.total_time += item.total;
 				c.items.write[j] = item;
 			}
@@ -741,9 +745,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		bool parsed = false;
 		const String cap = p_msg.substr(0, colon_index);
-		Map<StringName, Callable>::Element *element = captures.find(cap);
+		HashMap<StringName, Callable>::Iterator element = captures.find(cap);
 		if (element) {
-			Callable &c = element->value();
+			Callable &c = element->value;
 			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
 			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
 			const Variant *args[2] = { &cmd, &data };
@@ -779,18 +783,20 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			skip_breakpoints->set_icon(get_theme_icon(SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
-			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-
-			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
-			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
-			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
 			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			skip_breakpoints->set_icon(get_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
+			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
+			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
+			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
 			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -809,7 +815,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					Transform2D transform;
 
 					transform.scale_basis(Size2(zoom, zoom));
-					transform.elements[2] = -offset * zoom;
+					transform.columns[2] = -offset * zoom;
 
 					Array msg;
 					msg.push_back(transform);
@@ -1047,10 +1053,10 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 }
 
 int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
-	Map<String, int>::Element *E = res_path_cache.find(p_path);
+	HashMap<String, int>::Iterator E = res_path_cache.find(p_path);
 
 	if (E) {
-		return E->get();
+		return E->value;
 	}
 
 	last_path_id++;
@@ -1064,18 +1070,16 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 	return last_path_id;
 }
 
-void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
+void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!p_base || !live_debug || !is_session_active() || !EditorNode::get_singleton()->get_edited_scene()) {
 		return;
 	}
 
 	Node *node = Object::cast_to<Node>(p_base);
 
-	VARIANT_ARGPTRS
-
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+	for (int i = 0; i < p_argcount; i++) {
 		//no pointers, sorry
-		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::RID)) {
+		if (p_args[i]->get_type() == Variant::OBJECT || p_args[i]->get_type() == Variant::RID) {
 			return;
 		}
 	}
@@ -1087,9 +1091,9 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		Array msg;
 		msg.push_back(pathid);
 		msg.push_back(p_name);
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
-			msg.push_back(*argptr[i]);
+			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_node_call", msg);
 
@@ -1105,9 +1109,9 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		Array msg;
 		msg.push_back(pathid);
 		msg.push_back(p_name);
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
-			msg.push_back(*argptr[i]);
+			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_res_call", msg);
 
@@ -1418,6 +1422,10 @@ bool ScriptEditorDebugger::is_skip_breakpoints() {
 void ScriptEditorDebugger::_error_activated() {
 	TreeItem *selected = error_tree->get_selected();
 
+	if (!selected) {
+		return;
+	}
+
 	TreeItem *ci = selected->get_first_child();
 	if (ci) {
 		selected->set_collapsed(!selected->is_collapsed());
@@ -1426,6 +1434,11 @@ void ScriptEditorDebugger::_error_activated() {
 
 void ScriptEditorDebugger::_error_selected() {
 	TreeItem *selected = error_tree->get_selected();
+
+	if (!selected) {
+		return;
+	}
+
 	Array meta = selected->get_metadata(0);
 	if (meta.size() == 0) {
 		return;
@@ -1464,6 +1477,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
 	warning_count = 0;
+	emit_signal(SNAME("errors_cleared"));
 	update_tabs();
 
 	expand_all_button->set_disabled(true);
@@ -1471,7 +1485,11 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	clear_button->set_disabled(true);
 }
 
-void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) {
+void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	breakpoints_menu->clear();
 	breakpoints_menu->set_size(Size2(1, 1));
 
@@ -1481,7 +1499,7 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) 
 		breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Breakpoint"), ACTION_DELETE_BREAKPOINT);
 		file = selected->get_parent()->get_text(0);
 	}
-	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints in: ") + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
+	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints in:") + " " + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
 	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
 
 	breakpoints_menu->set_position(breakpoints_tree->get_global_position() + p_pos);
@@ -1489,13 +1507,17 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) 
 }
 
 // Right click on specific file(s) or folder(s).
-void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
+void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	item_menu->clear();
 	item_menu->reset_size();
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		item_menu->add_icon_item(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1617,6 +1639,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
+	ADD_SIGNAL(MethodInfo("errors_cleared"));
 }
 
 void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
@@ -1658,7 +1681,6 @@ bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
@@ -1676,7 +1698,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
-		reason->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+		reason->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 		reason->set_max_lines_visible(3);
 		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
@@ -1757,14 +1779,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		search = memnew(LineEdit);
 		search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		search->set_placeholder(TTR("Filter stack variables"));
+		search->set_placeholder(TTR("Filter Stack Variables"));
 		search->set_clear_button_enabled(true);
 		tools_hb->add_child(search);
 
 		inspector = memnew(EditorDebuggerInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->set_v_size_flags(SIZE_EXPAND_FILL);
-		inspector->set_enable_capitalize_paths(false);
+		inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 		inspector->set_read_only(true);
 		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 		inspector->connect("object_edited", callable_mp(this, &ScriptEditorDebugger::_remote_object_edited));
@@ -1780,7 +1802,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->set_allow_reselect(true);
 		breakpoints_tree->set_allow_rmb_select(true);
 		breakpoints_tree->set_hide_root(true);
-		breakpoints_tree->connect("item_rmb_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
+		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
 		breakpoints_tree->create_item();
 
 		parent_sc->add_child(breakpoints_tree);
@@ -1835,7 +1857,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_hide_root(true);
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
-		error_tree->connect("item_rmb_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
+		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);

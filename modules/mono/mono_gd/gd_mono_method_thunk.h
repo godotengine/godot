@@ -39,7 +39,7 @@
 #include "gd_mono_method.h"
 #include "gd_mono_utils.h"
 
-#if !defined(JAVASCRIPT_ENABLED) && !defined(IPHONE_ENABLED)
+#if !defined(JAVASCRIPT_ENABLED) && !defined(IOS_ENABLED)
 #define HAVE_METHOD_THUNKS
 #endif
 

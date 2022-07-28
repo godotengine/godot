@@ -43,12 +43,12 @@ void BaseButton::_unpress_group() {
 		status.pressed = true;
 	}
 
-	for (Set<BaseButton *>::Element *E = button_group->buttons.front(); E; E = E->next()) {
-		if (E->get() == this) {
+	for (BaseButton *E : button_group->buttons) {
+		if (E == this) {
 			continue;
 		}
 
-		E->get()->set_pressed(false);
+		E->set_pressed(false);
 	}
 }
 
@@ -339,17 +339,17 @@ bool BaseButton::is_keep_pressed_outside() const {
 
 void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
 	shortcut = p_shortcut;
-	set_process_unhandled_key_input(shortcut.is_valid());
+	set_process_shortcut_input(shortcut.is_valid());
 }
 
 Ref<Shortcut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
-void BaseButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shorcut_context()) {
+	if (!_is_focus_owner_in_shortcut_context()) {
 		return;
 	}
 
@@ -404,7 +404,7 @@ Node *BaseButton::get_shortcut_context() const {
 	return ctx_node;
 }
 
-bool BaseButton::_is_focus_owner_in_shorcut_context() const {
+bool BaseButton::_is_focus_owner_in_shortcut_context() const {
 	if (shortcut_context == ObjectID()) {
 		// No context, therefore global - always "in" context.
 		return true;
@@ -485,24 +485,24 @@ BaseButton::~BaseButton() {
 }
 
 void ButtonGroup::get_buttons(List<BaseButton *> *r_buttons) {
-	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
-		r_buttons->push_back(E->get());
+	for (BaseButton *E : buttons) {
+		r_buttons->push_back(E);
 	}
 }
 
 Array ButtonGroup::_get_buttons() {
 	Array btns;
-	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
-		btns.push_back(E->get());
+	for (const BaseButton *E : buttons) {
+		btns.push_back(E);
 	}
 
 	return btns;
 }
 
 BaseButton *ButtonGroup::get_pressed_button() {
-	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
-		if (E->get()->is_pressed()) {
-			return E->get();
+	for (BaseButton *E : buttons) {
+		if (E->is_pressed()) {
+			return E;
 		}
 	}
 

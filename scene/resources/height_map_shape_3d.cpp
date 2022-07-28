@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "height_map_shape_3d.h"
+
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
@@ -186,8 +187,8 @@ void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_data", "data"), &HeightMapShape3D::set_map_data);
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape3D::get_map_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "1,4096,1"), "set_map_width", "get_map_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "1,4096,1"), "set_map_depth", "get_map_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "map_data"), "set_map_data", "get_map_data");
 }
 

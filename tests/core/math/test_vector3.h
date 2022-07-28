@@ -111,6 +111,9 @@ TEST_CASE("[Vector3] Interpolation methods") {
 			Vector3(5, 0, 0).slerp(Vector3(0, 3, 4), 0.5).is_equal_approx(Vector3(3.535533905029296875, 2.121320486068725586, 2.828427314758300781)),
 			"Vector3 slerp with non-normalized values should work as expected.");
 	CHECK_MESSAGE(
+			Vector3(1, 1, 1).slerp(Vector3(2, 2, 2), 0.5).is_equal_approx(Vector3(1.5, 1.5, 1.5)),
+			"Vector3 slerp with colinear inputs should behave as expected.");
+	CHECK_MESSAGE(
 			Vector3().slerp(Vector3(), 0.5) == Vector3(),
 			"Vector3 slerp with both inputs as zero vectors should return a zero vector.");
 	CHECK_MESSAGE(

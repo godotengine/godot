@@ -33,7 +33,7 @@
 #include "servers/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
-	// The setters prefixed with _ are only exposed so we can have feeds through GDNative!
+	// The setters prefixed with _ are only exposed so we can have feeds through GDExtension!
 	// They should not be called by the end user.
 
 	ClassDB::bind_method(D_METHOD("get_id"), &CameraFeed::get_id);

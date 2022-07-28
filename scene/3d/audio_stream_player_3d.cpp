@@ -30,6 +30,7 @@
 
 #include "audio_stream_player_3d.h"
 
+#include "core/config/project_settings.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -273,15 +274,16 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
 			Vector<AudioFrame> volume_vector;
-			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
+				force_update_panning = false;
 				volume_vector = _update_panning();
 			}
 
 			if (setplay.get() >= 0 && stream.is_valid()) {
 				active.set();
-				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+				Ref<AudioStreamPlayback> new_playback = stream->instantiate_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-				Map<StringName, Vector<AudioFrame>> bus_map;
+				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				stream_playbacks.push_back(new_playback);
@@ -318,6 +320,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	}
 }
 
+// Interacts with PhysicsServer3D, so can only be called during _physics_process
 Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	//check if any area is diverting sound into a bus
 	Ref<World3D> world_3d = get_world_3d();
@@ -356,6 +359,7 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	return nullptr;
 }
 
+// Interacts with PhysicsServer3D, so can only be called during _physics_process
 StringName AudioStreamPlayer3D::_get_actual_bus() {
 	Area3D *overriding_area = _get_overriding_area();
 	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
@@ -364,6 +368,7 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 	return bus;
 }
 
+// Interacts with PhysicsServer3D, so can only be called during _physics_process
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(4);
@@ -387,7 +392,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), output_volume_vector);
 
-	Set<Camera3D *> cameras = world_3d->get_cameras();
+	HashSet<Camera3D *> cameras = world_3d->get_cameras();
 	cameras.insert(get_viewport()->get_camera_3d());
 
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
@@ -447,7 +452,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		if (emission_angle_enabled) {
 			Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
-			float c = listenertopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
+			float c = listenertopos.normalized().dot(get_global_transform().basis.get_column(2).normalized()); //it's z negative
 			float angle = Math::rad2deg(Math::acos(c));
 			if (angle > emission_angle) {
 				db_att -= -emission_angle_filter_attenuation_db;
@@ -458,15 +463,16 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 		}
-		//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
-		//      speakers not facing the source) - this could be made distance dependent.
-		_calc_output_vol(local_pos.normalized(), 4.0, output_volume_vector);
+		// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
+		float tightness = cached_global_panning_strength * 2.0f;
+		tightness *= panning_strength;
+		_calc_output_vol(local_pos.normalized(), tightness, output_volume_vector);
 
 		for (unsigned int k = 0; k < 4; k++) {
 			output_volume_vector.write[k] = multiplier * output_volume_vector[k];
 		}
 
-		Map<StringName, Vector<AudioFrame>> bus_volumes;
+		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
 		if (area) {
 			if (area->is_overriding_audio_bus()) {
 				//override audio bus
@@ -537,6 +543,7 @@ float AudioStreamPlayer3D::get_unit_db() const {
 
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
 	unit_size = p_volume;
+	update_gizmos();
 }
 
 float AudioStreamPlayer3D::get_unit_size() const {
@@ -665,6 +672,7 @@ void AudioStreamPlayer3D::_bus_layout_changed() {
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
 	ERR_FAIL_COND(p_metres < 0.0);
 	max_distance = p_metres;
+	update_gizmos();
 }
 
 float AudioStreamPlayer3D::get_max_distance() const {
@@ -725,6 +733,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 void AudioStreamPlayer3D::set_attenuation_model(AttenuationModel p_model) {
 	ERR_FAIL_INDEX((int)p_model, 4);
 	attenuation_model = p_model;
+	update_gizmos();
 }
 
 AudioStreamPlayer3D::AttenuationModel AudioStreamPlayer3D::get_attenuation_model() const {
@@ -783,6 +792,15 @@ void AudioStreamPlayer3D::set_max_polyphony(int p_max_polyphony) {
 
 int AudioStreamPlayer3D::get_max_polyphony() const {
 	return max_polyphony;
+}
+
+void AudioStreamPlayer3D::set_panning_strength(float p_panning_strength) {
+	ERR_FAIL_COND_MSG(p_panning_strength < 0, "Panning strength must be a positive number.");
+	panning_strength = p_panning_strength;
+}
+
+float AudioStreamPlayer3D::get_panning_strength() const {
+	return panning_strength;
 }
 
 void AudioStreamPlayer3D::_bind_methods() {
@@ -850,28 +868,32 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioStreamPlayer3D::set_max_polyphony);
 	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioStreamPlayer3D::get_max_polyphony);
 
+	ClassDB::bind_method(D_METHOD("set_panning_strength", "panning_strength"), &AudioStreamPlayer3D::set_panning_strength);
+	ClassDB::bind_method(D_METHOD("get_panning_strength"), &AudioStreamPlayer3D::get_panning_strength);
+
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6,suffix:dB"), "set_max_db", "get_max_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater"), "set_max_distance", "get_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_GROUP("Emission Angle", "emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emission_angle_enabled"), "set_emission_angle_enabled", "is_emission_angle_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_degrees", PROPERTY_HINT_RANGE, "0.1,90,0.1,degrees"), "set_emission_angle", "get_emission_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_filter_attenuation_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_emission_angle_filter_attenuation_db", "get_emission_angle_filter_attenuation_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_filter_attenuation_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), "set_emission_angle_filter_attenuation_db", "get_emission_angle_filter_attenuation_db");
 	ADD_GROUP("Attenuation Filter", "attenuation_filter_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_attenuation_filter_db", "get_attenuation_filter_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), "set_attenuation_filter_db", "get_attenuation_filter_db");
 	ADD_GROUP("Doppler", "doppler_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 
@@ -891,6 +913,7 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	velocity_tracker.instantiate();
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_bus_layout_changed));
 	set_disable_scale(true);
+	cached_global_panning_strength = ProjectSettings::get_singleton()->get("audio/general/3d_panning_strength");
 }
 
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {

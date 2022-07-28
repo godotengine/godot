@@ -86,6 +86,13 @@ void VisualScriptPropertySelector::_update_results_s(String p_string) {
 	_update_results();
 }
 
+void VisualScriptPropertySelector::_update_results_search_all() {
+	if (search_classes->is_pressed()) {
+		scope_combo->select(COMBO_ALL);
+	}
+	_update_results();
+}
+
 void VisualScriptPropertySelector::_update_results() {
 	_update_icons();
 	search_runner = Ref<SearchRunner>(memnew(SearchRunner(this, results_tree)));
@@ -102,11 +109,7 @@ void VisualScriptPropertySelector::_confirmed() {
 }
 
 void VisualScriptPropertySelector::_item_selected() {
-	if (results_tree->get_selected()->has_meta("description")) {
-		help_bit->set_text(results_tree->get_selected()->get_meta("description"));
-	} else {
-		help_bit->set_text("No description available");
-	}
+	help_bit->set_text(results_tree->get_selected()->get_meta("description", "No description available"));
 }
 
 void VisualScriptPropertySelector::_hide_requested() {
@@ -167,7 +170,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -179,7 +182,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_base_script, bool p_virtuals_only, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select from base type"));
 	base_type = p_base;
-	base_script = p_base_script.lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+	base_script = p_base_script.trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 	connecting = p_connecting;
 
@@ -201,8 +204,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	// When class is Input only show inheritors
-	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+	scope_combo->select(COMBO_RELATED);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -215,7 +217,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	ERR_FAIL_COND(p_script.is_null());
 
 	base_type = p_script->get_instance_base_type();
-	base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+	base_script = p_script->get_path().trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	connecting = p_connecting;
@@ -234,7 +236,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -264,7 +266,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -294,7 +296,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_RELATED);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -310,7 +312,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
-		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+		base_script = p_script->get_path().trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	}
 
 	type = Variant::NIL;
@@ -330,7 +332,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -344,7 +346,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
-		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+		base_script = p_script->get_path().trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	}
 	type = Variant::NIL;
 	connecting = false;
@@ -363,7 +365,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -418,7 +420,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_classes = memnew(Button);
 	search_classes->set_flat(true);
 	search_classes->set_tooltip(TTR("Search Classes"));
-	search_classes->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_classes->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results_search_all));
 	search_classes->set_toggle_mode(true);
 	search_classes->set_pressed(true);
 	search_classes->set_focus_mode(Control::FOCUS_NONE);
@@ -519,10 +521,19 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	vbox->add_child(results_tree);
 
+	ScrollContainer *scroller = memnew(ScrollContainer);
+	scroller->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	scroller->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scroller->set_custom_minimum_size(Size2(600, 400) * EDSCALE);
+	vbox->add_child(scroller);
+
 	help_bit = memnew(EditorHelpBit);
-	vbox->add_child(help_bit);
+	help_bit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	help_bit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scroller->add_child(help_bit);
+
 	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
-	get_ok_button()->set_text(TTR("Open"));
+	set_ok_button_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
 	set_hide_on_ok(false);
 }
@@ -724,7 +735,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 			combined_docs.insert(class_doc.name, class_doc);
 		}
 	}
-	iterator_doc = combined_docs.front();
+	iterator_doc = combined_docs.begin();
 	return true;
 }
 
@@ -739,56 +750,53 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_build() {
 	if (vs_nodes.is_empty()) {
 		return true;
 	}
-	String registerd_node_name = vs_nodes[0];
+	String registered_node_name = vs_nodes[0];
 	vs_nodes.pop_front();
 
-	Vector<String> path = registerd_node_name.split("/");
+	Vector<String> path = registered_node_name.split("/");
 	if (path[0] == "constants") {
-		_add_class_doc(registerd_node_name, "", "constants");
+		_add_class_doc(registered_node_name, "", "constants");
 	} else if (path[0] == "custom") {
-		_add_class_doc(registerd_node_name, "", "custom");
+		_add_class_doc(registered_node_name, "", "custom");
 	} else if (path[0] == "data") {
-		_add_class_doc(registerd_node_name, "", "data");
+		_add_class_doc(registered_node_name, "", "data");
 	} else if (path[0] == "flow_control") {
-		_add_class_doc(registerd_node_name, "", "flow_control");
+		_add_class_doc(registered_node_name, "", "flow_control");
 	} else if (path[0] == "functions") {
 		if (path[1] == "built_in") {
-			_add_class_doc(registerd_node_name, "functions", "built_in");
+			_add_class_doc(registered_node_name, "functions", "built_in");
 		} else if (path[1] == "by_type") {
-			if (search_flags & SEARCH_CLASSES) {
-				_add_class_doc(registerd_node_name, path[2], "by_type_class");
-			}
+			// No action is required.
+			// Using function references from ClassDB to remove confusion for users.
 		} else if (path[1] == "constructors") {
-			if (search_flags & SEARCH_CLASSES) {
-				_add_class_doc(registerd_node_name, path[2].substr(0, path[2].find_char('(')), "constructors_class");
-			}
+			_add_class_doc(registered_node_name, "", "constructors");
 		} else if (path[1] == "deconstruct") {
-			_add_class_doc(registerd_node_name, "", "deconstruct");
+			_add_class_doc(registered_node_name, "", "deconstruct");
 		} else if (path[1] == "wait") {
-			_add_class_doc(registerd_node_name, "functions", "yield");
+			_add_class_doc(registered_node_name, "functions", "yield");
 		} else {
-			_add_class_doc(registerd_node_name, "functions", "");
+			_add_class_doc(registered_node_name, "functions", "");
 		}
 	} else if (path[0] == "index") {
-		_add_class_doc(registerd_node_name, "", "index");
+		_add_class_doc(registered_node_name, "", "index");
 	} else if (path[0] == "operators") {
 		if (path[1] == "bitwise") {
-			_add_class_doc(registerd_node_name, "operators", "bitwise");
+			_add_class_doc(registered_node_name, "operators", "bitwise");
 		} else if (path[1] == "compare") {
-			_add_class_doc(registerd_node_name, "operators", "compare");
+			_add_class_doc(registered_node_name, "operators", "compare");
 		} else if (path[1] == "logic") {
-			_add_class_doc(registerd_node_name, "operators", "logic");
+			_add_class_doc(registered_node_name, "operators", "logic");
 		} else if (path[1] == "math") {
-			_add_class_doc(registerd_node_name, "operators", "math");
+			_add_class_doc(registered_node_name, "operators", "math");
 		} else {
-			_add_class_doc(registerd_node_name, "operators", "");
+			_add_class_doc(registered_node_name, "operators", "");
 		}
 	}
 	return false;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
-	DocData::ClassDoc &class_doc = iterator_doc->value();
+	DocData::ClassDoc &class_doc = iterator_doc->value;
 	if (
 			(!_is_class_disabled_by_feature_profile(class_doc.name) && !_is_class_disabled_by_scope(class_doc.name)) ||
 			_match_visual_script(class_doc)) {
@@ -910,13 +918,13 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 		}
 	}
 
-	iterator_doc = iterator_doc->next();
+	++iterator_doc;
 	return !iterator_doc;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
 	results_tree->clear();
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	root_item = results_tree->create_item();
 	class_items.clear();
@@ -929,7 +937,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
 		return true;
 	}
 
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
 
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
@@ -941,12 +949,12 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
 		}
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_member_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	return true;
 }
@@ -956,7 +964,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
 		return true;
 	}
 
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
@@ -987,7 +995,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
 		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 

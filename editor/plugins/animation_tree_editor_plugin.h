@@ -52,11 +52,11 @@ public:
 class AnimationTreeEditor : public VBoxContainer {
 	GDCLASS(AnimationTreeEditor, VBoxContainer);
 
-	ScrollContainer *path_edit;
-	HBoxContainer *path_hb;
+	ScrollContainer *path_edit = nullptr;
+	HBoxContainer *path_hb = nullptr;
 
-	AnimationTree *tree;
-	MarginContainer *editor_base;
+	AnimationTree *tree = nullptr;
+	MarginContainer *editor_base = nullptr;
 
 	Vector<String> button_path;
 	Vector<String> edited_path;
@@ -96,8 +96,8 @@ public:
 class AnimationTreeEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
-	AnimationTreeEditor *anim_tree_editor;
-	Button *button;
+	AnimationTreeEditor *anim_tree_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "AnimationTree"; }

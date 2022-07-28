@@ -131,6 +131,10 @@ int OS_JavaScript::get_process_id() const {
 	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the HTML5 platform.");
 }
 
+bool OS_JavaScript::is_process_running(const ProcessID &p_pid) const {
+	return false;
+}
+
 int OS_JavaScript::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
@@ -171,6 +175,10 @@ Error OS_JavaScript::shell_open(String p_uri) {
 
 String OS_JavaScript::get_name() const {
 	return "HTML5";
+}
+
+void OS_JavaScript::vibrate_handheld(int p_duration_ms) {
+	godot_js_input_vibrate_handheld(p_duration_ms);
 }
 
 String OS_JavaScript::get_user_data_dir() const {
@@ -221,10 +229,15 @@ bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
 
-Error OS_JavaScript::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_JavaScript::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
+	}
+
 	return OK;
 }
 

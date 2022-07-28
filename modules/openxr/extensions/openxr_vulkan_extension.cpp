@@ -30,10 +30,11 @@
 
 #include "core/string/print_string.h"
 
-#include "modules/openxr/extensions/openxr_vulkan_extension.h"
-#include "modules/openxr/openxr_api.h"
-#include "modules/openxr/openxr_util.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "../extensions/openxr_vulkan_extension.h"
+#include "../openxr_api.h"
+#include "../openxr_util.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 
@@ -419,7 +420,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	return true;
 }
 
-bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, CameraMatrix &r_camera_matrix) {
+bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
 	// Even though this is a Vulkan renderer we're using OpenGL coordinate systems
 	XrMatrix4x4f matrix;
 	XrMatrix4x4f_CreateProjectionFov(&matrix, GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
@@ -437,9 +438,8 @@ bool OpenXRVulkanExtension::copy_render_target_to_image(RID p_from_render_target
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
 	ERR_FAIL_NULL_V(data, false);
 	ERR_FAIL_COND_V(p_from_render_target.is_null(), false);
-	ERR_FAIL_NULL_V(RendererStorageRD::base_singleton, false);
 
-	RID source_image = RendererStorageRD::base_singleton->render_target_get_rd_texture(p_from_render_target);
+	RID source_image = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(p_from_render_target);
 	ERR_FAIL_COND_V(source_image.is_null(), false);
 
 	RID depth_image; // TODO implement
@@ -449,11 +449,9 @@ bool OpenXRVulkanExtension::copy_render_target_to_image(RID p_from_render_target
 	ERR_FAIL_COND_V(fb.is_null(), false);
 
 	// Our vulkan extension can only be used in conjunction with our vulkan renderer.
-	// We need access to the effects object in order to have access to our copy logic.
-	// Breaking all the rules but there is no nice way to do this.
-	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
-	ERR_FAIL_NULL_V(effects, false);
-	effects->copy_to_fb_rect(source_image, fb, Rect2i(), false, false, false, false, depth_image, data->is_multiview);
+	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+	ERR_FAIL_NULL_V(copy_effects, false);
+	copy_effects->copy_to_fb_rect(source_image, fb, Rect2i(), false, false, false, false, depth_image, data->is_multiview);
 
 	return true;
 }

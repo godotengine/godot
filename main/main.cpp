@@ -35,6 +35,7 @@
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
+#include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -64,12 +65,15 @@
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
+#include "servers/movie_writer/movie_writer.h"
+#include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
 #include "servers/xr_server.h"
 
@@ -85,6 +89,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
+#include "editor/project_converter_3_to_4.h"
 #include "editor/project_manager.h"
 #ifndef NO_EDITOR_SPLASH
 #include "main/splash_editor.gen.h"
@@ -119,10 +124,10 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
-static PhysicsServer3D *physics_server = nullptr;
-static PhysicsServer2D *physics_2d_server = nullptr;
-static NavigationServer3D *navigation_server = nullptr;
-static NavigationServer2D *navigation_2d_server = nullptr;
+static PhysicsServer3D *physics_server_3d = nullptr;
+static PhysicsServer2D *physics_server_2d = nullptr;
+static NavigationServer3D *navigation_server_3d = nullptr;
+static NavigationServer2D *navigation_server_2d = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -143,7 +148,7 @@ static bool cmdline_tool = false;
 static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
-static OS::ProcessID allow_focus_steal_pid = 0;
+static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
@@ -170,11 +175,14 @@ static Vector2 init_custom_pos;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
+static bool debug_paths = false;
 static bool debug_navigation = false;
 #endif
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
+static MovieWriter *movie_writer = nullptr;
+static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
 static bool dump_extension_api = false;
@@ -203,32 +211,32 @@ static String get_full_version_string() {
 // to have less code in main.cpp.
 void initialize_physics() {
 	/// 3D Physics Server
-	physics_server = PhysicsServer3DManager::new_server(
+	physics_server_3d = PhysicsServer3DManager::new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
-	if (!physics_server) {
+	if (!physics_server_3d) {
 		// Physics server not found, Use the default physics
-		physics_server = PhysicsServer3DManager::new_default_server();
+		physics_server_3d = PhysicsServer3DManager::new_default_server();
 	}
-	ERR_FAIL_COND(!physics_server);
-	physics_server->init();
+	ERR_FAIL_COND(!physics_server_3d);
+	physics_server_3d->init();
 
 	/// 2D Physics server
-	physics_2d_server = PhysicsServer2DManager::new_server(
+	physics_server_2d = PhysicsServer2DManager::new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::setting_property_name));
-	if (!physics_2d_server) {
+	if (!physics_server_2d) {
 		// Physics server not found, Use the default physics
-		physics_2d_server = PhysicsServer2DManager::new_default_server();
+		physics_server_2d = PhysicsServer2DManager::new_default_server();
 	}
-	ERR_FAIL_COND(!physics_2d_server);
-	physics_2d_server->init();
+	ERR_FAIL_COND(!physics_server_2d);
+	physics_server_2d->init();
 }
 
 void finalize_physics() {
-	physics_server->finish();
-	memdelete(physics_server);
+	physics_server_3d->finish();
+	memdelete(physics_server_3d);
 
-	physics_2d_server->finish();
-	memdelete(physics_2d_server);
+	physics_server_2d->finish();
+	memdelete(physics_server_2d);
 }
 
 void finalize_display() {
@@ -239,18 +247,18 @@ void finalize_display() {
 }
 
 void initialize_navigation_server() {
-	ERR_FAIL_COND(navigation_server != nullptr);
+	ERR_FAIL_COND(navigation_server_3d != nullptr);
 
-	navigation_server = NavigationServer3DManager::new_default_server();
-	navigation_2d_server = memnew(NavigationServer2D);
+	navigation_server_3d = NavigationServer3DManager::new_default_server();
+	navigation_server_2d = memnew(NavigationServer2D);
 }
 
 void finalize_navigation_server() {
-	memdelete(navigation_server);
-	navigation_server = nullptr;
+	memdelete(navigation_server_3d);
+	navigation_server_3d = nullptr;
 
-	memdelete(navigation_2d_server);
-	navigation_2d_server = nullptr;
+	memdelete(navigation_server_2d);
+	navigation_server_2d = nullptr;
 }
 
 //#define DEBUG_INIT
@@ -273,7 +281,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -h, --help                                   Display this help message.\n");
 	OS::get_singleton()->print("  --version                                    Display the version string.\n");
 	OS::get_singleton()->print("  -v, --verbose                                Use verbose stdout mode.\n");
-	OS::get_singleton()->print("  --quiet                                      Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	OS::get_singleton()->print("  -q, --quiet                                  Quiet mode, silences stdout messages. Errors are still displayed.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
@@ -282,7 +290,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -p, --project-manager                        Start the project manager, even if a project is auto-detected.\n");
 	OS::get_singleton()->print("  --debug-server <uri>                         Start the editor debug server (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007)\n");
 #endif
-	OS::get_singleton()->print("  -q, --quit                                   Quit after the first iteration.\n");
+	OS::get_singleton()->print("  --quit                                       Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>                      Use a specific locale (<locale> being a two-letter code).\n");
 	OS::get_singleton()->print("  --path <directory>                           Path to a project (<directory> must contain a 'project.godot' file).\n");
 	OS::get_singleton()->print("  -u, --upwards                                Scan folders upwards for project.godot file.\n");
@@ -319,10 +327,11 @@ void Main::print_help(const char *p_binary) {
 
 	OS::get_singleton()->print("  --rendering-driver <driver>                  Rendering driver (depends on display driver).\n");
 	OS::get_singleton()->print("  --gpu-index <device_index>                   Use a specific GPU (run with --verbose to get available device list).\n");
-
 	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
-
+	OS::get_singleton()->print("  --tablet-driver <driver>                     Pen tablet input driver.\n");
 	OS::get_singleton()->print("  --headless                                   Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
+	OS::get_singleton()->print("  --write-movie <file>                         Run the engine in a way that a movie is written (by default .avi MJPEG). Fixed FPS is forced when enabled, but can be used to change movie FPS. Disabling vsync can speed up movie writing but makes interaction more difficult.\n");
+	OS::get_singleton()->print("  --disable-vsync                              Force disabling of vsync. Run the engine in a way that a movie is written (by default .avi MJPEG). Fixed FPS is forced when enabled, but can be used to change movie FPS.\n");
 
 	OS::get_singleton()->print("\n");
 
@@ -334,21 +343,24 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
-	OS::get_singleton()->print("  --tablet-driver                              Pen tablet input driver.\n");
+	OS::get_singleton()->print("  --xr-mode <mode>                             Select XR mode (default/off/on).\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Debug options:\n");
 	OS::get_singleton()->print("  -d, --debug                                  Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("  -b, --breakpoints                            Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                                  Enable profiling in the script debugger.\n");
-	OS::get_singleton()->print("  --vk-layers                                  Enable Vulkan Validation layers for debugging.\n");
-#ifdef DEBUG_ENABLED
-	OS::get_singleton()->print("  --gpu-abort                                  Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
+	OS::get_singleton()->print("  --gpu-profile                                Show a GPU profile of the tasks that took the most time during frame rendering.\n");
+	OS::get_singleton()->print("  --gpu-validation                             Enable graphics API validation layers for debugging.\n");
+#if DEBUG_ENABLED
+	OS::get_singleton()->print("  --gpu-abort                                  Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --remote-debug <uri>                         Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 #if defined(DEBUG_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions                           Show collision shapes when running the scene.\n");
+	OS::get_singleton()->print("  --debug-paths                                Show path lines when running the scene.\n");
 	OS::get_singleton()->print("  --debug-navigation                           Show navigation polygons when running the scene.\n");
+	OS::get_singleton()->print("  --debug-stringnames                          Print all StringName allocations to stdout when the engine quits.\n");
 #endif
 	OS::get_singleton()->print("  --frame-delay <ms>                           Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
 	OS::get_singleton()->print("  --time-scale <scale>                         Force time scale (higher values are faster, 1.0 is normal speed).\n");
@@ -356,7 +368,6 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --disable-crash-handler                      Disable crash handler when supported by the platform code.\n");
 	OS::get_singleton()->print("  --fixed-fps <fps>                            Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
 	OS::get_singleton()->print("  --print-fps                                  Print the frames per second to the stdout.\n");
-	OS::get_singleton()->print("  --profile-gpu                                Show a simple profile of the tasks that took more time during frame rendering.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Standalone tools:\n");
@@ -367,15 +378,12 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>                Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	OS::get_singleton()->print("  --convert-3to4                               Converts project from Godot 3.x to Godot 4.x.\n");
+	OS::get_singleton()->print("  --validate-conversion-3to4                   Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --doctool [<path>]                           Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 	OS::get_singleton()->print("  --dump-extension-api                         Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
-#ifdef DEBUG_METHODS_ENABLED
-	// TODO: Should be removed together with nativescript eventually.
-	OS::get_singleton()->print("  --gdnative-generate-json-api <path>          Generate JSON dump of the Godot API for GDNative bindings and save it on the file specified in <path>.\n");
-	OS::get_singleton()->print("  --gdnative-generate-json-builtin-api <path>  Generate JSON dump of the Godot API of the builtin Variant types and utility functions for GDNative bindings and save it on the file specified in <path>.\n");
-#endif
 #ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test [--help]                              Run unit tests. Use --test --help for more information.\n");
 #endif
@@ -402,18 +410,27 @@ Error Main::test_setup() {
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
 
+	register_core_settings(); //here globals are present
+
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
-	register_core_extensions();
+	if (tsman) {
+		Ref<TextServerDummy> ts;
+		ts.instantiate();
+		tsman->add_interface(ts);
+	}
 
 	// From `Main::setup2()`.
-	preregister_module_types();
-	preregister_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	register_core_extensions();
 
 	register_core_singletons();
 
+	/** INITIALIZE SERVERS **/
 	register_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	translation_server->setup(); //register translations, load them, etc.
 	if (!locale.is_empty()) {
@@ -427,21 +444,44 @@ Error Main::test_setup() {
 	register_scene_types();
 	register_driver_types();
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
+
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
 	register_platform_apis();
 
-	register_module_types();
-
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
-	TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(0));
+
+	/* Use one with the most features available. */
+	int max_features = 0;
+	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		uint32_t features = TextServerManager::get_singleton()->get_interface(i)->get_features();
+		int feature_number = 0;
+		while (features) {
+			feature_number += features & 1;
+			features >>= 1;
+		}
+		if (feature_number >= max_features) {
+			max_features = feature_number;
+			text_driver_idx = i;
+		}
+	}
+	if (text_driver_idx >= 0) {
+		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
+	} else {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
+	}
 
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
@@ -459,13 +499,19 @@ void Main::test_cleanup() {
 	ResourceSaver::remove_custom_savers();
 
 #ifdef TOOLS_ENABLED
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	EditorNode::unregister_editor_types();
 #endif
 
-	unregister_module_types();
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
@@ -487,6 +533,7 @@ void Main::test_cleanup() {
 	}
 
 	unregister_core_driver_types();
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_extensions();
 	unregister_core_types();
 
@@ -567,16 +614,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_RST("application/run/flush_stdout_on_print.debug", true);
 
 	GLOBAL_DEF("debug/settings/crash_handler/message",
-			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+			String("Please include this when reporting the bug to the project developer."));
+	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
+			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
+	// Add command line arguments.
 	for (int i = 0; i < argc; i++) {
 		args.push_back(String::utf8(argv[i]));
+	}
+
+	// Add arguments received from macOS LaunchService (URL schemas, file associations).
+	for (const String &arg : platform_args) {
+		args.push_back(arg);
 	}
 
 	List<String>::Element *I = args.front();
@@ -585,8 +641,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();
 	}
-
-	I = args.front();
 
 	String display_driver = "";
 	String audio_driver = "";
@@ -608,6 +662,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool found_project = false;
 #endif
 
+	String default_renderer = "";
+	String renderer_hints = "";
+
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
 		packed_data = memnew(PackedData);
@@ -625,9 +682,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	packed_data->add_pack_source(zip_packed_data);
 #endif
 
+	// Default exit code, can be modified for certain errors.
+	Error exit_code = ERR_INVALID_PARAMETER;
+
 	I = args.front();
 	while (I) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Ignore the process serial number argument passed by macOS Gatekeeper.
 		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
 		if (I->get().begins_with("-psn_")) {
@@ -640,16 +700,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
 
 			OS::get_singleton()->_verbose_stdout = true;
-		} else if (I->get() == "--quiet") { // quieter output
+		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
 
 			quiet_stdout = true;
 
@@ -792,10 +854,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				Engine::singleton->gpu_idx = I->next()->get().to_int();
 				N = I->next()->next();
 			} else {
-				OS::get_singleton()->print("Missing gpu index argument, aborting.\n");
+				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--vk-layers") {
+		} else if (I->get() == "--gpu-validation") {
 			Engine::singleton->use_validation_layers = true;
 #ifdef DEBUG_ENABLED
 		} else if (I->get() == "--gpu-abort") {
@@ -946,15 +1008,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 			cmdline_tool = true;
-#ifdef DEBUG_METHODS_ENABLED
-		} else if (I->get() == "--gdnative-generate-json-api" || I->get() == "--gdnative-generate-json-builtin-api") {
-			// Register as an editor instance to use low-end fallback if relevant.
-			editor = true;
-			cmdline_tool = true;
-			// We still pass it to the main arguments since the argument handling itself is not done in this function,
-			// it's done in nativescript init code.
-			main_args.push_back(I->get());
-#endif
 		} else if (I->get() == "--dump-extension-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
@@ -971,19 +1024,31 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			editor = true;
 			cmdline_tool = true;
 			main_args.push_back(I->get());
+		} else if (I->get() == "--convert-3to4") {
+			// Actually handling is done in start().
+			cmdline_tool = true;
+			main_args.push_back(I->get());
+		} else if (I->get() == "--validate-conversion-3to4") {
+			// Actually handling is done in start().
+			cmdline_tool = true;
+			main_args.push_back(I->get());
 		} else if (I->get() == "--doctool") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
+
+			// `--doctool` implies `--headless` to avoid spawning an unnecessary window
+			// and speed up class reference generation.
+			audio_driver = "Dummy";
+			display_driver = "headless";
 			main_args.push_back(I->get());
 #endif
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
 			if (I->next()) {
 				String p = I->next()->get();
-				if (OS::get_singleton()->set_cwd(p) == OK) {
-					//nothing
-				} else {
-					project_path = I->next()->get(); //use project_path instead
+				if (OS::get_singleton()->set_cwd(p) != OK) {
+					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
+					goto error;
 				}
 				N = I->next()->next();
 			} else {
@@ -992,7 +1057,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
 			upwards = true;
-		} else if (I->get() == "-q" || I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
+		} else if (I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
 			auto_quit = true;
 		} else if (I->get().ends_with("project.godot")) {
 			String path;
@@ -1057,6 +1122,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
+		} else if (I->get() == "--debug-paths") {
+			debug_paths = true;
 		} else if (I->get() == "--debug-navigation") {
 			debug_navigation = true;
 		} else if (I->get() == "--debug-stringnames") {
@@ -1075,9 +1142,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--allow_focus_steal_pid") { // not exposed to user
+		} else if (I->get() == "--editor-pid") { // not exposed to user
 			if (I->next()) {
-				allow_focus_steal_pid = I->next()->get().to_int();
+				editor_pid = I->next()->get().to_int();
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
@@ -1093,6 +1160,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--write-movie") {
+			if (I->next()) {
+				Engine::get_singleton()->set_write_movie_path(I->next()->get());
+				N = I->next()->next();
+				if (fixed_fps == -1) {
+					fixed_fps = 60;
+				}
+				OS::get_singleton()->_writing_movie = true;
+			} else {
+				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
+				goto error;
+			}
+		} else if (I->get() == "--disable-vsync") {
+			disable_vsync = true;
 		} else if (I->get() == "--print-fps") {
 			print_fps = true;
 		} else if (I->get() == "--profile-gpu") {
@@ -1101,6 +1182,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--xr-mode") {
+			if (I->next()) {
+				String xr_mode = I->next()->get().to_lower();
+				N = I->next()->next();
+				if (xr_mode == "default") {
+					XRServer::set_xr_mode(XRServer::XRMODE_DEFAULT);
+				} else if (xr_mode == "off") {
+					XRServer::set_xr_mode(XRServer::XRMODE_OFF);
+				} else if (xr_mode == "on") {
+					XRServer::set_xr_mode(XRServer::XRMODE_ON);
+				} else {
+					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
+					goto error;
+				}
+			} else {
+				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
+				goto error;
+			}
+
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1157,6 +1257,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
@@ -1192,7 +1293,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE,
 					"0, 200, 1, or_greater"));
 
-	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints);
+	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints, []() {
+		if (editor_pid) {
+			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
+		}
+	});
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -1276,14 +1381,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
-	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
 
 	// this list is hard coded, which makes it more difficult to add new backends.
 	// can potentially be changed to more of a plugin system at a later date.
+
+	// Start with Vulkan, which will be the default if enabled.
+#ifdef VULKAN_ENABLED
+	renderer_hints = "vulkan";
+#endif
+
+	// And OpenGL3 next, or first if Vulkan is disabled.
+#ifdef GLES3_ENABLED
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
+	}
+	renderer_hints += "opengl3";
+#endif
+	if (renderer_hints.is_empty()) {
+		ERR_PRINT("No rendering driver available.");
+	}
+
+	default_renderer = renderer_hints.get_slice(",", 0);
+	GLOBAL_DEF_RST("rendering/driver/driver_name", default_renderer);
+
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "vulkan,opengl3"));
+					PROPERTY_HINT_ENUM, renderer_hints));
 
 	// if not set on the command line
 	if (rendering_driver.is_empty()) {
@@ -1297,35 +1421,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
-
-	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_width",
-			PropertyInfo(Variant::INT, "display/window/size/viewport_width",
-					PROPERTY_HINT_RANGE,
-					"0,7680,1,or_greater")); // 8K resolution
-
-	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height",
-			PropertyInfo(Variant::INT, "display/window/size/viewport_height",
-					PROPERTY_HINT_RANGE,
-					"0,4320,1,or_greater")); // 8K resolution
-
-	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
-	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
-	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
-	GLOBAL_DEF("display/window/size/always_on_top", false);
-	GLOBAL_DEF("display/window/size/window_width_override", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_width_override",
-			PropertyInfo(Variant::INT,
-					"display/window/size/window_width_override",
-					PROPERTY_HINT_RANGE,
-					"0,7680,1,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/window_height_override", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height_override",
-			PropertyInfo(Variant::INT,
-					"display/window/size/window_height_override",
-					PROPERTY_HINT_RANGE,
-					"0,4320,1,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -1360,7 +1455,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
@@ -1396,11 +1491,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* Determine audio and video drivers */
 
 	// Display driver, e.g. X11, Wayland.
-	// print_line("requested display driver : " + display_driver);
+	// Make sure that headless is the last one, which it is assumed to be by design.
+	DEV_ASSERT(String("headless") == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 		String name = DisplayServer::get_create_function_name(i);
-		// print_line("\t" + itos(i) + " : " + name);
-
 		if (display_driver == name) {
 			display_driver_idx = i;
 			break;
@@ -1408,6 +1502,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (display_driver_idx < 0) {
+		// If the requested driver wasn't found, pick the first entry.
+		// If all else failed it would be the headless server.
 		display_driver_idx = 0;
 	}
 
@@ -1420,6 +1516,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
+	// Make sure that dummy is the last one, which it is assumed to be by design.
+	DEV_ASSERT(String("Dummy") == AudioDriverManager::get_driver(AudioDriverManager::get_driver_count() - 1)->get_name());
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
 		if (audio_driver == AudioDriverManager::get_driver(i)->get_name()) {
 			audio_driver_idx = i;
@@ -1428,7 +1526,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver_idx < 0) {
+		// If the requested driver wasn't found, pick the first entry.
+		// If all else failed it would be the dummy driver (no sound).
 		audio_driver_idx = 0;
+	}
+
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
+		// Always use dummy driver for audio driver (which is last), also in no threaded mode.
+		audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
+		AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
 	}
 
 	{
@@ -1436,6 +1542,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 	{
 		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
+		if (disable_vsync) {
+			window_vsync_mode = DisplayServer::VSyncMode::VSYNC_DISABLED;
+		}
 	}
 	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC("physics/common/physics_ticks_per_second", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_ticks_per_second",
@@ -1475,7 +1584,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"0,33200,1,or_greater")); // No negative numbers
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
-	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
+	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
+	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
+			PropertyInfo(Variant::FLOAT,
+					"input_devices/pointing/ios/touch_delay",
+					PROPERTY_HINT_RANGE, "0,1,0.001"));
+
+	// XR project settings.
+	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
+	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://openxr_action_map.tres");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
+
+	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"));
+
+	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
+
+	GLOBAL_DEF_BASIC("xr/openxr/reference_space", "1");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/reference_space", PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"));
+
+#ifdef TOOLS_ENABLED
+	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
+
+	// editor settings (it seems we're too early in the process when setting up rendering, to access editor settings...)
+	// EDITOR_DEF_RST("xr/openxr/in_editor", false);
+	// GLOBAL_DEF("xr/openxr/in_editor", false);
+#endif
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -1493,6 +1628,7 @@ error:
 	display_driver = "";
 	audio_driver = "";
 	tablet_driver = "";
+	Engine::get_singleton()->set_write_movie_path(String());
 	project_path = "";
 
 	args.clear();
@@ -1541,14 +1677,21 @@ error:
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
-	return ERR_INVALID_PARAMETER;
+	return exit_code;
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
 	tsman = memnew(TextServerManager);
 
-	preregister_module_types();
-	preregister_server_types();
+	if (tsman) {
+		Ref<TextServerDummy> ts;
+		ts.instantiate();
+		tsman->add_interface(ts);
+	}
+
+	register_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
@@ -1578,10 +1721,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 		if (err != OK || display_server == nullptr) {
-			//ok i guess we can't use this display server, try other ones
-			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+			// We can't use this display server, try other ones as fallback.
+			// Skip headless (always last registered) because that's not what users
+			// would expect if they didn't request it explicitly.
+			for (int i = 0; i < DisplayServer::get_create_function_count() - 1; i++) {
 				if (i == display_driver_idx) {
-					continue; //don't try the same twice
+					continue; // Don't try the same twice.
 				}
 				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 				if (err == OK && display_server != nullptr) {
@@ -1658,6 +1803,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		rendering_server->set_print_gpu_profile(true);
 	}
 
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
+		movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
+		if (movie_writer == nullptr) {
+			ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
+			Engine::get_singleton()->set_write_movie_path(String());
+		}
+	}
+
 #ifdef UNIX_ENABLED
 	// Print warning after initializing the renderer but before initializing audio.
 	if (OS::get_singleton()->get_environment("USER") == "root" && !OS::get_singleton()->has_environment("GODOT_SILENCE_ROOT_WARNING")) {
@@ -1709,22 +1862,16 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 	}
 
-	if (allow_focus_steal_pid) {
-		DisplayServer::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
-	}
-
-	register_server_types();
-
 	MAIN_PRINT("Main: Load Boot Image");
 
-	Color clear = GLOBAL_DEF("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
+	Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
-		const bool boot_logo_image = GLOBAL_DEF("application/boot_splash/show_image", true);
-		const String boot_logo_path = String(GLOBAL_DEF("application/boot_splash/image", String())).strip_edges();
-		const bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
-		const bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
+		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC("application/boot_splash/image", String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
 				PropertyInfo(Variant::STRING,
 						"application/boot_splash/image",
@@ -1749,10 +1896,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 		const Color boot_bg_color =
-				GLOBAL_DEF("application/boot_splash/bg_color",
+				GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
 						(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
 #else
-		const Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
+		const Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
 			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
@@ -1784,7 +1931,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
-			GLOBAL_DEF("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3)));
+			GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3)));
 
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
@@ -1838,7 +1985,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Enum text drivers */
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		if (i > 0) {
@@ -1882,21 +2029,22 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (text_driver_idx >= 0) {
 		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
 	} else {
-		ERR_PRINT("TextServer: Unable to create TextServer interface.");
-		return ERR_CANT_CREATE;
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
-
-	MAIN_PRINT("Main: Load Driver Types");
-
 	register_driver_types();
+
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
@@ -1905,14 +2053,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Modules");
 
 	register_platform_apis();
-	register_module_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
 
-	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
-	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
-	GLOBAL_DEF("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
+	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image", String());
+	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
+	GLOBAL_DEF_BASIC("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
 	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image",
 			PropertyInfo(Variant::STRING,
 					"display/mouse_cursor/custom_image",
@@ -1951,7 +2098,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// able to load resources, load the global shader variables.
 		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
-		rendering_server->global_variables_load_settings(!editor);
+		rendering_server->global_shader_uniforms_load_settings(!editor);
 	}
 
 	_start_success = true;
@@ -1987,6 +2134,8 @@ bool Main::start() {
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
+	bool converting_project = false;
+	bool validating_converting_project = false;
 #endif
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
@@ -2002,6 +2151,10 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
 			doc_base = false;
+		} else if (args[i] == "--convert-3to4") {
+			converting_project = true;
+		} else if (args[i] == "--validate-conversion-3to4") {
+			validating_converting_project = true;
 		} else if (args[i] == "-e" || args[i] == "--editor") {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
@@ -2065,6 +2218,13 @@ bool Main::start() {
 #endif
 	}
 
+	uint64_t minimum_time_msec = GLOBAL_DEF("application/boot_splash/minimum_display_time", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/minimum_display_time",
+			PropertyInfo(Variant::INT,
+					"application/boot_splash/minimum_display_time",
+					PROPERTY_HINT_RANGE,
+					"0,100,1,or_greater,suffix:ms")); // No negative numbers.
+
 #ifdef TOOLS_ENABLED
 	if (!doc_tool_path.is_empty()) {
 		// Needed to instance editor-only classes for their default values
@@ -2076,8 +2236,8 @@ bool Main::start() {
 		}
 
 		{
-			DirAccessRef da = DirAccess::open(doc_tool_path);
-			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a valid directory path.");
+			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
+			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
 #ifndef MODULE_MONO_ENABLED
@@ -2097,8 +2257,8 @@ bool Main::start() {
 		doc.generate(doc_base);
 
 		DocTools docsrc;
-		Map<String, String> doc_data_classes;
-		Set<String> checked_paths;
+		HashMap<String, String> doc_data_classes;
+		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
@@ -2113,9 +2273,8 @@ bool Main::start() {
 				checked_paths.insert(path);
 
 				// Create the module documentation directory if it doesn't exist
-				DirAccess *da = DirAccess::create_for_path(path);
+				Ref<DirAccess> da = DirAccess::create_for_path(path);
 				err = da->make_dir_recursive(path);
-				memdelete(da);
 				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
 				print_line("Loading docs from: " + path);
@@ -2126,9 +2285,8 @@ bool Main::start() {
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
-		DirAccess *da = DirAccess::create_for_path(index_path);
+		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
-		memdelete(da);
 		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
 		print_line("Loading classes from: " + index_path);
@@ -2139,10 +2297,10 @@ bool Main::start() {
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
 
-		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
-			print_line("Erasing old docs at: " + E->get());
-			err = DocTools::erase_classes(E->get());
-			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));
+		for (const String &E : checked_paths) {
+			print_line("Erasing old docs at: " + E);
+			err = DocTools::erase_classes(E);
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E + ": " + itos(err));
 		}
 
 		print_line("Generating new docs...");
@@ -2157,6 +2315,18 @@ bool Main::start() {
 		NativeExtensionAPIDump::generate_extension_json_file("extension_api.json");
 		return false;
 	}
+
+	if (converting_project) {
+		int exit_code = ProjectConverter3To4().convert();
+		OS::get_singleton()->set_exit_code(exit_code);
+		return false;
+	}
+	if (validating_converting_project) {
+		int exit_code = ProjectConverter3To4().validate_conversion();
+		OS::get_singleton()->set_exit_code(exit_code);
+		return false;
+	}
+
 #endif
 
 	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
@@ -2255,6 +2425,9 @@ bool Main::start() {
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
 		}
+		if (debug_paths) {
+			sml->set_debug_paths_hint(true);
+		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 		}
@@ -2262,20 +2435,21 @@ bool Main::start() {
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
-		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows)) {
-			sml->get_root()->set_embed_subwindows_hint(true);
+		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+			sml->get_root()->set_embedding_subwindows(true);
 		}
+
 		ResourceLoader::add_custom_loaders();
 		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
-				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				//first pass, add the constants so they exist before any script is loaded
-				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-					const ProjectSettings::AutoloadInfo &info = E.get();
+				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+					const ProjectSettings::AutoloadInfo &info = E.value;
 
 					if (info.is_singleton) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -2286,10 +2460,10 @@ bool Main::start() {
 
 				//second pass, load into global constants
 				List<Node *> to_add;
-				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-					const ProjectSettings::AutoloadInfo &info = E.get();
+				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+					const ProjectSettings::AutoloadInfo &info = E.value;
 
-					RES res = ResourceLoader::load(info.path);
+					Ref<Resource> res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
 					Ref<PackedScene> scn = res;
@@ -2299,7 +2473,7 @@ bool Main::start() {
 					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
@@ -2416,12 +2590,12 @@ bool Main::start() {
 							"display/window/stretch/aspect",
 							PROPERTY_HINT_ENUM,
 							"ignore,keep,keep_width,keep_height,expand"));
-			GLOBAL_DEF_BASIC("display/window/stretch/shrink", 1.0);
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink",
+			GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
 					PropertyInfo(Variant::FLOAT,
-							"display/window/stretch/shrink",
+							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
-							"1.0,8.0,0.1"));
+							"0.5,8.0,0.01"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
@@ -2445,7 +2619,7 @@ bool Main::start() {
 					"interface/editor/single_window_mode");
 
 			if (editor_embed_subwindows) {
-				sml->get_root()->set_embed_subwindows_hint(true);
+				sml->get_root()->set_embedding_subwindows(true);
 			}
 		}
 #endif
@@ -2466,15 +2640,13 @@ bool Main::start() {
 						int sep = local_game_path.rfind("/");
 
 						if (sep == -1) {
-							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							local_game_path = da->get_current_dir().plus_file(local_game_path);
-							memdelete(da);
 						} else {
-							DirAccess *da = DirAccess::open(local_game_path.substr(0, sep));
-							if (da) {
+							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
+							if (da.is_valid()) {
 								local_game_path = da->get_current_dir().plus_file(
 										local_game_path.substr(sep + 1, local_game_path.length()));
-								memdelete(da);
 							}
 						}
 					}
@@ -2517,7 +2689,7 @@ bool Main::start() {
 				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
 				sml->add_current_scene(scene);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
 				if (!mac_iconpath.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(mac_iconpath);
@@ -2570,6 +2742,18 @@ bool Main::start() {
 
 	OS::get_singleton()->set_main_loop(main_loop);
 
+	if (movie_writer) {
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
+	}
+
+	if (minimum_time_msec) {
+		uint64_t minimum_time = 1000 * minimum_time_msec;
+		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
+		if (elapsed_time < minimum_time) {
+			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
+		}
+	}
+
 	return true;
 }
 
@@ -2585,6 +2769,7 @@ bool Main::start() {
 
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
+uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
@@ -2725,12 +2910,17 @@ bool Main::iteration() {
 	Engine::get_singleton()->_process_frames++;
 
 	if (frame > 1000000) {
-		if (editor || project_manager) {
-			if (print_fps) {
-				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+		// Wait a few seconds before printing FPS, as FPS reporting just after the engine has started is inaccurate.
+		if (hide_print_fps_attempts == 0) {
+			if (editor || project_manager) {
+				if (print_fps) {
+					print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+				}
+			} else if (print_fps || GLOBAL_GET("debug/settings/stdout/print_fps")) {
+				print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 			}
-		} else if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
-			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+		} else {
+			hide_print_fps_attempts--;
 		}
 
 		Engine::get_singleton()->_fps = frames;
@@ -2748,6 +2938,13 @@ bool Main::iteration() {
 	// Needed for OSs using input buffering regardless accumulation (like Android)
 	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
 		Input::get_singleton()->flush_buffered_events();
+	}
+
+	if (movie_writer) {
+		RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
+		RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
+		Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
+		movie_writer->add_frame(vp_tex);
 	}
 
 	if (fixed_fps != -1) {
@@ -2789,6 +2986,10 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
+	if (movie_writer) {
+		movie_writer->end();
+	}
+
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -2810,7 +3011,7 @@ void Main::cleanup(bool p_force) {
 	RenderingServer::get_singleton()->sync();
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_variables_clear();
+	rendering_server->global_shader_uniforms_clear();
 
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
@@ -2819,15 +3020,23 @@ void Main::cleanup(bool p_force) {
 	}
 
 #ifdef TOOLS_ENABLED
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	EditorNode::unregister_editor_types();
+
 #endif
 
 	ImageLoader::cleanup();
 
-	unregister_module_types();
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
 	EngineDebugger::deinitialize();
@@ -2896,6 +3105,7 @@ void Main::cleanup(bool p_force) {
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();

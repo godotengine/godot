@@ -231,10 +231,10 @@ vec3 apply_fxaa(vec3 color, vec2 uv_interp, vec2 pixel_size) {
 }
 
 void main() {
-	vec3 color = textureLod(source, uv_interp, 0.0).rgb;
+	vec4 color = textureLod(source, uv_interp, 0.0);
 
 #ifdef USE_FXAA
-	color = apply_fxaa(color, uv_interp, pixel_size);
+	color.rgb = apply_fxaa(color.rgb, uv_interp, pixel_size);
 #endif
 
 	// Glow
@@ -296,18 +296,18 @@ void main() {
 #endif //USE_MULTI_TEXTURE_GLOW
 
 	glow *= glow_intensity;
-	color = apply_glow(color, glow);
+	color.rgb = apply_glow(color.rgb, glow);
 #endif
 
 	// Additional effects
 
 #ifdef USE_BCS
-	color = apply_bcs(color, bcs);
+	color.rgb = apply_bcs(color.rgb, bcs);
 #endif
 
 #ifdef USE_COLOR_CORRECTION
-	color = apply_color_correction(color, color_correction);
+	color.rgb = apply_color_correction(color.rgb, color_correction);
 #endif
 
-	frag_color = vec4(color, 1.0);
+	frag_color = color;
 }

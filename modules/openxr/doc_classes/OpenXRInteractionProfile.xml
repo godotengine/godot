@@ -9,6 +9,21 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_binding" qualifiers="const">
+			<return type="OpenXRIPBinding" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Retrieve the binding at this index.
+			</description>
+		</method>
+		<method name="get_binding_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Get the number of bindings in this interaction profile.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bindings" type="Array" setter="set_bindings" getter="get_bindings" default="[]">
 			Action bindings for this interaction profile.

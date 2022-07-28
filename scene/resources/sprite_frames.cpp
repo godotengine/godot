@@ -33,38 +33,38 @@
 #include "scene/scene_string_names.h"
 
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	if (p_at_pos >= 0 && p_at_pos < E->get().frames.size()) {
-		E->get().frames.insert(p_at_pos, p_frame);
+	if (p_at_pos >= 0 && p_at_pos < E->value.frames.size()) {
+		E->value.frames.insert(p_at_pos, p_frame);
 	} else {
-		E->get().frames.push_back(p_frame);
+		E->value.frames.push_back(p_frame);
 	}
 
 	emit_changed();
 }
 
 int SpriteFrames::get_frame_count(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	return E->get().frames.size();
+	return E->value.frames.size();
 }
 
 void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.remove_at(p_idx);
+	E->value.frames.remove_at(p_idx);
 	emit_changed();
 }
 
 void SpriteFrames::clear(const StringName &p_anim) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.clear();
+	E->value.frames.clear();
 	emit_changed();
 }
 
@@ -96,17 +96,6 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	animations[p_next] = anim;
 }
 
-Vector<String> SpriteFrames::_get_animation_list() const {
-	Vector<String> ret;
-	List<StringName> al;
-	get_animation_list(&al);
-	for (const StringName &E : al) {
-		ret.push_back(E);
-	}
-
-	return ret;
-}
-
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
 	for (const KeyValue<StringName, Anim> &E : animations) {
 		r_animations->push_back(E.key);
@@ -124,54 +113,45 @@ Vector<String> SpriteFrames::get_animation_names() const {
 
 void SpriteFrames::set_animation_speed(const StringName &p_anim, double p_fps) {
 	ERR_FAIL_COND_MSG(p_fps < 0, "Animation speed cannot be negative (" + itos(p_fps) + ").");
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->get().speed = p_fps;
+	E->value.speed = p_fps;
 }
 
 double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
-	return E->get().speed;
+	return E->value.speed;
 }
 
 void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->get().loop = p_loop;
+	E->value.loop = p_loop;
 }
 
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
-	return E->get().loop;
-}
-
-void SpriteFrames::_set_frames(const Array &p_frames) {
-	clear_all();
-	Map<StringName, Anim>::Element *E = animations.find(SceneStringNames::get_singleton()->_default);
-	ERR_FAIL_COND(!E);
-
-	E->get().frames.resize(p_frames.size());
-	for (int i = 0; i < E->get().frames.size(); i++) {
-		E->get().frames.write[i] = p_frames[i];
-	}
-}
-
-Array SpriteFrames::_get_frames() const {
-	return Array();
+	return E->value.loop;
 }
 
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (const KeyValue<StringName, Anim> &E : animations) {
+
+	List<StringName> sorted_names;
+	get_animation_list(&sorted_names);
+	sorted_names.sort_custom<StringName::AlphCompare>();
+
+	for (const StringName &name : sorted_names) {
+		const Anim &anim = animations[name];
 		Dictionary d;
-		d["name"] = E.key;
-		d["speed"] = E.value.speed;
-		d["loop"] = E.value.loop;
+		d["name"] = name;
+		d["speed"] = anim.speed;
+		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < E.value.frames.size(); i++) {
-			frames.push_back(E.value.frames[i]);
+		for (int i = 0; i < anim.frames.size(); i++) {
+			frames.push_back(anim.frames[i]);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);
@@ -195,7 +175,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
-			RES res = frames[j];
+			Ref<Resource> res = frames[j];
 			anim.frames.push_back(res);
 		}
 
@@ -225,15 +205,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear", "anim"), &SpriteFrames::clear);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SpriteFrames::clear_all);
 
-	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
-	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
-
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_frames", "_get_frames"); //compatibility
+	// `animations` property is for serialization.
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
 }
 
 SpriteFrames::SpriteFrames() {

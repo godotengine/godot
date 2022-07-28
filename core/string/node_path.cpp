@@ -199,6 +199,21 @@ Vector<StringName> NodePath::get_subnames() const {
 	return Vector<StringName>();
 }
 
+StringName NodePath::get_concatenated_names() const {
+	ERR_FAIL_COND_V(!data, StringName());
+
+	if (!data->concatenated_path) {
+		int pc = data->path.size();
+		String concatenated;
+		const StringName *sn = data->path.ptr();
+		for (int i = 0; i < pc; i++) {
+			concatenated += i == 0 ? sn[i].operator String() : "/" + sn[i];
+		}
+		data->concatenated_path = concatenated;
+	}
+	return data->concatenated_path;
+}
+
 StringName NodePath::get_concatenated_subnames() const {
 	ERR_FAIL_COND_V(!data, StringName());
 

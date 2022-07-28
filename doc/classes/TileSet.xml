@@ -113,7 +113,7 @@
 			<argument index="0" name="source_from" type="int" />
 			<argument index="1" name="coords_from" type="Vector2i" />
 			<description>
-				Returns the coodinate-level proxy for the given identifiers. The returned array contains the two proxie's target identifiers (source ID and atlas coords ID).
+				Returns the coordinate-level proxy for the given identifiers. The returned array contains the two target identifiers of the proxy (source ID and atlas coordinates ID).
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
 			</description>
 		</method>
@@ -591,7 +591,7 @@
 			Tile coordinates layout where both axis stay consistent with their respective local horizontal and vertical axis.
 		</constant>
 		<constant name="TILE_LAYOUT_STACKED_OFFSET" value="1" enum="TileLayout">
-			Same as [code]TILE_LAYOUT_STAKED[/code], but the first half-offset is negative instead of positive.
+			Same as [constant TILE_LAYOUT_STACKED], but the first half-offset is negative instead of positive.
 		</constant>
 		<constant name="TILE_LAYOUT_STAIRS_RIGHT" value="2" enum="TileLayout">
 			Tile coordinates layout where the horizontal axis stay horizontal, and the vertical one goes down-right.

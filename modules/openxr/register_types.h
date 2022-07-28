@@ -33,8 +33,9 @@
 
 #define MODULE_OPENXR_HAS_PREREGISTER
 
-void preregister_openxr_types();
-void register_openxr_types();
-void unregister_openxr_types();
+#include "modules/register_module_types.h"
+
+void initialize_openxr_module(ModuleInitializationLevel p_level);
+void uninitialize_openxr_module(ModuleInitializationLevel p_level);
 
 #endif // OPENXR_REGISTER_TYPES_H

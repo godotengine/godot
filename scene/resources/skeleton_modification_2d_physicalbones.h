@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DPHYSICALBONES_H
-#define SKELETONMODIFICATION2DPHYSICALBONES_H
+#ifndef SKELETON_MODIFICATION_2D_PHYSICALBONES_H
+#define SKELETON_MODIFICATION_2D_PHYSICALBONES_H
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
@@ -52,7 +52,7 @@ private:
 
 	bool _simulation_state_dirty = false;
 	TypedArray<StringName> _simulation_state_dirty_names;
-	bool _simulation_state_dirty_process;
+	bool _simulation_state_dirty_process = false;
 	void _update_simulation_state();
 
 protected:
@@ -79,4 +79,4 @@ public:
 	~SkeletonModification2DPhysicalBones();
 };
 
-#endif // SKELETONMODIFICATION2DPHYSICALBONES_H
+#endif // SKELETON_MODIFICATION_2D_PHYSICALBONES_H

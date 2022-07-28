@@ -29,8 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface_extension.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
-#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 void XRInterfaceExtension::_bind_methods() {
@@ -51,6 +50,7 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_camera_transform);
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
+	GDVIRTUAL_BIND(_get_vrs_texture);
 
 	GDVIRTUAL_BIND(_process);
 	GDVIRTUAL_BIND(_pre_render);
@@ -258,12 +258,12 @@ Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const 
 	return Transform3D();
 }
 
-CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
-	CameraMatrix cm;
+Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+	Projection cm;
 	PackedFloat64Array arr;
 
 	if (GDVIRTUAL_CALL(_get_projection_for_view, p_view, p_aspect, p_z_near, p_z_far, arr)) {
-		ERR_FAIL_COND_V_MSG(arr.size() != 16, CameraMatrix(), "Projection matrix must contain 16 floats");
+		ERR_FAIL_COND_V_MSG(arr.size() != 16, Projection(), "Projection matrix must contain 16 floats");
 		real_t *m = (real_t *)cm.matrix;
 		for (int i = 0; i < 16; i++) {
 			m[i] = arr[i];
@@ -271,7 +271,16 @@ CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, doub
 		return cm;
 	}
 
-	return CameraMatrix();
+	return Projection();
+}
+
+RID XRInterfaceExtension::get_vrs_texture() {
+	RID vrs_texture;
+	if (GDVIRTUAL_CALL(_get_vrs_texture, vrs_texture)) {
+		return vrs_texture;
+	} else {
+		return XRInterface::get_vrs_texture();
+	}
 }
 
 void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, double p_k1, double p_k2, double p_upscale, double p_aspect_ratio) {
@@ -339,10 +348,10 @@ void XRInterfaceExtension::notification(int p_what) {
 RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {
 	// In due time this will need to be enhance to return the correct INTERNAL RID for the chosen rendering engine.
 	// So once a GLES driver is implemented we'll return that and the implemented plugin needs to handle this correctly too.
-	RendererStorageRD *rd_storage = RendererStorageRD::base_singleton;
-	ERR_FAIL_NULL_V_MSG(rd_storage, RID(), "Renderer storage not setup");
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V_MSG(texture_storage, RID(), "Texture storage not setup");
 
-	return rd_storage->render_target_get_rd_texture(p_render_target);
+	return texture_storage->render_target_get_rd_texture(p_render_target);
 }
 
 /*

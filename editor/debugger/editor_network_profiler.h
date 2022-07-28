@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORNETWORKPROFILER_H
-#define EDITORNETWORKPROFILER_H
+#ifndef EDITOR_NETWORK_PROFILER_H
+#define EDITOR_NETWORK_PROFILER_H
 
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
@@ -42,15 +42,15 @@ class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
 
 private:
-	Button *activate;
-	Button *clear_button;
-	Tree *counters_display;
-	LineEdit *incoming_bandwidth_text;
-	LineEdit *outgoing_bandwidth_text;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
+	Tree *counters_display = nullptr;
+	LineEdit *incoming_bandwidth_text = nullptr;
+	LineEdit *outgoing_bandwidth_text = nullptr;
 
-	Timer *frame_delay;
+	Timer *frame_delay = nullptr;
 
-	Map<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
+	HashMap<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
 
 	void _update_frame();
 
@@ -69,4 +69,4 @@ public:
 	EditorNetworkProfiler();
 };
 
-#endif //EDITORNETWORKPROFILER_H
+#endif // EDITOR_NETWORK_PROFILER_H

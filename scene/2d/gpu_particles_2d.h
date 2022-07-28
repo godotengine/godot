@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_H
-#define PARTICLES_2D_H
+#ifndef GPU_PARTICLES_2D_H
+#define GPU_PARTICLES_2D_H
 
 #include "scene/2d/node_2d.h"
 
@@ -47,19 +47,20 @@ public:
 private:
 	RID particles;
 
-	bool one_shot;
-	int amount;
-	double lifetime;
-	double pre_process_time;
-	real_t explosiveness_ratio;
-	real_t randomness_ratio;
-	double speed_scale;
+	bool one_shot = false;
+	int amount = 0;
+	double lifetime = 0.0;
+	double pre_process_time = 0.0;
+	real_t explosiveness_ratio = 0.0;
+	real_t randomness_ratio = 0.0;
+	double speed_scale = 0.0;
 	Rect2 visibility_rect;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	bool local_coords = false;
+	int fixed_fps = 0;
+	bool fractional_delta = false;
+	bool interpolate = true;
 #ifdef TOOLS_ENABLED
-	bool show_visibility_rect;
+	bool show_visibility_rect = false;
 #endif
 	Ref<Material> process_material;
 
@@ -133,6 +134,9 @@ public:
 	void set_fractional_delta(bool p_enable);
 	bool get_fractional_delta() const;
 
+	void set_interpolate(bool p_enable);
+	bool get_interpolate() const;
+
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
 
@@ -163,4 +167,4 @@ public:
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
 
-#endif // PARTICLES_2D_H
+#endif // GPU_PARTICLES_2D_H

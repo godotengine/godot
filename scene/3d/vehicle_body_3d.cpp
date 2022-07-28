@@ -40,7 +40,7 @@ public:
 	Vector3 m_0MinvJt;
 	Vector3 m_1MinvJt;
 	//Optimization: can be stored in the w/last component of one of the vectors
-	real_t m_Adiag;
+	real_t m_Adiag = 0.0;
 
 	real_t getDiagonal() const { return m_Adiag; }
 
@@ -90,8 +90,8 @@ void VehicleWheel3D::_notification(int p_what) {
 			cb->wheels.push_back(this);
 
 			m_chassisConnectionPointCS = get_transform().origin;
-			m_wheelDirectionCS = -get_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
-			m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
+			m_wheelDirectionCS = -get_transform().basis.get_column(Vector3::AXIS_Y).normalized();
+			m_wheelAxleCS = get_transform().basis.get_column(Vector3::AXIS_X).normalized();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -109,7 +109,7 @@ TypedArray<String> VehicleWheel3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
-		warnings.push_back(TTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D."));
+		warnings.push_back(RTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D."));
 	}
 
 	return warnings;
@@ -274,21 +274,21 @@ void VehicleWheel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleWheel3D::get_steering);
 
 	ADD_GROUP("Per-Wheel Motion", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "-1024,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, U"-1024,1024.0,0.01,or_greater,suffix:kg\u22C5m/s\u00B2 (N)"), "set_engine_force", "get_engine_force");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, U"0.0,1.0,0.01,suffix:kg\u22C5m/s\u00B2 (N)"), "set_brake", "get_brake");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01,radians"), "set_steering", "get_steering");
 	ADD_GROUP("VehicleBody3D Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
 	ADD_GROUP("Wheel", "wheel_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_roll_influence"), "set_roll_influence", "get_roll_influence");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_radius"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_rest_length"), "set_suspension_rest_length", "get_suspension_rest_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_radius", PROPERTY_HINT_NONE, "suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_rest_length", PROPERTY_HINT_NONE, "suffix:m"), "set_suspension_rest_length", "get_suspension_rest_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_friction_slip"), "set_friction_slip", "get_friction_slip");
 	ADD_GROUP("Suspension", "suspension_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_travel"), "set_suspension_travel", "get_suspension_travel");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_travel", PROPERTY_HINT_NONE, "suffix:m"), "set_suspension_travel", "get_suspension_travel");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_stiffness"), "set_suspension_stiffness", "get_suspension_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_max_force"), "set_suspension_max_force", "get_suspension_max_force");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_max_force", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_suspension_max_force", "get_suspension_max_force");
 	ADD_GROUP("Damping", "damping_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_compression"), "set_damping_compression", "get_damping_compression");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_relaxation"), "set_damping_relaxation", "get_damping_relaxation");
@@ -684,7 +684,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 
 				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis; //get_global_transform().basis;
 
-				m_axle.write[i] = wheelBasis0.get_axis(Vector3::AXIS_X);
+				m_axle.write[i] = wheelBasis0.get_column(Vector3::AXIS_X);
 				//m_axle[i] = wheelInfo.m_raycastInfo.m_wheelAxleWS;
 
 				const Vector3 &surfNormalWS = wheelInfo.m_raycastInfo.m_contactNormalWS;
@@ -918,9 +918,9 @@ void VehicleBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleBody3D::get_steering);
 
 	ADD_GROUP("Motion", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "-1024,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, U"-1024,1024.0,0.01,or_greater,suffix:kg\u22C5m/s\u00B2 (N)"), "set_engine_force", "get_engine_force");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, U"0.0,1.0,0.01,suffix:kg\u22C5m/s\u00B2 (N)"), "set_brake", "get_brake");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01,radians"), "set_steering", "get_steering");
 }
 
 VehicleBody3D::VehicleBody3D() {

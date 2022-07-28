@@ -76,6 +76,10 @@
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.1">
 			Position increment to snap to when moving a point on the axis.
 		</member>
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
+			If [code]false[/code], the blended animations' frame are stopped when the blend value is [code]0[/code].
+			If [code]true[/code], forcing the blended animations to advance frame.
+		</member>
 		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label" default="&quot;value&quot;">
 			Label of the virtual axis of the blend space.
 		</member>

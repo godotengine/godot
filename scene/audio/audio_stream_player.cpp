@@ -136,7 +136,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream->is_monophonic() && is_playing()) {
 		stop();
 	}
-	Ref<AudioStreamPlayback> stream_playback = stream->instance_playback();
+	Ref<AudioStreamPlayback> stream_playback = stream->instantiate_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
 
 	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
@@ -349,7 +349,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");

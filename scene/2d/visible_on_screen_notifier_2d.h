@@ -37,7 +37,7 @@ class Viewport;
 class VisibleOnScreenNotifier2D : public Node2D {
 	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
 
-	Set<Viewport *> viewports;
+	HashSet<Viewport *> viewports;
 
 	Rect2 rect;
 
@@ -102,4 +102,4 @@ public:
 
 VARIANT_ENUM_CAST(VisibleOnScreenEnabler2D::EnableMode);
 
-#endif // VISIBILITY_NOTIFIER_2D_H
+#endif // VISIBLE_ON_SCREEN_NOTIFIER_2D_H

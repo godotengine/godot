@@ -24,7 +24,13 @@
 			return vec3(max3, max3, max3);
 			[/codeblock]
 		</constant>
-		<constant name="FUNC_SEPIA" value="1" enum="Function">
+		<constant name="FUNC_HSV2RGB" value="1" enum="Function">
+			Converts HSV vector to RGB equivalent.
+		</constant>
+		<constant name="FUNC_RGB2HSV" value="2" enum="Function">
+			Converts RGB vector to HSV equivalent.
+		</constant>
+		<constant name="FUNC_SEPIA" value="3" enum="Function">
 			Applies sepia tone effect using the following formula:
 			[codeblock]
 			vec3 c = input;
@@ -34,7 +40,7 @@
 			return vec3(r, g, b);
 			[/codeblock]
 		</constant>
-		<constant name="FUNC_MAX" value="2" enum="Function">
+		<constant name="FUNC_MAX" value="4" enum="Function">
 			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>

@@ -106,16 +106,13 @@ void NavigationPolygonEditor::_create_resource() {
 
 	undo_redo->create_action(TTR("Create Navigation Polygon"));
 	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
-	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(REF()));
+	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(Ref<RefCounted>()));
 	undo_redo->commit_action();
 
 	_menu_option(MODE_CREATE);
 }
 
-NavigationPolygonEditor::NavigationPolygonEditor() :
-		AbstractPolygon2DEditor() {
-	node = nullptr;
-}
+NavigationPolygonEditor::NavigationPolygonEditor() {}
 
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(NavigationPolygonEditor), "NavigationRegion2D") {

@@ -152,7 +152,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 		}
 
 		config->set_value("remap", "importer", "3d_texture");
-		config->set_value("remap", "type", "StreamTexture3D");
+		config->set_value("remap", "type", "CompressedTexture3D");
 		if (!config->has_section_key("params", "compress/mode")) {
 			config->set_value("params", "compress/mode", 3); //user may want another compression, so leave it be
 		}

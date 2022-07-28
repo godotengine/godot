@@ -44,6 +44,7 @@ struct hb_subset_plan_t
 
   // For each cp that we'd like to retain maps to the corresponding gid.
   hb_set_t *unicodes;
+  hb_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> unicode_to_new_gid_list;
 
   // name_ids we would like to retain
   hb_set_t *name_ids;
@@ -53,6 +54,9 @@ struct hb_subset_plan_t
 
   //layout features which will be preserved
   hb_set_t *layout_features;
+
+  // layout scripts which will be preserved.
+  hb_set_t *layout_scripts;
 
   //glyph ids requested to retain
   hb_set_t *glyphs_requested;
@@ -69,6 +73,7 @@ struct hb_subset_plan_t
   // Old -> New glyph id mapping
   hb_map_t *glyph_map;
   hb_map_t *reverse_glyph_map;
+  hb_map_t *glyph_map_gsub;
 
   // Plan is only good for a specific source/dest so keep them with it
   hb_face_t *source;
@@ -85,8 +90,8 @@ struct hb_subset_plan_t
   hb_map_t *gpos_lookups;
 
   //active langsys we'd like to retain
-  hb_hashmap_t<unsigned, hb_set_t *> *gsub_langsys;
-  hb_hashmap_t<unsigned, hb_set_t *> *gpos_langsys;
+  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *gsub_langsys;
+  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *gpos_langsys;
 
   //active features after removing redundant langsys and prune_features
   hb_map_t *gsub_features;
@@ -101,7 +106,33 @@ struct hb_subset_plan_t
   //Old -> New layout item variation store delta set index mapping
   hb_map_t *layout_variation_idx_map;
 
+  hb_hashmap_t<hb_tag_t, hb::unique_ptr<hb_blob_t>>* sanitized_table_cache;
+  //normalized axes location map
+  hb_hashmap_t<hb_tag_t, int> *axes_location;
+  //user specified axes location map
+  hb_hashmap_t<hb_tag_t, float> *user_axes_location;
+  bool all_axes_pinned;
+
  public:
+
+  template<typename T>
+  hb_blob_ptr_t<T> source_table()
+  {
+    if (sanitized_table_cache
+        && !sanitized_table_cache->in_error ()
+        && sanitized_table_cache->has (T::tableTag)) {
+      return hb_blob_reference (sanitized_table_cache->get (T::tableTag).get ());
+    }
+
+    hb::unique_ptr<hb_blob_t> table_blob {hb_sanitize_context_t ().reference_table<T> (source)};
+    hb_blob_t* ret = hb_blob_reference (table_blob.get ());
+
+    if (likely (sanitized_table_cache))
+      sanitized_table_cache->set (T::tableTag,
+                                  std::move (table_blob));
+
+    return ret;
+  }
 
   bool in_error () const { return !successful; }
 
@@ -197,14 +228,5 @@ struct hb_subset_plan_t
     return hb_face_builder_add_table (dest, tag, contents);
   }
 };
-
-typedef struct hb_subset_plan_t hb_subset_plan_t;
-
-HB_INTERNAL hb_subset_plan_t *
-hb_subset_plan_create (hb_face_t           *face,
-		       const hb_subset_input_t   *input);
-
-HB_INTERNAL void
-hb_subset_plan_destroy (hb_subset_plan_t *plan);
 
 #endif /* HB_SUBSET_PLAN_HH */

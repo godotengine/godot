@@ -105,4 +105,5 @@ public:
 	HTTPClientJavaScript();
 	~HTTPClientJavaScript();
 };
+
 #endif // HTTP_CLIENT_JAVASCRIPT_H

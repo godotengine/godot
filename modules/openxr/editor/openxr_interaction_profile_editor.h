@@ -1,0 +1,83 @@
+/*************************************************************************/
+/*  openxr_interaction_profile_editor.h                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
+#ifndef OPENXR_INTERACTION_PROFILE_EDITOR_H
+#define OPENXR_INTERACTION_PROFILE_EDITOR_H
+
+#include "../action_map/openxr_action_map.h"
+#include "../action_map/openxr_defs.h"
+#include "../action_map/openxr_interaction_profile.h"
+#include "scene/gui/scroll_container.h"
+
+#include "openxr_select_action_dialog.h"
+
+class OpenXRInteractionProfileEditorBase : public ScrollContainer {
+	GDCLASS(OpenXRInteractionProfileEditorBase, ScrollContainer);
+
+protected:
+	Ref<OpenXRInteractionProfile> interaction_profile;
+	Ref<OpenXRActionMap> action_map;
+
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	const OpenXRDefs::InteractionProfile *profile_def = nullptr;
+
+public:
+	Ref<OpenXRInteractionProfile> get_interaction_profile() { return interaction_profile; }
+
+	virtual void _update_interaction_profile() {}
+	virtual void _theme_changed() {}
+	void _add_binding(const String p_action, const String p_path);
+	void _remove_binding(const String p_action, const String p_path);
+
+	OpenXRInteractionProfileEditorBase(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile);
+};
+
+class OpenXRInteractionProfileEditor : public OpenXRInteractionProfileEditorBase {
+	GDCLASS(OpenXRInteractionProfileEditor, OpenXRInteractionProfileEditorBase);
+
+private:
+	String selecting_for_io_path;
+	HBoxContainer *main_hb = nullptr;
+	OpenXRSelectActionDialog *select_action_dialog = nullptr;
+
+	void _add_io_path(VBoxContainer *p_container, const OpenXRDefs::IOPath *p_io_path);
+
+public:
+	void select_action_for(const String p_io_path);
+	void action_selected(const String p_action);
+
+	virtual void _update_interaction_profile() override;
+	virtual void _theme_changed() override;
+	OpenXRInteractionProfileEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile);
+};
+
+#endif // OPENXR_INTERACTION_PROFILE_EDITOR_H

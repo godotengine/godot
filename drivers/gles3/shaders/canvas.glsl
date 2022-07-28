@@ -5,6 +5,7 @@ mode_quad =
 mode_ninepatch = #define USE_NINEPATCH
 mode_primitive = #define USE_PRIMITIVE
 mode_attributes = #define USE_ATTRIBUTES
+mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 
 #[specializations]
 
@@ -20,6 +21,23 @@ layout(location = 4) in vec2 uv_attrib;
 layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 
+#ifdef USE_INSTANCING
+
+layout(location = 1) in highp vec4 instance_xform0;
+layout(location = 2) in highp vec4 instance_xform1;
+layout(location = 5) in highp uvec4 instance_color_custom_data; // Color packed into xy, custom_data packed into zw for compatibility with 3D
+
+#endif
+
+#endif
+
+// This needs to be outside clang-format so the ubo comment is in the right place
+#ifdef MATERIAL_UNIFORMS_USED
+layout(std140) uniform MaterialUniforms{ //ubo:4
+
+#MATERIAL_UNIFORMS
+
+};
 #endif
 /* clang-format on */
 #include "canvas_uniforms_inc.glsl"
@@ -36,15 +54,6 @@ flat out int draw_data_instance;
 
 out vec2 pixel_size_interp;
 
-#endif
-
-#ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:4
-
-#MATERIAL_UNIFORMS
-
-};
 #endif
 
 #GLOBALS
@@ -77,13 +86,22 @@ void main() {
 	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
-
+#ifdef USE_INSTANCING
+	draw_data_instance = 0;
+#endif
 	vec2 vertex = vertex_attrib;
 	vec4 color = color_attrib * draw_data[draw_data_instance].modulation;
 	vec2 uv = uv_attrib;
 
 	uvec4 bones = bone_attrib;
 	vec4 bone_weights = weight_attrib;
+
+#ifdef USE_INSTANCING
+	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+	color *= instance_color;
+	instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+#endif
+
 #else
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
@@ -96,83 +114,12 @@ void main() {
 
 #endif
 
-	mat4 world_matrix = mat4(vec4(draw_data[draw_data_instance].world_x, 0.0, 0.0), vec4(draw_data[draw_data_instance].world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data[draw_data_instance].world_ofs, 0.0, 1.0));
+	mat4 model_matrix = mat4(vec4(draw_data[draw_data_instance].world_x, 0.0, 0.0), vec4(draw_data[draw_data_instance].world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data[draw_data_instance].world_ofs, 0.0, 1.0));
 
-	// MultiMeshes don't batch, so always read from draw_data[0]
-	uint instancing = draw_data[0].flags & FLAGS_INSTANCING_MASK;
+#ifdef USE_INSTANCING
+	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
+#endif // USE_INSTANCING
 
-#ifdef USE_ATTRIBUTES
-/*
-	if (instancing > 1) {
-		// trails
-
-		uint stride = 2 + 1 + 1; //particles always uses this format
-
-		uint trail_size = instancing;
-
-		uint offset = trail_size * stride * gl_InstanceID;
-
-		vec4 pcolor;
-		vec2 new_vertex;
-		{
-			uint boffset = offset + bone_attrib.x * stride;
-			new_vertex = (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.x;
-			pcolor = transforms.data[boffset + 2] * weight_attrib.x;
-		}
-		if (weight_attrib.y > 0.001) {
-			uint boffset = offset + bone_attrib.y * stride;
-			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.y;
-			pcolor += transforms.data[boffset + 2] * weight_attrib.y;
-		}
-		if (weight_attrib.z > 0.001) {
-			uint boffset = offset + bone_attrib.z * stride;
-			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.z;
-			pcolor += transforms.data[boffset + 2] * weight_attrib.z;
-		}
-		if (weight_attrib.w > 0.001) {
-			uint boffset = offset + bone_attrib.w * stride;
-			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.w;
-			pcolor += transforms.data[boffset + 2] * weight_attrib.w;
-		}
-
-		instance_custom = transforms.data[offset + 3];
-
-		vertex = new_vertex;
-		color *= pcolor;
-	} else*/
-#endif // USE_ATTRIBUTES
-/*
-	{
-		if (instancing == 1) {
-			uint stride = 2;
-			{
-				if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_COLORS)) {
-					stride += 1;
-				}
-				if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-					stride += 1;
-				}
-			}
-
-			uint offset = stride * gl_InstanceID;
-
-			mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-			offset += 2;
-
-			if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_COLORS)) {
-				color *= transforms.data[offset];
-				offset += 1;
-			}
-
-			if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-				instance_custom = transforms.data[offset];
-			}
-
-			matrix = transpose(matrix);
-			world_matrix = world_matrix * matrix;
-		}
-	}
-*/
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	if (bool(draw_data[draw_data_instance].flags & FLAGS_USING_PARTICLES)) {
 		//scale by texture size
@@ -192,7 +139,7 @@ void main() {
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED)
-	vertex = (world_matrix * vec4(vertex, 0.0, 1.0)).xy;
+	vertex = (model_matrix * vec4(vertex, 0.0, 1.0)).xy;
 #endif
 
 	color_interp = color;
@@ -286,7 +233,7 @@ in vec2 pixel_size_interp;
 layout(location = 0) out vec4 frag_color;
 
 #ifdef MATERIAL_UNIFORMS_USED
-uniform MaterialUniforms{
+layout(std140) uniform MaterialUniforms{
 //ubo:4
 
 #MATERIAL_UNIFORMS
@@ -478,10 +425,6 @@ float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
 }
 
-vec2 msdf_map(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
-	return out_min + (out_max - out_min) * (value - in_min) / (in_max - in_min);
-}
-
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
@@ -522,8 +465,8 @@ void main() {
 		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
 		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
 
-		if (outline_thickness > 0) {
-			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
+		if (outline_thickness > 0.0) {
+			float cr = clamp(outline_thickness, 0.0, px_range / 2.0) / px_range;
 			float a = clamp((d + cr) * px_size, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
@@ -714,8 +657,8 @@ void main() {
 			vec2 pos_rot = pos_norm * mat2(vec2(0.7071067811865476, -0.7071067811865476), vec2(0.7071067811865476, 0.7071067811865476)); //is there a faster way to 45 degrees rot?
 			float tex_ofs;
 			float distance;
-			if (pos_rot.y > 0) {
-				if (pos_rot.x > 0) {
+			if (pos_rot.y > 0.0) {
+				if (pos_rot.x > 0.0) {
 					tex_ofs = pos_box.y * 0.125 + 0.125;
 					distance = shadow_pos.x;
 				} else {
@@ -723,7 +666,7 @@ void main() {
 					distance = shadow_pos.y;
 				}
 			} else {
-				if (pos_rot.x < 0) {
+				if (pos_rot.x < 0.0) {
 					tex_ofs = pos_box.y * -0.125 + (0.5 + 0.125);
 					distance = -shadow_pos.x;
 				} else {

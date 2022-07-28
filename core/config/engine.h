@@ -40,7 +40,7 @@ class Engine {
 public:
 	struct Singleton {
 		StringName name;
-		Object *ptr;
+		Object *ptr = nullptr;
 		StringName class_name; //used for binding generation hinting
 		bool user_created = false;
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
@@ -69,13 +69,14 @@ private:
 	bool _in_physics = false;
 
 	List<Singleton> singletons;
-	Map<StringName, Object *> singleton_ptrs;
+	HashMap<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 
 	static Engine *singleton;
 
+	String write_movie_path;
 	String shader_cache_path;
 
 public:
@@ -137,6 +138,9 @@ public:
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;
+
+	void set_write_movie_path(const String &p_path);
+	String get_write_movie_path() const;
 
 	void set_shader_cache_path(const String &p_path);
 	String get_shader_cache_path() const;

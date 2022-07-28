@@ -23,39 +23,39 @@
 		<method name="blend_rect">
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
-			<argument index="1" name="src_rect" type="Rect2" />
-			<argument index="2" name="dst" type="Vector2" />
+			<argument index="1" name="src_rect" type="Rect2i" />
+			<argument index="2" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code].
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
 			<argument index="1" name="mask" type="Image" />
-			<argument index="2" name="src_rect" type="Rect2" />
-			<argument index="3" name="dst" type="Vector2" />
+			<argument index="2" name="src_rect" type="Rect2i" />
+			<argument index="3" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code]. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code], clipped accordingly to both image bounds. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect">
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
-			<argument index="1" name="src_rect" type="Rect2" />
-			<argument index="2" name="dst" type="Vector2" />
+			<argument index="1" name="src_rect" type="Rect2i" />
+			<argument index="2" name="dst" type="Vector2i" />
 			<description>
-				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code].
+				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
 			<argument index="1" name="mask" type="Image" />
-			<argument index="2" name="src_rect" type="Rect2" />
-			<argument index="3" name="dst" type="Vector2" />
+			<argument index="2" name="src_rect" type="Rect2i" />
+			<argument index="3" name="dst" type="Vector2i" />
 			<description>
-				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code]. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
+				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code], clipped accordingly to both image bounds. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="bump_map_to_normal_map">
@@ -153,7 +153,7 @@
 				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
-		<method name="detect_used_channels">
+		<method name="detect_used_channels" qualifiers="const">
 			<return type="int" enum="Image.UsedChannels" />
 			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
@@ -168,7 +168,7 @@
 		</method>
 		<method name="fill_rect">
 			<return type="void" />
-			<argument index="0" name="rect" type="Rect2" />
+			<argument index="0" name="rect" type="Rect2i" />
 			<argument index="1" name="color" type="Color" />
 			<description>
 				Fills [code]rect[/code] with [code]color[/code].
@@ -244,7 +244,7 @@
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Image" />
-			<argument index="0" name="rect" type="Rect2" />
+			<argument index="0" name="rect" type="Rect2i" />
 			<description>
 				Returns a new image that is a copy of the image's area specified with [code]rect[/code].
 			</description>
@@ -256,9 +256,9 @@
 			</description>
 		</method>
 		<method name="get_used_rect" qualifiers="const">
-			<return type="Rect2" />
+			<return type="Rect2i" />
 			<description>
-				Returns a [Rect2] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
+				Returns a [Rect2i] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
@@ -306,6 +306,13 @@
 			<description>
 				Loads an image from the binary contents of a BMP file.
 				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="Image" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Creates a new [Image] and loads data from the specified file.
 			</description>
 		</method>
 		<method name="load_jpg_from_buffer">
@@ -371,6 +378,19 @@
 				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
 			</description>
 		</method>
+		<method name="rotate_180">
+			<return type="void" />
+			<description>
+				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
+			</description>
+		</method>
+		<method name="rotate_90">
+			<return type="void" />
+			<argument index="0" name="direction" type="int" enum="ClockDirection" />
+			<description>
+				Rotates the image in the specified [code]direction[/code] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
+			</description>
+		</method>
 		<method name="save_exr" qualifiers="const">
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
@@ -380,16 +400,59 @@
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
 			</description>
 		</method>
+		<method name="save_exr_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="grayscale" type="bool" default="false" />
+			<description>
+				Saves the image as an EXR file to a byte array. If [code]grayscale[/code] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_jpg" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to [code]path[/code] with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
+			</description>
+		</method>
+		<method name="save_jpg_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to a byte array with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
+			</description>
+		</method>
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Saves the image as a PNG file to [code]path[/code].
+				Saves the image as a PNG file to the file at [code]path[/code].
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Saves the image as a PNG file to a byte array.
+			</description>
+		</method>
+		<method name="save_webp" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="lossy" type="bool" default="false" />
+			<argument index="2" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to the file at [code]path[/code]. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
+			</description>
+		</method>
+		<method name="save_webp_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="lossy" type="bool" default="false" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
 			</description>
 		</method>
 		<method name="set_pixel">

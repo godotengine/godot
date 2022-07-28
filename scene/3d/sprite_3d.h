@@ -44,6 +44,8 @@ public:
 		FLAG_TRANSPARENT,
 		FLAG_SHADED,
 		FLAG_DOUBLE_SIDED,
+		FLAG_DISABLE_DEPTH_TEST,
+		FLAG_FIXED_SIZE,
 		FLAG_MAX
 
 	};
@@ -69,6 +71,7 @@ private:
 	bool vflip = false;
 
 	Color modulate = Color(1, 1, 1, 1);
+	int render_priority = 0;
 
 	Vector3::Axis axis = Vector3::AXIS_Z;
 	real_t pixel_size = 0.01;
@@ -80,6 +83,7 @@ private:
 	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
+	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 	bool pending_update = false;
 	void _im_update();
 
@@ -97,10 +101,10 @@ protected:
 	uint32_t mesh_surface_offsets[RS::ARRAY_MAX];
 	PackedByteArray vertex_buffer;
 	PackedByteArray attribute_buffer;
-	uint32_t vertex_stride;
-	uint32_t attrib_stride;
-	uint32_t skin_stride;
-	uint32_t mesh_surface_format;
+	uint32_t vertex_stride = 0;
+	uint32_t attrib_stride = 0;
+	uint32_t skin_stride = 0;
+	uint32_t mesh_surface_format = 0;
 
 	void _queue_update();
 
@@ -117,6 +121,9 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
+	void set_render_priority(int p_priority);
+	int get_render_priority() const;
+
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
@@ -131,13 +138,17 @@ public:
 
 	void set_alpha_cut_mode(AlphaCutMode p_mode);
 	AlphaCutMode get_alpha_cut_mode() const;
+
 	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
 	StandardMaterial3D::BillboardMode get_billboard_mode() const;
+
+	void set_texture_filter(StandardMaterial3D::TextureFilter p_filter);
+	StandardMaterial3D::TextureFilter get_texture_filter() const;
 
 	virtual Rect2 get_item_rect() const = 0;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
+
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 
 	SpriteBase3D();
@@ -237,6 +248,8 @@ public:
 	virtual Rect2 get_item_rect() const override;
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+
 	AnimatedSprite3D();
 };
 

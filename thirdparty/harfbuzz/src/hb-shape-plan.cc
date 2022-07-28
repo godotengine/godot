@@ -117,7 +117,7 @@ hb_shape_plan_key_t::init (bool                           copy,
   }
   else
   {
-    const hb_shaper_entry_t *shapers = _hb_shapers_get ();
+    const HB_UNUSED hb_shaper_entry_t *shapers = _hb_shapers_get ();
     for (unsigned int i = 0; i < HB_SHAPERS_COUNT; i++)
       if (false)
 	;
@@ -170,7 +170,7 @@ hb_shape_plan_key_t::equal (const hb_shape_plan_key_t *other)
 
 
 /**
- * hb_shape_plan_create: (Xconstructor)
+ * hb_shape_plan_create:
  * @face: #hb_face_t to use
  * @props: The #hb_segment_properties_t of the segment
  * @user_features: (array length=num_user_features): The list of user-selected features
@@ -198,7 +198,7 @@ hb_shape_plan_create (hb_face_t                     *face,
 }
 
 /**
- * hb_shape_plan_create2: (Xconstructor)
+ * hb_shape_plan_create2:
  * @face: #hb_face_t to use
  * @props: The #hb_segment_properties_t of the segment
  * @user_features: (array length=num_user_features): The list of user-selected features
@@ -231,7 +231,8 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		  num_coords,
 		  shaper_list);
 
-  assert (props->direction != HB_DIRECTION_INVALID);
+  if (unlikely (props->direction == HB_DIRECTION_INVALID))
+    return hb_shape_plan_get_empty ();
 
   hb_shape_plan_t *shape_plan;
 
@@ -317,10 +318,6 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
 {
   if (!hb_object_destroy (shape_plan)) return;
 
-#ifndef HB_NO_OT_SHAPE
-  shape_plan->ot.fini ();
-#endif
-  shape_plan->key.fini ();
   hb_free (shape_plan);
 }
 
@@ -334,7 +331,7 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
  *
  * Attaches a user-data key/data pair to the given shaping plan. 
  *
- * Return value: %true if success, %false otherwise.
+ * Return value: `true` if success, `false` otherwise.
  *
  * Since: 0.9.7
  **/
@@ -439,7 +436,7 @@ _hb_shape_plan_execute_internal (hb_shape_plan_t    *shape_plan,
  * Executes the given shaping plan on the specified buffer, using
  * the given @font and @features.
  *
- * Return value: %true if success, %false otherwise.
+ * Return value: `true` if success, `false` otherwise.
  *
  * Since: 0.9.7
  **/

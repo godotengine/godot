@@ -47,15 +47,15 @@ class EditorFileServer : public Object {
 	};
 
 	struct ClientData {
-		Thread *thread;
+		Thread *thread = nullptr;
 		Ref<StreamPeerTCP> connection;
-		Map<int, FileAccess *> files;
+		HashMap<int, Ref<FileAccess>> files;
 		EditorFileServer *efs = nullptr;
 		bool quit = false;
 	};
 
 	Ref<TCPServer> server;
-	Set<Thread *> to_wait;
+	HashSet<Thread *> to_wait;
 
 	static void _close_client(ClientData *cd);
 	static void _subthread_start(void *s);
@@ -63,12 +63,12 @@ class EditorFileServer : public Object {
 	Mutex wait_mutex;
 	Thread thread;
 	static void _thread_start(void *);
-	bool quit;
-	Command cmd;
+	bool quit = false;
+	Command cmd = CMD_NONE;
 
 	String password;
-	int port;
-	bool active;
+	int port = 0;
+	bool active = false;
 
 public:
 	void start();

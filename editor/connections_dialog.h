@@ -93,8 +93,11 @@ public:
 			if (unbinds > 0) {
 				return Callable(target, method).unbind(unbinds);
 			} else if (!binds.is_empty()) {
-				const Variant *args = binds.ptr();
-				return Callable(target, method).bind(&args, binds.size());
+				const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
+				for (int i = 0; i < binds.size(); i++) {
+					argptrs[i] = &binds[i];
+				}
+				return Callable(target, method).bind(argptrs, binds.size());
 			} else {
 				return Callable(target, method);
 			}
@@ -102,27 +105,27 @@ public:
 	};
 
 private:
-	Label *connect_to_label;
-	LineEdit *from_signal;
-	Node *source;
+	Label *connect_to_label = nullptr;
+	LineEdit *from_signal = nullptr;
+	Node *source = nullptr;
 	StringName signal;
-	LineEdit *dst_method;
-	ConnectDialogBinds *cdbinds;
-	bool edit_mode;
+	LineEdit *dst_method = nullptr;
+	ConnectDialogBinds *cdbinds = nullptr;
+	bool edit_mode = false;
 	NodePath dst_path;
-	VBoxContainer *vbc_right;
+	VBoxContainer *vbc_right = nullptr;
 
-	SceneTreeEditor *tree;
-	AcceptDialog *error;
-	SpinBox *unbind_count;
-	EditorInspector *bind_editor;
-	OptionButton *type_list;
-	CheckBox *deferred;
-	CheckBox *oneshot;
-	CheckButton *advanced;
+	SceneTreeEditor *tree = nullptr;
+	AcceptDialog *error = nullptr;
+	SpinBox *unbind_count = nullptr;
+	EditorInspector *bind_editor = nullptr;
+	OptionButton *type_list = nullptr;
+	CheckBox *deferred = nullptr;
+	CheckBox *oneshot = nullptr;
+	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
-	Label *error_label;
+	Label *error_label = nullptr;
 
 	void ok_pressed() override;
 	void _cancel_pressed();
@@ -183,18 +186,18 @@ class ConnectionsDock : public VBoxContainer {
 		DISCONNECT
 	};
 
-	Node *selected_node;
-	ConnectionsDockTree *tree;
+	Node *selected_node = nullptr;
+	ConnectionsDockTree *tree = nullptr;
 
-	ConfirmationDialog *disconnect_all_dialog;
-	ConnectDialog *connect_dialog;
-	Button *connect_button;
-	PopupMenu *signal_menu;
-	PopupMenu *slot_menu;
-	UndoRedo *undo_redo;
-	LineEdit *search_box;
+	ConfirmationDialog *disconnect_all_dialog = nullptr;
+	ConnectDialog *connect_dialog = nullptr;
+	Button *connect_button = nullptr;
+	PopupMenu *signal_menu = nullptr;
+	PopupMenu *slot_menu = nullptr;
+	UndoRedo *undo_redo = nullptr;
+	LineEdit *search_box = nullptr;
 
-	Map<StringName, Map<StringName, String>> descr_cache;
+	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 
 	void _filter_changed(const String &p_text);
 
@@ -213,7 +216,7 @@ class ConnectionsDock : public VBoxContainer {
 
 	void _handle_signal_menu_option(int p_option);
 	void _handle_slot_menu_option(int p_option);
-	void _rmb_pressed(Vector2 p_position);
+	void _rmb_pressed(Vector2 p_position, MouseButton p_button);
 	void _close();
 
 protected:

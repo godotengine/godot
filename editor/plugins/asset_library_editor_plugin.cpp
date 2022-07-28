@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/io/stream_peer_ssl.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
@@ -44,8 +45,8 @@
 static inline void setup_http_request(HTTPRequest *request) {
 	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
 
-	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
-	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	const String proxy_host = EDITOR_GET("network/http_proxy/host");
+	const int proxy_port = EDITOR_GET("network/http_proxy/port");
 	request->set_http_proxy(proxy_host, proxy_port);
 	request->set_https_proxy(proxy_host, proxy_port);
 }
@@ -160,18 +161,13 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						Ref<Image> overlay = previews->get_theme_icon(SNAME("PlayOverlay"), SNAME("EditorIcons"))->get_image();
 						Ref<Image> thumbnail = p_image->get_image();
 						thumbnail = thumbnail->duplicate();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+						Point2i overlay_pos = Point2i((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
-
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
+						preview_images[i].button->set_icon(ImageTexture::create_from_image(thumbnail));
 
-						Ref<ImageTexture> tex;
-						tex.instantiate();
-						tex->create_from_image(thumbnail);
-
-						preview_images[i].button->set_icon(tex);
 						// Make it clearer that clicking it will open an external link
 						preview_images[i].button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 					} else {
@@ -290,12 +286,15 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	hbox->add_child(previews_vbox);
 	previews_vbox->add_theme_constant_override("separation", 15 * EDSCALE);
 	previews_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	previews_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	preview = memnew(TextureRect);
 	previews_vbox->add_child(preview);
 	preview->set_ignore_texture_size(true);
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
+	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews_bg = memnew(PanelContainer);
 	previews_vbox->add_child(previews_bg);
@@ -308,8 +307,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok_button()->set_text(TTR("Download"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Download"));
+	set_cancel_button_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -577,6 +576,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
 			error_label->raise();
 		} break;
 
@@ -619,6 +619,10 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		} break;
 
+		case NOTIFICATION_RESIZED: {
+			_update_asset_items_columns();
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_repository_options();
 			setup_http_request(request);
@@ -639,7 +643,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	}
 }
 
-void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> key = p_event;
@@ -728,9 +732,8 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		if (use_cache) {
 			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
-			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
-
-			if (file) {
+			Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
+			if (file.is_valid()) {
 				PackedByteArray cached_data;
 				int len = file->get_32();
 				cached_data.resize(len);
@@ -739,8 +742,6 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 				file->get_buffer(w, len);
 
 				image_data = cached_data;
-				file->close();
-				memdelete(file);
 			}
 		}
 
@@ -784,9 +785,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 				} break;
 			}
 
-			Ref<ImageTexture> tex;
-			tex.instantiate();
-			tex->create_from_image(image);
+			Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
 			image_set = true;
@@ -807,23 +806,17 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 				if (headers[i].findn("ETag:") == 0) { // Save etag
 					String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
-					FileAccess *file;
-
-					file = FileAccess::open(cache_filename_base + ".etag", FileAccess::WRITE);
-					if (file) {
+					Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".etag", FileAccess::WRITE);
+					if (file.is_valid()) {
 						file->store_line(new_etag);
-						file->close();
-						memdelete(file);
 					}
 
 					int len = p_data.size();
 					const uint8_t *r = p_data.ptr();
 					file = FileAccess::open(cache_filename_base + ".data", FileAccess::WRITE);
-					if (file) {
+					if (file.is_valid()) {
 						file->store_32(len);
 						file->store_buffer(r, len);
-						file->close();
-						memdelete(file);
 					}
 
 					break;
@@ -857,11 +850,9 @@ void EditorAssetLibrary::_update_image_queue() {
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {
-				FileAccess *file = FileAccess::open(cache_filename_base + ".etag", FileAccess::READ);
-				if (file) {
+				Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".etag", FileAccess::READ);
+				if (file.is_valid()) {
 					headers.push_back("If-None-Match: " + file->get_line());
-					file->close();
-					memdelete(file);
 				}
 			}
 
@@ -907,6 +898,19 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 }
 
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
+	library_error->hide();
+	library_info->set_text(TTR("Loading..."));
+	library_info->show();
+
+	asset_top_page->hide();
+	asset_bottom_page->hide();
+	asset_items->hide();
+
+	filter->set_editable(false);
+	sort->set_disabled(true);
+	categories->set_disabled(true);
+	support->set_disabled(true);
+
 	host = repository->get_item_metadata(p_repository_id);
 	if (templates_only) {
 		_api_request("configure", REQUESTING_CONFIG, "?type=project");
@@ -975,6 +979,10 @@ void EditorAssetLibrary::_filter_debounce_timer_timeout() {
 	_search();
 }
 
+void EditorAssetLibrary::_request_current_config() {
+	_repository_changed(repository->get_selected());
+}
+
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
@@ -996,7 +1004,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
-	first->set_text(TTR("First"));
+	first->set_text(TTR("First", "Pagination"));
 	if (p_page != 0) {
 		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(0));
 	} else {
@@ -1006,7 +1014,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(first);
 
 	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous"));
+	prev->set_text(TTR("Previous", "Pagination"));
 	if (p_page > 0) {
 		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page - 1));
 	} else {
@@ -1036,7 +1044,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	}
 
 	Button *next = memnew(Button);
-	next->set_text(TTR("Next"));
+	next->set_text(TTR("Next", "Pagination"));
 	if (p_page < p_page_count - 1) {
 		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page + 1));
 	} else {
@@ -1047,7 +1055,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(next);
 
 	Button *last = memnew(Button);
-	last->set_text(TTR("Last"));
+	last->set_text(TTR("Last", "Pagination"));
 	if (p_page != p_page_count - 1) {
 		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page_count - 1));
 	} else {
@@ -1116,6 +1124,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	}
 
 	if (error_abort) {
+		if (requesting == REQUESTING_CONFIG) {
+			library_info->hide();
+			library_error->show();
+		}
 		error_hb->show();
 		return;
 	}
@@ -1145,21 +1157,20 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					String name = cat["name"];
 					int id = cat["id"];
 					categories->add_item(name);
-					categories->set_item_metadata(categories->get_item_count() - 1, id);
+					categories->set_item_metadata(-1, id);
 					category_map[cat["id"]] = name;
 				}
 			}
+
+			filter->set_editable(true);
+			sort->set_disabled(false);
+			categories->set_disabled(false);
+			support->set_disabled(false);
 
 			_search();
 		} break;
 		case REQUESTING_SEARCH: {
 			initial_loading = false;
-
-			// The loading text only needs to be displayed before the first page is loaded.
-			// Therefore, we don't need to show it again.
-			library_loading->hide();
-
-			library_error->hide();
 
 			if (asset_items) {
 				memdelete(asset_items);
@@ -1199,9 +1210,9 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_top_page);
 
 			asset_items = memnew(GridContainer);
-			asset_items->set_columns(2);
-			asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
+			_update_asset_items_columns();
+			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1210,16 +1221,18 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			if (result.is_empty()) {
 				if (!filter->get_text().is_empty()) {
-					library_error->set_text(
+					library_info->set_text(
 							vformat(TTR("No results for \"%s\"."), filter->get_text()));
 				} else {
 					// No results, even though the user didn't search for anything specific.
 					// This is typically because the version number changed recently
 					// and no assets compatible with the new version have been published yet.
-					library_error->set_text(
+					library_info->set_text(
 							vformat(TTR("No results compatible with %s %s."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH)));
 				}
-				library_error->show();
+				library_info->show();
+			} else {
+				library_info->hide();
 			}
 
 			for (int i = 0; i < result.size(); i++) {
@@ -1280,14 +1293,14 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
 				if (download_item->can_install()) {
-					description->get_ok_button()->set_text(TTR("Install"));
+					description->set_ok_button_text(TTR("Install"));
 					description->get_ok_button()->set_disabled(false);
 				} else {
-					description->get_ok_button()->set_text(TTR("Downloading..."));
+					description->set_ok_button_text(TTR("Downloading..."));
 					description->get_ok_button()->set_disabled(true);
 				}
 			} else {
-				description->get_ok_button()->set_text(TTR("Download"));
+				description->set_ok_button_text(TTR("Download"));
 				description->get_ok_button()->set_disabled(false);
 			}
 
@@ -1363,6 +1376,15 @@ void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_tit
 	emit_signal(SNAME("install_asset"), p_zip_path, p_title);
 }
 
+void EditorAssetLibrary::_update_asset_items_columns() {
+	int new_columns = get_size().x / (450.0 * EDSCALE);
+	new_columns = MAX(1, new_columns);
+
+	if (new_columns != asset_items->get_columns()) {
+		asset_items->set_columns(new_columns);
+	}
+}
+
 void EditorAssetLibrary::disable_community_support() {
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
 }
@@ -1377,7 +1399,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	initial_loading = true;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
-
 	add_child(library_main);
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
@@ -1387,9 +1408,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	filter = memnew(LineEdit);
 	if (templates_only) {
-		filter->set_placeholder(TTR("Search templates, projects, and demos"));
+		filter->set_placeholder(TTR("Search Templates, Projects, and Demos"));
 	} else {
-		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
+		filter->set_placeholder(TTR("Search Assets (Excluding Templates, Projects, and Demos)"));
 	}
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
@@ -1435,6 +1456,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	sort->set_clip_text(true);
 	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1444,6 +1466,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	categories->set_clip_text(true);
 	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1457,6 +1480,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	repository->set_clip_text(true);
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1499,22 +1523,30 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb_border->add_child(library_vb);
 
-	library_loading = memnew(Label(TTR("Loading...")));
-	library_loading->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	library_vb->add_child(library_loading);
+	library_info = memnew(Label);
+	library_info->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	library_vb->add_child(library_info);
 
-	library_error = memnew(Label);
-	library_error->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	library_error = memnew(VBoxContainer);
 	library_error->hide();
 	library_vb->add_child(library_error);
+
+	library_error_label = memnew(Label(TTR("Failed to get repository configuration.")));
+	library_error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	library_error->add_child(library_error_label);
+
+	library_error_retry = memnew(Button(TTR("Retry")));
+	library_error_retry->set_h_size_flags(SIZE_SHRINK_CENTER);
+	library_error_retry->connect("pressed", callable_mp(this, &EditorAssetLibrary::_request_current_config));
+	library_error->add_child(library_error_retry);
 
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
-	asset_items->set_columns(2);
-	asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
-	asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
+	_update_asset_items_columns();
+	asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1541,7 +1573,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = nullptr;
 
 	set_process(true);
-	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
+	set_process_shortcut_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
@@ -1552,7 +1584,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open = memnew(EditorFileDialog);
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip ; " + TTR("Assets ZIP File"));
+	asset_open->add_filter("*.zip", TTR("Assets ZIP File"));
 	asset_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));
@@ -1561,6 +1593,16 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 }
 
 ///////
+
+bool AssetLibraryEditorPlugin::is_available() {
+#ifdef JAVASCRIPT_ENABLED
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+	return false;
+#else
+	return StreamPeerSSL::is_available();
+#endif
+}
 
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
@@ -1574,7 +1616,7 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	EditorNode::get_singleton()->get_main_control()->add_child(addon_library);
-	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }
 

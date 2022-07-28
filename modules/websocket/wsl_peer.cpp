@@ -146,17 +146,17 @@ void wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct wslay_event
 	if (!peer_data->valid || peer_data->closing) {
 		return;
 	}
-	WSLPeer *peer = (WSLPeer *)peer_data->peer;
+	WSLPeer *peer = static_cast<WSLPeer *>(peer_data->peer);
 
 	if (peer->parse_message(arg) != OK) {
 		return;
 	}
 
 	if (peer_data->is_server) {
-		WSLServer *helper = (WSLServer *)peer_data->obj;
+		WSLServer *helper = static_cast<WSLServer *>(peer_data->obj);
 		helper->_on_peer_packet(peer_data->id);
 	} else {
-		WSLClient *helper = (WSLClient *)peer_data->obj;
+		WSLClient *helper = static_cast<WSLClient *>(peer_data->obj);
 		helper->_on_peer_packet();
 	}
 }
@@ -184,10 +184,10 @@ Error WSLPeer::parse_message(const wslay_event_on_msg_recv_arg *arg) {
 		}
 		if (!wslay_event_get_close_sent(_data->ctx)) {
 			if (_data->is_server) {
-				WSLServer *helper = (WSLServer *)_data->obj;
+				WSLServer *helper = static_cast<WSLServer *>(_data->obj);
 				helper->_on_close_request(_data->id, close_code, close_reason);
 			} else {
-				WSLClient *helper = (WSLClient *)_data->obj;
+				WSLClient *helper = static_cast<WSLClient *>(_data->obj);
 				helper->_on_close_request(close_code, close_reason);
 			}
 		}

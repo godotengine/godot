@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+/*
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,9 +99,9 @@ struct SwSize
 struct SwOutline
 {
     SwPoint*      pts;              //the outline's points
-    uint16_t      ptsCnt;           //number of points in the glyph
-    uint16_t      reservedPtsCnt;
-    uint16_t*     cntrs;            //the contour end points
+    uint32_t      ptsCnt;           //number of points in the glyph
+    uint32_t      reservedPtsCnt;
+    uint32_t*     cntrs;            //the contour end points
     uint16_t      cntrsCnt;         //number of contours in glyph
     uint16_t      reservedCntrsCnt;
     uint8_t*      types;            //curve type
@@ -235,6 +235,7 @@ struct SwImage
 struct SwBlender
 {
     uint32_t (*join)(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    uint32_t (*lumaValue)(uint32_t c);
 };
 
 struct SwCompositor;

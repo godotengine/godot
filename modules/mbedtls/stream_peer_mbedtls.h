@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_OPEN_SSL_H
-#define STREAM_PEER_OPEN_SSL_H
+#ifndef STREAM_PEER_MBEDTLS_H
+#define STREAM_PEER_MBEDTLS_H
 
 #include "core/io/stream_peer_ssl.h"
 #include "ssl_context_mbedtls.h"
@@ -57,6 +57,7 @@ public:
 	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
 	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>());
 	virtual Status get_status() const;
+	virtual Ref<StreamPeer> get_stream() const;
 
 	virtual void disconnect_from_stream();
 
@@ -75,4 +76,4 @@ public:
 	~StreamPeerMbedTLS();
 };
 
-#endif // STREAM_PEER_SSL_H
+#endif // STREAM_PEER_MBEDTLS_H

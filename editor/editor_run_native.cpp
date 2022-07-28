@@ -30,9 +30,9 @@
 
 #include "editor_run_native.h"
 
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/export/editor_export_platform.h"
 
 void EditorRunNative::_notification(int p_what) {
 	switch (p_what) {
@@ -49,9 +49,7 @@ void EditorRunNative::_notification(int p_what) {
 					im->clear_mipmaps();
 					if (!im->is_empty()) {
 						im->resize(16 * EDSCALE, 16 * EDSCALE);
-						Ref<ImageTexture> small_icon;
-						small_icon.instantiate();
-						small_icon->create_from_image(im);
+						Ref<ImageTexture> small_icon = ImageTexture::create_from_image(im);
 						MenuButton *mb = memnew(MenuButton);
 						mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
 						mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
@@ -83,7 +81,7 @@ void EditorRunNative::_notification(int p_what) {
 							mb->set_tooltip(eep->get_options_tooltip());
 							for (int i = 0; i < dc; i++) {
 								mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
-								mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
+								mb->get_popup()->set_item_tooltip(-1, eep->get_option_tooltip(i));
 							}
 						}
 					}
@@ -151,7 +149,13 @@ Error EditorRunNative::run_native(int p_idx, int p_platform) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
 	}
 
-	return eep->run(preset, p_idx, flags);
+	eep->clear_messages();
+	Error err = eep->run(preset, p_idx, flags);
+	result_dialog_log->clear();
+	if (eep->fill_log_messages(result_dialog_log, err)) {
+		result_dialog->popup_centered_ratio(0.5);
+	}
+	return err;
 }
 
 void EditorRunNative::resume_run_native() {
@@ -167,8 +171,16 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 }
 
 EditorRunNative::EditorRunNative() {
+	result_dialog = memnew(AcceptDialog);
+	result_dialog->set_title(TTR("Project Run"));
+	result_dialog_log = memnew(RichTextLabel);
+	result_dialog_log->set_custom_minimum_size(Size2(300, 80) * EDSCALE);
+	result_dialog->add_child(result_dialog_log);
+
+	add_child(result_dialog);
+	result_dialog->hide();
+
 	set_process(true);
-	first = true;
 	resume_idx = 0;
 	resume_platform = 0;
 }

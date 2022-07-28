@@ -181,7 +181,7 @@ Error AudioDriverALSA::init() {
 }
 
 void AudioDriverALSA::thread_func(void *p_udata) {
-	AudioDriverALSA *ad = (AudioDriverALSA *)p_udata;
+	AudioDriverALSA *ad = static_cast<AudioDriverALSA *>(p_udata);
 
 	while (!ad->exit_thread) {
 		ad->lock();

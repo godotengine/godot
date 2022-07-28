@@ -42,7 +42,7 @@ class SceneState : public RefCounted {
 	Vector<NodePath> node_paths;
 	Vector<NodePath> editable_instances;
 	mutable HashMap<NodePath, int> node_path_cache;
-	mutable Map<int, int> base_scene_node_remap;
+	mutable HashMap<int, int> base_scene_node_remap;
 
 	int base_scene_idx = -1;
 
@@ -69,6 +69,12 @@ class SceneState : public RefCounted {
 		Vector<int> groups;
 	};
 
+	struct DeferredNodePathProperties {
+		Node *base = nullptr;
+		StringName property;
+		NodePath path;
+	};
+
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
@@ -83,8 +89,8 @@ class SceneState : public RefCounted {
 
 	Vector<ConnectionData> connections;
 
-	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map);
-	Error _parse_connections(Node *p_owner, Node *p_node, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map);
+	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
+	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
 
 	String path;
 
@@ -104,6 +110,8 @@ public:
 		FLAG_ID_IS_PATH = (1 << 30),
 		TYPE_INSTANCED = 0x7FFFFFFF,
 		FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30),
+		FLAG_PATH_PROPERTY_IS_NODE = (1 << 30),
+		FLAG_PROP_NAME_MASK = FLAG_PATH_PROPERTY_IS_NODE - 1,
 		FLAG_MASK = (1 << 24) - 1,
 	};
 
@@ -157,6 +165,7 @@ public:
 	int get_node_property_count(int p_idx) const;
 	StringName get_node_property_name(int p_idx, int p_prop) const;
 	Variant get_node_property_value(int p_idx, int p_prop) const;
+	Vector<String> get_node_deferred_nodepath_properties(int p_idx) const;
 
 	int get_connection_count() const;
 	NodePath get_connection_source(int p_idx) const;
@@ -177,7 +186,7 @@ public:
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
 	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
-	void add_node_property(int p_node, int p_name, int p_value);
+	void add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path = false);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
 	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
@@ -185,6 +194,9 @@ public:
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
+
+	// Used when saving pointers (saves a path property instead).
+	static String get_meta_pointer_property(const String &p_property);
 
 	SceneState();
 };
@@ -225,14 +237,16 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 #ifdef TOOLS_ENABLED
-	virtual void set_last_modified_time(uint64_t p_time) override { state->set_last_modified_time(p_time); }
+	virtual void set_last_modified_time(uint64_t p_time) override {
+		state->set_last_modified_time(p_time);
+	}
 
 #endif
-	Ref<SceneState> get_state();
+	Ref<SceneState> get_state() const;
 
 	PackedScene();
 };
 
 VARIANT_ENUM_CAST(PackedScene::GenEditState)
 
-#endif // SCENE_PRELOADER_H
+#endif // PACKED_SCENE_H

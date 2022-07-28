@@ -1,6 +1,6 @@
 # Commented out parameters are those with the same value as base LLVM style.
 # We can uncomment them if we want to change their value, or enforce the
-# chosen value in case the base style changes (last sync: Clang 13.0).
+# chosen value in case the base style changes (last sync: Clang 14.0).
 ---
 ### General config, applies to all languages ###
 BasedOnStyle:  LLVM
@@ -15,7 +15,6 @@ AlignAfterOpenBracket: DontAlign
 AlignOperands:   DontAlign
 AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
-# AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 # AllowShortEnumsOnASingleLine: true
 # AllowShortBlocksOnASingleLine: Never
@@ -62,8 +61,8 @@ BreakConstructorInitializers: AfterColon
 # BreakStringLiterals: true
 ColumnLimit:     0
 # CommentPragmas:  '^ IWYU pragma:'
+# QualifierAlignment: Leave
 # CompactNamespaces: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 8
 ContinuationIndentWidth: 8
 Cpp11BracedListStyle: false
@@ -73,6 +72,9 @@ Cpp11BracedListStyle: false
 # EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
+# PackConstructorInitializers: BinPack
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+# AllowAllConstructorInitializersOnNextLine: true
 # FixNamespaceComments: true
 # ForEachMacros:
 #   - foreach
@@ -112,6 +114,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 # PenaltyBreakBeforeFirstCallParameter: 19
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
+# PenaltyBreakOpenParenthesis: 0
 # PenaltyBreakString: 1000
 # PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
@@ -121,6 +124,8 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 # PPIndentWidth:   -1
 # ReferenceAlignment: Pointer
 # ReflowComments:  true
+# RemoveBracesLLVM: false
+# SeparateDefinitionBlocks: Leave
 # ShortNamespaceLines: 1
 # SortIncludes:    CaseSensitive
 # SortJavaStaticImport: Before
@@ -134,15 +139,20 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 # SpaceBeforeCtorInitializerColon: true
 # SpaceBeforeInheritanceColon: true
 # SpaceBeforeParens: ControlStatements
+# SpaceBeforeParensOptions:
+#   AfterControlStatements: true
+#   AfterForeachMacros: true
+#   AfterFunctionDefinitionName: false
+#   AfterFunctionDeclarationName: false
+#   AfterIfMacros:   true
+#   AfterOverloadedOperator: false
+#   BeforeNonEmptyParentheses: false
 # SpaceAroundPointerQualifiers: Default
 # SpaceBeforeRangeBasedForLoopColon: true
-# SpaceInEmptyParentheses: false
-# SpacesBeforeTrailingComments: 1
 # SpaceInEmptyBlock: false
 # SpaceInEmptyParentheses: false
 # SpacesBeforeTrailingComments: 1
 # SpacesInAngles:  Never
-# SpacesInContainerLiterals: true
 # SpacesInConditionalStatement: false
 # SpacesInContainerLiterals: true
 # SpacesInCStyleCastParentheses: false

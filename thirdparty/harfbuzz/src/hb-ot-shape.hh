@@ -60,8 +60,10 @@ struct hb_shape_plan_key_t;
 
 struct hb_ot_shape_plan_t
 {
+  ~hb_ot_shape_plan_t () { fini (); }
+
   hb_segment_properties_t props;
-  const struct hb_ot_complex_shaper_t *shaper;
+  const struct hb_ot_shaper_t *shaper;
   hb_ot_map_t map;
   hb_aat_map_t aat_map;
   const void *data;
@@ -158,10 +160,10 @@ struct hb_ot_shape_planner_t
 #endif
   bool script_zero_marks : 1;
   bool script_fallback_mark_positioning : 1;
-  const struct hb_ot_complex_shaper_t *shaper;
+  const struct hb_ot_shaper_t *shaper;
 
   HB_INTERNAL hb_ot_shape_planner_t (hb_face_t                     *face,
-				     const hb_segment_properties_t *props);
+				     const hb_segment_properties_t &props);
 
   HB_INTERNAL void compile (hb_ot_shape_plan_t           &plan,
 			    const hb_ot_shape_plan_key_t &key);

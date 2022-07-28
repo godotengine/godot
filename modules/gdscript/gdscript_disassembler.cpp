@@ -564,6 +564,28 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5 + argc;
 			} break;
+			case OPCODE_CALL_NATIVE_STATIC: {
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
+				int argc = _code_ptr[ip + 2 + instr_var_args];
+
+				text += "call native method static ";
+				text += DADDR(1 + argc);
+				text += " = ";
+				text += method->get_instance_class();
+				text += ".";
+				text += method->get_name();
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr += 4 + argc;
+			} break;
 			case OPCODE_CALL_PTRCALL_NO_RETURN: {
 				text += "call-ptrcall (no return) ";
 
@@ -617,10 +639,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_PTRCALL(VECTOR3);
 				DISASSEMBLE_PTRCALL(VECTOR3I);
 				DISASSEMBLE_PTRCALL(TRANSFORM2D);
+				DISASSEMBLE_PTRCALL(VECTOR4);
+				DISASSEMBLE_PTRCALL(VECTOR4I);
 				DISASSEMBLE_PTRCALL(PLANE);
 				DISASSEMBLE_PTRCALL(AABB);
 				DISASSEMBLE_PTRCALL(BASIS);
 				DISASSEMBLE_PTRCALL(TRANSFORM3D);
+				DISASSEMBLE_PTRCALL(PROJECTION);
 				DISASSEMBLE_PTRCALL(COLOR);
 				DISASSEMBLE_PTRCALL(STRING_NAME);
 				DISASSEMBLE_PTRCALL(NODE_PATH);
@@ -770,6 +795,25 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 3 + captures_count;
 			} break;
+			case OPCODE_CREATE_SELF_LAMBDA: {
+				int captures_count = _code_ptr[ip + 1 + instr_var_args];
+				GDScriptFunction *lambda = _lambdas_ptr[_code_ptr[ip + 2 + instr_var_args]];
+
+				text += DADDR(1 + captures_count);
+				text += "create self lambda from ";
+				text += lambda->name.operator String();
+				text += "function, captures (";
+
+				for (int i = 0; i < captures_count; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 3 + captures_count;
+			} break;
 			case OPCODE_JUMP: {
 				text += "jump ";
 				text += itos(_code_ptr[ip + 1]);
@@ -796,6 +840,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "jump-to-default-argument ";
 
 				incr = 1;
+			} break;
+			case OPCODE_JUMP_IF_SHARED: {
+				text += "jump-if-shared ";
+				text += DADDR(1);
+				text += " to ";
+				text += itos(_code_ptr[ip + 2]);
+
+				incr = 3;
 			} break;
 			case OPCODE_RETURN: {
 				text += "return ";
@@ -964,11 +1016,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(VECTOR3);
 				DISASSEMBLE_TYPE_ADJUST(VECTOR3I);
 				DISASSEMBLE_TYPE_ADJUST(TRANSFORM2D);
+				DISASSEMBLE_TYPE_ADJUST(VECTOR4);
+				DISASSEMBLE_TYPE_ADJUST(VECTOR4I);
 				DISASSEMBLE_TYPE_ADJUST(PLANE);
 				DISASSEMBLE_TYPE_ADJUST(QUATERNION);
 				DISASSEMBLE_TYPE_ADJUST(AABB);
 				DISASSEMBLE_TYPE_ADJUST(BASIS);
-				DISASSEMBLE_TYPE_ADJUST(TRANSFORM);
+				DISASSEMBLE_TYPE_ADJUST(TRANSFORM3D);
+				DISASSEMBLE_TYPE_ADJUST(PROJECTION);
 				DISASSEMBLE_TYPE_ADJUST(COLOR);
 				DISASSEMBLE_TYPE_ADJUST(STRING_NAME);
 				DISASSEMBLE_TYPE_ADJUST(NODE_PATH);

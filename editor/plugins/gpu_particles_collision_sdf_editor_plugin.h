@@ -41,12 +41,12 @@ class EditorFileDialog;
 class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticlesCollisionSDF3DEditorPlugin, EditorPlugin);
 
-	GPUParticlesCollisionSDF3D *col_sdf;
+	GPUParticlesCollisionSDF3D *col_sdf = nullptr;
 
-	HBoxContainer *bake_hb;
-	Button *bake;
+	HBoxContainer *bake_hb = nullptr;
+	Button *bake = nullptr;
 
-	EditorFileDialog *probe_file;
+	EditorFileDialog *probe_file = nullptr;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);

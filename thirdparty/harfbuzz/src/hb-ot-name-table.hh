@@ -156,7 +156,7 @@ struct NameRecord
 };
 
 static int
-_hb_ot_name_entry_cmp_key (const void *pa, const void *pb)
+_hb_ot_name_entry_cmp_key (const void *pa, const void *pb, bool exact)
 {
   const hb_ot_name_entry_t *a = (const hb_ot_name_entry_t *) pa;
   const hb_ot_name_entry_t *b = (const hb_ot_name_entry_t *) pb;
@@ -169,8 +169,19 @@ _hb_ot_name_entry_cmp_key (const void *pa, const void *pb)
   if (a->language == b->language) return 0;
   if (!a->language) return -1;
   if (!b->language) return +1;
-  return strcmp (hb_language_to_string (a->language),
-		 hb_language_to_string (b->language));
+
+  const char *astr = hb_language_to_string (a->language);
+  const char *bstr = hb_language_to_string (b->language);
+
+  signed c = strcmp (astr, bstr);
+
+  // 'a' is the user request, and 'b' is string in the font.
+  // If eg. user asks for "en-us" and font has "en", approve.
+  if (!exact && c &&
+      hb_language_matches (b->language, a->language))
+    return 0;
+
+  return c;
 }
 
 static int
@@ -178,7 +189,7 @@ _hb_ot_name_entry_cmp (const void *pa, const void *pb)
 {
   /* Compare by name_id, then language, then score, then index. */
 
-  int v = _hb_ot_name_entry_cmp_key (pa, pb);
+  int v = _hb_ot_name_entry_cmp_key (pa, pb, true);
   if (v)
     return v;
 
@@ -330,7 +341,18 @@ struct name
       const hb_ot_name_entry_t *entry = hb_bsearch (key, (const hb_ot_name_entry_t *) this->names,
 						    this->names.length,
 						    sizeof (hb_ot_name_entry_t),
-						    _hb_ot_name_entry_cmp_key);
+						    _hb_ot_name_entry_cmp_key,
+						    true);
+
+      if (!entry)
+      {
+	entry = hb_bsearch (key, (const hb_ot_name_entry_t *) this->names,
+			    this->names.length,
+			    sizeof (hb_ot_name_entry_t),
+			    _hb_ot_name_entry_cmp_key,
+			    false);
+      }
+
       if (!entry)
 	return -1;
 

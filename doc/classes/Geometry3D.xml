@@ -81,7 +81,7 @@
 			<argument index="3" name="b" type="Vector3" />
 			<argument index="4" name="c" type="Vector3" />
 			<description>
-				Tests if the 3D ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
+				Tests if the 3D ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="segment_intersects_convex">
@@ -121,7 +121,7 @@
 			<argument index="3" name="b" type="Vector3" />
 			<argument index="4" name="c" type="Vector3" />
 			<description>
-				Tests if the segment ([code]from[/code], [code]to[/code]) intersects the triangle [code]a[/code], [code]b[/code], [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
+				Tests if the segment ([code]from[/code], [code]to[/code]) intersects the triangle [code]a[/code], [code]b[/code], [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, returns [code]null[/code].
 			</description>
 		</method>
 	</methods>

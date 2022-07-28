@@ -37,11 +37,11 @@ class SceneCacheInterface : public MultiplayerCacheInterface {
 	GDCLASS(SceneCacheInterface, MultiplayerCacheInterface);
 
 private:
-	MultiplayerAPI *multiplayer;
+	MultiplayerAPI *multiplayer = nullptr;
 
 	//path sent caches
 	struct PathSentCache {
-		Map<int, bool> confirmed_peers;
+		HashMap<int, bool> confirmed_peers;
 		int id;
 	};
 
@@ -52,11 +52,11 @@ private:
 			ObjectID instance;
 		};
 
-		Map<int, NodeInfo> nodes;
+		HashMap<int, NodeInfo> nodes;
 	};
 
 	HashMap<NodePath, PathSentCache> path_send_cache;
-	Map<int, PathGetCache> path_get_cache;
+	HashMap<int, PathGetCache> path_get_cache;
 	int last_send_cache_id = 1;
 
 protected:
@@ -72,7 +72,8 @@ public:
 	virtual void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) override;
 
 	// Returns true if all peers have cached path.
-	virtual bool send_object_cache(Object *p_obj, NodePath p_path, int p_target, int &p_id) override;
+	virtual bool send_object_cache(Object *p_obj, int p_target, int &p_id) override;
+	virtual int make_object_cache(Object *p_obj) override;
 	virtual Object *get_cached_object(int p_from, uint32_t p_cache_id) override;
 	virtual bool is_cache_confirmed(NodePath p_path, int p_peer) override;
 

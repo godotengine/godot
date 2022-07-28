@@ -38,8 +38,8 @@
 class GradientEdit : public Control {
 	GDCLASS(GradientEdit, Control);
 
-	PopupPanel *popup;
-	ColorPicker *picker;
+	PopupPanel *popup = nullptr;
+	ColorPicker *picker = nullptr;
 
 	bool grabbing = false;
 	int grabbed = -1;
@@ -67,14 +67,15 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_ramp(const Vector<real_t> &p_offsets, const Vector<Color> &p_colors);
-	Vector<real_t> get_offsets() const;
+	void set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors);
+	Vector<float> get_offsets() const;
 	Vector<Color> get_colors() const;
 	void set_points(Vector<Gradient::Point> &p_points);
 	Vector<Gradient::Point> &get_points();
 	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
 	Gradient::InterpolationMode get_interpolation_mode();
 	ColorPicker *get_picker();
+	PopupPanel *get_popup();
 
 	virtual Size2 get_minimum_size() const override;
 

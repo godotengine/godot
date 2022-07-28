@@ -35,7 +35,11 @@ if env["platform"] == "android":
 
     # may need to include java parts of the openxr loader
 elif env["platform"] == "linuxbsd":
-    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_LINUX", "XR_USE_PLATFORM_XLIB"])
+    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_LINUX"])
+
+    if env["x11"]:
+        env_thirdparty.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
+
     # FIXME: Review what needs to be set for Android and macOS.
     env_thirdparty.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":
@@ -75,13 +79,18 @@ module_obj = []
 env_openxr.add_source_files(module_obj, "*.cpp")
 env_openxr.add_source_files(module_obj, "action_map/*.cpp")
 
-# We're a little more targetted with our extensions
+# We're a little more targeted with our extensions
 if env["platform"] == "android":
     env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
 if env["vulkan"]:
     env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
 
+env_openxr.add_source_files(module_obj, "extensions/openxr_htc_vive_tracker_extension.cpp")
+
 env.modules_sources += module_obj
+
+if env["tools"]:
+    SConscript("editor/SCsub")
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

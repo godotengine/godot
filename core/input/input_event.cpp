@@ -47,30 +47,30 @@ int InputEvent::get_device() const {
 }
 
 bool InputEvent::is_action(const StringName &p_action, bool p_exact_match) const {
-	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match);
+	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match);
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match) const {
 	bool pressed;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, &pressed, nullptr, nullptr);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed, nullptr, nullptr);
 	return valid && pressed && (p_allow_echo || !is_echo());
 }
 
 bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_match) const {
 	bool pressed;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, &pressed, nullptr, nullptr);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed, nullptr, nullptr);
 	return valid && !pressed;
 }
 
 float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
 	float strength;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, nullptr, &strength, nullptr);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, nullptr, &strength, nullptr);
 	return valid ? strength : 0.0f;
 }
 
 float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exact_match) const {
 	float raw_strength;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, nullptr, nullptr, &raw_strength);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, nullptr, nullptr, &raw_strength);
 	return valid ? raw_strength : 0.0f;
 }
 
@@ -83,7 +83,7 @@ bool InputEvent::is_echo() const {
 }
 
 Ref<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
-	return Ref<InputEvent>((InputEvent *)this);
+	return Ref<InputEvent>(const_cast<InputEvent *>(this));
 }
 
 bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
@@ -382,7 +382,7 @@ String InputEventKey::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods.is_empty() ? TTR("none") : mods;
+	mods = mods.is_empty() ? "none" : mods;
 
 	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
@@ -424,8 +424,13 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 	} else {
 		match = get_physical_keycode() == key->get_physical_keycode();
 	}
+	Key action_mask = get_modifiers_mask();
+	Key key_mask = key->get_modifiers_mask();
+	if (key->is_pressed()) {
+		match &= (action_mask & key_mask) == action_mask;
+	}
 	if (p_exact_match) {
-		match &= get_modifiers_mask() == key->get_modifiers_mask();
+		match &= action_mask == key_mask;
 	}
 	if (match) {
 		bool pressed = key->is_pressed();
@@ -520,8 +525,8 @@ void InputEventMouse::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_position"), &InputEventMouse::get_global_position);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position"), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
 }
 
 ///////////////////////////////////
@@ -589,8 +594,13 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_
 	}
 
 	bool match = button_index == mb->button_index;
+	Key action_mask = get_modifiers_mask();
+	Key button_mask = mb->get_modifiers_mask();
+	if (mb->is_pressed()) {
+		match &= (action_mask & button_mask) == action_mask;
+	}
 	if (p_exact_match) {
-		match &= get_modifiers_mask() == mb->get_modifiers_mask();
+		match &= action_mask == button_mask;
 	}
 	if (match) {
 		bool pressed = mb->is_pressed();
@@ -680,14 +690,14 @@ String InputEventMouseButton::to_string() {
 		case MouseButton::WHEEL_RIGHT:
 		case MouseButton::MB_XBUTTON1:
 		case MouseButton::MB_XBUTTON2:
-			button_string += " (" + RTR(_mouse_button_descriptions[(size_t)idx - 1]) + ")"; // button index starts from 1, array index starts from 0, so subtract 1
+			button_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)idx - 1])); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
 			break;
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods.is_empty() ? TTR("none") : mods;
+	mods = mods.is_empty() ? "none" : mods;
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s, mods=%s", button_index, mods);
@@ -731,6 +741,14 @@ float InputEventMouseMotion::get_pressure() const {
 	return pressure;
 }
 
+void InputEventMouseMotion::set_pen_inverted(bool p_inverted) {
+	pen_inverted = p_inverted;
+}
+
+bool InputEventMouseMotion::get_pen_inverted() const {
+	return pen_inverted;
+}
+
 void InputEventMouseMotion::set_relative(const Vector2 &p_relative) {
 	relative = p_relative;
 }
@@ -758,6 +776,7 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_position(p_xform.xform(get_position() + p_local_ofs));
 	mm->set_pressure(get_pressure());
+	mm->set_pen_inverted(get_pen_inverted());
 	mm->set_tilt(get_tilt());
 	mm->set_global_position(get_global_position());
 
@@ -777,27 +796,27 @@ String InputEventMouseMotion::to_string() {
 	String button_mask_string = itos((int64_t)button_mask);
 	switch (button_mask) {
 		case MouseButton::MASK_LEFT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
 			break;
 		case MouseButton::MASK_MIDDLE:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
 			break;
 		case MouseButton::MASK_RIGHT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
 			break;
 		case MouseButton::MASK_XBUTTON1:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
 			break;
 		case MouseButton::MASK_XBUTTON2:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
 			break;
 		default:
 			break;
 	}
 
-	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
-	String mask_and_position = vformat("button_mask=%s, position=(%s)", button_mask_string, String(get_position()));
-	return vformat("InputEventMouseMotion: %s, relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()));
+	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.
+	String mask_and_position_and_relative = vformat("button_mask=%s, position=(%s), relative=(%s)", button_mask_string, String(get_position()), String(get_relative()));
+	return vformat("InputEventMouseMotion: %s, velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%d)", mask_and_position_and_relative, String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
@@ -849,6 +868,9 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventMouseMotion::set_pressure);
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventMouseMotion::get_pressure);
 
+	ClassDB::bind_method(D_METHOD("set_pen_inverted", "pen_inverted"), &InputEventMouseMotion::set_pen_inverted);
+	ClassDB::bind_method(D_METHOD("get_pen_inverted"), &InputEventMouseMotion::get_pen_inverted);
+
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
@@ -857,8 +879,9 @@ void InputEventMouseMotion::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -951,9 +974,9 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX] = {
 };
 
 String InputEventJoypadMotion::as_text() const {
-	String desc = axis < JoyAxis::MAX ? RTR(_joy_axis_descriptions[(size_t)axis]) : TTR("Unknown Joypad Axis");
+	String desc = axis < JoyAxis::MAX ? TTRGET(_joy_axis_descriptions[(size_t)axis]) : RTR("Unknown Joypad Axis");
 
-	return vformat(TTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
+	return vformat(RTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
 }
 
 String InputEventJoypadMotion::to_string() {
@@ -1157,7 +1180,7 @@ void InputEventScreenTouch::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
@@ -1250,9 +1273,9 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1352,7 +1375,7 @@ void InputEventGesture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventGesture::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventGesture::get_position);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 }
 
 Vector2 InputEventGesture::get_position() const {

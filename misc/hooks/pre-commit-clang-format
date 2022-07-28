@@ -77,7 +77,7 @@ fi
 # To get consistent formatting, we recommend contributors to use the same
 # clang-format version as CI.
 RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="12"
-RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="13"
+RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="14"
 
 if [ ! -x "$CLANG_FORMAT" ] ; then
 	message="Error: clang-format executable not found. Please install clang-format $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX."

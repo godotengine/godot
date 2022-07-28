@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPT_PROPERTYSELECTOR_H
-#define VISUALSCRIPT_PROPERTYSELECTOR_H
+#ifndef VISUAL_SCRIPT_PROPERTY_SELECTOR_H
+#define VISUAL_SCRIPT_PROPERTY_SELECTOR_H
 
 #include "../visual_script.h"
 #include "editor/editor_help.h"
@@ -62,23 +62,32 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
 	};
 
-	LineEdit *search_box;
+	enum ScopeCombo {
+		COMBO_RELATED,
+		COMBO_SEPARATOR,
+		COMBO_BASE,
+		COMBO_INHERITERS,
+		COMBO_UNRELATED,
+		COMBO_ALL,
+	};
 
-	Button *case_sensitive_button;
-	Button *hierarchy_button;
+	LineEdit *search_box = nullptr;
 
-	Button *search_visual_script_nodes;
-	Button *search_classes;
-	Button *search_operators;
+	Button *case_sensitive_button = nullptr;
+	Button *hierarchy_button = nullptr;
 
-	Button *search_methods;
-	Button *search_signals;
-	Button *search_constants;
-	Button *search_properties;
-	Button *search_theme_items;
+	Button *search_visual_script_nodes = nullptr;
+	Button *search_classes = nullptr;
+	Button *search_operators = nullptr;
 
-	OptionButton *scope_combo;
-	Tree *results_tree;
+	Button *search_methods = nullptr;
+	Button *search_signals = nullptr;
+	Button *search_constants = nullptr;
+	Button *search_properties = nullptr;
+	Button *search_theme_items = nullptr;
+
+	OptionButton *scope_combo = nullptr;
+	Tree *results_tree = nullptr;
 
 	class SearchRunner;
 	Ref<SearchRunner> search_runner;
@@ -88,13 +97,14 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_results_i(int p_int);
 	void _update_results_s(String p_string);
+	void _update_results_search_all();
 	void _update_results();
 
 	void _confirmed();
 	void _item_selected();
 	void _hide_requested();
 
-	EditorHelpBit *help_bit;
+	EditorHelpBit *help_bit = nullptr;
 
 	bool properties = false;
 	bool visual_script_generic = false;
@@ -104,9 +114,9 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	String base_type;
 	String base_script;
 	ObjectID script;
-	Object *instance;
+	Object *instance = nullptr;
 	bool virtuals_only = false;
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 
 protected:
 	void _notification(int p_what);
@@ -159,25 +169,25 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 		}
 	};
 
-	VisualScriptPropertySelector *selector_ui;
-	Control *ui_service;
-	Tree *results_tree;
+	VisualScriptPropertySelector *selector_ui = nullptr;
+	Control *ui_service = nullptr;
+	Tree *results_tree = nullptr;
 	String term;
-	int search_flags;
-	int scope_flags;
+	int search_flags = 0;
+	int scope_flags = 0;
 
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
-	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	HashMap<String, ClassMatch> matches;
+	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;
-	Map<String, TreeItem *> class_items;
+	HashMap<String, TreeItem *> class_items;
 	TreeItem *matched_item = nullptr;
 	float match_highest_score = 0;
 
-	Map<String, DocData::ClassDoc> combined_docs;
+	HashMap<String, DocData::ClassDoc> combined_docs;
 	List<String> vs_nodes;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
@@ -216,4 +226,4 @@ public:
 	SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree);
 };
 
-#endif // VISUALSCRIPT_PROPERTYSELECTOR_H
+#endif // VISUAL_SCRIPT_PROPERTY_SELECTOR_H

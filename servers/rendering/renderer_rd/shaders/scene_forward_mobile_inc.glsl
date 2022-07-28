@@ -118,22 +118,23 @@ layout(set = 0, binding = 13, std430) restrict readonly buffer Decals {
 }
 decals;
 
-layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalShaderUniformData {
 	highp vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-layout(set = 1, binding = 0, std140) uniform SceneData {
+struct SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 inv_projection_matrix;
-	highp mat4 camera_matrix;
-	highp mat4 inv_camera_matrix;
+	highp mat4 inv_view_matrix;
+	highp mat4 view_matrix;
 
 	// only used for multiview
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
 
 	highp vec2 viewport_size;
 	highp vec2 screen_pixel_size;
@@ -189,8 +190,12 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	uint pad1;
 	uint pad2;
 	uint pad3;
+};
+
+layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
+	SceneData data;
 }
-scene_data;
+scene_data_block;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 

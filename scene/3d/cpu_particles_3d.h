@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CPU_PARTICLES_H
-#define CPU_PARTICLES_H
+#ifndef CPU_PARTICLES_3D_H
+#define CPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -71,6 +71,7 @@ public:
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
+		EMISSION_SHAPE_SPHERE_SURFACE,
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
@@ -173,9 +174,9 @@ private:
 	Vector<Color> emission_colors;
 	int emission_point_count = 0;
 	Vector3 emission_ring_axis;
-	real_t emission_ring_height;
-	real_t emission_ring_radius;
-	real_t emission_ring_inner_radius;
+	real_t emission_ring_height = 0.0;
+	real_t emission_ring_radius = 0.0;
+	real_t emission_ring_inner_radius = 0.0;
 
 	Ref<Curve> scale_curve_x;
 	Ref<Curve> scale_curve_y;
@@ -201,7 +202,6 @@ protected:
 
 public:
 	AABB get_aabb() const override;
-	Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
@@ -317,4 +317,4 @@ VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
 
-#endif // CPU_PARTICLES_H
+#endif // CPU_PARTICLES_3D_H

@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (body).
  *
- * Copyright (C) 2003-2021 by
+ * Copyright (C) 2003-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1316,7 +1316,7 @@
   {
     AF_AxisHints  axis          = & hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;
 
 
@@ -1393,7 +1393,7 @@
     AF_Point      point_limit = points + hints->num_points;
     AF_AxisHints  axis        = &hints->axis[dim];
     AF_Edge       edges       = axis->edges;
-    AF_Edge       edge_limit  = edges + axis->num_edges;
+    AF_Edge       edge_limit  = FT_OFFSET( edges, axis->num_edges );
     FT_UInt       touch_flag;
 
 

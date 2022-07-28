@@ -44,8 +44,8 @@ class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
-	Map<StringName, Variant> default_values;
+	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> default_values;
 
 	Ref<ResourceImporter> importer;
 
@@ -81,6 +81,11 @@ protected:
 
 void ImportDefaultsEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			inspector->edit(nullptr);
 		} break;

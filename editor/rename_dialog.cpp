@@ -114,7 +114,6 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(cbut_collapse_features);
 
 	tabc_features = memnew(TabContainer);
-	tabc_features->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabc_features->set_use_hidden_tabs_for_min_size(true);
 	vbc->add_child(tabc_features);
 
@@ -284,13 +283,13 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
-	lbl_preview->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	lbl_preview->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
 
 	set_min_size(Size2(383, 0));
-	get_ok_button()->set_text(TTR("Rename"));
+	set_ok_button_text(TTR("Rename"));
 	Button *but_reset = add_button(TTR("Reset"));
 
 	eh.errfunc = _error_handler;
@@ -357,6 +356,8 @@ void RenameDialog::_update_substitute() {
 }
 
 void RenameDialog::_post_popup() {
+	ConfirmationDialog::_post_popup();
+
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	preview_node = nullptr;
 

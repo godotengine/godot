@@ -70,7 +70,7 @@ public:
 
 class EditorPropertyAnchorsPreset : public EditorProperty {
 	GDCLASS(EditorPropertyAnchorsPreset, EditorProperty);
-	OptionButton *options;
+	OptionButton *options = nullptr;
 
 	void _option_selected(int p_which);
 
@@ -94,9 +94,9 @@ class EditorPropertySizeFlags : public EditorProperty {
 		SIZE_FLAGS_PRESET_CUSTOM,
 	};
 
-	OptionButton *flag_presets;
-	CheckBox *flag_expand;
-	VBoxContainer *flag_options;
+	OptionButton *flag_presets = nullptr;
+	CheckBox *flag_expand = nullptr;
+	VBoxContainer *flag_options = nullptr;
 	Vector<CheckBox *> flag_checks;
 
 	bool vertical = false;
@@ -128,8 +128,8 @@ public:
 class ControlEditorToolbar : public HBoxContainer {
 	GDCLASS(ControlEditorToolbar, HBoxContainer);
 
-	UndoRedo *undo_redo;
-	EditorSelection *editor_selection;
+	UndoRedo *undo_redo = nullptr;
+	EditorSelection *editor_selection = nullptr;
 
 	enum MenuOption {
 		ANCHORS_AND_OFFSETS_PRESET_TOP_LEFT,
@@ -147,7 +147,7 @@ class ControlEditorToolbar : public HBoxContainer {
 		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_WIDE,
 		ANCHORS_AND_OFFSETS_PRESET_VCENTER_WIDE,
 		ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_FULL_RECT,
 
 		ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO,
 
@@ -166,7 +166,7 @@ class ControlEditorToolbar : public HBoxContainer {
 		ANCHORS_PRESET_BOTTOM_WIDE,
 		ANCHORS_PRESET_VCENTER_WIDE,
 		ANCHORS_PRESET_HCENTER_WIDE,
-		ANCHORS_PRESET_WIDE,
+		ANCHORS_PRESET_FULL_RECT,
 
 		// Offsets Presets are not currently in use.
 		OFFSETS_PRESET_TOP_LEFT,
@@ -184,7 +184,7 @@ class ControlEditorToolbar : public HBoxContainer {
 		OFFSETS_PRESET_BOTTOM_WIDE,
 		OFFSETS_PRESET_VCENTER_WIDE,
 		OFFSETS_PRESET_HCENTER_WIDE,
-		OFFSETS_PRESET_WIDE,
+		OFFSETS_PRESET_FULL_RECT,
 
 		CONTAINERS_H_PRESET_FILL,
 		CONTAINERS_H_PRESET_FILL_EXPAND,
@@ -198,14 +198,12 @@ class ControlEditorToolbar : public HBoxContainer {
 		CONTAINERS_V_PRESET_SHRINK_END,
 	};
 
-	TextureRect *anchor_layouts_icon;
-	MenuButton *anchor_presets_menu;
-	PopupMenu *anchors_popup;
-	TextureRect *container_layouts_icon;
-	MenuButton *container_h_presets_menu;
-	MenuButton *container_v_presets_menu;
+	MenuButton *anchor_presets_menu = nullptr;
+	PopupMenu *anchors_popup = nullptr;
+	MenuButton *container_h_presets_menu = nullptr;
+	MenuButton *container_v_presets_menu = nullptr;
 
-	Button *anchor_mode_button;
+	Button *anchor_mode_button = nullptr;
 
 	bool anchors_mode = false;
 
@@ -241,7 +239,7 @@ public:
 class ControlEditorPlugin : public EditorPlugin {
 	GDCLASS(ControlEditorPlugin, EditorPlugin);
 
-	ControlEditorToolbar *toolbar;
+	ControlEditorToolbar *toolbar = nullptr;
 
 public:
 	virtual String get_name() const override { return "Control"; }
@@ -249,4 +247,4 @@ public:
 	ControlEditorPlugin();
 };
 
-#endif //CONTROL_EDITOR_PLUGIN_H
+#endif // CONTROL_EDITOR_PLUGIN_H

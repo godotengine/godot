@@ -43,17 +43,12 @@
  * is writable, then the iterator returns lvalues, otherwise it
  * returns rvalues.
  *
- * TODO Document more.
- *
- * If iterator implementation implements operator!=, then can be
+ * If iterator implementation implements operator!=, then it can be
  * used in range-based for loop.  That already happens if the iterator
  * is random-access.  Otherwise, the range-based for loop incurs
  * one traversal to find end(), which can be avoided if written
  * as a while-style for loop, or if iterator implements a faster
- * __end__() method.
- * TODO When opting in for C++17, address this by changing return
- * type of .end()?
- */
+ * __end__() method. */
 
 /*
  * Base classes for iterators.
@@ -75,10 +70,6 @@ struct hb_iter_t
 	iter_t* thiz ()       { return static_cast<      iter_t *> (this); }
   public:
 
-  /* TODO:
-   * Port operators below to use hb_enable_if to sniff which method implements
-   * an operator and use it, and remove hb_iter_fallback_mixin_t completely. */
-
   /* Operators. */
   iter_t iter () const { return *thiz(); }
   iter_t operator + () const { return *thiz(); }
@@ -87,8 +78,7 @@ struct hb_iter_t
   explicit operator bool () const { return thiz()->__more__ (); }
   unsigned len () const { return thiz()->__len__ (); }
   /* The following can only be enabled if item_t is reference type.  Otherwise
-   * it will be returning pointer to temporary rvalue.
-   * TODO Use a wrapper return type to fix for non-reference type. */
+   * it will be returning pointer to temporary rvalue. */
   template <typename T = item_t,
 	    hb_enable_if (std::is_reference<T>::value)>
   hb_remove_reference<item_t>* operator -> () const { return std::addressof (**thiz()); }
@@ -263,6 +253,8 @@ struct hb_is_iterator_of
 };
 #define hb_is_iterator_of(Iter, Item) hb_is_iterator_of<Iter, Item>::value
 #define hb_is_iterator(Iter) hb_is_iterator_of (Iter, typename Iter::item_t)
+#define hb_is_sorted_iterator_of(Iter, Item) (hb_is_iterator_of<Iter, Item>::value && Iter::is_sorted_iterator)
+#define hb_is_sorted_iterator(Iter) hb_is_sorted_iterator_of (Iter, typename Iter::item_t)
 
 /* hb_is_iterable() */
 

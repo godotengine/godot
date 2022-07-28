@@ -33,15 +33,15 @@
 
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
-#include "core/templates/ordered_hash_map.h"
-#include "core/templates/set.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/rb_set.h"
 
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
 public:
-	typedef Map<String, Variant> CustomMap;
+	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
 	enum {
@@ -62,6 +62,7 @@ protected:
 		int order = 0;
 		bool persist = false;
 		bool basic = false;
+		bool internal = false;
 		Variant variant;
 		Variant initial;
 		bool hide_from_editor = false;
@@ -84,17 +85,17 @@ protected:
 	int last_builtin_order = 0;
 	uint64_t last_save_time = 0;
 
-	Map<StringName, VariantContainer> props;
+	RBMap<StringName, VariantContainer> props; // NOTE: Key order is used e.g. in the save_custom method.
 	String resource_path;
-	Map<StringName, PropertyInfo> custom_prop_info;
+	HashMap<StringName, PropertyInfo> custom_prop_info;
 	bool disable_feature_overrides = false;
 	bool using_datapack = false;
 	List<String> input_presets;
 
-	Set<String> custom_features;
-	Map<StringName, StringName> feature_overrides;
+	HashSet<String> custom_features;
+	HashMap<StringName, StringName> feature_overrides;
 
-	OrderedHashMap<StringName, AutoloadInfo> autoloads;
+	HashMap<StringName, AutoloadInfo> autoloads;
 
 	String project_data_dir_name;
 
@@ -108,8 +109,8 @@ protected:
 	Error _load_settings_binary(const String &p_path);
 	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
-	Error _save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
-	Error _save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
 	Error _save_custom_bnd(const String &p_file);
 
@@ -141,6 +142,7 @@ public:
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
 	void set_as_basic(const String &p_name, bool p_basic);
+	void set_as_internal(const String &p_name, bool p_internal);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
@@ -168,7 +170,7 @@ public:
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
-	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
+	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
 	Vector<String> get_optimizer_presets() const;
@@ -181,7 +183,7 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
-	OrderedHashMap<StringName, AutoloadInfo> get_autoload_list() const;
+	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
 	void add_autoload(const AutoloadInfo &p_autoload);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
@@ -191,8 +193,8 @@ public:
 	~ProjectSettings();
 };
 
-//not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false);
+// Not a macro any longer.
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
@@ -203,5 +205,7 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
 #define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
 #define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
+
+#define GLOBAL_DEF_INTERNAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, false, true)
 
 #endif // PROJECT_SETTINGS_H

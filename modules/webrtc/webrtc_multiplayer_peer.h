@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBRTC_MULTIPLAYER_H
-#define WEBRTC_MULTIPLAYER_H
+#ifndef WEBRTC_MULTIPLAYER_PEER_H
+#define WEBRTC_MULTIPLAYER_PEER_H
 
 #include "core/multiplayer/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
@@ -69,7 +69,7 @@ private:
 	int next_packet_peer = 0;
 	bool server_compat = false;
 
-	Map<int, Ref<ConnectedPeer>> peer_map;
+	HashMap<int, Ref<ConnectedPeer>> peer_map;
 	List<Dictionary> channels_config;
 
 	void _peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict);
@@ -106,4 +106,4 @@ public:
 	ConnectionStatus get_connection_status() const override;
 };
 
-#endif // WEBRTC_MULTIPLAYER_H
+#endif // WEBRTC_MULTIPLAYER_PEER_H

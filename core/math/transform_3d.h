@@ -45,10 +45,10 @@ struct _NO_DISCARD_ Transform3D {
 	void affine_invert();
 	Transform3D affine_inverse() const;
 
-	Transform3D rotated(const Vector3 &p_axis, real_t p_phi) const;
+	Transform3D rotated(const Vector3 &p_axis, real_t p_angle) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	void rotate_basis(const Vector3 &p_axis, real_t p_angle);
 
 	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 	Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0)) const;
@@ -56,9 +56,9 @@ struct _NO_DISCARD_ Transform3D {
 	void scale(const Vector3 &p_scale);
 	Transform3D scaled(const Vector3 &p_scale) const;
 	void scale_basis(const Vector3 &p_scale);
-	void translate(real_t p_tx, real_t p_ty, real_t p_tz);
-	void translate(const Vector3 &p_translation);
-	Transform3D translated(const Vector3 &p_translation) const;
+	void translate_local(real_t p_tx, real_t p_ty, real_t p_tz);
+	void translate_local(const Vector3 &p_translation);
+	Transform3D translated_local(const Vector3 &p_translation) const;
 
 	const Basis &get_basis() const { return basis; }
 	void set_basis(const Basis &p_basis) { basis = p_basis; }
@@ -100,7 +100,7 @@ struct _NO_DISCARD_ Transform3D {
 	void operator*=(const real_t p_val);
 	Transform3D operator*(const real_t p_val) const;
 
-	Transform3D sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const;
+	Transform3D spherical_interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {
@@ -135,9 +135,9 @@ _FORCE_INLINE_ Vector3 Transform3D::xform_inv(const Vector3 &p_vector) const {
 	Vector3 v = p_vector - origin;
 
 	return Vector3(
-			(basis.elements[0][0] * v.x) + (basis.elements[1][0] * v.y) + (basis.elements[2][0] * v.z),
-			(basis.elements[0][1] * v.x) + (basis.elements[1][1] * v.y) + (basis.elements[2][1] * v.z),
-			(basis.elements[0][2] * v.x) + (basis.elements[1][2] * v.y) + (basis.elements[2][2] * v.z));
+			(basis.rows[0][0] * v.x) + (basis.rows[1][0] * v.y) + (basis.rows[2][0] * v.z),
+			(basis.rows[0][1] * v.x) + (basis.rows[1][1] * v.y) + (basis.rows[2][1] * v.z),
+			(basis.rows[0][2] * v.x) + (basis.rows[1][2] * v.y) + (basis.rows[2][2] * v.z));
 }
 
 // Neither the plane regular xform or xform_inv are particularly efficient,

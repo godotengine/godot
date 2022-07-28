@@ -135,7 +135,7 @@ const GodotWebSocket = {
 			if (!ref) {
 				return;
 			}
-			GodotWebSocket.close(p_id, 1001, '');
+			GodotWebSocket.close(p_id, 3001, 'destroyed');
 			IDHandler.remove(p_id);
 			ref.onopen = null;
 			ref.onmessage = null;

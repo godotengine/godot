@@ -102,7 +102,7 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 	m_calculatedTransformB = B->get_transform() * m_frameInB;
 	m_realPivotAInW = m_calculatedTransformA.origin;
 	m_realPivotBInW = m_calculatedTransformB.origin;
-	m_sliderAxis = m_calculatedTransformA.basis.get_axis(0); // along X
+	m_sliderAxis = m_calculatedTransformA.basis.get_column(0); // along X
 	m_delta = m_realPivotBInW - m_realPivotAInW;
 	m_projPivotInW = m_realPivotAInW + m_sliderAxis.dot(m_delta) * m_sliderAxis;
 	m_relPosA = m_projPivotInW - A->get_transform().origin;
@@ -111,7 +111,7 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 	int i;
 	//linear part
 	for (i = 0; i < 3; i++) {
-		normalWorld = m_calculatedTransformA.basis.get_axis(i);
+		normalWorld = m_calculatedTransformA.basis.get_column(i);
 		memnew_placement(
 				&m_jacLin[i],
 				GodotJacobianEntry3D(
@@ -130,7 +130,7 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 	testLinLimits();
 	// angular part
 	for (i = 0; i < 3; i++) {
-		normalWorld = m_calculatedTransformA.basis.get_axis(i);
+		normalWorld = m_calculatedTransformA.basis.get_column(i);
 		memnew_placement(
 				&m_jacAng[i],
 				GodotJacobianEntry3D(
@@ -141,7 +141,7 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 						B->get_inv_inertia()));
 	}
 	testAngLimits();
-	Vector3 axisA = m_calculatedTransformA.basis.get_axis(0);
+	Vector3 axisA = m_calculatedTransformA.basis.get_column(0);
 	m_kAngle = real_t(1.0) / (A->compute_angular_impulse_denominator(axisA) + B->compute_angular_impulse_denominator(axisA));
 	// clear accumulator for motors
 	m_accumulatedLinMotorImpulse = real_t(0.0);
@@ -206,8 +206,8 @@ void GodotSliderJoint3D::solve(real_t p_step) {
 	}
 	// angular
 	// get axes in world space
-	Vector3 axisA = m_calculatedTransformA.basis.get_axis(0);
-	Vector3 axisB = m_calculatedTransformB.basis.get_axis(0);
+	Vector3 axisA = m_calculatedTransformA.basis.get_column(0);
+	Vector3 axisB = m_calculatedTransformB.basis.get_column(0);
 
 	const Vector3 &angVelA = A->get_angular_velocity();
 	const Vector3 &angVelB = B->get_angular_velocity();
@@ -297,14 +297,14 @@ void GodotSliderJoint3D::calculateTransforms() {
 	m_calculatedTransformB = B->get_transform() * m_frameInB;
 	m_realPivotAInW = m_calculatedTransformA.origin;
 	m_realPivotBInW = m_calculatedTransformB.origin;
-	m_sliderAxis = m_calculatedTransformA.basis.get_axis(0); // along X
+	m_sliderAxis = m_calculatedTransformA.basis.get_column(0); // along X
 	m_delta = m_realPivotBInW - m_realPivotAInW;
 	m_projPivotInW = m_realPivotAInW + m_sliderAxis.dot(m_delta) * m_sliderAxis;
 	Vector3 normalWorld;
 	int i;
 	//linear part
 	for (i = 0; i < 3; i++) {
-		normalWorld = m_calculatedTransformA.basis.get_axis(i);
+		normalWorld = m_calculatedTransformA.basis.get_column(i);
 		m_depth[i] = m_delta.dot(normalWorld);
 	}
 }
@@ -335,9 +335,9 @@ void GodotSliderJoint3D::testAngLimits() {
 	m_angDepth = real_t(0.);
 	m_solveAngLim = false;
 	if (m_lowerAngLimit <= m_upperAngLimit) {
-		const Vector3 axisA0 = m_calculatedTransformA.basis.get_axis(1);
-		const Vector3 axisA1 = m_calculatedTransformA.basis.get_axis(2);
-		const Vector3 axisB0 = m_calculatedTransformB.basis.get_axis(1);
+		const Vector3 axisA0 = m_calculatedTransformA.basis.get_column(1);
+		const Vector3 axisA1 = m_calculatedTransformA.basis.get_column(2);
+		const Vector3 axisB0 = m_calculatedTransformB.basis.get_column(1);
 		real_t rot = atan2fast(axisB0.dot(axisA1), axisB0.dot(axisA0));
 		if (rot < m_lowerAngLimit) {
 			m_angDepth = rot - m_lowerAngLimit;

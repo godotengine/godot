@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_noise = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/noise/"
+thirdparty_sources = [
+    # Add C++ source files for noise modules here
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_noise.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_noise.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_noise.add_source_files(module_obj, "*.cpp")
+env_noise.add_source_files(module_obj, "editor/*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

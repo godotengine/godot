@@ -59,7 +59,8 @@ void load_editor_translations(const String &p_locale) {
 			int ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
 			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 
-			FileAccessMemory *fa = memnew(FileAccessMemory);
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
 			fa->open_custom(data.ptr(), data.size());
 
 			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
@@ -84,7 +85,8 @@ void load_doc_translations(const String &p_locale) {
 			int ret = Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
 			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 
-			FileAccessMemory *fa = memnew(FileAccessMemory);
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
 			fa->open_custom(data.ptr(), data.size());
 
 			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);

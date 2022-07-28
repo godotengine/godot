@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DFABRIK_H
-#define SKELETONMODIFICATION2DFABRIK_H
+#ifndef SKELETON_MODIFICATION_2D_FABRIK_H
+#define SKELETON_MODIFICATION_2D_FABRIK_H
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
@@ -105,4 +105,4 @@ public:
 	~SkeletonModification2DFABRIK();
 };
 
-#endif // SKELETONMODIFICATION2DFABRIK_H
+#endif // SKELETON_MODIFICATION_2D_FABRIK_H

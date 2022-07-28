@@ -14,27 +14,26 @@
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
-				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. This method is equivalent of calling [method call_group_flags] with [constant GROUP_CALL_DEFAULT] flag.
-				[b]Note:[/b] Due to design limitations, [method call_group] will fail silently if one of the arguments is [code]null[/code].
-				[b]Note:[/b] [method call_group] will always call methods with an one-frame delay, in a way similar to [method Object.call_deferred]. To call methods immediately, use [method call_group_flags] with the [constant GROUP_CALL_REALTIME] flag.
+				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
+				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method call_group] was called, use [method call_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="flags" type="int" />
 			<argument index="1" name="group" type="StringName" />
 			<argument index="2" name="method" type="StringName" />
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
-				[b]Note:[/b] Due to design limitations, [method call_group_flags] will fail silently if one of the arguments is [code]null[/code].
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
 				[codeblock]
-				# Call the method immediately and in reverse order.
-				get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy")
+				# Call the method in a deferred manner and in reverse order.
+				get_tree().call_group_flags(SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE)
 				[/codeblock]
+				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method call_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, methods will be called with a one-frame delay in a way similar to [method Object.set_deferred].
 			</description>
 		</method>
 		<method name="change_scene">
@@ -91,12 +90,20 @@
 			<return type="Node" />
 			<argument index="0" name="group" type="StringName" />
 			<description>
+				Returns the first node in the specified group, or [code]null[/code] if the group is empty or does not exist.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the current frame number, i.e. the total frame count since the application started.
+			</description>
+		</method>
+		<method name="get_multiplayer" qualifiers="const">
+			<return type="MultiplayerAPI" />
+			<argument index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<description>
+				Return the [MultiplayerAPI] configured for the given path, or the default one if [code]for_path[/code] is empty.
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
@@ -131,6 +138,7 @@
 			<argument index="1" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code].
+				[b]Note:[/b] [method notify_group] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification lots of members. To wait for one frame, use [method notify_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
 		<method name="notify_group_flags">
@@ -140,6 +148,7 @@
 			<argument index="2" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
+				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method notify_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, notifications will be sent with a one-frame delay in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
 			</description>
 		</method>
 		<method name="queue_delete">
@@ -166,14 +175,6 @@
 				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
 			</description>
 		</method>
-		<method name="set_auto_accept_quit">
-			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
-			<description>
-				If [code]true[/code], the application automatically accepts quitting. Enabled by default.
-				For mobile platforms, see [method set_quit_on_go_back].
-			</description>
-		</method>
 		<method name="set_group">
 			<return type="void" />
 			<argument index="0" name="group" type="StringName" />
@@ -181,6 +182,7 @@
 			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group.
+				[b]Note:[/b] [method set_group] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members. To wait for one frame, use [method set_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
 		<method name="set_group_flags">
@@ -191,18 +193,23 @@
 			<argument index="3" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
+				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method set_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, properties will be set with a one-frame delay in a way similar to [method Object.call_deferred].
 			</description>
 		</method>
-		<method name="set_quit_on_go_back">
+		<method name="set_multiplayer">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<argument index="0" name="multiplayer" type="MultiplayerAPI" />
+			<argument index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
-				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Enabled by default.
-				To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
+				Sets a custom [MultiplayerAPI] with the given [code]root_path[/code] (controlling also the relative subpaths), or override the default one if [code]root_path[/code] is empty.
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="auto_accept_quit" type="bool" setter="set_auto_accept_quit" getter="is_auto_accept_quit" default="true">
+			If [code]true[/code], the application automatically accepts quitting.
+			For mobile platforms, see [member quit_on_go_back].
+		</member>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
 			The current scene.
 		</member>
@@ -212,11 +219,11 @@
 		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint" default="false">
 			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
 		</member>
+		<member name="debug_paths_hint" type="bool" setter="set_debug_paths_hint" getter="is_debugging_paths_hint" default="false">
+			If [code]true[/code], curves from [Path2D] and [Path3D] nodes will be visible when running the game from the editor for debugging purposes.
+		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.
-		</member>
-		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
-			The default [MultiplayerAPI] instance for this [SceneTree].
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled" default="true">
 			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal process_frame].
@@ -226,6 +233,10 @@
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
 			- 2D and 3D physics will be stopped. This includes signals and collision detection.
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
+		</member>
+		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
+			If [code]true[/code], the application quits automatically on going back (e.g. on Android).
+			To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
 		</member>
 		<member name="root" type="Window" setter="" getter="get_root">
 			The [SceneTree]'s root [Window].
@@ -284,8 +295,8 @@
 		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
 			Call a group in reverse scene order.
 		</constant>
-		<constant name="GROUP_CALL_REALTIME" value="2" enum="GroupCallFlags">
-			Call a group immediately (calls are normally made on idle).
+		<constant name="GROUP_CALL_DEFERRED" value="2" enum="GroupCallFlags">
+			Call a group with a one-frame delay (idle frame, not physics).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
 			Call a group only once even if the call is executed many times.

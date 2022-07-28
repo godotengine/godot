@@ -29,41 +29,40 @@
 /*************************************************************************/
 
 #include "gltf_document_extension_convert_importer_mesh.h"
+
+#include "gltf_state.h"
+
 #include "core/error/error_macros.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/importer_mesh.h"
 
-#include <cstddef>
-
 void GLTFDocumentExtensionConvertImporterMesh::_bind_methods() {
 }
 
-Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFDocument> p_document, Node *p_node) {
-	ERR_FAIL_NULL_V(p_document, ERR_INVALID_PARAMETER);
-	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
+Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_state, Node *p_root) {
+	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	List<Node *> queue;
-	queue.push_back(p_node);
+	queue.push_back(p_root);
 	List<Node *> delete_queue;
 	while (!queue.is_empty()) {
 		List<Node *>::Element *E = queue.front();
 		Node *node = E->get();
-		{
-			ImporterMeshInstance3D *mesh_3d = cast_to<ImporterMeshInstance3D>(node);
-			if (mesh_3d) {
-				MeshInstance3D *mesh_instance_node_3d = memnew(MeshInstance3D);
-				Ref<ImporterMesh> mesh = mesh_3d->get_mesh();
-				if (mesh.is_valid()) {
-					Ref<ArrayMesh> array_mesh = mesh->get_mesh();
-					mesh_instance_node_3d->set_name(node->get_name());
-					mesh_instance_node_3d->set_transform(mesh_3d->get_transform());
-					mesh_instance_node_3d->set_mesh(array_mesh);
-					mesh_instance_node_3d->set_skin(mesh_3d->get_skin());
-					mesh_instance_node_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
-					node->replace_by(mesh_instance_node_3d);
-					delete_queue.push_back(node);
-				} else {
-					memdelete(mesh_instance_node_3d);
-				}
+		ImporterMeshInstance3D *mesh_3d = cast_to<ImporterMeshInstance3D>(node);
+		if (mesh_3d) {
+			MeshInstance3D *mesh_instance_node_3d = memnew(MeshInstance3D);
+			Ref<ImporterMesh> mesh = mesh_3d->get_mesh();
+			if (mesh.is_valid()) {
+				Ref<ArrayMesh> array_mesh = mesh->get_mesh();
+				mesh_instance_node_3d->set_name(node->get_name());
+				mesh_instance_node_3d->set_transform(mesh_3d->get_transform());
+				mesh_instance_node_3d->set_mesh(array_mesh);
+				mesh_instance_node_3d->set_skin(mesh_3d->get_skin());
+				mesh_instance_node_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
+				node->replace_by(mesh_instance_node_3d);
+				delete_queue.push_back(node);
+			} else {
+				memdelete(mesh_instance_node_3d);
 			}
 		}
 		int child_count = node->get_child_count();

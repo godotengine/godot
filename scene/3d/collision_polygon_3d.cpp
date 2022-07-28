@@ -171,11 +171,11 @@ TypedArray<String> CollisionPolygon3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		warnings.push_back(TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
+		warnings.push_back(RTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (polygon.is_empty()) {
-		warnings.push_back(TTR("An empty CollisionPolygon3D has no effect on collision."));
+		warnings.push_back(RTR("An empty CollisionPolygon3D has no effect on collision."));
 	}
 
 	return warnings;
@@ -200,10 +200,10 @@ void CollisionPolygon3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon3D::_is_editable_3d_polygon);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_NONE, "suffix:m"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001,suffix:m"), "set_margin", "get_margin");
 }
 
 CollisionPolygon3D::CollisionPolygon3D() {

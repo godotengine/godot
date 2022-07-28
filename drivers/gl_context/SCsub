@@ -2,7 +2,7 @@
 
 Import("env")
 
-if env["platform"] in ["haiku", "osx", "windows", "linuxbsd"]:
+if env["platform"] in ["haiku", "macos", "windows", "linuxbsd"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [

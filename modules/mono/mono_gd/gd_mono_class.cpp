@@ -194,7 +194,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 #ifdef DEBUG_ENABLED
 		// For debug builds, we also fetched from native base classes as well before if this is not a native base class.
-		// This allows us to warn the user here if he is using snake_case by mistake.
+		// This allows us to warn the user here if they are using snake_case by mistake.
 
 		if (p_native_base != this) {
 			GDMonoClass *native_top = p_native_base;
@@ -247,7 +247,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 				if (existing_method) {
 					memdelete(*existing_method); // Must delete old one
 				}
-				methods.set(key, method);
+				methods.insert(key, method);
 
 				break;
 			}
@@ -266,11 +266,9 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p_name) {
 	ERR_FAIL_COND_V(!methods_fetched, nullptr);
 
-	const MethodKey *k = nullptr;
-
-	while ((k = methods.next(k))) {
-		if (k->name == p_name) {
-			return methods.get(*k);
+	for (const KeyValue<MethodKey, GDMonoMethod *> &E : methods) {
+		if (E.key.name == p_name) {
+			return E.value;
 		}
 	}
 
@@ -307,7 +305,7 @@ GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, uint16_t p_param
 
 	if (raw_method) {
 		GDMonoMethod *method = memnew(GDMonoMethod(p_name, raw_method));
-		methods.set(key, method);
+		methods.insert(key, method);
 
 		return method;
 	}
@@ -342,7 +340,7 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName
 	}
 
 	GDMonoMethod *method = memnew(GDMonoMethod(p_name, p_raw_method));
-	methods.set(key, method);
+	methods.insert(key, method);
 
 	return method;
 }
@@ -362,10 +360,10 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 }
 
 GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
-	Map<StringName, GDMonoField *>::Element *result = fields.find(p_name);
+	HashMap<StringName, GDMonoField *>::Iterator result = fields.find(p_name);
 
 	if (result) {
-		return result->value();
+		return result->value;
 	}
 
 	if (fields_fetched) {
@@ -394,10 +392,10 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 	while ((raw_field = mono_class_get_fields(mono_class, &iter)) != nullptr) {
 		StringName name = String::utf8(mono_field_get_name(raw_field));
 
-		Map<StringName, GDMonoField *>::Element *match = fields.find(name);
+		HashMap<StringName, GDMonoField *>::Iterator match = fields.find(name);
 
 		if (match) {
-			fields_list.push_back(match->get());
+			fields_list.push_back(match->value);
 		} else {
 			GDMonoField *field = memnew(GDMonoField(raw_field, this));
 			fields.insert(name, field);
@@ -411,10 +409,10 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 }
 
 GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
-	Map<StringName, GDMonoProperty *>::Element *result = properties.find(p_name);
+	HashMap<StringName, GDMonoProperty *>::Iterator result = properties.find(p_name);
 
 	if (result) {
-		return result->value();
+		return result->value;
 	}
 
 	if (properties_fetched) {
@@ -443,10 +441,10 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 	while ((raw_property = mono_class_get_properties(mono_class, &iter)) != nullptr) {
 		StringName name = String::utf8(mono_property_get_name(raw_property));
 
-		Map<StringName, GDMonoProperty *>::Element *match = properties.find(name);
+		HashMap<StringName, GDMonoProperty *>::Iterator match = properties.find(name);
 
 		if (match) {
-			properties_list.push_back(match->get());
+			properties_list.push_back(match->value);
 		} else {
 			GDMonoProperty *property = memnew(GDMonoProperty(raw_property, this));
 			properties.insert(name, property);
@@ -479,10 +477,10 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 		if (mono_class_is_delegate(raw_class)) {
 			StringName name = String::utf8(mono_class_get_name(raw_class));
 
-			Map<StringName, GDMonoClass *>::Element *match = delegates.find(name);
+			HashMap<StringName, GDMonoClass *>::Iterator match = delegates.find(name);
 
 			if (match) {
-				delegates_list.push_back(match->get());
+				delegates_list.push_back(match->value);
 			} else {
 				GDMonoClass *delegate = memnew(GDMonoClass(String::utf8(mono_class_get_namespace(raw_class)), String::utf8(mono_class_get_name(raw_class)), raw_class, assembly));
 				delegates.insert(name, delegate);
@@ -549,9 +547,8 @@ GDMonoClass::~GDMonoClass() {
 		Vector<GDMonoMethod *> deleted_methods;
 		deleted_methods.resize(methods.size());
 
-		const MethodKey *k = nullptr;
-		while ((k = methods.next(k))) {
-			GDMonoMethod *method = methods.get(*k);
+		for (const KeyValue<MethodKey, GDMonoMethod *> &E : methods) {
+			GDMonoMethod *method = E.value;
 
 			if (method) {
 				for (int i = 0; i < offset; i++) {

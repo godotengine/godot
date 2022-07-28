@@ -194,7 +194,7 @@ void CSGBrush::_regen_face_aabbs() {
 	}
 }
 
-void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces) {
+void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_flip_faces) {
 	faces.clear();
 
 	int vc = p_vertices.size();
@@ -208,10 +208,10 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 	const bool *rs = p_smooth.ptr();
 	int mc = p_materials.size();
 	const Ref<Material> *rm = p_materials.ptr();
-	int ic = p_invert_faces.size();
-	const bool *ri = p_invert_faces.ptr();
+	int ic = p_flip_faces.size();
+	const bool *ri = p_flip_faces.ptr();
 
-	Map<Ref<Material>, int> material_map;
+	HashMap<Ref<Material>, int> material_map;
 
 	faces.resize(p_vertices.size() / 3);
 
@@ -242,10 +242,10 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 		if (mc == vc / 3) {
 			Ref<Material> mat = rm[i];
 			if (mat.is_valid()) {
-				const Map<Ref<Material>, int>::Element *E = material_map.find(mat);
+				HashMap<Ref<Material>, int>::ConstIterator E = material_map.find(mat);
 
 				if (E) {
-					f.material = E->get();
+					f.material = E->value;
 				} else {
 					f.material = material_map.size();
 					material_map[mat] = f.material;
@@ -1336,9 +1336,9 @@ CSGBrushOperation::Build2DFaces::Build2DFaces(const CSGBrush &p_brush, int p_fac
 
 	plane = Plane(points_3D[0], points_3D[1], points_3D[2]);
 	to_3D.origin = points_3D[0];
-	to_3D.basis.set_axis(2, plane.normal);
-	to_3D.basis.set_axis(0, (points_3D[1] - points_3D[2]).normalized());
-	to_3D.basis.set_axis(1, to_3D.basis.get_axis(0).cross(to_3D.basis.get_axis(2)).normalized());
+	to_3D.basis.set_column(2, plane.normal);
+	to_3D.basis.set_column(0, (points_3D[1] - points_3D[2]).normalized());
+	to_3D.basis.set_column(1, to_3D.basis.get_column(0).cross(to_3D.basis.get_column(2)).normalized());
 	to_2D = to_3D.affine_inverse();
 
 	Face2D face;
@@ -1387,13 +1387,13 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 	}
 
 	// Ensure B has points either side of or in the plane of A.
-	int in_plane_count = 0, over_count = 0, under_count = 0;
+	int over_count = 0, under_count = 0;
 	Plane plane_a(vertices_a[0], vertices_a[1], vertices_a[2]);
 	ERR_FAIL_COND_MSG(plane_a.normal == Vector3(), "Couldn't form plane from Brush A face.");
 
 	for (int i = 0; i < 3; i++) {
 		if (plane_a.has_point(vertices_b[i])) {
-			in_plane_count++;
+			// In plane.
 		} else if (plane_a.is_point_over(vertices_b[i])) {
 			over_count++;
 		} else {
@@ -1406,7 +1406,6 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 	}
 
 	// Ensure A has points either side of or in the plane of B.
-	in_plane_count = 0;
 	over_count = 0;
 	under_count = 0;
 	Plane plane_b(vertices_b[0], vertices_b[1], vertices_b[2]);
@@ -1414,7 +1413,7 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 
 	for (int i = 0; i < 3; i++) {
 		if (plane_b.has_point(vertices_a[i])) {
-			in_plane_count++;
+			// In plane.
 		} else if (plane_b.is_point_over(vertices_a[i])) {
 			over_count++;
 		} else {

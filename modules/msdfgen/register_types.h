@@ -31,7 +31,9 @@
 #ifndef MSDFGEN_REGISTER_TYPES_H
 #define MSDFGEN_REGISTER_TYPES_H
 
-void register_msdfgen_types();
-void unregister_msdfgen_types();
+#include "modules/register_module_types.h"
+
+void initialize_msdfgen_module(ModuleInitializationLevel p_level);
+void uninitialize_msdfgen_module(ModuleInitializationLevel p_level);
 
 #endif // MSDFGEN_REGISTER_TYPES_H

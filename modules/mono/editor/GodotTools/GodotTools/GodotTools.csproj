@@ -19,7 +19,7 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <Reference Include="GodotSharp">
       <HintPath>$(GodotApiAssembliesDir)/GodotSharp.dll</HintPath>
       <Private>False</Private>

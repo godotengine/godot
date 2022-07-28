@@ -203,6 +203,9 @@
 			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
 			[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is [code]true[/code].
 		</member>
+		<member name="application/boot_splash/minimum_display_time" type="int" setter="" getter="" default="0">
+			Minimum boot splash display time (in milliseconds). It is not recommended to set too high values for this setting.
+		</member>
 		<member name="application/boot_splash/show_image" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], displays the image specified in [member application/boot_splash/image] when the engine starts. If [code]false[/code], only displays the plain color specified in [member application/boot_splash/bg_color].
 		</member>
@@ -216,6 +219,9 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/features" type="PackedStringArray" setter="" getter="">
+			List of internal features associated with the project, like [code]Double Precision[/code] or [code]C#[/code]. Not to be confused with feature tags.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
@@ -225,6 +231,9 @@
 		<member name="application/config/name" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files. The window title will be set to match the project name automatically on startup.
 			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
+		</member>
+		<member name="application/config/name_localized" type="Dictionary" setter="" getter="" default="{}">
+			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS and macOS.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
@@ -301,6 +310,12 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
+		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer2D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength].
+		</member>
+		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
+		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
@@ -331,18 +346,20 @@
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
-		<member name="debug/gdscript/warnings/assert_always_false" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
 		</member>
-		<member name="debug/gdscript/warnings/assert_always_true" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns true.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a constant is used as a function.
+		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a constant is used as a function.
 		</member>
-		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when deprecated keywords are used.
+		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when deprecated keywords are used.
 		</member>
-		<member name="debug/gdscript/warnings/empty_file" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when an empty file is parsed.
+		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
@@ -350,85 +367,94 @@
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when using a function as if it was a property.
+		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when using a function as if it was a property.
 		</member>
-		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
+		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a ternary operator may emit values with incompatible types.
 		</member>
-		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when trying to assign an integer to a variable that expects an enum value.
 		</member>
-		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
+		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
-		<member name="debug/gdscript/warnings/narrowing_conversion" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when using a property as if it was a function.
+		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when using a property as if it was a function.
 		</member>
-		<member name="debug/gdscript/warnings/redundant_await" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a function that is not a coroutine is called with await.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
+		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
+		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
-		<member name="debug/gdscript/warnings/standalone_ternary" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], all warnings will be reported as if they were errors.
 		</member>
-		<member name="debug/gdscript/warnings/unassigned_variable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when using a variable that wasn't previously assigned.
+		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when using a variable that wasn't previously assigned.
 		</member>
-		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
+		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
-		<member name="debug/gdscript/warnings/unreachable_code" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
+		<member name="debug/gdscript/warnings/unreachable_code" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
-		<member name="debug/gdscript/warnings/unreachable_pattern" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unreachable_pattern" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an unreachable [code]match[/code] pattern is detected.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_call_argument" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when using an expression whose type may not be compatible with the function parameter expected.
+		<member name="debug/gdscript/warnings/unsafe_call_argument" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_cast" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when performing an unsafe cast.
+		<member name="debug/gdscript/warnings/unsafe_cast" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when performing an unsafe cast.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_method_access" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when calling a method whose presence is not guaranteed at compile-time in the class.
+		<member name="debug/gdscript/warnings/unsafe_method_access" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_property_access" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when accessing a property whose presence is not guaranteed at compile-time in the class.
+		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unused_local_constant" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a local constant is never used.
 		</member>
-		<member name="debug/gdscript/warnings/unused_parameter" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_parameter" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a function parameter is never used.
 		</member>
-		<member name="debug/gdscript/warnings/unused_private_class_variable" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a class variable is never used.
 		</member>
-		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a signal is unused.
+		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a signal is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_variable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a local variable is unused.
+		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a local variable is unused.
 		</member>
-		<member name="debug/gdscript/warnings/void_assignment" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when assigning the result of a function that returns [code]void[/code] to a variable.
+		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
-		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on https://github.com/godotengine/godot/issues&quot;">
-			Message to be displayed before the backtrace when the engine crashes.
+		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
+			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
+		</member>
+		<member name="debug/settings/crash_handler/message.editor" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on: https://github.com/godotengine/godot/issues&quot;">
+			Editor-only override for [member debug/settings/crash_handler/message]. Does not affect exported projects in debug or release mode.
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
 			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
@@ -471,6 +497,12 @@
 		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
+			Color of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
+			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
@@ -509,7 +541,7 @@
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
-			[b]Note:[/b] This setting is ignored on iOS and Android.
+			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height.
@@ -529,6 +561,32 @@
 			Sets the VSync mode for the main game window.
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code], if the desired mode is not supported.
+		</member>
+		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
+			[b]Note:[/b] [member editor/movie_writer/disable_vsync] has no effect if the operating system or graphics driver forces V-Sync with no way for applications to disable it.
+		</member>
+		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
+			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+		</member>
+		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
+			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
+		</member>
+		<member name="editor/movie_writer/mjpeg_quality" type="float" setter="" getter="" default="0.75">
+			The JPEG quality to use when writing a video to an AVI file, between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.9[/code]. Even at quality [code]1.0[/code], JPEG compression remains lossy.
+			[b]Note:[/b] This does not affect the audio quality or writing PNG image sequences.
+		</member>
+		<member name="editor/movie_writer/movie_file" type="String" setter="" getter="" default="&quot;&quot;">
+			The output path for the movie. The file extension determines the [MovieWriter] that will be used.
+			Godot has 2 built-in [MovieWriter]s:
+			- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/mjpeg_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
+			- PNG image sequence for video and WAV for audio ([code].png[/code] file extension). Lossless compression, large file sizes, slow encoding. Designed to be encoded to a video file with another tool such as [url=https://ffmpeg.org/]FFmpeg[/url] after recording. Transparency is currently not supported, even if the root viewport is set to be transparent.
+			If you need to encode to a different format or pipe a stream through third-party software, you can extend this [MovieWriter] class to create your own movie writers.
+			When using PNG output, the frame number will be appended at the end of the file name. It starts from 0 and is padded with 8 digits to ensure correct sorting and easier processing. For example, if the output path is [code]/tmp/hello.png[/code], the first two frames will be [code]/tmp/hello00000000.png[/code] and [code]/tmp/hello00000001.png[/code]. The audio will be saved at [code]/tmp/hello.wav[/code].
+		</member>
+		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
+			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>
 		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
@@ -550,6 +608,14 @@
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
+		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
+			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
+		</member>
+		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
+			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
@@ -565,13 +631,23 @@
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
 		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontData.antialiased].
+			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontFile.antialiased].
+		</member>
+		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
+			Enabling [member gui/theme/default_font_generate_mipmaps] increases font generation time and memory usage. Only enable this setting if you actually need it.
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_hinting" type="int" setter="" getter="" default="1">
-			Default font hinting mode. See [member FontData.hinting].
+			Default font hinting mode. See [member FontFile.hinting].
+		</member>
+		<member name="gui/theme/default_font_multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], the default font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
+			MSDF font rendering can be combined with [member gui/theme/default_font_generate_mipmaps] to further improve font rendering quality when scaled down.
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
-			Default font glyph sub-pixel positioning mode. See [member FontData.subpixel_positioning].
+			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
@@ -781,6 +857,12 @@
 		</member>
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
+		</member>
+		<member name="internationalization/locale/translation_remaps" type="PackedStringArray" setter="" getter="">
+			Locale-dependent resource remaps. Edit them in the "Localization" tab of Project Settings editor.
+		</member>
+		<member name="internationalization/locale/translations" type="PackedStringArray" setter="" getter="">
+			List of translation files available in the project. Edit them in the "Localization" tab of Project Settings editor.
 		</member>
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
 			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
@@ -1346,10 +1428,10 @@
 		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
-		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">
+		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
 		</member>
-		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.3">
+		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.25">
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer3D.map_set_edge_connection_margin].
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
@@ -1493,7 +1575,7 @@
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
-			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
+			"DEFAULT" and "GodotPhysics3D" are the same, as there is currently no alternative 3D physics server implemented.
 		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
@@ -1536,18 +1618,6 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
 		</member>
-		<member name="rendering/2d/opengl/batching_send_null" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/opengl/batching_stream" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/opengl/legacy_orphan_buffers" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/opengl/legacy_stream" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/2d/options/use_software_skinning" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/2d/sdf/scale" type="int" setter="" getter="" default="1">
@@ -1562,42 +1632,20 @@
 			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also bilinear scaling 3d [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
-			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
+			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry. The blurriness can be counteracted to an extent by using a negative mipmap LOD bias ([member rendering/textures/default_filters/texture_mipmap_bias]).
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
+			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which can be counteracted to an extent by using a negative mipmap LOD bias ([member rendering/textures/default_filters/texture_mipmap_bias]).
+			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/amount" type="float" setter="" getter="" default="0.25">
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/enabled" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
-		</member>
-		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
-		</member>
-		<member name="rendering/batching/lights/scissor_area_threshold" type="float" setter="" getter="" default="1.0">
-		</member>
-		<member name="rendering/batching/options/single_rect_fallback" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
-		</member>
-		<member name="rendering/batching/parameters/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
-		</member>
-		<member name="rendering/batching/parameters/item_reordering_lookahead" type="int" setter="" getter="" default="4">
-		</member>
-		<member name="rendering/batching/parameters/max_join_item_commands" type="int" setter="" getter="" default="16">
-		</member>
-		<member name="rendering/batching/precision/uv_contract" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
 		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
@@ -1608,13 +1656,16 @@
 		<member name="rendering/camera/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
 		</member>
+		<member name="rendering/driver/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
+			Disables [member rendering/driver/depth_prepass/enable] conditionally for certain vendors. By default, disables the depth prepass for mobile devices as mobile devices do not benefit from the depth prepass due to their unique architecture.
+		</member>
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
-			[b]Note:[/b] Only supported when using the Vulkan Clustered backend (not Vulkan Mobile or OpenGL). When using Vulkan Mobile or OpenGL, there is no depth prepass performed.
+			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			The video driver to use.
-			[b]Note:[/b] OpenGL support is currently incomplete. Only basic 2D rendering is supported, and single-window mode is required for correct operation.
+			[b]Note:[/b] OpenGL support is currently incomplete. Only basic rendering is supported.
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
@@ -1652,11 +1703,8 @@
 		<member name="rendering/environment/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
 			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion at great distances.
 		</member>
-		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
-		</member>
-		<member name="rendering/environment/ssao/half_size.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/environment/ssao/half_size] on mobile devices, due to performance concerns.
+		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
@@ -1697,10 +1745,6 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gles2/compatibility/disable_half_float" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/gles2/compatibility/enable_high_float.Android" type="bool" setter="" getter="" default="false">
-		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
@@ -1714,34 +1758,55 @@
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
+			The maximum number of rays that can be thrown per pass when baking lightmaps with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
+			The maximum number of rays that can be thrown per pass when baking dynamic object lighting in [LightmapProbe]s with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/region_size" type="int" setter="" getter="" default="512">
+			The region size to use when baking lightmaps with [LightmapGI].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/high_quality_probe_ray_count" type="int" setter="" getter="" default="512">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/high_quality_ray_count" type="int" setter="" getter="" default="256">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/low_quality_probe_ray_count" type="int" setter="" getter="" default="64">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_LOW].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/low_quality_ray_count" type="int" setter="" getter="" default="16">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_LOW].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/medium_quality_probe_ray_count" type="int" setter="" getter="" default="256">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_MEDIUM].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/medium_quality_ray_count" type="int" setter="" getter="" default="64">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_MEDIUM].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count" type="int" setter="" getter="" default="2048">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
 		</member>
 		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
+			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
 		</member>
 		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
 		</member>
 		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>
 		<member name="rendering/limits/global_shader_variables/buffer_size" type="int" setter="" getter="" default="65536">
+		</member>
+		<member name="rendering/limits/opengl/max_lights_per_object" type="int" setter="" getter="" default="8">
+			Max number of omnilights and spotlights renderable per object. At the default value of 8, this means that each surface can be affected by up to 8 omnilights and 8 spotlights. This is further limited by hardware support and [member rendering/limits/opengl/max_renderable_lights]. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
+		</member>
+		<member name="rendering/limits/opengl/max_renderable_elements" type="int" setter="" getter="" default="65536">
+			Max amount of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+		</member>
+		<member name="rendering/limits/opengl/max_renderable_lights" type="int" setter="" getter="" default="32">
+			Max number of positional lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
 		</member>
@@ -1791,9 +1856,6 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/scaling_3d/fsr_mipmap_bias" type="float" setter="" getter="" default="0.0">
-			Affects the final texture sharpness by reading from a lower or higher mipmap. Negative values make textures sharper, while positive values make textures blurrier. When using FSR, this value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]
-		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
@@ -1833,47 +1895,52 @@
 		<member name="rendering/shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/directional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply [i]constant[/i] shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
-		<member name="rendering/shadows/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
+		<member name="rendering/shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
+		<member name="rendering/shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
 			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
-			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
+			Lower-end override for [member rendering/shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/positional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
-		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/shadows/positional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/shadows/positional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
+		</member>
+		<member name="rendering/textures/default_filters/texture_mipmap_bias" type="float" setter="" getter="" default="0.0">
+			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
+			[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
+			[b]Note:[/b] This property is only read when the project starts. To change the mipmap LOD bias at run-time, set [member Viewport.texture_mipmap_bias] instead.
 		</member>
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
@@ -1903,6 +1970,12 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
+		<member name="rendering/vrs/mode" type="int" setter="" getter="" default="0">
+			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.
+		</member>
+		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
+			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
+		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="rendering/vulkan/rendering/back_end" type="int" setter="" getter="" default="0">
@@ -1915,7 +1988,13 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://default_action_map.tres&quot;">
+		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
+		</member>
+		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
+		</member>
+		<member name="threading/worker_pool/use_system_threads_for_low_priority_tasks" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
@@ -1928,7 +2007,7 @@
 			Specify the default reference space.
 		</member>
 		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
-			Specify the view configuration with which to configure OpenXR settting up either Mono or Stereo rendering.
+			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.
 		</member>
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.

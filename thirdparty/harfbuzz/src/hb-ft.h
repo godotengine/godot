@@ -122,9 +122,16 @@ hb_ft_font_set_load_flags (hb_font_t *font, int load_flags);
 HB_EXTERN int
 hb_ft_font_get_load_flags (hb_font_t *font);
 
-/* Call when size or variations settings on underlying FT_Face change. */
+/* Call when size or variations settings on underlying FT_Face changed,
+ * and you want to update the hb_font_t from it. */
 HB_EXTERN void
 hb_ft_font_changed (hb_font_t *font);
+
+/* Call when size or variations settings on underlying hb_font_t may have
+ * changed, and you want to update the FT_Face from it.  This call is fast
+ * if nothing changed on hb_font_t. Returns true if changed. */
+HB_EXTERN hb_bool_t
+hb_ft_hb_font_changed (hb_font_t *font);
 
 /* Makes an hb_font_t use FreeType internally to implement font functions.
  * Note: this internally creates an FT_Face.  Use it when you create your

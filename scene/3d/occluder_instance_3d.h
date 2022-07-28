@@ -194,7 +194,6 @@ public:
 	Ref<Occluder3D> get_occluder() const;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_bake_mask(uint32_t p_mask);
 	uint32_t get_bake_mask() const;
@@ -212,4 +211,4 @@ public:
 	~OccluderInstance3D();
 };
 
-#endif
+#endif // OCCLUDER_INSTANCE_3D_H

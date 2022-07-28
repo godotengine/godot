@@ -57,6 +57,9 @@
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
+		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="true">
+			Enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is lower than the screen refresh rate.
+		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
 			Amount of time each particle will exist.
 		</member>

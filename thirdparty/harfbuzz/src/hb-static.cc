@@ -33,6 +33,7 @@
 #include "hb-aat-layout-feat-table.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-cmap-table.hh"
+#include "hb-ot-glyf-table.hh"
 #include "hb-ot-head-table.hh"
 #include "hb-ot-maxp-table.hh"
 
@@ -45,27 +46,55 @@ uint64_t const _hb_NullPool[(HB_NULL_POOL_SIZE + sizeof (uint64_t) - 1) / sizeof
 DEFINE_NULL_NAMESPACE_BYTES (OT, Index) =  {0xFF,0xFF};
 DEFINE_NULL_NAMESPACE_BYTES (OT, VarIdx) =  {0xFF,0xFF,0xFF,0xFF};
 DEFINE_NULL_NAMESPACE_BYTES (OT, LangSys) = {0x00,0x00, 0xFF,0xFF, 0x00,0x00};
-DEFINE_NULL_NAMESPACE_BYTES (OT, RangeRecord) = {0x00,0x01, 0x00,0x00, 0x00, 0x00};
+DEFINE_NULL_NAMESPACE_BYTES (OT, RangeRecord) = {0x01};
 DEFINE_NULL_NAMESPACE_BYTES (OT, CmapSubtableLongGroup) = {0x00,0x00,0x00,0x01, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00};
 DEFINE_NULL_NAMESPACE_BYTES (AAT, SettingName) = {0xFF,0xFF, 0xFF,0xFF};
-/* Hand-coded because Lookup is a template.  Sad. */
-const unsigned char _hb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
+DEFINE_NULL_NAMESPACE_BYTES (AAT, Lookup) = {0xFF,0xFF};
 
 
+/* hb_map_t */
+
+const hb_codepoint_t minus_1 = -1;
 
 /* hb_face_t */
+
+#ifndef HB_NO_BEYOND_64K
+static inline unsigned
+load_num_glyphs_from_loca (const hb_face_t *face)
+{
+  unsigned ret = 0;
+
+  unsigned indexToLocFormat = face->table.head->indexToLocFormat;
+
+  if (indexToLocFormat <= 1)
+  {
+    bool short_offset = 0 == indexToLocFormat;
+    hb_blob_t *loca_blob = face->table.loca.get_blob ();
+    ret = hb_max (1u, loca_blob->length / (short_offset ? 2 : 4)) - 1;
+  }
+
+  return ret;
+}
+#endif
+
+static inline unsigned
+load_num_glyphs_from_maxp (const hb_face_t *face)
+{
+  return face->table.maxp->get_num_glyphs ();
+}
 
 unsigned int
 hb_face_t::load_num_glyphs () const
 {
-  hb_sanitize_context_t c = hb_sanitize_context_t ();
-  c.set_num_glyphs (0); /* So we don't recurse ad infinitum. */
-  hb_blob_t *maxp_blob = c.reference_table<OT::maxp> (this);
-  const OT::maxp *maxp_table = maxp_blob->as<OT::maxp> ();
+  unsigned ret = 0;
 
-  unsigned int ret = maxp_table->get_num_glyphs ();
+#ifndef HB_NO_BEYOND_64K
+  ret = hb_max (ret, load_num_glyphs_from_loca (this));
+#endif
+
+  ret = hb_max (ret, load_num_glyphs_from_maxp (this));
+
   num_glyphs.set_relaxed (ret);
-  hb_blob_destroy (maxp_blob);
   return ret;
 }
 

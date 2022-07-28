@@ -234,6 +234,16 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 		to_delete[i]->queue_delete();
 		toasts.erase(to_delete[i]);
 	}
+
+	if (toasts.is_empty()) {
+		main_button->set_tooltip(TTR("No notifications."));
+		main_button->set_modulate(Color(0.5, 0.5, 0.5));
+		main_button->set_disabled(true);
+	} else {
+		main_button->set_tooltip(TTR("Show notifications."));
+		main_button->set_modulate(Color(1, 1, 1));
+		main_button->set_disabled(false);
+	}
 }
 
 void EditorToaster::_draw_button() {
@@ -385,12 +395,19 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 }
 
 void EditorToaster::popup_str(String p_message, Severity p_severity, String p_tooltip) {
+	if (is_processing_error) {
+		return;
+	}
+
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
+	is_processing_error = true;
 	call_deferred(SNAME("_popup_str"), p_message, p_severity, p_tooltip);
+	is_processing_error = false;
 }
 
 void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_tooltip) {
+	is_processing_error = true;
 	// Check if we already have a popup with the given message.
 	Control *control = nullptr;
 	for (KeyValue<Control *, Toast> element : toasts) {
@@ -432,6 +449,7 @@ void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_t
 	} else {
 		label->set_text(vformat("%s (%d)", p_message, toasts[control].count));
 	}
+	is_processing_error = false;
 }
 
 void EditorToaster::close(Control *p_control) {
@@ -500,6 +518,9 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
+	main_button->set_tooltip(TTR("No notifications."));
+	main_button->set_modulate(Color(0.5, 0.5, 0.5));
+	main_button->set_disabled(true);
 	main_button->set_flat(true);
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled), varray(true));
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
@@ -513,6 +534,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
+	disable_notifications_button->set_tooltip(TTR("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled), varray(false));
 	disable_notifications_panel->add_child(disable_notifications_button);

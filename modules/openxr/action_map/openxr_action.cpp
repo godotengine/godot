@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "openxr_action.h"
+#include "openxr_action_set.h"
 
 void OpenXRAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_localized_name", "localized_name"), &OpenXRAction::set_localized_name);
@@ -62,6 +63,16 @@ Ref<OpenXRAction> OpenXRAction::new_action(const char *p_name, const char *p_loc
 	return action;
 }
 
+String OpenXRAction::get_name_with_set() const {
+	String name = get_name();
+
+	if (action_set != nullptr) {
+		name = action_set->get_name() + "/" + name;
+	}
+
+	return name;
+}
+
 void OpenXRAction::set_localized_name(const String p_localized_name) {
 	localized_name = p_localized_name;
 }
@@ -84,6 +95,18 @@ void OpenXRAction::set_toplevel_paths(const PackedStringArray p_toplevel_paths) 
 
 PackedStringArray OpenXRAction::get_toplevel_paths() const {
 	return toplevel_paths;
+}
+
+void OpenXRAction::add_toplevel_path(const String p_toplevel_path) {
+	if (!toplevel_paths.has(p_toplevel_path)) {
+		toplevel_paths.push_back(p_toplevel_path);
+	}
+}
+
+void OpenXRAction::rem_toplevel_path(const String p_toplevel_path) {
+	if (toplevel_paths.has(p_toplevel_path)) {
+		toplevel_paths.erase(p_toplevel_path);
+	}
 }
 
 void OpenXRAction::parse_toplevel_paths(const String p_toplevel_paths) {

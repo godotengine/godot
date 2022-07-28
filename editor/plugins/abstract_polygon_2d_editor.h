@@ -40,9 +40,9 @@ class CanvasItemEditor;
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-	Button *button_create;
-	Button *button_edit;
-	Button *button_delete;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
 
 	struct Vertex {
 		Vertex() {}
@@ -80,14 +80,14 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
-	bool wip_active;
-	bool wip_destructive;
+	bool wip_active = false;
+	bool wip_destructive = false;
 
-	bool _polygon_editing_enabled;
+	bool _polygon_editing_enabled = false;
 
-	CanvasItemEditor *canvas_item_editor;
-	Panel *panel;
-	ConfirmationDialog *create_resource;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	Panel *panel = nullptr;
+	ConfirmationDialog *create_resource = nullptr;
 
 protected:
 	enum {
@@ -97,9 +97,9 @@ protected:
 		MODE_CONT,
 	};
 
-	int mode;
+	int mode = MODE_EDIT;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
@@ -149,7 +149,7 @@ public:
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
-	AbstractPolygon2DEditor *polygon_editor;
+	AbstractPolygon2DEditor *polygon_editor = nullptr;
 	String klass;
 
 public:

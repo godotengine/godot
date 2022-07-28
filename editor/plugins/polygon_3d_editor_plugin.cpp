@@ -117,7 +117,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D 
 	Transform3D gt = node->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
 	float depth = _get_depth() * 0.5;
-	Vector3 n = gt.basis.get_axis(2).normalized();
+	Vector3 n = gt.basis.get_column(2).normalized();
 	Plane p(n, gt.origin + n * depth);
 
 	Ref<InputEventMouseButton> mb = p_event;

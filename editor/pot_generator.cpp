@@ -39,15 +39,15 @@ POTGenerator *POTGenerator::singleton = nullptr;
 
 #ifdef DEBUG_POT
 void POTGenerator::_print_all_translation_strings() {
-	for (OrderedHashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
+	for (HashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
 		Vector<MsgidData> v_md = all_translation_strings[E.key()];
 		for (int i = 0; i < v_md.size(); i++) {
 			print_line("++++++");
 			print_line("msgid: " + E.key());
 			print_line("context: " + v_md[i].ctx);
 			print_line("msgid_plural: " + v_md[i].plural);
-			for (Set<String>::Element *E = v_md[i].locations.front(); E; E = E->next()) {
-				print_line("location: " + E->get());
+			for (const String &F : v_md[i].locations) {
+				print_line("location: " + F);
 			}
 		}
 	}
@@ -93,7 +93,7 @@ void POTGenerator::generate_pot(const String &p_file) {
 
 void POTGenerator::_write_to_pot(const String &p_file) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 		ERR_PRINT("Failed to open " + p_file);
 		return;
@@ -121,20 +121,20 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 	file->store_string(header);
 
-	for (OrderedHashMap<String, Vector<MsgidData>>::Element E_pair = all_translation_strings.front(); E_pair; E_pair = E_pair.next()) {
-		String msgid = E_pair.key();
-		Vector<MsgidData> v_msgid_data = E_pair.value();
+	for (const KeyValue<String, Vector<MsgidData>> &E_pair : all_translation_strings) {
+		String msgid = E_pair.key;
+		const Vector<MsgidData> &v_msgid_data = E_pair.value;
 		for (int i = 0; i < v_msgid_data.size(); i++) {
 			String context = v_msgid_data[i].ctx;
 			String plural = v_msgid_data[i].plural;
-			const Set<String> &locations = v_msgid_data[i].locations;
+			const HashSet<String> &locations = v_msgid_data[i].locations;
 
 			// Put the blank line at the start, to avoid a double at the end when closing the file.
 			file->store_line("");
 
 			// Write file locations.
-			for (Set<String>::Element *E = locations.front(); E; E = E->next()) {
-				file->store_line("#: " + E->get().trim_prefix("res://"));
+			for (const String &E : locations) {
+				file->store_line("#: " + E.trim_prefix("res://"));
 			}
 
 			// Write context.
@@ -155,11 +155,9 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			}
 		}
 	}
-
-	file->close();
 }
 
-void POTGenerator::_write_msgid(FileAccess *r_file, const String &p_id, bool p_plural) {
+void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural) {
 	// Split \\n and \n.
 	Vector<String> temp = p_id.split("\\n");
 	Vector<String> msg_lines;

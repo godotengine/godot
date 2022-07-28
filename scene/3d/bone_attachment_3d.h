@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_ATTACHMENT_H
-#define BONE_ATTACHMENT_H
+#ifndef BONE_ATTACHMENT_3D_H
+#define BONE_ATTACHMENT_3D_H
 
 #include "scene/3d/skeleton_3d.h"
+#ifdef TOOLS_ENABLED
+#include "scene/resources/bone_map.h"
+#endif // TOOLS_ENABLED
 
 class BoneAttachment3D : public Node3D {
 	GDCLASS(BoneAttachment3D, Node3D);
@@ -68,6 +71,9 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+#ifdef TOOLS_ENABLED
+	virtual void _notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Ref<BoneMap> p_bone_map);
+#endif // TOOLS_ENABLED
 
 public:
 	virtual TypedArray<String> get_configuration_warnings() const override;
@@ -93,4 +99,4 @@ public:
 	BoneAttachment3D();
 };
 
-#endif // BONE_ATTACHMENT_H
+#endif // BONE_ATTACHMENT_3D_H

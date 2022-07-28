@@ -70,11 +70,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if operands are different from each other.
@@ -163,6 +158,18 @@
 			</description>
 		</operator>
 		<operator name="operator *">
+			<return type="Vector4" />
+			<argument index="0" name="right" type="Vector4" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4i" />
+			<argument index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>
@@ -174,6 +181,18 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Multiplies two [int]s.
+			</description>
+		</operator>
+		<operator name="operator **">
+			<return type="float" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator **">
+			<return type="int" />
+			<argument index="0" name="right" type="int" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator +">
@@ -269,11 +288,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] the left integer is less than or equal to the right one.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

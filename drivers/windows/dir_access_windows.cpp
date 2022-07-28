@@ -185,7 +185,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	return ERR_CANT_CREATE;
 }
 
-String DirAccessWindows::get_current_dir(bool p_include_drive) {
+String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 	String base = _get_root_path();
 	if (!base.is_empty()) {
 		String bd = current_dir.replace("\\", "/").replace_first(base, "");

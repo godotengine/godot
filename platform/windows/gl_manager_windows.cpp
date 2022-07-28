@@ -54,6 +54,18 @@
 
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
+static String format_error_message(DWORD id) {
+	LPWSTR messageBuffer = nullptr;
+	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
+
+	String msg = "Error " + itos(id) + ": " + String::utf16((const char16_t *)messageBuffer, size);
+
+	LocalFree(messageBuffer);
+
+	return msg;
+}
+
 int GLManager_Windows::_find_or_create_display(GLWindow &win) {
 	// find display NYI, only 1 supported so far
 	if (_displays.size()) {
@@ -79,7 +91,7 @@ int GLManager_Windows::_find_or_create_display(GLWindow &win) {
 	return new_display_id;
 }
 
-Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
+static Error _configure_pixel_format(HDC hDC) {
 	static PIXELFORMATDESCRIPTOR pfd = {
 		sizeof(PIXELFORMATDESCRIPTOR), // Size Of This Pixel Format Descriptor
 		1,
@@ -101,9 +113,6 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 		0, 0, 0 // Layer Masks Ignored
 	};
 
-	// alias
-	HDC hDC = win.hDC;
-
 	int pixel_format = ChoosePixelFormat(hDC, &pfd);
 	if (!pixel_format) // Did Windows Find A Matching Pixel Format?
 	{
@@ -116,13 +125,24 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	gl_display.hRC = wglCreateContext(hDC);
+	return OK;
+}
+
+Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
+	Error err = _configure_pixel_format(win.hDC);
+	if (err != OK) {
+		return err;
+	}
+
+	gl_display.hRC = wglCreateContext(win.hDC);
 	if (!gl_display.hRC) // Are We Able To Get A Rendering Context?
 	{
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	wglMakeCurrent(hDC, gl_display.hRC);
+	if (!wglMakeCurrent(win.hDC, gl_display.hRC)) {
+		ERR_PRINT("Could not attach OpenGL context to newly created window: " + format_error_message(GetLastError()));
+	}
 
 	int attribs[] = {
 		WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
@@ -143,57 +163,61 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 		return ERR_CANT_CREATE;
 	}
 
-	HGLRC new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
+	HGLRC new_hRC = wglCreateContextAttribsARB(win.hDC, 0, attribs);
 	if (!new_hRC) {
 		wglDeleteContext(gl_display.hRC);
 		gl_display.hRC = 0;
-		return ERR_CANT_CREATE; // Return false
+		return ERR_CANT_CREATE;
 	}
-	wglMakeCurrent(hDC, nullptr);
+
+	if (!wglMakeCurrent(win.hDC, nullptr)) {
+		ERR_PRINT("Could not detach OpenGL context from newly created window: " + format_error_message(GetLastError()));
+	}
+
 	wglDeleteContext(gl_display.hRC);
 	gl_display.hRC = new_hRC;
 
-	if (!wglMakeCurrent(hDC, gl_display.hRC)) // Try To Activate The Rendering Context
+	if (!wglMakeCurrent(win.hDC, gl_display.hRC)) // Try To Activate The Rendering Context
 	{
+		ERR_PRINT("Could not attach OpenGL context to newly created window with replaced OpenGL context: " + format_error_message(GetLastError()));
 		wglDeleteContext(gl_display.hRC);
 		gl_display.hRC = 0;
-		return ERR_CANT_CREATE; // Return FALSE
+		return ERR_CANT_CREATE;
 	}
 
 	return OK;
 }
 
 Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
-	HDC hdc = GetDC(p_hwnd);
-	if (!hdc) {
-		return ERR_CANT_CREATE; // Return FALSE
+	HDC hDC = GetDC(p_hwnd);
+	if (!hDC) {
+		return ERR_CANT_CREATE;
 	}
 
-	// make sure vector is big enough...
-	// we can mirror the external vector, it is simpler
-	// to keep the IDs identical for fast lookup
-	if (p_window_id >= (int)_windows.size()) {
-		_windows.resize(p_window_id + 1);
+	// configure the HDC to use a compatible pixel format
+	Error result = _configure_pixel_format(hDC);
+	if (result != OK) {
+		return result;
 	}
 
-	GLWindow &win = _windows[p_window_id];
-	win.in_use = true;
-	win.window_id = p_window_id;
+	GLWindow win;
 	win.width = p_width;
 	win.height = p_height;
 	win.hwnd = p_hwnd;
-	win.hDC = hdc;
+	win.hDC = hDC;
 
 	win.gldisplay_id = _find_or_create_display(win);
 
 	if (win.gldisplay_id == -1) {
-		// release DC?
-		_windows.remove_at(_windows.size() - 1);
 		return FAILED;
 	}
 
+	// WARNING: p_window_id is an eternally growing integer since popup windows keep coming and going
+	// and each of them has a higher id than the previous, so it must be used in a map not a vector
+	_windows[p_window_id] = win;
+
 	// make current
-	window_make_current(_windows.size() - 1);
+	window_make_current(p_window_id);
 
 	return OK;
 }
@@ -217,11 +241,10 @@ int GLManager_Windows::window_get_height(DisplayServer::WindowID p_window_id) {
 
 void GLManager_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
-	win.in_use = false;
-
 	if (_current_window == &win) {
 		_current_window = nullptr;
 	}
+	_windows.erase(p_window_id);
 }
 
 void GLManager_Windows::release_current() {
@@ -229,7 +252,9 @@ void GLManager_Windows::release_current() {
 		return;
 	}
 
-	wglMakeCurrent(_current_window->hDC, nullptr);
+	if (!wglMakeCurrent(_current_window->hDC, nullptr)) {
+		ERR_PRINT("Could not detach OpenGL context from window marked current: " + format_error_message(GetLastError()));
+	}
 }
 
 void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
@@ -237,10 +262,8 @@ void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id)
 		return;
 	}
 
+	// crash if our data structures are out of sync, i.e. not found
 	GLWindow &win = _windows[p_window_id];
-	if (!win.in_use) {
-		return;
-	}
 
 	// noop
 	if (&win == _current_window) {
@@ -248,7 +271,9 @@ void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id)
 	}
 
 	const GLDisplay &disp = get_display(win.gldisplay_id);
-	wglMakeCurrent(win.hDC, disp.hRC);
+	if (!wglMakeCurrent(win.hDC, disp.hRC)) {
+		ERR_PRINT("Could not switch OpenGL context to other window: " + format_error_message(GetLastError()));
+	}
 
 	_internal_set_current_window(&win);
 }
@@ -257,34 +282,19 @@ void GLManager_Windows::make_current() {
 	if (!_current_window) {
 		return;
 	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
 	const GLDisplay &disp = get_current_display();
-	wglMakeCurrent(_current_window->hDC, disp.hRC);
+	if (!wglMakeCurrent(_current_window->hDC, disp.hRC)) {
+		ERR_PRINT("Could not switch OpenGL context to window marked current: " + format_error_message(GetLastError()));
+	}
 }
 
 void GLManager_Windows::swap_buffers() {
-	// NO NEED TO CALL SWAP BUFFERS for each window...
-	// see https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glXSwapBuffers.xml
-
-	if (!_current_window) {
-		return;
+	// on other platforms, OpenGL swaps buffers for all windows (on all displays, really?)
+	// Windows swaps buffers on a per-window basis
+	// REVISIT: this could be structurally bad, should we have "dirty" flags then?
+	for (KeyValue<DisplayServer::WindowID, GLWindow> &entry : _windows) {
+		SwapBuffers(entry.value.hDC);
 	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
-
-	//	print_line("\tswap_buffers");
-
-	// only for debugging without drawing anything
-	//	glClearColor(Math::randf(), 0, 1, 1);
-	//glClear(GL_COLOR_BUFFER_BIT);
-
-	//	const GLDisplay &disp = get_current_display();
-	SwapBuffers(_current_window->hDC);
 }
 
 Error GLManager_Windows::initialize() {

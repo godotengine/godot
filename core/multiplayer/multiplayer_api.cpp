@@ -463,8 +463,12 @@ bool MultiplayerAPI::is_cache_confirmed(NodePath p_path, int p_peer) {
 	return cache->is_cache_confirmed(p_path, p_peer);
 }
 
-bool MultiplayerAPI::send_object_cache(Object *p_obj, NodePath p_path, int p_peer_id, int &r_id) {
-	return cache->send_object_cache(p_obj, p_path, p_peer_id, r_id);
+bool MultiplayerAPI::send_object_cache(Object *p_obj, int p_peer_id, int &r_id) {
+	return cache->send_object_cache(p_obj, p_peer_id, r_id);
+}
+
+int MultiplayerAPI::make_object_cache(Object *p_obj) {
+	return cache->make_object_cache(p_obj);
 }
 
 Object *MultiplayerAPI::get_cached_object(int p_from, uint32_t p_cache_id) {
@@ -494,8 +498,8 @@ Vector<int> MultiplayerAPI::get_peer_ids() const {
 	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), Vector<int>(), "No multiplayer peer is assigned. Assume no peers are connected.");
 
 	Vector<int> ret;
-	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const int &E : connected_peers) {
+		ret.push_back(E);
 	}
 
 	return ret;

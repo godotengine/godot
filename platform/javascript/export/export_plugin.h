@@ -36,8 +36,8 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
@@ -61,19 +61,16 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		EXPORT_MODE_NORMAL = 0,
 		EXPORT_MODE_THREADS = 1,
 		EXPORT_MODE_GDNATIVE = 2,
+		EXPORT_MODE_THREADS_GDNATIVE = 3,
 	};
 
 	String _get_template_name(ExportMode p_mode, bool p_debug) const {
 		String name = "webassembly";
-		switch (p_mode) {
-			case EXPORT_MODE_THREADS:
-				name += "_threads";
-				break;
-			case EXPORT_MODE_GDNATIVE:
-				name += "_gdnative";
-				break;
-			default:
-				break;
+		if (p_mode & EXPORT_MODE_GDNATIVE) {
+			name += "_gdnative";
+		}
+		if (p_mode & EXPORT_MODE_THREADS) {
+			name += "_threads";
 		}
 		if (p_debug) {
 			name += "_debug.zip";
@@ -104,7 +101,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	}
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
-	void _replace_strings(Map<String, String> p_replaces, Vector<uint8_t> &r_template);
+	void _replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template);
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
@@ -138,7 +135,7 @@ public:
 		r_features->push_back(get_os_name().to_lower());
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
 	String get_debug_protocol() const override { return "ws://"; }
@@ -147,4 +144,4 @@ public:
 	~EditorExportPlatformJavaScript();
 };
 
-#endif
+#endif // JAVASCRIPT_EXPORT_PLUGIN_H

@@ -37,7 +37,7 @@
 class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(CollisionPolygon2DEditor, AbstractPolygon2DEditor);
 
-	CollisionPolygon2D *node;
+	CollisionPolygon2D *node = nullptr;
 
 protected:
 	virtual Node2D *_get_node() const override;

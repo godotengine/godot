@@ -54,7 +54,7 @@ class GodotPhysicsServer3D : public PhysicsServer3D {
 	bool flushing_queries = false;
 
 	GodotStep3D *stepper = nullptr;
-	Set<const GodotSpace3D *> active_spaces;
+	HashSet<const GodotSpace3D *> active_spaces;
 
 	mutable RID_PtrOwner<GodotShape3D, true> shape_owner;
 	mutable RID_PtrOwner<GodotSpace3D, true> space_owner;
@@ -74,7 +74,7 @@ public:
 	struct CollCbkData {
 		int max;
 		int amount;
-		Vector3 *ptr;
+		Vector3 *ptr = nullptr;
 	};
 
 	static void _shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
@@ -253,7 +253,7 @@ public:
 
 	virtual RID soft_body_create() override;
 
-	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) override;
+	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;
@@ -353,7 +353,7 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
 	virtual int joint_get_solver_priority(RID p_joint) const override;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) override;
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
 	/* MISC */

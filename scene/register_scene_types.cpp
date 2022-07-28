@@ -129,6 +129,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
 #include "scene/main/instance_placeholder.h"
+#include "scene/main/missing_node.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
@@ -139,8 +140,10 @@
 #include "scene/multiplayer/scene_cache_interface.h"
 #include "scene/multiplayer/scene_replication_interface.h"
 #include "scene/multiplayer/scene_rpc_interface.h"
-#include "scene/resources/audio_stream_sample.h"
+#include "scene/resources/animation_library.h"
+#include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/bone_map.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/camera_effects.h"
 #include "scene/resources/capsule_shape_2d.h"
@@ -156,6 +159,7 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/immediate_mesh.h"
+#include "scene/resources/label_settings.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
@@ -170,6 +174,7 @@
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/separation_ray_shape_2d.h"
 #include "scene/resources/separation_ray_shape_3d.h"
+#include "scene/resources/shader_include.h"
 #include "scene/resources/skeleton_modification_2d.h"
 #include "scene/resources/skeleton_modification_2d_ccdik.h"
 #include "scene/resources/skeleton_modification_2d_fabrik.h"
@@ -187,6 +192,7 @@
 #include "scene/resources/skeleton_modification_3d_twoboneik.h"
 #include "scene/resources/skeleton_modification_stack_2d.h"
 #include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -225,6 +231,7 @@
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/joint_3d.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
@@ -260,12 +267,15 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
-static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
-static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
+static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderCompressedTextureLayered> resource_loader_texture_layered;
+static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
+
+static Ref<ResourceFormatSaverShaderInclude> resource_saver_shader_include;
+static Ref<ResourceFormatLoaderShaderInclude> resource_loader_shader_include;
 
 void register_scene_types() {
 	SceneStringNames::create();
@@ -295,14 +305,21 @@ void register_scene_types() {
 	resource_loader_shader.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
 
+	resource_saver_shader_include.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_saver_shader_include, true);
+
+	resource_loader_shader_include.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_shader_include, true);
+
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Object);
 
 	GDREGISTER_CLASS(Node);
-	GDREGISTER_VIRTUAL_CLASS(InstancePlaceholder);
+	GDREGISTER_VIRTUAL_CLASS(MissingNode);
+	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
-	GDREGISTER_VIRTUAL_CLASS(Viewport);
+	GDREGISTER_ABSTRACT_CLASS(Viewport);
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
 	GDREGISTER_CLASS(HTTPRequest);
@@ -324,11 +341,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Control);
 	GDREGISTER_CLASS(Button);
 	GDREGISTER_CLASS(Label);
-	GDREGISTER_VIRTUAL_CLASS(ScrollBar);
+	GDREGISTER_ABSTRACT_CLASS(ScrollBar);
 	GDREGISTER_CLASS(HScrollBar);
 	GDREGISTER_CLASS(VScrollBar);
 	GDREGISTER_CLASS(ProgressBar);
-	GDREGISTER_VIRTUAL_CLASS(Slider);
+	GDREGISTER_ABSTRACT_CLASS(Slider);
 	GDREGISTER_CLASS(HSlider);
 	GDREGISTER_CLASS(VSlider);
 	GDREGISTER_CLASS(Popup);
@@ -349,19 +366,19 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AspectRatioContainer);
 	GDREGISTER_CLASS(TabContainer);
 	GDREGISTER_CLASS(TabBar);
-	GDREGISTER_VIRTUAL_CLASS(Separator);
+	GDREGISTER_ABSTRACT_CLASS(Separator);
 	GDREGISTER_CLASS(HSeparator);
 	GDREGISTER_CLASS(VSeparator);
 	GDREGISTER_CLASS(TextureButton);
 	GDREGISTER_CLASS(Container);
-	GDREGISTER_VIRTUAL_CLASS(BoxContainer);
+	GDREGISTER_ABSTRACT_CLASS(BoxContainer);
 	GDREGISTER_CLASS(HBoxContainer);
 	GDREGISTER_CLASS(VBoxContainer);
 	GDREGISTER_CLASS(GridContainer);
 	GDREGISTER_CLASS(CenterContainer);
 	GDREGISTER_CLASS(ScrollContainer);
 	GDREGISTER_CLASS(PanelContainer);
-	GDREGISTER_VIRTUAL_CLASS(FlowContainer);
+	GDREGISTER_ABSTRACT_CLASS(FlowContainer);
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
 
@@ -384,7 +401,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SyntaxHighlighter);
 	GDREGISTER_CLASS(CodeHighlighter);
 
-	GDREGISTER_VIRTUAL_CLASS(TreeItem);
+	GDREGISTER_ABSTRACT_CLASS(TreeItem);
 	GDREGISTER_CLASS(OptionButton);
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
@@ -398,7 +415,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(MarginContainer);
 	GDREGISTER_CLASS(SubViewportContainer);
-	GDREGISTER_VIRTUAL_CLASS(SplitContainer);
+	GDREGISTER_ABSTRACT_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
 
@@ -418,7 +435,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(AnimationPlayer);
 	GDREGISTER_CLASS(Tween);
-	GDREGISTER_VIRTUAL_CLASS(Tweener);
+	GDREGISTER_ABSTRACT_CLASS(Tweener);
 	GDREGISTER_CLASS(PropertyTweener);
 	GDREGISTER_CLASS(IntervalTweener);
 	GDREGISTER_CLASS(CallbackTweener);
@@ -433,6 +450,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 
+	GDREGISTER_CLASS(AnimationNodeSync);
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
 	GDREGISTER_CLASS(AnimationNodeOutput);
 	GDREGISTER_CLASS(AnimationNodeOneShot);
@@ -453,9 +471,9 @@ void register_scene_types() {
 
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(Node3D);
-	GDREGISTER_VIRTUAL_CLASS(Node3DGizmo);
+	GDREGISTER_ABSTRACT_CLASS(Node3DGizmo);
 	GDREGISTER_CLASS(Skin);
-	GDREGISTER_VIRTUAL_CLASS(SkinReference);
+	GDREGISTER_ABSTRACT_CLASS(SkinReference);
 	GDREGISTER_CLASS(Skeleton3D);
 	GDREGISTER_CLASS(ImporterMesh);
 	GDREGISTER_CLASS(ImporterMeshInstance3D);
@@ -464,22 +482,23 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
-	GDREGISTER_VIRTUAL_CLASS(XRNode3D);
+	GDREGISTER_ABSTRACT_CLASS(XRNode3D);
 	GDREGISTER_CLASS(XRController3D);
 	GDREGISTER_CLASS(XRAnchor3D);
 	GDREGISTER_CLASS(XROrigin3D);
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
-	GDREGISTER_VIRTUAL_CLASS(Occluder3D);
+	GDREGISTER_ABSTRACT_CLASS(Occluder3D);
 	GDREGISTER_CLASS(ArrayOccluder3D);
 	GDREGISTER_CLASS(QuadOccluder3D);
 	GDREGISTER_CLASS(BoxOccluder3D);
 	GDREGISTER_CLASS(SphereOccluder3D);
 	GDREGISTER_CLASS(PolygonOccluder3D);
-	GDREGISTER_VIRTUAL_CLASS(SpriteBase3D);
+	GDREGISTER_ABSTRACT_CLASS(SpriteBase3D);
 	GDREGISTER_CLASS(Sprite3D);
 	GDREGISTER_CLASS(AnimatedSprite3D);
-	GDREGISTER_VIRTUAL_CLASS(Light3D);
+	GDREGISTER_CLASS(Label3D);
+	GDREGISTER_ABSTRACT_CLASS(Light3D);
 	GDREGISTER_CLASS(DirectionalLight3D);
 	GDREGISTER_CLASS(OmniLight3D);
 	GDREGISTER_CLASS(SpotLight3D);
@@ -490,14 +509,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightmapGI);
 	GDREGISTER_CLASS(LightmapGIData);
 	GDREGISTER_CLASS(LightmapProbe);
-	GDREGISTER_VIRTUAL_CLASS(Lightmapper);
+	GDREGISTER_ABSTRACT_CLASS(Lightmapper);
 	GDREGISTER_CLASS(GPUParticles3D);
-	GDREGISTER_VIRTUAL_CLASS(GPUParticlesCollision3D);
+	GDREGISTER_ABSTRACT_CLASS(GPUParticlesCollision3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionBox3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionSphere3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionSDF3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionHeightField3D);
-	GDREGISTER_VIRTUAL_CLASS(GPUParticlesAttractor3D);
+	GDREGISTER_ABSTRACT_CLASS(GPUParticlesAttractor3D);
 	GDREGISTER_CLASS(GPUParticlesAttractorBox3D);
 	GDREGISTER_CLASS(GPUParticlesAttractorSphere3D);
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
@@ -509,8 +528,8 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_VIRTUAL_CLASS(CollisionObject3D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsBody3D);
+	GDREGISTER_ABSTRACT_CLASS(CollisionObject3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);
 	GDREGISTER_CLASS(AnimatableBody3D);
 	GDREGISTER_CLASS(RigidDynamicBody3D);
@@ -542,7 +561,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FogMaterial);
 	GDREGISTER_CLASS(RemoteTransform3D);
 
-	GDREGISTER_VIRTUAL_CLASS(Joint3D);
+	GDREGISTER_ABSTRACT_CLASS(Joint3D);
 	GDREGISTER_CLASS(PinJoint3D);
 	GDREGISTER_CLASS(HingeJoint3D);
 	GDREGISTER_CLASS(SliderJoint3D);
@@ -560,14 +579,15 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Shader);
 	GDREGISTER_CLASS(VisualShader);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNode);
+	GDREGISTER_CLASS(ShaderInclude);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNode);
 	GDREGISTER_CLASS(VisualShaderNodeCustom);
 	GDREGISTER_CLASS(VisualShaderNodeInput);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeOutput);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeResizableBase);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeGroupBase);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeConstant);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeVectorBase);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeOutput);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeResizableBase);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeGroupBase);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeConstant);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVectorBase);
 	GDREGISTER_CLASS(VisualShaderNodeComment);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
@@ -575,6 +595,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Constant);
+	GDREGISTER_CLASS(VisualShaderNodeVec4Constant);
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
 	GDREGISTER_CLASS(VisualShaderNodeIntOp);
@@ -607,11 +628,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTexture);
 	GDREGISTER_CLASS(VisualShaderNodeCurveTexture);
 	GDREGISTER_CLASS(VisualShaderNodeCurveXYZTexture);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeSample3D);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeSample3D);
 	GDREGISTER_CLASS(VisualShaderNodeTexture2DArray);
 	GDREGISTER_CLASS(VisualShaderNodeTexture3D);
 	GDREGISTER_CLASS(VisualShaderNodeCubemap);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeUniform);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeUniform);
 	GDREGISTER_CLASS(VisualShaderNodeUniformRef);
 	GDREGISTER_CLASS(VisualShaderNodeFloatUniform);
 	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
@@ -619,6 +640,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
+	GDREGISTER_CLASS(VisualShaderNodeVec4Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniformTriplanar);
@@ -634,6 +656,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeCompare);
 	GDREGISTER_CLASS(VisualShaderNodeMultiplyAdd);
 	GDREGISTER_CLASS(VisualShaderNodeBillboard);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
+	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
+	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
 
 	GDREGISTER_CLASS(VisualShaderNodeSDFToScreenUV);
 	GDREGISTER_CLASS(VisualShaderNodeScreenUVToSDF);
@@ -642,7 +667,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeSDFRaymarch);
 
 	GDREGISTER_CLASS(VisualShaderNodeParticleOutput);
-	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeParticleEmitter);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeParticleEmitter);
 	GDREGISTER_CLASS(VisualShaderNodeParticleSphereEmitter);
 	GDREGISTER_CLASS(VisualShaderNodeParticleBoxEmitter);
 	GDREGISTER_CLASS(VisualShaderNodeParticleRingEmitter);
@@ -654,7 +679,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
 
 	GDREGISTER_CLASS(ShaderMaterial);
-	GDREGISTER_VIRTUAL_CLASS(CanvasItem);
+	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
 	GDREGISTER_CLASS(CanvasTexture);
 	GDREGISTER_CLASS(CanvasItemMaterial);
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
@@ -673,8 +698,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Line2D);
 	GDREGISTER_CLASS(MeshInstance2D);
 	GDREGISTER_CLASS(MultiMeshInstance2D);
-	GDREGISTER_VIRTUAL_CLASS(CollisionObject2D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsBody2D);
+	GDREGISTER_ABSTRACT_CLASS(CollisionObject2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsBody2D);
 	GDREGISTER_CLASS(StaticBody2D);
 	GDREGISTER_CLASS(AnimatableBody2D);
 	GDREGISTER_CLASS(RigidDynamicBody2D);
@@ -690,7 +715,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Polygon2D);
 	GDREGISTER_CLASS(Skeleton2D);
 	GDREGISTER_CLASS(Bone2D);
-	GDREGISTER_VIRTUAL_CLASS(Light2D);
+	GDREGISTER_ABSTRACT_CLASS(Light2D);
 	GDREGISTER_CLASS(PointLight2D);
 	GDREGISTER_CLASS(DirectionalLight2D);
 	GDREGISTER_CLASS(LightOccluder2D);
@@ -701,12 +726,12 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Camera2D);
 	GDREGISTER_CLASS(AudioListener2D);
-	GDREGISTER_VIRTUAL_CLASS(Joint2D);
+	GDREGISTER_ABSTRACT_CLASS(Joint2D);
 	GDREGISTER_CLASS(PinJoint2D);
 	GDREGISTER_CLASS(GrooveJoint2D);
 	GDREGISTER_CLASS(DampedSpringJoint2D);
 	GDREGISTER_CLASS(TileSet);
-	GDREGISTER_VIRTUAL_CLASS(TileSetSource);
+	GDREGISTER_ABSTRACT_CLASS(TileSetSource);
 	GDREGISTER_CLASS(TileSetAtlasSource);
 	GDREGISTER_CLASS(TileSetScenesCollectionSource);
 	GDREGISTER_CLASS(TileMapPattern);
@@ -733,7 +758,7 @@ void register_scene_types() {
 
 	/* REGISTER RESOURCES */
 
-	GDREGISTER_VIRTUAL_CLASS(Shader);
+	GDREGISTER_ABSTRACT_CLASS(Shader);
 	GDREGISTER_CLASS(ParticlesMaterial);
 	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
 	ParticlesMaterial::init_shaders();
@@ -744,6 +769,7 @@ void register_scene_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(Mesh);
 	GDREGISTER_CLASS(ArrayMesh);
+	GDREGISTER_CLASS(PlaceholderMesh);
 	GDREGISTER_CLASS(ImmediateMesh);
 	GDREGISTER_CLASS(MultiMesh);
 	GDREGISTER_CLASS(SurfaceTool);
@@ -758,13 +784,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PrismMesh);
 	GDREGISTER_CLASS(QuadMesh);
 	GDREGISTER_CLASS(SphereMesh);
+	GDREGISTER_CLASS(TextMesh);
 	GDREGISTER_CLASS(TubeTrailMesh);
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
 	GDREGISTER_VIRTUAL_CLASS(Material);
-	GDREGISTER_VIRTUAL_CLASS(BaseMaterial3D);
+	GDREGISTER_ABSTRACT_CLASS(BaseMaterial3D);
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
+	GDREGISTER_CLASS(PlaceholderMaterial);
 	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
 	BaseMaterial3D::init_shaders();
 
@@ -772,7 +800,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_VIRTUAL_CLASS(Shape3D);
+	GDREGISTER_ABSTRACT_CLASS(Shape3D);
 	GDREGISTER_CLASS(SeparationRayShape3D);
 	GDREGISTER_CLASS(SphereShape3D);
 	GDREGISTER_CLASS(BoxShape3D);
@@ -805,7 +833,8 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Texture);
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);
 	GDREGISTER_CLASS(Sky);
-	GDREGISTER_CLASS(StreamTexture2D);
+	GDREGISTER_CLASS(CompressedTexture2D);
+	GDREGISTER_CLASS(PortableCompressedTexture2D);
 	GDREGISTER_CLASS(ImageTexture);
 	GDREGISTER_CLASS(AtlasTexture);
 	GDREGISTER_CLASS(MeshTexture);
@@ -817,22 +846,35 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimatedTexture);
 	GDREGISTER_CLASS(CameraTexture);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
-	GDREGISTER_VIRTUAL_CLASS(ImageTextureLayered);
+	GDREGISTER_ABSTRACT_CLASS(ImageTextureLayered);
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);
 	GDREGISTER_CLASS(ImageTexture3D);
-	GDREGISTER_CLASS(StreamTexture3D);
+	GDREGISTER_CLASS(CompressedTexture3D);
 	GDREGISTER_CLASS(Cubemap);
 	GDREGISTER_CLASS(CubemapArray);
 	GDREGISTER_CLASS(Texture2DArray);
-	GDREGISTER_VIRTUAL_CLASS(StreamTextureLayered);
-	GDREGISTER_CLASS(StreamCubemap);
-	GDREGISTER_CLASS(StreamCubemapArray);
-	GDREGISTER_CLASS(StreamTexture2DArray);
+	GDREGISTER_ABSTRACT_CLASS(CompressedTextureLayered);
+	GDREGISTER_CLASS(CompressedCubemap);
+	GDREGISTER_CLASS(CompressedCubemapArray);
+	GDREGISTER_CLASS(CompressedTexture2DArray);
+	GDREGISTER_CLASS(PlaceholderTexture2D);
+	GDREGISTER_CLASS(PlaceholderTexture3D);
+	GDREGISTER_ABSTRACT_CLASS(PlaceholderTextureLayered);
+	GDREGISTER_CLASS(PlaceholderTexture2DArray);
+	GDREGISTER_CLASS(PlaceholderCubemap);
+	GDREGISTER_CLASS(PlaceholderCubemapArray);
 
 	GDREGISTER_CLASS(Animation);
-	GDREGISTER_CLASS(FontData);
-	GDREGISTER_CLASS(Font);
+	GDREGISTER_CLASS(AnimationLibrary);
+
+	GDREGISTER_ABSTRACT_CLASS(Font);
+	GDREGISTER_CLASS(FontFile);
+	GDREGISTER_CLASS(FontVariation);
+	GDREGISTER_CLASS(SystemFont);
+
 	GDREGISTER_CLASS(Curve);
+
+	GDREGISTER_CLASS(LabelSettings);
 
 	GDREGISTER_CLASS(SceneReplicationConfig);
 
@@ -850,6 +892,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(BitMap);
 	GDREGISTER_CLASS(Gradient);
 
+	GDREGISTER_CLASS(SkeletonProfile);
+	GDREGISTER_CLASS(SkeletonProfileHumanoid);
+	GDREGISTER_CLASS(BoneMap);
+
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(AudioStreamPlayer);
@@ -857,12 +903,12 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
 #endif
-	GDREGISTER_VIRTUAL_CLASS(VideoStream);
-	GDREGISTER_CLASS(AudioStreamSample);
+	GDREGISTER_ABSTRACT_CLASS(VideoStream);
+	GDREGISTER_CLASS(AudioStreamWAV);
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_VIRTUAL_CLASS(Shape2D);
+	GDREGISTER_ABSTRACT_CLASS(Shape2D);
 	GDREGISTER_CLASS(WorldBoundaryShape2D);
 	GDREGISTER_CLASS(SegmentShape2D);
 	GDREGISTER_CLASS(SeparationRayShape2D);
@@ -883,26 +929,25 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_VIRTUAL_CLASS(SceneState);
+	GDREGISTER_ABSTRACT_CLASS(SceneState);
 	GDREGISTER_CLASS(PackedScene);
 
 	GDREGISTER_CLASS(SceneTree);
-	GDREGISTER_VIRTUAL_CLASS(SceneTreeTimer); // sorry, you can't create it
+	GDREGISTER_ABSTRACT_CLASS(SceneTreeTimer); // sorry, you can't create it
 
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
-	ClassDB::add_compatibility_class("BitmapFont", "Font");
-	ClassDB::add_compatibility_class("DynamicFont", "Font");
-	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
-	ClassDB::add_compatibility_class("ToolButton", "Button");
-	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
-	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
-	ClassDB::add_compatibility_class("YSort", "Node2D");
-	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
-	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
 	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
 	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
+	ClassDB::add_compatibility_class("BitmapFont", "FontFile");
+	ClassDB::add_compatibility_class("DynamicFont", "FontFile");
+	ClassDB::add_compatibility_class("DynamicFontData", "FontFile");
+	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
+	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
+	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
+	ClassDB::add_compatibility_class("ToolButton", "Button");
+	ClassDB::add_compatibility_class("YSort", "Node2D");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
 	ClassDB::add_compatibility_class("Portal", "Node3D");
 	ClassDB::add_compatibility_class("Room", "Node3D");
@@ -923,10 +968,9 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
 	ClassDB::add_compatibility_class("ARVRPositionalTracker", "XRPositionalTracker");
 	ClassDB::add_compatibility_class("ARVRServer", "XRServer");
+	ClassDB::add_compatibility_class("AStar", "AStar3D");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
-	ClassDB::add_compatibility_class("BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D");
-	ClassDB::add_compatibility_class("BulletPhysicsServer", "BulletPhysicsServer3D");
 	ClassDB::add_compatibility_class("Camera", "Camera3D");
 	ClassDB::add_compatibility_class("CapsuleShape", "CapsuleShape3D");
 	ClassDB::add_compatibility_class("ClippedCamera", "ClippedCamera3D");
@@ -952,6 +996,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
 	ClassDB::add_compatibility_class("EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin");
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
+	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
+	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
 	ClassDB::add_compatibility_class("GradientTexture", "GradientTexture1D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
@@ -1013,7 +1059,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
-	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
+	ClassDB::add_compatibility_class("StreamTexture", "CompressedTexture2D");
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
@@ -1043,20 +1089,29 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("World", "World3D");
+
+	// Renamed during 4.0 alpha, added to ease transition between alphas.
+	ClassDB::add_compatibility_class("AudioStreamSample", "AudioStreamWAV");
+	ClassDB::add_compatibility_class("StreamCubemap", "CompressedCubemap");
+	ClassDB::add_compatibility_class("StreamCubemapArray", "CompressedCubemapArray");
+	ClassDB::add_compatibility_class("StreamTexture2D", "CompressedTexture2D");
+	ClassDB::add_compatibility_class("StreamTexture2DArray", "CompressedTexture2DArray");
+	ClassDB::add_compatibility_class("StreamTexture3D", "CompressedTexture3D");
+	ClassDB::add_compatibility_class("StreamTextureLayered", "CompressedTextureLayered");
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_render"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_render"), i + 1), "");
 	}
 
 	for (int i = 0; i < 32; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_physics"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_navigation"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_navigation"), i + 1), "");
 	}
 
 	if (RenderingServer::get_singleton()) {
@@ -1067,8 +1122,6 @@ void register_scene_types() {
 	SceneReplicationInterface::make_default();
 	SceneRPCInterface::make_default();
 	SceneCacheInterface::make_default();
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void initialize_theme() {
@@ -1080,7 +1133,7 @@ void initialize_theme() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	bool font_antialiased = (bool)GLOBAL_DEF_RST("gui/theme/default_font_antialiased", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiased", PropertyInfo(Variant::BOOL, "gui/theme/default_font_antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
@@ -1090,6 +1143,9 @@ void initialize_theme() {
 
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
+	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
 
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
@@ -1101,7 +1157,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased, font_msdf, font_generate_mipmaps);
 	}
 
 	if (!theme_path.is_empty()) {
@@ -1118,8 +1174,6 @@ void initialize_theme() {
 }
 
 void unregister_scene_types() {
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
-
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 
@@ -1143,6 +1197,12 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader);
 	resource_loader_shader.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_saver_shader_include);
+	resource_saver_shader_include.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_shader_include);
+	resource_loader_shader_include.unref();
 
 	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED

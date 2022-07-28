@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MESH_INSTANCE_EDITOR_PLUGIN_H
-#define MESH_INSTANCE_EDITOR_PLUGIN_H
+#ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -51,17 +51,17 @@ class MeshInstance3DEditor : public Control {
 		MENU_OPTION_DEBUG_UV2,
 	};
 
-	MeshInstance3D *node;
+	MeshInstance3D *node = nullptr;
 
-	MenuButton *options;
+	MenuButton *options = nullptr;
 
-	ConfirmationDialog *outline_dialog;
-	SpinBox *outline_size;
+	ConfirmationDialog *outline_dialog = nullptr;
+	SpinBox *outline_size = nullptr;
 
-	AcceptDialog *err_dialog;
+	AcceptDialog *err_dialog = nullptr;
 
-	AcceptDialog *debug_uv_dialog;
-	Control *debug_uv;
+	AcceptDialog *debug_uv_dialog = nullptr;
+	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 
 	void _menu_option(int p_option);
@@ -84,7 +84,7 @@ public:
 class MeshInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(MeshInstance3DEditorPlugin, EditorPlugin);
 
-	MeshInstance3DEditor *mesh_editor;
+	MeshInstance3DEditor *mesh_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "MeshInstance3D"; }
@@ -97,4 +97,4 @@ public:
 	~MeshInstance3DEditorPlugin();
 };
 
-#endif // MESH_EDITOR_PLUGIN_H
+#endif // MESH_INSTANCE_3D_EDITOR_PLUGIN_H

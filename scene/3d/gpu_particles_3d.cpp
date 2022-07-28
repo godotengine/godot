@@ -36,10 +36,6 @@ AABB GPUParticles3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void GPUParticles3D::set_emitting(bool p_emitting) {
 	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 
@@ -274,10 +270,10 @@ bool GPUParticles3D::get_interpolate() const {
 }
 
 TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+	TypedArray<String> warnings = GeometryInstance3D::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
+		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
 	}
 
 	bool meshes_found = false;
@@ -304,17 +300,17 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	}
 
 	if (!meshes_found) {
-		warnings.push_back(TTR("Nothing is visible because meshes have not been assigned to draw passes."));
+		warnings.push_back(RTR("Nothing is visible because meshes have not been assigned to draw passes."));
 	}
 
 	if (process_material.is_null()) {
-		warnings.push_back(TTR("A material to process the particles is not assigned, so no behavior is imprinted."));
+		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param_max(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			warnings.push_back(TTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
+			warnings.push_back(RTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 		}
 	}
 
@@ -356,15 +352,15 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 		}
 
 		if (dp_count && skin.is_valid()) {
-			warnings.push_back(TTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
+			warnings.push_back(RTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
 		} else if (dp_count == 0 && skin.is_null()) {
-			warnings.push_back(TTR("Trails active, but neither Trail meshes or a Skin were found."));
+			warnings.push_back(RTR("Trails active, but neither Trail meshes or a Skin were found."));
 		} else if (dp_count > 1) {
-			warnings.push_back(TTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
+			warnings.push_back(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
 		if ((dp_count || !skin.is_null()) && (missing_trails || no_materials)) {
-			warnings.push_back(TTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
+			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 	}
 
@@ -571,25 +567,25 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles3D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_GROUP("Time", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,exp"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:m"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb"), "set_visibility_aabb", "get_visibility_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime,View Depth"), "set_draw_order", "get_draw_order");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,ZBillboard,YToVelocity,ZBillboardYToVelocity"), "set_transform_align", "get_transform_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity"), "set_transform_align", "get_transform_align");
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_trail_length", "get_trail_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_trail_length", "get_trail_length");
 	ADD_GROUP("Process Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Draw Passes", "draw_");

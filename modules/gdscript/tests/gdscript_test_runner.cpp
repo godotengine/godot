@@ -48,11 +48,11 @@
 namespace GDScriptTests {
 
 void init_autoloads() {
-	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 	// First pass, add the constants so they exist before any script is loaded.
-	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-		const ProjectSettings::AutoloadInfo &info = E.get();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
 
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -62,15 +62,15 @@ void init_autoloads() {
 	}
 
 	// Second pass, load into global constants.
-	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-		const ProjectSettings::AutoloadInfo &info = E.get();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
 
 		if (!info.is_singleton) {
 			// Skip non-singletons since we don't have a scene tree here anyway.
 			continue;
 		}
 
-		RES res = ResourceLoader::load(info.path);
+		Ref<Resource> res = ResourceLoader::load(info.path);
 		ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 		Node *n = nullptr;
 		Ref<PackedScene> scn = res;
@@ -80,7 +80,7 @@ void init_autoloads() {
 		} else if (script.is_valid()) {
 			StringName ibt = script->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
 
 			Object *obj = ClassDB::instantiate(ibt);
 
@@ -229,7 +229,7 @@ bool GDScriptTestRunner::generate_outputs() {
 
 bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 	Error err = OK;
-	DirAccessRef dir(DirAccess::open(p_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open(p_dir, &err));
 
 	if (err != OK) {
 		return false;
@@ -254,7 +254,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;
-				FileAccessRef script_file(FileAccess::open(current_dir.plus_file(next), FileAccess::READ, &open_err));
+				Ref<FileAccess> script_file(FileAccess::open(current_dir.plus_file(next), FileAccess::READ, &open_err));
 				if (open_err != OK) {
 					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
 					next = dir->get_next();
@@ -286,7 +286,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 
 bool GDScriptTestRunner::make_tests() {
 	Error err = OK;
-	DirAccessRef dir(DirAccess::open(source_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
@@ -363,7 +363,7 @@ void GDScriptTest::disable_stdout() {
 	OS::get_singleton()->set_stderr_enabled(false);
 }
 
-void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error) {
+void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error, bool p_rich) {
 	TestResult *result = (TestResult *)p_this;
 	result->output += p_message + "\n";
 }
@@ -543,8 +543,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 	// Test running.
-	const Map<StringName, GDScriptFunction *>::Element *test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
-	if (test_function_element == nullptr) {
+	const HashMap<StringName, GDScriptFunction *>::ConstIterator test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
+	if (!test_function_element) {
 		enable_stdout();
 		result.status = GDTEST_LOAD_ERROR;
 		result.output = "";
@@ -573,7 +573,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Call test function.
 	Callable::CallError call_err;
-	instance->call(GDScriptTestRunner::test_function_name, nullptr, 0, call_err);
+	instance->callp(GDScriptTestRunner::test_function_name, nullptr, 0, call_err);
 
 	// Tear down output handlers.
 	remove_print_handler(&_print_handler);
@@ -611,7 +611,7 @@ bool GDScriptTest::generate_output() {
 	}
 
 	Error err = OK;
-	FileAccessRef out_file = FileAccess::open(output_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> out_file = FileAccess::open(output_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 		return false;
 	}
@@ -620,7 +620,6 @@ bool GDScriptTest::generate_output() {
 	output += "\n"; // Make sure to insert newline for CI static checks.
 
 	out_file->store_string(output);
-	out_file->close();
 
 	return true;
 }

@@ -31,6 +31,7 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 
 class String;
@@ -54,10 +55,12 @@ struct _NO_DISCARD_ Vector3i {
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ int32_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 

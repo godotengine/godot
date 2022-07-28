@@ -26,6 +26,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<theme_items>
 		<theme_item name="margin_bottom" data_type="constant" type="int" default="0">

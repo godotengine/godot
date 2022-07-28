@@ -57,11 +57,11 @@ struct TileMapQuadrant {
 	Vector2i coords;
 
 	// TileMapCells
-	Set<Vector2i> cells;
+	RBSet<Vector2i> cells;
 	// We need those two maps to sort by world position for rendering
 	// This is kind of workaround, it would be better to sort the cells directly in the "cells" set instead.
-	Map<Vector2i, Vector2i> map_to_world;
-	Map<Vector2i, Vector2i, CoordsWorldComparator> world_to_map;
+	RBMap<Vector2i, Vector2i> map_to_world;
+	RBMap<Vector2i, Vector2i, CoordsWorldComparator> world_to_map;
 
 	// Debug.
 	RID debug_canvas_item;
@@ -74,13 +74,13 @@ struct TileMapQuadrant {
 	List<RID> bodies;
 
 	// Navigation.
-	Map<Vector2i, Vector<RID>> navigation_regions;
+	HashMap<Vector2i, Vector<RID>> navigation_regions;
 
 	// Scenes.
-	Map<Vector2i, String> scenes;
+	HashMap<Vector2i, String> scenes;
 
 	// Runtime TileData cache.
-	Map<Vector2i, TileData *> runtime_tile_data_cache;
+	HashMap<Vector2i, TileData *> runtime_tile_data_cache;
 
 	void operator=(const TileMapQuadrant &q) {
 		layer = q.layer;
@@ -119,6 +119,8 @@ public:
 		int bit = -1;
 		int terrain = -1;
 
+		int priority = 1;
+
 	public:
 		bool operator<(const TerrainConstraint &p_other) const {
 			if (base_cell_coords == p_other.base_cell_coords) {
@@ -128,14 +130,18 @@ public:
 		}
 
 		String to_string() const {
-			return vformat("Constraint {pos:%s, bit:%d, terrain:%d}", base_cell_coords, bit, terrain);
+			return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain, priority);
 		}
 
 		Vector2i get_base_cell_coords() const {
 			return base_cell_coords;
 		}
 
-		Map<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
+		bool is_center_bit() const {
+			return bit == 0;
+		}
+
+		HashMap<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
 
 		void set_terrain(int p_terrain) {
 			terrain = p_terrain;
@@ -145,8 +151,17 @@ public:
 			return terrain;
 		}
 
-		TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain);
-		TerrainConstraint() {}
+		void set_priority(int p_priority) {
+			priority = p_priority;
+		}
+
+		int get_priority() {
+			return priority;
+		}
+
+		TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, int p_terrain); // For the center terrain bit
+		TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
+		TerrainConstraint(){};
 	};
 
 	enum VisibilityMode {
@@ -193,22 +208,22 @@ private:
 		int y_sort_origin = 0;
 		int z_index = 0;
 		RID canvas_item;
-		Map<Vector2i, TileMapCell> tile_map;
-		Map<Vector2i, TileMapQuadrant> quadrant_map;
+		HashMap<Vector2i, TileMapCell> tile_map;
+		HashMap<Vector2i, TileMapQuadrant> quadrant_map;
 		SelfList<TileMapQuadrant>::List dirty_quadrant_list;
 	};
 	LocalVector<TileMapLayer> layers;
 	int selected_layer = -1;
 
 	// Mapping for RID to coords.
-	Map<RID, Vector2i> bodies_coords;
+	HashMap<RID, Vector2i> bodies_coords;
 
 	// Quadrants and internals management.
 	Vector2i _coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const;
 
-	Map<Vector2i, TileMapQuadrant>::Element *_create_quadrant(int p_layer, const Vector2i &p_qk);
+	HashMap<Vector2i, TileMapQuadrant>::Iterator _create_quadrant(int p_layer, const Vector2i &p_qk);
 
-	void _make_quadrant_dirty(Map<Vector2i, TileMapQuadrant>::Element *Q);
+	void _make_quadrant_dirty(HashMap<Vector2i, TileMapQuadrant>::Iterator Q);
 	void _make_all_quadrants_dirty();
 	void _queue_update_dirty_quadrants();
 
@@ -217,7 +232,7 @@ private:
 	void _recreate_layer_internals(int p_layer);
 	void _recreate_internals();
 
-	void _erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q);
+	void _erase_quadrant(HashMap<Vector2i, TileMapQuadrant>::Iterator Q);
 	void _clear_layer_internals(int p_layer);
 	void _clear_internals();
 
@@ -251,7 +266,9 @@ private:
 	void _scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
 	// Terrains.
-	Set<TileSet::TerrainsPattern> _get_valid_terrains_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<TerrainConstraint> p_constraints);
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints);
+	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
+	RBSet<TerrainConstraint> _get_terrain_constraints_from_cells_list(int p_layer, const RBSet<Vector2i> &p_on_map, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	// Set and get tiles from data arrays.
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
@@ -321,7 +338,8 @@ public:
 	VisibilityMode get_navigation_visibility_mode();
 
 	// Cells accessors.
-	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE);
+	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
+	void erase_cell(int p_layer, const Vector2i &p_coords);
 	int get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
@@ -332,14 +350,17 @@ public:
 	void set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains.
-	Set<TerrainConstraint> get_terrain_constraints_from_removed_cells_list(int p_layer, const Set<Vector2i> &p_to_replace, int p_terrain_set, bool p_ignore_empty_terrains = true) const; // Not exposed.
-	Set<TerrainConstraint> get_terrain_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const; // Not exposed.
-	Map<Vector2i, TileSet::TerrainsPattern> terrain_wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TerrainConstraint> p_constraints); // Not exposed.
-	void set_cells_from_surrounding_terrains(int p_layer, TypedArray<Vector2i> p_coords_array, int p_terrain_set, bool p_ignore_empty_terrains = true);
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true); // Not exposed.
+
+	void set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
+	void set_cells_terrain_path(int p_layer, TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 
 	// Not exposed to users
 	TileMapCell get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
-	Map<Vector2i, TileMapQuadrant> *get_quadrant_map(int p_layer);
+	HashMap<Vector2i, TileMapQuadrant> *get_quadrant_map(int p_layer);
 	int get_effective_quadrant_size(int p_layer) const;
 	//---
 
@@ -364,7 +385,7 @@ public:
 	// For finding tiles from collision.
 	Vector2i get_coords_for_body_rid(RID p_physics_body);
 
-	// Fixing a nclearing methods.
+	// Fixing and clearing methods.
 	void fix_invalid_tiles();
 
 	// Clears tiles from a given layer
@@ -376,7 +397,7 @@ public:
 
 	// Helpers?
 	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
-	void draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Color p_color, Transform2D p_transform = Transform2D());
+	void draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Color p_color, Transform2D p_transform = Transform2D());
 
 	// Virtual function to modify the TileData at runtime
 	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);

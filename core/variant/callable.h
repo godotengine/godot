@@ -61,6 +61,7 @@ public:
 			CALL_ERROR_TOO_MANY_ARGUMENTS, // expected is number of arguments
 			CALL_ERROR_TOO_FEW_ARGUMENTS, // expected is number of arguments
 			CALL_ERROR_INSTANCE_IS_NULL,
+			CALL_ERROR_METHOD_NOT_CONST,
 		};
 		Error error = Error::CALL_OK;
 		int argument = 0;
@@ -168,6 +169,12 @@ public:
 	Signal(const Object *p_object, const StringName &p_name);
 	Signal(ObjectID p_object, const StringName &p_name);
 	Signal() {}
+};
+
+struct CallableComparator {
+	const Callable &func;
+
+	bool operator()(const Variant &p_l, const Variant &p_r) const;
 };
 
 #endif // CALLABLE_H

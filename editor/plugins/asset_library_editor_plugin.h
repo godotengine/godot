@@ -53,16 +53,16 @@
 class EditorAssetLibraryItem : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
 
-	TextureButton *icon;
-	LinkButton *title;
-	LinkButton *category;
-	LinkButton *author;
+	TextureButton *icon = nullptr;
+	LinkButton *title = nullptr;
+	LinkButton *category = nullptr;
+	LinkButton *author = nullptr;
 	TextureRect *stars[5];
-	Label *price;
+	Label *price = nullptr;
 
-	int asset_id;
-	int category_id;
-	int author_id;
+	int asset_id = 0;
+	int category_id = 0;
+	int author_id = 0;
 
 	void _asset_clicked();
 	void _category_clicked();
@@ -83,11 +83,11 @@ public:
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
-	EditorAssetLibraryItem *item;
-	RichTextLabel *description;
-	ScrollContainer *previews;
-	HBoxContainer *preview_hb;
-	PanelContainer *previews_bg;
+	EditorAssetLibraryItem *item = nullptr;
+	RichTextLabel *description = nullptr;
+	ScrollContainer *previews = nullptr;
+	HBoxContainer *preview_hb = nullptr;
+	PanelContainer *previews_bg = nullptr;
 
 	struct Preview {
 		int id = 0;
@@ -98,11 +98,11 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	};
 
 	Vector<Preview> preview_images;
-	TextureRect *preview;
+	TextureRect *preview = nullptr;
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
-	int asset_id;
+	int asset_id = 0;
 	String download_url;
 	String title;
 	String sha256;
@@ -130,27 +130,27 @@ public:
 class EditorAssetLibraryItemDownload : public MarginContainer {
 	GDCLASS(EditorAssetLibraryItemDownload, MarginContainer);
 
-	PanelContainer *panel;
-	TextureRect *icon;
-	Label *title;
-	ProgressBar *progress;
-	Button *install_button;
-	Button *retry_button;
-	TextureButton *dismiss_button;
+	PanelContainer *panel = nullptr;
+	TextureRect *icon = nullptr;
+	Label *title = nullptr;
+	ProgressBar *progress = nullptr;
+	Button *install_button = nullptr;
+	Button *retry_button = nullptr;
+	TextureButton *dismiss_button = nullptr;
 
-	AcceptDialog *download_error;
-	HTTPRequest *download;
+	AcceptDialog *download_error = nullptr;
+	HTTPRequest *download = nullptr;
 	String host;
 	String sha256;
-	Label *status;
+	Label *status = nullptr;
 
 	int prev_status;
 
-	int asset_id;
+	int asset_id = 0;
 
 	bool external_install;
 
-	EditorAssetInstaller *asset_installer;
+	EditorAssetInstaller *asset_installer = nullptr;
 
 	void _close();
 	void _make_request();
@@ -176,35 +176,37 @@ class EditorAssetLibrary : public PanelContainer {
 
 	String host;
 
-	EditorFileDialog *asset_open;
-	EditorAssetInstaller *asset_installer;
+	EditorFileDialog *asset_open = nullptr;
+	EditorAssetInstaller *asset_installer = nullptr;
 
 	void _asset_open();
 	void _asset_file_selected(const String &p_file);
 	void _update_repository_options();
 
-	PanelContainer *library_scroll_bg;
-	ScrollContainer *library_scroll;
-	VBoxContainer *library_vb;
-	Label *library_loading;
-	Label *library_error;
-	LineEdit *filter;
-	Timer *filter_debounce_timer;
-	OptionButton *categories;
-	OptionButton *repository;
-	OptionButton *sort;
-	HBoxContainer *error_hb;
-	TextureRect *error_tr;
-	Label *error_label;
-	MenuButton *support;
+	PanelContainer *library_scroll_bg = nullptr;
+	ScrollContainer *library_scroll = nullptr;
+	VBoxContainer *library_vb = nullptr;
+	Label *library_info = nullptr;
+	VBoxContainer *library_error = nullptr;
+	Label *library_error_label = nullptr;
+	Button *library_error_retry = nullptr;
+	LineEdit *filter = nullptr;
+	Timer *filter_debounce_timer = nullptr;
+	OptionButton *categories = nullptr;
+	OptionButton *repository = nullptr;
+	OptionButton *sort = nullptr;
+	HBoxContainer *error_hb = nullptr;
+	TextureRect *error_tr = nullptr;
+	Label *error_label = nullptr;
+	MenuButton *support = nullptr;
 
-	HBoxContainer *contents;
+	HBoxContainer *contents = nullptr;
 
-	HBoxContainer *asset_top_page;
-	GridContainer *asset_items;
-	HBoxContainer *asset_bottom_page;
+	HBoxContainer *asset_top_page = nullptr;
+	GridContainer *asset_items = nullptr;
+	HBoxContainer *asset_bottom_page = nullptr;
 
-	HTTPRequest *request;
+	HTTPRequest *request = nullptr;
 
 	bool templates_only;
 	bool initial_loading;
@@ -250,7 +252,7 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	int last_queue_id;
-	Map<int, ImageQueue> image_queue;
+	HashMap<int, ImageQueue> image_queue;
 
 	void _image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
@@ -260,7 +262,7 @@ class EditorAssetLibrary : public PanelContainer {
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
 
 	//
-	EditorAssetLibraryItemDescription *description;
+	EditorAssetLibraryItemDescription *description = nullptr;
 	//
 
 	enum RequestType {
@@ -273,8 +275,8 @@ class EditorAssetLibrary : public PanelContainer {
 	RequestType requesting;
 	Dictionary category_map;
 
-	ScrollContainer *downloads_scroll;
-	HBoxContainer *downloads_hb;
+	ScrollContainer *downloads_scroll = nullptr;
+	HBoxContainer *downloads_hb = nullptr;
 
 	void _install_asset();
 
@@ -291,6 +293,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _filter_debounce_timer_timeout();
+	void _request_current_config();
 	EditorAssetLibraryItemDownload *_get_asset_in_progress(int p_asset_id) const;
 
 	void _repository_changed(int p_repository_id);
@@ -298,13 +301,15 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _install_external_asset(String p_zip_path, String p_title);
 
+	void _update_asset_items_columns();
+
 	friend class EditorAssetLibraryItemDescription;
 	friend class EditorAssetLibraryItem;
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void disable_community_support();
@@ -315,9 +320,11 @@ public:
 class AssetLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
-	EditorAssetLibrary *addon_library;
+	EditorAssetLibrary *addon_library = nullptr;
 
 public:
+	static bool is_available();
+
 	virtual String get_name() const override { return "AssetLib"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
@@ -331,4 +338,4 @@ public:
 	~AssetLibraryEditorPlugin();
 };
 
-#endif // EDITORASSETLIBRARY_H
+#endif // ASSET_LIBRARY_EDITOR_PLUGIN_H

@@ -32,6 +32,14 @@
 
 #include "scene/scene_string_names.h"
 
+AABB VisualInstance3D::get_aabb() const {
+	AABB ret;
+	if (GDVIRTUAL_CALL(_get_aabb, ret)) {
+		return ret;
+	}
+	return AABB();
+}
+
 AABB VisualInstance3D::get_transformed_aabb() const {
 	return get_global_transform().xform(get_aabb());
 }
@@ -115,6 +123,7 @@ void VisualInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance3D::get_transformed_aabb);
 
+	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 }
 
@@ -380,15 +389,15 @@ TypedArray<String> GeometryInstance3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Math::is_zero_approx(visibility_range_end) && visibility_range_end <= visibility_range_begin) {
-		warnings.push_back(TTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));
+		warnings.push_back(RTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && !Math::is_zero_approx(visibility_range_begin) && Math::is_zero_approx(visibility_range_begin_margin)) {
-		warnings.push_back(TTR("The GeometryInstance3D is configured to fade in smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range Begin Margin above 0."));
+		warnings.push_back(RTR("The GeometryInstance3D is configured to fade in smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range Begin Margin above 0."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && !Math::is_zero_approx(visibility_range_end) && Math::is_zero_approx(visibility_range_end_margin)) {
-		warnings.push_back(TTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
+		warnings.push_back(RTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
 	}
 
 	return warnings;
@@ -449,20 +458,20 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_overlay", "get_material_overlay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
+
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×")), "set_lightmap_scale", "get_lightmap_scale");
 
 	ADD_GROUP("Visibility Range", "visibility_range_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_begin", "get_visibility_range_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_begin_margin", "get_visibility_range_begin_margin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_end", "get_visibility_range_end");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_end_margin", "get_visibility_range_end_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin", "get_visibility_range_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin_margin", "get_visibility_range_begin_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_end", "get_visibility_range_end");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_end_margin", "get_visibility_range_end_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_range_fade_mode", PROPERTY_HINT_ENUM, "Disabled,Self,Dependencies"), "set_visibility_range_fade_mode", "get_visibility_range_fade_mode");
-	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_ON);
@@ -485,5 +494,13 @@ void GeometryInstance3D::_bind_methods() {
 }
 
 GeometryInstance3D::GeometryInstance3D() {
-	//RS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
+}
+
+GeometryInstance3D::~GeometryInstance3D() {
+	if (material_overlay.is_valid()) {
+		set_material_overlay(Ref<Material>());
+	}
+	if (material_override.is_valid()) {
+		set_material_override(Ref<Material>());
+	}
 }

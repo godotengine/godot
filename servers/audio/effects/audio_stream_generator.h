@@ -50,7 +50,7 @@ public:
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
 	virtual float get_length() const override;
@@ -65,7 +65,7 @@ class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
 	int skips;
 	bool active;
 	float mixed;
-	AudioStreamGenerator *generator;
+	AudioStreamGenerator *generator = nullptr;
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
@@ -89,8 +89,11 @@ public:
 	int get_frames_available() const;
 	int get_skips() const;
 
+	virtual void tag_used_streams() override;
+
 	void clear_buffer();
 
 	AudioStreamGeneratorPlayback();
 };
+
 #endif // AUDIO_STREAM_GENERATOR_H

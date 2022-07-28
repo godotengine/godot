@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "sphere_shape_3d.h"
+
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> SphereShape3D::get_debug_mesh_lines() const {
@@ -77,10 +78,10 @@ void SphereShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereShape3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereShape3D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
 }
 
 SphereShape3D::SphereShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_SPHERE)) {
-	set_radius(1.0);
+	set_radius(0.5);
 }

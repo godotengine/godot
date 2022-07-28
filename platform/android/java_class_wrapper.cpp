@@ -34,16 +34,16 @@
 #include "thread_jandroid.h"
 
 bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
-	Map<StringName, List<MethodInfo>>::Element *M = methods.find(p_method);
+	HashMap<StringName, List<MethodInfo>>::Iterator M = methods.find(p_method);
 	if (!M) {
 		return false;
 	}
 
 	JNIEnv *env = get_jni_env();
-	ERR_FAIL_COND_V(env == nullptr, false);
+	ERR_FAIL_NULL_V(env, false);
 
 	MethodInfo *method = nullptr;
-	for (MethodInfo &E : M->get()) {
+	for (MethodInfo &E : M->value) {
 		if (!p_instance && !E._static) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			continue;
@@ -485,14 +485,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	return success;
 }
 
-Variant JavaClass::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	Variant ret;
 	bool found = _call_method(nullptr, p_method, p_args, p_argcount, r_error, ret);
 	if (found) {
 		return ret;
 	}
 
-	return RefCounted::call(p_method, p_args, p_argcount, r_error);
+	return RefCounted::callp(p_method, p_args, p_argcount, r_error);
 }
 
 JavaClass::JavaClass() {
@@ -500,7 +500,7 @@ JavaClass::JavaClass() {
 
 /////////////////////
 
-Variant JavaObject::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant JavaObject::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	return Variant();
 }
 
@@ -971,14 +971,14 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 	}
 
 	JNIEnv *env = get_jni_env();
-	ERR_FAIL_COND_V(env == nullptr, Ref<JavaClass>());
+	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
 	jclass bclass = env->FindClass(p_class.utf8().get_data());
-	ERR_FAIL_COND_V(!bclass, Ref<JavaClass>());
+	ERR_FAIL_NULL_V(bclass, Ref<JavaClass>());
 
 	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, getDeclaredMethods);
 
-	ERR_FAIL_COND_V(!methods, Ref<JavaClass>());
+	ERR_FAIL_NULL_V(methods, Ref<JavaClass>());
 
 	Ref<JavaClass> java_class = memnew(JavaClass);
 
@@ -1061,7 +1061,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 			if (E->get().param_types.size() != mi.param_types.size()) {
 				continue;
 			}
-			bool valid = true;
+			bool this_valid = true;
 			for (int j = 0; j < E->get().param_types.size(); j++) {
 				Variant::Type _new;
 				float new_l;
@@ -1070,14 +1070,14 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 				JavaClass::_convert_to_variant_type(E->get().param_types[j], existing, existing_l);
 				JavaClass::_convert_to_variant_type(mi.param_types[j], _new, new_l);
 				if (_new != existing) {
-					valid = false;
+					this_valid = false;
 					break;
 				}
 				new_likeliness += new_l;
 				existing_likeliness = existing_l;
 			}
 
-			if (!valid) {
+			if (!this_valid) {
 				continue;
 			}
 
@@ -1155,10 +1155,10 @@ JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 	singleton = this;
 
 	JNIEnv *env = get_jni_env();
-	ERR_FAIL_COND(env == nullptr);
+	ERR_FAIL_NULL(env);
 
-	jclass activityClass = env->FindClass("android/app/Activity");
-	jmethodID getClassLoader = env->GetMethodID(activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+	jclass activity = env->FindClass("android/app/Activity");
+	jmethodID getClassLoader = env->GetMethodID(activity, "getClassLoader", "()Ljava/lang/ClassLoader;");
 	classLoader = env->CallObjectMethod(p_activity, getClassLoader);
 	classLoader = (jclass)env->NewGlobalRef(classLoader);
 	jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
@@ -1168,18 +1168,18 @@ JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 	getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
 	getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
 	Class_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
-	//
+
 	bclass = env->FindClass("java/lang/reflect/Method");
 	getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
 	getReturnType = env->GetMethodID(bclass, "getReturnType", "()Ljava/lang/Class;");
 	getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
-	///
+
 	bclass = env->FindClass("java/lang/reflect/Field");
 	Field_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Field_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
 	Field_get = env->GetMethodID(bclass, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
-	// each
+
 	bclass = env->FindClass("java/lang/Boolean");
 	Boolean_booleanValue = env->GetMethodID(bclass, "booleanValue", "()Z");
 

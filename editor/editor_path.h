@@ -37,17 +37,17 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/texture_rect.h"
 
-class EditorHistory;
+class EditorSelectionHistory;
 
 class EditorPath : public Button {
 	GDCLASS(EditorPath, Button);
 
-	EditorHistory *history;
+	EditorSelectionHistory *history = nullptr;
 
-	TextureRect *current_object_icon;
-	Label *current_object_label;
-	TextureRect *sub_objects_icon;
-	PopupMenu *sub_objects_menu;
+	TextureRect *current_object_icon = nullptr;
+	Label *current_object_label = nullptr;
+	TextureRect *sub_objects_icon = nullptr;
+	PopupMenu *sub_objects_menu = nullptr;
 
 	Vector<ObjectID> objects;
 
@@ -65,7 +65,7 @@ public:
 	void clear_path();
 	void enable_path();
 
-	EditorPath(EditorHistory *p_history);
+	EditorPath(EditorSelectionHistory *p_history);
 };
 
 #endif // EDITOR_PATH_H

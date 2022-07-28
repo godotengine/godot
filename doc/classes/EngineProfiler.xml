@@ -20,11 +20,11 @@
 		<method name="_tick" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="frame_time" type="float" />
-			<argument index="1" name="idle_time" type="float" />
+			<argument index="1" name="process_time" type="float" />
 			<argument index="2" name="physics_time" type="float" />
 			<argument index="3" name="physics_frame_time" type="float" />
 			<description>
-				Called once every engine iteration when the profiler is active with information about the current frame.
+				Called once every engine iteration when the profiler is active with information about the current frame. All time values are in seconds. Lower values represent faster processing times and are therefore considered better.
 			</description>
 		</method>
 		<method name="_toggle" qualifiers="virtual">

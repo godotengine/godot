@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_CODEGEN
-#define GDSCRIPT_CODEGEN
+#ifndef GDSCRIPT_CODEGEN_H
+#define GDSCRIPT_CODEGEN_H
 
 #include "core/multiplayer/multiplayer.h"
 #include "core/string/string_name.h"
@@ -125,12 +125,13 @@ public:
 	virtual void write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
+	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
-	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures) = 0;
+	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) = 0;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) = 0;
@@ -139,6 +140,8 @@ public:
 	virtual void write_if(const Address &p_condition) = 0;
 	virtual void write_else() = 0;
 	virtual void write_endif() = 0;
+	virtual void write_jump_if_shared(const Address &p_value) = 0;
+	virtual void write_end_jump_if_shared() = 0;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
 	virtual void write_for_assignment(const Address &p_variable, const Address &p_list) = 0;
 	virtual void write_for() = 0;
@@ -160,4 +163,4 @@ public:
 	virtual ~GDScriptCodeGenerator() {}
 };
 
-#endif // GDSCRIPT_CODEGEN
+#endif // GDSCRIPT_CODEGEN_H

@@ -38,11 +38,11 @@
 #define kOutputBus 0
 #define kInputBus 1
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected device is the Default call set_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
@@ -56,7 +56,7 @@ OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected device is the Default call set_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
@@ -72,7 +72,7 @@ Error AudioDriverCoreAudio::init() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
 #else
 	desc.componentSubType = kAudioUnitSubType_RemoteIO;
@@ -85,7 +85,7 @@ Error AudioDriverCoreAudio::init() {
 	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
 	prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -135,7 +135,7 @@ Error AudioDriverCoreAudio::init() {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 #endif
@@ -168,7 +168,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inRefCon);
 
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
@@ -209,7 +209,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inRefCon);
 	if (!ad->active) {
 		return 0;
 	}
@@ -313,7 +313,7 @@ void AudioDriverCoreAudio::finish() {
 			ERR_PRINT("AudioUnitUninitialize failed");
 		}
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -339,7 +339,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
 #else
 	desc.componentSubType = kAudioUnitSubType_RemoteIO;
@@ -352,7 +352,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
 	prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -370,7 +370,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	UInt32 size;
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	AudioDeviceID deviceId;
 	size = sizeof(AudioDeviceID);
 	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
@@ -447,7 +447,7 @@ void AudioDriverCoreAudio::capture_finish() {
 			ERR_PRINT("AudioUnitUninitialize failed");
 		}
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -491,7 +491,7 @@ Error AudioDriverCoreAudio::capture_stop() {
 	return OK;
 }
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 
 Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 	Array list;

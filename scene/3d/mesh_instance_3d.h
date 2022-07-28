@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MESH_INSTANCE_H
-#define MESH_INSTANCE_H
+#ifndef MESH_INSTANCE_3D_H
+#define MESH_INSTANCE_3D_H
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
@@ -47,7 +47,7 @@ protected:
 	NodePath skeleton_path = NodePath("..");
 
 	LocalVector<float> blend_shape_tracks;
-	Map<StringName, int> blend_shape_properties;
+	HashMap<StringName, int> blend_shape_properties;
 	Vector<Ref<Material>> surface_override_materials;
 
 	void _mesh_changed();
@@ -93,10 +93,9 @@ public:
 	void create_debug_tangents();
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	MeshInstance3D();
 	~MeshInstance3D();
 };
 
-#endif
+#endif // MESH_INSTANCE_3D_H

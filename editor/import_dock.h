@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMPORTDOCK_H
-#define IMPORTDOCK_H
+#ifndef IMPORT_DOCK_H
+#define IMPORT_DOCK_H
 
 #include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
@@ -45,25 +45,25 @@ class ImportDockParameters;
 class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer);
 
-	Label *imported;
-	OptionButton *import_as;
-	MenuButton *preset;
-	EditorInspector *import_opts;
+	Label *imported = nullptr;
+	OptionButton *import_as = nullptr;
+	MenuButton *preset = nullptr;
+	EditorInspector *import_opts = nullptr;
 
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> property_values;
+	HashMap<StringName, Variant> property_values;
 
-	ConfirmationDialog *reimport_confirm;
-	Label *label_warning;
-	Button *import;
+	ConfirmationDialog *reimport_confirm = nullptr;
+	Label *label_warning = nullptr;
+	Button *import = nullptr;
 
-	Control *advanced_spacer;
-	Button *advanced;
+	Control *advanced_spacer = nullptr;
+	Button *advanced = nullptr;
 
-	ImportDockParameters *params;
+	ImportDockParameters *params = nullptr;
 
-	VBoxContainer *content;
-	Label *select_a_resource;
+	VBoxContainer *content = nullptr;
+	Label *select_a_resource = nullptr;
 
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
@@ -105,4 +105,4 @@ public:
 	~ImportDock();
 };
 
-#endif // IMPORTDOCK_H
+#endif // IMPORT_DOCK_H

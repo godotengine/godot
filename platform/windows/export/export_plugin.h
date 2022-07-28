@@ -33,20 +33,25 @@
 
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export_platform_pc.h"
 #include "platform/windows/logo.gen.h"
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
-	void _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) override;
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual String get_template_file_name(const String &p_target, const String &p_arch) const override;
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 };
 
-#endif
+#endif // WINDOWS_EXPORT_PLUGIN_H

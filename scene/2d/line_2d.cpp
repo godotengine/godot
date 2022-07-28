@@ -265,15 +265,15 @@ bool Line2D::get_antialiased() const {
 }
 
 void Line2D::_draw() {
-	if (_points.size() <= 1 || _width == 0.f) {
+	int len = _points.size();
+	if (len <= 1 || _width == 0.f) {
 		return;
 	}
 
 	// TODO Is this really needed?
 	// Copy points for faster access
 	Vector<Vector2> points;
-	points.resize(_points.size());
-	int len = points.size();
+	points.resize(len);
 	{
 		const Vector2 *points_read = _points.ptr();
 		for (int i = 0; i < len; ++i) {
@@ -393,7 +393,7 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
 	ADD_GROUP("Fill", "");

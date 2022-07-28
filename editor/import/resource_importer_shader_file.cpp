@@ -68,7 +68,7 @@ String ResourceImporterShaderFile::get_preset_name(int p_idx) const {
 void ResourceImporterShaderFile::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 }
 
-bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -82,18 +82,18 @@ static String _include_function(const String &p_path, void *userpointer) {
 		include = base_path->plus_file(include);
 	}
 
-	FileAccessRef file_inc = FileAccess::open(include, FileAccess::READ, &err);
+	Ref<FileAccess> file_inc = FileAccess::open(include, FileAccess::READ, &err);
 	if (err != OK) {
 		return String();
 	}
 	return file_inc->get_as_utf8_string();
 }
 
-Error ResourceImporterShaderFile::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterShaderFile::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* STEP 1, Read shader code */
 
 	Error err;
-	FileAccessRef file = FileAccess::open(p_source_file, FileAccess::READ, &err);
+	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 	ERR_FAIL_COND_V(!file.operator->(), ERR_CANT_OPEN);
 

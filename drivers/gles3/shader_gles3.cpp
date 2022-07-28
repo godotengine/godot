@@ -165,10 +165,20 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	builder.append("\n"); //make sure defines begin at newline
 	builder.append(general_defines.get_data());
 	builder.append(variant_defines[p_variant]);
+	builder.append("\n");
 	for (int j = 0; j < p_version->custom_defines.size(); j++) {
 		builder.append(p_version->custom_defines[j].get_data());
 	}
 	builder.append("\n"); //make sure defines begin at newline
+
+	// Default to highp precision unless specified otherwise.
+	builder.append("precision highp float;\n");
+	builder.append("precision highp int;\n");
+#ifndef GLES_OVER_GL
+	builder.append("precision highp sampler2D;\n");
+	builder.append("precision highp samplerCube;\n");
+	builder.append("precision highp sampler2DArray;\n");
+#endif
 
 	for (uint32_t i = 0; i < p_template.chunks.size(); i++) {
 		const StageTemplate::Chunk &chunk = p_template.chunks[i];
@@ -327,7 +337,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 			glDeleteProgram(spec.id);
 			spec.id = 0;
 
-			ERR_PRINT("No OpenGL program link log. What the frick?");
+			ERR_PRINT("No OpenGL program link log. Something is wrong.");
 			ERR_FAIL();
 		}
 
@@ -464,8 +474,8 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
 
-	FileAccessRef f = FileAccess::open(path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+	if (f.is_null()) {
 		return false;
 	}
 
@@ -530,8 +540,8 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
 
-	FileAccessRef f = FileAccess::open(path, FileAccess::WRITE);
-	ERR_FAIL_COND(!f);
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
 	f->store_32(cache_file_version); //file version
 	uint32_t variant_count = variant_count;
@@ -541,8 +551,6 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 		f->store_32(p_version->variant_data[i].size()); //stage count
 		f->store_buffer(p_version->variant_data[i].ptr(), p_version->variant_data[i].size());
 	}
-
-	f->close();
 #endif
 }
 
@@ -554,7 +562,7 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 	for (int i = 0; i < variant_count; i++) {
 		for (OAHashMap<uint64_t, Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
-			if (it.valid) {
+			if (it.value->id != 0) {
 				glDeleteShader(it.value->vert_id);
 				glDeleteShader(it.value->frag_id);
 				glDeleteProgram(it.value->id);
@@ -577,7 +585,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	}
 }
 
-void ShaderGLES3::version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize) {
+void ShaderGLES3::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize) {
 	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 
@@ -644,8 +652,8 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 
 		base_sha256 = hash_build.as_string().sha256_text();
 
-		DirAccessRef d = DirAccess::open(shader_cache_dir);
-		ERR_FAIL_COND(!d);
+		Ref<DirAccess> d = DirAccess::open(shader_cache_dir);
+		ERR_FAIL_COND(d.is_null());
 		if (d->change_dir(name) != OK) {
 			Error err = d->make_dir(name);
 			ERR_FAIL_COND(err != OK);
@@ -665,7 +673,7 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
 	}
 
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
 }
 
 void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {

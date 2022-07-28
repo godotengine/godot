@@ -47,24 +47,24 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 
 	String base_type;
 	String icon_fallback;
 	String preferred_search_result_type;
 
-	Button *favorite;
+	Button *favorite = nullptr;
 	Vector<String> favorite_list;
-	Tree *favorites;
-	ItemList *recent;
-	EditorHelpBit *help_bit;
+	Tree *favorites = nullptr;
+	ItemList *recent = nullptr;
+	EditorHelpBit *help_bit = nullptr;
 
 	HashMap<String, TreeItem *> search_options_types;
 	HashMap<String, String> custom_type_parents;
 	HashMap<String, int> custom_type_indices;
 	List<StringName> type_list;
-	Set<StringName> type_blacklist;
+	HashSet<StringName> type_blacklist;
 
 	void _update_search();
 	bool _should_hide_type(const String &p_type) const;
@@ -115,6 +115,7 @@ public:
 
 	void set_base_type(const String &p_base) { base_type = p_base; }
 	String get_base_type() const { return base_type; }
+	void select_base();
 
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 	String get_preferred_search_result_type() { return preferred_search_result_type; }
@@ -124,4 +125,4 @@ public:
 	CreateDialog();
 };
 
-#endif
+#endif // CREATE_DIALOG_H

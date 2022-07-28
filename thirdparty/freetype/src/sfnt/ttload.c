@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -205,7 +205,6 @@
 
       if ( FT_STREAM_READ_FIELDS( table_dir_entry_fields, &table ) )
       {
-        nn--;
         FT_TRACE2(( "check_table_dir:"
                     " can read only %d table%s in font (instead of %d)\n",
                     nn, nn == 1 ? "" : "s", sfnt->num_tables ));

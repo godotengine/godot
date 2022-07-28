@@ -38,6 +38,7 @@
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -72,10 +73,12 @@ public:
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
-	RES load_threaded_get(const String &p_path);
+	Ref<Resource> load_threaded_get(const String &p_path);
 
-	RES load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
+	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);
+	void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
@@ -94,6 +97,7 @@ protected:
 
 public:
 	enum SaverFlags {
+		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -105,8 +109,10 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
-	Vector<String> get_recognized_extensions(const RES &p_resource);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags);
+	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
+	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
+	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
 	ResourceSaver() { singleton = this; }
 };
@@ -164,6 +170,8 @@ public:
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 
+	Vector<String> get_system_fonts() const;
+	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
@@ -171,6 +179,7 @@ public:
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
+	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
 	bool has_environment(const String &p_var) const;
@@ -233,6 +242,7 @@ public:
 
 	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	Error move_to_trash(const String &p_path) const;
 	String get_user_data_dir() const;
 	String get_config_dir() const;
 	String get_data_dir() const;
@@ -347,7 +357,7 @@ public:
 class File : public RefCounted {
 	GDCLASS(File, RefCounted);
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	bool big_endian = false;
 
 protected:
@@ -435,17 +445,16 @@ public:
 
 	void store_var(const Variant &p_var, bool p_full_objects = false);
 
-	bool file_exists(const String &p_name) const; // Return true if a file exists.
+	static bool file_exists(const String &p_name); // Return true if a file exists.
 
 	uint64_t get_modified_time(const String &p_file) const;
 
 	File() {}
-	virtual ~File();
 };
 
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
-	DirAccess *d;
+	Ref<DirAccess> d;
 
 	bool dir_open = false;
 	bool include_navigational = false;
@@ -493,7 +502,6 @@ public:
 	Error remove(String p_name);
 
 	Directory();
-	virtual ~Directory();
 };
 
 class Marshalls : public Object {
@@ -549,7 +557,6 @@ class Thread : public RefCounted {
 
 protected:
 	Variant ret;
-	Variant userdata;
 	SafeFlag running;
 	Callable target_callable;
 	::Thread thread;
@@ -564,7 +571,7 @@ public:
 		PRIORITY_MAX
 	};
 
-	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
+	Error start(const Callable &p_callable, Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_started() const;
 	bool is_alive() const;
@@ -602,8 +609,7 @@ public:
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	StringName get_category(const StringName &p_node) const;
+	int64_t get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 
 	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 	PackedStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
@@ -663,8 +669,15 @@ public:
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
 
+	void register_script_language(ScriptLanguage *p_language);
+	int get_script_language_count();
+	ScriptLanguage *get_script_language(int p_index) const;
+
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
+	String get_write_movie_path() const;
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
@@ -675,8 +688,8 @@ public:
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
-	Map<StringName, Callable> captures;
-	Map<StringName, Ref<EngineProfiler>> profilers;
+	HashMap<StringName, Callable> captures;
+	HashMap<StringName, Ref<EngineProfiler>> profilers;
 
 protected:
 	static void _bind_methods();
@@ -711,7 +724,7 @@ public:
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 
-VARIANT_ENUM_CAST(core_bind::ResourceSaver::SaverFlags);
+VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
 VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
 VARIANT_ENUM_CAST(core_bind::OS::Weekday);

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NODE2D_H
-#define NODE2D_H
+#ifndef NODE_2D_H
+#define NODE_2D_H
 
 #include "scene/main/canvas_item.h"
 
@@ -92,12 +92,14 @@ public:
 
 	Point2 get_global_position() const;
 	real_t get_global_rotation() const;
+	real_t get_global_skew() const;
 	Size2 get_global_scale() const;
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
-	void set_global_rotation(real_t p_radians);
+	void set_global_rotation(const real_t p_radians);
+	void set_global_skew(const real_t p_radians);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z_index(int p_z);
@@ -122,4 +124,4 @@ public:
 	Node2D() {}
 };
 
-#endif // NODE2D_H
+#endif // NODE_2D_H

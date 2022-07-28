@@ -552,5 +552,5 @@ EditorLocaleDialog::EditorLocaleDialog() {
 	add_child(vb);
 	_update_tree();
 
-	get_ok_button()->set_text(TTR("Select"));
+	set_ok_button_text(TTR("Select"));
 }

@@ -55,7 +55,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(MenuButton *p_debug_menu) {
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
 	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
 	// Add separation for the warning/error icon that is displayed later.
-	db->add_theme_constant_override("hseparation", 6 * EDSCALE);
+	db->add_theme_constant_override("h_separation", 6 * EDSCALE);
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.
@@ -63,30 +63,27 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(MenuButton *p_debug_menu) {
 	PopupMenu *p = debug_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTR("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
-	p->set_item_tooltip(
-			p->get_item_count() - 1,
+	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, using one-click deploy will make the executable attempt to connect to this computer's IP so the running project can be debugged.\nThis option is intended to be used for remote debugging (typically with a mobile device).\nYou don't need to enable it to use the GDScript debugger locally."));
 	p->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTR("Small Deploy with Network Filesystem")), RUN_FILE_SERVER);
-	p->set_item_tooltip(
-			p->get_item_count() - 1,
+	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
-	p->set_item_tooltip(
-			p->get_item_count() - 1,
+	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTR("Visible Paths")), RUN_DEBUG_PATHS);
+	p->set_item_tooltip(-1,
+			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
-	p->set_item_tooltip(
-			p->get_item_count() - 1,
+	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Synchronize Scene Changes")), RUN_LIVE_DEBUG);
-	p->set_item_tooltip(
-			p->get_item_count() - 1,
+	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, any changes made to the scene in the editor will be replicated in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Synchronize Script Changes")), RUN_RELOAD_SCRIPTS);
-	p->set_item_tooltip(
-			p->get_item_count() - 1,
+	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, any script that is saved will be reloaded in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
 
 	// Multi-instance, start/stop
@@ -159,6 +156,12 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
 
 		} break;
+		case RUN_DEBUG_PATHS: {
+			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_PATHS));
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_PATHS), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
+
+		} break;
 		case RUN_DEBUG_NAVIGATION: {
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
@@ -188,6 +191,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
@@ -201,6 +205,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_debug_collisions) {
 		_menu_option(RUN_DEBUG_COLLISONS);
+	}
+	if (check_debug_paths) {
+		_menu_option(RUN_DEBUG_PATHS);
 	}
 	if (check_debug_navigation) {
 		_menu_option(RUN_DEBUG_NAVIGATION);

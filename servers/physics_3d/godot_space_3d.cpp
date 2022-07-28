@@ -153,7 +153,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
 				min_d = 0;
-				res_point = local_from;
+				res_point = begin;
 				res_normal = Vector3();
 				res_shape = shape_idx;
 				res_obj = col_obj;
@@ -445,7 +445,7 @@ struct _RestCallbackData {
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-	_RestCallbackData *rd = (_RestCallbackData *)p_userdata;
+	_RestCallbackData *rd = static_cast<_RestCallbackData *>(p_userdata);
 
 	Vector3 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
@@ -906,7 +906,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	}
 
 	bool collided = false;
-	if (recovered || (safe < 1)) {
+	if ((p_parameters.recovery_as_collision && recovered) || (safe < 1)) {
 		if (safe >= 1) {
 			best_shape = -1; //no best shape with cast, reset to -1
 		}
@@ -1007,11 +1007,8 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	return collided;
 }
 
+// Assumes a valid collision pair, this should have been checked beforehand in the BVH or octree.
 void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A, GodotCollisionObject3D *B, int p_subindex_B, void *p_self) {
-	if (!A->interacts_with(B)) {
-		return nullptr;
-	}
-
 	GodotCollisionObject3D::Type type_A = A->get_type();
 	GodotCollisionObject3D::Type type_B = B->get_type();
 	if (type_A > type_B) {
@@ -1020,7 +1017,7 @@ void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A
 		SWAP(type_A, type_B);
 	}
 
-	GodotSpace3D *self = (GodotSpace3D *)p_self;
+	GodotSpace3D *self = static_cast<GodotSpace3D *>(p_self);
 
 	self->collision_pairs++;
 
@@ -1041,10 +1038,10 @@ void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A
 		}
 	} else if (type_A == GodotCollisionObject3D::TYPE_BODY) {
 		if (type_B == GodotCollisionObject3D::TYPE_SOFT_BODY) {
-			GodotBodySoftBodyPair3D *soft_pair = memnew(GodotBodySoftBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotSoftBody3D *)B));
+			GodotBodySoftBodyPair3D *soft_pair = memnew(GodotBodySoftBodyPair3D(static_cast<GodotBody3D *>(A), p_subindex_A, static_cast<GodotSoftBody3D *>(B)));
 			return soft_pair;
 		} else {
-			GodotBodyPair3D *b = memnew(GodotBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotBody3D *)B, p_subindex_B));
+			GodotBodyPair3D *b = memnew(GodotBodyPair3D(static_cast<GodotBody3D *>(A), p_subindex_A, static_cast<GodotBody3D *>(B), p_subindex_B));
 			return b;
 		}
 	} else {
@@ -1059,9 +1056,9 @@ void GodotSpace3D::_broadphase_unpair(GodotCollisionObject3D *A, int p_subindex_
 		return;
 	}
 
-	GodotSpace3D *self = (GodotSpace3D *)p_self;
+	GodotSpace3D *self = static_cast<GodotSpace3D *>(p_self);
 	self->collision_pairs--;
-	GodotConstraint3D *c = (GodotConstraint3D *)p_data;
+	GodotConstraint3D *c = static_cast<GodotConstraint3D *>(p_data);
 	memdelete(c);
 }
 
@@ -1099,7 +1096,7 @@ void GodotSpace3D::remove_object(GodotCollisionObject3D *p_object) {
 	objects.erase(p_object);
 }
 
-const Set<GodotCollisionObject3D *> &GodotSpace3D::get_objects() const {
+const HashSet<GodotCollisionObject3D *> &GodotSpace3D::get_objects() const {
 	return objects;
 }
 

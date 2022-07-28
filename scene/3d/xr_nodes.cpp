@@ -95,7 +95,7 @@ TypedArray<String> XRCamera3D::get_configuration_warnings() const {
 		// must be child node of XROrigin3D!
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			warnings.push_back(TTR("XRCamera3D must have an XROrigin3D node as its parent."));
+			warnings.push_back(RTR("XRCamera3D must have an XROrigin3D node as its parent."));
 		};
 	}
 
@@ -120,7 +120,7 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
@@ -143,7 +143,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -173,7 +173,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) co
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -202,7 +202,7 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
 };
 
@@ -423,15 +423,15 @@ TypedArray<String> XRNode3D::get_configuration_warnings() const {
 		// must be child node of XROrigin!
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			warnings.push_back(TTR("XRController3D must have an XROrigin3D node as its parent."));
+			warnings.push_back(RTR("XRController3D must have an XROrigin3D node as its parent."));
 		}
 
 		if (tracker_name == "") {
-			warnings.push_back(TTR("No tracker name is set."));
+			warnings.push_back(RTR("No tracker name is set."));
 		}
 
 		if (pose_name == "") {
-			warnings.push_back(TTR("No pose is set."));
+			warnings.push_back(RTR("No pose is set."));
 		}
 	}
 
@@ -577,7 +577,7 @@ Plane XRAnchor3D::get_plane() const {
 	Vector3 location = get_position();
 	Basis orientation = get_transform().basis;
 
-	Plane plane(orientation.get_axis(1).normalized(), location);
+	Plane plane(orientation.get_column(1).normalized(), location);
 
 	return plane;
 }
@@ -589,13 +589,13 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 
 	if (is_visible() && is_inside_tree()) {
 		if (tracked_camera == nullptr) {
-			warnings.push_back(TTR("XROrigin3D requires an XRCamera3D child node."));
+			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 	}
 
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
-		warnings.push_back(TTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
+		warnings.push_back(RTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
 	}
 
 	return warnings;

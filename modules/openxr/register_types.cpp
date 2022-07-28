@@ -38,46 +38,84 @@
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
 
-OpenXRAPI *openxr_api = nullptr;
-Ref<OpenXRInterface> openxr_interface;
+#ifdef TOOLS_ENABLED
 
-void preregister_openxr_types() {
-	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
+#include "editor/editor_node.h"
+#include "editor/openxr_editor_plugin.h"
 
-	OpenXRAPI::setup_global_defs();
-	openxr_api = OpenXRAPI::get_singleton();
-	if (openxr_api) {
-		if (!openxr_api->initialise(Main::get_rendering_driver_name())) {
-			return;
-		}
+static void _editor_init() {
+	if (OpenXRAPI::openxr_is_enabled(false)) {
+		// Only add our OpenXR action map editor if OpenXR is enabled for our project
+
+		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
 }
 
-void register_openxr_types() {
-	GDREGISTER_CLASS(OpenXRInterface);
+#endif
 
-	GDREGISTER_CLASS(OpenXRAction);
-	GDREGISTER_CLASS(OpenXRActionSet);
-	GDREGISTER_CLASS(OpenXRActionMap);
-	GDREGISTER_CLASS(OpenXRIPBinding);
-	GDREGISTER_CLASS(OpenXRInteractionProfile);
+static OpenXRAPI *openxr_api = nullptr;
+static Ref<OpenXRInterface> openxr_interface;
 
-	XRServer *xr_server = XRServer::get_singleton();
-	if (xr_server) {
-		openxr_interface.instantiate();
-		xr_server->add_interface(openxr_interface);
+void initialize_openxr_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
-		if (openxr_interface->initialise_on_startup()) {
-			openxr_interface->initialize();
+		if (OpenXRAPI::openxr_is_enabled()) {
+			openxr_api = memnew(OpenXRAPI);
+			ERR_FAIL_NULL(openxr_api);
+
+			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+				memdelete(openxr_api);
+				openxr_api = nullptr;
+				return;
+			}
 		}
+	}
+
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(OpenXRInterface);
+
+		GDREGISTER_CLASS(OpenXRAction);
+		GDREGISTER_CLASS(OpenXRActionSet);
+		GDREGISTER_CLASS(OpenXRActionMap);
+		GDREGISTER_CLASS(OpenXRIPBinding);
+		GDREGISTER_CLASS(OpenXRInteractionProfile);
+
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server) {
+			openxr_interface.instantiate();
+			xr_server->add_interface(openxr_interface);
+
+			if (openxr_interface->initialize_on_startup()) {
+				openxr_interface->initialize();
+			}
+		}
+
+#ifdef TOOLS_ENABLED
+		EditorNode::add_init_callback(_editor_init);
+#endif
 	}
 }
 
-void unregister_openxr_types() {
+void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	if (openxr_interface.is_valid()) {
+		// uninitialize just in case
+		if (openxr_interface->is_initialized()) {
+			openxr_interface->uninitialize();
+		}
+
 		// unregister our interface from the XR server
-		if (XRServer::get_singleton()) {
-			XRServer::get_singleton()->remove_interface(openxr_interface);
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server) {
+			if (xr_server->get_primary_interface() == openxr_interface) {
+				xr_server->set_primary_interface(Ref<XRInterface>());
+			}
+			xr_server->remove_interface(openxr_interface);
 		}
 
 		// and release
@@ -87,5 +125,6 @@ void unregister_openxr_types() {
 	if (openxr_api) {
 		openxr_api->finish();
 		memdelete(openxr_api);
+		openxr_api = nullptr;
 	}
 }

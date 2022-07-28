@@ -989,7 +989,7 @@ MBEDTLS_DEPRECATED int mbedtls_mpi_is_prime( const mbedtls_mpi *X,
  *                 generate yourself and that are supposed to be prime, then
  *                 \p rounds should be at least the half of the security
  *                 strength of the cryptographic algorithm. On the other hand,
- *                 if \p X is chosen uniformly or non-adversially (as is the
+ *                 if \p X is chosen uniformly or non-adversarially (as is the
  *                 case when mbedtls_mpi_gen_prime calls this function), then
  *                 \p rounds can be much lower.
  *

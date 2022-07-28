@@ -32,6 +32,7 @@
 #define RICH_TEXT_LABEL_H
 
 #include "rich_text_effect.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -39,13 +40,6 @@ class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
 
 public:
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
 	enum ListType {
 		LIST_NUMBERS,
 		LIST_LETTERS,
@@ -78,16 +72,14 @@ public:
 		ITEM_BGCOLOR,
 		ITEM_FGCOLOR,
 		ITEM_META,
+		ITEM_HINT,
 		ITEM_DROPCAP,
 		ITEM_CUSTOMFX
 	};
 
-	enum VisibleCharactersBehavior {
-		VC_CHARS_BEFORE_SHAPING,
-		VC_CHARS_AFTER_SHAPING,
-		VC_GLYPHS_AUTO,
-		VC_GLYPHS_LTR,
-		VC_GLYPHS_RTL,
+	enum MenuItems {
+		MENU_COPY,
+		MENU_SELECT_ALL,
 	};
 
 protected:
@@ -110,6 +102,10 @@ private:
 		int char_count = 0;
 
 		Line() { text_buf.instantiate(); }
+
+		_FORCE_INLINE_ float get_height(float line_separation) const {
+			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * line_separation;
+		}
 	};
 
 	struct Item {
@@ -134,10 +130,10 @@ private:
 	struct ItemFrame : public Item {
 		bool cell = false;
 
-		Vector<Line> lines;
-		int first_invalid_line = 0;
-		int first_invalid_font_line = 0;
-		int first_resized_line = 0;
+		LocalVector<Line> lines;
+		std::atomic<int> first_invalid_line;
+		std::atomic<int> first_invalid_font_line;
+		std::atomic<int> first_resized_line;
 
 		ItemFrame *parent_frame = nullptr;
 
@@ -148,7 +144,12 @@ private:
 		Size2 max_size_over = Size2(-1, -1);
 		Rect2 padding;
 
-		ItemFrame() { type = ITEM_FRAME; }
+		ItemFrame() {
+			type = ITEM_FRAME;
+			first_invalid_line.store(0);
+			first_invalid_font_line.store(0);
+			first_resized_line.store(0);
+		}
 	};
 
 	struct ItemText : public Item {
@@ -177,17 +178,13 @@ private:
 
 	struct ItemFont : public Item {
 		Ref<Font> font;
+		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
 	struct ItemFontSize : public Item {
 		int font_size = 16;
 		ItemFontSize() { type = ITEM_FONT_SIZE; }
-	};
-
-	struct ItemFontFeatures : public Item {
-		Dictionary opentype_features;
-		ItemFontFeatures() { type = ITEM_FONT_FEATURES; }
 	};
 
 	struct ItemColor : public Item {
@@ -218,11 +215,16 @@ private:
 		ItemMeta() { type = ITEM_META; }
 	};
 
+	struct ItemHint : public Item {
+		String description;
+		ItemHint() { type = ITEM_HINT; }
+	};
+
 	struct ItemParagraph : public Item {
 		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
-		Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
@@ -251,8 +253,8 @@ private:
 			int width = 0;
 		};
 
-		Vector<Column> columns;
-		Vector<float> rows;
+		LocalVector<Column> columns;
+		LocalVector<float> rows;
 
 		int total_width = 0;
 		int total_height = 0;
@@ -351,9 +353,19 @@ private:
 	Item *current = nullptr;
 	ItemFrame *current_frame = nullptr;
 
+	Thread thread;
+	Mutex data_mutex;
+	bool threaded = false;
+	std::atomic<bool> stop_thread;
+	std::atomic<bool> updating;
+	std::atomic<double> loaded;
+
+	uint64_t loading_started = 0;
+	int progress_delay = 1000;
+
 	VScrollBar *vscroll = nullptr;
 
-	AutowrapMode autowrap_mode = AUTOWRAP_WORD_SMART;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
 	bool scroll_visible = false;
 	bool scroll_follow = false;
@@ -369,6 +381,7 @@ private:
 
 	int tab_size = 4;
 	bool underline_meta = true;
+	bool underline_hint = true;
 	bool override_selected_font_color = false;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
@@ -379,14 +392,18 @@ private:
 	Array custom_effects;
 
 	void _invalidate_current_line(ItemFrame *p_frame);
-	void _validate_line_caches(ItemFrame *p_frame);
+
+	static void _thread_function(void *self);
+	void _stop_thread();
+	bool _validate_line_caches();
+	void _process_line_caches();
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	struct Selection {
@@ -413,9 +430,18 @@ private:
 	Selection selection;
 	bool deselect_on_focus_loss_enabled = true;
 
+	bool context_menu_enabled = false;
+	bool shortcut_keys_enabled = true;
+
+	// Context menu.
+	PopupMenu *menu = nullptr;
+	void _generate_context_menu();
+	Key _get_menu_action_accelerator(const String &p_action);
+	void _menu_option(int p_option);
+
 	int visible_characters = -1;
 	float percent_visible = 1.0;
-	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	bool _is_click_inside_selection() const;
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
@@ -424,20 +450,21 @@ private:
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 
-	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
-	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
+	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
+	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
+
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
-	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
+	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
 
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
 
+	Item *_find_indentable(Item *p_item);
 	Item *_get_item_at_pos(Item *p_item_from, Item *p_item_to, int p_position);
 	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);
-	Ref<Font> _find_font(Item *p_item);
-	int _find_font_size(Item *p_item);
-	Dictionary _find_font_features(Item *p_item);
+	ItemFontSize *_find_font_size(Item *p_item);
+	ItemFont *_find_font(Item *p_item);
 	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
@@ -445,23 +472,27 @@ private:
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	HorizontalAlignment _find_alignment(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
-	Control::StructuredTextParser _find_stt(Item *p_item);
+	TextServer::StructuredTextParser _find_stt(Item *p_item);
 	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	Color _find_outline_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
+	bool _find_hint(Item *p_item, String *r_description);
 	Color _find_bgcolor(Item *p_item);
 	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
-	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
+	int _find_first_line(int p_from, int p_to, int p_vofs) const;
+
+	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 	Item *_get_next_item(Item *p_item, bool p_free = false) const;
 	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
@@ -488,9 +519,8 @@ public:
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
-	void push_font(const Ref<Font> &p_font);
+	void push_font(const Ref<Font> &p_font, int p_size = 0);
 	void push_font_size(int p_font_size);
-	void push_font_features(const Dictionary &p_features);
 	void push_outline_size(int p_font_size);
 	void push_normal();
 	void push_bold();
@@ -501,10 +531,11 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", Control::StructuredTextParser p_st_parser = STRUCTURED_TEXT_DEFAULT);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
+	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP);
 	void push_fade(int p_start_index, int p_length);
 	void push_shake(int p_strength, float p_rate);
@@ -530,6 +561,9 @@ public:
 	void set_meta_underline(bool p_underline);
 	bool is_meta_underlined() const;
 
+	void set_hint_underline(bool p_underline);
+	bool is_hint_underlined() const;
+
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
 
@@ -541,6 +575,12 @@ public:
 
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
+
+	void set_context_menu_enabled(bool p_enabled);
+	bool is_context_menu_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
 
 	void set_fit_content_height(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
@@ -571,9 +611,23 @@ public:
 	int get_selection_from() const;
 	int get_selection_to() const;
 	String get_selected_text() const;
+	void select_all();
 	void selection_copy();
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
+	void deselect();
+
+	bool is_ready() const;
+
+	void set_threaded(bool p_threaded);
+	bool is_threaded() const;
+
+	void set_progress_bar_delay(int p_delay_ms);
+	int get_progress_bar_delay() const;
+
+	// Context menu.
+	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void parse_bbcode(const String &p_bbcode);
 	void append_text(const String &p_bbcode);
@@ -590,11 +644,11 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
@@ -609,8 +663,8 @@ public:
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
 
-	VisibleCharactersBehavior get_visible_characters_behavior() const;
-	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
 	void set_effects(Array p_effects);
 	Array get_effects();
@@ -620,13 +674,11 @@ public:
 	void set_fixed_size_to_width(int p_width);
 	virtual Size2 get_minimum_size() const override;
 
-	RichTextLabel();
+	RichTextLabel(const String &p_text = String());
 	~RichTextLabel();
 };
 
-VARIANT_ENUM_CAST(RichTextLabel::AutowrapMode);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
-VARIANT_ENUM_CAST(RichTextLabel::VisibleCharactersBehavior);
 
 #endif // RICH_TEXT_LABEL_H

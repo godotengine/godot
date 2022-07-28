@@ -45,7 +45,7 @@ uint32_t MobileVRInterface::get_capabilities() const {
 
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	// Our magnetometer doesn't give us nice clean data.
-	// Well it may on Mac OS X because we're getting a calibrated value in the current implementation but Android we're getting raw data.
+	// Well it may on macOS because we're getting a calibrated value in the current implementation but Android we're getting raw data.
 	// This is a fairly simple adjustment we can do to correct for the magnetometer data being elliptical
 
 	Vector3 mag_raw = p_magnetometer;
@@ -112,9 +112,9 @@ Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p
 
 	// We use our gravity and magnetometer vectors to construct our matrix
 	Basis acc_mag_m3;
-	acc_mag_m3.elements[0] = -magneto_east;
-	acc_mag_m3.elements[1] = up;
-	acc_mag_m3.elements[2] = magneto;
+	acc_mag_m3.rows[0] = -magneto_east;
+	acc_mag_m3.rows[1] = up;
+	acc_mag_m3.rows[2] = magneto;
 
 	return acc_mag_m3;
 };
@@ -175,9 +175,9 @@ void MobileVRInterface::set_position_from_sensors() {
 	if (has_gyro) {
 		// start with applying our gyro (do NOT smooth our gyro!)
 		Basis rotate;
-		rotate.rotate(orientation.get_axis(0), gyro.x * delta_time);
-		rotate.rotate(orientation.get_axis(1), gyro.y * delta_time);
-		rotate.rotate(orientation.get_axis(2), gyro.z * delta_time);
+		rotate.rotate(orientation.get_column(0), gyro.x * delta_time);
+		rotate.rotate(orientation.get_column(1), gyro.y * delta_time);
+		rotate.rotate(orientation.get_column(2), gyro.z * delta_time);
 		orientation = rotate * orientation;
 
 		tracking_state = XRInterface::XR_NORMAL_TRACKING;
@@ -452,10 +452,10 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	return transform_for_eye;
 };
 
-CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
 
-	CameraMatrix eye;
+	Projection eye;
 
 	aspect = p_aspect;
 	eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);

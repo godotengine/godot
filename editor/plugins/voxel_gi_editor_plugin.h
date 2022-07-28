@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VOXEL_GIEDITORPLUGIN_H
-#define VOXEL_GIEDITORPLUGIN_H
+#ifndef VOXEL_GI_EDITOR_PLUGIN_H
+#define VOXEL_GI_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
@@ -41,12 +41,12 @@ struct EditorProgress;
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);
 
-	VoxelGI *voxel_gi;
+	VoxelGI *voxel_gi = nullptr;
 
-	HBoxContainer *bake_hb;
-	Button *bake;
+	HBoxContainer *bake_hb = nullptr;
+	Button *bake = nullptr;
 
-	EditorFileDialog *probe_file;
+	EditorFileDialog *probe_file = nullptr;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);
@@ -71,4 +71,4 @@ public:
 	~VoxelGIEditorPlugin();
 };
 
-#endif // VOXEL_GIEDITORPLUGIN_H
+#endif // VOXEL_GI_EDITOR_PLUGIN_H

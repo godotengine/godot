@@ -72,7 +72,7 @@ real_t Decal::get_albedo_mix() const {
 }
 
 void Decal::set_upper_fade(real_t p_fade) {
-	upper_fade = p_fade;
+	upper_fade = MAX(p_fade, 0.0);
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
@@ -81,7 +81,7 @@ real_t Decal::get_upper_fade() const {
 }
 
 void Decal::set_lower_fade(real_t p_fade) {
-	lower_fade = p_fade;
+	lower_fade = MAX(p_fade, 0.0);
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
@@ -152,10 +152,6 @@ AABB Decal::get_aabb() const {
 	return aabb;
 }
 
-Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -167,15 +163,15 @@ TypedArray<String> Decal::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (textures[TEXTURE_ALBEDO].is_null() && textures[TEXTURE_NORMAL].is_null() && textures[TEXTURE_ORM].is_null() && textures[TEXTURE_EMISSION].is_null()) {
-		warnings.push_back(TTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
+		warnings.push_back(RTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
 	}
 
 	if ((textures[TEXTURE_NORMAL].is_valid() || textures[TEXTURE_ORM].is_valid()) && textures[TEXTURE_ALBEDO].is_null()) {
-		warnings.push_back(TTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
+		warnings.push_back(RTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
 	}
 
 	if (cull_mask == 0) {
-		warnings.push_back(TTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
+		warnings.push_back(RTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
 	}
 
 	return warnings;
@@ -218,12 +214,14 @@ void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Decal::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Decal::get_cull_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_extents", "get_extents");
+
 	ADD_GROUP("Textures", "texture_");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_NORMAL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ORM);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
+
 	ADD_GROUP("Parameters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
@@ -231,13 +229,16 @@ void Decal::_bind_methods() {
 	// A Normal Fade of 1.0 causes the decal to be invisible even if fully perpendicular to a surface.
 	// Due to this, limit Normal Fade to 0.999.
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_fade", PROPERTY_HINT_RANGE, "0,0.999,0.001"), "set_normal_fade", "get_normal_fade");
+
 	ADD_GROUP("Vertical Fade", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "upper_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_upper_fade", "get_upper_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lower_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_lower_fade", "get_lower_fade");
+
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled"), "set_enable_distance_fade", "is_distance_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin"), "set_distance_fade_begin", "get_distance_fade_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length"), "set_distance_fade_length", "get_distance_fade_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_begin", "get_distance_fade_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_length", "get_distance_fade_length");
+
 	ADD_GROUP("Cull Mask", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 

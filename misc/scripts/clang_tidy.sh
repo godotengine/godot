@@ -18,13 +18,13 @@ done
 
 diff=$(git diff --color)
 
-# If no patch has been generated all is OK, clean up, and exit.
+# If no diff has been generated all is OK, clean up, and exit.
 if [ -z "$diff" ] ; then
     printf "Files in this commit comply with the clang-tidy style rules.\n"
     exit 0
 fi
 
-# A patch has been created, notify the user, clean up, and exit.
+# A diff has been created, notify the user, clean up, and exit.
 printf "\n*** The following changes have been made to comply with the formatting rules:\n\n"
 echo "$diff"
 printf "\n*** Please fix your commit(s) with 'git commit --amend' or 'git rebase -i <hash>'\n"

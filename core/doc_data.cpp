@@ -38,7 +38,7 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 		} else {
 			p_method.return_type += "*";
 		}
-	} else if (p_retinfo.type == Variant::INT && p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+	} else if (p_retinfo.type == Variant::INT && p_retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		p_method.return_enum = p_retinfo.class_name;
 		if (p_method.return_enum.begins_with("_")) { //proxy class
 			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
@@ -69,7 +69,7 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 		} else {
 			p_argument.type += "*";
 		}
-	} else if (p_arginfo.type == Variant::INT && p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+	} else if (p_arginfo.type == Variant::INT && p_arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		p_argument.enumeration = p_arginfo.class_name;
 		if (p_argument.enumeration.begins_with("_")) { //proxy class
 			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());
@@ -115,6 +115,31 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 	p_method.name = p_methodinfo.name;
 	p_method.description = p_desc;
 
+	if (p_methodinfo.flags & METHOD_FLAG_VIRTUAL) {
+		p_method.qualifiers = "virtual";
+	}
+
+	if (p_methodinfo.flags & METHOD_FLAG_CONST) {
+		if (!p_method.qualifiers.is_empty()) {
+			p_method.qualifiers += " ";
+		}
+		p_method.qualifiers += "const";
+	}
+
+	if (p_methodinfo.flags & METHOD_FLAG_VARARG) {
+		if (!p_method.qualifiers.is_empty()) {
+			p_method.qualifiers += " ";
+		}
+		p_method.qualifiers += "vararg";
+	}
+
+	if (p_methodinfo.flags & METHOD_FLAG_STATIC) {
+		if (!p_method.qualifiers.is_empty()) {
+			p_method.qualifiers += " ";
+		}
+		p_method.qualifiers += "static";
+	}
+
 	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
 
 	for (int i = 0; i < p_methodinfo.arguments.size(); i++) {
@@ -123,7 +148,7 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 		int default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
 		if (default_arg_index >= 0) {
 			Variant default_arg = p_methodinfo.default_arguments[default_arg_index];
-			argument.default_value = default_arg.get_construct_string();
+			argument.default_value = default_arg.get_construct_string().replace("\n", "");
 		}
 		p_method.arguments.push_back(argument);
 	}

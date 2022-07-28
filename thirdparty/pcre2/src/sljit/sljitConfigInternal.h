@@ -60,7 +60,7 @@ extern "C" {
      SLJIT_LITTLE_ENDIAN : little endian architecture
      SLJIT_BIG_ENDIAN : big endian architecture
      SLJIT_UNALIGNED : allows unaligned memory accesses for non-fpu operations (only!)
-     SLJIT_INDIRECT_CALL : see SLJIT_FUNC_OFFSET() for more information
+     SLJIT_INDIRECT_CALL : see SLJIT_FUNC_ADDR() for more information
 
    Constants:
      SLJIT_NUMBER_OF_REGISTERS : number of available registers
@@ -148,7 +148,7 @@ extern "C" {
 #endif
 #elif defined (__aarch64__)
 #define SLJIT_CONFIG_ARM_64 1
-#elif defined(__ppc64__) || defined(__powerpc64__) || defined(_ARCH_PPC64) || (defined(_POWER) && defined(__64BIT__))
+#elif defined(__ppc64__) || defined(__powerpc64__) || (defined(_ARCH_PPC64) && defined(__64BIT__)) || (defined(_POWER) && defined(__64BIT__))
 #define SLJIT_CONFIG_PPC_64 1
 #elif defined(__ppc__) || defined(__powerpc__) || defined(_ARCH_PPC) || defined(_ARCH_PWR) || defined(_ARCH_PWR2) || defined(_POWER)
 #define SLJIT_CONFIG_PPC_32 1
@@ -156,7 +156,7 @@ extern "C" {
 #define SLJIT_CONFIG_MIPS_32 1
 #elif defined(__mips64)
 #define SLJIT_CONFIG_MIPS_64 1
-#elif defined(__sparc__) || defined(__sparc)
+#elif (defined(__sparc__) || defined(__sparc)) && !defined(_LP64)
 #define SLJIT_CONFIG_SPARC_32 1
 #elif defined(__s390x__)
 #define SLJIT_CONFIG_S390X 1
@@ -274,8 +274,12 @@ extern "C" {
 
 #ifndef SLJIT_INLINE
 /* Inline functions. Some old compilers do not support them. */
-#if defined(__SUNPRO_C) && __SUNPRO_C <= 0x510
+#ifdef __SUNPRO_C
+#if __SUNPRO_C < 0x560
 #define SLJIT_INLINE
+#else
+#define SLJIT_INLINE inline
+#endif /* __SUNPRO_C */
 #else
 #define SLJIT_INLINE __inline
 #endif
@@ -319,18 +323,36 @@ extern "C" {
 /* Instruction cache flush. */
 /****************************/
 
+/*
+ * TODO:
+ *
+ * clang >= 15 could be safe to enable below
+ * older versions are known to abort in some targets
+ * https://github.com/PhilipHazel/pcre2/issues/92
+ *
+ * beware APPLE is known to have removed the code in iOS so
+ * it will need to be excempted or result in broken builds
+ */
 #if (!defined SLJIT_CACHE_FLUSH && defined __has_builtin)
-#if __has_builtin(__builtin___clear_cache)
+#if __has_builtin(__builtin___clear_cache) && !defined(__clang__)
 
+/*
+ * https://gcc.gnu.org/bugzilla//show_bug.cgi?id=91248
+ * https://gcc.gnu.org/bugzilla//show_bug.cgi?id=93811
+ * gcc's clear_cache builtin for power and sparc are broken
+ */
+#if !defined(SLJIT_CONFIG_PPC) && !defined(SLJIT_CONFIG_SPARC_32)
 #define SLJIT_CACHE_FLUSH(from, to) \
 	__builtin___clear_cache((char*)(from), (char*)(to))
+#endif
 
-#endif /* __has_builtin(__builtin___clear_cache) */
+#endif /* gcc >= 10 */
 #endif /* (!defined SLJIT_CACHE_FLUSH && defined __has_builtin) */
 
 #ifndef SLJIT_CACHE_FLUSH
 
-#if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86)
+#if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86) \
+	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
 
 /* Not required to implement on archs with unified caches. */
 #define SLJIT_CACHE_FLUSH(from, to)
@@ -340,9 +362,9 @@ extern "C" {
 /* Supported by all macs since Mac OS 10.5.
    However, it does not work on non-jailbroken iOS devices,
    although the compilation is successful. */
-
+#include <libkern/OSCacheControl.h>
 #define SLJIT_CACHE_FLUSH(from, to) \
-	sys_icache_invalidate((char*)(from), (char*)(to) - (char*)(from))
+	sys_icache_invalidate((void*)(from), (size_t)((char*)(to) - (char*)(from)))
 
 #elif (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC)
 
@@ -351,18 +373,6 @@ extern "C" {
 	ppc_cache_flush((from), (to))
 #define SLJIT_CACHE_FLUSH_OWN_IMPL 1
 
-#elif (defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
-
-#define SLJIT_CACHE_FLUSH(from, to) \
-	__builtin___clear_cache((char*)(from), (char*)(to))
-
-#elif defined __ANDROID__
-
-/* Android lacks __clear_cache; instead, cacheflush should be used. */
-
-#define SLJIT_CACHE_FLUSH(from, to) \
-    cacheflush((long)(from), (long)(to), 0)
-
 #elif (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
 
 /* The __clear_cache() implementation of GCC is a dummy function on Sparc. */
@@ -370,14 +380,26 @@ extern "C" {
 	sparc_cache_flush((from), (to))
 #define SLJIT_CACHE_FLUSH_OWN_IMPL 1
 
+#elif (defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(__clang__)
+
+#define SLJIT_CACHE_FLUSH(from, to) \
+	__builtin___clear_cache((char*)(from), (char*)(to))
+
+#elif defined __ANDROID__
+
+/* Android ARMv7 with gcc lacks __clear_cache; use cacheflush instead. */
+#include <sys/cachectl.h>
+#define SLJIT_CACHE_FLUSH(from, to) \
+	cacheflush((long)(from), (long)(to), 0)
+
 #elif defined _WIN32
 
 #define SLJIT_CACHE_FLUSH(from, to) \
-	FlushInstructionCache(GetCurrentProcess(), (char*)(from), (char*)(to) - (char*)(from))
+	FlushInstructionCache(GetCurrentProcess(), (void*)(from), (char*)(to) - (char*)(from))
 
 #else
 
-/* Calls __ARM_NR_cacheflush on ARM-Linux. */
+/* Call __ARM_NR_cacheflush on ARM-Linux or the corresponding MIPS syscall. */
 #define SLJIT_CACHE_FLUSH(from, to) \
 	__clear_cache((char*)(from), (char*)(to))
 
@@ -645,18 +667,23 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 
 #define SLJIT_NUMBER_OF_REGISTERS 12
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 9
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 7
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
 #define SLJIT_LOCALS_OFFSET_BASE (compiler->locals_offset)
 #define SLJIT_PREF_SHIFT_REG SLJIT_R2
 
 #elif (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
 
 #define SLJIT_NUMBER_OF_REGISTERS 13
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 15
 #ifndef _WIN64
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 6
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
 #define SLJIT_LOCALS_OFFSET_BASE 0
 #else /* _WIN64 */
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 8
-#define SLJIT_LOCALS_OFFSET_BASE (compiler->locals_offset)
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 10
+#define SLJIT_LOCALS_OFFSET_BASE (4 * (sljit_s32)sizeof(sljit_sw))
 #endif /* !_WIN64 */
 #define SLJIT_PREF_SHIFT_REG SLJIT_R3
 
@@ -664,31 +691,39 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 
 #define SLJIT_NUMBER_OF_REGISTERS 12
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 8
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 14
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 8
 #define SLJIT_LOCALS_OFFSET_BASE 0
 
 #elif (defined SLJIT_CONFIG_ARM_THUMB2 && SLJIT_CONFIG_ARM_THUMB2)
 
 #define SLJIT_NUMBER_OF_REGISTERS 12
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 8
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 14
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 8
 #define SLJIT_LOCALS_OFFSET_BASE 0
 
 #elif (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64)
 
 #define SLJIT_NUMBER_OF_REGISTERS 26
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 10
-#define SLJIT_LOCALS_OFFSET_BASE 0
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 30
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 8
+#define SLJIT_LOCALS_OFFSET_BASE (2 * (sljit_s32)sizeof(sljit_sw))
 
 #elif (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC)
 
 #define SLJIT_NUMBER_OF_REGISTERS 23
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 17
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 30
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 18
 #if (defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64) || (defined _AIX)
-#define SLJIT_LOCALS_OFFSET_BASE ((6 + 8) * sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE ((6 + 8) * (sljit_s32)sizeof(sljit_sw))
 #elif (defined SLJIT_CONFIG_PPC_32 && SLJIT_CONFIG_PPC_32)
 /* Add +1 for double alignment. */
-#define SLJIT_LOCALS_OFFSET_BASE ((3 + 1) * sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE ((3 + 1) * (sljit_s32)sizeof(sljit_sw))
 #else
-#define SLJIT_LOCALS_OFFSET_BASE (3 * sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE (3 * (sljit_s32)sizeof(sljit_sw))
 #endif /* SLJIT_CONFIG_PPC_64 || _AIX */
 
 #elif (defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS)
@@ -696,19 +731,25 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 #define SLJIT_NUMBER_OF_REGISTERS 21
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 8
 #if (defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32)
-#define SLJIT_LOCALS_OFFSET_BASE (4 * sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE (4 * (sljit_s32)sizeof(sljit_sw))
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 13
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 6
 #else
 #define SLJIT_LOCALS_OFFSET_BASE 0
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 29
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 8
 #endif
 
 #elif (defined SLJIT_CONFIG_SPARC && SLJIT_CONFIG_SPARC)
 
 #define SLJIT_NUMBER_OF_REGISTERS 18
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 14
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 14
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
 #if (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
 /* saved registers (16), return struct pointer (1), space for 6 argument words (1),
    4th double arg (2), double alignment (1). */
-#define SLJIT_LOCALS_OFFSET_BASE ((16 + 1 + 6 + 2 + 1) * sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE ((16 + 1 + 6 + 2 + 1) * (sljit_s32)sizeof(sljit_sw))
 #endif
 
 #elif (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
@@ -736,12 +777,16 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 
 #define SLJIT_NUMBER_OF_REGISTERS 12
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 8
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 15
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 8
 #define SLJIT_LOCALS_OFFSET_BASE SLJIT_S390X_DEFAULT_STACK_FRAME_SIZE
 
 #elif (defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED)
 
 #define SLJIT_NUMBER_OF_REGISTERS 0
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 0
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 0
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
 #define SLJIT_LOCALS_OFFSET_BASE 0
 
 #endif
@@ -751,13 +796,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 #define SLJIT_NUMBER_OF_SCRATCH_REGISTERS \
 	(SLJIT_NUMBER_OF_REGISTERS - SLJIT_NUMBER_OF_SAVED_REGISTERS)
 
-#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 6
-#if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64) && (defined _WIN64)
-#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 1
-#else
-#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
-#endif
-
 #define SLJIT_NUMBER_OF_SCRATCH_FLOAT_REGISTERS \
 	(SLJIT_NUMBER_OF_FLOAT_REGISTERS - SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS)
 
@@ -765,8 +803,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 /* CPU status flags management. */
 /********************************/
 
-#if (defined SLJIT_CONFIG_ARM_32 && SLJIT_CONFIG_ARM_32) \
-	|| (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
+#if (defined SLJIT_CONFIG_ARM && SLJIT_CONFIG_ARM) \
+	|| (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC) \
 	|| (defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS) \
 	|| (defined SLJIT_CONFIG_SPARC && SLJIT_CONFIG_SPARC) \
 	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)

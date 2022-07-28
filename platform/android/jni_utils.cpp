@@ -123,10 +123,10 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 			for (int j = 0; j < keys.size(); j++) {
 				Variant var = dict[keys[j]];
-				jvalret v = _variant_to_jvalue(env, var.get_type(), &var, true);
-				env->SetObjectArrayElement(jvalues, j, v.val.l);
-				if (v.obj) {
-					env->DeleteLocalRef(v.obj);
+				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true);
+				env->SetObjectArrayElement(jvalues, j, valret.val.l);
+				if (valret.obj) {
+					env->DeleteLocalRef(valret.obj);
 				}
 			}
 
@@ -186,7 +186,7 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 	if (array) {
 		jmethodID isArray = env->GetMethodID(cclass, "isArray", "()Z");
 		jboolean isarr = env->CallBooleanMethod(cls, isArray);
-		(*array) = isarr ? true : false;
+		(*array) = isarr != 0;
 	}
 	String name = jstring_to_string(clsName, env);
 	env->DeleteLocalRef(clsName);

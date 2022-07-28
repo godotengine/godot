@@ -35,7 +35,7 @@
 
 #include "core/typedefs.h"
 
-#if !defined(JAVASCRIPT_ENABLED) && !defined(IPHONE_ENABLED)
+#if !defined(JAVASCRIPT_ENABLED) && !defined(IOS_ENABLED)
 // We have custom mono log callbacks for WASM and iOS
 #define GD_MONO_LOG_ENABLED
 #endif
@@ -48,7 +48,7 @@ class GDMonoLog {
 #ifdef GD_MONO_LOG_ENABLED
 	int log_level_id = -1;
 
-	FileAccess *log_file = nullptr;
+	Ref<FileAccess> log_file;
 	String log_file_path;
 
 	bool _try_create_logs_dir(const String &p_logs_dir);

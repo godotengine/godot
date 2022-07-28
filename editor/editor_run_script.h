@@ -39,7 +39,7 @@ class EditorNode;
 class EditorScript : public RefCounted {
 	GDCLASS(EditorScript, RefCounted);
 
-	EditorNode *editor;
+	EditorNode *editor = nullptr;
 
 protected:
 	static void _bind_methods();

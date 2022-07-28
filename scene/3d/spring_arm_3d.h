@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPRING_ARM_H
-#define SPRING_ARM_H
+#ifndef SPRING_ARM_3D_H
+#define SPRING_ARM_3D_H
 
 #include "scene/3d/node_3d.h"
 
@@ -37,7 +37,7 @@ class SpringArm3D : public Node3D {
 	GDCLASS(SpringArm3D, Node3D);
 
 	Ref<Shape3D> shape;
-	Set<RID> excluded_objects;
+	HashSet<RID> excluded_objects;
 	real_t spring_length = 1.0;
 	real_t current_spring_length = 0.0;
 	bool keep_child_basis = false;
@@ -68,4 +68,4 @@ private:
 	void process_spring();
 };
 
-#endif
+#endif // SPRING_ARM_3D_H
