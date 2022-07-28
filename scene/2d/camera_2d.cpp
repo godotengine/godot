@@ -254,9 +254,8 @@ void Camera2D::_notification(int p_what) {
 			// if a camera enters the tree that is set to current,
 			// it should take over as the current camera, and mark
 			// all other cameras as non current
-			_set_current(current);
-
 			first = true;
+			_set_current(current);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
