@@ -200,6 +200,9 @@ namespace Godot.NativeInterop
             godotsharp_variant_new_string_name(out godot_variant r_dest, in godot_string_name p_s);
 
         [DllImport(GodotDllName)]
+        public static extern void godotsharp_variant_new_copy(out godot_variant r_dest, in godot_variant p_src);
+
+        [DllImport(GodotDllName)]
         public static extern void godotsharp_variant_new_node_path(out godot_variant r_dest, in godot_node_path p_np);
 
         [DllImport(GodotDllName)]

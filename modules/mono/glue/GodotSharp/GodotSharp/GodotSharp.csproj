@@ -124,6 +124,7 @@
     <Compile Include="Core\Vector4i.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Variant.cs" />
   </ItemGroup>
   <!--
   We import a props file with auto-generated includes. This works well with Rider.

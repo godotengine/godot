@@ -105,8 +105,6 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define C_METHOD_ENGINE_GET_SINGLETON C_NS_MONOUTILS ".EngineGetSingleton"
 
 #define C_NS_MONOMARSHAL "Marshaling"
-#define C_METHOD_MANAGED_TO_VARIANT C_NS_MONOMARSHAL ".ConvertManagedObjectToVariant"
-#define C_METHOD_MANAGED_FROM_VARIANT C_NS_MONOMARSHAL ".ConvertVariantToManagedObject"
 #define C_METHOD_MONOSTR_TO_GODOT C_NS_MONOMARSHAL ".ConvertStringToNative"
 #define C_METHOD_MONOSTR_FROM_GODOT C_NS_MONOMARSHAL ".ConvertStringToManaged"
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL ".ConvertSystemArrayToNative" #m_type
@@ -844,15 +842,12 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 		}
 
 		// Get arguments information
-		int i = 0;
 		for (const ArgumentInterface &iarg : imethod.arguments) {
 			const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 			ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 			im_unique_sig += ",";
 			im_unique_sig += get_arg_unique_sig(*arg_type);
-
-			i++;
 		}
 
 		// godot_icall_{argc}_{icallcount}
@@ -1011,9 +1006,9 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			CRASH_COND(enum_class_name != "Variant"); // Hard-coded...
 
-			_log("Declaring global enum '%s' inside static class '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
+			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
-			p_output.append("\npublic static partial class ");
+			p_output.append("\npublic partial struct ");
 			p_output.append(enum_class_name);
 			p_output.append("\n" OPEN_BLOCK);
 		}
@@ -2462,7 +2457,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 
 			r_output << INDENT2 "using var variantSpanDisposer = new VariantSpanDisposer(varargs_span);\n";
 
-			r_output << INDENT2 "fixed (godot_variant* varargs = &MemoryMarshal.GetReference(varargs_span).DangerousSelfRef)\n"
+			r_output << INDENT2 "fixed (godot_variant.movable* varargs = &MemoryMarshal.GetReference(varargs_span))\n"
 					 << INDENT2 "fixed (IntPtr* " C_LOCAL_PTRCALL_ARGS " = "
 								"&MemoryMarshal.GetReference(" C_LOCAL_PTRCALL_ARGS "_span))\n"
 					 << OPEN_BLOCK_L2;
@@ -2470,7 +2465,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			r_output << c_in_statements.as_string();
 
 			r_output << INDENT3 "for (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
-					 << INDENT4 "varargs[i] = " C_METHOD_MANAGED_TO_VARIANT "(" << vararg_arg << "[i]);\n"
+					 << INDENT4 "varargs[i] = " << vararg_arg << "[i].NativeVar;\n"
 					 << INDENT4 C_LOCAL_PTRCALL_ARGS "[" << real_argc_str << " + i] = new IntPtr(&varargs[i]);\n"
 					 << CLOSE_BLOCK_L3;
 
@@ -3181,7 +3176,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 	switch (p_val.get_type()) {
 		case Variant::NIL:
 			// Either Object type or Variant
-			r_iarg.default_argument = "null";
+			r_iarg.default_argument = "default";
 			break;
 		// Atomic types
 		case Variant::BOOL:
@@ -3352,8 +3347,8 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 	}
 
-	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type.cname == name_cache.type_Variant && r_iarg.default_argument != "null") {
-		r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
+	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type.cname == name_cache.type_Variant && r_iarg.default_argument != "default") {
+		r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 	}
 
 	return true;
@@ -3558,17 +3553,18 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "Variant";
 	itype.cname = itype.name;
-	itype.proxy_name = "object";
+	itype.proxy_name = "Variant";
 	itype.cs_type = itype.proxy_name;
-	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_VARIANT "(%1);\n";
-	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_VARIANT "(%1);\n";
+	itype.c_in = "%5%0 %1_in = (%0)%1.NativeVar;\n";
+	itype.c_out = "%5return Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_variant";
 	itype.c_type_in = itype.cs_type;
 	itype.c_type_out = itype.cs_type;
-	itype.c_type_is_disposable_struct = true;
-	itype.cs_variant_to_managed = C_METHOD_MANAGED_FROM_VARIANT "(%0)";
-	itype.cs_managed_to_variant = C_METHOD_MANAGED_TO_VARIANT "(%0)";
+	itype.c_type_is_disposable_struct = false; // [c_out] takes ownership
+	itype.c_ret_needs_default_initialization = true;
+	itype.cs_variant_to_managed = "Variant.CreateCopyingBorrowed(%0)";
+	itype.cs_managed_to_variant = "%0.CopyNativeVariant()";
 	builtin_types.insert(itype.cname, itype);
 
 	// Callable
@@ -3607,14 +3603,13 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "VarArg";
 	itype.cname = itype.name;
-	itype.proxy_name = "object[]";
-	itype.cs_type = "params object[]";
-	itype.cs_in_expr = "%0 ?? Array.Empty<object>()";
+	itype.proxy_name = "Variant[]";
+	itype.cs_type = "params Variant[]";
+	itype.cs_in_expr = "%0 ?? Array.Empty<Variant>()";
 	// c_type, c_in and c_arg_in are hard-coded in the generator.
 	// c_out and c_type_out are not applicable to VarArg.
 	itype.c_arg_in = "&%s_in";
-	itype.c_type_in = "object[]";
-	itype.cs_variant_to_managed = "VariantUtils.ConvertToSystemArray(%0)";
+	itype.c_type_in = "Variant[]";
 	builtin_types.insert(itype.cname, itype);
 
 #define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t)                \

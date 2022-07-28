@@ -4,6 +4,44 @@ namespace Godot.NativeInterop
 {
     public static partial class NativeFuncs
     {
+        public static godot_variant godotsharp_variant_new_copy(in godot_variant src)
+        {
+            switch (src.Type)
+            {
+                case Variant.Type.Nil:
+                    return default;
+                case Variant.Type.Bool:
+                    return new godot_variant() { Bool = src.Bool };
+                case Variant.Type.Int:
+                    return new godot_variant() { Int = src.Int };
+                case Variant.Type.Float:
+                    return new godot_variant() { Float = src.Float };
+                case Variant.Type.Vector2:
+                    return new godot_variant() { Vector2 = src.Vector2 };
+                case Variant.Type.Vector2i:
+                    return new godot_variant() { Vector2i = src.Vector2i };
+                case Variant.Type.Rect2:
+                    return new godot_variant() { Rect2 = src.Rect2 };
+                case Variant.Type.Rect2i:
+                    return new godot_variant() { Rect2i = src.Rect2i };
+                case Variant.Type.Vector3:
+                    return new godot_variant() { Vector3 = src.Vector3 };
+                case Variant.Type.Vector3i:
+                    return new godot_variant() { Vector3i = src.Vector3i };
+                case Variant.Type.Plane:
+                    return new godot_variant() { Plane = src.Plane };
+                case Variant.Type.Quaternion:
+                    return new godot_variant() { Quaternion = src.Quaternion };
+                case Variant.Type.Color:
+                    return new godot_variant() { Color = src.Color };
+                case Variant.Type.Rid:
+                    return new godot_variant() { RID = src.RID };
+            }
+
+            godotsharp_variant_new_copy(out godot_variant ret, src);
+            return ret;
+        }
+
         public static godot_string_name godotsharp_string_name_new_copy(in godot_string_name src)
         {
             if (src.IsEmpty)

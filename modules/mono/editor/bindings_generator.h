@@ -240,7 +240,7 @@ class BindingsGenerator {
 		 * Determines whether the native return value of this type must be zero initialized
 		 * before its address is passed to ptrcall. This is required for types whose destructor
 		 * is called before being assigned the return value by `PtrToArg::encode`, e.g.:
-		 * Array, Dictionary, String, StringName.
+		 * Array, Dictionary, String, StringName, Variant.
 		 * It's not necessary to set this to `true` if [c_type_is_disposable_struct] is already `true`.
 		 */
 		bool c_ret_needs_default_initialization = false;

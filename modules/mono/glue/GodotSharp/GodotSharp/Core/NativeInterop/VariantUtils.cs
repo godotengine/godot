@@ -227,14 +227,6 @@ namespace Godot.NativeInterop
             return CreateFromArray(array);
         }
 
-        public static godot_variant CreateFromSystemArrayOfVariant(object[]? from)
-        {
-            if (from == null)
-                return default; // Nil
-            using godot_array array = Marshaling.ConvertSystemArrayToNativeGodotArray(from);
-            return CreateFromArray(array);
-        }
-
         public static godot_variant CreateFromArray(godot_array from)
         {
             NativeFuncs.godotsharp_variant_new_array(out godot_variant ret, from);
@@ -669,12 +661,6 @@ namespace Godot.NativeInterop
         {
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
             return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType(godotArray, type);
-        }
-
-        public static object[] ConvertToSystemArrayOfVariant(in godot_variant p_var)
-        {
-            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
-            return Marshaling.ConvertNativeGodotArrayToSystemArray(godotArray);
         }
 
         public static Array<T> ConvertToGenericArrayObject<T>(in godot_variant p_var) =>

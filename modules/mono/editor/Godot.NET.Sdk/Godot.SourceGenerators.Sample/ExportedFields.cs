@@ -80,7 +80,6 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Vector3[] field_Vector3Array = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right };
         [Export] private Color[] field_ColorArray = { Colors.Aqua, Colors.Aquamarine, Colors.Azure, Colors.Beige };
         [Export] private Godot.Object[] field_GodotObjectOrDerivedArray = { null };
-        [Export] private object[] field_SystemObjectArray = { 0, 1f, 2d, "foo", Vector3i.Up };
 
         // Generics
         [Export] private Godot.Collections.Dictionary<string, string> field_GodotGenericDictionary =
@@ -105,7 +104,7 @@ namespace Godot.SourceGenerators.Sample
             new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
 
         // Variant
-        [Export] private object field_SystemObject = "foo";
+        [Export] private Variant field_Variant = "foo";
 
         // Classes
         [Export] private Godot.Object field_GodotObjectOrDerived;

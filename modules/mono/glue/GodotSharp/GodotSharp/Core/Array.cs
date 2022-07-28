@@ -714,5 +714,11 @@ namespace Godot.Collections
         /// </summary>
         /// <returns>A string representation of this array.</returns>
         public override string ToString() => _underlyingArray.ToString();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Variant(Array<T> from) => Variant.From(from);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator Array<T>(Variant from) => from.AsGodotGenericArray<T>();
     }
 }

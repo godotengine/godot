@@ -30,7 +30,7 @@ namespace Godot.SourceGenerators.Sample
     {
         public partial class NesterClass : RefCounted
         {
-            public override object _Get(StringName property) => null;
+            public override Variant _Get(StringName property) => default;
         }
     }
 }
