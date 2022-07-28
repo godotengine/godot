@@ -247,8 +247,8 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(canvas_group_name);
 
 			_update_process_callback();
-			_update_scroll();
 			first = true;
+			_update_scroll();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
