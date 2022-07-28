@@ -396,6 +396,8 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 		pending_buffer_size = state_len;
 	}
 	parent->add_child(node);
+	spawner->emit_signal(SNAME("spawned"), node);
+
 	pending_spawn = ObjectID();
 	pending_buffer = nullptr;
 	pending_buffer_size = 0;
@@ -411,10 +413,17 @@ Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p
 	Error err = rep_state->peer_del_remote(p_from, net_id, &node);
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(!node, ERR_BUG);
+
+	MultiplayerSpawner *spawner = rep_state->get_spawner(node->get_instance_id());
+	ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
+	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
+
 	if (node->get_parent() != nullptr) {
 		node->get_parent()->remove_child(node);
 	}
 	node->queue_delete();
+	spawner->emit_signal(SNAME("despawned"), node);
+
 	return OK;
 }
 

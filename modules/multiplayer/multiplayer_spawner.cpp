@@ -126,7 +126,7 @@ void MultiplayerSpawner::_set_spawnable_scenes(const Vector<String> &p_scenes) {
 void MultiplayerSpawner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_spawnable_scene", "path"), &MultiplayerSpawner::add_spawnable_scene);
 	ClassDB::bind_method(D_METHOD("get_spawnable_scene_count"), &MultiplayerSpawner::get_spawnable_scene_count);
-	ClassDB::bind_method(D_METHOD("get_spawnable_scene", "path"), &MultiplayerSpawner::get_spawnable_scene);
+	ClassDB::bind_method(D_METHOD("get_spawnable_scene", "index"), &MultiplayerSpawner::get_spawnable_scene);
 	ClassDB::bind_method(D_METHOD("clear_spawnable_scenes"), &MultiplayerSpawner::clear_spawnable_scenes);
 
 	ClassDB::bind_method(D_METHOD("_get_spawnable_scenes"), &MultiplayerSpawner::_get_spawnable_scenes);
@@ -146,8 +146,8 @@ void MultiplayerSpawner::_bind_methods() {
 
 	GDVIRTUAL_BIND(_spawn_custom, "data");
 
-	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::INT, "scene_id"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::INT, "scene_id"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 }
 
 void MultiplayerSpawner::_update_spawn_node() {
@@ -277,12 +277,11 @@ Node *MultiplayerSpawner::instantiate_scene(int p_id) {
 
 Node *MultiplayerSpawner::instantiate_custom(const Variant &p_data) {
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	Object *obj = nullptr;
 	Node *node = nullptr;
-	if (GDVIRTUAL_CALL(_spawn_custom, p_data, obj)) {
-		node = Object::cast_to<Node>(obj);
+	if (GDVIRTUAL_CALL(_spawn_custom, p_data, node)) {
+		return node;
 	}
-	return node;
+	ERR_FAIL_V_MSG(nullptr, "Method '_spawn_custom' is not implemented on this peer.");
 }
 
 Node *MultiplayerSpawner::spawn(const Variant &p_data) {
