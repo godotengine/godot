@@ -116,6 +116,7 @@ static ZipArchive *zip_packed_data = nullptr;
 #endif
 static FileAccessNetworkClient *file_access_network_client = nullptr;
 static MessageQueue *message_queue = nullptr;
+static bool quiet_header = false;
 
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
@@ -649,7 +650,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String debug_uri = "";
 	bool skip_breakpoints = false;
 	String main_pack;
-	bool quiet_header = false;
 	bool quiet_stdout = false;
 	int rtm = -1;
 
