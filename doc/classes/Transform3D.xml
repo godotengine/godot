@@ -112,7 +112,7 @@
 				Returns a copy of the transform with its basis and origin scaled by the given [code]scale[/code] factor, using matrix multiplication.
 			</description>
 		</method>
-		<method name="sphere_interpolate_with" qualifiers="const">
+		<method name="spherical_interpolate_with" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="xform" type="Transform3D" />
 			<argument index="1" name="weight" type="float" />
