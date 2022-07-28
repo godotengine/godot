@@ -129,19 +129,19 @@ void Transform3D::scale_basis(const Vector3 &p_scale) {
 	basis.scale(p_scale);
 }
 
-void Transform3D::translate(real_t p_tx, real_t p_ty, real_t p_tz) {
-	translate(Vector3(p_tx, p_ty, p_tz));
+void Transform3D::translate_local(real_t p_tx, real_t p_ty, real_t p_tz) {
+	translate_local(Vector3(p_tx, p_ty, p_tz));
 }
 
-void Transform3D::translate(const Vector3 &p_translation) {
+void Transform3D::translate_local(const Vector3 &p_translation) {
 	for (int i = 0; i < 3; i++) {
 		origin[i] += basis[i].dot(p_translation);
 	}
 }
 
-Transform3D Transform3D::translated(const Vector3 &p_translation) const {
+Transform3D Transform3D::translated_local(const Vector3 &p_translation) const {
 	Transform3D t = *this;
-	t.translate(p_translation);
+	t.translate_local(p_translation);
 	return t;
 }
 

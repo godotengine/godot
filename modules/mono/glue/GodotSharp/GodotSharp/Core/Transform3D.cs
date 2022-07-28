@@ -239,7 +239,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform3D Translated(Vector3 offset)
+        public Transform3D TranslatedLocal(Vector3 offset)
         {
             return new Transform3D(basis, new Vector3
             (

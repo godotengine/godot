@@ -356,14 +356,14 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 
 Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) const {
 	Transform3D camera_transform;
-	camera_transform.translate(p_cursor.pos);
+	camera_transform.translate_local(p_cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
 
 	if (orthogonal) {
-		camera_transform.translate(0, 0, (get_zfar() - get_znear()) / 2.0);
+		camera_transform.translate_local(0, 0, (get_zfar() - get_znear()) / 2.0);
 	} else {
-		camera_transform.translate(0, 0, p_cursor.distance);
+		camera_transform.translate_local(0, 0, p_cursor.distance);
 	}
 
 	return camera_transform;
@@ -651,10 +651,10 @@ Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	Vector2 screen_he = cm.get_viewport_half_extents();
 
 	Transform3D camera_transform;
-	camera_transform.translate(cursor.pos);
+	camera_transform.translate_local(cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-	camera_transform.translate(0, 0, cursor.distance);
+	camera_transform.translate_local(0, 0, cursor.distance);
 
 	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_he.y, -(get_znear() + p_vector3.z)));
 }
@@ -2102,7 +2102,7 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 
 	Transform3D camera_transform;
 
-	camera_transform.translate(cursor.pos);
+	camera_transform.translate_local(cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	const bool invert_x_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_x_axis");
@@ -2112,7 +2112,7 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 			(invert_y_axis ? -1 : 1) * p_relative.y * pan_speed,
 			0);
 	translation *= cursor.distance / DISTANCE_DEFAULT;
-	camera_transform.translate(translation);
+	camera_transform.translate_local(translation);
 	cursor.pos = camera_transform.origin;
 }
 
@@ -2522,14 +2522,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 					const Vector3 offset(0.005, 0.005, 0.005);
 					Basis aabb_s;
 					aabb_s.scale(se->aabb.size + offset);
-					t.translate(se->aabb.position - offset / 2);
+					t.translate_local(se->aabb.position - offset / 2);
 					t.basis = t.basis * aabb_s;
 				}
 				{
 					const Vector3 offset(0.01, 0.01, 0.01);
 					Basis aabb_s;
 					aabb_s.scale(se->aabb.size + offset);
-					t_offset.translate(se->aabb.position - offset / 2);
+					t_offset.translate_local(se->aabb.position - offset / 2);
 					t_offset.basis = t_offset.basis * aabb_s;
 				}
 

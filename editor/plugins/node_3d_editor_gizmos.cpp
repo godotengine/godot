@@ -5044,8 +5044,8 @@ Basis JointGizmosDrawer::look_body_toward_z(const Transform3D &p_joint_transform
 
 void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform3D &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse) {
 	if (p_limit_lower == p_limit_upper) {
-		r_points.push_back(p_offset.translated(Vector3()).origin);
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(0.5, 0, 0))).origin);
+		r_points.push_back(p_offset.translated_local(Vector3()).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(0.5, 0, 0))).origin);
 
 	} else {
 		if (p_limit_lower > p_limit_upper) {
@@ -5087,20 +5087,20 @@ void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const
 			}
 
 			if (i == points - 1) {
-				r_points.push_back(p_offset.translated(to).origin);
-				r_points.push_back(p_offset.translated(Vector3()).origin);
+				r_points.push_back(p_offset.translated_local(to).origin);
+				r_points.push_back(p_offset.translated_local(Vector3()).origin);
 			}
 			if (i == 0) {
-				r_points.push_back(p_offset.translated(from).origin);
-				r_points.push_back(p_offset.translated(Vector3()).origin);
+				r_points.push_back(p_offset.translated_local(from).origin);
+				r_points.push_back(p_offset.translated_local(Vector3()).origin);
 			}
 
-			r_points.push_back(p_offset.translated(from).origin);
-			r_points.push_back(p_offset.translated(to).origin);
+			r_points.push_back(p_offset.translated_local(from).origin);
+			r_points.push_back(p_offset.translated_local(to).origin);
 		}
 
-		r_points.push_back(p_offset.translated(Vector3(0, p_radius * 1.5, 0)).origin);
-		r_points.push_back(p_offset.translated(Vector3()).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(0, p_radius * 1.5, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3()).origin);
 	}
 }
 
@@ -5116,17 +5116,17 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, a.x, a.y))).origin);
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, b.x, b.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(d, a.x, a.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(d, b.x, b.y))).origin);
 
 		if (i % 90 == 0) {
-			r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, a.x, a.y))).origin);
-			r_points.push_back(p_offset.translated(p_base.xform(Vector3())).origin);
+			r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(d, a.x, a.y))).origin);
+			r_points.push_back(p_offset.translated_local(p_base.xform(Vector3())).origin);
 		}
 	}
 
-	r_points.push_back(p_offset.translated(p_base.xform(Vector3())).origin);
-	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, 0))).origin);
+	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3())).origin);
+	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(1, 0, 0))).origin);
 
 	/// Twist
 	float ts = Math::rad2deg(p_twist);
@@ -5140,8 +5140,8 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w * cn;
 
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(c, a.x, a.y))).origin);
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(cn, b.x, b.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(c, a.x, a.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(cn, b.x, b.y))).origin);
 	}
 }
 
@@ -5325,17 +5325,17 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform3D &p_offset, Vector<Vector3> &r_cursor_points) {
 	float cs = 0.25;
 
-	r_cursor_points.push_back(p_offset.translated(Vector3(+cs, 0, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(-cs, 0, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, +cs, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, -cs, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, +cs)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, -cs)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(+cs, 0, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(-cs, 0, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, +cs, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, -cs, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, 0, +cs)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, 0, -cs)).origin);
 }
 
 void Joint3DGizmoPlugin::CreateHingeJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
-	r_common_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
-	r_common_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
+	r_common_points.push_back(p_offset.translated_local(Vector3(0, 0, 0.5)).origin);
+	r_common_points.push_back(p_offset.translated_local(Vector3(0, 0, -0.5)).origin);
 
 	if (!p_use_limit) {
 		p_limit_upper = -1;
@@ -5368,34 +5368,34 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform3D &p_offset, con
 	p_linear_limit_upper = -p_linear_limit_upper;
 
 	float cs = 0.25;
-	r_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
-	r_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
+	r_points.push_back(p_offset.translated_local(Vector3(0, 0, 0.5)).origin);
+	r_points.push_back(p_offset.translated_local(Vector3(0, 0, -0.5)).origin);
 
 	if (p_linear_limit_lower >= p_linear_limit_upper) {
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, 0, 0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, 0, 0)).origin);
 
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
 
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
 
 	} else {
-		r_points.push_back(p_offset.translated(Vector3(+cs * 2, 0, 0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(-cs * 2, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(+cs * 2, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(-cs * 2, 0, 0)).origin);
 	}
 
 	if (r_body_a_points) {
@@ -5518,13 +5518,13 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 				break;
 		}
 
-#define ADD_VTX(x, y, z)                                   \
-	{                                                      \
-		Vector3 v;                                         \
-		v[a1] = (x);                                       \
-		v[a2] = (y);                                       \
-		v[a3] = (z);                                       \
-		r_points.push_back(p_offset.translated(v).origin); \
+#define ADD_VTX(x, y, z)                                         \
+	{                                                            \
+		Vector3 v;                                               \
+		v[a1] = (x);                                             \
+		v[a2] = (y);                                             \
+		v[a3] = (z);                                             \
+		r_points.push_back(p_offset.translated_local(v).origin); \
 	}
 
 		if (enable_lin && lll >= lul) {
