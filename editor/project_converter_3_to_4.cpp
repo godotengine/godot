@@ -240,6 +240,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
 	{ "canvas_light_set_scale", "canvas_light_set_texture_scale" }, // RenderingServer
 	{ "center_viewport_to_cursor", "center_viewport_to_caret" }, // TextEdit
+	{ "change_scene", "change_scene_to_file" }, // SceneTree
+	{ "change_scene_to", "change_scene_to_packed" }, // SceneTree
 	{ "clip_polygons_2d", "clip_polygons" }, // Geometry2D
 	{ "clip_polyline_with_polygon_2d", "clip_polyline_with_polygon" }, //Geometry2D
 	{ "commit_handle", "_commit_handle" }, // EditorNode3DGizmo
@@ -670,6 +672,8 @@ static const char *csharp_function_renames[][2] = {
 	{ "CanInstance", "CanInstantiate" }, // PackedScene, Script
 	{ "CanvasLightSetScale", "CanvasLightSetTextureScale" }, // RenderingServer
 	{ "CenterViewportToCursor", "CenterViewportToCaret" }, // TextEdit
+	{ "ChangeScene", "ChangeSceneToFile" }, // SceneTree
+	{ "ChangeSceneTo", "ChangeSceneToPacked" }, // SceneTree
 	{ "ClipPolygons2d", "ClipPolygons" }, // Geometry2D
 	{ "ClipPolylineWithPolygon2d", "ClipPolylineWithPolygon" }, //Geometry2D
 	{ "CommitHandle", "_CommitHandle" }, // EditorNode3DGizmo
