@@ -40,19 +40,17 @@ namespace GodotTools
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
-        public static string ProjectAssemblyName
+        [UsedImplicitly]
+        private bool CreateProjectSolutionIfNeeded()
         {
-            get
+            if (!File.Exists(GodotSharpDirs.ProjectSlnPath) || !File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
-                string projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
-                projectAssemblyName = projectAssemblyName.ToSafeDirName();
-                if (string.IsNullOrEmpty(projectAssemblyName))
-                    projectAssemblyName = "UnnamedProject";
-                return projectAssemblyName;
+                return CreateProjectSolution();
             }
+
+            return true;
         }
 
-        [UsedImplicitly]
         private bool CreateProjectSolution()
         {
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
@@ -62,7 +60,7 @@ namespace GodotTools
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = ProjectAssemblyName;
+                string name = GodotSharpDirs.ProjectAssemblyName;
 
                 string guid = CsProjOperations.GenerateGameProject(path, name);
 
@@ -327,7 +325,8 @@ namespace GodotTools
         [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditorId)(int)_editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
+            return (ExternalEditorId)(int)_editorSettings.GetSetting("mono/editor/external_editor") !=
+                   ExternalEditorId.None;
         }
 
         public override bool _Build()
@@ -348,7 +347,7 @@ namespace GodotTools
                 // NOTE: The order in which changes are made to the project is important
 
                 // Migrate to MSBuild project Sdks style if using the old style
-                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, ProjectAssemblyName);
+                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
 
                 ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
 
@@ -411,6 +410,8 @@ namespace GodotTools
             var editorBaseControl = editorInterface.GetBaseControl();
 
             _editorSettings = editorInterface.GetEditorSettings();
+
+            GodotSharpDirs.RegisterProjectSettings();
 
             _errorDialog = new AcceptDialog();
             editorBaseControl.AddChild(_errorDialog);

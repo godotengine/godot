@@ -141,9 +141,9 @@ namespace GodotTools.Export
                 _ => "so"
             };
 
-            if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpEditor.ProjectAssemblyName}.dll"))
+            if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.dll"))
                 // NativeAOT shared library output
-                && !File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpEditor.ProjectAssemblyName}.{soExt}")))
+                && !File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.{soExt}")))
             {
                 throw new NotSupportedException(
                     "Publish succeeded but project assembly not found in the output directory");

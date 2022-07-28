@@ -110,9 +110,6 @@ public:
 	String mono_solutions_dir;
 	String build_logs_dir;
 
-	String sln_filepath;
-	String csproj_filepath;
-
 	String data_editor_tools_dir;
 #else
 	// Equivalent of res_assemblies_dir, but in the data directory rather than in 'res://'.
@@ -151,16 +148,7 @@ private:
 		mono_solutions_dir = mono_user_dir.plus_file("solutions");
 		build_logs_dir = mono_user_dir.plus_file("build_logs");
 
-		String appname = ProjectSettings::get_singleton()->get("application/config/name");
-		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-		if (appname_safe.is_empty()) {
-			appname_safe = "UnnamedProject";
-		}
-
 		String base_path = ProjectSettings::get_singleton()->globalize_path("res://");
-
-		sln_filepath = base_path.plus_file(appname_safe + ".sln");
-		csproj_filepath = base_path.plus_file(appname_safe + ".csproj");
 #endif
 
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
@@ -296,14 +284,6 @@ String get_mono_solutions_dir() {
 
 String get_build_logs_dir() {
 	return _GodotSharpDirs::get_singleton().build_logs_dir;
-}
-
-String get_project_sln_path() {
-	return _GodotSharpDirs::get_singleton().sln_filepath;
-}
-
-String get_project_csproj_path() {
-	return _GodotSharpDirs::get_singleton().csproj_filepath;
 }
 
 String get_data_editor_tools_dir() {

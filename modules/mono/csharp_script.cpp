@@ -65,17 +65,8 @@
 
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
-	String sln_path = GodotSharpDirs::get_project_sln_path();
-	String csproj_path = GodotSharpDirs::get_project_csproj_path();
-
-	if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
-		// A solution does not yet exist, create a new one
-
-		CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
-		return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolution");
-	}
-
-	return true;
+	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
+	return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolutionIfNeeded");
 }
 #endif
 
@@ -107,7 +98,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 extern void *godotsharp_pinvoke_funcs[186];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
-extern void *godotsharp_editor_pinvoke_funcs[30];
+extern void *godotsharp_editor_pinvoke_funcs[28];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_editor_pinvoke_funcs;
 #endif
 
@@ -709,10 +700,14 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // Already up to date
 		}
 	} else {
-		String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
+		String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+
+		if (assembly_name.is_empty()) {
+			assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
+		}
 
 		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
-								.plus_file(appname_safe + ".dll");
+								.plus_file(assembly_name + ".dll");
 		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
 		if (!FileAccess::exists(assembly_path)) {

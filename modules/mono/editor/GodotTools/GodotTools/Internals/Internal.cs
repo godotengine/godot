@@ -76,12 +76,6 @@ namespace GodotTools.Internals
         public static extern void godot_icall_GodotSharpDirs_BuildLogsDirs(out godot_string r_dest);
 
         [DllImport(GodotDllName)]
-        public static extern void godot_icall_GodotSharpDirs_ProjectSlnPath(out godot_string r_dest);
-
-        [DllImport(GodotDllName)]
-        public static extern void godot_icall_GodotSharpDirs_ProjectCsProjPath(out godot_string r_dest);
-
-        [DllImport(GodotDllName)]
         public static extern void godot_icall_GodotSharpDirs_DataEditorToolsDir(out godot_string r_dest);
 
         [DllImport(GodotDllName)]

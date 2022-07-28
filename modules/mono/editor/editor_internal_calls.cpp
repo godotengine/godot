@@ -86,22 +86,6 @@ GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_
 #endif
 }
 
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_ProjectSlnPath(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
-	memnew_placement(r_dest, String(GodotSharpDirs::get_project_sln_path()));
-#else
-	return nullptr;
-#endif
-}
-
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_ProjectCsProjPath(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
-	memnew_placement(r_dest, String(GodotSharpDirs::get_project_csproj_path()));
-#else
-	return nullptr;
-#endif
-}
-
 GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
 #ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
@@ -253,12 +237,10 @@ GD_PINVOKE_EXPORT bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const go
 }
 #endif
 
-void *godotsharp_editor_pinvoke_funcs[30] = {
+void *godotsharp_editor_pinvoke_funcs[28] = {
 	(void *)godot_icall_GodotSharpDirs_ResMetadataDir,
 	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
 	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
-	(void *)godot_icall_GodotSharpDirs_ProjectSlnPath,
-	(void *)godot_icall_GodotSharpDirs_ProjectCsProjPath,
 	(void *)godot_icall_GodotSharpDirs_DataEditorToolsDir,
 	(void *)godot_icall_EditorProgress_Create,
 	(void *)godot_icall_EditorProgress_Dispose,

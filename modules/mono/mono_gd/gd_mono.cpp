@@ -329,13 +329,13 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 }
 #else
 static String get_assembly_name() {
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.is_empty()) {
-		appname_safe = "UnnamedProject";
+	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+
+	if (assembly_name.is_empty()) {
+		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
 	}
 
-	return appname_safe;
+	return assembly_name;
 }
 
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
@@ -501,10 +501,14 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
+	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+
+	if (assembly_name.is_empty()) {
+		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
+	}
 
 	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
-								   .plus_file(appname_safe + ".dll");
+								   .plus_file(assembly_name + ".dll");
 	assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
 	String loaded_assembly_path;

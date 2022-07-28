@@ -52,9 +52,6 @@ String get_mono_logs_dir();
 String get_mono_solutions_dir();
 String get_build_logs_dir();
 
-String get_project_sln_path();
-String get_project_csproj_path();
-
 String get_data_editor_tools_dir();
 #else
 String get_data_game_assemblies_dir();
