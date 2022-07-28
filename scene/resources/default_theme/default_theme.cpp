@@ -980,6 +980,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
 	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
 
+	theme->set_constant("text_highlight_h_padding", "RichTextLabel", 3 * scale);
+	theme->set_constant("text_highlight_v_padding", "RichTextLabel", 3 * scale);
+
 	// Containers
 
 	theme->set_icon("h_grabber", "SplitContainer", icons["hsplitter"]);
