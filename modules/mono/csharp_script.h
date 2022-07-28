@@ -103,7 +103,13 @@ class CSharpScript : public Script {
 		MethodInfo method_info;
 	};
 
+	struct CSharpMethodInfo {
+		StringName name; // MethodInfo stores a string...
+		MethodInfo method_info;
+	};
+
 	Vector<EventSignalInfo> event_signals;
+	Vector<CSharpMethodInfo> methods;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache

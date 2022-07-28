@@ -5,17 +5,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-// TODO:
-//   Determine a proper way to emit the signal.
-//   'Emit(nameof(TheEvent))' creates a StringName everytime and has the overhead of string marshaling.
-//   I haven't decided on the best option yet. Some possibilities:
-//     - Expose the generated StringName fields to the user, for use with 'Emit(...)'.
-//     - Generate a 'EmitSignalName' method for each event signal.
-
 namespace Godot.SourceGenerators
 {
     [Generator]
-    public class ScriptSignalsGenerator : ISourceGenerator
+    public class ScriptMethodsGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
         {
@@ -65,7 +58,19 @@ namespace Godot.SourceGenerators
             }
         }
 
-        internal static string SignalDelegateSuffix = "EventHandler";
+        private class MethodOverloadEqualityComparer : IEqualityComparer<GodotMethodData>
+        {
+            public bool Equals(GodotMethodData x, GodotMethodData y)
+                => x.ParamTypes.Length == y.ParamTypes.Length && x.Method.Name == y.Method.Name;
+
+            public int GetHashCode(GodotMethodData obj)
+            {
+                unchecked
+                {
+                    return (obj.ParamTypes.Length.GetHashCode() * 397) ^ obj.Method.Name.GetHashCode();
+                }
+            }
+        }
 
         private static void VisitGodotScriptClass(
             GeneratorExecutionContext context,
@@ -82,7 +87,7 @@ namespace Godot.SourceGenerators
             bool isInnerClass = symbol.ContainingType != null;
 
             string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
-                                + "_ScriptSignals_Generated";
+                                + "_ScriptMethods_Generated";
 
             var source = new StringBuilder();
 
@@ -117,64 +122,40 @@ namespace Godot.SourceGenerators
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n");
 
-            // TODO:
-            // The delegate name already needs to end with 'Signal' to avoid collision with the event name.
-            // Requiring SignalAttribute is redundant. Should we remove it to make declaration shorter?
-
             var members = symbol.GetMembers();
 
-            var signalDelegateSymbols = members
-                .Where(s => s.Kind == SymbolKind.NamedType)
-                .Cast<INamedTypeSymbol>()
-                .Where(namedTypeSymbol => namedTypeSymbol.TypeKind == TypeKind.Delegate)
-                .Where(s => s.GetAttributes()
-                    .Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false));
+            var methodSymbols = members
+                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
+                .Cast<IMethodSymbol>()
+                .Where(m => m.MethodKind == MethodKind.Ordinary);
 
-            List<GodotSignalDelegateData> godotSignalDelegates = new();
-
-            foreach (var signalDelegateSymbol in signalDelegateSymbols)
-            {
-                if (!signalDelegateSymbol.Name.EndsWith(SignalDelegateSuffix))
-                {
-                    Common.ReportSignalDelegateMissingSuffix(context, signalDelegateSymbol);
-                    continue;
-                }
-
-                string signalName = signalDelegateSymbol.Name;
-                signalName = signalName.Substring(0, signalName.Length - SignalDelegateSuffix.Length);
-
-                var invokeMethodData = signalDelegateSymbol
-                    .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);
-
-                if (invokeMethodData == null)
-                {
-                    // TODO: Better error for incompatible signature. We should indicate incompatible argument types, as we do with exported properties.
-                    Common.ReportSignalDelegateSignatureNotSupported(context, signalDelegateSymbol);
-                    continue;
-                }
-
-                godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
-            }
+            var godotClassMethods = methodSymbols.WhereHasGodotCompatibleSignature(typeCache)
+                .Distinct(new MethodOverloadEqualityComparer())
+                .ToArray();
 
             source.Append("    private partial class GodotInternal {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
-            foreach (var signalDelegate in godotSignalDelegates)
+            var distinctMethodNames = godotClassMethods
+                .Select(m => m.Method.Name)
+                .Distinct()
+                .ToArray();
+
+            foreach (string methodName in distinctMethodNames)
             {
-                string signalName = signalDelegate.Name;
-                source.Append("        public static readonly StringName SignalName_");
-                source.Append(signalName);
+                source.Append("        public static readonly StringName MethodName_");
+                source.Append(methodName);
                 source.Append(" = \"");
-                source.Append(signalName);
+                source.Append(methodName);
                 source.Append("\";\n");
             }
 
             source.Append("    }\n"); // class GodotInternal
 
-            // Generate GetGodotSignalList
+            // Generate GetGodotMethodList
 
-            if (godotSignalDelegates.Count > 0)
+            if (godotClassMethods.Length > 0)
             {
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
@@ -182,70 +163,57 @@ namespace Godot.SourceGenerators
 
                 source.Append("    internal new static ")
                     .Append(listType)
-                    .Append(" GetGodotSignalList()\n    {\n");
+                    .Append(" GetGodotMethodList()\n    {\n");
 
-                source.Append("        var signals = new ")
+                source.Append("        var methods = new ")
                     .Append(listType)
                     .Append("(")
-                    .Append(godotSignalDelegates.Count)
+                    .Append(godotClassMethods.Length)
                     .Append(");\n");
 
-                foreach (var signalDelegateData in godotSignalDelegates)
+                foreach (var method in godotClassMethods)
                 {
-                    var methodInfo = DetermineMethodInfo(signalDelegateData);
+                    var methodInfo = DetermineMethodInfo(method);
                     AppendMethodInfo(source, methodInfo);
                 }
 
-                source.Append("        return signals;\n");
+                source.Append("        return methods;\n");
                 source.Append("    }\n");
 
                 source.Append("#pragma warning restore CS0109\n");
             }
 
-            // Generate signal event
+            // Generate InvokeGodotClassMethod
 
-            foreach (var signalDelegate in godotSignalDelegates)
+            if (godotClassMethods.Length > 0)
             {
-                string signalName = signalDelegate.Name;
+                source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
+                source.Append("NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n    {\n");
 
-                // TODO: Hide backing event from code-completion and debugger
-                // The reason we have a backing field is to hide the invoke method from the event,
-                // as it doesn't emit the signal, only the event delegates. This can confuse users.
-                // Maybe we should directly connect the delegates, as we do with native signals?
-                source.Append("    private ")
-                    .Append(signalDelegate.DelegateSymbol.FullQualifiedName())
-                    .Append(" backing_")
-                    .Append(signalName)
-                    .Append(";\n");
-
-                source.Append("    public event ")
-                    .Append(signalDelegate.DelegateSymbol.FullQualifiedName())
-                    .Append(" ")
-                    .Append(signalName)
-                    .Append(" {\n")
-                    .Append("        add => backing_")
-                    .Append(signalName)
-                    .Append(" += value;\n")
-                    .Append("        remove => backing_")
-                    .Append(signalName)
-                    .Append(" -= value;\n")
-                    .Append("}\n");
-            }
-
-            // Generate RaiseGodotClassSignalCallbacks
-
-            if (godotSignalDelegates.Count > 0)
-            {
-                source.Append(
-                    "    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, ");
-                source.Append("NativeVariantPtrArgs args, int argCount)\n    {\n");
-
-                foreach (var signal in godotSignalDelegates)
+                foreach (var method in godotClassMethods)
                 {
-                    GenerateSignalEventInvoker(signal, source);
+                    GenerateMethodInvoker(method, source);
                 }
 
-                source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args, argCount);\n");
+                source.Append("        return base.InvokeGodotClassMethod(method, args, argCount, out ret);\n");
+
+                source.Append("    }\n");
+            }
+
+            // Generate HasGodotClassMethod
+
+            if (distinctMethodNames.Length > 0)
+            {
+                source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
+
+                bool isFirstEntry = true;
+                foreach (string methodName in distinctMethodNames)
+                {
+                    GenerateHasMethodEntry(methodName, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                source.Append("        return base.HasGodotClassMethod(method);\n");
 
                 source.Append("    }\n");
             }
@@ -274,7 +242,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
         {
-            source.Append("        signals.Add(new(name: GodotInternal.SignalName_")
+            source.Append("        methods.Add(new(name: GodotInternal.MethodName_")
                 .Append(methodInfo.Name)
                 .Append(", returnVal: ");
 
@@ -323,15 +291,13 @@ namespace Godot.SourceGenerators
                 .Append(")");
         }
 
-        private static MethodInfo DetermineMethodInfo(GodotSignalDelegateData signalDelegateData)
+        private static MethodInfo DetermineMethodInfo(GodotMethodData method)
         {
-            var invokeMethodData = signalDelegateData.InvokeMethodData;
-
             PropertyInfo returnVal;
 
-            if (invokeMethodData.RetType != null)
+            if (method.RetType != null)
             {
-                returnVal = DeterminePropertyInfo(invokeMethodData.RetType.Value, name: string.Empty);
+                returnVal = DeterminePropertyInfo(method.RetType.Value, name: string.Empty);
             }
             else
             {
@@ -339,7 +305,7 @@ namespace Godot.SourceGenerators
                     hintString: null, PropertyUsageFlags.Default, exported: false);
             }
 
-            int paramCount = invokeMethodData.ParamTypes.Length;
+            int paramCount = method.ParamTypes.Length;
 
             List<PropertyInfo>? arguments;
 
@@ -349,8 +315,8 @@ namespace Godot.SourceGenerators
 
                 for (int i = 0; i < paramCount; i++)
                 {
-                    arguments.Add(DeterminePropertyInfo(invokeMethodData.ParamTypes[i],
-                        name: invokeMethodData.Method.Parameters[i].Name));
+                    arguments.Add(DeterminePropertyInfo(method.ParamTypes[i],
+                        name: method.Method.Parameters[i].Name));
                 }
             }
             else
@@ -358,7 +324,7 @@ namespace Godot.SourceGenerators
                 arguments = null;
             }
 
-            return new MethodInfo(signalDelegateData.Name, returnVal, MethodFlags.Default, arguments,
+            return new MethodInfo(method.Method.Name, returnVal, MethodFlags.Default, arguments,
                 defaultArguments: null);
         }
 
@@ -375,35 +341,66 @@ namespace Godot.SourceGenerators
                 PropertyHint.None, string.Empty, propUsage, exported: false);
         }
 
-        private static void GenerateSignalEventInvoker(
-            GodotSignalDelegateData signal,
+        private static void GenerateHasMethodEntry(
+            string methodName,
+            StringBuilder source,
+            bool isFirstEntry
+        )
+        {
+            source.Append("        ");
+            if (!isFirstEntry)
+                source.Append("else ");
+            source.Append("if (method == GodotInternal.MethodName_");
+            source.Append(methodName);
+            source.Append(") {\n           return true;\n        }\n");
+        }
+
+        private static void GenerateMethodInvoker(
+            GodotMethodData method,
             StringBuilder source
         )
         {
-            string signalName = signal.Name;
-            var invokeMethodData = signal.InvokeMethodData;
+            string methodName = method.Method.Name;
 
-            source.Append("        if (signal == GodotInternal.SignalName_");
-            source.Append(signalName);
+            source.Append("        if (method == GodotInternal.MethodName_");
+            source.Append(methodName);
             source.Append(" && argCount == ");
-            source.Append(invokeMethodData.ParamTypes.Length);
+            source.Append(method.ParamTypes.Length);
             source.Append(") {\n");
-            source.Append("            backing_");
-            source.Append(signalName);
-            source.Append("?.Invoke(");
 
-            for (int i = 0; i < invokeMethodData.ParamTypes.Length; i++)
+            if (method.RetType != null)
+                source.Append("            var callRet = ");
+            else
+                source.Append("            ");
+
+            source.Append(methodName);
+            source.Append("(");
+
+            for (int i = 0; i < method.ParamTypes.Length; i++)
             {
                 if (i != 0)
                     source.Append(", ");
 
                 source.AppendVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
-                    invokeMethodData.ParamTypeSymbols[i], invokeMethodData.ParamTypes[i]);
+                    method.ParamTypeSymbols[i], method.ParamTypes[i]);
             }
 
             source.Append(");\n");
 
-            source.Append("            return;\n");
+            if (method.RetType != null)
+            {
+                source.Append("            ret = ");
+
+                source.AppendManagedToVariantExpr("callRet", method.RetType.Value);
+                source.Append(";\n");
+
+                source.Append("            return true;\n");
+            }
+            else
+            {
+                source.Append("            ret = default;\n");
+                source.Append("            return true;\n");
+            }
 
             source.Append("        }\n");
         }

@@ -146,10 +146,72 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // class GodotInternal
 
-            // Generate GetGodotPropertyList
-
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
+                bool isFirstEntry;
+
+                // Generate SetGodotClassPropertyValue
+
+                bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
+                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly);
+
+                if (!allPropertiesAreReadOnly)
+                {
+                    source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
+                    source.Append("in godot_variant value)\n    {\n");
+
+                    isFirstEntry = true;
+                    foreach (var property in godotClassProperties)
+                    {
+                        if (property.PropertySymbol.IsReadOnly)
+                            continue;
+
+                        GeneratePropertySetter(property.PropertySymbol.Name,
+                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
+                        isFirstEntry = false;
+                    }
+
+                    foreach (var field in godotClassFields)
+                    {
+                        if (field.FieldSymbol.IsReadOnly)
+                            continue;
+
+                        GeneratePropertySetter(field.FieldSymbol.Name,
+                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
+                        isFirstEntry = false;
+                    }
+
+                    source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
+
+                    source.Append("    }\n");
+                }
+
+                // Generate GetGodotClassPropertyValue
+
+                source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
+                source.Append("out godot_variant value)\n    {\n");
+
+                isFirstEntry = true;
+                foreach (var property in godotClassProperties)
+                {
+                    GeneratePropertyGetter(property.PropertySymbol.Name,
+                        property.Type, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                foreach (var field in godotClassFields)
+                {
+                    GeneratePropertyGetter(field.FieldSymbol.Name,
+                        field.Type, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
+
+                source.Append("    }\n");
+
+                // Generate GetGodotPropertyList
+
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
                 string dictionaryType = "System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
@@ -210,6 +272,53 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static void GeneratePropertySetter(
+            string propertyMemberName,
+            ITypeSymbol propertyTypeSymbol,
+            MarshalType propertyMarshalType,
+            StringBuilder source,
+            bool isFirstEntry
+        )
+        {
+            source.Append("        ");
+
+            if (!isFirstEntry)
+                source.Append("else ");
+
+            source.Append("if (name == GodotInternal.PropName_")
+                .Append(propertyMemberName)
+                .Append(") {\n")
+                .Append("            ")
+                .Append(propertyMemberName)
+                .Append(" = ")
+                .AppendVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
+                .Append(";\n")
+                .Append("            return true;\n")
+                .Append("        }\n");
+        }
+
+        private static void GeneratePropertyGetter(
+            string propertyMemberName,
+            MarshalType propertyMarshalType,
+            StringBuilder source,
+            bool isFirstEntry
+        )
+        {
+            source.Append("        ");
+
+            if (!isFirstEntry)
+                source.Append("else ");
+
+            source.Append("if (name == GodotInternal.PropName_")
+                .Append(propertyMemberName)
+                .Append(") {\n")
+                .Append("            value = ")
+                .AppendManagedToVariantExpr(propertyMemberName, propertyMarshalType)
+                .Append(";\n")
+                .Append("            return true;\n")
+                .Append("        }\n");
         }
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)

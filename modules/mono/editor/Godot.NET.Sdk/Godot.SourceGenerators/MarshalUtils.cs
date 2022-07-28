@@ -400,6 +400,12 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".ConvertToQuaternion(", inputExpr, ")"),
                 MarshalType.Transform3D =>
                     source.Append(VariantUtils, ".ConvertToTransform3D(", inputExpr, ")"),
+                MarshalType.Vector4 =>
+                    source.Append(VariantUtils, ".ConvertToVector4(", inputExpr, ")"),
+                MarshalType.Vector4i =>
+                    source.Append(VariantUtils, ".ConvertToVector4i(", inputExpr, ")"),
+                MarshalType.Projection =>
+                    source.Append(VariantUtils, ".ConvertToProjection(", inputExpr, ")"),
                 MarshalType.AABB =>
                     source.Append(VariantUtils, ".ConvertToAABB(", inputExpr, ")"),
                 MarshalType.Color =>
@@ -535,6 +541,12 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".CreateFromQuaternion(", inputExpr, ")"),
                 MarshalType.Transform3D =>
                     source.Append(VariantUtils, ".CreateFromTransform3D(", inputExpr, ")"),
+                MarshalType.Vector4 =>
+                    source.Append(VariantUtils, ".CreateFromVector4(", inputExpr, ")"),
+                MarshalType.Vector4i =>
+                    source.Append(VariantUtils, ".CreateFromVector4i(", inputExpr, ")"),
+                MarshalType.Projection =>
+                    source.Append(VariantUtils, ".CreateFromProjection(", inputExpr, ")"),
                 MarshalType.AABB =>
                     source.Append(VariantUtils, ".CreateFromAABB(", inputExpr, ")"),
                 MarshalType.Color =>
