@@ -3746,19 +3746,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 	undo_redo->commit_action();
 
 	if (advance) {
-		float step = animation->get_step();
-		if (step == 0) {
-			step = 1;
-		}
-
-		float pos = timeline->get_play_position();
-
-		pos = Math::snapped(pos + step, step);
-		if (pos > animation->get_length()) {
-			pos = animation->get_length();
-		}
-		set_anim_pos(pos);
-		emit_signal(SNAME("timeline_changed"), pos, true, false);
+		_edit_menu_pressed(EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY);
 	}
 }
 
@@ -4086,12 +4074,20 @@ void AnimationTrackEditor::_confirm_insert_list() {
 	}
 
 	TrackIndices next_tracks(animation.ptr(), reset_anim.ptr());
+	bool advance = false;
 	while (insert_data.size()) {
+		if (insert_data.front()->get().advance) {
+			advance = true;
+		}
 		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, create_reset, reset_anim, insert_confirm_bezier->is_pressed());
 		insert_data.pop_front();
 	}
 
 	undo_redo->commit_action();
+
+	if (advance) {
+		_edit_menu_pressed(EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY);
+	}
 }
 
 PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val) {
@@ -5597,7 +5593,7 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 	emit_signal(SNAME("timeline_changed"), pos, true, false);
 }
 
-void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
+void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeline_only) {
 	if (animation.is_null()) {
 		return;
 	}
@@ -5621,7 +5617,7 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
 	}
 	set_anim_pos(pos);
 
-	emit_signal(SNAME("timeline_changed"), pos, true, false);
+	emit_signal(SNAME("timeline_changed"), pos, true, p_timeline_only);
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
@@ -5969,8 +5965,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				_update_key_edit();
 			}
 		} break;
+		case EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY:
 		case EDIT_GOTO_NEXT_STEP: {
-			goto_next_step(false);
+			goto_next_step(false, p_option == EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY);
 		} break;
 		case EDIT_GOTO_PREV_STEP: {
 			goto_prev_step(false);
