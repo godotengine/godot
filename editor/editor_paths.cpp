@@ -153,8 +153,8 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		if (!dir->dir_exists("templates")) {
-			dir->make_dir("templates");
+		if (!dir->dir_exists("export_templates")) {
+			dir->make_dir("export_templates");
 		}
 	}
 
