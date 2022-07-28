@@ -49,8 +49,8 @@ Error EditorExportPlatformWindows::_export_debug_script(const Ref<EditorExportPr
 	}
 
 	f->store_line("@echo off");
-	f->store_line("title \"" + p_app_name + "\"");
-	f->store_line("\"%~dp0" + p_pkg_name + "\" \"%*\"");
+	f->store_line("title " + p_app_name + "");
+	f->store_line("powershell -command \"Start-Process -FilePath %~dp0" + p_pkg_name + " -ArgumentList \\\" %* \\\" -Wait\"");
 	f->store_line("pause > nul");
 
 	return OK;
