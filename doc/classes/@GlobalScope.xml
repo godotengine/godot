@@ -260,6 +260,21 @@
 				Cubic interpolates between two values by the factor defined in [param weight] with pre and post values.
 			</description>
 		</method>
+		<method name="cubic_interpolate_in_time">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="weight" type="float" />
+			<param index="5" name="to_t" type="float" />
+			<param index="6" name="pre_t" type="float" />
+			<param index="7" name="post_t" type="float" />
+			<description>
+				Cubic interpolates between two values by the factor defined in [param weight] with pre and post values.
+				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+			</description>
+		</method>
 		<method name="db2linear">
 			<return type="float" />
 			<param index="0" name="db" type="float" />

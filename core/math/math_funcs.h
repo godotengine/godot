@@ -253,6 +253,29 @@ public:
 						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
 	}
 
+	static _ALWAYS_INLINE_ double cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t) {
+		/* Barry-Goldman method */
+		double t = Math::lerp(0.0, p_to_t, p_weight);
+		double a1 = Math::lerp(p_pre, p_from, p_pre_t == 0 ? 0.0 : (t - p_pre_t) / -p_pre_t);
+		double a2 = Math::lerp(p_from, p_to, p_to_t == 0 ? 0.5 : t / p_to_t);
+		double a3 = Math::lerp(p_to, p_post, p_post_t - p_to_t == 0 ? 1.0 : (t - p_to_t) / (p_post_t - p_to_t));
+		double b1 = Math::lerp(a1, a2, p_to_t - p_pre_t == 0 ? 0.0 : (t - p_pre_t) / (p_to_t - p_pre_t));
+		double b2 = Math::lerp(a2, a3, p_post_t == 0 ? 1.0 : t / p_post_t);
+		return Math::lerp(b1, b2, p_to_t == 0 ? 0.5 : t / p_to_t);
+	}
+	static _ALWAYS_INLINE_ float cubic_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
+			float p_to_t, float p_pre_t, float p_post_t) {
+		/* Barry-Goldman method */
+		float t = Math::lerp(0.0f, p_to_t, p_weight);
+		float a1 = Math::lerp(p_pre, p_from, p_pre_t == 0 ? 0.0f : (t - p_pre_t) / -p_pre_t);
+		float a2 = Math::lerp(p_from, p_to, p_to_t == 0 ? 0.5f : t / p_to_t);
+		float a3 = Math::lerp(p_to, p_post, p_post_t - p_to_t == 0 ? 1.0f : (t - p_to_t) / (p_post_t - p_to_t));
+		float b1 = Math::lerp(a1, a2, p_to_t - p_pre_t == 0 ? 0.0f : (t - p_pre_t) / (p_to_t - p_pre_t));
+		float b2 = Math::lerp(a2, a3, p_post_t == 0 ? 1.0f : t / p_post_t);
+		return Math::lerp(b1, b2, p_to_t == 0 ? 0.5f : t / p_to_t);
+	}
+
 	static _ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
 		/* Formula from Wikipedia article on Bezier curves. */
 		double omt = (1.0 - p_t);

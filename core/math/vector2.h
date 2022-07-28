@@ -114,6 +114,7 @@ struct _NO_DISCARD_ Vector2 {
 	_FORCE_INLINE_ Vector2 lerp(const Vector2 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector2 cubic_interpolate_in_time(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
 	_FORCE_INLINE_ Vector2 bezier_interpolate(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const;
 
 	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
@@ -267,6 +268,13 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 	Vector2 res = *this;
 	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
 	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	return res;
+}
+
+Vector2 Vector2::cubic_interpolate_in_time(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+	Vector2 res = *this;
+	res.x = Math::cubic_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
+	res.y = Math::cubic_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	return res;
 }
 

@@ -171,6 +171,20 @@
 				Performs a spherical cubic interpolation between quaternions [param pre_a], this vector, [param b], and [param post_b], by the given amount [param weight].
 			</description>
 		</method>
+		<method name="spherical_cubic_interpolate_in_time" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="b" type="Quaternion" />
+			<param index="1" name="pre_a" type="Quaternion" />
+			<param index="2" name="post_b" type="Quaternion" />
+			<param index="3" name="weight" type="float" />
+			<param index="4" name="b_t" type="float" />
+			<param index="5" name="pre_a_t" type="float" />
+			<param index="6" name="post_b_t" type="float" />
+			<description>
+				Performs a spherical cubic interpolation between quaternions [param pre_a], this vector, [param b], and [param post_b], by the given amount [param weight].
+				It can perform smoother interpolation than [code]spherical_cubic_interpolate()[/code] by the time values.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="w" type="float" setter="" getter="" default="1.0">
