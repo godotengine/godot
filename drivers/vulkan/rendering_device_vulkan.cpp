@@ -1835,7 +1835,8 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
 		}
 
-		if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)) {
+		// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
+		if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format.format != DATA_FORMAT_R8_UINT) {
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as VRS attachment.");
 		}
 	}
@@ -3358,7 +3359,8 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 		return false;
 	}
 
-	if (p_usage & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)) {
+	// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
+	if (p_usage & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format != DATA_FORMAT_R8_UINT) {
 		return false;
 	}
 
