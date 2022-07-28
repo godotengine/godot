@@ -99,8 +99,6 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	Ref<ImageTexture> texture;
 
-	AudioMixCallback mix_callback = nullptr;
-	void *mix_udata = nullptr;
 	bool paused = false;
 
 #ifdef THEORA_USE_THREAD_STREAMING
@@ -133,14 +131,7 @@ public:
 	virtual void set_paused(bool p_paused) override;
 	virtual bool is_paused() const override;
 
-	virtual void set_loop(bool p_enable) override;
-	virtual bool has_loop() const override;
-
 	virtual double get_length() const override;
-
-	virtual String get_stream_name() const;
-
-	virtual int get_loop_count() const;
 
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
@@ -150,7 +141,6 @@ public:
 	virtual Ref<Texture2D> get_texture() const override;
 	virtual void update(double p_delta) override;
 
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) override;
 	virtual int get_channels() const override;
 	virtual int get_mix_rate() const override;
 
@@ -163,9 +153,6 @@ public:
 class VideoStreamTheora : public VideoStream {
 	GDCLASS(VideoStreamTheora, VideoStream);
 
-	String file;
-	int audio_track;
-
 protected:
 	static void _bind_methods();
 
@@ -177,8 +164,6 @@ public:
 		return pb;
 	}
 
-	void set_file(const String &p_file) { file = p_file; }
-	String get_file() { return file; }
 	void set_audio_track(int p_track) override { audio_track = p_track; }
 
 	VideoStreamTheora() { audio_track = 0; }

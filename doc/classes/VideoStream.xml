@@ -8,4 +8,18 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="_instantiate_playback" qualifiers="virtual">
+			<return type="VideoStreamPlayback" />
+			<description>
+				Called when the video starts playing, to initialize and return a subclass of [VideoStreamPlayback].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="file" type="String" setter="set_file" getter="get_file" default="&quot;&quot;">
+			The video file path or URI that this [VideoStream] resource handles.
+			For [VideoStreamTheora], this filename should be an Ogg Theora video file with the [code].ogv[/code] extension.
+		</member>
+	</members>
 </class>

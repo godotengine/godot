@@ -236,7 +236,6 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	AudioServer::get_singleton()->unlock();
 
 	if (!playback.is_null()) {
-		playback->set_loop(loops);
 		playback->set_paused(paused);
 		texture = playback->get_texture();
 
@@ -344,6 +343,12 @@ int VideoStreamPlayer::get_buffering_msec() const {
 
 void VideoStreamPlayer::set_audio_track(int p_track) {
 	audio_track = p_track;
+	if (stream.is_valid()) {
+		stream->set_audio_track(audio_track);
+	}
+	if (playback.is_valid()) {
+		playback->set_audio_track(audio_track);
+	}
 }
 
 int VideoStreamPlayer::get_audio_track() const {
