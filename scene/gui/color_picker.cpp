@@ -998,10 +998,10 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			h = y / w_edit->get_size().height;
 		}
 
-		if (current_mode == MODE_HSV) {
-			color.set_hsv(h, s, v, color.a);
-		} else if (current_mode == MODE_OKHSL) {
+		if (actual_shape == SHAPE_OKHSL_CIRCLE) {
 			color.set_ok_hsl(h, s, v, color.a);
+		} else {
+			color.set_hsv(h, s, v, color.a);
 		}
 
 		last_color = color;
