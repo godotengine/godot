@@ -59,7 +59,7 @@ public:
 		RS::ViewportScaling3DMode scaling_3d_mode = RenderingServer::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 		float scaling_3d_scale = 1.0;
 		float fsr_sharpness = 0.2f;
-		float fsr_mipmap_bias = 0.0f;
+		float texture_mipmap_bias = 0.0f;
 		bool fsr_enabled = false;
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
@@ -229,7 +229,7 @@ public:
 	void viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode);
 	void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale);
 	void viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness);
-	void viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias);
+	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
 
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
 	void viewport_set_vflip(RID p_viewport, bool p_enable);

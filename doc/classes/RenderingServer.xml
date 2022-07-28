@@ -3175,14 +3175,6 @@
 				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
-		<method name="viewport_set_fsr_mipmap_bias">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="mipmap_bias" type="float" />
-			<description>
-				Affects the final texture sharpness by reading from a lower or higher mipmap. Negative values make textures sharper, while positive values make textures blurrier. When using FSR, this value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]
-			</description>
-		</method>
 		<method name="viewport_set_fsr_sharpness">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3323,6 +3315,15 @@
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="enabled" type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="viewport_set_texture_mipmap_bias">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mipmap_bias" type="float" />
+			<description>
+				Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member ProjectSettings.rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
+				[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
 			</description>
 		</method>
 		<method name="viewport_set_transparent_background">

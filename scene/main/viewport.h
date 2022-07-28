@@ -304,7 +304,7 @@ private:
 	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;
 	float scaling_3d_scale = 1.0;
 	float fsr_sharpness = 0.2f;
-	float fsr_mipmap_bias = 0.0f;
+	float texture_mipmap_bias = 0.0f;
 	bool use_debanding = false;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
@@ -540,8 +540,8 @@ public:
 	void set_fsr_sharpness(float p_fsr_sharpness);
 	float get_fsr_sharpness() const;
 
-	void set_fsr_mipmap_bias(float p_fsr_mipmap_bias);
-	float get_fsr_mipmap_bias() const;
+	void set_texture_mipmap_bias(float p_texture_mipmap_bias);
+	float get_texture_mipmap_bias() const;
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;

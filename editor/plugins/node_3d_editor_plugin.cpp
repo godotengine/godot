@@ -2425,8 +2425,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
 	viewport->set_fsr_sharpness(fsr_sharpness);
 
-	const float fsr_mipmap_bias = GLOBAL_GET("rendering/scaling_3d/fsr_mipmap_bias");
-	viewport->set_fsr_mipmap_bias(fsr_mipmap_bias);
+	const float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
+	viewport->set_texture_mipmap_bias(texture_mipmap_bias);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
