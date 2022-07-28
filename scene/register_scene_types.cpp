@@ -1089,7 +1089,9 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("World", "World3D");
 
 	// Renamed during 4.0 alpha, added to ease transition between alphas.
+	ClassDB::add_compatibility_class("AudioStreamOGGVorbis", "AudioStreamOggVorbis");
 	ClassDB::add_compatibility_class("AudioStreamSample", "AudioStreamWAV");
+	ClassDB::add_compatibility_class("OGGPacketSequence", "OggPacketSequence");
 	ClassDB::add_compatibility_class("StreamCubemap", "CompressedCubemap");
 	ClassDB::add_compatibility_class("StreamCubemapArray", "CompressedCubemapArray");
 	ClassDB::add_compatibility_class("StreamTexture2D", "CompressedTexture2D");

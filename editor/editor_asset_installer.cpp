@@ -101,7 +101,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["webp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 
 		extension_guess["wav"] = tree->get_theme_icon(SNAME("AudioStreamWAV"), SNAME("EditorIcons"));
-		extension_guess["ogg"] = tree->get_theme_icon(SNAME("AudioStreamOGGVorbis"), SNAME("EditorIcons"));
+		extension_guess["ogg"] = tree->get_theme_icon(SNAME("AudioStreamOggVorbis"), SNAME("EditorIcons"));
 		extension_guess["mp3"] = tree->get_theme_icon(SNAME("AudioStreamMP3"), SNAME("EditorIcons"));
 
 		extension_guess["scn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));

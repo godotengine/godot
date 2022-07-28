@@ -36,10 +36,10 @@
 #include "servers/audio/audio_stream.h"
 #include "thirdparty/libvorbis/vorbis/codec.h"
 
-class AudioStreamOGGVorbis;
+class AudioStreamOggVorbis;
 
-class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
-	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
+class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
+	GDCLASS(AudioStreamPlaybackOggVorbis, AudioStreamPlaybackResampled);
 
 	uint32_t frames_mixed = 0;
 	bool active = false;
@@ -66,11 +66,11 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	bool have_samples_left = false;
 	bool have_packets_left = false;
 
-	friend class AudioStreamOGGVorbis;
+	friend class AudioStreamOggVorbis;
 
-	Ref<OGGPacketSequence> vorbis_data;
-	Ref<OGGPacketSequencePlayback> vorbis_data_playback;
-	Ref<AudioStreamOGGVorbis> vorbis_stream;
+	Ref<OggPacketSequence> vorbis_data;
+	Ref<OggPacketSequencePlayback> vorbis_data_playback;
+	Ref<AudioStreamOggVorbis> vorbis_stream;
 
 	int _mix_frames(AudioFrame *p_buffer, int p_frames);
 	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
@@ -94,16 +94,16 @@ public:
 
 	virtual void tag_used_streams() override;
 
-	AudioStreamPlaybackOGGVorbis() {}
-	~AudioStreamPlaybackOGGVorbis();
+	AudioStreamPlaybackOggVorbis() {}
+	~AudioStreamPlaybackOggVorbis();
 };
 
-class AudioStreamOGGVorbis : public AudioStream {
-	GDCLASS(AudioStreamOGGVorbis, AudioStream);
+class AudioStreamOggVorbis : public AudioStream {
+	GDCLASS(AudioStreamOggVorbis, AudioStream);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 	RES_BASE_EXTENSION("oggvorbisstr");
 
-	friend class AudioStreamPlaybackOGGVorbis;
+	friend class AudioStreamPlaybackOggVorbis;
 
 	int channels = 1;
 	float length = 0.0;
@@ -114,7 +114,7 @@ class AudioStreamOGGVorbis : public AudioStream {
 	// Also causes allocation and deallocation.
 	void maybe_update_info();
 
-	Ref<OGGPacketSequence> packet_sequence;
+	Ref<OggPacketSequence> packet_sequence;
 
 	double bpm = 0;
 	int beat_count = 0;
@@ -142,15 +142,15 @@ public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
-	void set_packet_sequence(Ref<OGGPacketSequence> p_packet_sequence);
-	Ref<OGGPacketSequence> get_packet_sequence() const;
+	void set_packet_sequence(Ref<OggPacketSequence> p_packet_sequence);
+	Ref<OggPacketSequence> get_packet_sequence() const;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
 
-	AudioStreamOGGVorbis();
-	virtual ~AudioStreamOGGVorbis();
+	AudioStreamOggVorbis();
+	virtual ~AudioStreamOggVorbis();
 };
 
 #endif // AUDIO_STREAM_OGG_VORBIS_H
