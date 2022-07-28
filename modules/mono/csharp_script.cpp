@@ -104,7 +104,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[186];
+extern void *godotsharp_pinvoke_funcs[185];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[30];
@@ -1452,6 +1452,8 @@ void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_int
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
 
 	p_unmanaged->set_script_and_instance(script, csharp_instance);
+
+	csharp_instance->connect_event_signals();
 }
 
 void CSharpLanguage::tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged) {
@@ -1480,6 +1482,8 @@ void CSharpLanguage::tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gc
 		// instances is a set, so it's safe to insert multiple times (e.g.: from _internal_new_managed)
 		instance->script->instances.insert(instance->owner);
 	}
+
+	instance->connect_event_signals();
 }
 
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle) {
@@ -1774,13 +1778,22 @@ void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_f
 	}
 }
 
-void CSharpInstance::connect_event_signal(const StringName &p_event_signal) {
-	// TODO: Use pooling for ManagedCallable instances.
-	EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, p_event_signal));
+void CSharpInstance::connect_event_signals() {
+	CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		for (CSharpScript::EventSignalInfo &signal : top->get_script_event_signals()) {
+			String signal_name = signal.name;
 
-	Callable callable(event_signal_callable);
-	connected_event_signals.push_back(callable);
-	owner->connect(p_event_signal, callable);
+			// TODO: Use pooling for ManagedCallable instances.
+			EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
+
+			Callable callable(event_signal_callable);
+			connected_event_signals.push_back(callable);
+			owner->connect(signal_name, callable);
+		}
+
+		top = top->base_script.ptr();
+	}
 }
 
 void CSharpInstance::disconnect_event_signals() {
@@ -2169,19 +2182,55 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	bool tool = false;
+
 	Dictionary rpc_functions_dict;
 	// Destructor won't be called from C#, and I don't want to include the GDNative header
 	// only for this, so need to call the destructor manually before passing this to C#.
 	rpc_functions_dict.~Dictionary();
 
+	Dictionary signals_dict;
+	// Destructor won't be called from C#, and I don't want to include the GDNative header
+	// only for this, so need to call the destructor manually before passing this to C#.
+	signals_dict.~Dictionary();
+
 	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &tool, &rpc_functions_dict, &base_script);
+			p_script.ptr(), &tool, &rpc_functions_dict, &signals_dict, &base_script);
 
 	p_script->tool = tool;
 
 	p_script->rpc_config.clear();
 	p_script->rpc_config = rpc_functions_dict;
+
+	// Event signals
+
+	// Performance is not critical here as this will be replaced with source generators.
+
+	p_script->event_signals.clear();
+
+	// Sigh... can't we just have capacity?
+	p_script->event_signals.resize(signals_dict.size());
+	int push_index = 0;
+
+	for (const Variant *s = signals_dict.next(nullptr); s != nullptr; s = signals_dict.next(s)) {
+		StringName name = *s;
+
+		MethodInfo mi;
+		mi.name = name;
+
+		Array params = signals_dict[*s];
+
+		for (int i = 0; i < params.size(); i++) {
+			Dictionary param = params[i];
+
+			Variant::Type param_type = (Variant::Type)(int)param["type"];
+			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
+			arg_info.usage = (uint32_t)param["usage"];
+			mi.arguments.push_back(arg_info);
+		}
+
+		p_script->event_signals.set(push_index++, EventSignalInfo{ name, mi });
+	}
 
 	p_script->base_script = base_script;
 }
@@ -2467,9 +2516,13 @@ bool CSharpScript::has_script_signal(const StringName &p_signal) const {
 		return false;
 	}
 
-	String signal = p_signal;
+	for (const EventSignalInfo &signal : event_signals) {
+		if (signal.name == p_signal) {
+			return true;
+		}
+	}
 
-	return GDMonoCache::managed_callbacks.ScriptManagerBridge_HasScriptSignal(this, &signal);
+	return false;
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
@@ -2477,38 +2530,17 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 		return;
 	}
 
-	// Performance is not critical here as this will be replaced with source generators.
+	for (const EventSignalInfo &signal : get_script_event_signals()) {
+		r_signals->push_back(signal.method_info);
+	}
+}
 
-	if (!GDMonoCache::godot_api_cache_updated) {
-		return;
+Vector<CSharpScript::EventSignalInfo> CSharpScript::get_script_event_signals() const {
+	if (!valid) {
+		return Vector<EventSignalInfo>();
 	}
 
-	Dictionary signals_dict;
-	// Destructor won't be called from C#, and I don't want to include the GDNative header
-	// only for this, so need to call the destructor manually before passing this to C#.
-	signals_dict.~Dictionary();
-
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetScriptSignalList(this, &signals_dict);
-
-	for (const Variant *s = signals_dict.next(nullptr); s != nullptr; s = signals_dict.next(s)) {
-		MethodInfo mi;
-		mi.name = *s;
-
-		Array params = signals_dict[*s];
-
-		for (int i = 0; i < params.size(); i++) {
-			Dictionary param = params[i];
-
-			Variant::Type param_type = (Variant::Type)(int)param["type"];
-			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
-			if (param_type == Variant::NIL && (bool)param["nil_is_variant"]) {
-				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-			}
-			mi.arguments.push_back(arg_info);
-		}
-
-		r_signals->push_back(mi);
-	}
+	return event_signals;
 }
 
 bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {

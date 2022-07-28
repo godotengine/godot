@@ -98,6 +98,13 @@ class CSharpScript : public Script {
 
 	Dictionary rpc_config;
 
+	struct EventSignalInfo {
+		StringName name; // MethodInfo stores a string...
+		MethodInfo method_info;
+	};
+
+	Vector<EventSignalInfo> event_signals;
+
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
 	HashMap<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
@@ -157,6 +164,8 @@ public:
 
 	bool has_script_signal(const StringName &p_signal) const override;
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
+
+	Vector<EventSignalInfo> get_script_event_signals() const;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
@@ -254,7 +263,7 @@ public:
 	 */
 	void mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_free, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
 
-	void connect_event_signal(const StringName &p_event_signal);
+	void connect_event_signals();
 	void disconnect_event_signals();
 
 	void refcount_incremented() override;

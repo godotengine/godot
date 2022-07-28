@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -122,6 +123,33 @@ namespace Godot.SourceGenerators
             var godotClassProperties = propertySymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
             var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
 
+            var signalDelegateSymbols = members
+                .Where(s => s.Kind == SymbolKind.NamedType)
+                .Cast<INamedTypeSymbol>()
+                .Where(namedTypeSymbol => namedTypeSymbol.TypeKind == TypeKind.Delegate)
+                .Where(s => s.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false));
+
+            List<GodotSignalDelegateData> godotSignalDelegates = new();
+
+            foreach (var signalDelegateSymbol in signalDelegateSymbols)
+            {
+                if (!signalDelegateSymbol.Name.EndsWith(ScriptSignalsGenerator.SignalDelegateSuffix))
+                    continue;
+
+                string signalName = signalDelegateSymbol.Name;
+                signalName = signalName.Substring(0,
+                    signalName.Length - ScriptSignalsGenerator.SignalDelegateSuffix.Length);
+
+                var invokeMethodData = signalDelegateSymbol
+                    .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);
+
+                if (invokeMethodData == null)
+                    continue;
+
+                godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
+            }
+
             source.Append("    private partial class GodotInternal {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
@@ -153,6 +181,42 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        return base.InvokeGodotClassMethod(method, args, argCount, out ret);\n");
+
+                source.Append("    }\n");
+            }
+
+            // Generate HasGodotClassMethod
+
+            if (godotClassMethods.Length > 0)
+            {
+                source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
+
+                bool isFirstEntry = true;
+                foreach (var method in godotClassMethods)
+                {
+                    GenerateHasMethodEntry(method, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                source.Append("        return base.HasGodotClassMethod(method);\n");
+
+                source.Append("    }\n");
+            }
+
+            // Generate RaiseGodotClassSignalCallbacks
+
+            if (godotSignalDelegates.Count > 0)
+            {
+                source.Append(
+                    "    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, ");
+                source.Append("NativeVariantPtrArgs args, int argCount)\n    {\n");
+
+                foreach (var signal in godotSignalDelegates)
+                {
+                    GenerateSignalEventInvoker(signal, source);
+                }
+
+                source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args, argCount);\n");
 
                 source.Append("    }\n");
             }
@@ -220,24 +284,6 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
-
-                source.Append("    }\n");
-            }
-
-            // Generate HasGodotClassMethod
-
-            if (godotClassMethods.Length > 0)
-            {
-                source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
-
-                bool isFirstEntry = true;
-                foreach (var method in godotClassMethods)
-                {
-                    GenerateHasMethodEntry(method, source, isFirstEntry);
-                    isFirstEntry = false;
-                }
-
-                source.Append("        return base.HasGodotClassMethod(method);\n");
 
                 source.Append("    }\n");
             }
@@ -310,6 +356,39 @@ namespace Godot.SourceGenerators
                 source.Append("            ret = default;\n");
                 source.Append("            return true;\n");
             }
+
+            source.Append("        }\n");
+        }
+
+        private static void GenerateSignalEventInvoker(
+            GodotSignalDelegateData signal,
+            StringBuilder source
+        )
+        {
+            string signalName = signal.Name;
+            var invokeMethodData = signal.InvokeMethodData;
+
+            source.Append("        if (signal == GodotInternal.SignalName_");
+            source.Append(signalName);
+            source.Append(" && argCount == ");
+            source.Append(invokeMethodData.ParamTypes.Length);
+            source.Append(") {\n");
+            source.Append("            backing_");
+            source.Append(signalName);
+            source.Append("?.Invoke(");
+
+            for (int i = 0; i < invokeMethodData.ParamTypes.Length; i++)
+            {
+                if (i != 0)
+                    source.Append(", ");
+
+                source.AppendVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
+                    invokeMethodData.ParamTypeSymbols[i], invokeMethodData.ParamTypes[i]);
+            }
+
+            source.Append(");\n");
+
+            source.Append("            return;\n");
 
             source.Append("        }\n");
         }

@@ -208,13 +208,6 @@ GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, GC
 	}
 }
 
-GD_PINVOKE_EXPORT void godotsharp_internal_object_connect_event_signal(Object *p_ptr, const StringName *p_event_signal) {
-	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
-	if (csharp_instance) {
-		csharp_instance->connect_event_signal(*p_event_signal);
-	}
-}
-
 GD_PINVOKE_EXPORT int32_t godotsharp_internal_signal_awaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
 	StringName signal = p_signal ? *p_signal : StringName();
 	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
@@ -1322,7 +1315,7 @@ GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[186] = {
+void *godotsharp_pinvoke_funcs[185] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
@@ -1333,7 +1326,6 @@ void *godotsharp_pinvoke_funcs[186] = {
 	(void *)godotsharp_internal_object_get_associated_gchandle,
 	(void *)godotsharp_internal_object_disposed,
 	(void *)godotsharp_internal_refcounted_disposed,
-	(void *)godotsharp_internal_object_connect_event_signal,
 	(void *)godotsharp_internal_signal_awaiter_connect,
 	(void *)godotsharp_internal_unmanaged_get_script_instance_managed,
 	(void *)godotsharp_internal_unmanaged_get_instance_binding_managed,

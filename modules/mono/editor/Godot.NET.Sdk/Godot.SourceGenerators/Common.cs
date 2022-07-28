@@ -166,5 +166,54 @@ namespace Godot.SourceGenerators
                 location,
                 location?.SourceTree?.FilePath));
         }
+
+        public static void ReportSignalDelegateMissingSuffix(
+            GeneratorExecutionContext context,
+            INamedTypeSymbol delegateSymbol)
+        {
+            var locations = delegateSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            string message = "The name of the delegate must end with 'EventHandler': " +
+                             delegateSymbol.ToDisplayString() +
+                             $". Did you mean '{delegateSymbol.Name}EventHandler'?";
+
+            string description = $"{message}. Rename the delegate accordingly or remove the '[Signal]' attribute.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GODOT-G0201",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
+        public static void ReportSignalDelegateSignatureNotSupported(
+            GeneratorExecutionContext context,
+            INamedTypeSymbol delegateSymbol)
+        {
+            var locations = delegateSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            string message = "The delegate signature of the signal " +
+                             $"is not supported: '{delegateSymbol.ToDisplayString()}'";
+
+            string description = $"{message}. Use supported types only or remove the '[Signal]' attribute.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GODOT-G0202",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                location,
+                location?.SourceTree?.FilePath));
+        }
     }
 }

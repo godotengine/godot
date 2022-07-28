@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -120,9 +121,38 @@ namespace Godot.SourceGenerators
             var godotClassProperties = propertySymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
             var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
 
+            var signalDelegateSymbols = members
+                .Where(s => s.Kind == SymbolKind.NamedType)
+                .Cast<INamedTypeSymbol>()
+                .Where(namedTypeSymbol => namedTypeSymbol.TypeKind == TypeKind.Delegate)
+                .Where(s => s.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false));
+
+            List<GodotSignalDelegateData> godotSignalDelegates = new();
+
+            foreach (var signalDelegateSymbol in signalDelegateSymbols)
+            {
+                if (!signalDelegateSymbol.Name.EndsWith(ScriptSignalsGenerator.SignalDelegateSuffix))
+                    continue;
+
+                string signalName = signalDelegateSymbol.Name;
+                signalName = signalName.Substring(0,
+                    signalName.Length - ScriptSignalsGenerator.SignalDelegateSuffix.Length);
+
+                var invokeMethodData = signalDelegateSymbol
+                    .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);
+
+                if (invokeMethodData == null)
+                    continue;
+
+                godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
+            }
+
             source.Append(
                 "    protected override void SaveGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.SaveGodotObjectData(info);\n");
+
+            // Save properties
 
             foreach (var property in godotClassProperties)
             {
@@ -135,6 +165,8 @@ namespace Godot.SourceGenerators
                     .Append(");\n");
             }
 
+            // Save fields
+
             foreach (var field in godotClassFields)
             {
                 string fieldName = field.FieldSymbol.Name;
@@ -146,11 +178,26 @@ namespace Godot.SourceGenerators
                     .Append(");\n");
             }
 
+            // Save signal events
+
+            foreach (var signalDelegate in godotSignalDelegates)
+            {
+                string signalName = signalDelegate.Name;
+
+                source.Append("        info.AddSignalEventDelegate(GodotInternal.SignalName_")
+                    .Append(signalName)
+                    .Append(", this.backing_")
+                    .Append(signalName)
+                    .Append(");\n");
+            }
+
             source.Append("    }\n");
 
             source.Append(
                 "    protected override void RestoreGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.RestoreGodotObjectData(info);\n");
+
+            // Restore properties
 
             foreach (var property in godotClassProperties)
             {
@@ -171,6 +218,8 @@ namespace Godot.SourceGenerators
                     .Append(";\n");
             }
 
+            // Restore fields
+
             foreach (var field in godotClassFields)
             {
                 string fieldName = field.FieldSymbol.Name;
@@ -187,6 +236,27 @@ namespace Godot.SourceGenerators
                     .Append(fieldName)
                     .Append(" = _value_")
                     .Append(fieldName)
+                    .Append(";\n");
+            }
+
+            // Restore signal events
+
+            foreach (var signalDelegate in godotSignalDelegates)
+            {
+                string signalName = signalDelegate.Name;
+                string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedName();
+
+                source.Append("        if (info.TryGetSignalEventDelegate<")
+                    .Append(signalDelegateQualifiedName)
+                    .Append(">(GodotInternal.SignalName_")
+                    .Append(signalName)
+                    .Append(", out var _value_")
+                    .Append(signalName)
+                    .Append("))\n")
+                    .Append("            this.backing_")
+                    .Append(signalName)
+                    .Append(" = _value_")
+                    .Append(signalName)
                     .Append(";\n");
             }
 

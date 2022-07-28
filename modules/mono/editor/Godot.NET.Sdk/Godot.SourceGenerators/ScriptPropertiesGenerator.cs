@@ -146,7 +146,7 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // class GodotInternal
 
-            // Generate GetGodotPropertiesMetadata
+            // Generate GetGodotPropertyList
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
@@ -156,7 +156,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("    internal new static ")
                     .Append(dictionaryType)
-                    .Append(" GetGodotPropertiesMetadata()\n    {\n");
+                    .Append(" GetGodotPropertyList()\n    {\n");
 
                 source.Append("        var properties = new ")
                     .Append(dictionaryType)
@@ -164,7 +164,7 @@ namespace Godot.SourceGenerators
 
                 foreach (var property in godotClassProperties)
                 {
-                    var propertyInfo = GetPropertyMetadata(context, typeCache,
+                    var propertyInfo = DeterminePropertyInfo(context, typeCache,
                         property.PropertySymbol, property.Type);
 
                     if (propertyInfo == null)
@@ -175,7 +175,7 @@ namespace Godot.SourceGenerators
 
                 foreach (var field in godotClassFields)
                 {
-                    var propertyInfo = GetPropertyMetadata(context, typeCache,
+                    var propertyInfo = DeterminePropertyInfo(context, typeCache,
                         field.FieldSymbol, field.Type);
 
                     if (propertyInfo == null)
@@ -229,28 +229,7 @@ namespace Godot.SourceGenerators
                 .Append("));\n");
         }
 
-        private struct PropertyInfo
-        {
-            public PropertyInfo(VariantType type, string name, PropertyHint hint,
-                string? hintString, PropertyUsageFlags usage, bool exported)
-            {
-                Type = type;
-                Name = name;
-                Hint = hint;
-                HintString = hintString;
-                Usage = usage;
-                Exported = exported;
-            }
-
-            public VariantType Type { get; }
-            public string Name { get; }
-            public PropertyHint Hint { get; }
-            public string? HintString { get; }
-            public PropertyUsageFlags Usage { get; }
-            public bool Exported { get; }
-        }
-
-        private static PropertyInfo? GetPropertyMetadata(
+        private static PropertyInfo? DeterminePropertyInfo(
             GeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
             ISymbol memberSymbol,

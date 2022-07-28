@@ -22,7 +22,8 @@ namespace GodotTools.Build
             public string ProjectFile { get; set; }
         }
 
-        [Signal] public event Action BuildStateChanged;
+        [Signal]
+        public delegate void BuildStateChangedEventHandler();
 
         public bool HasBuildExited { get; private set; } = false;
 

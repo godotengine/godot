@@ -63,10 +63,6 @@ namespace Godot.NativeInterop
             godot_bool isFinalizer);
 
         [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_object_connect_event_signal(IntPtr obj,
-            in godot_string_name eventSignal);
-
-        [DllImport(GodotDllName)]
         internal static extern Error godotsharp_internal_signal_awaiter_connect(IntPtr source,
             in godot_string_name signal,
             IntPtr target, IntPtr awaiterHandlePtr);

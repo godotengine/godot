@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -9,7 +10,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Runtime.Serialization;
-using Godot.Collections;
 using Godot.NativeInterop;
 
 namespace Godot.Bridge
@@ -337,158 +337,13 @@ namespace Godot.Bridge
 
                 *outOwnerIsNull = godot_bool.False;
 
-                owner.InternalRaiseEventSignal(CustomUnsafe.AsRef(eventSignalName),
+                owner.RaiseGodotClassSignalCallbacks(CustomUnsafe.AsRef(eventSignalName),
                     new NativeVariantPtrArgs(args), argCount);
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
                 *outOwnerIsNull = godot_bool.False;
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        internal static unsafe void GetScriptSignalList(IntPtr scriptPtr, godot_dictionary* outRetSignals)
-        {
-            try
-            {
-                // Performance is not critical here as this will be replaced with source generators.
-                using var signals = new Dictionary();
-
-                Type? top = _scriptTypeBiMap.GetScriptType(scriptPtr);
-                Type native = Object.InternalGetClassNativeBase(top);
-
-                while (top != null && top != native)
-                {
-                    // Legacy signals
-
-                    foreach (var signalDelegate in top
-                                 .GetNestedTypes(BindingFlags.DeclaredOnly | BindingFlags.NonPublic |
-                                                 BindingFlags.Public)
-                                 .Where(nestedType => typeof(Delegate).IsAssignableFrom(nestedType))
-                                 .Where(@delegate => @delegate.GetCustomAttributes().OfType<SignalAttribute>().Any()))
-                    {
-                        var invokeMethod = signalDelegate.GetMethod("Invoke");
-
-                        if (invokeMethod == null)
-                            throw new MissingMethodException(signalDelegate.FullName, "Invoke");
-
-                        var signalParams = new Collections.Array();
-
-                        foreach (var parameters in invokeMethod.GetParameters())
-                        {
-                            var paramType = Marshaling.ConvertManagedTypeToVariantType(
-                                parameters.ParameterType, out bool nilIsVariant);
-                            signalParams.Add(new Dictionary()
-                            {
-                                { "name", parameters.Name },
-                                { "type", paramType },
-                                { "nil_is_variant", nilIsVariant }
-                            });
-                        }
-
-                        signals.Add(signalDelegate.Name, signalParams);
-                    }
-
-                    // Event signals
-
-                    var foundEventSignals = top.GetEvents(
-                            BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                            BindingFlags.NonPublic | BindingFlags.Public)
-                        .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any())
-                        .Select(ev => ev.Name);
-
-                    var fields = top.GetFields(
-                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                        BindingFlags.NonPublic | BindingFlags.Public);
-
-                    foreach (var eventSignalField in fields
-                                 .Where(f => typeof(Delegate).IsAssignableFrom(f.FieldType))
-                                 .Where(f => foundEventSignals.Contains(f.Name)))
-                    {
-                        var delegateType = eventSignalField.FieldType;
-                        var invokeMethod = delegateType.GetMethod("Invoke");
-
-                        if (invokeMethod == null)
-                            throw new MissingMethodException(delegateType.FullName, "Invoke");
-
-                        var signalParams = new Collections.Array();
-
-                        foreach (var parameters in invokeMethod.GetParameters())
-                        {
-                            var paramType = Marshaling.ConvertManagedTypeToVariantType(
-                                parameters.ParameterType, out bool nilIsVariant);
-                            signalParams.Add(new Dictionary()
-                            {
-                                { "name", parameters.Name },
-                                { "type", paramType },
-                                { "nil_is_variant", nilIsVariant }
-                            });
-                        }
-
-                        signals.Add(eventSignalField.Name, signalParams);
-                    }
-
-                    top = top.BaseType;
-                }
-
-                *outRetSignals = NativeFuncs.godotsharp_dictionary_new_copy((godot_dictionary)signals.NativeValue);
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.LogException(e);
-                *outRetSignals = NativeFuncs.godotsharp_dictionary_new();
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        internal static unsafe godot_bool HasScriptSignal(IntPtr scriptPtr, godot_string* signalName)
-        {
-            try
-            {
-                // Performance is not critical here as this will be replaced with source generators.
-                using var signals = new Dictionary();
-
-                string signalNameStr = Marshaling.ConvertStringToManaged(*signalName);
-
-                Type? top = _scriptTypeBiMap.GetScriptType(scriptPtr);
-                Type native = Object.InternalGetClassNativeBase(top);
-
-                while (top != null && top != native)
-                {
-                    // Legacy signals
-
-                    if (top
-                        .GetNestedTypes(BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
-                        .Where(nestedType => typeof(Delegate).IsAssignableFrom(nestedType))
-                        .Where(@delegate => @delegate.GetCustomAttributes().OfType<SignalAttribute>().Any())
-                        .Any(signalDelegate => signalDelegate.Name == signalNameStr)
-                       )
-                    {
-                        return godot_bool.True;
-                    }
-
-                    // Event signals
-
-                    if (top.GetEvents(
-                            BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                            BindingFlags.NonPublic | BindingFlags.Public)
-                        .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any())
-                        .Any(eventSignal => eventSignal.Name == signalNameStr)
-                       )
-                    {
-                        return godot_bool.True;
-                    }
-
-                    top = top.BaseType;
-                }
-
-                return godot_bool.False;
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.LogException(e);
-                return godot_bool.False;
             }
         }
 
@@ -702,7 +557,7 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_bool* outTool,
-            godot_dictionary* outRpcFunctionsDest, godot_ref* outBaseScript)
+            godot_dictionary* outRpcFunctionsDest, godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
         {
             try
             {
@@ -725,7 +580,7 @@ namespace Godot.Bridge
 
                 // RPC functions
 
-                Dictionary<string, Dictionary> rpcFunctions = new();
+                Collections.Dictionary<string, Collections.Dictionary> rpcFunctions = new();
 
                 Type? top = scriptType;
                 Type native = Object.InternalGetClassNativeBase(top);
@@ -749,7 +604,7 @@ namespace Godot.Bridge
                         if (rpcAttr == null)
                             continue;
 
-                        var rpcConfig = new Dictionary();
+                        var rpcConfig = new Collections.Dictionary();
 
                         rpcConfig["rpc_mode"] = (long)rpcAttr.Mode;
                         rpcConfig["call_local"] = rpcAttr.CallLocal;
@@ -764,7 +619,54 @@ namespace Godot.Bridge
 
                 *outRpcFunctionsDest =
                     NativeFuncs.godotsharp_dictionary_new_copy(
-                        (godot_dictionary)((Dictionary)rpcFunctions).NativeValue);
+                        (godot_dictionary)((Collections.Dictionary)rpcFunctions).NativeValue);
+
+                // Event signals
+
+                // Performance is not critical here as this will be replaced with source generators.
+                using var signals = new Collections.Dictionary();
+
+                top = scriptType;
+
+                while (top != null && top != native)
+                {
+                    var signalList = GetSignalListForType(top);
+
+                    if (signalList != null)
+                    {
+                        foreach (var signal in signalList)
+                        {
+                            string signalName = signal.Name;
+
+                            if (signals.ContainsKey(signalName))
+                                continue;
+
+                            var signalParams = new Collections.Array();
+
+                            if (signal.Arguments != null)
+                            {
+                                foreach (var param in signal.Arguments)
+                                {
+                                    signalParams.Add(new Collections.Dictionary()
+                                    {
+                                        { "name", param.Name },
+                                        { "type", param.Type },
+                                        { "usage", param.Usage }
+                                    });
+                                }
+                            }
+
+                            signals.Add(signalName, signalParams);
+                        }
+                    }
+
+                    top = top.BaseType;
+                }
+
+                *outEventSignalsDest =
+                    NativeFuncs.godotsharp_dictionary_new_copy((godot_dictionary)signals.NativeValue);
+
+                // Base script
 
                 var baseType = scriptType.BaseType;
                 if (baseType != null && baseType != native)
@@ -781,41 +683,22 @@ namespace Godot.Bridge
                 ExceptionUtils.LogException(e);
                 *outTool = godot_bool.False;
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();
+                *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();
+                *outBaseScript = default;
             }
         }
 
-        [UnmanagedCallersOnly]
-        internal static unsafe godot_bool SwapGCHandleForType(IntPtr oldGCHandlePtr, IntPtr* outNewGCHandlePtr,
-            godot_bool createWeak)
+        private static List<MethodInfo>? GetSignalListForType(Type type)
         {
-            try
-            {
-                var oldGCHandle = GCHandle.FromIntPtr(oldGCHandlePtr);
+            var getGodotSignalListMethod = type.GetMethod(
+                "GetGodotSignalList",
+                BindingFlags.DeclaredOnly | BindingFlags.Static |
+                BindingFlags.NonPublic | BindingFlags.Public);
 
-                object? target = oldGCHandle.Target;
+            if (getGodotSignalListMethod == null)
+                return null;
 
-                if (target == null)
-                {
-                    CustomGCHandle.Free(oldGCHandle);
-                    *outNewGCHandlePtr = IntPtr.Zero;
-                    return godot_bool.False; // Called after the managed side was collected, so nothing to do here
-                }
-
-                // Release the current weak handle and replace it with a strong handle.
-                var newGCHandle = createWeak.ToBool() ?
-                    CustomGCHandle.AllocWeak(target) :
-                    CustomGCHandle.AllocStrong(target);
-
-                CustomGCHandle.Free(oldGCHandle);
-                *outNewGCHandlePtr = GCHandle.ToIntPtr(newGCHandle);
-                return godot_bool.True;
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.LogException(e);
-                *outNewGCHandlePtr = IntPtr.Zero;
-                return godot_bool.False;
-            }
+            return (List<MethodInfo>?)getGodotSignalListMethod.Invoke(null, null);
         }
 
         // ReSharper disable once InconsistentNaming
@@ -857,16 +740,16 @@ namespace Godot.Bridge
         {
             try
             {
-                var getGodotPropertiesMetadataMethod = type.GetMethod(
-                    "GetGodotPropertiesMetadata",
+                var getGodotPropertyListMethod = type.GetMethod(
+                    "GetGodotPropertyList",
                     BindingFlags.DeclaredOnly | BindingFlags.Static |
                     BindingFlags.NonPublic | BindingFlags.Public);
 
-                if (getGodotPropertiesMetadataMethod == null)
+                if (getGodotPropertyListMethod == null)
                     return;
 
-                var properties = (System.Collections.Generic.List<PropertyInfo>?)
-                    getGodotPropertiesMetadataMethod.Invoke(null, null);
+                var properties = (List<PropertyInfo>?)
+                    getGodotPropertyListMethod.Invoke(null, null);
 
                 if (properties == null || properties.Count <= 0)
                     return;
@@ -985,7 +868,7 @@ namespace Godot.Bridge
                 if (getGodotPropertyDefaultValuesMethod == null)
                     return;
 
-                var defaultValues = (System.Collections.Generic.Dictionary<StringName, object>?)
+                var defaultValues = (Dictionary<StringName, object>?)
                     getGodotPropertyDefaultValuesMethod.Invoke(null, null);
 
                 if (defaultValues == null || defaultValues.Count <= 0)
@@ -1046,6 +929,40 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool SwapGCHandleForType(IntPtr oldGCHandlePtr, IntPtr* outNewGCHandlePtr,
+            godot_bool createWeak)
+        {
+            try
+            {
+                var oldGCHandle = GCHandle.FromIntPtr(oldGCHandlePtr);
+
+                object? target = oldGCHandle.Target;
+
+                if (target == null)
+                {
+                    CustomGCHandle.Free(oldGCHandle);
+                    *outNewGCHandlePtr = IntPtr.Zero;
+                    return godot_bool.False; // Called after the managed side was collected, so nothing to do here
+                }
+
+                // Release the current weak handle and replace it with a strong handle.
+                var newGCHandle = createWeak.ToBool() ?
+                    CustomGCHandle.AllocWeak(target) :
+                    CustomGCHandle.AllocStrong(target);
+
+                CustomGCHandle.Free(oldGCHandle);
+                *outNewGCHandlePtr = GCHandle.ToIntPtr(newGCHandle);
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outNewGCHandlePtr = IntPtr.Zero;
+                return godot_bool.False;
             }
         }
     }

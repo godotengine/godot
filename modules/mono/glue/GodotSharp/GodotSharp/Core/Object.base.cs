@@ -49,30 +49,6 @@ namespace Godot
             }
 
             _weakReferenceToSelf = DisposablesTracker.RegisterGodotObject(this);
-
-            _InitializeGodotScriptInstanceInternals();
-        }
-
-        internal void _InitializeGodotScriptInstanceInternals()
-        {
-            // Performance is not critical here as this will be replaced with source generators.
-            Type top = GetType();
-            Type native = InternalGetClassNativeBase(top);
-
-            while (top != null && top != native)
-            {
-                foreach (var eventSignal in top.GetEvents(
-                                 BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                                 BindingFlags.NonPublic | BindingFlags.Public)
-                             .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any()))
-                {
-                    using var eventSignalName = new StringName(eventSignal.Name);
-                    var eventSignalNameSelf = (godot_string_name)eventSignalName.NativeValue;
-                    NativeFuncs.godotsharp_internal_object_connect_event_signal(NativePtr, eventSignalNameSelf);
-                }
-
-                top = top.BaseType;
-            }
         }
 
         internal Object(bool memoryOwn)
@@ -238,72 +214,10 @@ namespace Godot
             return false;
         }
 
-        internal void InternalRaiseEventSignal(in godot_string_name eventSignalName, NativeVariantPtrArgs args,
-            int argc)
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected internal virtual void RaiseGodotClassSignalCallbacks(in godot_string_name signal,
+            NativeVariantPtrArgs args, int argCount)
         {
-            // Performance is not critical here as this will be replaced with source generators.
-
-            using var stringName = StringName.CreateTakingOwnershipOfDisposableValue(
-                NativeFuncs.godotsharp_string_name_new_copy(eventSignalName));
-            string eventSignalNameStr = stringName.ToString();
-
-            Type top = GetType();
-            Type native = InternalGetClassNativeBase(top);
-
-            while (top != null && top != native)
-            {
-                var foundEventSignals = top.GetEvents(
-                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                        BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any())
-                    .Select(ev => ev.Name);
-
-                var fields = top.GetFields(
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                var eventSignalField = fields
-                    .Where(f => typeof(Delegate).IsAssignableFrom(f.FieldType))
-                    .Where(f => foundEventSignals.Contains(f.Name))
-                    .FirstOrDefault(f => f.Name == eventSignalNameStr);
-
-                if (eventSignalField != null)
-                {
-                    var @delegate = (Delegate)eventSignalField.GetValue(this);
-
-                    if (@delegate == null)
-                        continue;
-
-                    var delegateType = eventSignalField.FieldType;
-
-                    var invokeMethod = delegateType.GetMethod("Invoke");
-
-                    if (invokeMethod == null)
-                        throw new MissingMethodException(delegateType.FullName, "Invoke");
-
-                    var parameterInfos = invokeMethod.GetParameters();
-                    var paramsLength = parameterInfos.Length;
-
-                    if (argc != paramsLength)
-                    {
-                        throw new InvalidOperationException(
-                            $"The event delegate expects {paramsLength} arguments, but received {argc}.");
-                    }
-
-                    var managedArgs = new object[argc];
-
-                    for (int i = 0; i < argc; i++)
-                    {
-                        managedArgs[i] = Marshaling.ConvertVariantToManagedObjectOfType(
-                            args[i], parameterInfos[i].ParameterType);
-                    }
-
-                    invokeMethod.Invoke(@delegate, managedArgs);
-                    return;
-                }
-
-                top = top.BaseType;
-            }
         }
 
         internal static IntPtr ClassDB_get_method(StringName type, StringName method)
@@ -332,74 +246,11 @@ namespace Godot
 
         protected internal virtual void SaveGodotObjectData(GodotSerializationInfo info)
         {
-            // Temporary solution via reflection until we add a signals events source generator
-
-            Type top = GetType();
-            Type native = InternalGetClassNativeBase(top);
-
-            while (top != null && top != native)
-            {
-                var foundEventSignals = top.GetEvents(
-                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                        BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any())
-                    .Select(ev => ev.Name);
-
-                var fields = top.GetFields(
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                foreach (var eventSignalField in fields
-                             .Where(f => typeof(Delegate).IsAssignableFrom(f.FieldType))
-                             .Where(f => foundEventSignals.Contains(f.Name)))
-                {
-                    var eventSignalDelegate = (Delegate)eventSignalField.GetValue(this);
-                    info.AddSignalEventDelegate(eventSignalField.Name, eventSignalDelegate);
-                }
-
-                top = top.BaseType;
-            }
         }
 
         // TODO: Should this be a constructor overload?
         protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
         {
-            // Temporary solution via reflection until we add a signals events source generator
-
-            void RestoreSignalEvent(StringName signalEventName)
-            {
-                Type top = GetType();
-                Type native = InternalGetClassNativeBase(top);
-
-                while (top != null && top != native)
-                {
-                    var foundEventSignal = top.GetEvent(signalEventName,
-                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                        BindingFlags.NonPublic | BindingFlags.Public);
-
-                    if (foundEventSignal != null &&
-                        foundEventSignal.GetCustomAttributes().OfType<SignalAttribute>().Any())
-                    {
-                        var field = top.GetField(foundEventSignal.Name,
-                            BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                            BindingFlags.NonPublic | BindingFlags.Public);
-
-                        if (field != null && typeof(Delegate).IsAssignableFrom(field.FieldType))
-                        {
-                            var eventSignalDelegate = info.GetSignalEventDelegate(signalEventName);
-                            field.SetValue(this, eventSignalDelegate);
-                            return;
-                        }
-                    }
-
-                    top = top.BaseType;
-                }
-            }
-
-            foreach (var signalEventName in info.GetSignalEventsList())
-            {
-                RestoreSignalEvent(signalEventName);
-            }
         }
     }
 }

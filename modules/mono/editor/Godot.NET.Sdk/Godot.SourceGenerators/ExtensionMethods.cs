@@ -174,11 +174,48 @@ namespace Godot.SourceGenerators
         public static bool IsGodotExportAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.ExportAttr;
 
+        public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
+            => symbol.ToString() == GodotClasses.SignalAttr;
+
         public static bool IsGodotClassNameAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.GodotClassNameAttr;
 
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.SystemFlagsAttr;
+
+        public static GodotMethodData? HasGodotCompatibleSignature(
+            this IMethodSymbol method,
+            MarshalUtils.TypeCache typeCache
+        )
+        {
+            if (method.IsGenericMethod)
+                return null;
+
+            var retSymbol = method.ReturnType;
+            var retType = method.ReturnsVoid ?
+                null :
+                MarshalUtils.ConvertManagedTypeToMarshalType(method.ReturnType, typeCache);
+
+            if (retType == null && !method.ReturnsVoid)
+                return null;
+
+            var parameters = method.Parameters;
+
+            var paramTypes = parameters
+                // Currently we don't support `ref`, `out`, `in`, `ref readonly` parameters (and we never may)
+                .Where(p => p.RefKind == RefKind.None)
+                // Attempt to determine the variant type
+                .Select(p => MarshalUtils.ConvertManagedTypeToMarshalType(p.Type, typeCache))
+                // Discard parameter types that couldn't be determined (null entries)
+                .Where(t => t != null).Cast<MarshalType>().ToImmutableArray();
+
+            // If any parameter type was incompatible, it was discarded so the length won't match
+            if (parameters.Length > paramTypes.Length)
+                return null; // Ignore incompatible method
+
+            return new GodotMethodData(method, paramTypes, parameters
+                .Select(p => p.Type).ToImmutableArray(), retType, retSymbol);
+        }
 
         public static IEnumerable<GodotMethodData> WhereHasGodotCompatibleSignature(
             this IEnumerable<IMethodSymbol> methods,
@@ -187,33 +224,10 @@ namespace Godot.SourceGenerators
         {
             foreach (var method in methods)
             {
-                if (method.IsGenericMethod)
-                    continue;
+                var methodData = HasGodotCompatibleSignature(method, typeCache);
 
-                var retSymbol = method.ReturnType;
-                var retType = method.ReturnsVoid ?
-                    null :
-                    MarshalUtils.ConvertManagedTypeToMarshalType(method.ReturnType, typeCache);
-
-                if (retType == null && !method.ReturnsVoid)
-                    continue;
-
-                var parameters = method.Parameters;
-
-                var paramTypes = parameters
-                    // Currently we don't support `ref`, `out`, `in`, `ref readonly` parameters (and we never may)
-                    .Where(p => p.RefKind == RefKind.None)
-                    // Attempt to determine the variant type
-                    .Select(p => MarshalUtils.ConvertManagedTypeToMarshalType(p.Type, typeCache))
-                    // Discard parameter types that couldn't be determined (null entries)
-                    .Where(t => t != null).Cast<MarshalType>().ToImmutableArray();
-
-                // If any parameter type was incompatible, it was discarded so the length won't match
-                if (parameters.Length > paramTypes.Length)
-                    continue;
-
-                yield return new GodotMethodData(method, paramTypes, parameters
-                    .Select(p => p.Type).ToImmutableArray(), retType, retSymbol);
+                if (methodData != null)
+                    yield return methodData.Value;
             }
         }
 

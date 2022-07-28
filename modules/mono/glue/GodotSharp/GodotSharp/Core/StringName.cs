@@ -34,7 +34,11 @@ namespace Godot
         {
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
-            DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
+
+            if (_weakReferenceToSelf != null)
+            {
+                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
+            }
         }
 
         private StringName(godot_string_name nativeValueToOwn)

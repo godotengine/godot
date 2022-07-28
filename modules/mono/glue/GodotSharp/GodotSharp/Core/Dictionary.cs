@@ -76,7 +76,11 @@ namespace Godot.Collections
         {
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
-            DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
+
+            if (_weakReferenceToSelf != null)
+            {
+                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
+            }
         }
 
         /// <summary>
@@ -704,7 +708,7 @@ namespace Godot.Collections
             return found;
         }
 
-        // TODO: This is temporary. It's needed for the serialization generator. It won't be needed once we replace Sysme.Object with a Variant type.
+        // TODO: This is temporary. It's needed for the serialization generator. It won't be needed once we replace System.Object with a Variant type.
         internal bool TryGetValueAsType<TValueCustom>(TKey key, [MaybeNullWhen(false)] out TValueCustom value)
         {
             using godot_variant variantKey = Marshaling.ConvertManagedObjectToVariant(key);

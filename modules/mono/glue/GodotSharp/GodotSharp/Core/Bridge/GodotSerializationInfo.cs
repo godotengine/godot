@@ -46,22 +46,34 @@ public class GodotSerializationInfo
         }
     }
 
-    public Delegate GetSignalEventDelegate(StringName name)
+    public bool TryGetSignalEventDelegate<T>(StringName name, [MaybeNullWhen(false)] out T value)
+        where T : Delegate
     {
-        if (DelegateUtils.TryDeserializeDelegate(_signalEvents[name], out var eventDelegate))
+        if (_signalEvents.TryGetValue(name, out Collections.Array serializedData))
         {
-            return eventDelegate;
-        }
-        else if (OS.IsStdoutVerbose())
-        {
-            Console.WriteLine($"Failed to deserialize event signal delegate: {name}");
+            if (DelegateUtils.TryDeserializeDelegate(serializedData, out var eventDelegate))
+            {
+                value = eventDelegate as T;
+
+                if (value == null)
+                {
+                    Console.WriteLine($"Cannot cast the deserialized event signal delegate: {name}. " +
+                                      $"Expected '{typeof(T).FullName}'; got '{eventDelegate.GetType().FullName}'.");
+                    return false;
+                }
+
+                return true;
+            }
+            else if (OS.IsStdoutVerbose())
+            {
+                Console.WriteLine($"Failed to deserialize event signal delegate: {name}");
+            }
+
+            value = null;
+            return false;
         }
 
-        return null;
-    }
-
-    public IEnumerable<StringName> GetSignalEventsList()
-    {
-        return _signalEvents.Keys;
+        value = null;
+        return false;
     }
 }
