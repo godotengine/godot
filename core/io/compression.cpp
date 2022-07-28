@@ -270,8 +270,8 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 }
 
 int Compression::decompress_file(const String dst_file_path, int p_max_dst_size, const String src_file_path, Mode p_mode) {
-	FileAccess *src_file = FileAccess::open(src_file_path, FileAccess::READ);
-	FileAccess *dst_file = FileAccess::open(dst_file_path, FileAccess::WRITE);
+	Ref<FileAccess> src_file = FileAccess::open(src_file_path, FileAccess::READ);
+	Ref<FileAccess> dst_file = FileAccess::open(dst_file_path, FileAccess::WRITE);
 
 	int ret = Z_ERRNO;
 	z_stream strm;
@@ -337,10 +337,10 @@ int Compression::decompress_file(const String dst_file_path, int p_max_dst_size,
 		// Finish when input stream is complete
 	} while (ret != Z_STREAM_END);
 
-	src_file->close();
+	src_file.unref();
 
 	dst_file->flush();
-	dst_file->close();
+	dst_file.unref();
 
 	inflateEnd(&strm);
 

@@ -198,13 +198,11 @@ void HTTPRequest::cancel_request() {
 		thread.wait_to_finish();
 	}
 
-	if (file) {
-		file->close();
-		memdelete(file);
-		file = nullptr;
+	if (file.is_valid()) {
+		file.unref();
 	}
 
-	client->close();
+	client.unref();
 	body.clear();
 	got_response = false;
 	response_code = -1;
@@ -248,7 +246,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 		if (!new_request.is_empty()) {
 			// Process redirect.
-			client->close();
+			client.unref();
 			int new_redirs = redirections + 1; // Because _request() will clear it.
 			Error err;
 			if (new_request.begins_with("http")) {
@@ -476,18 +474,18 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 				WARN_PRINT("Decompress complete");
 
 				// Delete the original compressed file
-				DirAccess *d = DirAccess::create_for_path(download_to_file);
+				Ref<DirAccess> d = DirAccess::create_for_path(download_to_file);
 				Error err = d->remove(download_to_file);
 				if (err != OK)
 					WARN_PRINT("Failed to delete compressed file: " + download_to_file);
-				memdelete(d);
+				d.unref();
 
 				// Rename temp file to original
 				d = DirAccess::create_for_path(temp_file_name);
 				err = d->rename(temp_file_name, download_to_file);
 				if (err != OK)
 					WARN_PRINT("Failed to move decompressed file: " + temp_file_name);
-				memdelete(d);
+				d.unref();
 			} else {
 				if (result == -5) {
 					WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
@@ -498,17 +496,17 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 				p_status = RESULT_BODY_DECOMPRESS_FAILED;
 
 				// Delete both files
-				DirAccess *d = DirAccess::create_for_path(download_to_file);
+				Ref<DirAccess> d = DirAccess::create_for_path(download_to_file);
 				Error err = d->remove(download_to_file);
 				if (err != OK)
 					WARN_PRINT("Failed to delete compressed file: " + download_to_file);
-				memdelete(d);
+				d.unref();
 
 				d = DirAccess::create_for_path(temp_file_name);
 				err = d->remove(temp_file_name);
 				if (err != OK)
 					WARN_PRINT("Failed to move decompressed file: " + temp_file_name);
-				memdelete(d);
+				d.unref();
 			}
 
 			// Return empty mem buffer for the body
