@@ -70,12 +70,18 @@ void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_angle) {
 }
 
 Transform3D Transform3D::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(origin.is_equal_approx(p_target), Transform3D(), "The transform's origin and target can't be equal.");
+#endif
 	Transform3D t = *this;
 	t.basis = Basis::looking_at(p_target - origin, p_up);
 	return t;
 }
 
 void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_MSG(p_eye.is_equal_approx(p_target), "The eye and target vectors can't be equal.");
+#endif
 	basis = Basis::looking_at(p_target - p_eye, p_up);
 	origin = p_eye;
 }
