@@ -343,6 +343,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
+	OS::get_singleton()->print("  --xr-mode <mode>                             Select XR mode (default/off/on).\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Debug options:\n");
@@ -1181,6 +1182,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--xr-mode") {
+			if (I->next()) {
+				String xr_mode = I->next()->get().to_lower();
+				N = I->next()->next();
+				if (xr_mode == "default") {
+					XRServer::set_xr_mode(XRServer::XRMODE_DEFAULT);
+				} else if (xr_mode == "off") {
+					XRServer::set_xr_mode(XRServer::XRMODE_OFF);
+				} else if (xr_mode == "on") {
+					XRServer::set_xr_mode(XRServer::XRMODE_ON);
+				} else {
+					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
+					goto error;
+				}
+			} else {
+				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
+				goto error;
+			}
+
 		} else {
 			main_args.push_back(I->get());
 		}
