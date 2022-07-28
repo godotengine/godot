@@ -1401,7 +1401,7 @@ def make_method_signature(
     if ref_type != "":
         if ref_type == "operator":
             out += ":ref:`{0}<class_{1}_{2}_{3}_{4}>` ".format(
-                method_def.name,
+                method_def.name.replace("<", "\\<"),  # So operator "<" gets correctly displayed.
                 class_def.name,
                 ref_type,
                 sanitize_operator_name(method_def.name, state),
