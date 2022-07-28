@@ -1636,8 +1636,6 @@ const Vector<Multiplayer::RPCConfig> GDScriptInstance::get_rpc_methods() const {
 void GDScriptInstance::reload_members() {
 #ifdef DEBUG_ENABLED
 
-	members.resize(script->member_indices.size()); //resize
-
 	Vector<Variant> new_members;
 	new_members.resize(script->member_indices.size());
 
@@ -1648,6 +1646,8 @@ void GDScriptInstance::reload_members() {
 			new_members.write[E.value.index] = value;
 		}
 	}
+
+	members.resize(new_members.size()); //resize
 
 	//apply
 	members = new_members;
