@@ -281,7 +281,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -h, --help                                   Display this help message.\n");
 	OS::get_singleton()->print("  --version                                    Display the version string.\n");
 	OS::get_singleton()->print("  -v, --verbose                                Use verbose stdout mode.\n");
-	OS::get_singleton()->print("  -q, --quiet                                  Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	OS::get_singleton()->print("  -q, --quiet                                  Be quiet. Silences header if specified once, and all stdout messages if present twice. Errors are still displayed.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
@@ -649,6 +649,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String debug_uri = "";
 	bool skip_breakpoints = false;
 	String main_pack;
+	bool quiet_header = false;
 	bool quiet_stdout = false;
 	int rtm = -1;
 
@@ -712,8 +713,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			OS::get_singleton()->_verbose_stdout = true;
 		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
-
-			quiet_stdout = true;
+			if quiet_header {
+				// the option is specified twice
+				quiet_stdout = true;
+			} else {
+				quiet_header = true;
+			}
 
 		} else if (I->get() == "--audio-driver") { // audio driver
 
@@ -1694,7 +1699,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	// Print engine name and version
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	if (!quiet_header) {
+		print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	}
 
 #if !defined(NO_THREADS)
 	if (p_main_tid_override) {
