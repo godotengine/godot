@@ -11,10 +11,10 @@ public struct MethodInfo
     public MethodFlags Flags { get; init; }
     public int Id { get; init; } = 0;
     public List<PropertyInfo>? Arguments { get; init; }
-    public List<object>? DefaultArguments { get; init; }
+    public List<Variant>? DefaultArguments { get; init; }
 
-    public MethodInfo(StringName name, PropertyInfo returnVal, MethodFlags flags, List<PropertyInfo>? arguments,
-        List<object>? defaultArguments)
+    public MethodInfo(StringName name, PropertyInfo returnVal, MethodFlags flags,
+        List<PropertyInfo>? arguments, List<Variant>? defaultArguments)
     {
         Name = name;
         ReturnVal = returnVal;

@@ -10,17 +10,6 @@ namespace Godot.SourceGenerators
         public class TypeCache
         {
             public INamedTypeSymbol GodotObjectType { get; }
-            public INamedTypeSymbol GodotGenericDictionary { get; }
-            public INamedTypeSymbol GodotGenericArray { get; }
-
-            // ReSharper disable once InconsistentNaming
-            public INamedTypeSymbol IDictionary { get; }
-
-            // ReSharper disable once InconsistentNaming
-            public INamedTypeSymbol ICollection { get; }
-            public INamedTypeSymbol GenericIDictionary { get; }
-            public INamedTypeSymbol SystemGenericDictionary { get; }
-            public INamedTypeSymbol SystemGenericList { get; }
 
             public TypeCache(GeneratorExecutionContext context)
             {
@@ -31,13 +20,6 @@ namespace Godot.SourceGenerators
                 }
 
                 GodotObjectType = GetTypeByMetadataNameOrThrow("Godot.Object");
-                GodotGenericDictionary = GetTypeByMetadataNameOrThrow("Godot.Collections.Dictionary`2");
-                GodotGenericArray = GetTypeByMetadataNameOrThrow("Godot.Collections.Array`1");
-                IDictionary = GetTypeByMetadataNameOrThrow("System.Collections.IDictionary");
-                ICollection = GetTypeByMetadataNameOrThrow("System.Collections.ICollection");
-                GenericIDictionary = GetTypeByMetadataNameOrThrow("System.Collections.Generic.IDictionary`2");
-                SystemGenericDictionary = GetTypeByMetadataNameOrThrow("System.Collections.Generic.Dictionary`2");
-                SystemGenericList = GetTypeByMetadataNameOrThrow("System.Collections.Generic.List`1");
             }
         }
 
@@ -86,14 +68,9 @@ namespace Godot.SourceGenerators
                 MarshalType.Vector3Array => VariantType.PackedVector3Array,
                 MarshalType.ColorArray => VariantType.PackedColorArray,
                 MarshalType.GodotObjectOrDerivedArray => VariantType.Array,
-                MarshalType.SystemArrayOfSupportedType => VariantType.Array,
-                MarshalType.GodotGenericDictionary => VariantType.Dictionary,
-                MarshalType.GodotGenericArray => VariantType.Array,
-                MarshalType.SystemGenericDictionary => VariantType.Dictionary,
-                MarshalType.SystemGenericList => VariantType.Array,
-                MarshalType.GenericIDictionary => VariantType.Dictionary,
-                MarshalType.GenericICollection => VariantType.Array,
-                MarshalType.GenericIEnumerable => VariantType.Array,
+                MarshalType.SystemArrayOfStringName => VariantType.Array,
+                MarshalType.SystemArrayOfNodePath => VariantType.Array,
+                MarshalType.SystemArrayOfRID => VariantType.Array,
                 MarshalType.Variant => VariantType.Nil,
                 MarshalType.GodotObjectOrDerived => VariantType.Object,
                 MarshalType.StringName => VariantType.StringName,
@@ -101,9 +78,6 @@ namespace Godot.SourceGenerators
                 MarshalType.RID => VariantType.Rid,
                 MarshalType.GodotDictionary => VariantType.Dictionary,
                 MarshalType.GodotArray => VariantType.Array,
-                MarshalType.IDictionary => VariantType.Dictionary,
-                MarshalType.ICollection => VariantType.Array,
-                MarshalType.IEnumerable => VariantType.Array,
                 _ => null
             };
 
@@ -212,53 +186,21 @@ namespace Godot.SourceGenerators
                                     return MarshalType.Vector3Array;
                                 case { Name: "Color" }:
                                     return MarshalType.ColorArray;
+                                case { Name: "StringName" }:
+                                    return MarshalType.SystemArrayOfStringName;
+                                case { Name: "NodePath" }:
+                                    return MarshalType.SystemArrayOfNodePath;
+                                case { Name: "RID" }:
+                                    return MarshalType.SystemArrayOfRID;
                             }
                         }
 
-                        if (ConvertManagedTypeToMarshalType(elementType, typeCache) != null)
-                            return MarshalType.SystemArrayOfSupportedType;
-
                         return null;
-                    }
-                    else if (type is INamedTypeSymbol { IsGenericType: true } genericType)
-                    {
-                        var genericTypeDef = genericType.ConstructedFrom;
-
-                        if (SymbolEqualityComparer.Default.Equals(genericTypeDef, typeCache.GodotGenericDictionary))
-                            return MarshalType.GodotGenericDictionary;
-
-                        if (SymbolEqualityComparer.Default.Equals(genericTypeDef, typeCache.GodotGenericArray))
-                            return MarshalType.GodotGenericArray;
-
-                        if (SymbolEqualityComparer.Default.Equals(genericTypeDef, typeCache.SystemGenericDictionary))
-                            return MarshalType.SystemGenericDictionary;
-
-                        if (SymbolEqualityComparer.Default.Equals(genericTypeDef, typeCache.SystemGenericList))
-                            return MarshalType.SystemGenericList;
-
-                        if (SymbolEqualityComparer.Default.Equals(genericTypeDef, typeCache.GenericIDictionary))
-                            return MarshalType.GenericIDictionary;
-
-                        return genericTypeDef.SpecialType switch
-                        {
-                            SpecialType.System_Collections_Generic_ICollection_T => MarshalType.GenericICollection,
-                            SpecialType.System_Collections_Generic_IEnumerable_T => MarshalType.GenericIEnumerable,
-                            _ => null
-                        };
                     }
                     else
                     {
                         if (type.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerived;
-
-                        if (SymbolEqualityComparer.Default.Equals(type, typeCache.IDictionary))
-                            return MarshalType.IDictionary;
-
-                        if (SymbolEqualityComparer.Default.Equals(type, typeCache.ICollection))
-                            return MarshalType.ICollection;
-
-                        if (specialType == SpecialType.System_Collections_IEnumerable)
-                            return MarshalType.IEnumerable;
 
                         if (type.ContainingAssembly.Name == "GodotSharp")
                         {
@@ -341,13 +283,9 @@ namespace Godot.SourceGenerators
             string c, string d, string e, string f, string g)
             => source.Append(a).Append(b).Append(c).Append(d).Append(e).Append(f).Append(g);
 
-        private static StringBuilder Append(this StringBuilder source, string a, string b,
-            string c, string d, string e, string f, string g, string h)
-            => source.Append(a).Append(b).Append(c).Append(d).Append(e).Append(f).Append(g).Append(h);
-
         private const string VariantUtils = "global::Godot.NativeInterop.VariantUtils";
 
-        public static StringBuilder AppendVariantToManagedExpr(this StringBuilder source,
+        public static StringBuilder AppendNativeVariantToManagedExpr(this StringBuilder source,
             string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
         {
             return marshalType switch
@@ -438,30 +376,12 @@ namespace Godot.SourceGenerators
                 MarshalType.GodotObjectOrDerivedArray =>
                     source.Append(VariantUtils, ".ConvertToSystemArrayOfGodotObject<",
                         ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.SystemArrayOfSupportedType =>
-                    source.Append(VariantUtils, ".ConvertToSystemArrayOfSupportedType<",
-                        ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.GodotGenericDictionary =>
-                    source.Append(VariantUtils, ".ConvertToGenericDictionaryObject<",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ", ",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.GodotGenericArray =>
-                    source.Append(VariantUtils, ".ConvertToGenericArrayObject<",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.SystemGenericDictionary =>
-                    source.Append(VariantUtils, ".ConvertToSystemGenericDictionary<",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ", ",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.SystemGenericList =>
-                    source.Append(VariantUtils, ".ConvertToSystemGenericList<",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.GenericIDictionary =>
-                    source.Append(VariantUtils, ".ConvertToGenericDictionaryObject<",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ", ",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedName(), ">(", inputExpr, ")"),
-                MarshalType.GenericICollection or MarshalType.GenericIEnumerable =>
-                    source.Append(VariantUtils, ".ConvertToGenericArrayObject<",
-                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ">(", inputExpr, ")"),
+                MarshalType.SystemArrayOfStringName =>
+                    source.Append(VariantUtils, ".ConvertToSystemArrayOfStringName(", inputExpr, ")"),
+                MarshalType.SystemArrayOfNodePath =>
+                    source.Append(VariantUtils, ".ConvertToSystemArrayOfNodePath(", inputExpr, ")"),
+                MarshalType.SystemArrayOfRID =>
+                    source.Append(VariantUtils, ".ConvertToSystemArrayOfRID(", inputExpr, ")"),
                 MarshalType.Variant =>
                     source.Append("global::Godot.Variant.CreateCopyingBorrowed(", inputExpr, ")"),
                 MarshalType.GodotObjectOrDerived =>
@@ -477,16 +397,12 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".ConvertToDictionaryObject(", inputExpr, ")"),
                 MarshalType.GodotArray =>
                     source.Append(VariantUtils, ".ConvertToArrayObject(", inputExpr, ")"),
-                MarshalType.IDictionary =>
-                    source.Append(VariantUtils, ".ConvertToDictionaryObject(", inputExpr, ")"),
-                MarshalType.ICollection or MarshalType.IEnumerable =>
-                    source.Append(VariantUtils, ".ConvertToArrayObject(", inputExpr, ")"),
                 _ => throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
                     "Received unexpected marshal type")
             };
         }
 
-        public static StringBuilder AppendManagedToVariantExpr(
+        public static StringBuilder AppendManagedToNativeVariantExpr(
             this StringBuilder source, string inputExpr, MarshalType marshalType)
         {
             return marshalType switch
@@ -575,22 +491,12 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".CreateFromPackedColorArray(", inputExpr, ")"),
                 MarshalType.GodotObjectOrDerivedArray =>
                     source.Append(VariantUtils, ".CreateFromSystemArrayOfGodotObject(", inputExpr, ")"),
-                MarshalType.SystemArrayOfSupportedType =>
-                    source.Append(VariantUtils, ".CreateFromSystemArrayOfSupportedType(", inputExpr, ")"),
-                MarshalType.GodotGenericDictionary =>
-                    source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
-                MarshalType.GodotGenericArray =>
-                    source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
-                MarshalType.SystemGenericDictionary =>
-                    source.Append(VariantUtils, ".CreateFromSystemDictionary(", inputExpr, ")"),
-                MarshalType.SystemGenericList =>
-                    source.Append(VariantUtils, ".CreateFromSystemICollection(", inputExpr, ")"),
-                MarshalType.GenericIDictionary =>
-                    source.Append(VariantUtils, ".CreateFromSystemGenericIDictionary(", inputExpr, ")"),
-                MarshalType.GenericICollection =>
-                    source.Append(VariantUtils, ".CreateFromSystemGenericICollection(", inputExpr, ")"),
-                MarshalType.GenericIEnumerable =>
-                    source.Append(VariantUtils, ".CreateFromSystemGenericIEnumerable(", inputExpr, ")"),
+                MarshalType.SystemArrayOfStringName =>
+                    source.Append(VariantUtils, ".CreateFromSystemArrayOfStringName(", inputExpr, ")"),
+                MarshalType.SystemArrayOfNodePath =>
+                    source.Append(VariantUtils, ".CreateFromSystemArrayOfNodePath(", inputExpr, ")"),
+                MarshalType.SystemArrayOfRID =>
+                    source.Append(VariantUtils, ".CreateFromSystemArrayOfRID(", inputExpr, ")"),
                 MarshalType.Variant =>
                     source.Append(inputExpr, ".CopyNativeVariant()"),
                 MarshalType.GodotObjectOrDerived =>
@@ -605,15 +511,140 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
                 MarshalType.GodotArray =>
                     source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
-                MarshalType.IDictionary =>
-                    source.Append(VariantUtils, ".CreateFromSystemIDictionary(", inputExpr, ")"),
-                MarshalType.ICollection =>
-                    source.Append(VariantUtils, ".CreateFromSystemICollection(", inputExpr, ")"),
-                MarshalType.IEnumerable =>
-                    source.Append(VariantUtils, ".CreateFromSystemIEnumerable(", inputExpr, ")"),
                 _ => throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
                     "Received unexpected marshal type")
             };
+        }
+
+        public static StringBuilder AppendVariantToManagedExpr(this StringBuilder source,
+            string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+        {
+            return marshalType switch
+            {
+                MarshalType.Boolean => source.Append(inputExpr, ".AsBool()"),
+                MarshalType.Char => source.Append(inputExpr, ".AsChar()"),
+                MarshalType.SByte => source.Append(inputExpr, ".AsSByte()"),
+                MarshalType.Int16 => source.Append(inputExpr, ".AsInt16()"),
+                MarshalType.Int32 => source.Append(inputExpr, ".AsInt32()"),
+                MarshalType.Int64 => source.Append(inputExpr, ".AsInt64()"),
+                MarshalType.Byte => source.Append(inputExpr, ".AsByte()"),
+                MarshalType.UInt16 => source.Append(inputExpr, ".AsUInt16()"),
+                MarshalType.UInt32 => source.Append(inputExpr, ".AsUInt32()"),
+                MarshalType.UInt64 => source.Append(inputExpr, ".AsUInt64()"),
+                MarshalType.Single => source.Append(inputExpr, ".AsSingle()"),
+                MarshalType.Double => source.Append(inputExpr, ".AsDouble()"),
+                MarshalType.String => source.Append(inputExpr, ".AsString()"),
+                MarshalType.Vector2 => source.Append(inputExpr, ".AsVector2()"),
+                MarshalType.Vector2i => source.Append(inputExpr, ".AsVector2i()"),
+                MarshalType.Rect2 => source.Append(inputExpr, ".AsRect2()"),
+                MarshalType.Rect2i => source.Append(inputExpr, ".AsRect2i()"),
+                MarshalType.Transform2D => source.Append(inputExpr, ".AsTransform2D()"),
+                MarshalType.Vector3 => source.Append(inputExpr, ".AsVector3()"),
+                MarshalType.Vector3i => source.Append(inputExpr, ".AsVector3i()"),
+                MarshalType.Basis => source.Append(inputExpr, ".AsBasis()"),
+                MarshalType.Quaternion => source.Append(inputExpr, ".AsQuaternion()"),
+                MarshalType.Transform3D => source.Append(inputExpr, ".AsTransform3D()"),
+                MarshalType.Vector4 => source.Append(inputExpr, ".AsVector4()"),
+                MarshalType.Vector4i => source.Append(inputExpr, ".AsVector4i()"),
+                MarshalType.Projection => source.Append(inputExpr, ".AsProjection()"),
+                MarshalType.AABB => source.Append(inputExpr, ".AsAABB()"),
+                MarshalType.Color => source.Append(inputExpr, ".AsColor()"),
+                MarshalType.Plane => source.Append(inputExpr, ".AsPlane()"),
+                MarshalType.Callable => source.Append(inputExpr, ".AsCallable()"),
+                MarshalType.SignalInfo => source.Append(inputExpr, ".AsSignalInfo()"),
+                MarshalType.Enum =>
+                    source.Append("(", typeSymbol.FullQualifiedName(), ")", inputExpr, ".AsInt64()"),
+                MarshalType.ByteArray => source.Append(inputExpr, ".AsByteArray()"),
+                MarshalType.Int32Array => source.Append(inputExpr, ".AsInt32Array()"),
+                MarshalType.Int64Array => source.Append(inputExpr, ".AsInt64Array()"),
+                MarshalType.Float32Array => source.Append(inputExpr, ".AsFloat32Array()"),
+                MarshalType.Float64Array => source.Append(inputExpr, ".AsFloat64Array()"),
+                MarshalType.StringArray => source.Append(inputExpr, ".AsStringArray()"),
+                MarshalType.Vector2Array => source.Append(inputExpr, ".AsVector2Array()"),
+                MarshalType.Vector3Array => source.Append(inputExpr, ".AsVector3Array()"),
+                MarshalType.ColorArray => source.Append(inputExpr, ".AsColorArray()"),
+                MarshalType.GodotObjectOrDerivedArray => source.Append(inputExpr, ".AsGodotObjectArray<",
+                    ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedName(), ">()"),
+                MarshalType.SystemArrayOfStringName => source.Append(inputExpr, ".AsSystemArrayOfStringName()"),
+                MarshalType.SystemArrayOfNodePath => source.Append(inputExpr, ".AsSystemArrayOfNodePath()"),
+                MarshalType.SystemArrayOfRID => source.Append(inputExpr, ".AsSystemArrayOfRID()"),
+                MarshalType.Variant => source.Append(inputExpr),
+                MarshalType.GodotObjectOrDerived => source.Append("(",
+                    typeSymbol.FullQualifiedName(), ")", inputExpr, ".AsGodotObject()"),
+                MarshalType.StringName => source.Append(inputExpr, ".AsStringName()"),
+                MarshalType.NodePath => source.Append(inputExpr, ".AsNodePath()"),
+                MarshalType.RID => source.Append(inputExpr, ".AsRID()"),
+                MarshalType.GodotDictionary => source.Append(inputExpr, ".AsGodotDictionary()"),
+                MarshalType.GodotArray => source.Append(inputExpr, ".AsGodotArray()"),
+                _ => throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
+                    "Received unexpected marshal type")
+            };
+        }
+
+        public static StringBuilder AppendManagedToVariantExpr(this StringBuilder source,
+            string inputExpr, MarshalType marshalType)
+        {
+            switch (marshalType)
+            {
+                case MarshalType.Boolean:
+                case MarshalType.Char:
+                case MarshalType.SByte:
+                case MarshalType.Int16:
+                case MarshalType.Int32:
+                case MarshalType.Int64:
+                case MarshalType.Byte:
+                case MarshalType.UInt16:
+                case MarshalType.UInt32:
+                case MarshalType.UInt64:
+                case MarshalType.Single:
+                case MarshalType.Double:
+                case MarshalType.String:
+                case MarshalType.Vector2:
+                case MarshalType.Vector2i:
+                case MarshalType.Rect2:
+                case MarshalType.Rect2i:
+                case MarshalType.Transform2D:
+                case MarshalType.Vector3:
+                case MarshalType.Vector3i:
+                case MarshalType.Basis:
+                case MarshalType.Quaternion:
+                case MarshalType.Transform3D:
+                case MarshalType.Vector4:
+                case MarshalType.Vector4i:
+                case MarshalType.Projection:
+                case MarshalType.AABB:
+                case MarshalType.Color:
+                case MarshalType.Plane:
+                case MarshalType.Callable:
+                case MarshalType.SignalInfo:
+                case MarshalType.ByteArray:
+                case MarshalType.Int32Array:
+                case MarshalType.Int64Array:
+                case MarshalType.Float32Array:
+                case MarshalType.Float64Array:
+                case MarshalType.StringArray:
+                case MarshalType.Vector2Array:
+                case MarshalType.Vector3Array:
+                case MarshalType.ColorArray:
+                case MarshalType.GodotObjectOrDerivedArray:
+                case MarshalType.SystemArrayOfStringName:
+                case MarshalType.SystemArrayOfNodePath:
+                case MarshalType.SystemArrayOfRID:
+                case MarshalType.GodotObjectOrDerived:
+                case MarshalType.StringName:
+                case MarshalType.NodePath:
+                case MarshalType.RID:
+                case MarshalType.GodotDictionary:
+                case MarshalType.GodotArray:
+                    return source.Append("Variant.CreateFrom(", inputExpr, ")");
+                case MarshalType.Enum:
+                    return source.Append("Variant.CreateFrom((long)", inputExpr, ")");
+                case MarshalType.Variant:
+                    return source.Append(inputExpr);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
+                        "Received unexpected marshal type");
+            }
         }
     }
 }

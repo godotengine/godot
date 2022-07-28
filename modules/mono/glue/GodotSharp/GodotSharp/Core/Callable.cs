@@ -85,7 +85,7 @@ namespace Godot
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
         /// <returns>The value returned by the method.</returns>
-        public unsafe object Call(params object[] args)
+        public unsafe Variant Call(params Variant[] args)
         {
             using godot_callable callable = Marshaling.ConvertCallableToNative(this);
 
@@ -106,13 +106,13 @@ namespace Godot
             {
                 for (int i = 0; i < argc; i++)
                 {
-                    varargs[i] = Marshaling.ConvertManagedObjectToVariant(args[i]);
+                    varargs[i] = (godot_variant)args[i].NativeVar;
                     argsPtr[i] = new IntPtr(&varargs[i]);
                 }
 
-                using godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
+                godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
                     (godot_variant**)argsPtr, argc, out _);
-                return Marshaling.ConvertVariantToManagedObject(ret);
+                return Variant.CreateTakingOwnershipOfDisposableValue(ret);
             }
         }
 
@@ -121,7 +121,7 @@ namespace Godot
         /// Arguments can be passed and should match the method's signature.
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
-        public unsafe void CallDeferred(params object[] args)
+        public unsafe void CallDeferred(params Variant[] args)
         {
             using godot_callable callable = Marshaling.ConvertCallableToNative(this);
 
@@ -142,7 +142,7 @@ namespace Godot
             {
                 for (int i = 0; i < argc; i++)
                 {
-                    varargs[i] = Marshaling.ConvertManagedObjectToVariant(args[i]);
+                    varargs[i] = (godot_variant)args[i].NativeVar;
                     argsPtr[i] = new IntPtr(&varargs[i]);
                 }
 

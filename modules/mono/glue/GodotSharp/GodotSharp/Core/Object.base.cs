@@ -187,18 +187,6 @@ namespace Godot
             return null;
         }
 
-        internal static bool InternalIsClassNativeBase(Type t)
-        {
-            // Check whether the type is declared in the GodotSharp or GodotSharpEditor assemblies
-            var typeAssembly = t.Assembly;
-
-            if (typeAssembly == CachedType.Assembly)
-                return true;
-
-            var typeAssemblyName = t.Assembly.GetName();
-            return typeAssemblyName.Name == "GodotSharpEditor";
-        }
-
         // ReSharper disable once VirtualMemberNeverOverridden.Global
         protected internal virtual bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
         {

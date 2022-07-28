@@ -1,35 +1,43 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Godot.NativeInterop;
 
 namespace Godot.Bridge;
 
-public class GodotSerializationInfo
+public class GodotSerializationInfo : IDisposable
 {
-    private readonly Collections.Dictionary<StringName, object> _properties = new();
-    private readonly Collections.Dictionary<StringName, Collections.Array> _signalEvents = new();
+    private readonly Collections.Dictionary _properties;
+    private readonly Collections.Dictionary _signalEvents;
 
-    internal GodotSerializationInfo()
+    public void Dispose()
     {
+        _properties?.Dispose();
+        _signalEvents?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 
-    internal GodotSerializationInfo(
-        Collections.Dictionary<StringName, object> properties,
-        Collections.Dictionary<StringName, Collections.Array> signalEvents
-    )
+    private GodotSerializationInfo(in godot_dictionary properties, in godot_dictionary signalEvents)
     {
-        _properties = properties;
-        _signalEvents = signalEvents;
+        _properties = Collections.Dictionary.CreateTakingOwnershipOfDisposableValue(properties);
+        _signalEvents = Collections.Dictionary.CreateTakingOwnershipOfDisposableValue(signalEvents);
     }
 
-    public void AddProperty(StringName name, object value)
+    internal static GodotSerializationInfo CreateCopyingBorrowed(
+        in godot_dictionary properties, in godot_dictionary signalEvents)
+    {
+        return new(NativeFuncs.godotsharp_dictionary_new_copy(properties),
+            NativeFuncs.godotsharp_dictionary_new_copy(signalEvents));
+    }
+
+    public void AddProperty(StringName name, Variant value)
     {
         _properties[name] = value;
     }
 
-    public bool TryGetProperty<T>(StringName name, [MaybeNullWhen(false)] out T value)
+    public bool TryGetProperty(StringName name, out Variant value)
     {
-        return _properties.TryGetValueAsType(name, out value);
+        return _properties.TryGetValue(name, out value);
     }
 
     public void AddSignalEventDelegate(StringName name, Delegate eventDelegate)
@@ -49,9 +57,9 @@ public class GodotSerializationInfo
     public bool TryGetSignalEventDelegate<T>(StringName name, [MaybeNullWhen(false)] out T value)
         where T : Delegate
     {
-        if (_signalEvents.TryGetValue(name, out Collections.Array serializedData))
+        if (_signalEvents.TryGetValue(name, out Variant serializedData))
         {
-            if (DelegateUtils.TryDeserializeDelegate(serializedData, out var eventDelegate))
+            if (DelegateUtils.TryDeserializeDelegate(serializedData.AsGodotArray(), out var eventDelegate))
             {
                 value = eventDelegate as T;
 

@@ -160,8 +160,8 @@ namespace Godot.SourceGenerators
 
                 source.Append("        info.AddProperty(GodotInternal.PropName_")
                     .Append(propertyName)
-                    .Append(", this.")
-                    .Append(propertyName)
+                    .Append(", ")
+                    .AppendManagedToVariantExpr(string.Concat("this.", propertyName), property.Type)
                     .Append(");\n");
             }
 
@@ -173,8 +173,8 @@ namespace Godot.SourceGenerators
 
                 source.Append("        info.AddProperty(GodotInternal.PropName_")
                     .Append(fieldName)
-                    .Append(", this.")
-                    .Append(fieldName)
+                    .Append(", ")
+                    .AppendManagedToVariantExpr(string.Concat("this.", fieldName), field.Type)
                     .Append(");\n");
             }
 
@@ -202,19 +202,17 @@ namespace Godot.SourceGenerators
             foreach (var property in godotClassProperties)
             {
                 string propertyName = property.PropertySymbol.Name;
-                string propertyTypeQualifiedName = property.PropertySymbol.Type.FullQualifiedName();
 
-                source.Append("        if (info.TryGetProperty<")
-                    .Append(propertyTypeQualifiedName)
-                    .Append(">(GodotInternal.PropName_")
+                source.Append("        if (info.TryGetProperty(GodotInternal.PropName_")
                     .Append(propertyName)
                     .Append(", out var _value_")
                     .Append(propertyName)
                     .Append("))\n")
                     .Append("            this.")
                     .Append(propertyName)
-                    .Append(" = _value_")
-                    .Append(propertyName)
+                    .Append(" = ")
+                    .AppendVariantToManagedExpr(string.Concat("_value_", propertyName),
+                        property.PropertySymbol.Type, property.Type)
                     .Append(";\n");
             }
 
@@ -223,19 +221,17 @@ namespace Godot.SourceGenerators
             foreach (var field in godotClassFields)
             {
                 string fieldName = field.FieldSymbol.Name;
-                string fieldTypeQualifiedName = field.FieldSymbol.Type.FullQualifiedName();
 
-                source.Append("        if (info.TryGetProperty<")
-                    .Append(fieldTypeQualifiedName)
-                    .Append(">(GodotInternal.PropName_")
+                source.Append("        if (info.TryGetProperty(GodotInternal.PropName_")
                     .Append(fieldName)
                     .Append(", out var _value_")
                     .Append(fieldName)
                     .Append("))\n")
                     .Append("            this.")
                     .Append(fieldName)
-                    .Append(" = _value_")
-                    .Append(fieldName)
+                    .Append(" = ")
+                    .AppendVariantToManagedExpr(string.Concat("_value_", fieldName),
+                        field.FieldSymbol.Type, field.Type)
                     .Append(";\n");
             }
 

@@ -481,9 +481,9 @@ namespace GodotTools
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = Variant.Type.Int,
+                ["type"] = (int)Variant.Type.Int,
                 ["name"] = "mono/editor/external_editor",
-                ["hint"] = PropertyHint.Enum,
+                ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = settingsHintStr
             });
 

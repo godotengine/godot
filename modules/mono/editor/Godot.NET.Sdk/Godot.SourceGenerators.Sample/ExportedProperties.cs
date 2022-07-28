@@ -80,28 +80,9 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Vector3[] property_Vector3Array { get; set; } = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right };
         [Export] private Color[] property_ColorArray { get; set; } = { Colors.Aqua, Colors.Aquamarine, Colors.Azure, Colors.Beige };
         [Export] private Godot.Object[] property_GodotObjectOrDerivedArray { get; set; } = { null };
-
-        // Generics
-        [Export] private Godot.Collections.Dictionary<string, string> property_GodotGenericDictionary { get; set; } =
-            new Godot.Collections.Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
-
-        [Export] private Godot.Collections.Array<string> property_GodotGenericArray { get; set; } =
-            new Godot.Collections.Array<string> { "elem1", "elem2", "elem3" };
-
-        [Export] private System.Collections.Generic.Dictionary<string, string> property_SystemGenericDictionary { get; set; } =
-            new System.Collections.Generic.Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
-
-        [Export] private System.Collections.Generic.List<string> property_SystemGenericList { get; set; } =
-            new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
-
-        [Export] private System.Collections.Generic.IDictionary<string, string> property_GenericIDictionary { get; set; } =
-            new System.Collections.Generic.Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
-
-        [Export] private System.Collections.Generic.ICollection<string> property_GenericICollection { get; set; } =
-            new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
-
-        [Export] private System.Collections.Generic.IEnumerable<string> property_GenericIEnumerable { get; set; } =
-            new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
+        [Export] private StringName[] field_StringNameArray { get; set; } = { "foo", "bar" };
+        [Export] private NodePath[] field_NodePathArray { get; set; } = { "foo", "bar" };
+        [Export] private RID[] field_RIDArray { get; set; } = { default, default, default };
 
         // Variant
         [Export] private Variant property_Variant { get; set; } = "foo";
@@ -118,15 +99,5 @@ namespace Godot.SourceGenerators.Sample
 
         [Export] private Godot.Collections.Array property_GodotArray { get; set; } =
             new() { "foo", 10, Vector2.Up, Colors.Chocolate };
-
-        [Export] private System.Collections.IDictionary property_IDictionary { get; set; } =
-            new System.Collections.Generic.Dictionary<object, object>
-                { { "foo", 10 }, { Vector2.Up, Colors.Chocolate } };
-
-        [Export] private System.Collections.ICollection property_ICollection { get; set; } =
-            new System.Collections.Generic.List<object> { "foo", 10, Vector2.Up, Colors.Chocolate };
-
-        [Export] private System.Collections.IEnumerable property_IEnumerable { get; set; } =
-            new System.Collections.Generic.List<object> { "foo", 10, Vector2.Up, Colors.Chocolate };
     }
 }

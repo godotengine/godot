@@ -4,10 +4,10 @@ using Godot.NativeInterop;
 
 namespace Godot
 {
-    public class SignalAwaiter : IAwaiter<object[]>, IAwaitable<object[]>
+    public class SignalAwaiter : IAwaiter<Variant[]>, IAwaitable<Variant[]>
     {
         private bool _completed;
-        private object[] _result;
+        private Variant[] _result;
         private Action _continuation;
 
         public SignalAwaiter(Object source, StringName signal, Object target)
@@ -26,9 +26,9 @@ namespace Godot
             _continuation = continuation;
         }
 
-        public object[] GetResult() => _result;
+        public Variant[] GetResult() => _result;
 
-        public IAwaiter<object[]> GetAwaiter() => this;
+        public IAwaiter<Variant[]> GetAwaiter() => this;
 
         [UnmanagedCallersOnly]
         internal static unsafe void SignalCallback(IntPtr awaiterGCHandlePtr, godot_variant** args, int argCount,
@@ -48,10 +48,10 @@ namespace Godot
 
                 awaiter._completed = true;
 
-                object[] signalArgs = new object[argCount];
+                Variant[] signalArgs = new Variant[argCount];
 
                 for (int i = 0; i < argCount; i++)
-                    signalArgs[i] = Marshaling.ConvertVariantToManagedObject(*args[i]);
+                    signalArgs[i] = Variant.CreateCopyingBorrowed(*args[i]);
 
                 awaiter._result = signalArgs;
 

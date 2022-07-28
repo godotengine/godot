@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Godot.Collections;
 using GodotTools.Internals;
 using File = GodotTools.Utils.File;
 using Path = System.IO.Path;
@@ -59,7 +58,7 @@ namespace GodotTools.Build
         }
 
         // TODO Use List once we have proper serialization.
-        private Array<BuildIssue> _issues = new Array<BuildIssue>();
+        private Godot.Collections.Array _issues = new();
         private ItemList _issuesList;
         private PopupMenu _issuesListContextMenu;
         private TextEdit _buildLog;
@@ -129,12 +128,12 @@ namespace GodotTools.Build
             if (issueIndex < 0 || issueIndex >= _issues.Count)
                 throw new IndexOutOfRangeException("Issue index out of range");
 
-            BuildIssue issue = _issues[issueIndex];
+            var issue = (BuildIssue)_issues[issueIndex];
 
             if (string.IsNullOrEmpty(issue.ProjectFile) && string.IsNullOrEmpty(issue.File))
                 return;
 
-            string projectDir = issue.ProjectFile.Length > 0 ?
+            string projectDir = !string.IsNullOrEmpty(issue.ProjectFile) ?
                 issue.ProjectFile.GetBaseDir() :
                 _buildInfo.Solution.GetBaseDir();
 
@@ -163,7 +162,7 @@ namespace GodotTools.Build
             {
                 for (int i = 0; i < _issues.Count; i++)
                 {
-                    BuildIssue issue = _issues[i];
+                    var issue = (BuildIssue)_issues[i];
 
                     if (!(issue.Warning ? WarningsVisible : ErrorsVisible))
                         continue;

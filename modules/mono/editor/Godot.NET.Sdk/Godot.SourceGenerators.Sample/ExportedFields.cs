@@ -80,28 +80,9 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Vector3[] field_Vector3Array = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right };
         [Export] private Color[] field_ColorArray = { Colors.Aqua, Colors.Aquamarine, Colors.Azure, Colors.Beige };
         [Export] private Godot.Object[] field_GodotObjectOrDerivedArray = { null };
-
-        // Generics
-        [Export] private Godot.Collections.Dictionary<string, string> field_GodotGenericDictionary =
-            new Godot.Collections.Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
-
-        [Export] private Godot.Collections.Array<string> field_GodotGenericArray =
-            new Godot.Collections.Array<string> { "elem1", "elem2", "elem3" };
-
-        [Export] private System.Collections.Generic.Dictionary<string, string> field_SystemGenericDictionary =
-            new System.Collections.Generic.Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
-
-        [Export] private System.Collections.Generic.List<string> field_SystemGenericList =
-            new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
-
-        [Export] private System.Collections.Generic.IDictionary<string, string> field_GenericIDictionary =
-            new System.Collections.Generic.Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
-
-        [Export] private System.Collections.Generic.ICollection<string> field_GenericICollection =
-            new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
-
-        [Export] private System.Collections.Generic.IEnumerable<string> field_GenericIEnumerable =
-            new System.Collections.Generic.List<string> { "elem1", "elem2", "elem3" };
+        [Export] private StringName[] field_StringNameArray = { "foo", "bar" };
+        [Export] private NodePath[] field_NodePathArray = { "foo", "bar" };
+        [Export] private RID[] field_RIDArray = { default, default, default };
 
         // Variant
         [Export] private Variant field_Variant = "foo";
@@ -118,15 +99,5 @@ namespace Godot.SourceGenerators.Sample
 
         [Export] private Godot.Collections.Array field_GodotArray =
             new() { "foo", 10, Vector2.Up, Colors.Chocolate };
-
-        [Export] private System.Collections.IDictionary field_IDictionary =
-            new System.Collections.Generic.Dictionary<object, object>
-                { { "foo", 10 }, { Vector2.Up, Colors.Chocolate } };
-
-        [Export] private System.Collections.ICollection field_ICollection =
-            new System.Collections.Generic.List<object> { "foo", 10, Vector2.Up, Colors.Chocolate };
-
-        [Export] private System.Collections.IEnumerable field_IEnumerable =
-            new System.Collections.Generic.List<object> { "foo", 10, Vector2.Up, Colors.Chocolate };
     }
 }

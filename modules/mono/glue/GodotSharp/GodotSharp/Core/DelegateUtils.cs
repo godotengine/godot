@@ -99,7 +99,7 @@ namespace Godot
 
             if (TrySerializeSingleDelegate(@delegate, out byte[]? buffer))
             {
-                serializedData.Add(buffer);
+                serializedData.Add((Span<byte>)buffer);
                 return true;
             }
 
@@ -181,8 +181,18 @@ namespace Godot
                                 if (variantType == Variant.Type.Nil)
                                     return false;
 
+                                static byte[] Var2Bytes(in godot_variant var)
+                                {
+                                    NativeFuncs.godotsharp_var2bytes(var, false.ToGodotBool(), out var varBytes);
+                                    using (varBytes)
+                                        return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
+                                }
+
                                 writer.Write(field.Name);
-                                byte[] valueBuffer = GD.Var2Bytes(field.GetValue(target));
+
+                                var fieldValue = field.GetValue(target);
+                                using var fieldValueVariant = Marshaling.ConvertManagedObjectToVariant(fieldValue);
+                                byte[] valueBuffer = Var2Bytes(fieldValueVariant);
                                 writer.Write(valueBuffer.Length);
                                 writer.Write(valueBuffer);
                             }
@@ -320,9 +330,14 @@ namespace Godot
         internal static bool TryDeserializeDelegate(Collections.Array serializedData,
             [MaybeNullWhen(false)] out Delegate @delegate)
         {
+            @delegate = null;
+
             if (serializedData.Count == 1)
             {
-                object elem = serializedData[0];
+                var elem = serializedData[0].Obj;
+
+                if (elem == null)
+                    return false;
 
                 if (elem is Collections.Array multiCastData)
                     return TryDeserializeDelegate(multiCastData, out @delegate);
@@ -330,12 +345,15 @@ namespace Godot
                 return TryDeserializeSingleDelegate((byte[])elem, out @delegate);
             }
 
-            @delegate = null;
-
             var delegates = new List<Delegate>(serializedData.Count);
 
-            foreach (object elem in serializedData)
+            foreach (Variant variantElem in serializedData)
             {
+                var elem = variantElem.Obj;
+
+                if (elem == null)
+                    continue;
+
                 if (elem is Collections.Array multiCastData)
                 {
                     if (TryDeserializeDelegate(multiCastData, out Delegate? oneDelegate))

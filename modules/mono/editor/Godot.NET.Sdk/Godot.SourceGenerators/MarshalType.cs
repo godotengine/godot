@@ -53,16 +53,9 @@ namespace Godot.SourceGenerators
         Vector3Array,
         ColorArray,
         GodotObjectOrDerivedArray,
-        SystemArrayOfSupportedType,
-
-        // Generics
-        GodotGenericDictionary,
-        GodotGenericArray,
-        SystemGenericDictionary,
-        SystemGenericList,
-        GenericIDictionary,
-        GenericICollection,
-        GenericIEnumerable,
+        SystemArrayOfStringName,
+        SystemArrayOfNodePath,
+        SystemArrayOfRID,
 
         // Variant
         Variant,
@@ -74,8 +67,5 @@ namespace Godot.SourceGenerators
         RID,
         GodotDictionary,
         GodotArray,
-        IDictionary,
-        ICollection,
-        IEnumerable,
     }
 }

@@ -21,12 +21,11 @@ namespace Godot
         /// <param name="bytes">Byte array that will be decoded to a <c>Variant</c>.</param>
         /// <param name="allowObjects">If objects should be decoded.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static object Bytes2Var(byte[] bytes, bool allowObjects = false)
+        public static Variant Bytes2Var(Span<byte> bytes, bool allowObjects = false)
         {
             using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
             NativeFuncs.godotsharp_bytes2var(varBytes, allowObjects.ToGodotBool(), out godot_variant ret);
-            using (ret)
-                return Marshaling.ConvertVariantToManagedObject(ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
         /// <summary>
@@ -44,12 +43,10 @@ namespace Godot
         /// </code>
         /// </example>
         /// <returns>The <c>Variant</c> converted to the given <paramref name="type"/>.</returns>
-        public static object Convert(object what, Variant.Type type)
+        public static Variant Convert(Variant what, Variant.Type type)
         {
-            using var whatVariant = Marshaling.ConvertManagedObjectToVariant(what);
-            NativeFuncs.godotsharp_convert(whatVariant, (int)type, out godot_variant ret);
-            using (ret)
-                return Marshaling.ConvertVariantToManagedObject(ret);
+            NativeFuncs.godotsharp_convert((godot_variant)what.NativeVar, (int)type, out godot_variant ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
         /// <summary>
@@ -83,10 +80,9 @@ namespace Godot
         /// </example>
         /// <param name="var">Variable that will be hashed.</param>
         /// <returns>Hash of the variable passed.</returns>
-        public static int Hash(object var)
+        public static int Hash(Variant var)
         {
-            using var variant = Marshaling.ConvertManagedObjectToVariant(var);
-            return NativeFuncs.godotsharp_hash(variant);
+            return NativeFuncs.godotsharp_hash((godot_variant)var.NativeVar);
         }
 
         /// <summary>
@@ -515,16 +511,16 @@ namespace Godot
         /// </summary>
         /// <param name="what">Arguments that will converted to string.</param>
         /// <returns>The string formed by the given arguments.</returns>
-        public static string Str(params object[] what)
+        public static string Str(params Variant[] what)
         {
-            using var whatGodotArray = Marshaling.ConvertSystemArrayToNativeGodotArray(what);
-            NativeFuncs.godotsharp_str(whatGodotArray, out godot_string ret);
+            using var whatGodot = new Godot.Collections.Array(what);
+            NativeFuncs.godotsharp_str((godot_array)whatGodot.NativeValue, out godot_string ret);
             using (ret)
                 return Marshaling.ConvertStringToManaged(ret);
         }
 
         /// <summary>
-        /// Converts a formatted string that was returned by <see cref="Var2Str(object)"/> to the original value.
+        /// Converts a formatted string that was returned by <see cref="Var2Str(Variant)"/> to the original value.
         /// </summary>
         /// <example>
         /// <code>
@@ -535,27 +531,25 @@ namespace Godot
         /// </example>
         /// <param name="str">String that will be converted to Variant.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static object Str2Var(string str)
+        public static Variant Str2Var(string str)
         {
             using var godotStr = Marshaling.ConvertStringToNative(str);
             NativeFuncs.godotsharp_str2var(godotStr, out godot_variant ret);
-            using (ret)
-                return Marshaling.ConvertVariantToManagedObject(ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
         /// <summary>
         /// Encodes a <c>Variant</c> value to a byte array.
         /// If <paramref name="fullObjects"/> is <see langword="true"/> encoding objects is allowed
         /// (and can potentially include code).
-        /// Deserialization can be done with <see cref="Bytes2Var(byte[], bool)"/>.
+        /// Deserialization can be done with <see cref="Bytes2Var(Span{byte}, bool)"/>.
         /// </summary>
         /// <param name="var">Variant that will be encoded.</param>
         /// <param name="fullObjects">If objects should be serialized.</param>
         /// <returns>The <c>Variant</c> encoded as an array of bytes.</returns>
-        public static byte[] Var2Bytes(object var, bool fullObjects = false)
+        public static byte[] Var2Bytes(Variant var, bool fullObjects = false)
         {
-            using var variant = Marshaling.ConvertManagedObjectToVariant(var);
-            NativeFuncs.godotsharp_var2bytes(variant, fullObjects.ToGodotBool(), out var varBytes);
+            NativeFuncs.godotsharp_var2bytes((godot_variant)var.NativeVar, fullObjects.ToGodotBool(), out var varBytes);
             using (varBytes)
                 return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
@@ -577,10 +571,9 @@ namespace Godot
         /// </example>
         /// <param name="var">Variant that will be converted to string.</param>
         /// <returns>The <c>Variant</c> encoded as a string.</returns>
-        public static string Var2Str(object var)
+        public static string Var2Str(Variant var)
         {
-            using var variant = Marshaling.ConvertManagedObjectToVariant(var);
-            NativeFuncs.godotsharp_var2str(variant, out godot_string ret);
+            NativeFuncs.godotsharp_var2str((godot_variant)var.NativeVar, out godot_string ret);
             using (ret)
                 return Marshaling.ConvertStringToManaged(ret);
         }

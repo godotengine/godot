@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GodotTools.BuildLogger;
@@ -156,9 +157,9 @@ namespace GodotTools.Build
             AddLoggerArgument(buildInfo, arguments);
 
             // Custom properties
-            foreach (string customProperty in buildInfo.CustomProperties)
+            foreach (var customProperty in buildInfo.CustomProperties)
             {
-                arguments.Add("-p:" + customProperty);
+                arguments.Add("-p:" + (string)customProperty);
             }
         }
 
@@ -198,9 +199,9 @@ namespace GodotTools.Build
             AddLoggerArgument(buildInfo, arguments);
 
             // Custom properties
-            foreach (string customProperty in buildInfo.CustomProperties)
+            foreach (var customProperty in buildInfo.CustomProperties)
             {
-                arguments.Add("-p:" + customProperty);
+                arguments.Add("-p:" + (string)customProperty);
             }
 
             // Publish output directory
