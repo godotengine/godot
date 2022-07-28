@@ -41,11 +41,6 @@
     <PackageReference Include="ReflectionAnalyzers" Version="0.1.22-dev" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <!--PackageReference Include="IDisposableAnalyzers" Version="3.4.13" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" /-->
   </ItemGroup>
-  <!-- Targets for generating Godot.NativeInterop.CustomUnsafe -->
-  <Import Project="GenerateGodotCustomUnsafe.targets" />
-  <ItemGroup>
-    <None Include="GenerateGodotCustomUnsafe.targets" />
-  </ItemGroup>
   <!-- Sources -->
   <ItemGroup>
     <Compile Include="Core\AABB.cs" />
@@ -89,6 +84,7 @@
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />
+    <Compile Include="Core\NativeInterop\CustomUnsafe.cs" />
     <Compile Include="Core\NativeInterop\ExceptionUtils.cs" />
     <Compile Include="Core\NativeInterop\GodotDllImportResolver.cs" />
     <Compile Include="Core\NativeInterop\InteropUtils.cs" />
