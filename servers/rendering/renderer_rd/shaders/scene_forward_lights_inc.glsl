@@ -199,7 +199,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
 		float cLdotH5 = SchlickFresnel(cLdotH);
-		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
+		// Calculate Fresnel using specular occlusion term from Filament:
+		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
+		float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), 0.0, 1.0);
+		vec3 F = f0 + (f90 - f0) * cLdotH5;
 
 		vec3 specular_brdf_NL = cNdotL * D * F * G;
 
