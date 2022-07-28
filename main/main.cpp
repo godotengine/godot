@@ -713,7 +713,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			OS::get_singleton()->_verbose_stdout = true;
 		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
-			if quiet_header {
+			if (quiet_header) {
 				// the option is specified twice
 				quiet_stdout = true;
 			} else {
