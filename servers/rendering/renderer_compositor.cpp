@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "servers/xr_server.h"
 
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
 bool RendererCompositor::low_end = false;
@@ -46,7 +47,11 @@ bool RendererCompositor::is_xr_enabled() const {
 }
 
 RendererCompositor::RendererCompositor() {
-	xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+		xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+	} else {
+		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+	}
 }
 
 RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

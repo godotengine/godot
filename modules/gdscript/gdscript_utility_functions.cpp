@@ -115,6 +115,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		if (p_arg_count < 1) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
+			r_error.expected = 1;
 			*r_ret = Variant();
 			return;
 		}

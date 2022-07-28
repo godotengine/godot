@@ -37,6 +37,7 @@
 
 void PostImportPluginSkeletonTrackOrganizer::get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/remove_tracks/except_bone_transform"), false));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/remove_tracks/unimportant_positions"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/remove_tracks/unmapped_bones"), false));
 	}
@@ -58,6 +59,7 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 		if (!src_skeleton) {
 			return;
 		}
+		bool remove_except_bone = bool(p_options["retarget/remove_tracks/except_bone_transform"]);
 		bool remove_positions = bool(p_options["retarget/remove_tracks/unimportant_positions"]);
 		bool remove_unmapped_bones = bool(p_options["retarget/remove_tracks/unmapped_bones"]);
 
@@ -75,31 +77,40 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 				int track_len = anim->get_track_count();
 				Vector<int> remove_indices;
 				for (int i = 0; i < track_len; i++) {
-					if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
-						continue;
-					}
-
 					String track_path = String(anim->track_get_path(i).get_concatenated_names());
 					Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-					if (node) {
-						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-						if (track_skeleton && track_skeleton == src_skeleton) {
-							StringName bn = anim->track_get_path(i).get_subname(0);
-							if (bn) {
-								int prof_idx = profile->find_bone(bone_map->find_profile_bone_name(bn));
-								if (remove_unmapped_bones && prof_idx < 0) {
-									remove_indices.push_back(i);
+					if (!node) {
+						if (remove_except_bone) {
+							remove_indices.push_back(i);
+						}
+						continue;
+					}
+					Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+					if (track_skeleton && track_skeleton == src_skeleton) {
+						if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
+							if (remove_except_bone) {
+								remove_indices.push_back(i);
+							}
+							continue;
+						}
+						StringName bn = anim->track_get_path(i).get_subname(0);
+						if (bn) {
+							int prof_idx = profile->find_bone(bone_map->find_profile_bone_name(bn));
+							if (remove_unmapped_bones && prof_idx < 0) {
+								remove_indices.push_back(i);
+								continue;
+							}
+							if (remove_positions && anim->track_get_type(i) == Animation::TYPE_POSITION_3D && prof_idx >= 0) {
+								StringName prof_bn = profile->get_bone_name(prof_idx);
+								if (prof_bn == profile->get_root_bone() || prof_bn == profile->get_scale_base_bone()) {
 									continue;
 								}
-								if (remove_positions && anim->track_get_type(i) == Animation::TYPE_POSITION_3D && prof_idx >= 0) {
-									StringName prof_bn = profile->get_bone_name(prof_idx);
-									if (prof_bn == profile->get_root_bone() || prof_bn == profile->get_scale_base_bone()) {
-										continue;
-									}
-									remove_indices.push_back(i);
-								}
+								remove_indices.push_back(i);
 							}
 						}
+					}
+					if (remove_except_bone) {
+						remove_indices.push_back(i);
 					}
 				}
 

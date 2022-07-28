@@ -262,6 +262,7 @@ private:
 	bool reset_on_save = true;
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
+	bool movie_quit_on_finish = false;
 	bool processing = false;
 	bool active = true;
 
@@ -372,6 +373,9 @@ public:
 
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
+
+	void set_movie_quit_on_finish_enabled(bool p_enabled);
+	bool is_movie_quit_on_finish_enabled() const;
 
 	void seek(double p_time, bool p_update = false);
 	void seek_delta(double p_time, float p_delta);
