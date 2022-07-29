@@ -154,17 +154,19 @@ void NetworkedMultiplayerCustom::set_max_packet_size(int p_max_packet_size) {
 }
 
 void NetworkedMultiplayerCustom::set_connection_status(NetworkedMultiplayerPeer::ConnectionStatus p_connection_status) {
-	// Can only go to connecting, if we are disconnected.
-	if (p_connection_status == ConnectionStatus::CONNECTION_CONNECTING && connection_status == ConnectionStatus::CONNECTION_DISCONNECTED) {
-		connection_status = p_connection_status;
+	if (connection_status == p_connection_status) {
+		return;
 	}
-	// Can only go to connected, if we are connecting.
-	else if (p_connection_status == ConnectionStatus::CONNECTION_CONNECTED && connection_status == ConnectionStatus::CONNECTION_CONNECTING) {
+
+	ERR_FAIL_COND_MSG(p_connection_status == ConnectionStatus::CONNECTION_CONNECTING && connection_status != ConnectionStatus::CONNECTION_DISCONNECTED,
+			"Can only change connection status to CONNECTION_CONNECTING from CONNECTION_DISCONNECTED");
+	ERR_FAIL_COND_MSG(p_connection_status == ConnectionStatus::CONNECTION_CONNECTED && connection_status != ConnectionStatus::CONNECTION_CONNECTING,
+			"Can only change connection status to CONNECTION_CONNECTED from CONNECTION_CONNECTING");
+
+	if (p_connection_status == ConnectionStatus::CONNECTION_CONNECTED) {
 		connection_status = p_connection_status;
 		emit_signal("connection_succeeded");
-	}
-	// Can only go to disconnected, if we aren't already disconnected.
-	else if (p_connection_status == ConnectionStatus::CONNECTION_DISCONNECTED && connection_status != ConnectionStatus::CONNECTION_DISCONNECTED) {
+	} else if (p_connection_status == ConnectionStatus::CONNECTION_DISCONNECTED) {
 		ConnectionStatus old_connection_status = connection_status;
 		connection_status = p_connection_status;
 
@@ -175,6 +177,8 @@ void NetworkedMultiplayerCustom::set_connection_status(NetworkedMultiplayerPeer:
 				emit_signal("server_disconnected");
 			}
 		}
+	} else {
+		connection_status = p_connection_status;
 	}
 }
 
