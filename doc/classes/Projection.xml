@@ -211,13 +211,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="w" type="Vector4" setter="" getter="" default="Vector4(0, 0, 0)">
+		<member name="w" type="Vector4" setter="" getter="" default="Vector4(0, 0, 0, 1)">
 		</member>
-		<member name="x" type="Vector4" setter="" getter="" default="Vector4(1, 0, 0)">
+		<member name="x" type="Vector4" setter="" getter="" default="Vector4(1, 0, 0, 0)">
 		</member>
-		<member name="y" type="Vector4" setter="" getter="" default="Vector4(0, 1, 0)">
+		<member name="y" type="Vector4" setter="" getter="" default="Vector4(0, 1, 0, 0)">
 		</member>
-		<member name="z" type="Vector4" setter="" getter="" default="Vector4(0, 0, 1)">
+		<member name="z" type="Vector4" setter="" getter="" default="Vector4(0, 0, 1, 0)">
 		</member>
 	</members>
 	<constants>

@@ -173,13 +173,13 @@
 		<constant name="AXIS_W" value="3">
 			Enumerated value for the W axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="ZERO" value="Vector4(0, 0, 0)">
+		<constant name="ZERO" value="Vector4(0, 0, 0, 0)">
 			Zero vector, a vector with all components set to [code]0[/code].
 		</constant>
-		<constant name="ONE" value="Vector4(1, 1, 1)">
+		<constant name="ONE" value="Vector4(1, 1, 1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
 		</constant>
-		<constant name="INF" value="Vector4(inf, inf, inf)">
+		<constant name="INF" value="Vector4(inf, inf, inf, inf)">
 			Infinity vector, a vector with all components set to [constant @GDScript.INF].
 		</constant>
 	</constants>
