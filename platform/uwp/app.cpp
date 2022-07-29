@@ -342,8 +342,9 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		os->input_event(screen_drag);
 	} else {
 		// In case the mouse grabbed, MouseMoved will handle this
-		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
+		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED) {
 			return;
+		}
 
 		Ref<InputEventMouseMotion> mouse_motion;
 		mouse_motion.instance();
@@ -360,8 +361,9 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	// In case the mouse isn't grabbed, PointerMoved will handle this
-	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED)
+	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED) {
 		return;
+	}
 
 	Windows::Foundation::Point pos;
 	pos.X = last_mouse_pos.X + args->MouseDelta.X;
