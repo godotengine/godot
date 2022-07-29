@@ -33,7 +33,6 @@
 
 #ifdef DBUS_ENABLED
 
-#include <dbus/dbus.h>
 #include <stdint.h>
 
 class FreeDesktopScreenSaver {
@@ -42,7 +41,7 @@ private:
 	bool unsupported = false;
 
 public:
-	FreeDesktopScreenSaver() {}
+	FreeDesktopScreenSaver();
 	void inhibit();
 	void uninhibit();
 };

@@ -32,6 +32,9 @@ if env["fontconfig"]:
 if env["udev"]:
     common_linuxbsd.append("libudev-so_wrap.c")
 
+if env["dbus"]:
+    common_linuxbsd.append("dbus-so_wrap.c")
+
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
