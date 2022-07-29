@@ -105,12 +105,6 @@
 				Returns project-specific metadata for the [code]section[/code] and [code]key[/code] specified. If the metadata doesn't exist, [code]default[/code] will be returned instead. See also [method set_project_metadata].
 			</description>
 		</method>
-		<method name="get_project_settings_dir" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the project-specific settings path. Projects all have a unique subdirectory inside the settings path where project-specific settings are saved.
-			</description>
-		</method>
 		<method name="get_recent_dirs" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>

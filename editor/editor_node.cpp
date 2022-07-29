@@ -1376,7 +1376,7 @@ void EditorNode::_get_scene_metadata(const String &p_file) {
 		return;
 	}
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
@@ -1408,7 +1408,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 		return;
 	}
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
@@ -4608,13 +4608,13 @@ void EditorNode::_save_docks() {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	// Load and amend existing config if it exists.
-	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	config->load(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
 	_save_docks_to_config(config, "docks");
 	_save_open_scenes_to_config(config, "EditorNode");
 	editor_data.get_plugin_window_layout(config);
 
-	config->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	config->save(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 }
 
 void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
@@ -4678,7 +4678,7 @@ void EditorNode::_dock_split_dragged(int ofs) {
 void EditorNode::_load_docks() {
 	Ref<ConfigFile> config;
 	config.instantiate();
-	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 	if (err != OK) {
 		// No config.
 		if (overridden_default_layout >= 0) {
@@ -4911,7 +4911,7 @@ bool EditorNode::has_scenes_in_session() {
 	}
 	Ref<ConfigFile> config;
 	config.instantiate();
-	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 	if (err != OK) {
 		return false;
 	}
