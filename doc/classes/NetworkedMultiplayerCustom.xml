@@ -24,6 +24,7 @@
 			<argument index="0" name="self_peer_id" type="int" />
 			<description>
 				Initialize the peer with the given [code]peer_id[/code] (must be between 1 and 2147483647).
+				Can only be called if the connection status is [constant NetworkedMultiplayerPeer.CONNECTION_CONNECTING]. See [method set_connection_status].
 			</description>
 		</method>
 		<method name="set_connection_status">
