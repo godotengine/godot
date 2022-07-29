@@ -5,23 +5,23 @@
 ################################################################################
 # Commands to always run
 ################################################################################
-_target_javascript_logo = custom_target(
-    'javascript_logo',
+_target_web_logo = custom_target(
+    'web_logo',
     output: ['logo.gen.h'],
     input: ['logo.png'],
-    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'javascript'],
+    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'web'],
     build_by_default: true
 )
-SOURCES += [_target_javascript_logo]
+SOURCES += [_target_web_logo]
 
-_target_javascript_run_icon = custom_target(
-    'javascript_run_icon',
+_target_web_run_icon = custom_target(
+    'web_run_icon',
     output: ['run_icon.gen.h'],
     input: ['run_icon.png'],
-    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'javascript'],
+    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'web'],
     build_by_default: true
 )
-SOURCES += [_target_javascript_run_icon]
+SOURCES += [_target_web_run_icon]
 
 
 ################################################################################
@@ -43,7 +43,7 @@ dir_base = meson.current_source_dir()
    MAIN_SOURCES += files('javascript_runtime.cpp')
 
     # the src files for the javascript *platform* library
-    _javascript_srcs = files([
+    _javascript_srcs = files(
         'audio_driver_javascript.cpp',
         'display_server_javascript.cpp',
         'http_client_javascript.cpp',
@@ -51,7 +51,7 @@ dir_base = meson.current_source_dir()
         'javascript_main.cpp',
         'os_javascript.cpp',
         'api/javascript_tools_editor_plugin.cpp',
-    ])
+    )
 
     DEPENDENCIES += _js_deps
 

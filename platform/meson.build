@@ -1,6 +1,6 @@
 _platform_apis = [
     'android',
-    'javascript'
+    'web'
 ]
 
 _register_platform_apis_target = custom_target(
@@ -14,14 +14,14 @@ SOURCES += [_register_platform_apis_target]
 # platform apis
 SOURCES += files(
     'android/api/api.cpp',
-    'javascript/api/api.cpp'
+    'web/api/api.cpp'
 )
 
 subdir('android')
 subdir('ios')
-subdir('javascript')
 subdir('linuxbsd')
 subdir('macos')
 #subdir('server')
 subdir('uwp')
+subdir('web')
 subdir('windows')
