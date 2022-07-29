@@ -49,7 +49,7 @@ MonoObject *godot_icall_Callable_Call(GDMonoMarshal::M_Callable *p_callable, Mon
 
 	Variant result;
 	Callable::CallError error;
-	callable.call(args.ptr(), argc, result, error);
+	callable.callp(args.ptr(), argc, result, error);
 
 	return GDMonoMarshal::variant_to_mono_object(result);
 }
@@ -68,7 +68,7 @@ void godot_icall_Callable_CallDeferred(GDMonoMarshal::M_Callable *p_callable, Mo
 		args.set(i, &arg_store.get(i));
 	}
 
-	callable.call_deferred(args.ptr(), argc);
+	callable.call_deferredp(args.ptr(), argc);
 }
 
 void godot_register_callable_icalls() {

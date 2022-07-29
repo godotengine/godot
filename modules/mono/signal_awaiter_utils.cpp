@@ -44,7 +44,7 @@ Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signa
 	SignalAwaiterCallable *awaiter_callable = memnew(SignalAwaiterCallable(p_target, p_awaiter, p_signal));
 	Callable callable = Callable(awaiter_callable);
 
-	return p_source->connect(p_signal, callable, Vector<Variant>(), Object::CONNECT_ONESHOT);
+	return p_source->connect(p_signal, callable, Object::CONNECT_ONESHOT);
 }
 
 bool SignalAwaiterCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
