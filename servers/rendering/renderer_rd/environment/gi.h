@@ -232,16 +232,13 @@ private:
 			uint32_t max_cascades;
 
 			int32_t screen_size[2];
-			uint32_t use_occlusion;
 			float y_mult;
 
-			uint32_t probe_axis_size;
 			float z_near;
-			float reserved1;
-			float reserved2;
 
-			float cam_transform[16];
-			float inv_projection[16];
+			float inv_projection[3][4];
+			float cam_basis[3][3];
+			float cam_origin[3];
 		};
 
 		SdfgiDebugShaderRD debug;
