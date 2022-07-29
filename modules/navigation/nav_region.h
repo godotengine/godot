@@ -53,7 +53,7 @@ class NavRegion : public NavRid {
 	bool polygons_dirty = true;
 
 	/// Cache
-	std::vector<gd::Polygon> polygons;
+	LocalVector<gd::Polygon> polygons;
 
 public:
 	void scratch_polygons() {
@@ -91,7 +91,7 @@ public:
 	Vector3 get_connection_pathway_start(int p_connection_id) const;
 	Vector3 get_connection_pathway_end(int p_connection_id) const;
 
-	std::vector<gd::Polygon> const &get_polygons() const {
+	LocalVector<gd::Polygon> const &get_polygons() const {
 		return polygons;
 	}
 
