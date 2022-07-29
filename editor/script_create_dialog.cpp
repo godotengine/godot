@@ -38,6 +38,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
@@ -620,9 +621,9 @@ void ScriptCreateDialog::_update_template_menu() {
 				} else {
 					String template_directory;
 					if (template_location == ScriptLanguage::TEMPLATE_PROJECT) {
-						template_directory = EditorSettings::get_singleton()->get_project_script_templates_dir();
+						template_directory = EditorPaths::get_singleton()->get_project_script_templates_dir();
 					} else {
-						template_directory = EditorSettings::get_singleton()->get_script_templates_dir();
+						template_directory = EditorPaths::get_singleton()->get_script_templates_dir();
 					}
 					templates_found = _get_user_templates(language, current_node, template_directory, template_location);
 				}

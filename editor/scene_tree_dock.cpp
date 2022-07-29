@@ -39,6 +39,7 @@
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/multi_node_edit.h"
@@ -3177,7 +3178,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 			favorite_nodes->get_child(i)->queue_delete();
 		}
 
-		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites.Node"), FileAccess::READ);
+		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("favorites.Node"), FileAccess::READ);
 		if (f.is_valid()) {
 			while (!f->eof_reached()) {
 				String l = f->get_line().strip_edges();

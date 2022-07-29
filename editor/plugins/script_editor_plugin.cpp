@@ -41,6 +41,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -1542,7 +1543,7 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog_option = THEME_SAVE_AS;
 	file_dialog->clear_filters();
 	file_dialog->add_filter("*.tet");
-	file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
+	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
 	file_dialog->popup_file_dialog();
 	file_dialog->set_title(TTR("Save Theme As..."));
 }
@@ -3264,7 +3265,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
 
 	// Save the cache.
-	script_editor_cache->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
+	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
 }
 
 void ScriptEditor::_help_class_open(const String &p_class) {
@@ -3645,7 +3646,7 @@ ScriptEditor::ScriptEditor() {
 	current_theme = "";
 
 	script_editor_cache.instantiate();
-	script_editor_cache->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
+	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
 
 	completion_cache = memnew(EditorScriptCodeCompletionCache);
 	restoring_layout = false;

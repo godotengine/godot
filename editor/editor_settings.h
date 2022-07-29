@@ -150,14 +150,6 @@ public:
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
 
-	String get_data_dir() const;
-	String get_export_templates_dir() const;
-	String get_project_settings_dir() const;
-	String get_text_editor_themes_dir() const;
-	String get_script_templates_dir() const;
-	String get_project_script_templates_dir() const;
-	String get_feature_profiles_dir() const;
-
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
 
