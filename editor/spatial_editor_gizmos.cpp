@@ -51,6 +51,7 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room.h"
+#include "scene/3d/shape_cast.h"
 #include "scene/3d/soft_body.h"
 #include "scene/3d/spring_arm.h"
 #include "scene/3d/sprite_3d.h"
@@ -1997,6 +1998,44 @@ void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_collision_segments(raycast->get_debug_line_vertices());
+}
+
+/////
+
+ShapeCastGizmoPlugin::ShapeCastGizmoPlugin() {
+	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	create_material("shape_material", gizmo_color);
+	const float gizmo_value = gizmo_color.get_v();
+	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
+	create_material("shape_material_disabled", gizmo_color_disabled);
+}
+
+bool ShapeCastGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<ShapeCast>(p_spatial) != nullptr;
+}
+
+String ShapeCastGizmoPlugin::get_name() const {
+	return "ShapeCast";
+}
+
+int ShapeCastGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void ShapeCastGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	ShapeCast *shapecast = Object::cast_to<ShapeCast>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	const Ref<SpatialMaterial> material = shapecast->is_enabled() ? shapecast->get_debug_material() : get_material("shape_material_disabled");
+
+	p_gizmo->add_lines(shapecast->get_debug_line_vertices(), material);
+
+	if (shapecast->get_shape().is_valid()) {
+		p_gizmo->add_lines(shapecast->get_debug_shape_vertices(), material);
+	}
+
+	p_gizmo->add_collision_segments(shapecast->get_debug_line_vertices());
 }
 
 /////
