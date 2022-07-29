@@ -124,7 +124,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	}
 
 	// List of all reachable navigation polys.
-	std::vector<gd::NavigationPoly> navigation_polys;
+	LocalVector<gd::NavigationPoly> navigation_polys;
 	navigation_polys.reserve(polygons.size() * 0.75);
 
 	// Add the start polygon to the reachable navigation polygons.
@@ -177,20 +177,18 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				const Vector3 new_entry = Geometry::get_closest_point_to_segment(least_cost_poly->entry, pathway);
 				const float new_distance = (least_cost_poly->entry.distance_to(new_entry) * region_travel_cost) + region_enter_cost + least_cost_poly->traveled_distance;
 
-				const std::vector<gd::NavigationPoly>::iterator it = std::find(
-						navigation_polys.begin(),
-						navigation_polys.end(),
-						gd::NavigationPoly(connection.polygon));
+				int64_t already_visited_polygon_index = navigation_polys.find(gd::NavigationPoly(connection.polygon));
 
-				if (it != navigation_polys.end()) {
+				if (already_visited_polygon_index != -1) {
 					// Polygon already visited, check if we can reduce the travel cost.
-					if (new_distance < it->traveled_distance) {
-						it->back_navigation_poly_id = least_cost_id;
-						it->back_navigation_edge = connection.edge;
-						it->back_navigation_edge_pathway_start = connection.pathway_start;
-						it->back_navigation_edge_pathway_end = connection.pathway_end;
-						it->traveled_distance = new_distance;
-						it->entry = new_entry;
+					gd::NavigationPoly &avp = navigation_polys[already_visited_polygon_index];
+					if (new_distance < avp.traveled_distance) {
+						avp.back_navigation_poly_id = least_cost_id;
+						avp.back_navigation_edge = connection.edge;
+						avp.back_navigation_edge_pathway_start = connection.pathway_start;
+						avp.back_navigation_edge_pathway_end = connection.pathway_end;
+						avp.traveled_distance = new_distance;
+						avp.entry = new_entry;
 					}
 				} else {
 					// Add the neighbour polygon to the reachable ones.
@@ -477,15 +475,15 @@ void NavMap::add_region(NavRegion *p_region) {
 }
 
 void NavMap::remove_region(NavRegion *p_region) {
-	const std::vector<NavRegion *>::iterator it = std::find(regions.begin(), regions.end(), p_region);
-	if (it != regions.end()) {
-		regions.erase(it);
+	int64_t region_index = regions.find(p_region);
+	if (region_index != -1) {
+		regions.remove_unordered(region_index);
 		regenerate_links = true;
 	}
 }
 
 bool NavMap::has_agent(RvoAgent *agent) const {
-	return std::find(agents.begin(), agents.end(), agent) != agents.end();
+	return (agents.find(agent) != -1);
 }
 
 void NavMap::add_agent(RvoAgent *agent) {
@@ -497,15 +495,15 @@ void NavMap::add_agent(RvoAgent *agent) {
 
 void NavMap::remove_agent(RvoAgent *agent) {
 	remove_agent_as_controlled(agent);
-	const std::vector<RvoAgent *>::iterator it = std::find(agents.begin(), agents.end(), agent);
-	if (it != agents.end()) {
-		agents.erase(it);
+	int64_t agent_index = agents.find(agent);
+	if (agent_index != -1) {
+		agents.remove_unordered(agent_index);
 		agents_dirty = true;
 	}
 }
 
 void NavMap::set_agent_as_controlled(RvoAgent *agent) {
-	const bool exist = std::find(controlled_agents.begin(), controlled_agents.end(), agent) != controlled_agents.end();
+	const bool exist = (controlled_agents.find(agent) != -1);
 	if (!exist) {
 		ERR_FAIL_COND(!has_agent(agent));
 		controlled_agents.push_back(agent);
@@ -513,22 +511,23 @@ void NavMap::set_agent_as_controlled(RvoAgent *agent) {
 }
 
 void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
-	const std::vector<RvoAgent *>::iterator it = std::find(controlled_agents.begin(), controlled_agents.end(), agent);
-	if (it != controlled_agents.end()) {
-		controlled_agents.erase(it);
+	int64_t active_avoidance_agent_index = controlled_agents.find(agent);
+	if (active_avoidance_agent_index != -1) {
+		controlled_agents.remove_unordered(active_avoidance_agent_index);
+		agents_dirty = true;
 	}
 }
 
 void NavMap::sync() {
 	// Check if we need to update the links.
 	if (regenerate_polygons) {
-		for (size_t r(0); r < regions.size(); r++) {
+		for (uint32_t r = 0; r < regions.size(); r++) {
 			regions[r]->scratch_polygons();
 		}
 		regenerate_links = true;
 	}
 
-	for (size_t r(0); r < regions.size(); r++) {
+	for (uint32_t r = 0; r < regions.size(); r++) {
 		if (regions[r]->sync()) {
 			regenerate_links = true;
 		}
@@ -536,33 +535,33 @@ void NavMap::sync() {
 
 	if (regenerate_links) {
 		// Remove regions connections.
-		for (size_t r(0); r < regions.size(); r++) {
+		for (uint32_t r = 0; r < regions.size(); r++) {
 			regions[r]->get_connections().clear();
 		}
 
 		// Resize the polygon count.
 		int count = 0;
-		for (size_t r(0); r < regions.size(); r++) {
+		for (uint32_t r = 0; r < regions.size(); r++) {
 			count += regions[r]->get_polygons().size();
 		}
 		polygons.resize(count);
 
 		// Copy all region polygons in the map.
 		count = 0;
-		for (size_t r(0); r < regions.size(); r++) {
-			std::copy(
-					regions[r]->get_polygons().data(),
-					regions[r]->get_polygons().data() + regions[r]->get_polygons().size(),
-					polygons.begin() + count);
+		for (uint32_t r = 0; r < regions.size(); r++) {
+			const LocalVector<gd::Polygon> &polygons_source = regions[r]->get_polygons();
+			for (uint32_t n = 0; n < polygons_source.size(); n++) {
+				polygons[count + n] = polygons_source[n];
+			}
 			count += regions[r]->get_polygons().size();
 		}
 
 		// Group all edges per key.
 		Map<gd::EdgeKey, Vector<gd::Edge::Connection>> connections;
-		for (size_t poly_id(0); poly_id < polygons.size(); poly_id++) {
+		for (uint32_t poly_id = 0; poly_id < polygons.size(); poly_id++) {
 			gd::Polygon &poly(polygons[poly_id]);
 
-			for (size_t p(0); p < poly.points.size(); p++) {
+			for (uint32_t p = 0; p < poly.points.size(); p++) {
 				int next_point = (p + 1) % poly.points.size();
 				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
 
@@ -669,6 +668,7 @@ void NavMap::sync() {
 
 	// Update agents tree.
 	if (agents_dirty) {
+		// cannot use LocalVector here as RVO library expects std::vector to build KdTree
 		std::vector<RVO::Agent *> raw_agents;
 		raw_agents.reserve(agents.size());
 		for (size_t i(0); i < agents.size(); i++) {
@@ -697,7 +697,7 @@ void NavMap::step(real_t p_deltatime) {
 				controlled_agents.size(),
 				this,
 				&NavMap::compute_single_step,
-				controlled_agents.data());
+				controlled_agents.ptr());
 	}
 }
 
@@ -707,7 +707,7 @@ void NavMap::dispatch_callbacks() {
 	}
 }
 
-void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const {
+void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const {
 	Vector3 from = path[path.size() - 1];
 
 	if (from.is_equal_approx(p_to_point)) {
