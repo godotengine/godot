@@ -1886,6 +1886,12 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		tile_atlas_control_unscaled->update();
 		alternative_tiles_control->update();
 		alternative_tiles_control_unscaled->update();
+
+		if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
+			if (Vector2(drag_start_mouse_pos).distance_to(tile_atlas_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
+				drag_type = DRAG_TYPE_NONE;
+			}
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1911,7 +1917,10 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
-				// Right click pressed
+				drag_type = DRAG_TYPE_MAY_POPUP_MENU;
+				drag_start_mouse_pos = alternative_tiles_control->get_local_mouse_position();
+			} else if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
+				// Right click released and wasn't dragged too far
 				Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
 
 				selection.clear();
