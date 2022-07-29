@@ -3603,7 +3603,10 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
+	bool is_script = false;
 	if (get_edited_object() && s.is_valid()) {
+		is_script = true;
+		InspectorDock::get_singleton()->store_script_properties(get_edited_object());
 		s->call("set_instance_base_type", get_edited_object()->get_class());
 	}
 
@@ -3628,6 +3631,11 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 
 	emit_changed(get_edited_property(), p_resource);
 	update_property();
+
+	if (is_script) {
+		// Restore properties if script was changed.
+		InspectorDock::get_singleton()->apply_script_properties(get_edited_object());
+	}
 
 	// Automatically suggest setting up the path for a ViewportTexture.
 	if (vpt.is_valid() && vpt->get_viewport_path_in_scene().is_empty()) {

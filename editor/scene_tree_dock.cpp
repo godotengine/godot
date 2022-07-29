@@ -1952,16 +1952,35 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		return;
 	}
 
-	editor_data->get_undo_redo().create_action(TTR("Attach Script"));
-	for (Node *E : selected) {
-		Ref<Script> existing = E->get_script();
-		editor_data->get_undo_redo().add_do_method(E, "set_script", p_script);
-		editor_data->get_undo_redo().add_undo_method(E, "set_script", existing);
+	if (selected.size() == 1) {
+		Node *node = selected.front()->get();
+		Ref<Script> existing = node->get_script();
+
+		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo().add_do_method(InspectorDock::get_singleton(), "store_script_properties", node);
+		editor_data->get_undo_redo().add_undo_method(InspectorDock::get_singleton(), "store_script_properties", node);
+		editor_data->get_undo_redo().add_do_method(node, "set_script", p_script);
+		editor_data->get_undo_redo().add_undo_method(node, "set_script", existing);
+		editor_data->get_undo_redo().add_do_method(InspectorDock::get_singleton(), "apply_script_properties", node);
+		editor_data->get_undo_redo().add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", node);
 		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
 		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().commit_action();
+	} else {
+		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
+			Ref<Script> existing = E->get()->get_script();
+			editor_data->get_undo_redo().add_do_method(InspectorDock::get_singleton(), "store_script_properties", E->get());
+			editor_data->get_undo_redo().add_undo_method(InspectorDock::get_singleton(), "store_script_properties", E->get());
+			editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script);
+			editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+			editor_data->get_undo_redo().add_do_method(InspectorDock::get_singleton(), "apply_script_properties", E->get());
+			editor_data->get_undo_redo().add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", E->get());
+			editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		}
+		editor_data->get_undo_redo().commit_action();
 	}
-
-	editor_data->get_undo_redo().commit_action();
 
 	_push_item(p_script.operator->());
 	_update_script_button();
@@ -2586,11 +2605,14 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	Ref<Script> scr = ResourceLoader::load(p_file);
 	ERR_FAIL_COND(!scr.is_valid());
-	Node *n = get_node(p_to);
-	if (n) {
+	if (Node *n = get_node(p_to)) {
 		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo().add_do_method(InspectorDock::get_singleton(), "store_script_properties", n);
+		editor_data->get_undo_redo().add_undo_method(InspectorDock::get_singleton(), "store_script_properties", n);
 		editor_data->get_undo_redo().add_do_method(n, "set_script", scr);
 		editor_data->get_undo_redo().add_undo_method(n, "set_script", n->get_script());
+		editor_data->get_undo_redo().add_do_method(InspectorDock::get_singleton(), "apply_script_properties", n);
+		editor_data->get_undo_redo().add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", n);
 		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
 		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
 		editor_data->get_undo_redo().commit_action();

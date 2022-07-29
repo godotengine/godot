@@ -453,6 +453,9 @@ void InspectorDock::_bind_methods() {
 
 	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
 
+	ClassDB::bind_method("store_script_properties", &InspectorDock::store_script_properties);
+	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
+
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
 
@@ -563,6 +566,31 @@ void InspectorDock::go_back() {
 
 EditorPropertyNameProcessor::Style InspectorDock::get_property_name_style() const {
 	return property_name_style;
+}
+
+void InspectorDock::store_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+	si->get_property_state(stored_properties);
+}
+
+void InspectorDock::apply_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+
+	for (const Pair<StringName, Variant> &E : stored_properties) {
+		Variant current;
+		if (si->get(E.first, current) && current.get_type() == E.second.get_type()) {
+			si->set(E.first, E.second);
+		}
+	}
+	stored_properties.clear();
 }
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
