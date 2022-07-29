@@ -117,6 +117,27 @@
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
 			</description>
 		</method>
+		<method name="get_custom_data_layer_by_name" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="layer_name" type="String" />
+			<description>
+				Returns the index of the custom data layer identified by the given name.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="layer_index" type="int" />
+			<description>
+				Returns the name of the custom data layer identified by the given index.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_type" qualifiers="const">
+			<return type="int" enum="Variant.Type" />
+			<argument index="0" name="layer_index" type="int" />
+			<description>
+				Returns the type of the custom data layer identified by the given index.
+			</description>
+		</method>
 		<method name="get_custom_data_layers_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -462,6 +483,22 @@
 				Creates a coordinates-level proxy for the given identifiers. A proxy will map set of tile identifiers to another set of identifiers. The alternative tile ID is kept the same when using coordinates-level proxies.
 				This can be used to replace a tile in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target tile when one is available.
 				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
+			</description>
+		</method>
+		<method name="set_custom_data_layer_name">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="layer_name" type="String" />
+			<description>
+				Sets the name of the custom data layer identified by the given index. Names are identifiers of the layer therefore if the name is already taken it will fail and raise an error.
+			</description>
+		</method>
+		<method name="set_custom_data_layer_type">
+			<return type="void" />
+			<argument index="0" name="layer_index" type="int" />
+			<argument index="1" name="layer_type" type="int" enum="Variant.Type" />
+			<description>
+				Sets the type of the custom data layer identified by the given index.
 			</description>
 		</method>
 		<method name="set_navigation_layer_layers">
