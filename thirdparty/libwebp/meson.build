@@ -1,5 +1,9 @@
 if get_option('builtin_libwebp')
-    _builtin_libwebp_srcs = files([
+    _builtin_libwebp_srcs = files(
+        'sharpyuv/sharpyuv.c',
+        'sharpyuv/sharpyuv_csp.c',
+        'sharpyuv/sharpyuv_dsp.c',
+        'sharpyuv/sharpyuv_gamma.c',
         'src/dec/alpha_dec.c',
         'src/dec/buffer_dec.c',
         'src/dec/frame_dec.c',
@@ -94,6 +98,7 @@ if get_option('builtin_libwebp')
         'src/enc/picture_tools_enc.c',
         'src/enc/predictor_enc.c',
         'src/enc/quant_enc.c',
+        'src/enc/picture_csp_enc.c',
         'src/enc/syntax_enc.c',
         'src/enc/token_enc.c',
         'src/enc/tree_enc.c',
@@ -115,11 +120,19 @@ if get_option('builtin_libwebp')
         'src/utils/rescaler_utils.c',
         'src/utils/thread_utils.c',
         'src/utils/utils.c',
-    ])
+    )
+
+    if host_machine.cpu_family() == 'x86_64'
+        webp_simd_files = files('sharpyuv/sharpyuv_sse2.c')
+     else
+        error('Unsupported platform')
+     endif
 
     _builtin_libwebp_incdirs = include_directories('src')
 
-    lib_builtin_libwebp = static_library('builtin_libwebp', _builtin_libwebp_srcs,
+    lib_builtin_libwebp = static_library('builtin_libwebp',
+        _builtin_libwebp_srcs,
+        webp_simd_files,
         include_directories: _builtin_libwebp_incdirs,
         build_by_default: false
     )

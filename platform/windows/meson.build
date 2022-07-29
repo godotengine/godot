@@ -45,6 +45,7 @@ if PLATFORM == 'windows'
         _cpp.find_library('dinput8'),
         _cpp.find_library('dsound'),
         _cpp.find_library('dwmapi'),
+        _cpp.find_library('dwrite'),
         _cpp.find_library('dxguid'),
         _cpp.find_library('imm32'),
         _cpp.find_library('iphlpapi'),

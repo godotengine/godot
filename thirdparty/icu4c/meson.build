@@ -1,5 +1,5 @@
 if get_option('builtin_icu')
-    _builtin_icu_incdirs = include_directories('common')
+    _builtin_icu_incdirs = include_directories('common', 'i18n')
 
     _builtin_icu_srcs = files([
         'common/appendable.cpp',
@@ -200,6 +200,10 @@ if get_option('builtin_icu')
         'common/uvectr32.cpp',
         'common/uvectr64.cpp',
         'common/wintz.cpp',
+        'i18n/ucln_in.cpp',
+        'i18n/uspoof.cpp',
+        'i18n/uspoof_impl.cpp',
+        'i18n/scriptset.cpp',
     ])
 
     _icu_data_name = 'icudt71l.dat'

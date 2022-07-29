@@ -5,7 +5,7 @@ if get_option('tools')
     _exporter_list = [
         'android',
         'ios',
-        'javascript',
+        'web',
         'linuxbsd',
         'macos',
         'uwp',
@@ -94,6 +94,7 @@ if get_option('tools')
     SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
     subdir('debugger')
+    subdir('export')
     subdir('fileserver')
     subdir('import')
     subdir('plugins')

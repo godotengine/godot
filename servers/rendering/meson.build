@@ -4,3 +4,4 @@ SOURCES += files('dummy/storage/texture_storage.cpp')
 
 subdir('renderer_rd')
 subdir('storage')
+subdir('dummy')
