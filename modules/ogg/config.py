@@ -8,8 +8,8 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "OGGPacketSequence",
-        "OGGPacketSequencePlayback",
+        "OggPacketSequence",
+        "OggPacketSequencePlayback",
     ]
 
 

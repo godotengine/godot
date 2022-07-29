@@ -1250,6 +1250,7 @@ static const char *class_renames[][2] = {
 	{ "AnimatedSprite", "AnimatedSprite2D" },
 	{ "AnimationTreePlayer", "AnimationTree" },
 	{ "Area", "Area3D" }, // Be careful, this will be used everywhere
+	{ "AudioStreamOGGVorbis", "AudioStreamOggVorbis" },
 	{ "AudioStreamRandomPitch", "AudioStreamRandomizer" },
 	{ "AudioStreamSample", "AudioStreamWAV" },
 	{ "BakedLightmap", "LightmapGI" },
