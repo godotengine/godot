@@ -2430,6 +2430,8 @@ bool Main::start() {
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+			NavigationServer3D::get_singleton()->set_active(true);
+			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
 		}
 #endif
 

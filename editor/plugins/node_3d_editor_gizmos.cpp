@@ -75,6 +75,7 @@
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/world_boundary_shape_3d.h"
+#include "servers/navigation_server_3d.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -4835,10 +4836,6 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
-	create_material("navigation_edge_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
-	create_material("navigation_edge_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
-	create_material("navigation_solid_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
-	create_material("navigation_solid_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
 }
 
 bool NavigationRegion3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -4854,24 +4851,19 @@ int NavigationRegion3DGizmoPlugin::get_priority() const {
 }
 
 void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	NavigationRegion3D *navmesh = Object::cast_to<NavigationRegion3D>(p_gizmo->get_spatial_node());
-
-	Ref<Material> edge_material = get_material("navigation_edge_material", p_gizmo);
-	Ref<Material> edge_material_disabled = get_material("navigation_edge_material_disabled", p_gizmo);
-	Ref<Material> solid_material = get_material("navigation_solid_material", p_gizmo);
-	Ref<Material> solid_material_disabled = get_material("navigation_solid_material_disabled", p_gizmo);
+	NavigationRegion3D *navigationregion = Object::cast_to<NavigationRegion3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
-	Ref<NavigationMesh> navmeshie = navmesh->get_navigation_mesh();
-	if (navmeshie.is_null()) {
+	Ref<NavigationMesh> navigationmesh = navigationregion->get_navigation_mesh();
+	if (navigationmesh.is_null()) {
 		return;
 	}
 
-	Vector<Vector3> vertices = navmeshie->get_vertices();
+	Vector<Vector3> vertices = navigationmesh->get_vertices();
 	const Vector3 *vr = vertices.ptr();
 	List<Face3> faces;
-	for (int i = 0; i < navmeshie->get_polygon_count(); i++) {
-		Vector<int> p = navmeshie->get_polygon(i);
+	for (int i = 0; i < navigationmesh->get_polygon_count(); i++) {
+		Vector<int> p = navigationmesh->get_polygon(i);
 
 		for (int j = 2; j < p.size(); j++) {
 			Face3 f;
@@ -4928,17 +4920,90 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<TriangleMesh> tmesh = memnew(TriangleMesh);
 	tmesh->create(tmeshfaces);
 
-	if (lines.size()) {
-		p_gizmo->add_lines(lines, navmesh->is_enabled() ? edge_material : edge_material_disabled);
-	}
 	p_gizmo->add_collision_triangles(tmesh);
-	Ref<ArrayMesh> m = memnew(ArrayMesh);
-	Array a;
-	a.resize(Mesh::ARRAY_MAX);
-	a[0] = tmeshfaces;
-	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
-	m->surface_set_material(0, navmesh->is_enabled() ? solid_material : solid_material_disabled);
-	p_gizmo->add_mesh(m);
+
+	Ref<ArrayMesh> debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	int polygon_count = navigationmesh->get_polygon_count();
+
+	// build geometry face surface
+	Vector<Vector3> face_vertex_array;
+	face_vertex_array.resize(polygon_count * 3);
+
+	for (int i = 0; i < polygon_count; i++) {
+		Vector<int> polygon = navigationmesh->get_polygon(i);
+
+		face_vertex_array.push_back(vertices[polygon[0]]);
+		face_vertex_array.push_back(vertices[polygon[1]]);
+		face_vertex_array.push_back(vertices[polygon[2]]);
+	}
+
+	Array face_mesh_array;
+	face_mesh_array.resize(Mesh::ARRAY_MAX);
+	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
+
+	// if enabled add vertex colors to colorize each face individually
+	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	if (enabled_geometry_face_random_color) {
+		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color polygon_color = debug_navigation_geometry_face_color;
+
+		Vector<Color> face_color_array;
+		face_color_array.resize(polygon_count * 3);
+
+		for (int i = 0; i < polygon_count; i++) {
+			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+
+			Vector<int> polygon = navigationmesh->get_polygon(i);
+
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+		}
+		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+	}
+
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
+	debug_mesh->surface_set_material(0, debug_geometry_face_material);
+
+	// if enabled build geometry edge line surface
+	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
+
+	if (enabled_edge_lines) {
+		Vector<Vector3> line_vertex_array;
+		line_vertex_array.resize(polygon_count * 6);
+
+		for (int i = 0; i < polygon_count; i++) {
+			Vector<int> polygon = navigationmesh->get_polygon(i);
+
+			line_vertex_array.push_back(vertices[polygon[0]]);
+			line_vertex_array.push_back(vertices[polygon[1]]);
+			line_vertex_array.push_back(vertices[polygon[1]]);
+			line_vertex_array.push_back(vertices[polygon[2]]);
+			line_vertex_array.push_back(vertices[polygon[2]]);
+			line_vertex_array.push_back(vertices[polygon[0]]);
+		}
+
+		Array line_mesh_array;
+		line_mesh_array.resize(Mesh::ARRAY_MAX);
+		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
+		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
+		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
+		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
+	}
+
+	if (!navigationregion->is_enabled()) {
+		if (debug_mesh.is_valid()) {
+			if (debug_mesh->get_surface_count() > 0) {
+				debug_mesh->surface_set_material(0, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_disabled_material());
+			}
+			if (debug_mesh->get_surface_count() > 1) {
+				debug_mesh->surface_set_material(1, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_disabled_material());
+			}
+		}
+	}
+
+	p_gizmo->add_mesh(debug_mesh);
 	p_gizmo->add_collision_segments(lines);
 }
 

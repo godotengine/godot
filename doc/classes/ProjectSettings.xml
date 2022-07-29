@@ -494,8 +494,38 @@
 		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color(1, 0.7, 0.1, 0.4)">
 			Color of the disabled navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/navigation/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
+			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_edge_connections" type="bool" setter="" getter="" default="true">
+			If enabled, displays edge connections between navigation regions when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_edge_connections_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays edge connections between navigation regions through geometry when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_edge_lines" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation mesh polygon edges when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_edge_lines_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation mesh polygon edges through geometry when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_geometry_face_random_color" type="bool" setter="" getter="" default="true">
+			If enabled, colorizes each navigation mesh polygon face with a random color when "Visible Navigation" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
+			Color to display enabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/geometry_edge_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
+			Color to display disabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/geometry_face_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 0.4)">
+			Color to display enabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/geometry_face_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 0.4)">
+			Color to display disabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
