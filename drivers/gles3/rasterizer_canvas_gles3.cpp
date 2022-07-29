@@ -815,10 +815,8 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				_bind_canvas_texture(texture, current_filter, current_repeat, r_index);
 				if (instance_count == 1) {
 					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_ATTRIBUTES);
-				} else if (instance_count > 1) {
-					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_INSTANCED);
 				} else {
-					ERR_PRINT("Must have at least one mesh instance to draw mesh");
+					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_INSTANCED);
 				}
 
 				uint32_t surf_count = mesh_storage->mesh_get_surface_count(mesh);
@@ -882,7 +880,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 						} else {
 							glDrawArrays(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(surface));
 						}
-					} else if (instance_count > 1) {
+					} else {
 						if (use_index_buffer) {
 							glDrawElementsInstanced(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(surface), mesh_storage->mesh_surface_get_index_type(surface), 0, instance_count);
 						} else {

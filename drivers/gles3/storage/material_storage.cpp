@@ -180,10 +180,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			if (p_array_size > 0) {
 				Vector<int> iv = value;
 				int s = iv.size();
-
-				if (p_array_size <= 0) {
-					p_array_size = 1;
-				}
 				int count = 2 * p_array_size;
 
 				const int *r = iv.ptr();
@@ -210,10 +206,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			if (p_array_size > 0) {
 				Vector<int> iv = value;
 				int s = iv.size();
-
-				if (p_array_size <= 0) {
-					p_array_size = 1;
-				}
 				int count = 3 * p_array_size;
 
 				const int *r = iv.ptr();
@@ -242,10 +234,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			if (p_array_size > 0) {
 				Vector<int> iv = value;
 				int s = iv.size();
-
-				if (p_array_size <= 0) {
-					p_array_size = 1;
-				}
 				int count = 4 * p_array_size;
 
 				const int *r = iv.ptr();
@@ -298,10 +286,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			if (p_array_size > 0) {
 				Vector<int> iv = value;
 				int s = iv.size();
-
-				if (p_array_size <= 0) {
-					p_array_size = 1;
-				}
 				int count = 2 * p_array_size;
 
 				const int *r = iv.ptr();
@@ -328,10 +312,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			if (p_array_size > 0) {
 				Vector<int> iv = value;
 				int s = iv.size();
-
-				if (p_array_size <= 0) {
-					p_array_size = 1;
-				}
 				int count = 3 * p_array_size;
 
 				const int *r = iv.ptr();
@@ -360,10 +340,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			if (p_array_size > 0) {
 				Vector<int> iv = value;
 				int s = iv.size();
-
-				if (p_array_size <= 0) {
-					p_array_size = 1;
-				}
 				int count = 4 * p_array_size;
 
 				const int *r = iv.ptr();
