@@ -497,7 +497,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	if (p_render_data->render_buffers.is_valid()) {
 		render_buffer = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
-	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
@@ -540,7 +539,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES].is_null()) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
-		} else if (env && (env->glow_enabled || env->auto_exposure || camera_effects_uses_dof(p_render_data->camera_effects))) {
+		} else if (p_render_data->environment.is_valid() && (environment_get_glow_enabled(p_render_data->environment) || environment_get_auto_exposure(p_render_data->environment) || camera_effects_uses_dof(p_render_data->camera_effects))) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
 		}
@@ -570,7 +569,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		if (RendererRD::LightStorage::get_singleton()->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			p_render_data->environment = RID(); //no environment on interiors
-			env = nullptr;
 		}
 
 		reverse_cull = true;
@@ -612,7 +610,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
+				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -624,7 +622,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
+				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -655,11 +653,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
 
-			RID sky_rid = env->sky;
+			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(env, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.update(p_render_data->environment, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -683,9 +681,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			Projection correction;
 			correction.set_depth_correction(true);
 			Projection projection = correction * p_render_data->cam_projection;
-			sky.update_res_buffers(env, 1, &projection, p_render_data->cam_transform, time);
+			sky.update_res_buffers(p_render_data->environment, 1, &projection, p_render_data->cam_transform, time);
 		} else {
-			sky.update_res_buffers(env, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			sky.update_res_buffers(p_render_data->environment, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
 		}
 
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
@@ -707,7 +705,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS;
 		}
 
-		if (!is_environment(p_render_data->environment) || environment_is_fog_enabled(p_render_data->environment)) {
+		if (!is_environment(p_render_data->environment) || environment_get_fog_enabled(p_render_data->environment)) {
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_FOG;
 		}
 	}
@@ -782,9 +780,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				Projection correction;
 				correction.set_depth_correction(true);
 				Projection projection = correction * p_render_data->cam_projection;
-				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.draw(draw_list, p_render_data->environment, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
-				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.draw(draw_list, p_render_data->environment, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass
@@ -1663,7 +1661,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 			scene_state.ubo.use_ambient_cubemap = false;
 		} else {
 			float energy = environment_get_ambient_light_energy(p_render_data->environment);
-			Color color = environment_get_ambient_light_color(p_render_data->environment);
+			Color color = environment_get_ambient_light(p_render_data->environment);
 			color = color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
@@ -1685,11 +1683,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 			scene_state.ubo.use_reflection_cubemap = false;
 		}
 
-		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_is_ssao_enabled(p_render_data->environment);
-		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
-		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
+		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_get_ssao_enabled(p_render_data->environment);
+		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_channel_affect(p_render_data->environment);
+		scene_state.ubo.ssao_light_affect = environment_get_ssao_direct_light_affect(p_render_data->environment);
 
-		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
+		scene_state.ubo.fog_enabled = environment_get_fog_enabled(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);

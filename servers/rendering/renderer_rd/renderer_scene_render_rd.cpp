@@ -51,9 +51,8 @@ void get_vogel_disk(float *r_kernel, int p_sample_count) {
 }
 
 void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
-	bool needs_sdfgi = env && env->sdfgi_enabled;
+	bool needs_sdfgi = p_environment.is_valid() && environment_get_sdfgi_enabled(p_environment);
 
 	if (!needs_sdfgi) {
 		if (rb->sdfgi != nullptr) {
@@ -68,7 +67,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
 
-	if (rb->sdfgi && (rb->sdfgi->num_cascades != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
+	if (rb->sdfgi && (rb->sdfgi->num_cascades != environment_get_sdfgi_cascades(p_environment) || rb->sdfgi->min_cell_size != environment_get_sdfgi_min_cell_size(p_environment) || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != environment_get_sdfgi_use_occlusion(p_environment) || rb->sdfgi->y_scale_mode != environment_get_sdfgi_y_scale(p_environment))) {
 		//configuration changed, erase
 		rb->sdfgi->erase();
 		memdelete(rb->sdfgi);
@@ -78,10 +77,10 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	RendererRD::GI::SDFGI *sdfgi = rb->sdfgi;
 	if (sdfgi == nullptr) {
 		// re-create
-		rb->sdfgi = gi.create_sdfgi(env, p_world_position, requested_history_size);
+		rb->sdfgi = gi.create_sdfgi(p_environment, p_world_position, requested_history_size);
 	} else {
 		//check for updates
-		rb->sdfgi->update(env, p_world_position);
+		rb->sdfgi->update(p_environment, p_world_position);
 	}
 }
 
@@ -159,224 +158,12 @@ Ref<Image> RendererSceneRenderRD::sky_bake_panorama(RID p_sky, float p_energy, b
 	return sky.sky_bake_panorama(p_sky, p_energy, p_bake_irradiance, p_size);
 }
 
-RID RendererSceneRenderRD::environment_allocate() {
-	return environment_owner.allocate_rid();
-}
-void RendererSceneRenderRD::environment_initialize(RID p_rid) {
-	environment_owner.initialize_rid(p_rid, RendererSceneEnvironmentRD());
-}
-
-void RendererSceneRenderRD::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->background = p_bg;
-}
-
-void RendererSceneRenderRD::environment_set_sky(RID p_env, RID p_sky) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->sky = p_sky;
-}
-
-void RendererSceneRenderRD::environment_set_sky_custom_fov(RID p_env, float p_scale) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->sky_custom_fov = p_scale;
-}
-
-void RendererSceneRenderRD::environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->sky_orientation = p_orientation;
-}
-
-void RendererSceneRenderRD::environment_set_bg_color(RID p_env, const Color &p_color) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->bg_color = p_color;
-}
-
-void RendererSceneRenderRD::environment_set_bg_energy(RID p_env, float p_energy) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->bg_energy = p_energy;
-}
-
-void RendererSceneRenderRD::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->canvas_max_layer = p_max_layer;
-}
-
-void RendererSceneRenderRD::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->set_ambient_light(p_color, p_ambient, p_energy, p_sky_contribution, p_reflection_source);
-}
-
-RS::EnvironmentBG RendererSceneRenderRD::environment_get_background(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, RS::ENV_BG_MAX);
-	return env->background;
-}
-
-RID RendererSceneRenderRD::environment_get_sky(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, RID());
-	return env->sky;
-}
-
-float RendererSceneRenderRD::environment_get_sky_custom_fov(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->sky_custom_fov;
-}
-
-Basis RendererSceneRenderRD::environment_get_sky_orientation(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, Basis());
-	return env->sky_orientation;
-}
-
-Color RendererSceneRenderRD::environment_get_bg_color(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, Color());
-	return env->bg_color;
-}
-
-float RendererSceneRenderRD::environment_get_bg_energy(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->bg_energy;
-}
-
-int RendererSceneRenderRD::environment_get_canvas_max_layer(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->canvas_max_layer;
-}
-
-Color RendererSceneRenderRD::environment_get_ambient_light_color(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, Color());
-	return env->ambient_light;
-}
-
-RS::EnvironmentAmbientSource RendererSceneRenderRD::environment_get_ambient_source(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, RS::ENV_AMBIENT_SOURCE_BG);
-	return env->ambient_source;
-}
-
-float RendererSceneRenderRD::environment_get_ambient_light_energy(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->ambient_light_energy;
-}
-
-float RendererSceneRenderRD::environment_get_ambient_sky_contribution(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->ambient_sky_contribution;
-}
-
-RS::EnvironmentReflectionSource RendererSceneRenderRD::environment_get_reflection_source(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, RS::ENV_REFLECTION_SOURCE_DISABLED);
-	return env->reflection_source;
-}
-
-void RendererSceneRenderRD::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->set_tonemap(p_tone_mapper, p_exposure, p_white, p_auto_exposure, p_min_luminance, p_max_luminance, p_auto_exp_speed, p_auto_exp_scale);
-}
-
-void RendererSceneRenderRD::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-	env->set_glow(p_enable, p_levels, p_intensity, p_strength, p_mix, p_bloom_threshold, p_blend_mode, p_hdr_bleed_threshold, p_hdr_bleed_scale, p_hdr_luminance_cap, p_glow_map_strength, p_glow_map);
-}
-
 void RendererSceneRenderRD::environment_glow_set_use_bicubic_upscale(bool p_enable) {
 	glow_bicubic_upscale = p_enable;
 }
 
 void RendererSceneRenderRD::environment_glow_set_use_high_quality(bool p_enable) {
 	glow_high_quality = p_enable;
-}
-
-void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	if (!is_dynamic_gi_supported()) {
-		return;
-	}
-
-	env->set_sdfgi(p_enable, p_cascades, p_min_cell_size, p_y_scale, p_use_occlusion, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_probe_bias);
-}
-
-void RendererSceneRenderRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	env->set_fog(p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_fog_aerial_perspective);
-}
-
-bool RendererSceneRenderRD::environment_is_fog_enabled(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, false);
-
-	return env->fog_enabled;
-}
-Color RendererSceneRenderRD::environment_get_fog_light_color(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, Color());
-	return env->fog_light_color;
-}
-float RendererSceneRenderRD::environment_get_fog_light_energy(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->fog_light_energy;
-}
-float RendererSceneRenderRD::environment_get_fog_sun_scatter(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->fog_sun_scatter;
-}
-float RendererSceneRenderRD::environment_get_fog_density(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->fog_density;
-}
-float RendererSceneRenderRD::environment_get_fog_height(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-
-	return env->fog_height;
-}
-float RendererSceneRenderRD::environment_get_fog_height_density(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->fog_height_density;
-}
-
-float RendererSceneRenderRD::environment_get_fog_aerial_perspective(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->fog_aerial_perspective;
-}
-
-void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	if (!is_volumetric_supported()) {
-		return;
-	}
-
-	env->set_volumetric_fog(p_enable, p_density, p_albedo, p_emission, p_emission_energy, p_anisotropy, p_length, p_detail_spread, p_gi_inject, p_temporal_reprojection, p_temporal_reprojection_amount, p_ambient_inject);
 }
 
 void RendererSceneRenderRD::environment_set_volumetric_fog_volume_size(int p_size, int p_depth) {
@@ -399,26 +186,12 @@ void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::Env
 	gi.sdfgi_frames_to_update_light = p_update;
 }
 
-void RendererSceneRenderRD::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	env->set_ssr(p_enable, p_max_steps, p_fade_int, p_fade_out, p_depth_tolerance);
-}
-
 void RendererSceneRenderRD::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
 	ssr_roughness_quality = p_quality;
 }
 
 RS::EnvironmentSSRRoughnessQuality RendererSceneRenderRD::environment_get_ssr_roughness_quality() const {
 	return ssr_roughness_quality;
-}
-
-void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	env->set_ssao(p_enable, p_radius, p_intensity, p_power, p_detail, p_horizon, p_sharpness, p_light_affect, p_ao_channel_affect);
 }
 
 void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
@@ -430,17 +203,6 @@ void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQual
 	ssao_fadeout_to = p_fadeout_to;
 }
 
-void RendererSceneRenderRD::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	env->ssil_enabled = p_enable;
-	env->ssil_radius = p_radius;
-	env->ssil_intensity = p_intensity;
-	env->ssil_sharpness = p_sharpness;
-	env->ssil_normal_rejection = p_normal_rejection;
-}
-
 void RendererSceneRenderRD::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ssil_quality = p_quality;
 	ssil_half_size = p_half_size;
@@ -450,56 +212,16 @@ void RendererSceneRenderRD::environment_set_ssil_quality(RS::EnvironmentSSILQual
 	ssil_fadeout_to = p_fadeout_to;
 }
 
-bool RendererSceneRenderRD::environment_is_ssao_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, false);
-	return env->ssao_enabled;
-}
-
-float RendererSceneRenderRD::environment_get_ssao_ao_affect(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0.0);
-	return env->ssao_ao_channel_affect;
-}
-
-float RendererSceneRenderRD::environment_get_ssao_light_affect(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0.0);
-	return env->ssao_direct_light_affect;
-}
-
-bool RendererSceneRenderRD::environment_is_ssil_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, false);
-	return env->ssil_enabled;
-}
-
-bool RendererSceneRenderRD::environment_is_ssr_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, false);
-	return env->ssr_enabled;
-}
-bool RendererSceneRenderRD::environment_is_sdfgi_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, false);
-	return env->sdfgi_enabled;
-}
-
-bool RendererSceneRenderRD::is_environment(RID p_env) const {
-	return environment_owner.owns(p_env);
-}
-
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, Ref<Image>());
+	ERR_FAIL_COND_V(p_env.is_null(), Ref<Image>());
 
-	RS::EnvironmentBG environment_background = env->background;
+	RS::EnvironmentBG environment_background = environment_get_background(p_env);
 
 	if (environment_background == RS::ENV_BG_CAMERA_FEED || environment_background == RS::ENV_BG_CANVAS || environment_background == RS::ENV_BG_KEEP) {
 		return Ref<Image>(); //nothing to bake
 	}
 
-	RS::EnvironmentAmbientSource ambient_source = env->ambient_source;
+	RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_env);
 
 	bool use_ambient_light = false;
 	bool use_cube_map = false;
@@ -509,14 +231,14 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		use_cube_map = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
 		use_ambient_light = use_cube_map || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
 	}
-	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && env->sky.is_valid());
+	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
 
 	Color ambient_color;
-	float ambient_color_sky_mix;
+	float ambient_color_sky_mix = 0.0;
 	if (use_ambient_light) {
-		ambient_color_sky_mix = env->ambient_sky_contribution;
-		const float ambient_energy = env->ambient_light_energy;
-		ambient_color = env->ambient_light;
+		ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_env);
+		const float ambient_energy = environment_get_ambient_light_energy(p_env);
+		ambient_color = environment_get_ambient_light(p_env);
 		ambient_color = ambient_color.srgb_to_linear();
 		ambient_color.r *= ambient_energy;
 		ambient_color.g *= ambient_energy;
@@ -524,7 +246,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	}
 
 	if (use_cube_map) {
-		Ref<Image> panorama = sky_bake_panorama(env->sky, env->bg_energy, p_bake_irradiance, p_size);
+		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy(p_env), p_bake_irradiance, p_size);
 		if (use_ambient_light) {
 			for (int x = 0; x < p_size.width; x++) {
 				for (int y = 0; y < p_size.height; y++) {
@@ -534,8 +256,8 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		}
 		return panorama;
 	} else {
-		const float bg_energy = env->bg_energy;
-		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? RSG::texture_storage->get_default_clear_color() : env->bg_color);
+		const float bg_energy = environment_get_bg_energy(p_env);
+		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? RSG::texture_storage->get_default_clear_color() : environment_get_bg_color(p_env));
 		panorama_color = panorama_color.srgb_to_linear();
 		panorama_color.r *= bg_energy;
 		panorama_color.g *= bg_energy;
@@ -1944,10 +1666,9 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		return;
 	}
 
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
-	ERR_FAIL_COND(!env);
+	ERR_FAIL_COND(p_environment.is_null());
 
-	ERR_FAIL_COND(!env->ssr_enabled);
+	ERR_FAIL_COND(!environment_get_ssr_enabled(p_environment));
 
 	Size2i half_size = Size2i(rb->internal_width / 2, rb->internal_height / 2);
 	if (rb->ssr.output.is_null()) {
@@ -1959,7 +1680,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		texture_slices[v] = rb->views[v].view_texture;
 		depth_slices[v] = rb->views[v].view_depth;
 	}
-	ss_effects->screen_space_reflection(rb->ssr, texture_slices, p_normal_slices, ssr_roughness_quality, p_metallic_slices, p_metallic_mask, depth_slices, half_size, env->ssr_max_steps, env->ssr_fade_in, env->ssr_fade_out, env->ssr_depth_tolerance, rb->view_count, p_projections, p_eye_offsets);
+	ss_effects->screen_space_reflection(rb->ssr, texture_slices, p_normal_slices, ssr_roughness_quality, p_metallic_slices, p_metallic_mask, depth_slices, half_size, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), rb->view_count, p_projections, p_eye_offsets);
 	copy_effects->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : rb->internal_texture, rb->ssr.output, rb->view_count);
 }
 
@@ -1969,18 +1690,17 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
-	ERR_FAIL_COND(!env);
+	ERR_FAIL_COND(p_environment.is_null());
 
 	RENDER_TIMESTAMP("Process SSAO");
 
 	RendererRD::SSEffects::SSAOSettings settings;
-	settings.radius = env->ssao_radius;
-	settings.intensity = env->ssao_intensity;
-	settings.power = env->ssao_power;
-	settings.detail = env->ssao_detail;
-	settings.horizon = env->ssao_horizon;
-	settings.sharpness = env->ssao_sharpness;
+	settings.radius = environment_get_ssao_radius(p_environment);
+	settings.intensity = environment_get_ssao_intensity(p_environment);
+	settings.power = environment_get_ssao_power(p_environment);
+	settings.detail = environment_get_ssao_detail(p_environment);
+	settings.horizon = environment_get_ssao_horizon(p_environment);
+	settings.sharpness = environment_get_ssao_sharpness(p_environment);
 
 	settings.quality = ssao_quality;
 	settings.half_size = ssao_half_size;
@@ -2000,16 +1720,15 @@ void RendererSceneRenderRD::_process_ssil(RID p_render_buffers, RID p_environmen
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
-	ERR_FAIL_COND(!env);
+	ERR_FAIL_COND(p_environment.is_null());
 
 	RENDER_TIMESTAMP("Process SSIL");
 
 	RendererRD::SSEffects::SSILSettings settings;
-	settings.radius = env->ssil_radius;
-	settings.intensity = env->ssil_intensity;
-	settings.sharpness = env->ssil_sharpness;
-	settings.normal_rejection = env->ssil_normal_rejection;
+	settings.radius = environment_get_ssil_radius(p_environment);
+	settings.intensity = environment_get_ssil_intensity(p_environment);
+	settings.sharpness = environment_get_ssil_sharpness(p_environment);
+	settings.normal_rejection = environment_get_ssil_normal_rejection(p_environment);
 
 	settings.quality = ssil_quality;
 	settings.half_size = ssil_half_size;
@@ -2141,7 +1860,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
 	// Glow and override exposure (if enabled).
 	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
@@ -2201,21 +1919,21 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (can_use_effects && env && env->auto_exposure) {
+	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_auto_exposure(p_render_data->environment)) {
 		RENDER_TIMESTAMP("Auto exposure");
 		RD::get_singleton()->draw_command_begin_label("Auto exposure");
 		if (rb->luminance.current.is_null()) {
 			_allocate_luminance_textures(rb);
 		}
 
-		bool set_immediate = env->auto_exposure_version != rb->auto_exposure_version;
-		rb->auto_exposure_version = env->auto_exposure_version;
+		bool set_immediate = environment_get_auto_exposure_version(p_render_data->environment) != rb->auto_exposure_version;
+		rb->auto_exposure_version = environment_get_auto_exposure_version(p_render_data->environment);
 
-		double step = env->auto_exp_speed * time_step;
+		double step = environment_get_auto_exp_speed(p_render_data->environment) * time_step;
 		if (can_use_storage) {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
+			RendererCompositorRD::singleton->get_effects()->luminance_reduction(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.current, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
 		} else {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
+			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
 		}
 		// Swap final reduce with prev luminance.
 		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
@@ -2229,7 +1947,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	int max_glow_level = -1;
 
-	if (can_use_effects && env && env->glow_enabled) {
+	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 		RENDER_TIMESTAMP("Glow");
 		RD::get_singleton()->draw_command_begin_label("Gaussian Glow");
 
@@ -2240,7 +1958,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 
 		for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
-			if (env->glow_levels[i] > 0.0) {
+			if (environment_get_glow_levels(p_render_data->environment)[i] > 0.0) {
 				if (i >= rb->blur[1].layers[0].mipmaps.size()) {
 					max_glow_level = rb->blur[1].layers[0].mipmaps.size() - 1;
 				} else {
@@ -2257,19 +1975,19 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 				if (i == 0) {
 					RID luminance_texture;
-					if (env->auto_exposure && rb->luminance.current.is_valid()) {
+					if (environment_get_auto_exposure(p_render_data->environment) && rb->luminance.current.is_valid()) {
 						luminance_texture = rb->luminance.current;
 					}
 					if (can_use_storage) {
-						copy_effects->gaussian_glow(rb->views[l].view_texture, rb->blur[1].layers[l].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+						copy_effects->gaussian_glow(rb->views[l].view_texture, rb->blur[1].layers[l].mipmaps[i].texture, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, environment_get_auto_exp_scale(p_render_data->environment));
 					} else {
-						copy_effects->gaussian_glow_raster(rb->views[l].view_texture, luminance_multiplier, rb->blur[1].layers[l].mipmaps[i].half_fb, rb->blur[1].layers[l].mipmaps[i].half_texture, rb->blur[1].layers[l].mipmaps[i].fb, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+						copy_effects->gaussian_glow_raster(rb->views[l].view_texture, luminance_multiplier, rb->blur[1].layers[l].mipmaps[i].half_fb, rb->blur[1].layers[l].mipmaps[i].half_texture, rb->blur[1].layers[l].mipmaps[i].fb, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, environment_get_auto_exp_scale(p_render_data->environment));
 					}
 				} else {
 					if (can_use_storage) {
-						copy_effects->gaussian_glow(rb->blur[1].layers[l].mipmaps[i - 1].texture, rb->blur[1].layers[l].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
+						copy_effects->gaussian_glow(rb->blur[1].layers[l].mipmaps[i - 1].texture, rb->blur[1].layers[l].mipmaps[i].texture, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality);
 					} else {
-						copy_effects->gaussian_glow_raster(rb->blur[1].layers[l].mipmaps[i - 1].texture, luminance_multiplier, rb->blur[1].layers[l].mipmaps[i].half_fb, rb->blur[1].layers[l].mipmaps[i].half_texture, rb->blur[1].layers[l].mipmaps[i].fb, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
+						copy_effects->gaussian_glow_raster(rb->blur[1].layers[l].mipmaps[i - 1].texture, luminance_multiplier, rb->blur[1].layers[l].mipmaps[i].half_fb, rb->blur[1].layers[l].mipmaps[i].half_texture, rb->blur[1].layers[l].mipmaps[i].fb, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality);
 					}
 				}
 			}
@@ -2284,28 +2002,28 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
-		if (can_use_effects && env && env->auto_exposure && rb->luminance.current.is_valid()) {
+		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_auto_exposure(p_render_data->environment) && rb->luminance.current.is_valid()) {
 			tonemap.use_auto_exposure = true;
 			tonemap.exposure_texture = rb->luminance.current;
-			tonemap.auto_exposure_grey = env->auto_exp_scale;
+			tonemap.auto_exposure_grey = environment_get_auto_exp_scale(p_render_data->environment);
 		} else {
 			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
-		if (can_use_effects && env && env->glow_enabled) {
+		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 			tonemap.use_glow = true;
-			tonemap.glow_mode = RendererRD::ToneMapper::TonemapSettings::GlowMode(env->glow_blend_mode);
-			tonemap.glow_intensity = env->glow_blend_mode == RS::ENV_GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
+			tonemap.glow_mode = RendererRD::ToneMapper::TonemapSettings::GlowMode(environment_get_glow_blend_mode(p_render_data->environment));
+			tonemap.glow_intensity = environment_get_glow_blend_mode(p_render_data->environment) == RS::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
 			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
-				tonemap.glow_levels[i] = env->glow_levels[i];
+				tonemap.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
 			}
 			tonemap.glow_texture_size.x = rb->blur[1].layers[0].mipmaps[0].width;
 			tonemap.glow_texture_size.y = rb->blur[1].layers[0].mipmaps[0].height;
 			tonemap.glow_use_bicubic_upscale = glow_bicubic_upscale;
 			tonemap.glow_texture = rb->blur[1].texture;
-			if (env->glow_map.is_valid()) {
-				tonemap.glow_map_strength = env->glow_map_strength;
-				tonemap.glow_map = texture_storage->texture_get_rd_texture(env->glow_map);
+			if (environment_get_glow_map(p_render_data->environment).is_valid()) {
+				tonemap.glow_map_strength = environment_get_glow_map_strength(p_render_data->environment);
+				tonemap.glow_map = texture_storage->texture_get_rd_texture(environment_get_glow_map(p_render_data->environment));
 			} else {
 				tonemap.glow_map_strength = 0.0f;
 				tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
@@ -2323,10 +2041,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.use_debanding = rb->use_debanding;
 		tonemap.texture_size = Vector2i(rb->internal_width, rb->internal_height);
 
-		if (env) {
-			tonemap.tonemap_mode = env->tone_mapper;
-			tonemap.white = env->white;
-			tonemap.exposure = env->exposure;
+		if (p_render_data->environment.is_valid()) {
+			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+			tonemap.white = environment_get_white(p_render_data->environment);
+			tonemap.exposure = environment_get_exposure(p_render_data->environment);
 		}
 
 		if (camfx && camfx->override_exposure_enabled) {
@@ -2337,15 +2055,15 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.use_1d_color_correction = false;
 		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 
-		if (can_use_effects && env) {
-			tonemap.use_bcs = env->adjustments_enabled;
-			tonemap.brightness = env->adjustments_brightness;
-			tonemap.contrast = env->adjustments_contrast;
-			tonemap.saturation = env->adjustments_saturation;
-			if (env->adjustments_enabled && env->color_correction.is_valid()) {
+		if (can_use_effects && p_render_data->environment.is_valid()) {
+			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
+			tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+			tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
+			tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
+			if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
 				tonemap.use_color_correction = true;
-				tonemap.use_1d_color_correction = env->use_1d_color_correction;
-				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(env->color_correction);
+				tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
+				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
 			}
 		}
 
@@ -2375,7 +2093,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
 	// Override exposure (if enabled).
 	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
@@ -2385,10 +2102,10 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RendererRD::ToneMapper::TonemapSettings tonemap;
 
-	if (env) {
-		tonemap.tonemap_mode = env->tone_mapper;
-		tonemap.exposure = env->exposure;
-		tonemap.white = env->white;
+	if (p_render_data->environment.is_valid()) {
+		tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+		tonemap.exposure = environment_get_exposure(p_render_data->environment);
+		tonemap.white = environment_get_white(p_render_data->environment);
 	}
 
 	if (camfx && camfx->override_exposure_enabled) {
@@ -2398,10 +2115,10 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
 	// The problem is that we need to use the result so far and process them before we can
 	// apply this to our results.
-	if (can_use_effects && env && env->glow_enabled) {
+	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 		ERR_FAIL_MSG("Glow is not supported when using subpasses.");
 	}
-	if (can_use_effects && env && env->auto_exposure) {
+	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_auto_exposure(p_render_data->environment)) {
 		ERR_FAIL_MSG("Glow is not supported when using subpasses.");
 	}
 
@@ -2415,15 +2132,15 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.use_1d_color_correction = false;
 	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 
-	if (can_use_effects && env) {
-		tonemap.use_bcs = env->adjustments_enabled;
-		tonemap.brightness = env->adjustments_brightness;
-		tonemap.contrast = env->adjustments_contrast;
-		tonemap.saturation = env->adjustments_saturation;
-		if (env->adjustments_enabled && env->color_correction.is_valid()) {
+	if (can_use_effects && p_render_data->environment.is_valid()) {
+		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
+		tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
+		tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
+		if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
 			tonemap.use_color_correction = true;
-			tonemap.use_1d_color_correction = env->use_1d_color_correction;
-			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(env->color_correction);
+			tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
+			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
 		}
 	}
 
@@ -2525,18 +2242,6 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 		Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
 		copy_effects->copy_to_fb_rect(_render_buffers_get_velocity_texture(p_render_buffers), texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
 	}
-}
-
-void RendererSceneRenderRD::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND(!env);
-
-	env->adjustments_enabled = p_enable;
-	env->adjustments_brightness = p_brightness;
-	env->adjustments_contrast = p_contrast;
-	env->adjustments_saturation = p_saturation;
-	env->use_1d_color_correction = p_use_1d_color_correction;
-	env->color_correction = p_color_correction;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_back_buffer_texture(RID p_render_buffers) {
@@ -3690,7 +3395,6 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	ERR_FAIL_COND(!is_clustered_enabled()); // can't use volumetric fog without clustered
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
 
 	float ratio = float(rb->width) / float((rb->width + rb->height) / 2);
 	uint32_t target_width = uint32_t(float(volumetric_fog_size) * ratio);
@@ -3698,18 +3402,18 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	if (rb->volumetric_fog) {
 		//validate
-		if (!env || !env->volumetric_fog_enabled || rb->volumetric_fog->width != target_width || rb->volumetric_fog->height != target_height || rb->volumetric_fog->depth != volumetric_fog_depth) {
+		if (p_environment.is_null() || !environment_get_volumetric_fog_enabled(p_environment) || rb->volumetric_fog->width != target_width || rb->volumetric_fog->height != target_height || rb->volumetric_fog->depth != volumetric_fog_depth) {
 			memdelete(rb->volumetric_fog);
 			rb->volumetric_fog = nullptr;
 		}
 	}
 
-	if (!env || !env->volumetric_fog_enabled) {
+	if (p_environment.is_null() || !environment_get_volumetric_fog_enabled(p_environment)) {
 		//no reason to enable or update, bye
 		return;
 	}
 
-	if (env && env->volumetric_fog_enabled && !rb->volumetric_fog) {
+	if (p_environment.is_valid() && environment_get_volumetric_fog_enabled(p_environment) && !rb->volumetric_fog) {
 		//required volumetric fog but not existing, create
 		rb->volumetric_fog = memnew(RendererRD::Fog::VolumetricFog(Vector3i(target_width, target_height, volumetric_fog_depth), sky.sky_shader.default_shader_rd));
 	}
@@ -3735,7 +3439,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		settings.cluster_builder = rb->cluster_builder;
 		settings.rbgi = &rb->rbgi;
 		settings.sdfgi = rb->sdfgi;
-		settings.env = env;
+		settings.env = p_environment;
 		settings.sky = &sky;
 		settings.gi = &gi;
 
@@ -3762,8 +3466,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 				return;
 			}
 
-			RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
-			rb->sdfgi->update_probes(env, sky.sky_owner.get_or_null(env->sky));
+			rb->sdfgi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)));
 		}
 	}
 }
@@ -4353,9 +4056,8 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			memdelete(rb->cluster_builder);
 		}
 		render_buffers_owner.free(p_rid);
-	} else if (environment_owner.owns(p_rid)) {
-		//not much to delete, just free it
-		environment_owner.free(p_rid);
+	} else if (is_environment(p_rid)) {
+		environment_free(p_rid);
 	} else if (camera_effects_owner.owns(p_rid)) {
 		//not much to delete, just free it
 		camera_effects_owner.free(p_rid);

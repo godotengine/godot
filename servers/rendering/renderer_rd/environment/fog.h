@@ -36,7 +36,6 @@
 #include "servers/rendering/environment/renderer_fog.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
-#include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog_process.glsl.gen.h"
 #include "servers/rendering/storage/utilities.h"
@@ -318,7 +317,7 @@ public:
 		GI *gi;
 		GI::SDFGI *sdfgi;
 		GI::RenderBuffersGI *rbgi;
-		RendererSceneEnvironmentRD *env;
+		RID env;
 		SkyRD *sky;
 	};
 	void volumetric_fog_update(const VolumetricFogSettings &p_settings, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);

@@ -923,7 +923,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 			scene_state.ubo.use_ambient_cubemap = false;
 		} else {
 			float energy = environment_get_ambient_light_energy(p_render_data->environment);
-			Color color = environment_get_ambient_light_color(p_render_data->environment);
+			Color color = environment_get_ambient_light(p_render_data->environment);
 			color = color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
@@ -945,16 +945,16 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 			scene_state.ubo.use_reflection_cubemap = false;
 		}
 
-		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
-		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
+		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_channel_affect(p_render_data->environment);
+		scene_state.ubo.ssao_light_affect = environment_get_ssao_direct_light_affect(p_render_data->environment);
 		uint32_t ss_flags = 0;
 		if (p_opaque_render_buffers) {
-			ss_flags |= environment_is_ssao_enabled(p_render_data->environment) ? 1 : 0;
-			ss_flags |= environment_is_ssil_enabled(p_render_data->environment) ? 2 : 0;
+			ss_flags |= environment_get_ssao_enabled(p_render_data->environment) ? 1 : 0;
+			ss_flags |= environment_get_ssil_enabled(p_render_data->environment) ? 2 : 0;
 		}
 		scene_state.ubo.ss_effects_flags = ss_flags;
 
-		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
+		scene_state.ubo.fog_enabled = environment_get_fog_enabled(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
@@ -1410,7 +1410,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	if (p_render_data->render_buffers.is_valid()) {
 		render_buffer = static_cast<RenderBufferDataForwardClustered *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
-	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
 	static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
 
 	//first of all, make a new render pass
@@ -1435,7 +1434,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_sdfgi = false;
 	bool using_voxelgi = false;
 	bool reverse_cull = false;
-	bool using_ssil = p_render_data->environment.is_valid() && environment_is_ssil_enabled(p_render_data->environment);
+	bool using_ssil = p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
 
 	if (render_buffer) {
 		screen_size.x = render_buffer->width;
@@ -1449,21 +1448,21 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			using_voxelgi = true;
 		}
 
-		if (!p_render_data->environment.is_valid() && using_voxelgi) {
+		if (p_render_data->environment.is_null() && using_voxelgi) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI;
-		} else if (p_render_data->environment.is_valid() && (environment_is_ssr_enabled(p_render_data->environment) || environment_is_sdfgi_enabled(p_render_data->environment) || using_voxelgi)) {
-			if (environment_is_sdfgi_enabled(p_render_data->environment)) {
+		} else if (p_render_data->environment.is_valid() && (environment_get_ssr_enabled(p_render_data->environment) || environment_get_sdfgi_enabled(p_render_data->environment) || using_voxelgi)) {
+			if (environment_get_sdfgi_enabled(p_render_data->environment)) {
 				depth_pass_mode = using_voxelgi ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI : PASS_MODE_DEPTH_NORMAL_ROUGHNESS; // also voxelgi
 				using_sdfgi = true;
 			} else {
 				depth_pass_mode = using_voxelgi ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI : PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
 			}
-			if (environment_is_ssr_enabled(p_render_data->environment)) {
+			if (environment_get_ssr_enabled(p_render_data->environment)) {
 				using_separate_specular = true;
 				using_ssr = true;
 				color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
 			}
-		} else if (p_render_data->environment.is_valid() && (environment_is_ssao_enabled(p_render_data->environment) || using_ssil || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
+		} else if (p_render_data->environment.is_valid() && (environment_get_ssao_enabled(p_render_data->environment) || using_ssil || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
 		}
 
@@ -1504,7 +1503,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (RendererRD::LightStorage::get_singleton()->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			p_render_data->environment = RID(); //no environment on interiors
-			env = nullptr;
 		}
 
 		reverse_cull = true; // for some reason our views are inverted
@@ -1556,7 +1554,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
-				if ((p_render_data->render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_data->render_buffers)) || environment_is_fog_enabled(p_render_data->environment)) {
+				if ((p_render_data->render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_data->render_buffers)) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -1566,7 +1564,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
-				if ((p_render_data->render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_data->render_buffers)) || environment_is_fog_enabled(p_render_data->environment)) {
+				if ((p_render_data->render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_data->render_buffers)) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -1596,11 +1594,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
 
-			RID sky_rid = env->sky;
+			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(env, projection, p_render_data->cam_transform, time);
+				sky.update(p_render_data->environment, projection, p_render_data->cam_transform, time);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -1616,7 +1614,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool debug_sdfgi_probes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES;
 	bool depth_pre_pass = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable")) && depth_framebuffer.is_valid();
 
-	bool using_ssao = depth_pre_pass && p_render_data->render_buffers.is_valid() && p_render_data->environment.is_valid() && environment_is_ssao_enabled(p_render_data->environment);
+	bool using_ssao = depth_pre_pass && p_render_data->render_buffers.is_valid() && p_render_data->environment.is_valid() && environment_get_ssao_enabled(p_render_data->environment);
 	bool continue_depth = false;
 	if (depth_pre_pass) { //depth pre pass
 
@@ -1755,9 +1753,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			Projection correction;
 			correction.set_depth_correction(true);
 			Projection projection = correction * p_render_data->cam_projection;
-			sky.draw(env, can_continue_color, can_continue_depth, color_only_framebuffer, 1, &projection, p_render_data->cam_transform, time);
+			sky.draw(p_render_data->environment, can_continue_color, can_continue_depth, color_only_framebuffer, 1, &projection, p_render_data->cam_transform, time);
 		} else {
-			sky.draw(env, can_continue_color, can_continue_depth, color_only_framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			sky.draw(p_render_data->environment, can_continue_color, can_continue_depth, color_only_framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
 		}
 		RD::get_singleton()->draw_command_end_label();
 	}

@@ -122,6 +122,7 @@ public:
 	virtual RID environment_allocate() = 0;
 	virtual void environment_initialize(RID p_rid) = 0;
 
+	// Background
 	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) = 0;
 	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) = 0;
@@ -131,40 +132,151 @@ public:
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) = 0;
 
-	virtual void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) = 0;
-	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
-	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
+	virtual RS::EnvironmentBG environment_get_background(RID p_Env) const = 0;
+	virtual RID environment_get_sky(RID p_env) const = 0;
+	virtual float environment_get_sky_custom_fov(RID p_env) const = 0;
+	virtual Basis environment_get_sky_orientation(RID p_env) const = 0;
+	virtual Color environment_get_bg_color(RID p_env) const = 0;
+	virtual float environment_get_bg_energy(RID p_env) const = 0;
+	virtual int environment_get_canvas_max_layer(RID p_env) const = 0;
+	virtual RS::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const = 0;
+	virtual Color environment_get_ambient_light(RID p_env) const = 0;
+	virtual float environment_get_ambient_light_energy(RID p_env) const = 0;
+	virtual float environment_get_ambient_sky_contribution(RID p_env) const = 0;
+	virtual RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const = 0;
 
+	// Tonemap
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
+
+	virtual RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const = 0;
+	virtual float environment_get_exposure(RID p_env) const = 0;
+	virtual float environment_get_white(RID p_env) const = 0;
+	virtual bool environment_get_auto_exposure(RID p_env) const = 0;
+	virtual float environment_get_min_luminance(RID p_env) const = 0;
+	virtual float environment_get_max_luminance(RID p_env) const = 0;
+	virtual float environment_get_auto_exp_speed(RID p_env) const = 0;
+	virtual float environment_get_auto_exp_scale(RID p_env) const = 0;
+	virtual uint64_t environment_get_auto_exposure_version(RID p_env) const = 0;
+
+	// Fog
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
+
+	virtual bool environment_get_fog_enabled(RID p_env) const = 0;
+	virtual Color environment_get_fog_light_color(RID p_env) const = 0;
+	virtual float environment_get_fog_light_energy(RID p_env) const = 0;
+	virtual float environment_get_fog_sun_scatter(RID p_env) const = 0;
+	virtual float environment_get_fog_density(RID p_env) const = 0;
+	virtual float environment_get_fog_height(RID p_env) const = 0;
+	virtual float environment_get_fog_height_density(RID p_env) const = 0;
+	virtual float environment_get_fog_aerial_perspective(RID p_env) const = 0;
+
+	// Volumetric Fog
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) = 0;
+
+	virtual bool environment_get_volumetric_fog_enabled(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_density(RID p_env) const = 0;
+	virtual Color environment_get_volumetric_fog_scattering(RID p_env) const = 0;
+	virtual Color environment_get_volumetric_fog_emission(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_emission_energy(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_anisotropy(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_length(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_detail_spread(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_gi_inject(RID p_env) const = 0;
+	virtual bool environment_get_volumetric_fog_temporal_reprojection(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_temporal_reprojection_amount(RID p_env) const = 0;
+	virtual float environment_get_volumetric_fog_ambient_inject(RID p_env) const = 0;
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
 
+	// Glow
+
+	virtual void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) = 0;
+
+	virtual bool environment_get_glow_enabled(RID p_env) const = 0;
+	virtual Vector<float> environment_get_glow_levels(RID p_env) const = 0;
+	virtual float environment_get_glow_intensity(RID p_env) const = 0;
+	virtual float environment_get_glow_strength(RID p_env) const = 0;
+	virtual float environment_get_glow_bloom(RID p_env) const = 0;
+	virtual float environment_get_glow_mix(RID p_env) const = 0;
+	virtual RS::EnvironmentGlowBlendMode environment_get_glow_blend_mode(RID p_env) const = 0;
+	virtual float environment_get_glow_hdr_bleed_threshold(RID p_env) const = 0;
+	virtual float environment_get_glow_hdr_luminance_cap(RID p_env) const = 0;
+	virtual float environment_get_glow_hdr_bleed_scale(RID p_env) const = 0;
+	virtual float environment_get_glow_map_strength(RID p_env) const = 0;
+	virtual RID environment_get_glow_map(RID p_env) const = 0;
+
+	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
+	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
+
+	// SSR
+
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) = 0;
+
+	virtual bool environment_get_ssr_enabled(RID p_env) const = 0;
+	virtual int environment_get_ssr_max_steps(RID p_env) const = 0;
+	virtual float environment_get_ssr_fade_in(RID p_env) const = 0;
+	virtual float environment_get_ssr_fade_out(RID p_env) const = 0;
+	virtual float environment_get_ssr_depth_tolerance(RID p_env) const = 0;
+
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
+	// SSAO
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) = 0;
+
+	virtual bool environment_get_ssao_enabled(RID p_env) const = 0;
+	virtual float environment_get_ssao_radius(RID p_env) const = 0;
+	virtual float environment_get_ssao_intensity(RID p_env) const = 0;
+	virtual float environment_get_ssao_power(RID p_env) const = 0;
+	virtual float environment_get_ssao_detail(RID p_env) const = 0;
+	virtual float environment_get_ssao_horizon(RID p_env) const = 0;
+	virtual float environment_get_ssao_sharpness(RID p_env) const = 0;
+	virtual float environment_get_ssao_direct_light_affect(RID p_env) const = 0;
+	virtual float environment_get_ssao_ao_channel_affect(RID p_env) const = 0;
+
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
+	// SSIL
+
 	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) = 0;
+
+	virtual bool environment_get_ssil_enabled(RID p_env) const = 0;
+	virtual float environment_get_ssil_radius(RID p_env) const = 0;
+	virtual float environment_get_ssil_intensity(RID p_env) const = 0;
+	virtual float environment_get_ssil_sharpness(RID p_env) const = 0;
+	virtual float environment_get_ssil_normal_rejection(RID p_env) const = 0;
+
 	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
+	// SDFGI
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+
+	virtual bool environment_get_sdfgi_enabled(RID p_env) const = 0;
+	virtual int environment_get_sdfgi_cascades(RID p_env) const = 0;
+	virtual float environment_get_sdfgi_min_cell_size(RID p_env) const = 0;
+	virtual bool environment_get_sdfgi_use_occlusion(RID p_env) const = 0;
+	virtual float environment_get_sdfgi_bounce_feedback(RID p_env) const = 0;
+	virtual bool environment_get_sdfgi_read_sky_light(RID p_env) const = 0;
+	virtual float environment_get_sdfgi_energy(RID p_env) const = 0;
+	virtual float environment_get_sdfgi_normal_bias(RID p_env) const = 0;
+	virtual float environment_get_sdfgi_probe_bias(RID p_env) const = 0;
+	virtual RS::EnvironmentSDFGIYScale environment_get_sdfgi_y_scale(RID p_env) const = 0;
 
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
 	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
-	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
-
+	// Adjustment
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
+	virtual bool environment_get_adjustments_enabled(RID p_env) const = 0;
+	virtual float environment_get_adjustments_brightness(RID p_env) const = 0;
+	virtual float environment_get_adjustments_contrast(RID p_env) const = 0;
+	virtual float environment_get_adjustments_saturation(RID p_env) const = 0;
+	virtual bool environment_get_use_1d_color_correction(RID p_env) const = 0;
+	virtual RID environment_get_color_correction(RID p_env) const = 0;
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
-
-	virtual RS::EnvironmentBG environment_get_background(RID p_Env) const = 0;
-	virtual int environment_get_canvas_max_layer(RID p_env) const = 0;
 
 	virtual bool is_environment(RID p_environment) const = 0;
 

@@ -1093,6 +1093,7 @@ public:
 
 	PASS1RC(bool, is_environment, RID)
 
+	// Background
 	PASS2(environment_set_background, RID, RS::EnvironmentBG)
 	PASS2(environment_set_sky, RID, RID)
 	PASS2(environment_set_sky_custom_fov, RID, float)
@@ -1102,36 +1103,146 @@ public:
 	PASS2(environment_set_canvas_max_layer, RID, int)
 	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
 
-	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
-	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
+	PASS1RC(RID, environment_get_sky, RID)
+	PASS1RC(float, environment_get_sky_custom_fov, RID)
+	PASS1RC(Basis, environment_get_sky_orientation, RID)
+	PASS1RC(Color, environment_get_bg_color, RID)
+	PASS1RC(float, environment_get_bg_energy, RID)
+	PASS1RC(int, environment_get_canvas_max_layer, RID)
+	PASS1RC(RS::EnvironmentAmbientSource, environment_get_ambient_source, RID)
+	PASS1RC(Color, environment_get_ambient_light, RID)
+	PASS1RC(float, environment_get_ambient_light_energy, RID)
+	PASS1RC(float, environment_get_ambient_sky_contribution, RID)
+	PASS1RC(RS::EnvironmentReflectionSource, environment_get_reflection_source, RID)
 
-	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
-	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
-
-	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
-	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
-
-	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
-	PASS1(environment_glow_set_use_bicubic_upscale, bool)
-	PASS1(environment_glow_set_use_high_quality, bool)
-
+	// Tonemap
 	PASS9(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float, bool, float, float, float, float)
+	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
+	PASS1RC(float, environment_get_exposure, RID)
+	PASS1RC(float, environment_get_white, RID)
+	PASS1RC(bool, environment_get_auto_exposure, RID)
+	PASS1RC(float, environment_get_min_luminance, RID)
+	PASS1RC(float, environment_get_max_luminance, RID)
+	PASS1RC(float, environment_get_auto_exp_speed, RID)
+	PASS1RC(float, environment_get_auto_exp_scale, RID)
+	PASS1RC(uint64_t, environment_get_auto_exposure_version, RID)
 
-	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
-
+	// Fog
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
+
+	PASS1RC(bool, environment_get_fog_enabled, RID)
+	PASS1RC(Color, environment_get_fog_light_color, RID)
+	PASS1RC(float, environment_get_fog_light_energy, RID)
+	PASS1RC(float, environment_get_fog_sun_scatter, RID)
+	PASS1RC(float, environment_get_fog_density, RID)
+	PASS1RC(float, environment_get_fog_height, RID)
+	PASS1RC(float, environment_get_fog_height_density, RID)
+	PASS1RC(float, environment_get_fog_aerial_perspective, RID)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
 
+	// Volumentric Fog
+	PASS13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
+
+	PASS1RC(bool, environment_get_volumetric_fog_enabled, RID)
+	PASS1RC(float, environment_get_volumetric_fog_density, RID)
+	PASS1RC(Color, environment_get_volumetric_fog_scattering, RID)
+	PASS1RC(Color, environment_get_volumetric_fog_emission, RID)
+	PASS1RC(float, environment_get_volumetric_fog_emission_energy, RID)
+	PASS1RC(float, environment_get_volumetric_fog_anisotropy, RID)
+	PASS1RC(float, environment_get_volumetric_fog_length, RID)
+	PASS1RC(float, environment_get_volumetric_fog_detail_spread, RID)
+	PASS1RC(float, environment_get_volumetric_fog_gi_inject, RID)
+	PASS1RC(bool, environment_get_volumetric_fog_temporal_reprojection, RID)
+	PASS1RC(float, environment_get_volumetric_fog_temporal_reprojection_amount, RID)
+	PASS1RC(float, environment_get_volumetric_fog_ambient_inject, RID)
+
+	// Glow
+	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
+
+	PASS1RC(bool, environment_get_glow_enabled, RID)
+	PASS1RC(Vector<float>, environment_get_glow_levels, RID)
+	PASS1RC(float, environment_get_glow_intensity, RID)
+	PASS1RC(float, environment_get_glow_strength, RID)
+	PASS1RC(float, environment_get_glow_bloom, RID)
+	PASS1RC(float, environment_get_glow_mix, RID)
+	PASS1RC(RS::EnvironmentGlowBlendMode, environment_get_glow_blend_mode, RID)
+	PASS1RC(float, environment_get_glow_hdr_bleed_threshold, RID)
+	PASS1RC(float, environment_get_glow_hdr_luminance_cap, RID)
+	PASS1RC(float, environment_get_glow_hdr_bleed_scale, RID)
+	PASS1RC(float, environment_get_glow_map_strength, RID)
+	PASS1RC(RID, environment_get_glow_map, RID)
+
+	PASS1(environment_glow_set_use_bicubic_upscale, bool)
+	PASS1(environment_glow_set_use_high_quality, bool)
+
+	// SSR
+	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
+
+	PASS1RC(bool, environment_get_ssr_enabled, RID)
+	PASS1RC(int, environment_get_ssr_max_steps, RID)
+	PASS1RC(float, environment_get_ssr_fade_in, RID)
+	PASS1RC(float, environment_get_ssr_fade_out, RID)
+	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
+
+	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+
+	// SSAO
+	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+
+	PASS1RC(bool, environment_get_ssao_enabled, RID)
+	PASS1RC(float, environment_get_ssao_radius, RID)
+	PASS1RC(float, environment_get_ssao_intensity, RID)
+	PASS1RC(float, environment_get_ssao_power, RID)
+	PASS1RC(float, environment_get_ssao_detail, RID)
+	PASS1RC(float, environment_get_ssao_horizon, RID)
+	PASS1RC(float, environment_get_ssao_sharpness, RID)
+	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
+	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
+
+	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
+
+	// SSIL
+	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
+
+	PASS1RC(bool, environment_get_ssil_enabled, RID)
+	PASS1RC(float, environment_get_ssil_radius, RID)
+	PASS1RC(float, environment_get_ssil_intensity, RID)
+	PASS1RC(float, environment_get_ssil_sharpness, RID)
+	PASS1RC(float, environment_get_ssil_normal_rejection, RID)
+
+	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
+
+	// SDFGI
+
 	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+
+	PASS1RC(bool, environment_get_sdfgi_enabled, RID)
+	PASS1RC(int, environment_get_sdfgi_cascades, RID)
+	PASS1RC(float, environment_get_sdfgi_min_cell_size, RID)
+	PASS1RC(bool, environment_get_sdfgi_use_occlusion, RID)
+	PASS1RC(float, environment_get_sdfgi_bounce_feedback, RID)
+	PASS1RC(bool, environment_get_sdfgi_read_sky_light, RID)
+	PASS1RC(float, environment_get_sdfgi_energy, RID)
+	PASS1RC(float, environment_get_sdfgi_normal_bias, RID)
+	PASS1RC(float, environment_get_sdfgi_probe_bias, RID)
+	PASS1RC(RS::EnvironmentSDFGIYScale, environment_get_sdfgi_y_scale, RID)
+
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
-	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
-	PASS1RC(int, environment_get_canvas_max_layer, RID)
+	// Adjustment
+	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
+
+	PASS1RC(bool, environment_get_adjustments_enabled, RID)
+	PASS1RC(float, environment_get_adjustments_brightness, RID)
+	PASS1RC(float, environment_get_adjustments_contrast, RID)
+	PASS1RC(float, environment_get_adjustments_saturation, RID)
+	PASS1RC(bool, environment_get_use_1d_color_correction, RID)
+	PASS1RC(RID, environment_get_color_correction, RID)
 
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
