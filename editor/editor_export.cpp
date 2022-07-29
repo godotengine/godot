@@ -235,7 +235,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		if (get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
 			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_icon("StatusWarning", "EditorIcons"), 16 * EDSCALE, 16 * EDSCALE, RichTextLabel::INLINE_ALIGN_CENTER);
 			p_log->add_text(" ");
-			p_log->add_text(TTR("Completed with errors."));
+			p_log->add_text(TTR("Completed with warnings."));
 			has_messages = true;
 		} else {
 			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_icon("StatusSuccess", "EditorIcons"), 16 * EDSCALE, 16 * EDSCALE, RichTextLabel::INLINE_ALIGN_CENTER);
