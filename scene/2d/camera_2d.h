@@ -48,10 +48,11 @@ public:
 		CAMERA2D_PROCESS_IDLE
 	};
 
-protected:
-	Point2 camera_pos;
-	Point2 smoothed_camera_pos;
-	bool first;
+private:
+	bool initialized;
+	Point2 current_position;
+	Point2 target_position;
+	Vector2 screen_size;
 
 	ObjectID custom_viewport_id; // to check validity
 	Viewport *custom_viewport;
@@ -65,37 +66,36 @@ protected:
 	AnchorMode anchor_mode;
 	bool rotating;
 	bool current;
-	float smoothing;
+	float smoothing_speed;
 	bool smoothing_enabled;
-	bool smoothing_active; // smoothing can be enabled but not active in the editor
+	// Smoothing can be enabled but not active in the editor.
+	bool smoothing_active;
 	int limit[4];
 	bool limit_smoothing_enabled;
 	float drag_margin[4];
-
 	bool h_drag_enabled;
 	bool v_drag_enabled;
 	float h_ofs;
 	float v_ofs;
-
 	bool h_offset_changed;
 	bool v_offset_changed;
-
-	Point2 camera_screen_center;
-	void _update_process_mode();
-	void _update_scroll();
-	void _setup_viewport();
-
-	void _make_current(Object *p_which);
-	void _set_current(bool p_current);
-
 	bool screen_drawing_enabled;
 	bool limit_drawing_enabled;
 	bool margin_drawing_enabled;
 
 	Camera2DProcessMode process_mode;
 
+	void _update_process_mode();
+	void _setup_viewport();
+	Transform2D _get_camera_transform();
+	void _update_viewport();
+	void _update_size();
+	void _update_position();
+	void _update_scroll();
+	void _clear_current();
+	void _set_current(bool p_current);
+
 protected:
-	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -133,8 +133,8 @@ public:
 	void set_enable_follow_smoothing(bool p_enabled);
 	bool is_follow_smoothing_enabled() const;
 
-	void set_follow_smoothing(float p_speed);
-	float get_follow_smoothing() const;
+	void set_smoothing_speed(float p_smoothing_speed);
+	float get_smoothing_speed() const;
 
 	void set_process_mode(Camera2DProcessMode p_mode);
 	Camera2DProcessMode get_process_mode() const;
@@ -146,12 +146,11 @@ public:
 	void set_zoom(const Vector2 &p_zoom);
 	Vector2 get_zoom() const;
 
-	Point2 get_camera_screen_center() const;
-
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;
 
-	Vector2 get_camera_position() const;
+	Point2 get_camera_screen_center() const;
+	Point2 get_camera_position() const;
 	void force_update_scroll();
 	void reset_smoothing();
 	void align();

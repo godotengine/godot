@@ -17,59 +17,59 @@
 		<method name="align">
 			<return type="void" />
 			<description>
-				Aligns the camera to the tracked node.
+				Resets the screen position to the camera position offset by [member offset_h] and [member offset_v]. See also [method reset_smoothing].
 			</description>
 		</method>
 		<method name="clear_current">
 			<return type="void" />
 			<description>
-				Removes any [Camera2D] from the ancestor [Viewport]'s internal currently-assigned camera.
+				Removes the currently assigned [Camera2D] from the [Viewport] (see [member current]).
 			</description>
 		</method>
 		<method name="force_update_scroll">
 			<return type="void" />
 			<description>
-				Forces the camera to update scroll immediately.
+				Deprecated! Will be removed in a future version of Godot.
 			</description>
 		</method>
 		<method name="get_camera_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the camera's [code]position[/code] (the tracked point the camera attempts to follow), relative to the origin.
-				[b]Note:[/b] The returned value is not the same as [member Node2D.position] or [member Node2D.global_position], as it is affected by the [code]drag[/code] properties.
+				Returns the camera's target position relative to the origin.
+				[b]Note:[/b] The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member smoothing_enabled] is [code]true[/code] (see [method get_camera_screen_center]).
 			</description>
 		</method>
 		<method name="get_camera_screen_center" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the location of the [Camera2D]'s screen-center, relative to the origin.
-				[b]Note:[/b] The real [code]position[/code] of the camera may be different, see [method get_camera_position].
+				Returns the current location of the camera's screen-center relative to the origin.
+				[b]Note:[/b] If [member smoothing_enabled] the current location of the camera may be different from the [method get_camera_position] (see [method get_camera_position]).
 			</description>
 		</method>
 		<method name="get_drag_margin" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
-				Returns the specified margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
+				Returns the specified [enum Margin]'s drag margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
 			</description>
 		</method>
 		<method name="get_limit" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
-				Returns the specified camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
+				Returns the specified [enum Margin]'s camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
 		<method name="make_current">
 			<return type="void" />
 			<description>
-				Make this the current 2D camera for the scene (viewport and layer), in case there are many cameras in the scene.
+				Makes this [Camera2D] the [Viewport]'s camera (see [member current]).
 			</description>
 		</method>
 		<method name="reset_smoothing">
 			<return type="void" />
 			<description>
-				Sets the camera's position immediately to its current smoothing destination.
+				Sets the camera's current position immediately to its target postion (see [method get_camera_position]).
 				This method has no effect if [member smoothing_enabled] is [code]false[/code].
 			</description>
 		</method>
@@ -78,7 +78,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin" />
 			<argument index="1" name="drag_margin" type="float" />
 			<description>
-				Sets the specified margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
+				Sets the specified [enum Margin]'s drag margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
 			</description>
 		</method>
 		<method name="set_limit">
@@ -86,7 +86,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin" />
 			<argument index="1" name="limit" type="int" />
 			<description>
-				Sets the specified camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
+				Sets the specified [enum Margin]'s camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
 	</methods>
@@ -95,7 +95,7 @@
 			The Camera2D's anchor point. See [enum AnchorMode] constants.
 		</member>
 		<member name="current" type="bool" setter="_set_current" getter="is_current" default="false">
-			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
+			If [code]true[/code], the camera becomes the active camera for the [Viewport]. Only one camera can be active in a given viewport, so making a camera in the [Viewport] current, will set all other cameras in the [Viewport]'s [member current] property to [code]false[/code].
 		</member>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.
@@ -128,24 +128,28 @@
 			If [code]true[/code], draws the camera's screen rectangle in the editor.
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" default="10000000">
-			Bottom scroll limit in pixels. The camera stops moving when reaching this value.
+			Bottom scroll limit in pixels. The camera stops moving when the bottom side of the camera reaches this value.
+			[b]Note[/b]: [member offset] Can push the view past the limit.
 		</member>
 		<member name="limit_left" type="int" setter="set_limit" getter="get_limit" default="-10000000">
-			Left scroll limit in pixels. The camera stops moving when reaching this value.
+			Left scroll limit in pixels. The camera stops moving when the left side of the camera reaches this value.
+			[b]Note[/b]: [member offset] Can push the view past the limit.
 		</member>
 		<member name="limit_right" type="int" setter="set_limit" getter="get_limit" default="10000000">
-			Right scroll limit in pixels. The camera stops moving when reaching this value.
+			Right scroll limit in pixels. The camera stops moving when the right side of the camera reaches this value.
+			[b]Note[/b]: [member offset] Can push the view past the limit.
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
-			If [code]true[/code], the camera smoothly stops when reaches its limits.
-			This property has no effect if [member smoothing_enabled] is [code]false[/code].
-			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
+			If [code]true[/code], when camera limits are changed, the camera smoothly scrolls to be within the new limits. Requires [member smoothing_enabled] to be [code]true[/code] too.
+			[b]Note:[/b] To immediately update the camera's position to be within new limits call [method reset_smoothing].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
-			Top scroll limit in pixels. The camera stops moving when reaching this value.
+			Top scroll limit in pixels. The camera stops moving when the top side of the camera reaches this value.
+			[b]Note[/b]: [member offset] Can push the view past the limit.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
-			The camera's offset, useful for looking around or camera shake animations.
+			The offset from the camera's current position. Useful for camera shake animations.
+			[b]Note[/b]: The offsetted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
 		</member>
 		<member name="offset_h" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The horizontal offset of the camera, relative to the drag margins.
@@ -156,16 +160,16 @@
 			[b]Note:[/b] Used the same as [member offset_h].
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Camera2D.Camera2DProcessMode" default="1">
-			The camera's process callback. See [enum Camera2DProcessMode].
+			The process step during which the camera's position is updated. See [enum Camera2DProcessMode].
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating" default="false">
 			If [code]true[/code], the camera view rotates with the target.
 		</member>
 		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled" default="false">
-			If [code]true[/code], the camera smoothly moves towards the target at [member smoothing_speed].
+			If [code]true[/code], the camera smoothly moves towards the target position at [member smoothing_speed].
 		</member>
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing" default="5.0">
-			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code].
+			When [member smoothing_enabled] is [code]true[/code], the asymptotic speed at which the camera closes the gap between the current position and the target position.
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2( 1, 1 )">
 			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2× zoom-in, and [code]Vector2(4, 4)[/code] for a 4× zoom-out.
@@ -173,16 +177,16 @@
 	</members>
 	<constants>
 		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0" enum="AnchorMode">
-			The camera's position is fixed so that the top-left corner is always at the origin.
+			The top-left corner of the camera is used as the camera's target position.
 		</constant>
 		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1" enum="AnchorMode">
-			The camera's position takes into account vertical/horizontal offsets and the screen size.
+			The camera's center is used as the camera's target position. If drag margins are enabled, the target position will only be adjusted when the [Node2D] position reaches the drag margins.
 		</constant>
 		<constant name="CAMERA2D_PROCESS_PHYSICS" value="0" enum="Camera2DProcessMode">
-			The camera updates with the [code]_physics_process[/code] callback.
+			The camera smoothing position updates during the [code]_physics_process[/code] step.
 		</constant>
 		<constant name="CAMERA2D_PROCESS_IDLE" value="1" enum="Camera2DProcessMode">
-			The camera updates with the [code]_process[/code] callback.
+			The camera smoothing position updates during the [code]_process[/code] step.
 		</constant>
 	</constants>
 </class>
