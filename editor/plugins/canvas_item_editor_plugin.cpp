@@ -5627,6 +5627,11 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	editor_data->get_undo_redo().add_do_reference(instantiated_scene);
 	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instantiated_scene);
 
+	if (EditorSettings::get_singleton()->get("docks/scene_tree/instantiate_with_editable_children")) {
+		editor_data->get_undo_redo().add_do_method(edited_scene, "set_editable_instance", instantiated_scene, true);
+		editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_display_folded", true);
+	}
+
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), path, new_name);
