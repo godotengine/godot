@@ -2989,7 +2989,7 @@ void FileSystemDock::_file_sort_popup(int p_id) {
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
 	button->set_flat(true);
-	button->set_tooltip_text(TTR("Sort files"));
+	button->set_tooltip_text(TTR("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_sort_popup));
@@ -3052,14 +3052,14 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
-	button_hist_prev->set_tooltip_text(TTR("Previous Folder/File"));
+	button_hist_prev->set_tooltip_text(TTR("Go to previous selected folder/file."));
 	toolbar_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
-	button_hist_next->set_tooltip_text(TTR("Next Folder/File"));
+	button_hist_next->set_tooltip_text(TTR("Go to next selected folder/file."));
 	toolbar_hbc->add_child(button_hist_next);
 
 	current_path = memnew(LineEdit);
