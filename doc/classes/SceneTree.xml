@@ -55,6 +55,7 @@
 				Changes the running scene to a new instance of the given [PackedScene].
 				Returns [constant OK] on success or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
 				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene_to] call.
+				[b]Note:[/b] Passing a value of [code]null[/code] into the method will unload the current scene without loading a new one.
 			</description>
 		</method>
 		<method name="create_timer">
