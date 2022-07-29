@@ -123,7 +123,7 @@ void OpenXRInterface::_load_action_map() {
 #ifdef TOOLS_ENABLED
 			// Save our action sets so our user can
 			action_map->set_path(default_tres_name, true);
-			ResourceSaver::save(default_tres_name, action_map);
+			ResourceSaver::save(action_map, default_tres_name);
 #endif
 		}
 	}

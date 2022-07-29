@@ -3630,7 +3630,7 @@ String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path)
 	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
-Error ResourceFormatSaverCSharpScript::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<CSharpScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 

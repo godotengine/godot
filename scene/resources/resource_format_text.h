@@ -194,7 +194,7 @@ public:
 class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

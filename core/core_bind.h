@@ -109,7 +109,7 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags);
+	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);

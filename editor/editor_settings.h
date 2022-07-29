@@ -88,8 +88,6 @@ private:
 	mutable HashMap<String, Ref<Shortcut>> shortcuts;
 	HashMap<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
-	String config_file_path;
-
 	Vector<String> favorites;
 	Vector<String> recent_dirs;
 

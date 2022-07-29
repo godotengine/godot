@@ -831,18 +831,18 @@ void ShaderEditor::save_external_data(const String &p_str) {
 
 	Ref<Shader> edited_shader = shader_editor->get_edited_shader();
 	if (edited_shader.is_valid()) {
-		ResourceSaver::save(edited_shader->get_path(), edited_shader);
+		ResourceSaver::save(edited_shader);
 	}
 	if (shader.is_valid() && shader != edited_shader) {
-		ResourceSaver::save(shader->get_path(), shader);
+		ResourceSaver::save(shader);
 	}
 
 	Ref<ShaderInclude> edited_shader_inc = shader_editor->get_edited_shader_include();
 	if (edited_shader_inc.is_valid()) {
-		ResourceSaver::save(edited_shader_inc->get_path(), edited_shader_inc);
+		ResourceSaver::save(edited_shader_inc);
 	}
 	if (shader_inc.is_valid() && shader_inc != edited_shader_inc) {
-		ResourceSaver::save(shader_inc->get_path(), shader_inc);
+		ResourceSaver::save(shader_inc);
 	}
 
 	disk_changed->hide();

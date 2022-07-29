@@ -226,7 +226,7 @@ Error ResourceImporterOggVorbis::import(const String &p_source_file, const Strin
 	ogg_vorbis_stream->set_beat_count(beat_count);
 	ogg_vorbis_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(p_save_path + ".oggvorbisstr", ogg_vorbis_stream);
+	return ResourceSaver::save(ogg_vorbis_stream, p_save_path + ".oggvorbisstr");
 }
 
 ResourceImporterOggVorbis::ResourceImporterOggVorbis() {

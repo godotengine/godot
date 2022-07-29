@@ -109,7 +109,7 @@ Error ResourceImporterShaderFile::import(const String &p_source_file, const Stri
 		}
 	}
 
-	ResourceSaver::save(p_save_path + ".res", shader_file);
+	ResourceSaver::save(shader_file, p_save_path + ".res");
 
 	return OK;
 }

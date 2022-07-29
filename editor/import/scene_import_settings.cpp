@@ -1184,7 +1184,7 @@ void SceneImportSettings::_save_dir_confirm() {
 				ERR_CONTINUE(!material_map.has(id));
 				MaterialData &md = material_map[id];
 
-				Error err = ResourceSaver::save(path, md.material);
+				Error err = ResourceSaver::save(md.material, path);
 				if (err != OK) {
 					EditorNode::get_singleton()->add_io_error(TTR("Can't make material external to file, write error:") + "\n\t" + path);
 					continue;
