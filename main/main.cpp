@@ -99,6 +99,11 @@
 
 #include "modules/modules_enabled.gen.h" // For mono.
 
+/* Required for registering app protocols */
+#ifdef MODULE_APP_PROTOCOL_ENABLED
+#include "modules/app_protocol/app_protocol.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -691,6 +696,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Error exit_code = ERR_INVALID_PARAMETER;
 
 	I = args.front();
+
 	while (I) {
 #ifdef MACOS_ENABLED
 		// Ignore the process serial number argument passed by macOS Gatekeeper.
@@ -702,11 +708,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 		List<String>::Element *N = I->next();
+#ifdef MODULE_APP_PROTOCOL_ENABLED
+		// in the case where we have no arguments from a browser OR a test execution with --uri.
+		if (I->get() == "--uri") {
+			if (I->next()) {
+				const String &str = I->next()->get();
 
+				print_verbose("String to send if client is open: " + str);
+				IPCClient client;
+				// Could be running in another game instance if it is we pass and close down.
+				// If our server is up we just close down the game, so this will return false if the server is down, and true if it is up.
+
+				if (client.setup_one_shot(str.ascii().get_data(), str.ascii().length())) {
+					exit_code = ERR_HELP;
+					goto error;
+				}
+			}
+		}
+#endif
 		if (adding_user_args) {
 			user_args.push_back(I->get());
 		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
-
 			show_help = true;
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;

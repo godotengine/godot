@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "godot_application_delegate.h"
-
 #include "display_server_macos.h"
+#include "modules/app_protocol/app_protocol.h"
 #include "os_macos.h"
 
 @implementation GodotApplicationDelegate
@@ -66,12 +66,11 @@
 		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 	}
 }
-
 - (id)init {
 	self = [super init];
 
 	NSAppleEventManager *aem = [NSAppleEventManager sharedAppleEventManager];
-	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:onAppUrlEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
 	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenDocuments];
 
 	return self;
@@ -84,12 +83,6 @@
 	}
 
 	List<String> args;
-	if (([event eventClass] == kInternetEventClass) && ([event eventID] == kAEGetURL)) {
-		// Opening URL scheme.
-		NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-		args.push_back(vformat("--uri=\"%s\"", String::utf8([url UTF8String])));
-	}
-
 	if (([event eventClass] == kCoreEventClass) && ([event eventID] == kAEOpenDocuments)) {
 		// Opening file association.
 		NSAppleEventDescriptor *files = [event paramDescriptorForKeyword:keyDirectObject];
@@ -108,6 +101,37 @@
 			os->create_instance(args);
 		} else {
 			// Application is just started, add to the list of command line arguments and continue.
+			os->set_cmdline_platform_args(args);
+		}
+	}
+}
+
+- (void)handleAppleEvent:(NSAppleEventDescriptor *)event onAppUrlEvent:(NSAppleEventDescriptor *)replyEvent {
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (!event || !os) {
+		return;
+	}
+
+	List<String> args;
+	if (([event eventClass] == kInternetEventClass) && ([event eventID] == kAEGetURL)) {
+		// Opening URL scheme.
+		NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+		args.push_back(vformat("%s", String::utf8([url UTF8String])));
+	}
+
+	const String &str = args.size() > 0 ? args[0] : "no arguments";
+	if (str == "no arguments") {
+		return;
+	}
+
+	if (AppProtocol::is_server_running_locally()) {
+		AppProtocol::on_server_get_message(str.ascii().get_data(), str.ascii().length());
+	} else {
+		IPCClient client;
+
+		// Could be running in another game instance if it is we pass and close down.
+		// If our server is up we just close down the game, so this will return false if the server is down, and true if it is up.
+		if (client.setup_one_shot(str.ascii().get_data(), str.ascii().length())) {
 			os->set_cmdline_platform_args(args);
 		}
 	}

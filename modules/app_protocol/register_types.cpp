@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_application_delegate.h                                         */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_APPLICATION_DELEGATE_H
-#define GODOT_APPLICATION_DELEGATE_H
+#include "register_types.h"
+#include "app_protocol.h"
 
-#include "core/os/os.h"
+void initialize_app_protocol_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		AppProtocol::initialize();
+		AppProtocol::get_singleton()->register_project_settings();
+		if (!Engine::get_singleton()->has_singleton("AppProtocol")) {
+			Engine::get_singleton()->add_singleton(
+					Engine::Singleton("AppProtocol", AppProtocol::get_singleton()));
+		}
+		GDREGISTER_CLASS(AppProtocol);
+	}
+}
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
-
-@interface GodotApplicationDelegate : NSObject
-- (void)forceUnbundledWindowActivationHackStep1;
-- (void)forceUnbundledWindowActivationHackStep2;
-- (void)forceUnbundledWindowActivationHackStep3;
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event onAppUrlEvent:(NSAppleEventDescriptor *)replyEvent;
-@end
-
-#endif // GODOT_APPLICATION_DELEGATE_H
+void uninitialize_app_protocol_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		AppProtocol::finalize();
+	}
+}

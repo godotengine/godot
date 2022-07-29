@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AppProtocol" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		App protocols let you register urls for your application to browsers and desktop applications.
+	</brief_description>
+	<description>
+		When you declare a protocol it lets you launch via web links in browser (with permission)
+		You can implement protocols for windows,mac and linux and have a uniform API for this.
+		On Mac you must register the binary at export time, so we enable this primarily after you execute and run your game.
+		The idea is you go to a website and click a link and your game opens, but additionally will pass data
+		from your browser to an already running game via an IPC library
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="poll_server">
+			<return type="void" />
+			<description>
+				Call this every frame in your GDScript.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="on_url_received">
+			<argument index="0" name="url" type="String" />
+			<description>
+				the url format will return the exact link clicked
+				for example yourappname://your_event_here could be put on a web browser page
+				this would directly be called in this signal
+			</description>
+		</signal>
+	</signals>
+</class>
