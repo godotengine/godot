@@ -57,6 +57,12 @@
 				Ensure current selection is visible, adjusting the scroll position as necessary.
 			</description>
 		</method>
+		<method name="force_update_list_size">
+			<return type="void" />
+			<description>
+				Forces an update to the list size based on its items. This happens automatically whenever size of the items, or other relevant settings like [member auto_height], change. The method can be used to trigger the update ahead of next drawing pass.
+			</description>
+		</method>
 		<method name="get_item_at_position" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="position" type="Vector2" />
