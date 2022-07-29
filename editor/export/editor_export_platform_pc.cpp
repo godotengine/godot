@@ -139,7 +139,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	template_path = template_path.strip_edges();
 
 	if (template_path.is_empty()) {
-		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/64_bits") ? "64" : "32"));
+		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/64_bits") ? "x86_64" : "x86_32"));
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
