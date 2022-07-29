@@ -2084,7 +2084,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
 			attachment.color_blend_op = RD::BLEND_OP_ADD;
 			attachment.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
 
