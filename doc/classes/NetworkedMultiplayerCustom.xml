@@ -24,6 +24,7 @@
 			<argument index="0" name="self_peer_id" type="int" />
 			<description>
 				Initialize the peer with the given [code]peer_id[/code] (must be between 1 and 2147483647).
+				Can only be called if the connection status is [constant NetworkedMultiplayerPeer.CONNECTION_CONNECTING]. See [method set_connection_status].
 			</description>
 		</method>
 		<method name="set_connection_status">
@@ -32,7 +33,7 @@
 			<description>
 				Set the state of the connection. See [enum NetworkedMultiplayerPeer.ConnectionStatus].
 				This will emit the [signal NetworkedMultiplayerPeer.connection_succeeded], [signal NetworkedMultiplayerPeer.connection_failed] or [signal NetworkedMultiplayerPeer.server_disconnected] signals depending on the status and if the peer has the unique network id of [code]1[/code].
-				You can only change to [code]CONNECTION_CONNECTING[/code] from [code]CONNECTION_DISCONNECTED[/code] and to [code]CONNECTION_CONNECTED[/code] from [code]CONNECTION_CONNECTING[/code].
+				You can only change to [constant NetworkedMultiplayerPeer.CONNECTION_CONNECTING] from [constant NetworkedMultiplayerPeer.CONNECTION_DISCONNECTED] and to [constant NetworkedMultiplayerPeer.CONNECTION_CONNECTED] from [constant NetworkedMultiplayerPeer.CONNECTION_CONNECTING].
 			</description>
 		</method>
 		<method name="set_max_packet_size">

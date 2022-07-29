@@ -139,9 +139,10 @@ NetworkedMultiplayerPeer::ConnectionStatus NetworkedMultiplayerCustom::get_conne
 //
 
 void NetworkedMultiplayerCustom::initialize(int p_self_id) {
-	if (connection_status != ConnectionStatus::CONNECTION_CONNECTING) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(connection_status != ConnectionStatus::CONNECTION_CONNECTING,
+			"Can only initialize if connection status is CONNECTION_CONNECTING.");
+	ERR_FAIL_COND_MSG(p_self_id < 0 || p_self_id > ~(1 << 31),
+			"Cannot initialize with invalid unique network id.");
 
 	self_id = p_self_id;
 	if (self_id == 1) {
@@ -159,9 +160,9 @@ void NetworkedMultiplayerCustom::set_connection_status(NetworkedMultiplayerPeer:
 	}
 
 	ERR_FAIL_COND_MSG(p_connection_status == ConnectionStatus::CONNECTION_CONNECTING && connection_status != ConnectionStatus::CONNECTION_DISCONNECTED,
-			"Can only change connection status to CONNECTION_CONNECTING from CONNECTION_DISCONNECTED");
+			"Can only change connection status to CONNECTION_CONNECTING from CONNECTION_DISCONNECTED.");
 	ERR_FAIL_COND_MSG(p_connection_status == ConnectionStatus::CONNECTION_CONNECTED && connection_status != ConnectionStatus::CONNECTION_CONNECTING,
-			"Can only change connection status to CONNECTION_CONNECTED from CONNECTION_CONNECTING");
+			"Can only change connection status to CONNECTION_CONNECTED from CONNECTION_CONNECTING.");
 
 	if (p_connection_status == ConnectionStatus::CONNECTION_CONNECTED) {
 		connection_status = p_connection_status;
