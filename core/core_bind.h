@@ -188,6 +188,7 @@ public:
 
 	String get_name() const;
 	Vector<String> get_cmdline_args();
+	Vector<String> get_cmdline_user_args();
 
 	String get_locale() const;
 	String get_locale_language() const;

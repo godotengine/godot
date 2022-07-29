@@ -285,6 +285,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
+	OS::get_singleton()->print("  --                                           Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                                 Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager                        Start the project manager, even if a project is auto-detected.\n");
@@ -623,6 +624,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> user_args;
+	bool adding_user_args = false;
 	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
 	// Add command line arguments.
@@ -695,9 +698,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
+
 		List<String>::Element *N = I->next();
 
-		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
+		if (adding_user_args) {
+			user_args.push_back(I->get());
+		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
@@ -1200,7 +1206,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-
+		} else if (I->get() == "--") {
+			adding_user_args = true;
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1377,7 +1384,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
-	OS::get_singleton()->set_cmdline(execpath, main_args);
+	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
@@ -1670,6 +1677,7 @@ error:
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 
 	if (message_queue) {
 		memdelete(message_queue);
@@ -3001,6 +3009,7 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->delete_main_loop();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
 
