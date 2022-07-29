@@ -31,8 +31,9 @@
 			<argument index="0" name="connection_status" type="int" enum="NetworkedMultiplayerPeer.ConnectionStatus" />
 			<description>
 				Set the state of the connection. See [enum NetworkedMultiplayerPeer.ConnectionStatus].
-				This will emit the [signal NetworkedMultiplayerPeer.connection_succeeded], [signal NetworkedMultiplayerPeer.connection_failed] or [signal NetworkedMultiplayerPeer.server_disconnected] signals depending on the status and if the peer has the unique network id of [code]1[/code].
+				This will emit the [signal NetworkedMultiplayerPeer.connection_succeeded] signal when set to [code]CONNECTION_CONNECTED[/code].
 				You can only change to [code]CONNECTION_CONNECTING[/code] from [code]CONNECTION_DISCONNECTED[/code] and to [code]CONNECTION_CONNECTED[/code] from [code]CONNECTION_CONNECTING[/code].
+				Setting this to [code]CONNECTION_DISCONNECTED[/code] will emit the [signal NetworkedMultiplayerPeer.connection_failed] if it was previously set to [code]CONNECTION_CONNECTING[/code] or [signal NetworkedMultiplayerPeer.server_disconnected] if previously [code]CONNECTION_CONNECTED[/code]. Note that this is only true if the peer is not in server mode (has the unique network id of [code]1[/code]), otherwise the connection status will be set to [code]CONNECTION_DISCONNECTED[/code] without emitting any signals.
 			</description>
 		</method>
 		<method name="set_max_packet_size">
@@ -49,8 +50,9 @@
 			<argument index="1" name="buffer" type="PoolByteArray" />
 			<argument index="2" name="transfer_mode" type="int" />
 			<description>
-				Emitted when the local [MultiplayerAPI] generates a packet.
+				Emitted when the local [MultiplayerAPI] generates a packet (e.g. when calling [method Node.rpc]).
 				Your script should take this packet and send it to the requested peer over the network (which should call [method deliver_packet] with the data when it's received).
+				The [code]peer_id[/code] is the [code]target_peer[/code] set by [method NetworkedMultiplayerPeer.set_target_peer].
 			</description>
 		</signal>
 	</signals>
