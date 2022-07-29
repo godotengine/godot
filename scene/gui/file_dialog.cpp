@@ -1083,9 +1083,9 @@ FileDialog::FileDialog() {
 	_update_drives();
 
 	connect("confirmed", callable_mp(this, &FileDialog::_action_pressed));
-	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), varray(), CONNECT_DEFERRED);
-	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), varray(), CONNECT_DEFERRED);
-	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated), varray());
+	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), CONNECT_DEFERRED);
+	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), CONNECT_DEFERRED);
+	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated));
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
 	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));

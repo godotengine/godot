@@ -2089,7 +2089,7 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("finished", callable_mp(this, &EditorHelp::_class_desc_finished));
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
-	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized), varray(false));
+	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
 	_class_desc_resized(false);
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.

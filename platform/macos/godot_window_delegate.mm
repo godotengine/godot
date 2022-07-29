@@ -187,7 +187,7 @@
 		Variant *sizep = &size;
 		Variant ret;
 		Callable::CallError ce;
-		wd.rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
+		wd.rect_changed_callback.callp((const Variant **)&sizep, 1, ret, ce);
 	}
 }
 
@@ -205,7 +205,7 @@
 		Variant *sizep = &size;
 		Variant ret;
 		Callable::CallError ce;
-		wd.rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
+		wd.rect_changed_callback.callp((const Variant **)&sizep, 1, ret, ce);
 	}
 }
 

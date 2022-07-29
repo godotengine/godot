@@ -157,7 +157,7 @@ void Font::set_fallbacks(const TypedArray<Font> &p_fallbacks) {
 	for (int i = 0; i < fallbacks.size(); i++) {
 		Ref<Font> f = fallbacks[i];
 		if (f.is_valid()) {
-			f->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+			f->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	_invalidate_rids();
@@ -2534,7 +2534,7 @@ void FontVariation::set_base_font(const Ref<Font> &p_font) {
 		}
 		base_font = p_font;
 		if (base_font.is_valid()) {
-			base_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+			base_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		_invalidate_rids();
 		notify_property_list_changed();
@@ -2565,7 +2565,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 				Ref<Font> f = Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 				}
 				return f;
 			}
@@ -2582,7 +2582,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 				Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 				}
 				return f;
 			}
@@ -2592,7 +2592,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
 		if (f.is_valid()) {
 			theme_font = f;
-			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		return f;
 	}
@@ -2811,7 +2811,7 @@ void SystemFont::_update_base_font() {
 	}
 
 	if (base_font.is_valid()) {
-		base_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+		base_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_invalidate_rids();
@@ -2864,7 +2864,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 				Ref<Font> f = Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 				}
 				return f;
 			}
@@ -2881,7 +2881,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 				Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 				}
 				return f;
 			}
@@ -2891,7 +2891,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
 		if (f.is_valid()) {
 			theme_font = f;
-			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		return f;
 	}

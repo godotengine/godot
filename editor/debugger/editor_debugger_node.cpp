@@ -92,17 +92,17 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	ScriptEditorDebugger *node = memnew(ScriptEditorDebugger);
 
 	int id = tabs->get_tab_count();
-	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop), varray(id));
-	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped), varray(id));
-	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected), varray(id));
-	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected), varray(id));
-	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected), varray(id));
+	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop).bind(id));
+	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped).bind(id));
+	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected).bind(id));
+	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
+	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
 	node->connect("clear_execution", callable_mp(this, &EditorDebuggerNode::_clear_execution));
-	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked), varray(id));
-	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated), varray(id));
-	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated), varray(id));
-	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated), varray(id));
-	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested), varray(id));
+	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked).bind(id));
+	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated).bind(id));
+	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated).bind(id));
+	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated).bind(id));
+	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested).bind(id));
 	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
 
 	if (tabs->get_tab_count() > 0) {

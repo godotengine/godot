@@ -72,7 +72,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 				p_task->template_userdata->callback_indexed(work_index);
 			} else {
 				arg = work_index;
-				p_task->callable.call((const Variant **)&argptr, 1, ret, ce);
+				p_task->callable.callp((const Variant **)&argptr, 1, ret, ce);
 			}
 
 			// This is the only way to ensure posting is done when all tasks are really complete.
@@ -123,7 +123,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		} else {
 			Callable::CallError ce;
 			Variant ret;
-			p_task->callable.call(nullptr, 0, ret, ce);
+			p_task->callable.callp(nullptr, 0, ret, ce);
 		}
 
 		p_task->completed = true;

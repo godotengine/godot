@@ -357,7 +357,7 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 	s->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	s->connect("value_changed", callable_mp(this, &ColorPicker::_value_changed));
-	s->connect("draw", callable_mp(this, &ColorPicker::_slider_draw), make_binds(idx));
+	s->connect("draw", callable_mp(this, &ColorPicker::_slider_draw).bind(idx));
 
 	if (idx < SLIDER_COUNT) {
 		sliders[idx] = s;
@@ -515,7 +515,7 @@ void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset = memnew(ColorPresetButton(p_color));
 	btn_preset->set_preset_color(p_color);
 	btn_preset->set_custom_minimum_size(Size2(p_size, p_size));
-	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input), varray(p_color));
+	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input).bind(p_color));
 	btn_preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
 	preset_container->add_child(btn_preset);
 }
@@ -1075,7 +1075,7 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
 		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed"), varray(false));
+		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed").bind(false));
 	} else {
 		screen->show();
 	}
@@ -1204,11 +1204,11 @@ ColorPicker::ColorPicker() :
 
 	uv_edit = memnew(Control);
 	hb_edit->add_child(uv_edit);
-	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input), make_binds(uv_edit));
+	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input).bind(uv_edit));
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, uv_edit));
+	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(0, uv_edit));
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
 	add_child(hb_smpl, false, INTERNAL_MODE_FRONT);
@@ -1295,19 +1295,19 @@ ColorPicker::ColorPicker() :
 	wheel = memnew(Control);
 	wheel_margin->add_child(wheel);
 	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
-	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(2, wheel));
+	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(2, wheel));
 
 	wheel_uv = memnew(Control);
 	wheel_margin->add_child(wheel_uv);
-	wheel_uv->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input), make_binds(wheel_uv));
-	wheel_uv->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, wheel_uv));
+	wheel_uv->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input).bind(wheel_uv));
+	wheel_uv->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(0, wheel_uv));
 
 	w_edit = memnew(Control);
 	hb_edit->add_child(w_edit);
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", callable_mp(this, &ColorPicker::_w_input));
-	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(1, w_edit));
+	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(1, w_edit));
 
 	_update_controls();
 	updating = false;

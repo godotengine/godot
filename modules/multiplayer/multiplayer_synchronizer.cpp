@@ -138,7 +138,7 @@ bool MultiplayerSynchronizer::is_visible_to(int p_peer) {
 		for (Callable filter : visibility_filters) {
 			Variant ret;
 			Callable::CallError err;
-			filter.call(argv, 1, ret, err);
+			filter.callp(argv, 1, ret, err);
 			ERR_FAIL_COND_V(err.error != Callable::CallError::CALL_OK || ret.get_type() != Variant::BOOL, false);
 			if (!ret.operator bool()) {
 				return false;

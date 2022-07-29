@@ -657,7 +657,7 @@ void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
 		}
 		settings = p_settings;
 		if (settings.is_valid()) {
-			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), varray(), CONNECT_REFERENCE_COUNTED);
+			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
 		}
 		_invalidate();
 	}

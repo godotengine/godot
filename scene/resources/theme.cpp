@@ -295,7 +295,7 @@ void Theme::set_default_font(const Ref<Font> &p_default_font) {
 	default_font = p_default_font;
 
 	if (default_font.is_valid()) {
-		default_font->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(false), CONNECT_REFERENCE_COUNTED);
+		default_font->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed();
@@ -341,7 +341,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_theme_type, c
 	icon_map[p_theme_type][p_name] = p_icon;
 
 	if (p_icon.is_valid()) {
-		icon_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(false), CONNECT_REFERENCE_COUNTED);
+		icon_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed(!existing);
@@ -451,7 +451,7 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_theme_typ
 	style_map[p_theme_type][p_name] = p_style;
 
 	if (p_style.is_valid()) {
-		style_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(false), CONNECT_REFERENCE_COUNTED);
+		style_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed(!existing);
@@ -561,7 +561,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, c
 	font_map[p_theme_type][p_name] = p_font;
 
 	if (p_font.is_valid()) {
-		font_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(false), CONNECT_REFERENCE_COUNTED);
+		font_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed(!existing);

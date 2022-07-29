@@ -1848,7 +1848,7 @@ void Thread::_start_func(void *ud) {
 	::Thread::set_name(func_name);
 
 	Callable::CallError ce;
-	t->target_callable.call(nullptr, 0, t->ret, ce);
+	t->target_callable.callp(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
 		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
@@ -2428,7 +2428,7 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	const Variant *args[2] = { &cmd, &data };
 	Variant retval;
 	Callable::CallError err;
-	capture.call(args, 2, retval, err);
+	capture.callp(args, 2, retval, err);
 	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, FAILED, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(capture, args, 2, err));
 	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, "Error calling 'capture' to callable: " + String(capture) + ". Return type is not bool.");
 	r_captured = retval;

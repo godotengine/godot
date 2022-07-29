@@ -325,7 +325,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 		{
 			if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
-				child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed), make_binds(child), CONNECT_ONESHOT);
+				child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONESHOT);
 			}
 		}
 
@@ -1377,9 +1377,9 @@ Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref
 
 	animation_libraries.insert(insert_pos, ald);
 
-	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_name));
-	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_name));
-	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed), varray(p_name));
+	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
+	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
+	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_name));
 
 	_animation_set_cache_update();
 
@@ -1417,7 +1417,7 @@ void AnimationPlayer::remove_animation_library(const StringName &p_name) {
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
@@ -1443,9 +1443,9 @@ void AnimationPlayer::rename_animation_library(const StringName &p_name, const S
 			animation_libraries[i].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added));
 			animation_libraries[i].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
 
-			animation_libraries[i].library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_new_name));
-			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_new_name));
-			animation_libraries[i].library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed), varray(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_new_name));
 
 			for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
 				StringName old_name = p_name == StringName() ? K.key : StringName(String(p_name) + "/" + String(K.key));

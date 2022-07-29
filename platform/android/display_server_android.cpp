@@ -276,9 +276,9 @@ void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Va
 		Variant ret;
 		Callable::CallError ce;
 		if (p_deferred) {
-			p_callable.call((const Variant **)&argp, 1, ret, ce);
+			p_callable.callp((const Variant **)&argp, 1, ret, ce);
 		} else {
-			p_callable.call_deferred((const Variant **)&argp, 1);
+			p_callable.call_deferredp((const Variant **)&argp, 1);
 		}
 	}
 }
@@ -482,7 +482,7 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	Variant ret;
 	Callable::CallError ce;
 
-	rect_changed_callback.call(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
+	rect_changed_callback.callp(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {

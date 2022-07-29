@@ -1348,8 +1348,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	Color font_color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
-	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input), varray(hb));
+	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
+	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 	hb->set_tooltip(item.description);
 
@@ -1360,7 +1360,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite->set_normal_texture(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
-	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
+	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
 	favorite_box->add_child(favorite);
 	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hb->add_child(favorite_box);
@@ -1433,7 +1433,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		path_hb->add_child(show);
 
 		if (!item.missing) {
-			show->connect("pressed", callable_mp(this, &ProjectList::_show_project), varray(item.path));
+			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
 			show->set_tooltip(TTR("Show in File Manager"));
 		} else {
 			show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
@@ -2451,7 +2451,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 		}
 		if (confirm) {
 			multi_scan_ask->get_ok_button()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
-			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
+			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders).bind(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
 			multi_scan_ask->popup_centered();

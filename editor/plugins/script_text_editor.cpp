@@ -1456,7 +1456,7 @@ void ScriptTextEditor::clear_breakpoints() {
 void ScriptTextEditor::set_tooltip_request_func(const Callable &p_toolip_callback) {
 	Variant args[1] = { this };
 	const Variant *argp[] = { &args[0] };
-	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bind(argp, 1));
+	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bindp(argp, 1));
 }
 
 void ScriptTextEditor::set_debugger_active(bool p_active) {
@@ -1862,7 +1862,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	color_picker = memnew(ColorPicker);
 	color_picker->set_deferred_mode(true);
 	color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_color_changed));
-	color_panel->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(color_picker));
+	color_panel->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(color_picker));
 
 	color_panel->add_child(color_picker);
 

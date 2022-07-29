@@ -645,7 +645,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->set_tooltip(TTR("Open documentation for this object."));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
-	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option), varray(OBJECT_REQUEST_HELP));
+	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
 	new_resource_dialog = memnew(CreateDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(new_resource_dialog);

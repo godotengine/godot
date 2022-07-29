@@ -239,7 +239,7 @@ void TextureRegionEditor::_region_draw() {
 		hscroll->set_value((hscroll->get_min() + hscroll->get_max() - hscroll->get_page()) / 2);
 		vscroll->set_value((vscroll->get_min() + vscroll->get_max() - vscroll->get_page()) / 2);
 		// This ensures that the view is updated correctly.
-		callable_bind(callable_mp(this, &TextureRegionEditor::_pan_callback), Vector2(1, 0)).call_deferred(nullptr, 0);
+		callable_mp(this, &TextureRegionEditor::_pan_callback).bind(Vector2(1, 0)).call_deferredp(nullptr, 0);
 		request_center = false;
 	}
 
@@ -1153,7 +1153,7 @@ bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const 
 		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
 			Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Region"));
 			button->set_icon(texture_region_editor->get_theme_icon(SNAME("RegionEdit"), SNAME("EditorIcons")));
-			button->connect("pressed", callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit), varray(p_object));
+			button->connect("pressed", callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));
 			add_property_editor(p_path, button, true);
 		}
 	}

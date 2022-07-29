@@ -39,7 +39,7 @@ SceneReplicationState::TrackedNode &SceneReplicationState::_track(const ObjectID
 	if (!tracked_nodes.has(p_id)) {
 		tracked_nodes[p_id] = TrackedNode(p_id);
 		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
-		node->connect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneReplicationState::_untrack), varray(p_id), Node::CONNECT_ONESHOT);
+		node->connect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneReplicationState::_untrack).bind(p_id), Node::CONNECT_ONESHOT);
 	}
 	return tracked_nodes[p_id];
 }

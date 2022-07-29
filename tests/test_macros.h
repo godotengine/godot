@@ -271,22 +271,20 @@ public:
 	static SignalWatcher *get_singleton() { return singleton; }
 
 	void watch_signal(Object *p_object, const String &p_signal) {
-		Vector<Variant> args;
-		args.push_back(p_signal);
 		MethodInfo method_info;
 		ClassDB::get_signal(p_object->get_class(), p_signal, &method_info);
 		switch (method_info.arguments.size()) {
 			case 0: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero).bind(p_signal));
 			} break;
 			case 1: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_one), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_one).bind(p_signal));
 			} break;
 			case 2: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_two), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_two).bind(p_signal));
 			} break;
 			case 3: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_three), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_three).bind(p_signal));
 			} break;
 			default: {
 				MESSAGE("Signal ", p_signal, " arg count not supported.");

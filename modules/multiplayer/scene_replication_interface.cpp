@@ -128,7 +128,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 	// Add to synchronizer list and setup visibility.
 	rep_state->config_add_sync(node, sync);
 	const ObjectID oid = node->get_instance_id();
-	sync->connect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed), varray(oid));
+	sync->connect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(oid));
 	if (multiplayer->has_multiplayer_peer() && sync->is_multiplayer_authority()) {
 		_update_sync_visibility(0, oid);
 	}

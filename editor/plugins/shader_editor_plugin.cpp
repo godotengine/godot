@@ -1424,7 +1424,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), main_split);
 
 	// Defer connect because Editor class is not in the binding system yet.
-	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), varray(), CONNECT_DEFERRED);
+	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	vb->add_child(shader_create_dialog);

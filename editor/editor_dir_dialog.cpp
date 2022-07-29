@@ -81,15 +81,15 @@ void EditorDirDialog::reload(const String &p_path) {
 void EditorDirDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
+			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload).bind(""));
 			reload();
 
 			if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
-				tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
+				tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), CONNECT_DEFERRED);
 			}
 
 			if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
-				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
+				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload).bind(""));
 			}
 		} break;
 

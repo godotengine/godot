@@ -272,7 +272,7 @@ void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	update_on_text_changed = p_enabled;
 
 	if (p_enabled) {
-		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), Vector<Variant>(), CONNECT_DEFERRED);
+		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
 	} else {
 		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
 	}
@@ -323,8 +323,8 @@ SpinBox::SpinBox() {
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
-	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), Vector<Variant>(), CONNECT_DEFERRED);
-	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
+	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), CONNECT_DEFERRED);
+	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
 
 	range_click_timer = memnew(Timer);

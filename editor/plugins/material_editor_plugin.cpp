@@ -201,13 +201,13 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch->set_toggle_mode(true);
 	sphere_switch->set_pressed(true);
 	vb_shape->add_child(sphere_switch);
-	sphere_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(sphere_switch));
+	sphere_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed).bind(sphere_switch));
 
 	box_switch = memnew(TextureButton);
 	box_switch->set_toggle_mode(true);
 	box_switch->set_pressed(false);
 	vb_shape->add_child(box_switch);
-	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(box_switch));
+	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed).bind(box_switch));
 
 	layout_3d->add_spacer();
 
@@ -217,12 +217,12 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_1_switch));
+	light_1_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed).bind(light_1_switch));
 
 	light_2_switch = memnew(TextureButton);
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_2_switch));
+	light_2_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed).bind(light_2_switch));
 
 	first_enter = true;
 

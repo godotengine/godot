@@ -2410,7 +2410,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (copy && copytarget) {
 					const Callable copy_callable = Callable(copytarget, E.callable.get_method());
 					if (!copy->is_connected(E.signal.get_name(), copy_callable)) {
-						copy->connect(E.signal.get_name(), copy_callable, E.binds, E.flags);
+						copy->connect(E.signal.get_name(), copy_callable, E.flags);
 					}
 				}
 			}
@@ -2496,7 +2496,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
 			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());
 			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", c.signal.get_object()->get_class(), c.signal.get_name(), c.callable.get_object()->get_class(), c.callable.get_method()));
-			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.binds, c.flags);
+			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.flags);
 		}
 	}
 }

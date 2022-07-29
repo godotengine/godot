@@ -868,13 +868,13 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_open_button->set_text(TTR("Open Folder"));
 	current_open_button->set_tooltip(TTR("Open the folder containing installed templates for the current version."));
 	current_installed_hb->add_child(current_open_button);
-	current_open_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_open_template_folder), varray(VERSION_FULL_CONFIG));
+	current_open_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_open_template_folder).bind(VERSION_FULL_CONFIG));
 
 	current_uninstall_button = memnew(Button);
 	current_uninstall_button->set_text(TTR("Uninstall"));
 	current_uninstall_button->set_tooltip(TTR("Uninstall templates for the current version."));
 	current_installed_hb->add_child(current_uninstall_button);
-	current_uninstall_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(VERSION_FULL_CONFIG));
+	current_uninstall_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template).bind(VERSION_FULL_CONFIG));
 
 	main_vb->add_child(memnew(HSeparator));
 
@@ -990,7 +990,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	install_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	install_file_dialog->add_filter("*.tpz", TTR("Godot Export Templates"));
-	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected), varray(false));
+	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected).bind(false));
 	add_child(install_file_dialog);
 
 	hide_dialog_accept = memnew(AcceptDialog);
