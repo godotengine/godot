@@ -1246,6 +1246,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	platform_rid = RID();
 	platform_object_id = ObjectID();
 	platform_velocity = Vector3();
+	platform_angular_velocity = Vector3();
 	platform_ceiling_velocity = Vector3();
 	floor_normal = Vector3();
 	wall_normal = Vector3();
@@ -1506,6 +1507,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	platform_object_id = ObjectID();
 	floor_normal = Vector3();
 	platform_velocity = Vector3();
+	platform_angular_velocity = Vector3();
 
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
@@ -1708,6 +1710,7 @@ void CharacterBody3D::_set_platform_data(const PhysicsServer3D::MotionCollision 
 	platform_rid = p_collision.collider;
 	platform_object_id = p_collision.collider_id;
 	platform_velocity = p_collision.collider_velocity;
+	platform_angular_velocity = p_collision.collider_angular_velocity;
 	platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(platform_rid);
 }
 
@@ -1778,6 +1781,10 @@ real_t CharacterBody3D::get_floor_angle(const Vector3 &p_up_direction) const {
 
 const Vector3 &CharacterBody3D::get_platform_velocity() const {
 	return platform_velocity;
+}
+
+const Vector3 &CharacterBody3D::get_platform_angular_velocity() const {
+	return platform_angular_velocity;
 }
 
 Vector3 CharacterBody3D::get_linear_velocity() const {
@@ -1932,6 +1939,7 @@ void CharacterBody3D::_notification(int p_what) {
 			platform_object_id = ObjectID();
 			motion_results.clear();
 			platform_velocity = Vector3();
+			platform_angular_velocity = Vector3();
 		} break;
 	}
 }
@@ -1986,6 +1994,7 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_real_velocity"), &CharacterBody3D::get_real_velocity);
 	ClassDB::bind_method(D_METHOD("get_floor_angle", "up_direction"), &CharacterBody3D::get_floor_angle, DEFVAL(Vector3(0.0, 1.0, 0.0)));
 	ClassDB::bind_method(D_METHOD("get_platform_velocity"), &CharacterBody3D::get_platform_velocity);
+	ClassDB::bind_method(D_METHOD("get_platform_angular_velocity"), &CharacterBody3D::get_platform_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_slide_collision_count"), &CharacterBody3D::get_slide_collision_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody3D::_get_slide_collision);
 	ClassDB::bind_method(D_METHOD("get_last_slide_collision"), &CharacterBody3D::_get_last_slide_collision);

@@ -41,10 +41,16 @@
 				Returns a [KinematicCollision3D], which contains information about the latest collision that occurred during the last call to [method move_and_slide].
 			</description>
 		</method>
+		<method name="get_platform_angular_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the angular velocity of the platform at the last collision point. Only valid after calling [method move_and_slide].
+			</description>
+		</method>
 		<method name="get_platform_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				Returns the linear velocity of the platform at the last collision point. Only valid after calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="get_position_delta" qualifiers="const">
