@@ -327,6 +327,7 @@ def configure(env):
             env.Append(CPPDEFINES=["DBUS_ENABLED"])
             env.ParseConfig("pkg-config dbus-1 --cflags")  # Only cflags, we dlopen the library.
         else:
+            env["dbus"] = False
             print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
 
     if env["speechd"]:
