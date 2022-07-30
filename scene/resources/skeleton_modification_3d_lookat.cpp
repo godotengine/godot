@@ -149,7 +149,6 @@ void SkeletonModification3DLookAt::set_bone_name(String p_name) {
 		}
 	}
 	execution_error_found = false;
-	notify_property_list_changed();
 }
 
 String SkeletonModification3DLookAt::get_bone_name() const {

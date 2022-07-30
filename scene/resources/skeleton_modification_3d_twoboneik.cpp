@@ -490,7 +490,6 @@ void SkeletonModification3DTwoBoneIK::set_joint_one_bone_name(String p_bone_name
 		joint_one_bone_idx = stack->skeleton->find_bone(p_bone_name);
 	}
 	execution_error_found = false;
-	notify_property_list_changed();
 }
 
 String SkeletonModification3DTwoBoneIK::get_joint_one_bone_name() const {
@@ -524,7 +523,6 @@ void SkeletonModification3DTwoBoneIK::set_joint_two_bone_name(String p_bone_name
 		joint_two_bone_idx = stack->skeleton->find_bone(p_bone_name);
 	}
 	execution_error_found = false;
-	notify_property_list_changed();
 }
 
 String SkeletonModification3DTwoBoneIK::get_joint_two_bone_name() const {
