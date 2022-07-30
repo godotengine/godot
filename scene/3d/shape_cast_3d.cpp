@@ -577,13 +577,17 @@ void ShapeCast3D::_update_debug_shape() {
 		_create_debug_shape();
 	}
 
+	_update_debug_shape_vertices();
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
 	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
 	Ref<ArrayMesh> mesh = mi->get_mesh();
 	if (!mesh.is_valid()) {
 		return;
 	}
-
-	_update_debug_shape_vertices();
 
 	mesh->clear_surfaces();
 
