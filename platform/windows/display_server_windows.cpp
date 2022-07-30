@@ -3740,7 +3740,14 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	show_window(MAIN_WINDOW_ID);
+	WindowData &wd = windows[main_window];
+
+	// As specified in https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow,
+	// the ShowWindow's flag must be "SW_SHOWNORMAL" when displaying the window for the first time.
+	// Not doing this may cause some bugs, like preventing window from getting maximized after a MoveWindow.
+	ShowWindow(wd.hWnd, SW_SHOWNORMAL);
+	SetForegroundWindow(wd.hWnd); // Slightly higher priority.
+	SetFocus(wd.hWnd); // Set keyboard focus.
 
 #if defined(VULKAN_ENABLED)
 
