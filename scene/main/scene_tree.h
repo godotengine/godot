@@ -236,7 +236,9 @@ public:
 		GROUP_CALL_UNIQUE = 4,
 	};
 
-	_FORCE_INLINE_ Window *get_root() const { return root; }
+	_FORCE_INLINE_ Window *get_root() const {
+		return root;
+	}
 
 	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
@@ -285,13 +287,19 @@ public:
 
 	void quit(int p_exit_code = EXIT_SUCCESS);
 
-	_FORCE_INLINE_ double get_physics_process_time() const { return physics_process_time; }
-	_FORCE_INLINE_ double get_process_time() const { return process_time; }
+	_FORCE_INLINE_ double get_physics_process_time() const {
+		return physics_process_time;
+	}
+	_FORCE_INLINE_ double get_process_time() const {
+		return process_time;
+	}
 
 #ifdef TOOLS_ENABLED
 	bool is_node_being_edited(const Node *p_node) const;
 #else
-	bool is_node_being_edited(const Node *p_node) const { return false; }
+	bool is_node_being_edited(const Node *p_node) const {
+		return false;
+	}
 #endif
 
 	void set_pause(bool p_enabled);
@@ -308,13 +316,19 @@ public:
 	bool is_debugging_navigation_hint() const;
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
-	bool is_debugging_collisions_hint() const { return false; }
+	bool is_debugging_collisions_hint() const {
+		return false;
+	}
 
 	void set_debug_paths_hint(bool p_enabled) {}
-	bool is_debugging_paths_hint() const { return false; }
+	bool is_debugging_paths_hint() const {
+		return false;
+	}
 
 	void set_debug_navigation_hint(bool p_enabled) {}
-	bool is_debugging_navigation_hint() const { return false; }
+	bool is_debugging_navigation_hint() const {
+		return false;
+	}
 #endif
 
 	void set_debug_collisions_color(const Color &p_color);
@@ -341,7 +355,9 @@ public:
 	Ref<Material> get_debug_collision_material();
 	Ref<ArrayMesh> get_debug_contact_mesh();
 
-	int get_collision_debug_contact_count() { return collision_debug_contacts; }
+	int get_collision_debug_contact_count() {
+		return collision_debug_contacts;
+	}
 
 	int64_t get_frame() const;
 
@@ -364,6 +380,7 @@ public:
 	Error change_scene(const String &p_path);
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
+	Error unload_current_scene();
 
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
 	Ref<Tween> create_tween();
@@ -372,7 +389,9 @@ public:
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);
 
-	static SceneTree *get_singleton() { return singleton; }
+	static SceneTree *get_singleton() {
+		return singleton;
+	}
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 

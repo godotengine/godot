@@ -204,6 +204,14 @@
 				Sets a custom [MultiplayerAPI] with the given [code]root_path[/code] (controlling also the relative subpaths), or override the default one if [code]root_path[/code] is empty.
 			</description>
 		</method>
+		<method name="unload_current_scene">
+			<return type="int" enum="Error" />
+			<description>
+				Unloads the currently active scene.
+				Returns [constant OK] on success, or [constant ERR_UNCONFIGURED] if no [member current_scene] has been defined yet.
+				[b]Note:[/b] This method cannot be used if the active scene and all its children are not yet ready.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="auto_accept_quit" type="bool" setter="set_auto_accept_quit" getter="is_auto_accept_quit" default="true">
