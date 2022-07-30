@@ -243,9 +243,9 @@ namespace Godot
         {
             return new Transform3D(basis, new Vector3
             (
-                origin[0] += basis.Row0.Dot(offset),
-                origin[1] += basis.Row1.Dot(offset),
-                origin[2] += basis.Row2.Dot(offset)
+                origin[0] + basis.Row0.Dot(offset),
+                origin[1] + basis.Row1.Dot(offset),
+                origin[2] + basis.Row2.Dot(offset)
             ));
         }
 
