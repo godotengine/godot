@@ -403,6 +403,9 @@ void CollisionObject3D::_on_transform_changed() {
 		debug_shape_old_transform = get_global_transform();
 		for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 			ShapeData &shapedata = E.value;
+			if (shapedata.disabled) {
+				continue; // If disabled then there are no debug shapes to update.
+			}
 			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
