@@ -184,6 +184,7 @@ public:
 
 	virtual void expand_all_folding();
 	virtual void collapse_all_folding();
+	virtual void expand_revertable();
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual void update_cache();
@@ -281,6 +282,8 @@ class EditorInspectorSection : public Container {
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping = false;
 
+	HashSet<StringName> revertable_properties;
+
 	void _test_unfold();
 
 protected:
@@ -298,6 +301,9 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
+
+	bool has_revertable_properties() const;
+	void property_can_revert_changed(const String &p_path, bool p_can_revert);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
@@ -517,7 +523,7 @@ class EditorInspector : public ScrollContainer {
 	void _edit_request_change(Object *p_object, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
-	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);
+	void _parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped);
 
 	void _vscroll_changed(double);
 
@@ -579,6 +585,7 @@ public:
 
 	void collapse_all_folding();
 	void expand_all_folding();
+	void expand_revertable();
 
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
