@@ -521,6 +521,9 @@
 		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 		</member>
+		<member name="text_editor/behavior/history/following_links_always_saves_to_history" type="bool" setter="" getter="">
+			If enabled, following a link in the text editor will always save to the editor history, even if the link doesn't lead to a new tab.
+		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 		</member>
 		<member name="text_editor/behavior/indent/size" type="int" setter="" getter="">

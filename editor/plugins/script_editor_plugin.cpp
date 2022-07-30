@@ -223,7 +223,8 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("edited_script_changed"));
 	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("request_update_current_history_state"));
+	ADD_SIGNAL(MethodInfo("request_save_new_history_state"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
 	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
@@ -560,27 +561,41 @@ void ScriptEditor::_update_history_arrows() {
 	script_forward->set_disabled(history_pos >= history.size() - 1);
 }
 
-void ScriptEditor::_save_history() {
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
+void ScriptEditor::_update_current_history_state() {
+	// Before making a change in the script editor that will lead to a new entry in the history,
+	// update the current history with current scroll etc.
+	// There may be nested actions that cause writing to history - only write before the outermost one.
+	if (history_save_depth == 0) {
+		if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
+			Node *n = tab_container->get_current_tab_control();
 
-		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
-		}
-		if (Object::cast_to<EditorHelp>(n)) {
-			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
+			if (Object::cast_to<ScriptEditorBase>(n)) {
+				history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+			}
+			if (Object::cast_to<EditorHelp>(n)) {
+				history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
+			}
 		}
 	}
 
-	history.resize(history_pos + 1);
-	ScriptHistory sh;
-	sh.control = tab_container->get_current_tab_control();
-	sh.state = Variant();
+	history_save_depth++;
+}
 
-	history.push_back(sh);
-	history_pos++;
+void ScriptEditor::_save_new_history_state() {
+	// Add a new history entry.
+	// There may be nested actions that cause writing to history - only write after the outermost one.
+	history_save_depth--;
+	if (history_save_depth == 0) {
+		history.resize(history_pos + 1);
+		ScriptHistory sh;
+		sh.control = tab_container->get_current_tab_control();
+		sh.state = Variant();
 
-	_update_history_arrows();
+		history.push_back(sh);
+		history_pos++;
+
+		_update_history_arrows();
+	}
 }
 
 void ScriptEditor::_go_to_tab(int p_idx) {
@@ -596,24 +611,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		return;
 	}
 
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
-
-		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
-		}
-		if (Object::cast_to<EditorHelp>(n)) {
-			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-		}
-	}
-
-	history.resize(history_pos + 1);
-	ScriptHistory sh;
-	sh.control = c;
-	sh.state = Variant();
-
-	history.push_back(sh);
-	history_pos++;
+	_update_current_history_state();
 
 	tab_container->set_current_tab(p_idx);
 
@@ -640,6 +638,8 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 			Object::cast_to<EditorHelp>(c)->set_focused();
 		}
 	}
+
+	_save_new_history_state();
 
 	c->set_meta("__editor_pass", ++edit_pass);
 	_update_history_arrows();
@@ -2419,7 +2419,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("request_help", callable_mp(this, &ScriptEditor::_help_search));
 	se->connect("request_open_script_at_line", callable_mp(this, &ScriptEditor::_goto_script_line));
 	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
-	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
+	se->connect("request_update_current_history_state", callable_mp(this, &ScriptEditor::_update_current_history_state));
+	se->connect("request_save_new_history_state", callable_mp(this, &ScriptEditor::_save_new_history_state));
 	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::_on_find_in_files_requested));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 
@@ -3290,6 +3291,8 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_class(p_class, 0);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
+	eh->connect("request_update_current_history_state", callable_mp(this, &ScriptEditor::_update_current_history_state));
+	eh->connect("request_save_new_history_state", callable_mp(this, &ScriptEditor::_save_new_history_state));
 	_add_recent_script(p_class);
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -3298,6 +3301,10 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 
 void ScriptEditor::_help_class_goto(const String &p_desc) {
 	String cname = p_desc.get_slice(":", 1);
+
+	// This must have a corresponding _save_new_history_state call, which currently only happens
+	// if _help_tab_goto returns true one of the two times it's called here.
+	_update_current_history_state();
 
 	if (_help_tab_goto(cname, p_desc)) {
 		return;
@@ -3310,6 +3317,8 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
+	eh->connect("request_update_current_history_state", callable_mp(this, &ScriptEditor::_update_current_history_state));
+	eh->connect("request_save_new_history_state", callable_mp(this, &ScriptEditor::_save_new_history_state));
 	_add_recent_script(eh->get_class());
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -3326,6 +3335,7 @@ bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
 			_go_to_tab(i);
 			eh->go_to_help(p_desc);
 			_update_script_names();
+			_save_new_history_state(); // What if this never happens??
 			return true;
 		}
 	}

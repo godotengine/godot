@@ -810,11 +810,19 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 
 		switch (result.type) {
 			case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION: {
+				bool save_history = EDITOR_GET("text_editor/behavior/history/following_links_always_saves_to_history");
+				if (save_history) {
+					emit_signal(SNAME("request_update_current_history_state"));
+				}
 				if (result.script.is_valid()) {
 					emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
+
 				} else {
-					emit_signal(SNAME("request_save_history"));
+					// This used to always save history, I'm not sure why.
 					goto_line_centered(result.location - 1);
+				}
+				if (save_history) {
+					emit_signal(SNAME("request_save_new_history_state"));
 				}
 			} break;
 			case ScriptLanguage::LOOKUP_RESULT_CLASS: {

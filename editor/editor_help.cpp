@@ -139,7 +139,14 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		if (table->has(link)) {
 			// Found in the current page.
 			if (class_desc->is_ready()) {
+				bool save_history = EDITOR_GET("text_editor/behavior/history/following_links_always_saves_to_history");
+				if (save_history) {
+					emit_signal(SNAME("request_update_current_history_state"));
+				}
 				class_desc->scroll_to_paragraph((*table)[link]);
+				if (save_history) {
+					emit_signal(SNAME("request_save_new_history_state"));
+				}
 			} else {
 				scroll_to = (*table)[link];
 			}
@@ -2073,6 +2080,8 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
+	ADD_SIGNAL(MethodInfo("request_update_current_history_state"));
+	ADD_SIGNAL(MethodInfo("request_save_new_history_state"));
 }
 
 EditorHelp::EditorHelp() {
