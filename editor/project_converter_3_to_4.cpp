@@ -1898,14 +1898,14 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					continue;
 				}
 				if (dir.current_is_dir()) {
-					directories_to_check.append(current_dir + file_name + "/");
+					directories_to_check.append(current_dir.plus_file(file_name) + "/");
 				} else {
 					bool proper_extension = false;
 					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
 						proper_extension = true;
 
 					if (proper_extension) {
-						collected_files.append(current_dir + file_name);
+						collected_files.append(current_dir.plus_file(file_name));
 					}
 				}
 				file_name = dir.get_next();
