@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 
-void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
 	}
@@ -42,12 +42,9 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 	if (p_preset->get("texture_format/etc2")) {
 		r_features->push_back("etc2");
 	}
-
-	if (p_preset->get("binary_format/64_bits")) {
-		r_features->push_back("64");
-	} else {
-		r_features->push_back("32");
-	}
+	// PC platforms only have one architecture per export, since
+	// we export a single executable instead of a bundle.
+	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
 void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
@@ -57,7 +54,6 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), false));
@@ -84,10 +80,9 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	bool valid = false;
 
 	// Look for export templates (first official, and if defined custom templates).
-
-	bool use64 = p_preset->get("binary_format/64_bits");
-	bool dvalid = exists_export_template(get_template_file_name("debug", use64 ? "x86_64" : "x86_32"), &err);
-	bool rvalid = exists_export_template(get_template_file_name("release", use64 ? "x86_64" : "x86_32"), &err);
+	String arch = p_preset->get("binary_format/architecture");
+	bool dvalid = exists_export_template(get_template_file_name("debug", arch), &err);
+	bool rvalid = exists_export_template(get_template_file_name("release", arch), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -139,7 +134,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	template_path = template_path.strip_edges();
 
 	if (template_path.is_empty()) {
-		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/64_bits") ? "x86_64" : "x86_32"));
+		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/architecture")));
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
@@ -171,7 +166,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 	int64_t embedded_size;
 	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
-		if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
+		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
 			return ERR_INVALID_PARAMETER;
 		}
@@ -224,7 +219,7 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 	logo = p_logo;
 }
 
-void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
+void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc"); //all pcs support "pc"
 	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
 	r_features->push_back(get_os_name().to_lower()); //OS name is a feature

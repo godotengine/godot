@@ -44,7 +44,7 @@ private:
 	int chmod_flags = -1;
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
@@ -68,7 +68,7 @@ public:
 	void set_logo(const Ref<Texture2D> &p_logo);
 
 	void add_platform_feature(const String &p_feature);
-	virtual void get_platform_features(List<String> *r_features) override;
+	virtual void get_platform_features(List<String> *r_features) const override;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
 	int get_chmod_flags() const;

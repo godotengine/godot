@@ -428,7 +428,7 @@ void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const Stri
 	_edit_files_with_filter(da, filters, r_list, exclude);
 }
 
-EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug) {
+EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug) const {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
 	List<String> feature_list;
 	platform->get_platform_features(&feature_list);
