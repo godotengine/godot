@@ -49,6 +49,8 @@
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
 #include "tests/core/math/test_rect2i.h"
+#include "tests/core/math/test_transform_2d.h"
+#include "tests/core/math/test_transform_3d.h"
 #include "tests/core/math/test_vector2.h"
 #include "tests/core/math/test_vector2i.h"
 #include "tests/core/math/test_vector3.h"
