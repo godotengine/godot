@@ -2154,8 +2154,11 @@ void ScriptEditor::_update_script_names() {
 		}
 		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
 			script_list->select(index);
+			_script_selected(index);
+
 			script_name_label->set_text(sedata_filtered[i].name);
 			script_icon->set_texture(sedata_filtered[i].icon);
+
 			ScriptEditorBase *se = _get_current_editor();
 			if (se) {
 				se->enable_editor();
