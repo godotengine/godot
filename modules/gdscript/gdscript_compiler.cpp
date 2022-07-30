@@ -245,7 +245,11 @@ static bool _have_exact_arguments(const MethodBind *p_method, const Vector<GDScr
 
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer, const GDScriptCodeGenerator::Address &p_index_addr) {
 	if (p_expression->is_constant) {
-		return codegen.add_constant(p_expression->reduced_value);
+		// Allow constants only of non-sharable variant types, since otherwise
+		// different variables initialized with the same constant will point to the same memory location
+		if (!Variant::is_type_shared(p_expression->reduced_value.get_type())) {
+			return codegen.add_constant(p_expression->reduced_value);
+		}
 	}
 
 	GDScriptCodeGenerator *gen = codegen.generator;

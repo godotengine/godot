@@ -1876,10 +1876,21 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
+	// New array object that will house reduced elements of the current array
+	Array reduced_array;
+	p_array->is_constant = true;
+
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 		reduce_expression(element);
+
+		reduced_array.push_back(element->reduced_value);
+
+		// All of the elements of the array should be constant for an array itself to be considered constant
+		p_array->is_constant = p_array->is_constant && element->is_constant;
 	}
+
+	p_array->reduced_value = reduced_array;
 
 	// It's array in any case.
 	GDScriptParser::DataType arr_type;
@@ -2162,7 +2173,11 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 			result = get_operation_type(p_binary_op->variant_op, left_type, right_type, valid, p_binary_op);
 
 			if (!valid) {
-				push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
+				push_error(vformat(R"(Invalid operands to operator %s, %s and %s.)",
+								   Variant::get_operator_name(p_binary_op->variant_op),
+								   left_type.to_string(),
+								   right_type.to_string()),
+						p_binary_op);
 			}
 		} else {
 			if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
@@ -2629,23 +2644,31 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 }
 
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
-	HashMap<Variant, GDScriptParser::ExpressionNode *, VariantHasher, VariantComparator> elements;
+	Dictionary reduced_dict;
+	p_dictionary->is_constant = true;
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+
+		// Lua-style dictionaries always have constant string literal keys
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
 			reduce_expression(element.key);
 		}
+
 		reduce_expression(element.value);
 
-		if (element.key->is_constant) {
-			if (elements.has(element.key->reduced_value)) {
-				push_error(vformat(R"(Key "%s" was already used in this dictionary (at line %d).)", element.key->reduced_value, elements[element.key->reduced_value]->start_line), element.key);
-			} else {
-				elements[element.key->reduced_value] = element.value;
-			}
+		// Ensure that after reduction no duplcate key appears in the dictionary
+		if (!reduced_dict.has(element.key->reduced_value)) {
+			reduced_dict[element.key->reduced_value] = element.value->reduced_value;
+		} else {
+			push_error("Dictionary key used twice in the same dictionary.", element.key);
 		}
+
+		// All of the elements of the dict should be constant for the dict itself to be considered constant
+		p_dictionary->is_constant = p_dictionary->is_constant && element.key->is_constant && element.value->is_constant;
 	}
+
+	p_dictionary->reduced_value = reduced_dict;
 
 	// It's dictionary in any case.
 	GDScriptParser::DataType dict_type;
