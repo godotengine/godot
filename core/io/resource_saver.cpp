@@ -80,7 +80,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 	if (path.is_empty()) {
 		path = p_resource->get_path();
 	}
-	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
+	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
 
 	String extension = path.get_extension();
 	Error err = ERR_FILE_UNRECOGNIZED;
