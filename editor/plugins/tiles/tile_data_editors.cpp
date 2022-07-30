@@ -722,7 +722,6 @@ void GenericTilePolygonEditor::set_multiple_polygon_mode(bool p_multiple_polygon
 
 void GenericTilePolygonEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
@@ -1168,7 +1167,6 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 
 void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 			tile_bool_checked = get_theme_icon(SNAME("TileChecked"), SNAME("EditorIcons"));
@@ -2567,7 +2565,6 @@ void TileDataTerrainsEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 
 void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 		} break;

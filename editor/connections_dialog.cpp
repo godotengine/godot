@@ -230,9 +230,8 @@ void ConnectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			bind_editor->edit(cdbinds);
+		} break;
 
-			[[fallthrough]];
-		}
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < type_list->get_item_count(); i++) {
 				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
@@ -913,7 +912,6 @@ void ConnectionsDock::_connect_pressed() {
 
 void ConnectionsDock::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;

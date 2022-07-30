@@ -64,52 +64,48 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	}
 }
 
-void EditorLog::_update_theme() {
-	Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
-	if (normal_font.is_valid()) {
-		log->add_theme_font_override("normal_font", normal_font);
-	}
-
-	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
-	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-
-	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-	if (bold_font.is_valid()) {
-		log->add_theme_font_override("bold_font", bold_font);
-	}
-
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-
-	clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
-	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-
-	theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
-	theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
-	theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
-}
-
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
 			_load_state();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+			if (normal_font.is_valid()) {
+				log->add_theme_font_override("normal_font", normal_font);
+			}
+
+			log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
+			log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
+
+			Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+			if (bold_font.is_valid()) {
+				log->add_theme_font_override("bold_font", bold_font);
+			}
+
+			type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
+			type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+			type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+
+			type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+			type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+			type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+			type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+
+			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
+			show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
+			theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+			theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
+			theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+			theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
+			theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+
 			_rebuild_log();
 		} break;
 	}

@@ -193,8 +193,8 @@ void ThemeEditorPreview::_notification(int p_what) {
 			}
 
 			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 
@@ -272,7 +272,6 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
 		} break;
@@ -475,7 +474,6 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 void SceneThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			reload_scene_button->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 		} break;
