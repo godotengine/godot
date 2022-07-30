@@ -2179,17 +2179,15 @@ double VisualScriptMathConstant::const_value[MATH_CONSTANT_MAX] = {
 	Math_PI,
 	Math_PI * 0.5,
 	Math_TAU,
-	2.71828182845904523536,
-	Math::sqrt(2.0),
-	INFINITY,
-	NAN,
 	Math_E,
 	Math_LN2,
 	Math_LN10,
 	Math_LOG2E,
 	Math_LOG10E,
 	Math_SQRT12,
-	Math_SQRT2
+	Math_SQRT2,
+	INFINITY,
+	NAN
 };
 
 int VisualScriptMathConstant::get_output_sequence_port_count() const {
