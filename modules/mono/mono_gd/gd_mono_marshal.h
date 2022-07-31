@@ -262,7 +262,7 @@ enum {
 			offsetof(Vector4, z) == (sizeof(real_t) * 2) &&
 			offsetof(Vector4, w) == (sizeof(real_t) * 3)),
 
-	MATCHES_Vector4i = (MATCHES_int && (sizeof(Vector4i) == (sizeof(int32_t) * 4i)) &&
+	MATCHES_Vector4i = (MATCHES_int && (sizeof(Vector4i) == (sizeof(int32_t) * 4)) &&
 			offsetof(Vector4i, x) == (sizeof(int32_t) * 0) &&
 			offsetof(Vector4i, y) == (sizeof(int32_t) * 1) &&
 			offsetof(Vector4i, z) == (sizeof(int32_t) * 2) &&

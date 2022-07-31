@@ -19,30 +19,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-# Temporarily disabled until Mono is fixed
-#
-#          - name: Editor w Mono (target=release_debug, tools=yes, tests=yes)
-#            cache-name: linux-editor-mono
-#            target: release_debug
-#            tools: true
-#            tests: false # Disabled due freeze caused by mix Mono build and CI
-#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
-#            doc-test: true
-#            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
-#            build-mono: true
-#            proj-conv: true
-#            artifact: true
-
-# Temporary replacement:
-
-          - name: Editor w/o Mono (target=release_debug, tools=yes, tests=yes)
+          - name: Editor w Mono (target=release_debug, tools=yes, tests=yes)
             cache-name: linux-editor-mono
             target: release_debug
             tools: true
             tests: false # Disabled due freeze caused by mix Mono build and CI
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
             doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.64"
-            build-mono: false
+            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+            build-mono: true
             proj-conv: true
             artifact: true
 
@@ -72,24 +57,12 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-# Temporarily disabled:
-#
-#          - name: Template w/ Mono (target=release, tools=no)
-#            cache-name: linux-template-mono
-#            target: release
-#            tools: false
-#            tests: false
-#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
-#            build-mono: false
-#            artifact: true
-
-# Temporary replacement:
-
-          - name: Template w/o Mono (target=release, tools=no)
+          - name: Template w/ Mono (target=release, tools=no)
             cache-name: linux-template-mono
             target: release
             tools: false
             tests: false
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
             build-mono: false
             artifact: true
 
