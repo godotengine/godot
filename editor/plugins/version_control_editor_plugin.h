@@ -157,7 +157,8 @@ private:
 	void _discard_all();
 	void _refresh_stage_area();
 	void _refresh_branch_list();
-	void _refresh_commit_list(int p_index);
+	void _set_commit_list_size(int p_index);
+	void _refresh_commit_list();
 	void _refresh_remote_list();
 	void _display_diff(int p_idx);
 	void _move_all(Object *p_tree);
@@ -187,6 +188,7 @@ private:
 	bool _is_staging_area_empty();
 	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
 	void _create_vcs_metadata_files();
+	void _popup_ssh_key_file_dialog(Variant p_file_dialog_variant);
 
 	friend class EditorVCSInterface;
 
