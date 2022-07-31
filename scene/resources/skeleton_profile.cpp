@@ -506,7 +506,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[5].reference_pose = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0);
 	bones.write[5].handle_offset = Vector2(0.5, 0.23);
 	bones.write[5].group = "Body";
-	bones.write[5].require = true;
+	bones.write[5].require = false;
 
 	bones.write[6].bone_name = "Head";
 	bones.write[6].bone_parent = "Neck";
