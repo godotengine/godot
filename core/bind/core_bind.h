@@ -551,7 +551,7 @@ public:
 	PoolVector<uint8_t> get_buffer(int64_t p_length) const; // Get an array of bytes.
 	String get_line() const;
 	Vector<String> get_csv_line(const String &p_delim = ",") const;
-	String get_as_text() const;
+	String get_as_text(bool p_skip_cr = true) const; // Skip CR by default for compat.
 	String get_md5(const String &p_path) const;
 	String get_sha256(const String &p_path) const;
 

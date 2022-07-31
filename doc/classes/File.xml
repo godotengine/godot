@@ -87,9 +87,10 @@
 		</method>
 		<method name="get_as_text" qualifiers="const">
 			<return type="String" />
+			<argument index="0" name="skip_cr" type="bool" default="true" />
 			<description>
-				Returns the whole file as a [String].
-				Text is interpreted as being UTF-8 encoded.
+				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded.
+				If [code]skip_cr[/code] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
