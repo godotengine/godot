@@ -1359,7 +1359,13 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
+#if HB_VERSION_ATLEAST(3, 3, 0)
 		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 3.3.0, synthetic slant offset correction disabled.
+#endif
+#endif
 
 		if (!p_font_data->face_init) {
 			// Get style flags and name.
@@ -1626,6 +1632,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 				for (unsigned int i = 0; i < count; i++) {
 					Dictionary ftr;
 
+#if HB_VERSION_ATLEAST(2, 1, 0)
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GSUB, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
 						PackedInt32Array lbl;
@@ -1635,6 +1642,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
+#endif
+#endif
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -1649,6 +1661,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 				for (unsigned int i = 0; i < count; i++) {
 					Dictionary ftr;
 
+#if HB_VERSION_ATLEAST(2, 1, 0)
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GPOS, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
 						PackedInt32Array lbl;
@@ -1658,6 +1671,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
+#endif
+#endif
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
