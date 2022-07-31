@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ray_cast_2d_editor_plugin.h                                          */
+/*  cast_2d_editor_plugin.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RAY_CAST_2D_EDITOR_PLUGIN_H
-#define RAY_CAST_2D_EDITOR_PLUGIN_H
+#ifndef CAST_2D_EDITOR_PLUGIN_H
+#define CAST_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "scene/2d/ray_cast_2d.h"
+#include "scene/2d/node_2d.h"
 
 class CanvasItemEditor;
 
-class RayCast2DEditor : public Control {
-	GDCLASS(RayCast2DEditor, Control);
+class Cast2DEditor : public Control {
+	GDCLASS(Cast2DEditor, Control);
 
 	UndoRedo *undo_redo = nullptr;
 	CanvasItemEditor *canvas_item_editor = nullptr;
-	RayCast2D *node;
+	Node2D *node;
 
 	bool pressed = false;
 	Point2 original_target_position;
@@ -53,27 +53,27 @@ protected:
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
-	void edit(Node *p_node);
+	void edit(Node2D *p_node);
 
-	RayCast2DEditor();
+	Cast2DEditor();
 };
 
-class RayCast2DEditorPlugin : public EditorPlugin {
-	GDCLASS(RayCast2DEditorPlugin, EditorPlugin);
+class Cast2DEditorPlugin : public EditorPlugin {
+	GDCLASS(Cast2DEditorPlugin, EditorPlugin);
 
-	RayCast2DEditor *ray_cast_2d_editor = nullptr;
+	Cast2DEditor *cast_2d_editor = nullptr;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return ray_cast_2d_editor->forward_canvas_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { ray_cast_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return cast_2d_editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { cast_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const override { return "RayCast2D"; }
+	virtual String get_name() const override { return "Cast2D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool visible) override;
 
-	RayCast2DEditorPlugin();
+	Cast2DEditorPlugin();
 };
 
-#endif // RAY_CAST_2D_EDITOR_PLUGIN_H
+#endif // CAST_2D_EDITOR_PLUGIN_H
