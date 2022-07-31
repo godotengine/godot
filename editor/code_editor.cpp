@@ -1548,7 +1548,8 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 }
 
 void CodeTextEditor::_toggle_scripts_pressed() {
-	ScriptEditor::get_singleton()->toggle_scripts_panel();
+	ERR_FAIL_NULL(toggle_scripts_list);
+	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
 	update_toggle_scripts_button();
 }
 
@@ -1723,16 +1724,18 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
+void CodeTextEditor::set_toggle_list_control(Control *p_control) {
+	toggle_scripts_list = p_control;
+}
+
 void CodeTextEditor::show_toggle_scripts_button() {
 	toggle_scripts_button->show();
 }
 
 void CodeTextEditor::update_toggle_scripts_button() {
-	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
-	} else {
-		toggle_scripts_button->set_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
-	}
+	ERR_FAIL_NULL(toggle_scripts_list);
+	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
+	toggle_scripts_button->set_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
 	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 
