@@ -34,7 +34,6 @@
 #include "editor/editor_plugin.h"
 
 #include "editor/editor_spin_slider.h"
-#include "editor/property_editor.h"
 #include "editor/property_selector.h"
 
 #include "../scene_replication_config.h"

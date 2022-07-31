@@ -33,7 +33,6 @@
 
 #include "editor/editor_data.h"
 #include "editor/editor_spin_slider.h"
-#include "editor/property_editor.h"
 #include "editor/property_selector.h"
 
 #include "scene/gui/control.h"

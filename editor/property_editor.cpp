@@ -51,6 +51,7 @@
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/property_selector.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/gui/label.h"
@@ -58,39 +59,6 @@
 #include "scene/resources/font.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
-
-void EditorResourceConversionPlugin::_bind_methods() {
-	GDVIRTUAL_BIND(_converts_to);
-	GDVIRTUAL_BIND(_handles, "resource");
-	GDVIRTUAL_BIND(_convert, "resource");
-}
-
-String EditorResourceConversionPlugin::converts_to() const {
-	String ret;
-	if (GDVIRTUAL_CALL(_converts_to, ret)) {
-		return ret;
-	}
-
-	return "";
-}
-
-bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_handles, p_resource, ret)) {
-		return ret;
-	}
-
-	return false;
-}
-
-Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<Resource> ret;
-	if (GDVIRTUAL_CALL(_convert, p_resource, ret)) {
-		return ret;
-	}
-
-	return Ref<Resource>();
-}
 
 void CustomPropertyEditor::_notification(int p_what) {
 	switch (p_what) {

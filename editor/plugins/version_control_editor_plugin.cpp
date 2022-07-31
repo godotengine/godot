@@ -35,6 +35,8 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/separator.h"
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 

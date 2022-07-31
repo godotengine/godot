@@ -36,6 +36,7 @@
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
 #include "editor/progress_dialog.h"
+#include "scene/gui/color_picker.h"
 
 void ThemeItemImportTree::_update_items_tree() {
 	import_items_tree->clear();

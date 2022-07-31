@@ -37,7 +37,6 @@
 #include "editor/editor_run.h"
 #include "editor/export/editor_export.h"
 #include "editor/inspector_dock.h"
-#include "editor/property_editor.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -48,6 +47,7 @@ class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class Button;
 class CenterContainer;
+class ColorPicker;
 class ConfirmationDialog;
 class Control;
 class DependencyEditor;
@@ -67,6 +67,7 @@ class EditorPlugin;
 class EditorPluginList;
 class EditorQuickOpen;
 class EditorResourcePreview;
+class EditorResourceConversionPlugin;
 class EditorRun;
 class EditorRunNative;
 class EditorSettingsDialog;

@@ -41,7 +41,6 @@
 #include "editor/filesystem_dock.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/project_settings_editor.h"
-#include "editor/property_editor.h"
 #include "editor/shader_create_dialog.h"
 #include "scene/gui/split_container.h"
 #include "servers/display_server.h"

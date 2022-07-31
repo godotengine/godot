@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  editor_resource_conversion_plugin.h                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#ifndef EDITOR_RESOURCE_CONVERSION_PLUGIN_H
+#define EDITOR_RESOURCE_CONVERSION_PLUGIN_H
 
-#include "editor/editor_settings.h"
-#include "export_plugin.h"
+#include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
-void register_uwp_exporter() {
-#ifdef WINDOWS_ENABLED
-	EDITOR_DEF("export/uwp/signtool", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-	EDITOR_DEF("export/uwp/debug_certificate", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/debug_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx"));
-	EDITOR_DEF("export/uwp/debug_password", "");
-	EDITOR_DEF("export/uwp/debug_algorithm", 2); // SHA256 is the default
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/uwp/debug_algorithm", PROPERTY_HINT_ENUM, "MD5,SHA1,SHA256"));
-#endif // WINDOWS_ENABLED
+class EditorResourceConversionPlugin : public RefCounted {
+	GDCLASS(EditorResourceConversionPlugin, RefCounted);
 
-	Ref<EditorExportPlatformUWP> exporter;
-	exporter.instantiate();
-	EditorExport::get_singleton()->add_export_platform(exporter);
-}
+protected:
+	static void _bind_methods();
+
+	GDVIRTUAL0RC(String, _converts_to)
+	GDVIRTUAL1RC(bool, _handles, Ref<Resource>)
+	GDVIRTUAL1RC(Ref<Resource>, _convert, Ref<Resource>)
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
+#endif // EDITOR_RESOURCE_CONVERSION_PLUGIN_H
