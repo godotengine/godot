@@ -32,9 +32,6 @@
 #include "core/io/compression.h"
 #include "scene/main/timer.h"
 
-void HTTPRequest::_redirect_request(const String &p_new_url) {
-}
-
 Error HTTPRequest::_request() {
 	return client->connect_to_host(url, port, use_tls, validate_tls);
 }
@@ -154,7 +151,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 		client->set_blocking_mode(false);
 		err = _request();
 		if (err != OK) {
-			call_deferred(SNAME("_request_done"), RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
+			_defer_done(RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 			return ERR_CANT_CONNECT;
 		}
 
@@ -170,7 +167,7 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 	Error err = hr->_request();
 
 	if (err != OK) {
-		hr->call_deferred(SNAME("_request_done"), RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
+		hr->_defer_done(RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 	} else {
 		while (!hr->thread_request_quit.is_set()) {
 			bool exit = hr->_update_connection();
@@ -210,7 +207,7 @@ void HTTPRequest::cancel_request() {
 
 bool HTTPRequest::_handle_response(bool *ret_value) {
 	if (!client->has_response()) {
-		call_deferred(SNAME("_request_done"), RESULT_NO_RESPONSE, 0, PackedStringArray(), PackedByteArray());
+		_defer_done(RESULT_NO_RESPONSE, 0, PackedStringArray(), PackedByteArray());
 		*ret_value = true;
 		return true;
 	}
@@ -232,7 +229,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		// Handle redirect.
 
 		if (max_redirects >= 0 && redirections >= max_redirects) {
-			call_deferred(SNAME("_request_done"), RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PackedByteArray());
+			_defer_done(RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PackedByteArray());
 			*ret_value = true;
 			return true;
 		}
@@ -291,7 +288,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 bool HTTPRequest::_update_connection() {
 	switch (client->get_status()) {
 		case HTTPClient::STATUS_DISCONNECTED: {
-			call_deferred(SNAME("_request_done"), RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
+			_defer_done(RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 			return true; // End it, since it's disconnected.
 		} break;
 		case HTTPClient::STATUS_RESOLVING: {
@@ -300,7 +297,7 @@ bool HTTPRequest::_update_connection() {
 			return false;
 		} break;
 		case HTTPClient::STATUS_CANT_RESOLVE: {
-			call_deferred(SNAME("_request_done"), RESULT_CANT_RESOLVE, 0, PackedStringArray(), PackedByteArray());
+			_defer_done(RESULT_CANT_RESOLVE, 0, PackedStringArray(), PackedByteArray());
 			return true;
 
 		} break;
@@ -310,7 +307,7 @@ bool HTTPRequest::_update_connection() {
 			return false;
 		} break; // Connecting to IP.
 		case HTTPClient::STATUS_CANT_CONNECT: {
-			call_deferred(SNAME("_request_done"), RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
+			_defer_done(RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 			return true;
 
 		} break;
@@ -325,16 +322,16 @@ bool HTTPRequest::_update_connection() {
 						return ret_value;
 					}
 
-					call_deferred(SNAME("_request_done"), RESULT_SUCCESS, response_code, response_headers, PackedByteArray());
+					_defer_done(RESULT_SUCCESS, response_code, response_headers, PackedByteArray());
 					return true;
 				}
 				if (body_len < 0) {
 					// Chunked transfer is done.
-					call_deferred(SNAME("_request_done"), RESULT_SUCCESS, response_code, response_headers, body);
+					_defer_done(RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
 
-				call_deferred(SNAME("_request_done"), RESULT_CHUNKED_BODY_SIZE_MISMATCH, response_code, response_headers, PackedByteArray());
+				_defer_done(RESULT_CHUNKED_BODY_SIZE_MISMATCH, response_code, response_headers, PackedByteArray());
 				return true;
 				// Request might have been done.
 			} else {
@@ -343,7 +340,7 @@ bool HTTPRequest::_update_connection() {
 				int size = request_data.size();
 				Error err = client->request(method, request_string, headers, size > 0 ? request_data.ptr() : nullptr, size);
 				if (err != OK) {
-					call_deferred(SNAME("_request_done"), RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
+					_defer_done(RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
 					return true;
 				}
 
@@ -366,7 +363,7 @@ bool HTTPRequest::_update_connection() {
 				}
 
 				if (!client->is_response_chunked() && client->get_response_body_length() == 0) {
-					call_deferred(SNAME("_request_done"), RESULT_SUCCESS, response_code, response_headers, PackedByteArray());
+					_defer_done(RESULT_SUCCESS, response_code, response_headers, PackedByteArray());
 					return true;
 				}
 
@@ -375,14 +372,14 @@ bool HTTPRequest::_update_connection() {
 				body_len = client->get_response_body_length();
 
 				if (body_size_limit >= 0 && body_len > body_size_limit) {
-					call_deferred(SNAME("_request_done"), RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PackedByteArray());
+					_defer_done(RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PackedByteArray());
 					return true;
 				}
 
 				if (!download_to_file.is_empty()) {
 					file = FileAccess::open(download_to_file, FileAccess::WRITE);
 					if (file.is_null()) {
-						call_deferred(SNAME("_request_done"), RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PackedByteArray());
+						_defer_done(RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PackedByteArray());
 						return true;
 					}
 				}
@@ -404,14 +401,14 @@ bool HTTPRequest::_update_connection() {
 					err = decompressor->get_data(chunk.ptrw(), chunk.size());
 				}
 				if (err != OK) {
-					call_deferred(SNAME("_request_done"), RESULT_BODY_DECOMPRESS_FAILED, response_code, response_headers, PackedByteArray());
+					_defer_done(RESULT_BODY_DECOMPRESS_FAILED, response_code, response_headers, PackedByteArray());
 					return true;
 				}
 			}
 			final_body_size.add(chunk.size());
 
 			if (body_size_limit >= 0 && final_body_size.get() > body_size_limit) {
-				call_deferred(SNAME("_request_done"), RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PackedByteArray());
+				_defer_done(RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PackedByteArray());
 				return true;
 			}
 
@@ -420,7 +417,7 @@ bool HTTPRequest::_update_connection() {
 					const uint8_t *r = chunk.ptr();
 					file->store_buffer(r, chunk.size());
 					if (file->get_error() != OK) {
-						call_deferred(SNAME("_request_done"), RESULT_DOWNLOAD_FILE_WRITE_ERROR, response_code, response_headers, PackedByteArray());
+						_defer_done(RESULT_DOWNLOAD_FILE_WRITE_ERROR, response_code, response_headers, PackedByteArray());
 						return true;
 					}
 				} else {
@@ -430,12 +427,12 @@ bool HTTPRequest::_update_connection() {
 
 			if (body_len >= 0) {
 				if (downloaded.get() == body_len) {
-					call_deferred(SNAME("_request_done"), RESULT_SUCCESS, response_code, response_headers, body);
+					_defer_done(RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
 			} else if (client->get_status() == HTTPClient::STATUS_DISCONNECTED) {
 				// We read till EOF, with no errors. Request is done.
-				call_deferred(SNAME("_request_done"), RESULT_SUCCESS, response_code, response_headers, body);
+				_defer_done(RESULT_SUCCESS, response_code, response_headers, body);
 				return true;
 			}
 
@@ -443,16 +440,20 @@ bool HTTPRequest::_update_connection() {
 
 		} break; // Request resulted in body: break which must be read.
 		case HTTPClient::STATUS_CONNECTION_ERROR: {
-			call_deferred(SNAME("_request_done"), RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
+			_defer_done(RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
 			return true;
 		} break;
 		case HTTPClient::STATUS_TLS_HANDSHAKE_ERROR: {
-			call_deferred(SNAME("_request_done"), RESULT_TLS_HANDSHAKE_ERROR, 0, PackedStringArray(), PackedByteArray());
+			_defer_done(RESULT_TLS_HANDSHAKE_ERROR, 0, PackedStringArray(), PackedByteArray());
 			return true;
 		} break;
 	}
 
 	ERR_FAIL_V(false);
+}
+
+void HTTPRequest::_defer_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
+	call_deferred(SNAME("_request_done"), p_status, p_code, p_headers, p_data);
 }
 
 void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
@@ -567,7 +568,7 @@ double HTTPRequest::get_timeout() {
 
 void HTTPRequest::_timeout() {
 	cancel_request();
-	call_deferred(SNAME("_request_done"), RESULT_TIMEOUT, 0, PackedStringArray(), PackedByteArray());
+	_defer_done(RESULT_TIMEOUT, 0, PackedStringArray(), PackedByteArray());
 }
 
 void HTTPRequest::_bind_methods() {
@@ -595,7 +596,6 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_downloaded_bytes"), &HTTPRequest::get_downloaded_bytes);
 	ClassDB::bind_method(D_METHOD("get_body_size"), &HTTPRequest::get_body_size);
 
-	ClassDB::bind_method(D_METHOD("_redirect_request"), &HTTPRequest::_redirect_request);
 	ClassDB::bind_method(D_METHOD("_request_done"), &HTTPRequest::_request_done);
 
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
