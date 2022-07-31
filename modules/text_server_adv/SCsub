@@ -117,11 +117,11 @@ if env["builtin_harfbuzz"]:
         ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_harfbuzz.Append(CPPPATH=["#thirdparty/harfbuzz/src"])
+    env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
     if env["builtin_icu"]:
-        env_harfbuzz.Append(CPPPATH=["#thirdparty/icu4c/common/"])
+        env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/"])
         env_harfbuzz.Append(CCFLAGS=["-DU_HAVE_LIB_SUFFIX=1", "-DU_LIB_SUFFIX_C_NAME=_godot", "-DHAVE_ICU_BUILTIN"])
 
     if freetype_enabled:
@@ -132,9 +132,9 @@ if env["builtin_harfbuzz"]:
             ]
         )
         if env["builtin_freetype"]:
-            env_harfbuzz.Append(CPPPATH=["#thirdparty/freetype/include"])
+            env_harfbuzz.Prepend(CPPPATH=["#thirdparty/freetype/include"])
         if env["builtin_graphite"]:
-            env_harfbuzz.Append(CPPPATH=["#thirdparty/graphite/include"])
+            env_harfbuzz.Prepend(CPPPATH=["#thirdparty/graphite/include"])
             env_harfbuzz.Append(CCFLAGS=["-DGRAPHITE2_STATIC"])
 
     if env["platform"] == "android" or env["platform"] == "linuxbsd":
@@ -146,7 +146,7 @@ if env["builtin_harfbuzz"]:
         else:
             env_harfbuzz.Append(CCFLAGS=["-DHB_NO_MT"])
 
-    env_text_server_adv.Append(CPPPATH=["#thirdparty/harfbuzz/src"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -209,7 +209,7 @@ if env["builtin_graphite"] and freetype_enabled:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_graphite.Append(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
+    env_graphite.Prepend(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
     env_graphite.Append(
         CCFLAGS=[
             "-DGRAPHITE2_STATIC",
@@ -447,11 +447,11 @@ if env["builtin_icu"]:
     if env_icu["tools"]:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
         env_icu.Command("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name, make_icu_data)
-        env_text_server_adv.Append(CPPPATH=["#thirdparty/icu4c/"])
+        env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
     else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
 
-    env_icu.Append(CPPPATH=["#thirdparty/icu4c/common/"])
+    env_icu.Prepend(CPPPATH=["#thirdparty/icu4c/common/"])
     env_icu.Append(
         CXXFLAGS=[
             "-DU_STATIC_IMPLEMENTATION",
@@ -480,7 +480,7 @@ if env["builtin_icu"]:
     if env_text_server_adv["tools"]:
         env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
 
-    env_text_server_adv.Append(CPPPATH=["#thirdparty/icu4c/common/"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/common/"])
 
     lib = env_icu.add_library("icu_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -504,13 +504,13 @@ if env["builtin_icu"]:
 module_obj = []
 
 if env["builtin_msdfgen"] and msdfgen_enabled:
-    env_text_server_adv.Append(CPPPATH=["#thirdparty/msdfgen"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
 if env["builtin_freetype"] and freetype_enabled:
-    env_text_server_adv.Append(CPPPATH=["#thirdparty/freetype/include"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
 if env["builtin_graphite"] and freetype_enabled:
-    env_text_server_adv.Append(CPPPATH=["#thirdparty/graphite/include"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/graphite/include"])
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
