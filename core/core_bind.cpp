@@ -1237,7 +1237,7 @@ String File::get_as_text() const {
 
 	const_cast<FileAccess *>(*f)->seek(original_pos);
 
-	return text;
+	return text.replace("\r", "");
 }
 
 String File::get_md5(const String &p_path) const {
