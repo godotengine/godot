@@ -209,7 +209,7 @@ public:
 	virtual ~NavigationServer3D();
 
 #ifdef DEBUG_ENABLED
-	bool debug_enabled = true;
+	bool debug_enabled = false;
 	bool debug_dirty = true;
 	void _emit_navigation_debug_changed_signal();
 
