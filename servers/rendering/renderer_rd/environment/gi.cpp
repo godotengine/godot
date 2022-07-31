@@ -287,6 +287,19 @@ float GI::voxel_gi_get_energy(RID p_voxel_gi) const {
 	return voxel_gi->energy;
 }
 
+void GI::voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) {
+	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
+
+	voxel_gi->baked_exposure = p_baked_exposure;
+}
+
+float GI::voxel_gi_get_baked_exposure_normalization(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->baked_exposure;
+}
+
 void GI::voxel_gi_set_bias(RID p_voxel_gi, float p_bias) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_COND(!voxel_gi);
@@ -1292,7 +1305,7 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	push_constant.y_mult = y_mult;
 
 	if (reads_sky && p_env.is_valid()) {
-		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy(p_env);
+		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
 			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
@@ -1840,6 +1853,11 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		c.probe_world_offset[2] = probe_ofs.z;
 
 		c.to_cell = 1.0 / cascades[i].cell_size;
+		c.exposure_normalization = 1.0;
+		if (p_render_data->camera_attributes.is_valid()) {
+			float exposure_normalization = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+			c.exposure_normalization = exposure_normalization / cascades[i].baked_exposure_normalization;
+		}
 	}
 
 	RD::get_singleton()->buffer_update(gi->sdfgi_ubo, 0, sizeof(SDFGIData), &sdfgi_data, RD::BARRIER_MASK_COMPUTE);
@@ -1876,6 +1894,14 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RS::LIGHT_DIRECTIONAL;
 			lights[idx].energy = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+			if (p_scene_render->is_using_physical_light_units()) {
+				lights[idx].energy *= RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INTENSITY);
+			}
+
+			if (p_render_data->camera_attributes.is_valid()) {
+				lights[idx].energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+			}
+
 			lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
 
 			idx++;
@@ -1920,7 +1946,25 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RSG::light_storage->light_get_type(li->light);
+
 			lights[idx].energy = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+			if (p_scene_render->is_using_physical_light_units()) {
+				lights[idx].energy *= RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INTENSITY);
+
+				// Convert from Luminous Power to Luminous Intensity
+				if (lights[idx].type == RS::LIGHT_OMNI) {
+					lights[idx].energy *= 1.0 / (Math_PI * 4.0);
+				} else if (lights[idx].type == RS::LIGHT_SPOT) {
+					// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
+					// We make this assumption to keep them easy to control.
+					lights[idx].energy *= 1.0 / Math_PI;
+				}
+			}
+
+			if (p_render_data->camera_attributes.is_valid()) {
+				lights[idx].energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+			}
+
 			lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
 			lights[idx].attenuation = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 			lights[idx].radius = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
@@ -1938,7 +1982,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 	}
 }
 
-void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
+void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render, float p_exposure_normalization) {
 	//print_line("rendering region " + itos(p_region));
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
@@ -1960,7 +2004,7 @@ void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArr
 	}
 
 	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
-	p_scene_render->_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_geom_facing);
+	p_scene_render->_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_geom_facing, p_exposure_normalization);
 
 	if (cascade_next != cascade) {
 		RD::get_singleton()->draw_command_begin_label("SDFGI Pre-Process Cascade");
@@ -1989,6 +2033,7 @@ void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArr
 		}
 
 		cascades[cascade].all_dynamic_lights_dirty = true;
+		cascades[cascade].baked_exposure_normalization = p_exposure_normalization;
 
 		push_constant.grid_size = cascade_size;
 		push_constant.cascade = cascade;
@@ -2297,7 +2342,7 @@ void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArr
 	}
 }
 
-void GI::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render) {
+void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render) {
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
 
@@ -2358,7 +2403,25 @@ void GI::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_co
 				lights[idx].color[0] = color.r;
 				lights[idx].color[1] = color.g;
 				lights[idx].color[2] = color.b;
+
 				lights[idx].energy = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+				if (p_scene_render->is_using_physical_light_units()) {
+					lights[idx].energy *= RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INTENSITY);
+
+					// Convert from Luminous Power to Luminous Intensity
+					if (lights[idx].type == RS::LIGHT_OMNI) {
+						lights[idx].energy *= 1.0 / (Math_PI * 4.0);
+					} else if (lights[idx].type == RS::LIGHT_SPOT) {
+						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
+						// We make this assumption to keep them easy to control.
+						lights[idx].energy *= 1.0 / Math_PI;
+					}
+				}
+
+				if (p_render_data->camera_attributes.is_valid()) {
+					lights[idx].energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+				}
+
 				lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
 				lights[idx].attenuation = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 				lights[idx].radius = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
@@ -2794,6 +2857,22 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 				l.attenuation = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
 				l.energy = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+
+				if (p_scene_render->is_using_physical_light_units()) {
+					l.energy *= RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INTENSITY);
+
+					l.energy *= gi->voxel_gi_get_baked_exposure_normalization(probe);
+
+					// Convert from Luminous Power to Luminous Intensity
+					if (l.type == RS::LIGHT_OMNI) {
+						l.energy *= 1.0 / (Math_PI * 4.0);
+					} else if (l.type == RS::LIGHT_SPOT) {
+						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
+						// We make this assumption to keep them easy to control.
+						l.energy *= 1.0 / Math_PI;
+					}
+				}
+
 				l.radius = to_cell.basis.xform(Vector3(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_RANGE), 0, 0)).length();
 				Color color = RSG::light_storage->light_get_color(light).srgb_to_linear();
 				l.color[0] = color.r;
@@ -3003,7 +3082,12 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				}
 				p_scene_render->cull_argument[0] = instance;
 
-				p_scene_render->_render_material(to_world_xform * xform, cm, true, p_scene_render->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size));
+				float exposure_normalization = 1.0;
+				if (p_scene_render->is_using_physical_light_units()) {
+					exposure_normalization = gi->voxel_gi_get_baked_exposure_normalization(probe);
+				}
+
+				p_scene_render->_render_material(to_world_xform * xform, cm, true, p_scene_render->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
 
 				VoxelGIDynamicPushConstant push_constant;
 				memset(&push_constant, 0, sizeof(VoxelGIDynamicPushConstant));
@@ -3496,7 +3580,7 @@ GI::SDFGI *GI::create_sdfgi(RID p_env, const Vector3 &p_world_position, uint32_t
 	return sdfgi;
 }
 
-void GI::setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render) {
+void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	r_voxel_gi_instances_used = 0;
@@ -3555,6 +3639,11 @@ void GI::setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_tra
 				gipd.normal_bias = voxel_gi_get_normal_bias(base_probe);
 				gipd.blend_ambient = !voxel_gi_is_interior(base_probe);
 				gipd.mipmaps = gipi->mipmaps.size();
+				gipd.exposure_normalization = 1.0;
+				if (p_render_data->camera_attributes.is_valid()) {
+					float exposure_normalization = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+					gipd.exposure_normalization = exposure_normalization / voxel_gi_get_baked_exposure_normalization(base_probe);
+				}
 			}
 
 			r_voxel_gi_instances_used++;

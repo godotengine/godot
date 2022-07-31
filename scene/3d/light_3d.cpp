@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/config/project_settings.h"
+
 #include "light_3d.h"
 
 void Light3D::set_param(Param p_param, real_t p_value) {
@@ -122,7 +124,14 @@ uint32_t Light3D::get_cull_mask() const {
 
 void Light3D::set_color(const Color &p_color) {
 	color = p_color;
-	RS::get_singleton()->light_set_color(light, p_color);
+
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		Color combined = color.srgb_to_linear();
+		combined *= correlated_color.srgb_to_linear();
+		RS::get_singleton()->light_set_color(light, combined.linear_to_srgb());
+	} else {
+		RS::get_singleton()->light_set_color(light, color);
+	}
 	// The gizmo color depends on the light color, so update it.
 	update_gizmos();
 }
@@ -181,6 +190,56 @@ void Light3D::owner_changed_notify() {
 	_update_visibility();
 }
 
+// Temperature expressed in Kelvins. Valid range 1000 - 15000
+// First converts to CIE 1960 then to sRGB
+// As explained in the Filament documentation: https://google.github.io/filament/Filament.md.html#lighting/directlighting/lightsparameterization
+Color _color_from_temperature(float p_temperature) {
+	float T2 = p_temperature * p_temperature;
+	float u = (0.860117757f + 1.54118254e-4f * p_temperature + 1.28641212e-7f * T2) /
+			(1.0f + 8.42420235e-4f * p_temperature + 7.08145163e-7f * T2);
+	float v = (0.317398726f + 4.22806245e-5f * p_temperature + 4.20481691e-8f * T2) /
+			(1.0f - 2.89741816e-5f * p_temperature + 1.61456053e-7f * T2);
+
+	// Convert to xyY space.
+	float d = 1.0f / (2.0f * u - 8.0f * v + 4.0f);
+	float x = 3.0f * u * d;
+	float y = 2.0f * v * d;
+
+	// Convert to XYZ space
+	const float a = 1.0 / MAX(y, 1e-5f);
+	Vector3 xyz = Vector3(x * a, 1.0, (1.0f - x - y) * a);
+
+	// Convert from XYZ to sRGB(linear)
+	Vector3 linear = Vector3(3.2404542f * xyz.x - 1.5371385f * xyz.y - 0.4985314f * xyz.z,
+			-0.9692660f * xyz.x + 1.8760108f * xyz.y + 0.0415560f * xyz.z,
+			0.0556434f * xyz.x - 0.2040259f * xyz.y + 1.0572252f * xyz.z);
+	linear /= MAX(1e-5f, linear[linear.max_axis_index()]);
+	// Normalize, clamp, and convert to sRGB.
+	return Color(linear.x, linear.y, linear.z).clamp().linear_to_srgb();
+}
+
+void Light3D::set_temperature(const float p_temperature) {
+	temperature = p_temperature;
+	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		return;
+	}
+	correlated_color = _color_from_temperature(temperature);
+
+	Color combined = color.srgb_to_linear() * correlated_color.srgb_to_linear();
+
+	RS::get_singleton()->light_set_color(light, combined.linear_to_srgb());
+	// The gizmo color depends on the light color, so update it.
+	update_gizmos();
+}
+
+Color Light3D::get_correlated_color() const {
+	return correlated_color;
+}
+
+float Light3D::get_temperature() const {
+	return temperature;
+}
+
 void Light3D::_update_visibility() {
 	if (!is_inside_tree()) {
 		return;
@@ -228,8 +287,14 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (get_light_type() != RS::LIGHT_DIRECTIONAL && p_property.name == "light_angular_distance") {
-		// Angular distance is only used in DirectionalLight3D.
+	if (get_light_type() != RS::LIGHT_DIRECTIONAL && (p_property.name == "light_angular_distance" || p_property.name == "light_intensity_lux")) {
+		// Angular distance and Light Intensity Lux are only used in DirectionalLight3D.
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (get_light_type() == RS::LIGHT_DIRECTIONAL && p_property.name == "light_intensity_lumens") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units") && (p_property.name == "light_intensity_lumens" || p_property.name == "light_intensity_lux" || p_property.name == "light_temperature")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -278,7 +343,14 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_projector", "projector"), &Light3D::set_projector);
 	ClassDB::bind_method(D_METHOD("get_projector"), &Light3D::get_projector);
 
+	ClassDB::bind_method(D_METHOD("set_temperature", "temperature"), &Light3D::set_temperature);
+	ClassDB::bind_method(D_METHOD("get_temperature"), &Light3D::get_temperature);
+	ClassDB::bind_method(D_METHOD("get_correlated_color"), &Light3D::get_correlated_color);
+
 	ADD_GROUP("Light", "light_");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lumens", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:lm"), "set_param", "get_param", PARAM_INTENSITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lux", PROPERTY_HINT_RANGE, "0,150000.0,0.01,or_greater,suffix:lx"), "set_param", "get_param", PARAM_INTENSITY);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "light_temperature", PROPERTY_HINT_RANGE, "1000,15000.0,1.0,suffix:k"), "set_temperature", "get_temperature");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
@@ -331,6 +403,7 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
+	BIND_ENUM_CONSTANT(PARAM_INTENSITY);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
@@ -382,6 +455,9 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
+	// For OmniLight3D and SpotLight3D, specified in Lumens.
+	set_param(PARAM_INTENSITY, 1000.0);
+	set_temperature(6500.0); // Nearly white.
 	set_disable_scale(true);
 }
 
@@ -487,6 +563,7 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	// Increase the default shadow bias to better suit most scenes.
 	set_param(PARAM_SHADOW_BIAS, 0.1);
+	set_param(PARAM_INTENSITY, 100000.0); // Specified in Lux, approximate mid-day sun.
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 	set_sky_mode(SKY_MODE_LIGHT_AND_SKY);

@@ -15,10 +15,10 @@ layout(location = 0) out vec2 uv_interp;
 layout(push_constant, std430) uniform Params {
 	mat3 orientation;
 	vec4 projections[MAX_VIEWS];
-	vec4 position_multiplier;
+	vec3 position;
 	float time;
+	vec3 pad;
 	float luminance_multiplier;
-	float pad[2];
 }
 params;
 
@@ -55,10 +55,10 @@ layout(location = 0) in vec2 uv_interp;
 layout(push_constant, std430) uniform Params {
 	mat3 orientation;
 	vec4 projections[MAX_VIEWS];
-	vec4 position_multiplier;
+	vec3 position;
 	float time;
+	vec3 pad;
 	float luminance_multiplier;
-	float pad[2];
 }
 params;
 
@@ -200,17 +200,17 @@ void main() {
 
 #ifdef USE_CUBEMAP_PASS
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal) * params.luminance_multiplier;
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal) / params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal) * params.luminance_multiplier;
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal) / params.luminance_multiplier;
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * params.luminance_multiplier;
+	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) / params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * params.luminance_multiplier;
+	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) / params.luminance_multiplier;
 #endif
 #endif
 
@@ -220,7 +220,7 @@ void main() {
 
 	}
 
-	frag_color.rgb = color * params.position_multiplier.w;
+	frag_color.rgb = color;
 	frag_color.a = alpha;
 
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
@@ -242,12 +242,13 @@ void main() {
 
 #endif // DISABLE_FOG
 
-	// Blending is disabled for Sky, so alpha doesn't blend
-	// alpha is used for subsurface scattering so make sure it doesn't get applied to Sky
+	// Blending is disabled for Sky, so alpha doesn't blend.
+	// Alpha is used for subsurface scattering so make sure it doesn't get applied to Sky.
 	if (!AT_CUBEMAP_PASS && !AT_HALF_RES_PASS && !AT_QUARTER_RES_PASS) {
 		frag_color.a = 0.0;
 	}
 
-	// For mobile renderer we're dividing by 2.0 as we're using a UNORM buffer
-	frag_color.rgb = frag_color.rgb / params.luminance_multiplier;
+	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
+	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
+	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
 }

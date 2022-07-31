@@ -92,9 +92,11 @@ private:
 	float bg_sky_custom_fov = 0.0;
 	Vector3 bg_sky_rotation;
 	Color bg_color;
-	float bg_energy = 1.0;
 	int bg_canvas_max_layer = 0;
 	int bg_camera_feed_id = 1;
+	float bg_energy_multiplier = 1.0;
+	float bg_intensity = 30000.0; // Measured in nits or candela/m^2
+	void _update_bg_energy();
 
 	// Ambient light
 	Color ambient_color;
@@ -108,11 +110,6 @@ private:
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
 	float tonemap_white = 1.0;
-	bool tonemap_auto_exposure_enabled = false;
-	float tonemap_auto_exposure_min = 0.05;
-	float tonemap_auto_exposure_max = 8.0;
-	float tonemap_auto_exposure_speed = 0.5;
-	float tonemap_auto_exposure_grey = 0.4;
 	void _update_tonemap();
 
 	// SSR
@@ -231,8 +228,10 @@ public:
 	Vector3 get_sky_rotation() const;
 	void set_bg_color(const Color &p_color);
 	Color get_bg_color() const;
-	void set_bg_energy(float p_energy);
-	float get_bg_energy() const;
+	void set_bg_energy_multiplier(float p_energy);
+	float get_bg_energy_multiplier() const;
+	void set_bg_intensity(float p_energy);
+	float get_bg_intensity() const;
 	void set_canvas_max_layer(int p_max_layer);
 	int get_canvas_max_layer() const;
 	void set_camera_feed_id(int p_id);
@@ -257,16 +256,6 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
-	void set_tonemap_auto_exposure_enabled(bool p_enabled);
-	bool is_tonemap_auto_exposure_enabled() const;
-	void set_tonemap_auto_exposure_min(float p_auto_exposure_min);
-	float get_tonemap_auto_exposure_min() const;
-	void set_tonemap_auto_exposure_max(float p_auto_exposure_max);
-	float get_tonemap_auto_exposure_max() const;
-	void set_tonemap_auto_exposure_speed(float p_auto_exposure_speed);
-	float get_tonemap_auto_exposure_speed() const;
-	void set_tonemap_auto_exposure_grey(float p_auto_exposure_grey);
-	float get_tonemap_auto_exposure_grey() const;
 
 	// SSR
 	void set_ssr_enabled(bool p_enabled);

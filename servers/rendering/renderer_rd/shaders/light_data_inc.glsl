@@ -44,7 +44,7 @@ struct ReflectionData {
 	bool exterior;
 	bool box_project;
 	uint ambient_mode;
-	uint pad;
+	float exposure_normalization;
 	//0-8 is intensity,8-9 is ambient, mode
 	highp mat4 local_matrix; // up to here for spot and omni, rest is for directional
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
@@ -52,7 +52,7 @@ struct ReflectionData {
 
 struct DirectionalLightData {
 	mediump vec3 direction;
-	mediump float energy;
+	highp float energy; // needs to be highp to avoid NaNs being created with high energy values (i.e. when using physical light units and over-exposing the image)
 	mediump vec3 color;
 	mediump float size;
 	mediump float specular;

@@ -224,8 +224,8 @@ void RendererSceneRender::environment_set_bg_color(RID p_env, const Color &p_col
 	environment_storage.environment_set_bg_color(p_env, p_color);
 }
 
-void RendererSceneRender::environment_set_bg_energy(RID p_env, float p_energy) {
-	environment_storage.environment_set_bg_energy(p_env, p_energy);
+void RendererSceneRender::environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) {
+	environment_storage.environment_set_bg_energy(p_env, p_multiplier, p_exposure_value);
 }
 
 void RendererSceneRender::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
@@ -256,8 +256,12 @@ Color RendererSceneRender::environment_get_bg_color(RID p_env) const {
 	return environment_storage.environment_get_bg_color(p_env);
 }
 
-float RendererSceneRender::environment_get_bg_energy(RID p_env) const {
-	return environment_storage.environment_get_bg_energy(p_env);
+float RendererSceneRender::environment_get_bg_energy_multiplier(RID p_env) const {
+	return environment_storage.environment_get_bg_energy_multiplier(p_env);
+}
+
+float RendererSceneRender::environment_get_bg_intensity(RID p_env) const {
+	return environment_storage.environment_get_bg_intensity(p_env);
 }
 
 int RendererSceneRender::environment_get_canvas_max_layer(RID p_env) const {
@@ -286,8 +290,8 @@ RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_
 
 // Tonemap
 
-void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
-	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white, p_auto_exposure, p_min_luminance, p_max_luminance, p_auto_exp_speed, p_auto_exp_scale);
+void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
+	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white);
 }
 
 RS::EnvironmentToneMapper RendererSceneRender::environment_get_tone_mapper(RID p_env) const {
@@ -300,30 +304,6 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 
 float RendererSceneRender::environment_get_white(RID p_env) const {
 	return environment_storage.environment_get_white(p_env);
-}
-
-bool RendererSceneRender::environment_get_auto_exposure(RID p_env) const {
-	return environment_storage.environment_get_auto_exposure(p_env);
-}
-
-float RendererSceneRender::environment_get_min_luminance(RID p_env) const {
-	return environment_storage.environment_get_min_luminance(p_env);
-}
-
-float RendererSceneRender::environment_get_max_luminance(RID p_env) const {
-	return environment_storage.environment_get_max_luminance(p_env);
-}
-
-float RendererSceneRender::environment_get_auto_exp_speed(RID p_env) const {
-	return environment_storage.environment_get_auto_exp_speed(p_env);
-}
-
-float RendererSceneRender::environment_get_auto_exp_scale(RID p_env) const {
-	return environment_storage.environment_get_auto_exp_scale(p_env);
-}
-
-uint64_t RendererSceneRender::environment_get_auto_exposure_version(RID p_env) const {
-	return environment_storage.environment_get_auto_exposure_version(p_env);
 }
 
 // Fog

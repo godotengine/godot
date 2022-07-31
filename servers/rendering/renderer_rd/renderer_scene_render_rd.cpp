@@ -37,6 +37,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/storage/camera_attributes_storage.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
 	const float golden_angle = 2.4;
@@ -246,7 +247,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	}
 
 	if (use_cube_map) {
-		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy(p_env), p_bake_irradiance, p_size);
+		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
 		if (use_ambient_light) {
 			for (int x = 0; x < p_size.width; x++) {
 				for (int y = 0; y < p_size.height; y++) {
@@ -256,12 +257,12 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		}
 		return panorama;
 	} else {
-		const float bg_energy = environment_get_bg_energy(p_env);
+		const float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_env);
 		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? RSG::texture_storage->get_default_clear_color() : environment_get_bg_color(p_env));
 		panorama_color = panorama_color.srgb_to_linear();
-		panorama_color.r *= bg_energy;
-		panorama_color.g *= bg_energy;
-		panorama_color.b *= bg_energy;
+		panorama_color.r *= bg_energy_multiplier;
+		panorama_color.g *= bg_energy_multiplier;
+		panorama_color.b *= bg_energy_multiplier;
 
 		if (use_ambient_light) {
 			panorama_color = ambient_color.lerp(panorama_color, ambient_color_sky_mix);
@@ -1083,45 +1084,6 @@ int RendererSceneRenderRD::get_directional_light_shadow_size(RID p_light_intance
 
 //////////////////////////////////////////////////
 
-RID RendererSceneRenderRD::camera_effects_allocate() {
-	return camera_effects_owner.allocate_rid();
-}
-void RendererSceneRenderRD::camera_effects_initialize(RID p_rid) {
-	camera_effects_owner.initialize_rid(p_rid, CameraEffects());
-}
-
-void RendererSceneRenderRD::camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) {
-	dof_blur_quality = p_quality;
-	dof_blur_use_jitter = p_use_jitter;
-}
-
-void RendererSceneRenderRD::camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) {
-	dof_blur_bokeh_shape = p_shape;
-}
-
-void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
-	ERR_FAIL_COND(!camfx);
-
-	camfx->dof_blur_far_enabled = p_far_enable;
-	camfx->dof_blur_far_distance = p_far_distance;
-	camfx->dof_blur_far_transition = p_far_transition;
-
-	camfx->dof_blur_near_enabled = p_near_enable;
-	camfx->dof_blur_near_distance = p_near_distance;
-	camfx->dof_blur_near_transition = p_near_transition;
-
-	camfx->dof_blur_amount = p_amount;
-}
-
-void RendererSceneRenderRD::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
-	ERR_FAIL_COND(!camfx);
-
-	camfx->override_exposure_enabled = p_enable;
-	camfx->override_exposure = p_exposure;
-}
-
 RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 	RID li = light_instance_owner.make_rid(LightInstance());
 
@@ -1860,13 +1822,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	// Glow and override exposure (if enabled).
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
-
+	// Glow, auto exposure and DoF (if enabled).
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 	bool can_use_storage = _render_buffers_can_be_storage();
 
-	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
+	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Depth of Field");
 		RD::get_singleton()->draw_command_begin_label("DOF");
 		if (rb->blur[0].texture.is_null()) {
@@ -1881,7 +1841,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		buffers.half_texture[0] = rb->blur[1].layers[0].mipmaps[0].texture;
 		buffers.half_texture[1] = rb->blur[0].layers[0].mipmaps[1].texture;
 
-		float bokeh_size = camfx->dof_blur_amount * 64.0;
 		if (can_use_storage) {
 			for (uint32_t i = 0; i < rb->view_count; i++) {
 				buffers.base_texture = rb->views[i].view_texture;
@@ -1890,7 +1849,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustrum
 				float z_near = p_render_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->view_projection[i].get_z_far();
-				bokeh_dof->bokeh_dof_compute(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, z_near, z_far, p_render_data->cam_orthogonal);
+				bokeh_dof->bokeh_dof_compute(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->cam_orthogonal);
 			};
 		} else {
 			// Set framebuffers.
@@ -1913,33 +1872,40 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustrum
 				float z_near = p_render_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->view_projection[i].get_z_far();
-				bokeh_dof->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, z_near, z_far, p_render_data->cam_orthogonal);
+				bokeh_dof->bokeh_dof_raster(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->cam_orthogonal);
 			}
 		}
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_auto_exposure(p_render_data->environment)) {
+	float auto_exposure_scale = 1.0;
+
+	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Auto exposure");
+
 		RD::get_singleton()->draw_command_begin_label("Auto exposure");
 		if (rb->luminance.current.is_null()) {
 			_allocate_luminance_textures(rb);
 		}
+		uint64_t auto_exposure_version = RSG::camera_attributes->camera_attributes_get_auto_exposure_version(p_render_data->camera_attributes);
+		bool set_immediate = auto_exposure_version != rb->auto_exposure_version;
+		rb->auto_exposure_version = auto_exposure_version;
 
-		bool set_immediate = environment_get_auto_exposure_version(p_render_data->environment) != rb->auto_exposure_version;
-		rb->auto_exposure_version = environment_get_auto_exposure_version(p_render_data->environment);
-
-		double step = environment_get_auto_exp_speed(p_render_data->environment) * time_step;
+		double step = RSG::camera_attributes->camera_attributes_get_auto_exposure_adjust_speed(p_render_data->camera_attributes) * time_step;
+		float auto_exposure_min_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_min_sensitivity(p_render_data->camera_attributes);
+		float auto_exposure_max_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_max_sensitivity(p_render_data->camera_attributes);
 		if (can_use_storage) {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.current, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
+			RendererCompositorRD::singleton->get_effects()->luminance_reduction(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.current, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
 		} else {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
+			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
 		}
 		// Swap final reduce with prev luminance.
 		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
 		if (!can_use_storage) {
 			SWAP(rb->luminance.current_fb, rb->luminance.fb.write[rb->luminance.fb.size() - 1]);
 		}
+
+		auto_exposure_scale = RSG::camera_attributes->camera_attributes_get_auto_exposure_scale(p_render_data->camera_attributes);
 
 		RenderingServerDefault::redraw_request(); // Redraw all the time if auto exposure rendering is on.
 		RD::get_singleton()->draw_command_end_label();
@@ -1975,13 +1941,13 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 				if (i == 0) {
 					RID luminance_texture;
-					if (environment_get_auto_exposure(p_render_data->environment) && rb->luminance.current.is_valid()) {
+					if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && rb->luminance.current.is_valid()) {
 						luminance_texture = rb->luminance.current;
 					}
 					if (can_use_storage) {
-						copy_effects->gaussian_glow(rb->views[l].view_texture, rb->blur[1].layers[l].mipmaps[i].texture, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, environment_get_auto_exp_scale(p_render_data->environment));
+						copy_effects->gaussian_glow(rb->views[l].view_texture, rb->blur[1].layers[l].mipmaps[i].texture, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, auto_exposure_scale);
 					} else {
-						copy_effects->gaussian_glow_raster(rb->views[l].view_texture, luminance_multiplier, rb->blur[1].layers[l].mipmaps[i].half_fb, rb->blur[1].layers[l].mipmaps[i].half_texture, rb->blur[1].layers[l].mipmaps[i].fb, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, environment_get_auto_exp_scale(p_render_data->environment));
+						copy_effects->gaussian_glow_raster(rb->views[l].view_texture, luminance_multiplier, rb->blur[1].layers[l].mipmaps[i].half_fb, rb->blur[1].layers[l].mipmaps[i].half_texture, rb->blur[1].layers[l].mipmaps[i].fb, Size2i(vp_w, vp_h), environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, auto_exposure_scale);
 					}
 				} else {
 					if (can_use_storage) {
@@ -2002,10 +1968,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
-		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_auto_exposure(p_render_data->environment) && rb->luminance.current.is_valid()) {
+		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && rb->luminance.current.is_valid()) {
 			tonemap.use_auto_exposure = true;
 			tonemap.exposure_texture = rb->luminance.current;
-			tonemap.auto_exposure_grey = environment_get_auto_exp_scale(p_render_data->environment);
+			tonemap.auto_exposure_scale = auto_exposure_scale;
 		} else {
 			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
@@ -2045,10 +2011,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
 			tonemap.white = environment_get_white(p_render_data->environment);
 			tonemap.exposure = environment_get_exposure(p_render_data->environment);
-		}
-
-		if (camfx && camfx->override_exposure_enabled) {
-			tonemap.exposure = camfx->override_exposure;
 		}
 
 		tonemap.use_color_correction = false;
@@ -2093,9 +2055,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	// Override exposure (if enabled).
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
-
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
@@ -2108,18 +2067,15 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		tonemap.white = environment_get_white(p_render_data->environment);
 	}
 
-	if (camfx && camfx->override_exposure_enabled) {
-		tonemap.exposure = camfx->override_exposure;
-	}
-
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
 	// The problem is that we need to use the result so far and process them before we can
 	// apply this to our results.
 	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 		ERR_FAIL_MSG("Glow is not supported when using subpasses.");
 	}
-	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_auto_exposure(p_render_data->environment)) {
-		ERR_FAIL_MSG("Glow is not supported when using subpasses.");
+
+	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
+		ERR_FAIL_MSG("Auto Exposure is not supported when using subpasses.");
 	}
 
 	tonemap.use_glow = false;
@@ -2739,7 +2695,7 @@ RendererSceneRenderRD::RenderBufferData *RendererSceneRenderRD::render_buffers_g
 	return rb->data;
 }
 
-void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment) {
+void RendererSceneRenderRD::_setup_reflections(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	cluster.reflection_count = 0;
 
@@ -2796,6 +2752,12 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 
 		reflection_ubo.exterior = !light_storage->reflection_probe_is_interior(base_probe);
 		reflection_ubo.box_project = light_storage->reflection_probe_is_box_projection(base_probe);
+		reflection_ubo.exposure_normalization = 1.0;
+
+		if (p_render_data->camera_attributes.is_valid()) {
+			float exposure = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+			reflection_ubo.exposure_normalization = exposure / light_storage->reflection_probe_get_baked_exposure(base_probe);
+		}
 
 		Color ambient_linear = light_storage->reflection_probe_get_ambient_color(base_probe).srgb_to_linear();
 		float interior_ambient_energy = light_storage->reflection_probe_get_ambient_color_energy(base_probe);
@@ -2819,7 +2781,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 }
 
-void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
+void RendererSceneRenderRD::_setup_lights(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
@@ -2863,7 +2825,17 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				float sign = light_storage->light_is_negative(base) ? -1 : 1;
 
-				light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
+				light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+
+				if (is_using_physical_light_units()) {
+					light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
+				} else {
+					light_data.energy *= Math_PI;
+				}
+
+				if (p_render_data->camera_attributes.is_valid()) {
+					light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+				}
 
 				Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
 				light_data.color[0] = linear_col.r;
@@ -3076,7 +3048,26 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			}
 		}
 
-		float energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI * fade;
+		float energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * fade;
+
+		if (is_using_physical_light_units()) {
+			energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
+
+			// Convert from Luminous Power to Luminous Intensity
+			if (type == RS::LIGHT_OMNI) {
+				energy *= 1.0 / (Math_PI * 4.0);
+			} else {
+				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
+				// We make this assumption to keep them easy to control.
+				energy *= 1.0 / Math_PI;
+			}
+		} else {
+			energy *= Math_PI;
+		}
+
+		if (p_render_data->camera_attributes.is_valid()) {
+			energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+		}
 
 		light_data.color[0] = linear_col.r * energy;
 		light_data.color[1] = linear_col.g * energy;
@@ -3645,12 +3636,12 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 		}
 	} else {
 		//do not render reflections when rendering a reflection probe
-		_setup_reflections(*p_render_data->reflection_probes, p_render_data->cam_transform.affine_inverse(), p_render_data->environment);
+		_setup_reflections(p_render_data, *p_render_data->reflection_probes, p_render_data->cam_transform.affine_inverse(), p_render_data->environment);
 	}
 
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
-	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
+	_setup_lights(p_render_data, *p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
 	_setup_decals(*p_render_data->decals, p_render_data->cam_transform.affine_inverse());
 
 	p_render_data->directional_light_count = directional_light_count;
@@ -3673,7 +3664,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	}
 }
 
-void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
+void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	// getting this here now so we can direct call a bunch of things more easily
@@ -3719,7 +3710,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		render_data.lightmaps = &p_lightmaps;
 		render_data.fog_volumes = &p_fog_volumes;
 		render_data.environment = p_environment;
-		render_data.camera_effects = p_camera_effects;
+		render_data.camera_attributes = p_camera_attributes;
 		render_data.shadow_atlas = p_shadow_atlas;
 		render_data.reflection_atlas = p_reflection_atlas;
 		render_data.reflection_probe = p_reflection_probe;
@@ -3753,11 +3744,15 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 	//sdfgi first
 	if (rb != nullptr && rb->sdfgi != nullptr) {
+		float exposure_normalization = 1.0;
+		if (p_camera_attributes.is_valid()) {
+			exposure_normalization = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_camera_attributes);
+		}
 		for (int i = 0; i < render_state.render_sdfgi_region_count; i++) {
-			rb->sdfgi->render_region(p_render_buffers, render_state.render_sdfgi_regions[i].region, render_state.render_sdfgi_regions[i].instances, this);
+			rb->sdfgi->render_region(p_render_buffers, render_state.render_sdfgi_regions[i].region, render_state.render_sdfgi_regions[i].instances, this, exposure_normalization);
 		}
 		if (render_state.sdfgi_update_data->update_static) {
-			rb->sdfgi->render_static_lights(p_render_buffers, render_state.sdfgi_update_data->static_cascade_count, p_sdfgi_update_data->static_cascade_indices, render_state.sdfgi_update_data->static_positional_lights, this);
+			rb->sdfgi->render_static_lights(&render_data, p_render_buffers, render_state.sdfgi_update_data->static_cascade_count, p_sdfgi_update_data->static_cascade_indices, render_state.sdfgi_update_data->static_positional_lights, this);
 		}
 	}
 
@@ -3790,6 +3785,9 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		} else {
 			current_cluster_builder = ra->cluster_builder;
 		}
+		if (p_camera_attributes.is_valid()) {
+			RendererRD::LightStorage::get_singleton()->reflection_probe_set_baked_exposure(rpi->probe, RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_camera_attributes));
+		}
 	} else {
 		ERR_PRINT("No render buffer nor reflection atlas, bug"); //should never happen, will crash
 		current_cluster_builder = nullptr;
@@ -3804,7 +3802,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 			rb->sdfgi->update_light();
 		}
 
-		gi.setup_voxel_gi_instances(render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
+		gi.setup_voxel_gi_instances(&render_data, render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
 	}
 
 	render_state.depth_prepass_used = false;
@@ -4041,7 +4039,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 }
 
 void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
-	_render_material(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_instances, p_framebuffer, p_region);
+	_render_material(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_instances, p_framebuffer, p_region, 1.0);
 }
 
 void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) {
@@ -4083,9 +4081,8 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		render_buffers_owner.free(p_rid);
 	} else if (is_environment(p_rid)) {
 		environment_free(p_rid);
-	} else if (camera_effects_owner.owns(p_rid)) {
-		//not much to delete, just free it
-		camera_effects_owner.free(p_rid);
+	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
+		RSG::camera_attributes->camera_attributes_free(p_rid);
 	} else if (reflection_atlas_owner.owns(p_rid)) {
 		reflection_atlas_set_size(p_rid, 0, 0);
 		ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_rid);
@@ -4335,8 +4332,8 @@ RendererSceneRenderRD::RendererSceneRenderRD() {
 void RendererSceneRenderRD::init() {
 	max_cluster_elements = get_max_elements();
 
-	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
-	directional_shadow.use_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");
+	directional_shadow.size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
+	directional_shadow.use_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
 
 	/* SKY SHADER */
 
@@ -4395,8 +4392,10 @@ void RendererSceneRenderRD::init() {
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
-	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
-	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
+	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
+	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
+	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
+
 	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
@@ -4414,8 +4413,8 @@ void RendererSceneRenderRD::init() {
 	directional_soft_shadow_kernel = memnew_arr(float, 128);
 	penumbra_shadow_kernel = memnew_arr(float, 128);
 	soft_shadow_kernel = memnew_arr(float, 128);
-	positional_soft_shadow_filter_set_quality(RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/positional_shadow/soft_shadow_filter_quality"))));
-	directional_soft_shadow_filter_set_quality(RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/directional_shadow/soft_shadow_filter_quality"))));
+	positional_soft_shadow_filter_set_quality(RS::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"))));
+	directional_soft_shadow_filter_set_quality(RS::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"))));
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));

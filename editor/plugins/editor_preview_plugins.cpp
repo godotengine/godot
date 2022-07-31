@@ -342,6 +342,12 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	RS::get_singleton()->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
 	RS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
 
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes = RS::get_singleton()->camera_attributes_create();
+		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
+		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
+	}
+
 	light = RS::get_singleton()->directional_light_create();
 	light_instance = RS::get_singleton()->instance_create2(light, scenario);
 	RS::get_singleton()->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
@@ -440,6 +446,7 @@ EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 	RS::get_singleton()->free(light2);
 	RS::get_singleton()->free(light_instance2);
 	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(camera_attributes);
 	RS::get_singleton()->free(scenario);
 }
 
@@ -743,6 +750,12 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	//RS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
 	RS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes = RS::get_singleton()->camera_attributes_create();
+		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
+		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
+	}
+
 	light = RS::get_singleton()->directional_light_create();
 	light_instance = RS::get_singleton()->instance_create2(light, scenario);
 	RS::get_singleton()->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
@@ -768,6 +781,7 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	RS::get_singleton()->free(light2);
 	RS::get_singleton()->free(light_instance2);
 	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(camera_attributes);
 	RS::get_singleton()->free(scenario);
 }
 

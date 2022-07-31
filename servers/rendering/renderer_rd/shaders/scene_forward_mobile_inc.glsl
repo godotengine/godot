@@ -94,6 +94,8 @@ directional_lights;
 
 struct Lightmap {
 	mediump mat3 normal_xform;
+	vec3 pad;
+	float exposure_normalization;
 };
 
 layout(set = 0, binding = 9, std140) restrict readonly buffer Lightmaps {
@@ -187,8 +189,8 @@ struct SceneData {
 	mediump float reflection_multiplier; // one normally, zero when rendering reflections
 
 	bool pancake_shadows;
-	uint pad1;
-	uint pad2;
+	float emissive_exposure_normalization;
+	float IBL_exposure_normalization;
 	uint pad3;
 };
 

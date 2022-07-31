@@ -30,6 +30,7 @@
 
 #include "scene_import_settings.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
@@ -1287,6 +1288,11 @@ SceneImportSettings::SceneImportSettings() {
 	camera = memnew(Camera3D);
 	base_viewport->add_child(camera);
 	camera->make_current();
+
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes.instantiate();
+		camera->set_attributes(camera_attributes);
+	}
 
 	light = memnew(DirectionalLight3D);
 	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));

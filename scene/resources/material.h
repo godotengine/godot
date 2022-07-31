@@ -467,7 +467,8 @@ private:
 	float metallic = 0.0f;
 	float roughness = 0.0f;
 	Color emission;
-	float emission_energy = 0.0f;
+	float emission_energy_multiplier = 1.0f;
+	float emission_intensity = 1000.0f; // In nits, equivalent to indoor lighting.
 	float normal_scale = 0.0f;
 	float rim = 0.0f;
 	float rim_tint = 0.0f;
@@ -573,8 +574,11 @@ public:
 	void set_emission(const Color &p_emission);
 	Color get_emission() const;
 
-	void set_emission_energy(float p_emission_energy);
-	float get_emission_energy() const;
+	void set_emission_energy_multiplier(float p_emission_energy_multiplier);
+	float get_emission_energy_multiplier() const;
+
+	void set_emission_intensity(float p_emission_intensity);
+	float get_emission_intensity() const;
 
 	void set_normal_scale(float p_normal_scale);
 	float get_normal_scale() const;

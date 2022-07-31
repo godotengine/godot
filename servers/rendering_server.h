@@ -434,6 +434,7 @@ public:
 		LIGHT_PARAM_SHADOW_OPACITY,
 		LIGHT_PARAM_SHADOW_BLUR,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
+		LIGHT_PARAM_INTENSITY,
 		LIGHT_PARAM_MAX
 	};
 
@@ -590,6 +591,7 @@ public:
 	virtual void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) = 0;
 	virtual void voxel_gi_set_propagation(RID p_voxel_gi, float p_range) = 0;
 	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_energy) = 0;
+	virtual void voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) = 0;
 	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_bias) = 0;
 	virtual void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) = 0;
 	virtual void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) = 0;
@@ -610,6 +612,7 @@ public:
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) = 0;
 	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) = 0;
 	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) = 0;
+	virtual void lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) = 0;
 	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const = 0;
 	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const = 0;
 	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const = 0;
@@ -762,7 +765,7 @@ public:
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
-	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
+	virtual void camera_set_camera_attributes(RID p_camera, RID p_camera_attributes) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
 	/* VIEWPORT API */
@@ -1011,7 +1014,7 @@ public:
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) = 0;
 	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) = 0;
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
-	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
+	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
 
@@ -1035,7 +1038,7 @@ public:
 		ENV_TONE_MAPPER_ACES
 	};
 
-	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
+	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
@@ -1139,7 +1142,7 @@ public:
 
 	/* CAMERA EFFECTS */
 
-	virtual RID camera_effects_create() = 0;
+	virtual RID camera_attributes_create() = 0;
 
 	enum DOFBlurQuality {
 		DOF_BLUR_QUALITY_VERY_LOW,
@@ -1148,7 +1151,7 @@ public:
 		DOF_BLUR_QUALITY_HIGH,
 	};
 
-	virtual void camera_effects_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;
+	virtual void camera_attributes_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 
 	enum DOFBokehShape {
 		DOF_BOKEH_BOX,
@@ -1156,10 +1159,11 @@ public:
 		DOF_BOKEH_CIRCLE
 	};
 
-	virtual void camera_effects_set_dof_blur_bokeh_shape(DOFBokehShape p_shape) = 0;
+	virtual void camera_attributes_set_dof_blur_bokeh_shape(DOFBokehShape p_shape) = 0;
 
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
-	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
+	virtual void camera_attributes_set_dof_blur(RID p_camera_attributes, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
+	virtual void camera_attributes_set_exposure(RID p_camera_attributes, float p_multiplier, float p_exposure_normalization) = 0;
+	virtual void camera_attributes_set_auto_exposure(RID p_camera_attributes, bool p_enable, float p_min_sensitivity, float p_max_sensitivity, float p_speed, float p_scale) = 0;
 
 	/* SCENARIO API */
 
@@ -1167,7 +1171,7 @@ public:
 
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
-	virtual void scenario_set_camera_effects(RID p_scenario, RID p_camera_effects) = 0;
+	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_camera_attributes) = 0;
 
 	/* INSTANCING API */
 

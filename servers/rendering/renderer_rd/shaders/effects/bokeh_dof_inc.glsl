@@ -20,6 +20,11 @@ layout(push_constant, std430) uniform Params {
 
 	bool use_jitter;
 	float jitter_seed;
+	bool use_physical_near;
+	bool use_physical_far;
+
+	float blur_size_near;
+	float blur_size_far;
 	uint pad[2];
 }
 params;

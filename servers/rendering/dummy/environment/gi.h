@@ -62,6 +62,9 @@ public:
 	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_range) override {}
 	virtual float voxel_gi_get_energy(RID p_voxel_gi) const override { return 0.0; }
 
+	virtual void voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) override {}
+	virtual float voxel_gi_get_baked_exposure_normalization(RID p_voxel_gi) const override { return 1.0; }
+
 	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_range) override {}
 	virtual float voxel_gi_get_bias(RID p_voxel_gi) const override { return 0.0; }
 

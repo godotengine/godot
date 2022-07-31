@@ -76,6 +76,7 @@ public:
 
 		float dynamic_range = 2.0;
 		float energy = 1.0;
+		float baked_exposure = 1.0;
 		float bias = 1.4;
 		float normal_bias = 0.0;
 		float propagation = 0.5;
@@ -398,6 +399,9 @@ public:
 	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_energy) override;
 	virtual float voxel_gi_get_energy(RID p_voxel_gi) const override;
 
+	virtual void voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) override;
+	virtual float voxel_gi_get_baked_exposure_normalization(RID p_voxel_gi) const override;
+
 	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_bias) override;
 	virtual float voxel_gi_get_bias(RID p_voxel_gi) const override;
 
@@ -512,6 +516,7 @@ public:
 				float to_cell;
 				int32_t probe_offset[3];
 				uint32_t pad;
+				float pad2[4];
 			};
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
@@ -550,6 +555,8 @@ public:
 			RID scroll_occlusion_uniform_set;
 			RID integrate_uniform_set;
 			RID lights_buffer;
+
+			float baked_exposure_normalization = 1.0;
 
 			bool all_dynamic_lights_dirty = true;
 		};
@@ -630,8 +637,8 @@ public:
 		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
 
 		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render);
-		void render_region(RID p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render);
-		void render_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render);
+		void render_region(RID p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render, float p_exposure_normalization);
+		void render_static_lights(RenderDataRD *p_render_data, RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render);
 	};
 
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
@@ -705,6 +712,8 @@ public:
 			float to_probe; // 1/bounds * grid_size
 			int32_t probe_world_offset[3];
 			float to_cell; // 1/bounds * grid_size
+			float pad[3];
+			float exposure_normalization;
 		};
 
 		ProbeCascadeData cascades[SDFGI::MAX_CASCADES];
@@ -720,6 +729,9 @@ public:
 		float normal_bias; // 4 - 88
 		uint32_t blend_ambient; // 4 - 92
 		uint32_t mipmaps; // 4 - 96
+
+		float pad[3]; // 12 - 108
+		float exposure_normalization; // 4 - 112
 	};
 
 	struct SceneData {
@@ -777,7 +789,7 @@ public:
 
 	SDFGI *create_sdfgi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
 
-	void setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render);
+	void setup_voxel_gi_instances(RenderDataRD *p_render_data, RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render);
 	void process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render);
 
 	RID voxel_gi_instance_create(RID p_base);

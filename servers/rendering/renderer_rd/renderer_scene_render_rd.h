@@ -76,7 +76,7 @@ struct RenderDataRD {
 	const PagedArray<RID> *lightmaps = nullptr;
 	const PagedArray<RID> *fog_volumes = nullptr;
 	RID environment;
-	RID camera_effects;
+	RID camera_attributes;
 	RID shadow_atlas;
 	RID reflection_atlas;
 	RID reflection_probe;
@@ -114,9 +114,9 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	void _setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows);
+	void _setup_lights(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows);
 	void _setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform);
-	void _setup_reflections(const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
+	void _setup_reflections(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
 
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_color) = 0;
 
@@ -125,9 +125,9 @@ protected:
 	virtual void _render_shadow_process() = 0;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) = 0;
 
-	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) = 0;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
+	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;
 
 	void _debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
@@ -418,31 +418,11 @@ private:
 	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
-	/* CAMERA EFFECTS */
-
-	struct CameraEffects {
-		bool dof_blur_far_enabled = false;
-		float dof_blur_far_distance = 10;
-		float dof_blur_far_transition = 5;
-
-		bool dof_blur_near_enabled = false;
-		float dof_blur_near_distance = 2;
-		float dof_blur_near_transition = 1;
-
-		float dof_blur_amount = 0.1;
-
-		bool override_exposure_enabled = false;
-		float override_exposure = 1;
-	};
-
-	RS::DOFBlurQuality dof_blur_quality = RS::DOF_BLUR_QUALITY_MEDIUM;
-	RS::DOFBokehShape dof_blur_bokeh_shape = RS::DOF_BOKEH_HEXAGON;
-	bool dof_blur_use_jitter = false;
 	RS::SubSurfaceScatteringQuality sss_quality = RS::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
 	float sss_scale = 0.05;
 	float sss_depth_scale = 0.01;
 
-	mutable RID_Owner<CameraEffects, true> camera_effects_owner;
+	bool use_physical_light_units = false;
 
 	/* RENDER BUFFERS */
 
@@ -592,7 +572,7 @@ private:
 			uint32_t exterior;
 			uint32_t box_project;
 			uint32_t ambient_mode;
-			uint32_t pad;
+			float exposure_normalization;
 			float local_matrix[16]; // up to here for spot and omni, rest is for directional
 		};
 
@@ -831,21 +811,8 @@ public:
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override;
 
-	/* CAMERA EFFECTS */
-
-	virtual RID camera_effects_allocate() override;
-	virtual void camera_effects_initialize(RID p_rid) override;
-
-	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) override;
-	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) override;
-
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) override;
-	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
-
-	bool camera_effects_uses_dof(RID p_camera_effects) {
-		CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
-
-		return camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0;
+	_FORCE_INLINE_ bool is_using_physical_light_units() {
+		return use_physical_light_units;
 	}
 
 	/* LIGHT INSTANCE API */
@@ -1139,7 +1106,7 @@ public:
 
 	virtual void update_uniform_sets(){};
 
-	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 
 	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 

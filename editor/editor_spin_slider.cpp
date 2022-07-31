@@ -155,6 +155,10 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
+	if (is_read_only()) {
+		return;
+	}
+
 	if (grabbing_grabber) {
 		if (mb.is_valid()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
@@ -196,7 +200,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed()) {
+	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
 		double step = get_step();
 		double real_step = step;
 		if (step < 1) {

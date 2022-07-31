@@ -45,7 +45,7 @@ public:
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
-	virtual void camera_set_camera_effects(RID p_camera, RID p_fx) = 0;
+	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 	virtual bool is_camera(RID p_camera) const = 0;
 
@@ -57,7 +57,7 @@ public:
 	virtual void scenario_initialize(RID p_rid) = 0;
 
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
-	virtual void scenario_set_camera_effects(RID p_scenario, RID p_fx) = 0;
+	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count) = 0;
 	virtual bool is_scenario(RID p_scenario) const = 0;
@@ -128,7 +128,7 @@ public:
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) = 0;
 	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) = 0;
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
-	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
+	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) = 0;
 
@@ -137,7 +137,8 @@ public:
 	virtual float environment_get_sky_custom_fov(RID p_env) const = 0;
 	virtual Basis environment_get_sky_orientation(RID p_env) const = 0;
 	virtual Color environment_get_bg_color(RID p_env) const = 0;
-	virtual float environment_get_bg_energy(RID p_env) const = 0;
+	virtual float environment_get_bg_energy_multiplier(RID p_env) const = 0;
+	virtual float environment_get_bg_intensity(RID p_env) const = 0;
 	virtual int environment_get_canvas_max_layer(RID p_env) const = 0;
 	virtual RS::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const = 0;
 	virtual Color environment_get_ambient_light(RID p_env) const = 0;
@@ -146,17 +147,11 @@ public:
 	virtual RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const = 0;
 
 	// Tonemap
-	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
 
 	virtual RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const = 0;
 	virtual float environment_get_exposure(RID p_env) const = 0;
 	virtual float environment_get_white(RID p_env) const = 0;
-	virtual bool environment_get_auto_exposure(RID p_env) const = 0;
-	virtual float environment_get_min_luminance(RID p_env) const = 0;
-	virtual float environment_get_max_luminance(RID p_env) const = 0;
-	virtual float environment_get_auto_exp_speed(RID p_env) const = 0;
-	virtual float environment_get_auto_exp_scale(RID p_env) const = 0;
-	virtual uint64_t environment_get_auto_exposure_version(RID p_env) const = 0;
 
 	// Fog
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
@@ -266,7 +261,6 @@ public:
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
 	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
-	// Adjustment
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
 
 	virtual bool environment_get_adjustments_enabled(RID p_env) const = 0;
@@ -283,17 +277,6 @@ public:
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) = 0;
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) = 0;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
-
-	/* Camera Effects */
-
-	virtual RID camera_effects_allocate() = 0;
-	virtual void camera_effects_initialize(RID p_rid) = 0;
-
-	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
-	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) = 0;
-
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
-	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
 	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
 	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;

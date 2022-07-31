@@ -434,6 +434,7 @@ void main() {
 	imageStore(primary_dynamic, ivec3(atlas_pos, params.atlas_slice), vec4(dynamic_light, 1.0));
 
 	dynamic_light += static_light * albedo; //send for bounces
+	dynamic_light *= params.env_transform[2][3]; // exposure_normalization
 	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), vec4(dynamic_light, 1.0));
 
 #ifdef USE_SH_LIGHTMAPS
@@ -444,6 +445,7 @@ void main() {
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 3), sh_accum[3]);
 
 #else
+	static_light *= params.env_transform[2][3]; // exposure_normalization
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), vec4(static_light, 1.0));
 #endif
 

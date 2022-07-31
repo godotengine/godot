@@ -82,6 +82,8 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 		return RS::INSTANCE_MULTIMESH;
 	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
 		return RS::INSTANCE_LIGHT;
+	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
+		return RS::INSTANCE_LIGHTMAP;
 	}
 	return RS::INSTANCE_NONE;
 }
@@ -113,6 +115,9 @@ bool Utilities::free(RID p_rid) {
 		return true;
 	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
 		GLES3::LightStorage::get_singleton()->light_free(p_rid);
+		return true;
+	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
+		GLES3::LightStorage::get_singleton()->lightmap_free(p_rid);
 		return true;
 	} else {
 		return false;

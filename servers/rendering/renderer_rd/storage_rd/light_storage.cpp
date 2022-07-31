@@ -93,6 +93,7 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+	light.param[RS::LIGHT_PARAM_INTENSITY] = p_type == RS::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
 
 	light_owner.initialize_rid(p_light, light);
 }
@@ -502,6 +503,13 @@ void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void LightStorage::reflection_probe_set_baked_exposure(RID p_probe, float p_exposure) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->baked_exposure = p_exposure;
+}
+
 AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
@@ -567,6 +575,13 @@ int LightStorage::reflection_probe_get_resolution(RID p_probe) const {
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->resolution;
+}
+
+float LightStorage::reflection_probe_get_baked_exposure(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 1.0);
+
+	return reflection_probe->baked_exposure;
 }
 
 float LightStorage::reflection_probe_get_intensity(RID p_probe) const {
@@ -709,6 +724,13 @@ void LightStorage::lightmap_set_probe_capture_data(RID p_lightmap, const PackedV
 	lm->bsp_tree = p_bsp_tree;
 	lm->point_sh = p_point_sh;
 	lm->tetrahedra = p_tetrahedra;
+}
+
+void LightStorage::lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_COND(!lm);
+
+	lm->baked_exposure = p_exposure;
 }
 
 PackedVector3Array LightStorage::lightmap_get_probe_capture_points(RID p_lightmap) const {

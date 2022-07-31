@@ -45,6 +45,7 @@ struct CascadeData {
 	float to_cell; // 1/bounds * grid_size
 	ivec3 probe_world_offset;
 	uint pad;
+	vec4 pad2;
 };
 
 layout(set = 0, binding = 8, std140) uniform Cascades {

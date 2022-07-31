@@ -986,6 +986,11 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
+#ifndef MODE_UNSHADED
+	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
+	emission *= scene_data.emissive_exposure_normalization;
+#endif
+
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	if (scene_data.use_reflection_cubemap) {
@@ -1015,6 +1020,7 @@ void fragment_shader(in SceneData scene_data) {
 		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
+		specular_light *= scene_data.IBL_exposure_normalization;
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
@@ -1035,7 +1041,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 			vec3 cubemap_ambient = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ambient_dir, MAX_ROUGHNESS_LOD).rgb;
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-
+			cubemap_ambient *= scene_data.IBL_exposure_normalization;
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
 		}
 	}
@@ -1094,15 +1100,16 @@ void fragment_shader(in SceneData scene_data) {
 		const float c4 = 0.886227;
 		const float c5 = 0.247708;
 		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-				c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-				c4 * lightmap_captures.data[index].sh[0].rgb -
-				c5 * lightmap_captures.data[index].sh[6].rgb +
-				2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-				2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-				2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-				2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-				2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-				2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
+								 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+								 c4 * lightmap_captures.data[index].sh[0].rgb -
+								 c5 * lightmap_captures.data[index].sh[6].rgb +
+								 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+								 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+								 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+								 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+								 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+								 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
+				scene_data.emissive_exposure_normalization;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -1120,20 +1127,22 @@ void fragment_shader(in SceneData scene_data) {
 
 			uint idx = instances.data[instance_index].gi_offset >> 20;
 			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
+			float en = lightmaps.data[idx].exposure_normalization;
 
-			ambient_light += lm_light_l0 * 0.282095f;
-			ambient_light += lm_light_l1n1 * 0.32573 * n.y;
-			ambient_light += lm_light_l1_0 * 0.32573 * n.z;
-			ambient_light += lm_light_l1p1 * 0.32573 * n.x;
+			ambient_light += lm_light_l0 * 0.282095f * en;
+			ambient_light += lm_light_l1n1 * 0.32573 * n.y * en;
+			ambient_light += lm_light_l1_0 * 0.32573 * n.z * en;
+			ambient_light += lm_light_l1p1 * 0.32573 * n.x * en;
 			if (metallic > 0.01) { // since the more direct bounced light is lost, we can kind of fake it with this trick
 				vec3 r = reflect(normalize(-vertex), normal);
-				specular_light += lm_light_l1n1 * 0.32573 * r.y;
-				specular_light += lm_light_l1_0 * 0.32573 * r.z;
-				specular_light += lm_light_l1p1 * 0.32573 * r.x;
+				specular_light += lm_light_l1n1 * 0.32573 * r.y * en;
+				specular_light += lm_light_l1_0 * 0.32573 * r.z * en;
+				specular_light += lm_light_l1p1 * 0.32573 * r.x * en;
 			}
 
 		} else {
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw, 0.0).rgb;
+			uint idx = instances.data[instance_index].gi_offset >> 20;
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw, 0.0).rgb * lightmaps.data[idx].exposure_normalization;
 		}
 	}
 #else

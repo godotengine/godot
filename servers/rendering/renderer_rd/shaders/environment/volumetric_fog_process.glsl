@@ -84,6 +84,9 @@ struct VoxelGIData {
 	float normal_bias; // 4 - 88
 	bool blend_ambient; // 4 - 92
 	uint mipmaps; // 4 - 96
+
+	vec3 pad; // 12 - 108
+	float exposure_normalization; // 4 - 112
 };
 
 layout(set = 0, binding = 11, std140) uniform VoxelGIs {
@@ -105,6 +108,8 @@ struct SDFVoxelGICascadeData {
 	float to_probe;
 	ivec3 probe_world_offset;
 	float to_cell; // 1/bounds * grid_size
+	vec3 pad;
+	float exposure_normalization;
 };
 
 layout(set = 1, binding = 0, std140) uniform SDFGI {
@@ -624,7 +629,7 @@ void main() {
 					light += a * slight;
 				}
 
-				light.rgb *= voxel_gi_instances.data[i].dynamic_range * params.gi_inject;
+				light.rgb *= voxel_gi_instances.data[i].dynamic_range * params.gi_inject * voxel_gi_instances.data[i].exposure_normalization;
 
 				total_light += light.rgb;
 			}
@@ -691,7 +696,7 @@ void main() {
 
 					vec3 ambient = texelFetch(sampler2DArray(sdfgi_ambient_texture, linear_sampler), uvw, 0).rgb;
 
-					ambient_accum.rgb += ambient * weight;
+					ambient_accum.rgb += ambient * weight * sdfgi.cascades[i].exposure_normalization;
 					ambient_accum.a += weight;
 				}
 

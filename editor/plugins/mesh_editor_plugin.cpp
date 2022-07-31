@@ -30,6 +30,7 @@
 
 #include "mesh_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_scale.h"
 
 void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
@@ -118,6 +119,11 @@ MeshEditor::MeshEditor() {
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
 	viewport->add_child(camera);
+
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes.instantiate();
+		camera->set_attributes(camera_attributes);
+	}
 
 	light1 = memnew(DirectionalLight3D);
 	light1->set_transform(Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));

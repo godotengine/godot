@@ -76,7 +76,7 @@ public:
 		uint32_t visible_layers;
 		bool vaspect;
 		RID env;
-		RID effects;
+		RID attributes;
 
 		Transform3D transform;
 
@@ -103,7 +103,7 @@ public:
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
-	virtual void camera_set_camera_effects(RID p_camera, RID p_fx);
+	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
 	virtual bool is_camera(RID p_camera) const;
 
@@ -320,7 +320,7 @@ public:
 		List<Instance *> directional_lights;
 		RID environment;
 		RID fallback_environment;
-		RID camera_effects;
+		RID camera_attributes;
 		RID reflection_probe_shadow_atlas;
 		RID reflection_atlas;
 		uint64_t used_viewport_visibility_bits;
@@ -354,7 +354,7 @@ public:
 	virtual void scenario_initialize(RID p_rid);
 
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
-	virtual void scenario_set_camera_effects(RID p_scenario, RID p_fx);
+	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count);
 	virtual bool is_scenario(RID p_scenario) const;
@@ -683,6 +683,7 @@ public:
 			Transform3D transform;
 			Color color;
 			float energy;
+			float intensity;
 			float bake_energy;
 			float radius;
 			float attenuation;
@@ -1054,7 +1055,7 @@ public:
 	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
@@ -1099,7 +1100,7 @@ public:
 	PASS2(environment_set_sky_custom_fov, RID, float)
 	PASS2(environment_set_sky_orientation, RID, const Basis &)
 	PASS2(environment_set_bg_color, RID, const Color &)
-	PASS2(environment_set_bg_energy, RID, float)
+	PASS3(environment_set_bg_energy, RID, float, float)
 	PASS2(environment_set_canvas_max_layer, RID, int)
 	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
 
@@ -1108,7 +1109,8 @@ public:
 	PASS1RC(float, environment_get_sky_custom_fov, RID)
 	PASS1RC(Basis, environment_get_sky_orientation, RID)
 	PASS1RC(Color, environment_get_bg_color, RID)
-	PASS1RC(float, environment_get_bg_energy, RID)
+	PASS1RC(float, environment_get_bg_energy_multiplier, RID)
+	PASS1RC(float, environment_get_bg_intensity, RID)
 	PASS1RC(int, environment_get_canvas_max_layer, RID)
 	PASS1RC(RS::EnvironmentAmbientSource, environment_get_ambient_source, RID)
 	PASS1RC(Color, environment_get_ambient_light, RID)
@@ -1117,16 +1119,10 @@ public:
 	PASS1RC(RS::EnvironmentReflectionSource, environment_get_reflection_source, RID)
 
 	// Tonemap
-	PASS9(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float, bool, float, float, float, float)
+	PASS4(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float)
 	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
 	PASS1RC(float, environment_get_exposure, RID)
 	PASS1RC(float, environment_get_white, RID)
-	PASS1RC(bool, environment_get_auto_exposure, RID)
-	PASS1RC(float, environment_get_min_luminance, RID)
-	PASS1RC(float, environment_get_max_luminance, RID)
-	PASS1RC(float, environment_get_auto_exp_speed, RID)
-	PASS1RC(float, environment_get_auto_exp_scale, RID)
-	PASS1RC(uint64_t, environment_get_auto_exposure_version, RID)
 
 	// Fog
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
@@ -1249,17 +1245,6 @@ public:
 	PASS3(screen_space_roughness_limiter_set_active, bool, float, float)
 	PASS1(sub_surface_scattering_set_quality, RS::SubSurfaceScatteringQuality)
 	PASS2(sub_surface_scattering_set_scale, float, float)
-
-	/* CAMERA EFFECTS */
-
-	PASS0R(RID, camera_effects_allocate)
-	PASS1(camera_effects_initialize, RID)
-
-	PASS2(camera_effects_set_dof_blur_quality, RS::DOFBlurQuality, bool)
-	PASS1(camera_effects_set_dof_blur_bokeh_shape, RS::DOFBokehShape)
-
-	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
-	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)

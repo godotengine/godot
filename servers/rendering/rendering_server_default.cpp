@@ -397,6 +397,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::canvas = memnew(RendererCanvasCull);
 	RSG::viewport = memnew(RendererViewport);
 	RendererSceneCull *sr = memnew(RendererSceneCull);
+	RSG::camera_attributes = memnew(RendererCameraAttributes);
 	RSG::scene = sr;
 	RSG::rasterizer = RendererCompositor::create();
 	RSG::utilities = RSG::rasterizer->get_utilities();
@@ -418,4 +419,5 @@ RenderingServerDefault::~RenderingServerDefault() {
 	memdelete(RSG::viewport);
 	memdelete(RSG::rasterizer);
 	memdelete(RSG::scene);
+	memdelete(RSG::camera_attributes);
 }

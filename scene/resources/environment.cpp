@@ -94,13 +94,30 @@ Color Environment::get_bg_color() const {
 	return bg_color;
 }
 
-void Environment::set_bg_energy(float p_energy) {
-	bg_energy = p_energy;
-	RS::get_singleton()->environment_set_bg_energy(environment, p_energy);
+void Environment::set_bg_energy_multiplier(float p_multiplier) {
+	bg_energy_multiplier = p_multiplier;
+	_update_bg_energy();
 }
 
-float Environment::get_bg_energy() const {
-	return bg_energy;
+float Environment::get_bg_energy_multiplier() const {
+	return bg_energy_multiplier;
+}
+
+void Environment::set_bg_intensity(float p_exposure_value) {
+	bg_intensity = p_exposure_value;
+	_update_bg_energy();
+}
+
+float Environment::get_bg_intensity() const {
+	return bg_intensity;
+}
+
+void Environment::_update_bg_energy() {
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		RS::get_singleton()->environment_set_bg_energy(environment, bg_energy_multiplier, bg_intensity);
+	} else {
+		RS::get_singleton()->environment_set_bg_energy(environment, bg_energy_multiplier, 1.0);
+	}
 }
 
 void Environment::set_canvas_max_layer(int p_max_layer) {
@@ -214,63 +231,12 @@ float Environment::get_tonemap_white() const {
 	return tonemap_white;
 }
 
-void Environment::set_tonemap_auto_exposure_enabled(bool p_enabled) {
-	tonemap_auto_exposure_enabled = p_enabled;
-	_update_tonemap();
-	notify_property_list_changed();
-}
-
-bool Environment::is_tonemap_auto_exposure_enabled() const {
-	return tonemap_auto_exposure_enabled;
-}
-
-void Environment::set_tonemap_auto_exposure_min(float p_auto_exposure_min) {
-	tonemap_auto_exposure_min = p_auto_exposure_min;
-	_update_tonemap();
-}
-
-float Environment::get_tonemap_auto_exposure_min() const {
-	return tonemap_auto_exposure_min;
-}
-
-void Environment::set_tonemap_auto_exposure_max(float p_auto_exposure_max) {
-	tonemap_auto_exposure_max = p_auto_exposure_max;
-	_update_tonemap();
-}
-
-float Environment::get_tonemap_auto_exposure_max() const {
-	return tonemap_auto_exposure_max;
-}
-
-void Environment::set_tonemap_auto_exposure_speed(float p_auto_exposure_speed) {
-	tonemap_auto_exposure_speed = p_auto_exposure_speed;
-	_update_tonemap();
-}
-
-float Environment::get_tonemap_auto_exposure_speed() const {
-	return tonemap_auto_exposure_speed;
-}
-
-void Environment::set_tonemap_auto_exposure_grey(float p_auto_exposure_grey) {
-	tonemap_auto_exposure_grey = p_auto_exposure_grey;
-	_update_tonemap();
-}
-
-float Environment::get_tonemap_auto_exposure_grey() const {
-	return tonemap_auto_exposure_grey;
-}
-
 void Environment::_update_tonemap() {
 	RS::get_singleton()->environment_set_tonemap(
 			environment,
 			RS::EnvironmentToneMapper(tone_mapper),
 			tonemap_exposure,
-			tonemap_white,
-			tonemap_auto_exposure_enabled,
-			tonemap_auto_exposure_min,
-			tonemap_auto_exposure_max,
-			tonemap_auto_exposure_speed,
-			tonemap_auto_exposure_grey);
+			tonemap_white);
 }
 
 // SSR
@@ -1080,10 +1046,13 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "background_intensity" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
 	static const char *hide_prefixes[] = {
 		"fog_",
 		"volumetric_fog_",
-		"auto_exposure_",
 		"ssr_",
 		"ssao_",
 		"ssil_",
@@ -1095,7 +1064,6 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	};
 
 	static const char *high_end_prefixes[] = {
-		"auto_exposure_",
 		"ssr_",
 		"ssao_",
 		nullptr
@@ -1162,8 +1130,10 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sky_rotation"), &Environment::get_sky_rotation);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &Environment::get_bg_color);
-	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
-	ClassDB::bind_method(D_METHOD("get_bg_energy"), &Environment::get_bg_energy);
+	ClassDB::bind_method(D_METHOD("set_bg_energy_multiplier", "energy"), &Environment::set_bg_energy_multiplier);
+	ClassDB::bind_method(D_METHOD("get_bg_energy_multiplier"), &Environment::get_bg_energy_multiplier);
+	ClassDB::bind_method(D_METHOD("set_bg_intensity", "energy"), &Environment::set_bg_intensity);
+	ClassDB::bind_method(D_METHOD("get_bg_intensity"), &Environment::get_bg_intensity);
 	ClassDB::bind_method(D_METHOD("set_canvas_max_layer", "layer"), &Environment::set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("get_canvas_max_layer"), &Environment::get_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "id"), &Environment::set_camera_feed_id);
@@ -1172,7 +1142,9 @@ void Environment::_bind_methods() {
 	ADD_GROUP("Background", "background_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Canvas,Keep,Camera Feed"), "set_background", "get_background");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "background_energy_multiplier", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy_multiplier", "get_bg_energy_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "background_intensity", PROPERTY_HINT_RANGE, "0,100000,0.01,suffix:nt"), "set_bg_intensity", "get_bg_intensity");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_camera_feed_id", PROPERTY_HINT_RANGE, "1,10,1"), "set_camera_feed_id", "get_camera_feed_id");
 
@@ -1211,27 +1183,11 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_exposure"), &Environment::get_tonemap_exposure);
 	ClassDB::bind_method(D_METHOD("set_tonemap_white", "white"), &Environment::set_tonemap_white);
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
-	ClassDB::bind_method(D_METHOD("set_tonemap_auto_exposure_enabled", "enabled"), &Environment::set_tonemap_auto_exposure_enabled);
-	ClassDB::bind_method(D_METHOD("is_tonemap_auto_exposure_enabled"), &Environment::is_tonemap_auto_exposure_enabled);
-	ClassDB::bind_method(D_METHOD("set_tonemap_auto_exposure_max", "exposure_max"), &Environment::set_tonemap_auto_exposure_max);
-	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure_max"), &Environment::get_tonemap_auto_exposure_max);
-	ClassDB::bind_method(D_METHOD("set_tonemap_auto_exposure_min", "exposure_min"), &Environment::set_tonemap_auto_exposure_min);
-	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure_min"), &Environment::get_tonemap_auto_exposure_min);
-	ClassDB::bind_method(D_METHOD("set_tonemap_auto_exposure_speed", "exposure_speed"), &Environment::set_tonemap_auto_exposure_speed);
-	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure_speed"), &Environment::get_tonemap_auto_exposure_speed);
-	ClassDB::bind_method(D_METHOD("set_tonemap_auto_exposure_grey", "exposure_grey"), &Environment::set_tonemap_auto_exposure_grey);
-	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure_grey"), &Environment::get_tonemap_auto_exposure_grey);
 
 	ADD_GROUP("Tonemap", "tonemap_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
-	ADD_GROUP("Auto Exposure", "auto_exposure_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_exposure_enabled"), "set_tonemap_auto_exposure_enabled", "is_tonemap_auto_exposure_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_tonemap_auto_exposure_grey", "get_tonemap_auto_exposure_grey");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_min_luma", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_auto_exposure_min", "get_tonemap_auto_exposure_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_max_luma", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_auto_exposure_max", "get_tonemap_auto_exposure_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_speed", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_tonemap_auto_exposure_speed", "get_tonemap_auto_exposure_speed");
 
 	// SSR
 
@@ -1549,6 +1505,7 @@ Environment::Environment() {
 	_update_fog();
 	_update_adjustment();
 	_update_volumetric_fog();
+	_update_bg_energy();
 	notify_property_list_changed();
 }
 

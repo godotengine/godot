@@ -1365,7 +1365,8 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
 
-	Color color = light->get_color();
+	Color color = light->get_color().srgb_to_linear() * light->get_correlated_color().srgb_to_linear();
+	color = color.linear_to_srgb();
 	// Make the gizmo color as bright as possible for better visibility
 	color.set_hsv(color.get_h(), color.get_s(), 1);
 
