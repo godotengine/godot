@@ -101,6 +101,13 @@
 				Used by sub-inspectors. Emit it if what was selected was an Object ID.
 			</description>
 		</signal>
+		<signal name="property_can_revert_changed">
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="can_revert" type="bool" />
+			<description>
+				Emitted when the revertability (i.e., whether it has a non-default value and thus is displayed with a revert icon) of a property has changed.
+			</description>
+		</signal>
 		<signal name="property_changed">
 			<argument index="0" name="property" type="StringName" />
 			<argument index="1" name="value" type="Variant" />

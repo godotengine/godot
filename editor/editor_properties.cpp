@@ -3918,6 +3918,12 @@ void EditorPropertyResource::expand_all_folding() {
 	}
 }
 
+void EditorPropertyResource::expand_revertable() {
+	if (sub_inspector) {
+		sub_inspector->expand_revertable();
+	}
+}
+
 void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
 	use_sub_inspector = p_enable;
 }

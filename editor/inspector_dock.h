@@ -61,6 +61,7 @@ class InspectorDock : public VBoxContainer {
 
 		COLLAPSE_ALL,
 		EXPAND_ALL,
+		EXPAND_REVERTABLE,
 
 		// Matches `EditorPropertyNameProcessor::Style`.
 		PROPERTY_NAME_STYLE_RAW,
@@ -124,6 +125,7 @@ class InspectorDock : public VBoxContainer {
 	void _edit_back();
 	void _menu_collapseall();
 	void _menu_expandall();
+	void _menu_expand_revertable();
 	void _select_history(int p_idx);
 	void _prepare_history();
 

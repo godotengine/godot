@@ -471,6 +471,9 @@ void EditorProperty::update_revert_and_pin_status() {
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
 	if (new_can_revert != can_revert || new_pinned != pinned) {
+		if (new_can_revert != can_revert) {
+			emit_signal(SNAME("property_can_revert_changed"), property, new_can_revert);
+		}
 		can_revert = new_can_revert;
 		pinned = new_pinned;
 		update();
@@ -784,6 +787,9 @@ void EditorProperty::expand_all_folding() {
 void EditorProperty::collapse_all_folding() {
 }
 
+void EditorProperty::expand_revertable() {
+}
+
 void EditorProperty::set_selectable(bool p_selectable) {
 	selectable = p_selectable;
 }
@@ -966,6 +972,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_keyed_with_value", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("property_checked", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "checked")));
 	ADD_SIGNAL(MethodInfo("property_pinned", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "pinned")));
+	ADD_SIGNAL(MethodInfo("property_can_revert_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "can_revert")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
@@ -1225,12 +1232,15 @@ void EditorInspectorSection::_notification(int p_what) {
 			// Get the section header font.
 			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+			Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 
 			// Get the right direction arrow texture, if the section is foldable.
 			Ref<Texture2D> arrow;
+			bool folded = foldable;
 			if (foldable) {
 				if (object->editor_is_section_unfolded(section)) {
 					arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
+					folded = false;
 				} else {
 					if (is_layout_rtl()) {
 						arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
@@ -1274,28 +1284,71 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 			draw_rect(header_rect, c);
 
-			// Draw header title and folding arrow.
-			const int arrow_margin = 2;
-			const int arrow_width = arrow.is_valid() ? arrow->get_width() : 0;
-			Color color = get_theme_color(SNAME("font_color"));
-			float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE) - section_indent;
-			Point2 text_offset = Point2(0, font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2);
-			HorizontalAlignment text_align = HORIZONTAL_ALIGNMENT_LEFT;
-			if (rtl) {
-				text_align = HORIZONTAL_ALIGNMENT_RIGHT;
-			} else {
-				text_offset.x = section_indent + Math::round(arrow_width + arrow_margin * EDSCALE);
-			}
-			draw_string(font, text_offset.floor(), label, text_align, text_width, font_size, color);
+			// Draw header title, folding arrow and coutn of revertable properties.
+			{
+				int separation = Math::round(2 * EDSCALE);
 
-			if (arrow.is_valid()) {
-				Point2 arrow_position = Point2(0, (header_height - arrow->get_height()) / 2);
-				if (rtl) {
-					arrow_position.x = get_size().width - section_indent - arrow->get_width() - Math::round(arrow_margin * EDSCALE);
-				} else {
-					arrow_position.x = section_indent + Math::round(arrow_margin * EDSCALE);
+				int margin_start = section_indent + separation;
+				int margin_end = separation;
+
+				// - Arrow.
+				if (arrow.is_valid()) {
+					Point2 arrow_position;
+					if (rtl) {
+						arrow_position.x = get_size().width - (margin_start + arrow->get_width());
+					} else {
+						arrow_position.x = margin_start;
+					}
+					arrow_position.y = (header_height - arrow->get_height()) / 2;
+					draw_texture(arrow, arrow_position);
+					margin_start += arrow->get_width();
 				}
-				draw_texture(arrow, arrow_position.floor());
+
+				int available = get_size().width - (margin_start + margin_end);
+
+				// - Count of revertable properties.
+				String num_revertable_str;
+				int num_revertable_width = 0;
+				if (folded && revertable_properties.size()) {
+					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
+
+					Ref<Font> light_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
+					int light_font_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
+					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
+
+					// Can we fit the long version of the revertable count text?
+					if (revertable_properties.size() == 1) {
+						num_revertable_str = "(1 change)";
+					} else {
+						num_revertable_str = vformat("(%d changes)", revertable_properties.size());
+					}
+					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
+					if (label_width + separation + num_revertable_width > available) {
+						// We'll have to use the short version.
+						num_revertable_str = vformat("(%d)", revertable_properties.size());
+						num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
+					}
+
+					Point2 text_offset = Point2(
+							margin_end,
+							light_font->get_ascent(light_font_size) + (header_height - light_font->get_height(light_font_size)) / 2);
+					if (!rtl) {
+						text_offset.x = get_size().width - (text_offset.x + num_revertable_width);
+					}
+					draw_string(light_font, text_offset, num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, light_font_color, TextServer::JUSTIFICATION_NONE);
+					margin_end += num_revertable_width + separation;
+					available -= num_revertable_width + separation;
+				}
+
+				// - Label.
+				Point2 text_offset = Point2(
+						margin_start,
+						font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2);
+				if (rtl) {
+					text_offset.x = margin_end;
+				}
+				HorizontalAlignment text_align = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
+				draw_string(font, text_offset, label, text_align, available, font_size, font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 			}
 
 			// Draw dropping highlight.
@@ -1469,6 +1522,22 @@ void EditorInspectorSection::fold() {
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
 	update();
+}
+
+bool EditorInspectorSection::has_revertable_properties() const {
+	return !revertable_properties.is_empty();
+}
+
+void EditorInspectorSection::property_can_revert_changed(const String &p_path, bool p_can_revert) {
+	bool had_revertable_properties = has_revertable_properties();
+	if (p_can_revert) {
+		revertable_properties.insert(p_path);
+	} else {
+		revertable_properties.erase(p_path);
+	}
+	if (has_revertable_properties() != had_revertable_properties) {
+		update();
+	}
 }
 
 void EditorInspectorSection::_bind_methods() {
@@ -2330,7 +2399,7 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
-void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped) {
+void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped) {
 	for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 		current_vbox->add_child(F.property_editor);
@@ -2368,6 +2437,10 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 					}
 					editor_property_map[prop].push_back(ep);
 				}
+			}
+
+			if (p_section) {
+				ep->connect("property_can_revert_changed", callable_mp(p_section, &EditorInspectorSection::property_can_revert_changed));
 			}
 
 			ep->set_read_only(read_only);
@@ -2476,7 +2549,7 @@ void EditorInspector::update_tree() {
 	// Get the lists of editors to add the beginning.
 	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 		ped->parse_begin(object);
-		_parse_added_editors(main_vbox, ped);
+		_parse_added_editors(main_vbox, nullptr, ped);
 	}
 
 	StringName type_name;
@@ -2601,7 +2674,7 @@ void EditorInspector::update_tree() {
 			// Add editors at the start of a category.
 			for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 				ped->parse_category(object, p.name);
-				_parse_added_editors(main_vbox, ped);
+				_parse_added_editors(main_vbox, nullptr, ped);
 			}
 
 			continue;
@@ -2793,7 +2866,7 @@ void EditorInspector::update_tree() {
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 					ped->parse_group(object, path);
-					_parse_added_editors(section->get_vbox(), ped);
+					_parse_added_editors(section->get_vbox(), section, ped);
 				}
 
 				vbox_per_path[root_vbox][acc_path] = section->get_vbox();
@@ -2975,6 +3048,12 @@ void EditorInspector::update_tree() {
 						editor_property_map[prop].push_back(ep);
 					}
 				}
+
+				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
+				if (section) {
+					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+				}
+
 				ep->set_draw_warning(draw_warning);
 				ep->set_use_folding(use_folding);
 				ep->set_checkable(checkable);
@@ -3027,7 +3106,7 @@ void EditorInspector::update_tree() {
 	// Get the lists of to add at the end.
 	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 		ped->parse_end(object);
-		_parse_added_editors(main_vbox, ped);
+		_parse_added_editors(main_vbox, nullptr, ped);
 	}
 }
 
@@ -3176,6 +3255,44 @@ void EditorInspector::expand_all_folding() {
 	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
 		for (EditorProperty *E : F.value) {
 			E->expand_all_folding();
+		}
+	}
+}
+
+void EditorInspector::expand_revertable() {
+	HashSet<EditorInspectorSection *> sections_to_unfold[2];
+	for (EditorInspectorSection *E : sections) {
+		if (E->has_revertable_properties()) {
+			sections_to_unfold[0].insert(E);
+		}
+	}
+
+	// Climb up the hierachy doing double buffering with the sets.
+	int a = 0;
+	int b = 1;
+	while (sections_to_unfold[a].size()) {
+		for (EditorInspectorSection *E : sections_to_unfold[a]) {
+			E->unfold();
+
+			Node *n = E->get_parent();
+			while (n) {
+				if (Object::cast_to<EditorInspector>(n)) {
+					break;
+				}
+				if (Object::cast_to<EditorInspectorSection>(n) && !sections_to_unfold[a].has((EditorInspectorSection *)n)) {
+					sections_to_unfold[b].insert((EditorInspectorSection *)n);
+				}
+				n = n->get_parent();
+			}
+		}
+
+		sections_to_unfold[a].clear();
+		SWAP(a, b);
+	}
+
+	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+		for (EditorProperty *E : F.value) {
+			E->expand_revertable();
 		}
 	}
 }

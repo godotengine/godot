@@ -856,6 +856,7 @@ public:
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;
+	void expand_revertable() override;
 
 	void set_use_sub_inspector(bool p_enable);
 

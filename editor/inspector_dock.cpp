@@ -65,6 +65,9 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case COLLAPSE_ALL: {
 			_menu_collapseall();
 		} break;
+		case EXPAND_REVERTABLE: {
+			_menu_expand_revertable();
+		} break;
 
 		case RESOURCE_SAVE: {
 			_save_resource(false);
@@ -401,6 +404,10 @@ void InspectorDock::_menu_expandall() {
 	inspector->expand_all_folding();
 }
 
+void InspectorDock::_menu_expand_revertable() {
+	inspector->expand_revertable();
+}
+
 void InspectorDock::_warning_pressed() {
 	warning_dialog->popup_centered();
 }
@@ -519,6 +526,8 @@ void InspectorDock::update(Object *p_object) {
 	p->clear();
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/expand_all", TTR("Expand All")), EXPAND_ALL);
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All")), COLLAPSE_ALL);
+	// Calling it 'revertable' internally, because that's what the implementation is based on, but labeling it as 'non-default' because that's more user friendly, even if not 100% accurate.
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTR("Expand Non-Default")), EXPAND_REVERTABLE);
 
 	p->add_separator(TTR("Property Name Style"));
 	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
