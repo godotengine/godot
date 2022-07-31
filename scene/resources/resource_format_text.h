@@ -90,6 +90,7 @@ class ResourceLoaderText {
 	};
 
 	struct DummyReadData {
+		bool no_placeholders = false;
 		HashMap<Ref<Resource>, int> external_resources;
 		HashMap<String, Ref<Resource>> rev_external_resources;
 		HashMap<Ref<Resource>, int> resource_index_map;
@@ -125,8 +126,9 @@ public:
 	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
+	Error get_classes_used(HashSet<StringName> *r_classes);
 
-	Error save_as_binary(Ref<FileAccess> p_f, const String &p_path);
+	Error save_as_binary(const String &p_path);
 	ResourceLoaderText();
 };
 
@@ -137,6 +139,8 @@ public:
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
+	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
+
 	virtual String get_resource_type(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
@@ -190,7 +194,7 @@ public:
 class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

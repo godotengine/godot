@@ -5,21 +5,22 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
-struct SingleSubstFormat2
+template <typename Types>
+struct SingleSubstFormat2_4
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
-  Offset16To<Coverage>
+  typename Types::template OffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<HBGlyphID16>
+  Array16Of<typename Types::HBGlyphID>
                 substitute;             /* Array of substitute
                                          * GlyphIDs--ordered by Coverage Index */
 
   public:
-  DEFINE_SIZE_ARRAY (6, substitute);
+  DEFINE_SIZE_ARRAY (4 + Types::size, substitute);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -103,7 +104,7 @@ struct SingleSubstFormat2
     + hb_zip (this+coverage, substitute)
     | hb_filter (glyphset, hb_first)
     | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID16 &> p) -> hb_codepoint_pair_t
+    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const typename Types::HBGlyphID &> p) -> hb_codepoint_pair_t
                               { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
     ;
 

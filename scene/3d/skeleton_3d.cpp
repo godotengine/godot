@@ -493,6 +493,19 @@ int Skeleton3D::get_bone_axis_forward_enum(int p_bone) {
 	return bones[p_bone].rest_bone_forward_axis;
 }
 
+void Skeleton3D::set_motion_scale(float p_motion_scale) {
+	if (p_motion_scale <= 0) {
+		motion_scale = 1;
+		ERR_FAIL_MSG("Motion scale must be larger than 0.");
+	}
+	motion_scale = p_motion_scale;
+}
+
+float Skeleton3D::get_motion_scale() const {
+	ERR_FAIL_COND_V(motion_scale <= 0, 1);
+	return motion_scale;
+}
+
 // Skeleton creation api
 
 void Skeleton3D::add_bone(const String &p_name) {
@@ -1255,6 +1268,9 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_update_all_bone_transforms"), &Skeleton3D::force_update_all_bone_transforms);
 	ClassDB::bind_method(D_METHOD("force_update_bone_child_transform", "bone_idx"), &Skeleton3D::force_update_bone_children_transforms);
 
+	ClassDB::bind_method(D_METHOD("set_motion_scale", "motion_scale"), &Skeleton3D::set_motion_scale);
+	ClassDB::bind_method(D_METHOD("get_motion_scale"), &Skeleton3D::get_motion_scale);
+
 	// Helper functions
 	ClassDB::bind_method(D_METHOD("global_pose_to_world_transform", "global_pose"), &Skeleton3D::global_pose_to_world_transform);
 	ClassDB::bind_method(D_METHOD("world_transform_to_global_pose", "world_transform"), &Skeleton3D::world_transform_to_global_pose);
@@ -1278,15 +1294,13 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton3D::get_modification_stack);
 	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton3D::execute_modifications);
 
-#ifndef _3D_DISABLED
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_scale", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater"), "set_motion_scale", "get_motion_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");
+#ifndef _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
 #endif // _3D_DISABLED
 
-#ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("pose_updated"));
-#endif // TOOLS_ENABLED
-
 	ADD_SIGNAL(MethodInfo("bone_pose_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("show_rest_only_changed"));

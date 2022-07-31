@@ -40,7 +40,7 @@
 #include "core/io/zip_io.h"
 #include "core/object/class_db.h"
 #include "core/version.h"
-#include "editor/editor_export.h"
+#include "editor/export/editor_export_platform.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -146,4 +146,4 @@ public:
 	~AppxPackager();
 };
 
-#endif
+#endif // UWP_APP_PACKAGER_H

@@ -85,6 +85,7 @@ void GradientEditor::reverse_gradient() {
 }
 
 GradientEditor::GradientEditor() {
+	GradientEdit::get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(GradientEdit::get_picker()));
 	editing = false;
 }
 

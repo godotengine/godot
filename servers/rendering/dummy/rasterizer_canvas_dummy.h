@@ -60,4 +60,4 @@ public:
 	~RasterizerCanvasDummy() {}
 };
 
-#endif // !RASTERIZER_CANVAS_DUMMY_H
+#endif // RASTERIZER_CANVAS_DUMMY_H

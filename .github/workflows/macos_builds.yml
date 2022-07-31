@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: master-v3
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes use_volk=yes
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
@@ -24,7 +24,7 @@ jobs:
             target: release_debug
             tools: true
             tests: true
-            bin: "./bin/godot.osx.opt.tools.64"
+            bin: "./bin/godot.macos.opt.tools.64"
 
           - name: Template (target=release, tools=no)
             cache-name: macos-template
@@ -45,11 +45,15 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
+      - name: Setup Vulkan SDK
+        run: |
+          sh misc/scripts/install_vulkan_sdk_macos.sh
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }}
-          platform: osx
+          platform: macos
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
@@ -65,6 +69,7 @@ jobs:
       - name: Prepare artifact
         run: |
           strip bin/godot.*
+          chmod +x bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact

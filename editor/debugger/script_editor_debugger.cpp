@@ -753,7 +753,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			const Variant *args[2] = { &cmd, &data };
 			Variant retval;
 			Callable::CallError err;
-			c.call(args, 2, retval, err);
+			c.callp(args, 2, retval, err);
 			ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(c, args, 2, err));
 			ERR_FAIL_COND_MSG(retval.get_type() != Variant::BOOL, "Error calling 'capture' to callable: " + String(c) + ". Return type is not bool.");
 			parsed = retval;
@@ -1877,7 +1877,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		profiler = memnew(EditorProfiler);
 		profiler->set_name(TTR("Profiler"));
 		tabs->add_child(profiler);
-		profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate), varray(PROFILER_SCRIPTS_SERVERS));
+		profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_SCRIPTS_SERVERS));
 		profiler->connect("break_request", callable_mp(this, &ScriptEditorDebugger::_profiler_seeked));
 	}
 
@@ -1885,14 +1885,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		visual_profiler = memnew(EditorVisualProfiler);
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
-		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate), varray(PROFILER_VISUAL));
+		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_VISUAL));
 	}
 
 	{ //network profiler
 		network_profiler = memnew(EditorNetworkProfiler);
 		network_profiler->set_name(TTR("Network Profiler"));
 		tabs->add_child(network_profiler);
-		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate), varray(PROFILER_NETWORK));
+		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_NETWORK));
 	}
 
 	{ //monitors

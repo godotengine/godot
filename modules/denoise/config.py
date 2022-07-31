@@ -4,7 +4,7 @@ def can_build(env, platform):
     # It's also only relevant for tools build and desktop platforms,
     # as doing lightmap generation and denoising on Android or HTML5
     # would be a bit far-fetched.
-    desktop_platforms = ["linuxbsd", "osx", "windows"]
+    desktop_platforms = ["linuxbsd", "macos", "windows"]
     supported_arch = env["bits"] == "64"
     if env["arch"] == "arm64":
         supported_arch = False

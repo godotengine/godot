@@ -895,17 +895,17 @@ struct _VariantCall {
 
 	static void func_Callable_call(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		callable->call(p_args, p_argcount, r_ret, r_error);
+		callable->callp(p_args, p_argcount, r_ret, r_error);
 	}
 
 	static void func_Callable_call_deferred(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		callable->call_deferred(p_args, p_argcount);
+		callable->call_deferredp(p_args, p_argcount);
 	}
 
 	static void func_Callable_rpc(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		callable->rpc(0, p_args, p_argcount, r_error);
+		callable->rpcp(0, p_args, p_argcount, r_error);
 	}
 
 	static void func_Callable_rpc_id(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
@@ -920,13 +920,13 @@ struct _VariantCall {
 			r_error.expected = Variant::INT;
 		} else {
 			Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-			callable->rpc(*p_args[0], &p_args[1], p_argcount - 1, r_error);
+			callable->rpcp(*p_args[0], &p_args[1], p_argcount - 1, r_error);
 		}
 	}
 
 	static void func_Callable_bind(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		r_ret = callable->bind(p_args, p_argcount);
+		r_ret = callable->bindp(p_args, p_argcount);
 	}
 
 	static void func_Signal_emit(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
@@ -1725,14 +1725,43 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
 
+	/* Vector4 */
+
+	bind_method(Vector4, min_axis_index, sarray(), varray());
+	bind_method(Vector4, max_axis_index, sarray(), varray());
+	bind_method(Vector4, length, sarray(), varray());
+	bind_method(Vector4, length_squared, sarray(), varray());
+	bind_method(Vector4, abs, sarray(), varray());
+	bind_method(Vector4, sign, sarray(), varray());
+	bind_method(Vector4, floor, sarray(), varray());
+	bind_method(Vector4, ceil, sarray(), varray());
+	bind_method(Vector4, round, sarray(), varray());
+	bind_method(Vector4, lerp, sarray("to", "weight"), varray());
+	bind_method(Vector4, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4, normalized, sarray(), varray());
+	bind_method(Vector4, is_normalized, sarray(), varray());
+	bind_method(Vector4, dot, sarray("with"), varray());
+	bind_method(Vector4, inverse, sarray(), varray());
+	bind_method(Vector4, is_equal_approx, sarray("with"), varray());
+
+	/* Vector4i */
+
+	bind_method(Vector4i, min_axis_index, sarray(), varray());
+	bind_method(Vector4i, max_axis_index, sarray(), varray());
+	bind_method(Vector4i, length, sarray(), varray());
+	bind_method(Vector4i, length_squared, sarray(), varray());
+	bind_method(Vector4i, sign, sarray(), varray());
+	bind_method(Vector4i, abs, sarray(), varray());
+	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
+
 	/* Plane */
 
 	bind_method(Plane, normalized, sarray(), varray());
 	bind_method(Plane, center, sarray(), varray());
 	bind_method(Plane, is_equal_approx, sarray("to_plane"), varray());
-	bind_method(Plane, is_point_over, sarray("plane"), varray());
+	bind_method(Plane, is_point_over, sarray("point"), varray());
 	bind_method(Plane, distance_to, sarray("point"), varray());
-	bind_method(Plane, has_point, sarray("point", "epsilon"), varray(CMP_EPSILON));
+	bind_method(Plane, has_point, sarray("point", "tolerance"), varray(CMP_EPSILON));
 	bind_method(Plane, project, sarray("point"), varray());
 	bind_methodv(Plane, intersect_3, &Plane::intersect_3_bind, sarray("b", "c"), varray());
 	bind_methodv(Plane, intersects_ray, &Plane::intersects_ray_bind, sarray("from", "dir"), varray());
@@ -1752,7 +1781,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, dot, sarray("with"), varray());
 	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
-	bind_method(Quaternion, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Quaternion, spherical_cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quaternion, get_euler, sarray(), varray());
 	bind_method(Quaternion, get_axis, sarray(), varray());
 	bind_method(Quaternion, get_angle, sarray(), varray());
@@ -1854,7 +1883,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, orthonormalized, sarray(), varray());
 	bind_method(Transform2D, rotated, sarray("angle"), varray());
 	bind_method(Transform2D, scaled, sarray("scale"), varray());
-	bind_method(Transform2D, translated, sarray("offset"), varray());
+	bind_method(Transform2D, translated_local, sarray("offset"), varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
@@ -1919,11 +1948,45 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, orthonormalized, sarray(), varray());
 	bind_method(Transform3D, rotated, sarray("axis", "angle"), varray());
 	bind_method(Transform3D, scaled, sarray("scale"), varray());
-	bind_method(Transform3D, translated, sarray("offset"), varray());
+	bind_method(Transform3D, translated_local, sarray("offset"), varray());
 	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
-	bind_method(Transform3D, sphere_interpolate_with, sarray("xform", "weight"), varray());
+	bind_method(Transform3D, spherical_interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
+
+	/* Projection */
+
+	bind_static_method(Projection, create_depth_correction, sarray("flip_y"), varray());
+	bind_static_method(Projection, create_light_atlas_rect, sarray("rect"), varray());
+	bind_static_method(Projection, create_perspective, sarray("fovy", "aspect", "z_near", "z_far", "flip_fov"), varray(false));
+	bind_static_method(Projection, create_perspective_hmd, sarray("fovy", "aspect", "z_near", "z_far", "flip_fov", "eye", "intraocular_dist", " convergence_dist"), varray());
+	bind_static_method(Projection, create_for_hmd, sarray("eye", "aspect", "intraocular_dist", "display_width", "display_to_lens", "oversample", "z_near", "z_far"), varray());
+	bind_static_method(Projection, create_orthogonal, sarray("left", "right", "bottom", "top", "z_near", "z_far"), varray());
+	bind_static_method(Projection, create_orthogonal_aspect, sarray("size", "aspect", "z_near", "z_far", "flip_fov"), varray(false));
+	bind_static_method(Projection, create_frustum, sarray("left", "right", "bottom", "top", "z_near", "z_far"), varray());
+	bind_static_method(Projection, create_frustum_aspect, sarray("size", "aspect", "offset", "z_near", "z_far", "flip_fov"), varray(false));
+	bind_static_method(Projection, create_fit_aabb, sarray("aabb"), varray());
+
+	bind_method(Projection, determinant, sarray(), varray());
+	bind_method(Projection, perspective_znear_adjusted, sarray("new_znear"), varray());
+	bind_method(Projection, get_projection_plane, sarray("plane"), varray());
+	bind_method(Projection, flipped_y, sarray(), varray());
+	bind_method(Projection, jitter_offseted, sarray("offset"), varray());
+
+	bind_static_method(Projection, get_fovy, sarray("fovx", "aspect"), varray());
+
+	bind_method(Projection, get_z_far, sarray(), varray());
+	bind_method(Projection, get_z_near, sarray(), varray());
+	bind_method(Projection, get_aspect, sarray(), varray());
+	bind_method(Projection, get_fov, sarray(), varray());
+	bind_method(Projection, is_orthogonal, sarray(), varray());
+
+	bind_method(Projection, get_viewport_half_extents, sarray(), varray());
+	bind_method(Projection, get_far_plane_half_extents, sarray(), varray());
+
+	bind_method(Projection, inverse, sarray(), varray());
+	bind_method(Projection, get_pixels_per_meter, sarray("for_pixel_width"), varray());
+	bind_method(Projection, get_lod_multiplier, sarray(), varray());
 
 	/* Dictionary */
 
@@ -2253,6 +2316,19 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
 
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_X", Vector4::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Z", Vector4::AXIS_Z);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_W", Vector4::AXIS_W);
+
+	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_X", Vector4::AXIS_X);
+	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_Y", Vector4::AXIS_Y);
+	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_Z", Vector4::AXIS_Z);
+	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_W", Vector4::AXIS_W);
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
+
 	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_X", Vector3i::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Y", Vector3i::AXIS_Y);
 	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Z", Vector3i::AXIS_Z);
@@ -2260,6 +2336,19 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_X", Vector3i::AXIS_X);
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Y", Vector3i::AXIS_Y);
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Z", Vector3i::AXIS_Z);
+
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_X", Vector4i::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_Y", Vector4i::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_Z", Vector4i::AXIS_Z);
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_W", Vector4i::AXIS_W);
+
+	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_X", Vector4i::AXIS_X);
+	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_Y", Vector4i::AXIS_Y);
+	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_Z", Vector4i::AXIS_Z);
+	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_W", Vector4i::AXIS_W);
+
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
@@ -2338,6 +2427,25 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
 
 	_VariantCall::add_variant_constant(Variant::QUATERNION, "IDENTITY", Quaternion(0, 0, 0, 1));
+
+	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_NEAR", Projection::PLANE_NEAR);
+	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_FAR", Projection::PLANE_FAR);
+	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_LEFT", Projection::PLANE_LEFT);
+	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_TOP", Projection::PLANE_TOP);
+	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_RIGHT", Projection::PLANE_RIGHT);
+	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_BOTTOM", Projection::PLANE_BOTTOM);
+
+	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_NEAR", Projection::PLANE_NEAR);
+	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_FAR", Projection::PLANE_FAR);
+	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_LEFT", Projection::PLANE_LEFT);
+	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_TOP", Projection::PLANE_TOP);
+	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_RIGHT", Projection::PLANE_RIGHT);
+	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_BOTTOM", Projection::PLANE_BOTTOM);
+
+	Projection p;
+	_VariantCall::add_variant_constant(Variant::PROJECTION, "IDENTITY", p);
+	p.set_zero();
+	_VariantCall::add_variant_constant(Variant::PROJECTION, "ZERO", p);
 }
 
 void Variant::_register_variant_methods() {

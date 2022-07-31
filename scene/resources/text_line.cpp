@@ -74,7 +74,7 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextLine::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &TextLine::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justication,Trim Edge Spaces After Justication,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justification,Trim Edge Spaces After Justification,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);

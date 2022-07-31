@@ -135,7 +135,7 @@ void ViewPanner::callback_helper(Callable p_callback, Vector<Variant> p_args) {
 
 	Variant result;
 	Callable::CallError ce;
-	p_callback.call(argptr, p_args.size(), result, ce);
+	p_callback.callp(argptr, p_args.size(), result, ce);
 }
 
 void ViewPanner::set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback) {

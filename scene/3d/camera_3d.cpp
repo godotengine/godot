@@ -31,7 +31,7 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
 void Camera3D::_update_audio_listener_state() {
@@ -197,7 +197,7 @@ void Camera3D::set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, rea
 	update_gizmos();
 }
 
-void Camera3D::set_projection(Camera3D::Projection p_mode) {
+void Camera3D::set_projection(ProjectionType p_mode) {
 	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
 		mode = p_mode;
 		_update_camera_mode();
@@ -265,7 +265,7 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	if (mode == PROJECTION_ORTHOGONAL) {
 		ray = Vector3(0, 0, -1);
 	} else {
-		CameraMatrix cm;
+		Projection cm;
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
 		Vector2 screen_he = cm.get_viewport_half_extents();
 		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -near).normalized();
@@ -314,7 +314,7 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm;
+	Projection cm;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
@@ -340,7 +340,7 @@ Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm;
+	Projection cm;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
@@ -368,7 +368,7 @@ Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) cons
 	}
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm;
+	Projection cm;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
@@ -544,7 +544,7 @@ real_t Camera3D::get_far() const {
 	return far;
 }
 
-Camera3D::Projection Camera3D::get_projection() const {
+Camera3D::ProjectionType Camera3D::get_projection() const {
 	return mode;
 }
 
@@ -607,7 +607,7 @@ Vector<Plane> Camera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	CameraMatrix cm;
+	Projection cm;
 	if (mode == PROJECTION_PERSPECTIVE) {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
 	} else {

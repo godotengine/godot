@@ -479,10 +479,10 @@ public:
 	void move_custom_data_layer(int p_from_index, int p_to_pos);
 	void remove_custom_data_layer(int p_index);
 	int get_custom_data_layer_by_name(String p_value) const;
-	void set_custom_data_name(int p_layer_id, String p_value);
-	String get_custom_data_name(int p_layer_id) const;
-	void set_custom_data_type(int p_layer_id, Variant::Type p_value);
-	Variant::Type get_custom_data_type(int p_layer_id) const;
+	void set_custom_data_layer_name(int p_layer_id, String p_value);
+	String get_custom_data_layer_name(int p_layer_id) const;
+	void set_custom_data_layer_type(int p_layer_id, Variant::Type p_value);
+	Variant::Type get_custom_data_layer_type(int p_layer_id) const;
 
 	// Tiles proxies.
 	void set_source_level_tile_proxy(int p_source_from, int p_source_to);
@@ -569,7 +569,7 @@ public:
 	virtual void add_custom_data_layer(int p_index){};
 	virtual void move_custom_data_layer(int p_from_index, int p_to_pos){};
 	virtual void remove_custom_data_layer(int p_index){};
-	virtual void reset_state() override{};
+	virtual void reset_state() override;
 
 	// Tiles.
 	virtual int get_tiles_count() const = 0;
@@ -847,7 +847,6 @@ public:
 	void add_custom_data_layer(int p_index);
 	void move_custom_data_layer(int p_from_index, int p_to_pos);
 	void remove_custom_data_layer(int p_index);
-	void reset_state();
 	void set_allow_transform(bool p_allow_transform);
 	bool is_allowing_transform() const;
 

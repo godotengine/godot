@@ -443,8 +443,10 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_caches();
-			_update_wrap_at_column(true);
+			if (is_inside_tree()) {
+				_update_caches();
+				_update_wrap_at_column(true);
+			}
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
@@ -1055,7 +1057,7 @@ void TextEdit::_notification(int p_what) {
 										const Variant *argp[] = { &args[0], &args[1], &args[2] };
 										Callable::CallError ce;
 										Variant ret;
-										gutter.custom_draw_callback.call(argp, 3, ret, ce);
+										gutter.custom_draw_callback.callp(argp, 3, ret, ce);
 									}
 								} break;
 							}
@@ -2789,7 +2791,7 @@ String TextEdit::get_tooltip(const Point2 &p_pos) const {
 		const Variant *argp[] = { &args[0] };
 		Callable::CallError ce;
 		Variant ret;
-		tooltip_callback.call(argp, 1, ret, ce);
+		tooltip_callback.callp(argp, 1, ret, ce);
 		ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, "", "Failed to call custom tooltip.");
 		return ret;
 	}

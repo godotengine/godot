@@ -118,10 +118,10 @@ layout(set = 0, binding = 13, std430) restrict readonly buffer Decals {
 }
 decals;
 
-layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalShaderUniformData {
 	highp vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 /* Set 1: Render Pass (changes per render pass) */
 

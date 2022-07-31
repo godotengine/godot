@@ -91,4 +91,4 @@ public:
 	Texture3DEditorPlugin();
 };
 
-#endif // TEXTURE_EDITOR_PLUGIN_H
+#endif // TEXTURE_3D_EDITOR_PLUGIN_H

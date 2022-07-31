@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_CULL_H
-#define RENDERING_SERVER_SCENE_CULL_H
+#ifndef RENDERER_SCENE_CULL_H
+#define RENDERER_SCENE_CULL_H
 
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/bin_sorted_array.h"
@@ -272,7 +272,7 @@ public:
 		RID base_rid;
 		union {
 			uint64_t instance_data_rid;
-			RendererSceneRender::GeometryInstance *instance_geometry;
+			RenderGeometryInstance *instance_geometry;
 			InstanceVisibilityNotifierData *visibility_notifier = nullptr;
 		};
 		Instance *instance = nullptr;
@@ -578,7 +578,7 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
-		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
+		RenderGeometryInstance *geometry_instance = nullptr;
 		HashSet<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
@@ -782,14 +782,14 @@ public:
 	HashSet<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
-	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
+	PagedArrayPool<RenderGeometryInstance *> geometry_instance_cull_page_pool;
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
 	PagedArray<Instance *> instance_shadow_cull_result;
 
 	struct InstanceCullResult {
-		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
+		PagedArray<RenderGeometryInstance *> geometry_instances;
 		PagedArray<Instance *> lights;
 		PagedArray<RID> light_instances;
 		PagedArray<RID> lightmaps;
@@ -800,10 +800,10 @@ public:
 		PagedArray<RID> fog_volumes;
 
 		struct DirectionalShadow {
-			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
+			PagedArray<RenderGeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
 		} directional_shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
 
-		PagedArray<RendererSceneRender::GeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+		PagedArray<RenderGeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
 		PagedArray<RID> sdfgi_cascade_lights[SDFGI_MAX_CASCADES];
 
 		void clear() {
@@ -882,7 +882,7 @@ public:
 			}
 		}
 
-		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RendererSceneRender::GeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
+		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RenderGeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
 			geometry_instances.set_page_pool(p_geometry_instance_pool);
 			light_instances.set_page_pool(p_rid_pool);
 			lights.set_page_pool(p_instance_pool);
@@ -980,9 +980,9 @@ public:
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 	void _unpair_instance(Instance *p_instance);
 
-	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
+	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 
@@ -992,7 +992,7 @@ public:
 			struct Cascade {
 				Frustum frustum;
 
-				CameraMatrix projection;
+				Projection projection;
 				Transform3D transform;
 				real_t zfar;
 				real_t split;
@@ -1045,7 +1045,7 @@ public:
 		uint32_t visible_layers;
 		Instance *render_reflection_probe = nullptr;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
-		const CameraMatrix *camera_matrix;
+		const Projection *camera_matrix;
 		uint64_t visibility_viewport_mask;
 	};
 
@@ -1093,6 +1093,7 @@ public:
 
 	PASS1RC(bool, is_environment, RID)
 
+	// Background
 	PASS2(environment_set_background, RID, RS::EnvironmentBG)
 	PASS2(environment_set_sky, RID, RID)
 	PASS2(environment_set_sky_custom_fov, RID, float)
@@ -1102,36 +1103,146 @@ public:
 	PASS2(environment_set_canvas_max_layer, RID, int)
 	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
 
-	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
-	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
+	PASS1RC(RID, environment_get_sky, RID)
+	PASS1RC(float, environment_get_sky_custom_fov, RID)
+	PASS1RC(Basis, environment_get_sky_orientation, RID)
+	PASS1RC(Color, environment_get_bg_color, RID)
+	PASS1RC(float, environment_get_bg_energy, RID)
+	PASS1RC(int, environment_get_canvas_max_layer, RID)
+	PASS1RC(RS::EnvironmentAmbientSource, environment_get_ambient_source, RID)
+	PASS1RC(Color, environment_get_ambient_light, RID)
+	PASS1RC(float, environment_get_ambient_light_energy, RID)
+	PASS1RC(float, environment_get_ambient_sky_contribution, RID)
+	PASS1RC(RS::EnvironmentReflectionSource, environment_get_reflection_source, RID)
 
-	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
-	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
-
-	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
-	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
-
-	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
-	PASS1(environment_glow_set_use_bicubic_upscale, bool)
-	PASS1(environment_glow_set_use_high_quality, bool)
-
+	// Tonemap
 	PASS9(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float, bool, float, float, float, float)
+	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
+	PASS1RC(float, environment_get_exposure, RID)
+	PASS1RC(float, environment_get_white, RID)
+	PASS1RC(bool, environment_get_auto_exposure, RID)
+	PASS1RC(float, environment_get_min_luminance, RID)
+	PASS1RC(float, environment_get_max_luminance, RID)
+	PASS1RC(float, environment_get_auto_exp_speed, RID)
+	PASS1RC(float, environment_get_auto_exp_scale, RID)
+	PASS1RC(uint64_t, environment_get_auto_exposure_version, RID)
 
-	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
-
+	// Fog
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
+
+	PASS1RC(bool, environment_get_fog_enabled, RID)
+	PASS1RC(Color, environment_get_fog_light_color, RID)
+	PASS1RC(float, environment_get_fog_light_energy, RID)
+	PASS1RC(float, environment_get_fog_sun_scatter, RID)
+	PASS1RC(float, environment_get_fog_density, RID)
+	PASS1RC(float, environment_get_fog_height, RID)
+	PASS1RC(float, environment_get_fog_height_density, RID)
+	PASS1RC(float, environment_get_fog_aerial_perspective, RID)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
 
+	// Volumentric Fog
+	PASS13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
+
+	PASS1RC(bool, environment_get_volumetric_fog_enabled, RID)
+	PASS1RC(float, environment_get_volumetric_fog_density, RID)
+	PASS1RC(Color, environment_get_volumetric_fog_scattering, RID)
+	PASS1RC(Color, environment_get_volumetric_fog_emission, RID)
+	PASS1RC(float, environment_get_volumetric_fog_emission_energy, RID)
+	PASS1RC(float, environment_get_volumetric_fog_anisotropy, RID)
+	PASS1RC(float, environment_get_volumetric_fog_length, RID)
+	PASS1RC(float, environment_get_volumetric_fog_detail_spread, RID)
+	PASS1RC(float, environment_get_volumetric_fog_gi_inject, RID)
+	PASS1RC(bool, environment_get_volumetric_fog_temporal_reprojection, RID)
+	PASS1RC(float, environment_get_volumetric_fog_temporal_reprojection_amount, RID)
+	PASS1RC(float, environment_get_volumetric_fog_ambient_inject, RID)
+
+	// Glow
+	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
+
+	PASS1RC(bool, environment_get_glow_enabled, RID)
+	PASS1RC(Vector<float>, environment_get_glow_levels, RID)
+	PASS1RC(float, environment_get_glow_intensity, RID)
+	PASS1RC(float, environment_get_glow_strength, RID)
+	PASS1RC(float, environment_get_glow_bloom, RID)
+	PASS1RC(float, environment_get_glow_mix, RID)
+	PASS1RC(RS::EnvironmentGlowBlendMode, environment_get_glow_blend_mode, RID)
+	PASS1RC(float, environment_get_glow_hdr_bleed_threshold, RID)
+	PASS1RC(float, environment_get_glow_hdr_luminance_cap, RID)
+	PASS1RC(float, environment_get_glow_hdr_bleed_scale, RID)
+	PASS1RC(float, environment_get_glow_map_strength, RID)
+	PASS1RC(RID, environment_get_glow_map, RID)
+
+	PASS1(environment_glow_set_use_bicubic_upscale, bool)
+	PASS1(environment_glow_set_use_high_quality, bool)
+
+	// SSR
+	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
+
+	PASS1RC(bool, environment_get_ssr_enabled, RID)
+	PASS1RC(int, environment_get_ssr_max_steps, RID)
+	PASS1RC(float, environment_get_ssr_fade_in, RID)
+	PASS1RC(float, environment_get_ssr_fade_out, RID)
+	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
+
+	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+
+	// SSAO
+	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+
+	PASS1RC(bool, environment_get_ssao_enabled, RID)
+	PASS1RC(float, environment_get_ssao_radius, RID)
+	PASS1RC(float, environment_get_ssao_intensity, RID)
+	PASS1RC(float, environment_get_ssao_power, RID)
+	PASS1RC(float, environment_get_ssao_detail, RID)
+	PASS1RC(float, environment_get_ssao_horizon, RID)
+	PASS1RC(float, environment_get_ssao_sharpness, RID)
+	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
+	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
+
+	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
+
+	// SSIL
+	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
+
+	PASS1RC(bool, environment_get_ssil_enabled, RID)
+	PASS1RC(float, environment_get_ssil_radius, RID)
+	PASS1RC(float, environment_get_ssil_intensity, RID)
+	PASS1RC(float, environment_get_ssil_sharpness, RID)
+	PASS1RC(float, environment_get_ssil_normal_rejection, RID)
+
+	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
+
+	// SDFGI
+
 	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+
+	PASS1RC(bool, environment_get_sdfgi_enabled, RID)
+	PASS1RC(int, environment_get_sdfgi_cascades, RID)
+	PASS1RC(float, environment_get_sdfgi_min_cell_size, RID)
+	PASS1RC(bool, environment_get_sdfgi_use_occlusion, RID)
+	PASS1RC(float, environment_get_sdfgi_bounce_feedback, RID)
+	PASS1RC(bool, environment_get_sdfgi_read_sky_light, RID)
+	PASS1RC(float, environment_get_sdfgi_energy, RID)
+	PASS1RC(float, environment_get_sdfgi_normal_bias, RID)
+	PASS1RC(float, environment_get_sdfgi_probe_bias, RID)
+	PASS1RC(RS::EnvironmentSDFGIYScale, environment_get_sdfgi_y_scale, RID)
+
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
-	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
-	PASS1RC(int, environment_get_canvas_max_layer, RID)
+	// Adjustment
+	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
+
+	PASS1RC(bool, environment_get_adjustments_enabled, RID)
+	PASS1RC(float, environment_get_adjustments_brightness, RID)
+	PASS1RC(float, environment_get_adjustments_contrast, RID)
+	PASS1RC(float, environment_get_adjustments_saturation, RID)
+	PASS1RC(bool, environment_get_use_1d_color_correction, RID)
+	PASS1RC(RID, environment_get_color_correction, RID)
 
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
@@ -1183,4 +1294,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // RENDERING_SERVER_SCENE_CULL_H
+#endif // RENDERER_SCENE_CULL_H

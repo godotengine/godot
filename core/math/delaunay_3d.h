@@ -33,7 +33,7 @@
 
 #include "core/io/file_access.h"
 #include "core/math/aabb.h"
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
@@ -184,7 +184,7 @@ class Delaunay3D {
 			return true;
 		}
 
-		CameraMatrix cm;
+		Projection cm;
 
 		cm.matrix[0][0] = p_points[p_simplex.points[0]].x;
 		cm.matrix[0][1] = p_points[p_simplex.points[1]].x;

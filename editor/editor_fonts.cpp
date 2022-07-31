@@ -102,7 +102,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			// - macOS doesn't use font hinting.
 			// - Windows uses ClearType, which is in between "Light" and "Normal" hinting.
 			// - Linux has configurable font hinting, but most distributions including Ubuntu default to "Light".
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			font_hinting = TextServer::HINTING_NONE;
 #else
 			font_hinting = TextServer::HINTING_LIGHT;

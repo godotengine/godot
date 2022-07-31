@@ -649,6 +649,32 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Vector3i(args[0], args[1], args[2]);
+		} else if (id == "Vector4") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 4) {
+				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Vector4(args[0], args[1], args[2], args[3]);
+		} else if (id == "Vector4i") {
+			Vector<int32_t> args;
+			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 4) {
+				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Vector4i(args[0], args[1], args[2], args[3]);
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -731,6 +757,19 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
+		} else if (id == "Projection") { // "Transform" kept for compatibility with Godot <4.
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 16) {
+				r_err_str = "Expected 16 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Projection(Vector4(args[0], args[1], args[2], args[3]), Vector4(args[4], args[5], args[6], args[7]), Vector4(args[8], args[9], args[10], args[11]), Vector4(args[12], args[13], args[14], args[15]));
 		} else if (id == "Color") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1534,6 +1573,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			Vector3i v = p_variant;
 			p_store_string_func(p_store_string_ud, "Vector3i(" + itos(v.x) + ", " + itos(v.y) + ", " + itos(v.z) + ")");
 		} break;
+		case Variant::VECTOR4: {
+			Vector4 v = p_variant;
+			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ", " + rtos_fix(v.w) + ")");
+		} break;
+		case Variant::VECTOR4I: {
+			Vector4i v = p_variant;
+			p_store_string_func(p_store_string_ud, "Vector4i(" + itos(v.x) + ", " + itos(v.y) + ", " + itos(v.z) + ", " + itos(v.w) + ")");
+		} break;
 		case Variant::PLANE: {
 			Plane p = p_variant;
 			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x) + ", " + rtos_fix(p.normal.y) + ", " + rtos_fix(p.normal.z) + ", " + rtos_fix(p.d) + ")");
@@ -1593,6 +1640,20 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			}
 
 			s = s + ", " + rtos_fix(t.origin.x) + ", " + rtos_fix(t.origin.y) + ", " + rtos_fix(t.origin.z);
+
+			p_store_string_func(p_store_string_ud, s + ")");
+		} break;
+		case Variant::PROJECTION: {
+			String s = "Projection(";
+			Projection t = p_variant;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					if (i != 0 || j != 0) {
+						s += ", ";
+					}
+					s += rtos_fix(t.matrix[i][j]);
+				}
+			}
 
 			p_store_string_func(p_store_string_ud, s + ")");
 		} break;

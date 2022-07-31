@@ -30,14 +30,15 @@
 
 #include "editor_resource_picker.h"
 
+#include "editor/audio_stream_preview.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/quick_open.h"
 #include "editor/scene_tree_dock.h"
 
 HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
@@ -47,32 +48,37 @@ void EditorResourcePicker::clear_caches() {
 }
 
 void EditorResourcePicker::_update_resource() {
-	preview_rect->set_texture(Ref<Texture2D>());
-	assign_button->set_custom_minimum_size(Size2(1, 1));
+	String resource_path;
+	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
+		resource_path = edited_resource->get_path() + "\n";
+	}
 
-	if (edited_resource == Ref<Resource>()) {
-		assign_button->set_icon(Ref<Texture2D>());
-		assign_button->set_text(TTR("[empty]"));
-		assign_button->set_tooltip("");
-	} else {
-		assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
+	if (preview_rect) {
+		preview_rect->set_texture(Ref<Texture2D>());
 
-		if (!edited_resource->get_name().is_empty()) {
-			assign_button->set_text(edited_resource->get_name());
-		} else if (edited_resource->get_path().is_resource_file()) {
-			assign_button->set_text(edited_resource->get_path().get_file());
+		assign_button->set_custom_minimum_size(assign_button_min_size);
+
+		if (edited_resource == Ref<Resource>()) {
+			assign_button->set_icon(Ref<Texture2D>());
+			assign_button->set_text(TTR("[empty]"));
+			assign_button->set_tooltip("");
 		} else {
-			assign_button->set_text(edited_resource->get_class());
-		}
+			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
 
-		String resource_path;
-		if (edited_resource->get_path().is_resource_file()) {
-			resource_path = edited_resource->get_path() + "\n";
+			if (!edited_resource->get_name().is_empty()) {
+				assign_button->set_text(edited_resource->get_name());
+			} else if (edited_resource->get_path().is_resource_file()) {
+				assign_button->set_text(edited_resource->get_path().get_file());
+			} else {
+				assign_button->set_text(edited_resource->get_class());
+			}
+			assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+
+			// Preview will override the above, so called at the end.
+			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
 		}
+	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
-
-		// Preview will override the above, so called at the end.
-		EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
 	}
 }
 
@@ -81,28 +87,30 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		return;
 	}
 
-	Ref<Script> script = edited_resource;
-	if (script.is_valid()) {
-		assign_button->set_text(script->get_path().get_file());
-		return;
-	}
-
-	if (p_preview.is_valid()) {
-		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
-
-		// Resource-specific stretching.
-		if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
-			preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
-			assign_button->set_custom_minimum_size(Size2(1, 1));
-		} else {
-			preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-			thumbnail_size *= EDSCALE;
-			assign_button->set_custom_minimum_size(Size2(1, thumbnail_size));
+	if (preview_rect) {
+		Ref<Script> script = edited_resource;
+		if (script.is_valid()) {
+			assign_button->set_text(script->get_path().get_file());
+			return;
 		}
 
-		preview_rect->set_texture(p_preview);
-		assign_button->set_text("");
+		if (p_preview.is_valid()) {
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+
+			// Resource-specific stretching.
+			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
+				preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
+				assign_button->set_custom_minimum_size(assign_button_min_size);
+			} else {
+				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+				thumbnail_size *= EDSCALE;
+				assign_button->set_custom_minimum_size(Size2(MIN(1, assign_button_min_size.x), MIN(thumbnail_size, assign_button_min_size.y)));
+			}
+
+			preview_rect->set_texture(p_preview);
+			assign_button->set_text("");
+		}
 	}
 }
 
@@ -863,10 +871,10 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu = memnew(PopupMenu);
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
+	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 
-EditorResourcePicker::EditorResourcePicker() {
+EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -877,13 +885,15 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
 	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
-	preview_rect = memnew(TextureRect);
-	preview_rect->set_ignore_texture_size(true);
-	preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	preview_rect->set_offset(SIDE_TOP, 1);
-	preview_rect->set_offset(SIDE_BOTTOM, -1);
-	preview_rect->set_offset(SIDE_RIGHT, -1);
-	assign_button->add_child(preview_rect);
+	if (!p_hide_assign_button_controls) {
+		preview_rect = memnew(TextureRect);
+		preview_rect->set_ignore_texture_size(true);
+		preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+		preview_rect->set_offset(SIDE_TOP, 1);
+		preview_rect->set_offset(SIDE_BOTTOM, -1);
+		preview_rect->set_offset(SIDE_RIGHT, -1);
+		assign_button->add_child(preview_rect);
+	}
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
@@ -992,4 +1002,177 @@ void EditorShaderPicker::set_preferred_mode(int p_mode) {
 }
 
 EditorShaderPicker::EditorShaderPicker() {
+}
+
+//////////////
+
+void EditorAudioStreamPicker::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY:
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_resource();
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Ref<AudioStream> audio_stream = get_edited_resource();
+			if (audio_stream.is_valid()) {
+				if (audio_stream->get_length() > 0) {
+					Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
+					if (preview.is_valid()) {
+						if (preview->get_version() != last_preview_version) {
+							stream_preview_rect->update();
+							last_preview_version = preview->get_version();
+						}
+					}
+				}
+
+				uint64_t tagged_frame = audio_stream->get_tagged_frame();
+				uint64_t diff_frames = AudioServer::get_singleton()->get_mixed_frames() - tagged_frame;
+				uint64_t diff_msec = diff_frames * 1000 / AudioServer::get_singleton()->get_mix_rate();
+
+				if (diff_msec < 300) {
+					uint32_t count = audio_stream->get_tagged_frame_count();
+
+					bool differ = false;
+
+					if (count != tagged_frame_offset_count) {
+						differ = true;
+					}
+					float offsets[MAX_TAGGED_FRAMES];
+
+					for (uint32_t i = 0; i < MIN(count, uint32_t(MAX_TAGGED_FRAMES)); i++) {
+						offsets[i] = audio_stream->get_tagged_frame_offset(i);
+						if (offsets[i] != tagged_frame_offsets[i]) {
+							differ = true;
+						}
+					}
+
+					if (differ) {
+						tagged_frame_offset_count = count;
+						for (uint32_t i = 0; i < count; i++) {
+							tagged_frame_offsets[i] = offsets[i];
+						}
+					}
+
+					stream_preview_rect->update();
+				} else {
+					if (tagged_frame_offset_count != 0) {
+						stream_preview_rect->update();
+					}
+					tagged_frame_offset_count = 0;
+				}
+			}
+		} break;
+	}
+}
+
+void EditorAudioStreamPicker::_update_resource() {
+	EditorResourcePicker::_update_resource();
+
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<AudioStream> audio_stream = get_edited_resource();
+	if (audio_stream.is_valid() && audio_stream->get_length() > 0.0) {
+		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 3));
+	} else {
+		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 1.5));
+	}
+
+	stream_preview_rect->update();
+}
+
+void EditorAudioStreamPicker::_preview_draw() {
+	Ref<AudioStream> audio_stream = get_edited_resource();
+	if (!audio_stream.is_valid()) {
+		get_assign_button()->set_text(TTR("[empty]"));
+		return;
+	}
+
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+
+	get_assign_button()->set_text("");
+
+	Size2i size = stream_preview_rect->get_size();
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+
+	Rect2 rect(Point2(), size);
+
+	if (audio_stream->get_length() > 0) {
+		rect.size.height *= 0.5;
+
+		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
+
+		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
+		float preview_len = preview->get_length();
+
+		Vector<Vector2> lines;
+		lines.resize(size.width * 2);
+
+		for (int i = 0; i < size.width; i++) {
+			float ofs = i * preview_len / size.width;
+			float ofs_n = (i + 1) * preview_len / size.width;
+			float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
+			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
+
+			int idx = i;
+			lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+			lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+		}
+
+		Vector<Color> color;
+		color.push_back(get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")));
+
+		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), lines, color);
+
+		if (tagged_frame_offset_count) {
+			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+
+			for (uint32_t i = 0; i < tagged_frame_offset_count; i++) {
+				int x = CLAMP(tagged_frame_offsets[i] * size.width / preview_len, 0, size.width);
+				if (x == 0) {
+					continue; // Because some may always return 0, ignore offset 0.
+				}
+				stream_preview_rect->draw_rect(Rect2i(x, 0, 2, rect.size.height), accent);
+			}
+		}
+		rect.position.y += rect.size.height;
+	}
+
+	Ref<Texture2D> icon;
+	Color icon_modulate(1, 1, 1, 1);
+
+	if (tagged_frame_offset_count > 0) {
+		icon = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
+		if ((OS::get_singleton()->get_ticks_msec() % 500) > 250) {
+			icon_modulate = Color(1, 0.5, 0.5, 1); // get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		}
+	} else {
+		icon = EditorNode::get_singleton()->get_object_icon(audio_stream.operator->(), "Object");
+	}
+	String text;
+	if (!audio_stream->get_name().is_empty()) {
+		text = audio_stream->get_name();
+	} else if (audio_stream->get_path().is_resource_file()) {
+		text = audio_stream->get_path().get_file();
+	} else {
+		text = audio_stream->get_class().replace_first("AudioStream", "");
+	}
+
+	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 2, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
+	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 2 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width());
+}
+
+EditorAudioStreamPicker::EditorAudioStreamPicker() :
+		EditorResourcePicker(true) {
+	stream_preview_rect = memnew(Control);
+
+	stream_preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	stream_preview_rect->set_offset(SIDE_TOP, 1);
+	stream_preview_rect->set_offset(SIDE_BOTTOM, -1);
+	stream_preview_rect->set_offset(SIDE_RIGHT, -1);
+	stream_preview_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	stream_preview_rect->connect("draw", callable_mp(this, &EditorAudioStreamPicker::_preview_draw));
+
+	get_assign_button()->add_child(stream_preview_rect);
+	get_assign_button()->move_child(stream_preview_rect, 0);
+	set_process_internal(true);
 }

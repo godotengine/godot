@@ -54,4 +54,4 @@ public:
 	void stop();
 };
 
-#endif
+#endif // DEBUG_ADAPTER_SERVER_H

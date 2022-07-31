@@ -1048,13 +1048,13 @@ int TileSet::get_custom_data_layer_by_name(String p_value) const {
 	}
 }
 
-void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
+void TileSet::set_custom_data_layer_name(int p_layer_id, String p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
 
 	// Exit if another property has the same name.
 	if (!p_value.is_empty()) {
 		for (int other_layer_id = 0; other_layer_id < get_custom_data_layers_count(); other_layer_id++) {
-			if (other_layer_id != p_layer_id && get_custom_data_name(other_layer_id) == p_value) {
+			if (other_layer_id != p_layer_id && get_custom_data_layer_name(other_layer_id) == p_value) {
 				ERR_FAIL_MSG(vformat("There is already a custom property named %s", p_value));
 			}
 		}
@@ -1070,12 +1070,12 @@ void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
 	emit_changed();
 }
 
-String TileSet::get_custom_data_name(int p_layer_id) const {
+String TileSet::get_custom_data_layer_name(int p_layer_id) const {
 	ERR_FAIL_INDEX_V(p_layer_id, custom_data_layers.size(), "");
 	return custom_data_layers[p_layer_id].name;
 }
 
-void TileSet::set_custom_data_type(int p_layer_id, Variant::Type p_value) {
+void TileSet::set_custom_data_layer_type(int p_layer_id, Variant::Type p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
 	custom_data_layers.write[p_layer_id].type = p_value;
 
@@ -1086,7 +1086,7 @@ void TileSet::set_custom_data_type(int p_layer_id, Variant::Type p_value) {
 	emit_changed();
 }
 
-Variant::Type TileSet::get_custom_data_type(int p_layer_id) const {
+Variant::Type TileSet::get_custom_data_layer_type(int p_layer_id) const {
 	ERR_FAIL_INDEX_V(p_layer_id, custom_data_layers.size(), Variant::NIL);
 	return custom_data_layers[p_layer_id].type;
 }
@@ -2467,9 +2467,42 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_peering_bit_polygon(Vector
 }
 
 void TileSet::reset_state() {
+	// Rendering
 	occlusion_layers.clear();
+	tile_lines_mesh.instantiate();
+	tile_filled_mesh.instantiate();
+	tile_meshes_dirty = true;
+
+	// Physics
 	physics_layers.clear();
+
+	// Terrains
+	terrain_sets.clear();
+	terrain_meshes.clear();
+	terrain_peering_bits_meshes.clear();
+	per_terrain_pattern_tiles.clear();
+	terrains_cache_dirty = true;
+
+	// Navigation
+	navigation_layers.clear();
+
 	custom_data_layers.clear();
+	custom_data_layers_by_name.clear();
+
+	// Proxies
+	source_level_proxies.clear();
+	coords_level_proxies.clear();
+	alternative_level_proxies.clear();
+
+#ifndef DISABLE_DEPRECATED
+	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
+		memdelete(E.value);
+	}
+	compatibility_data.clear();
+#endif // DISABLE_DEPRECATED
+	while (!source_ids.is_empty()) {
+		remove_source(source_ids[0]);
+	}
 }
 
 const Vector2i TileSetSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
@@ -3003,14 +3036,14 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				while (index >= custom_data_layers.size()) {
 					add_custom_data_layer();
 				}
-				set_custom_data_name(index, p_value);
+				set_custom_data_layer_name(index, p_value);
 				return true;
 			} else if (components[1] == "type") {
 				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
 				while (index >= custom_data_layers.size()) {
 					add_custom_data_layer();
 				}
-				set_custom_data_type(index, Variant::Type(int(p_value)));
+				set_custom_data_layer_type(index, Variant::Type(int(p_value)));
 				return true;
 			}
 		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_int()) {
@@ -3132,10 +3165,10 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			return false;
 		}
 		if (components[1] == "name") {
-			r_ret = get_custom_data_name(index);
+			r_ret = get_custom_data_layer_name(index);
 			return true;
 		} else if (components[1] == "type") {
-			r_ret = get_custom_data_type(index);
+			r_ret = get_custom_data_layer_type(index);
 			return true;
 		}
 	} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_int()) {
@@ -3358,6 +3391,11 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_custom_data_layer", "to_position"), &TileSet::add_custom_data_layer, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("move_custom_data_layer", "layer_index", "to_position"), &TileSet::move_custom_data_layer);
 	ClassDB::bind_method(D_METHOD("remove_custom_data_layer", "layer_index"), &TileSet::remove_custom_data_layer);
+	ClassDB::bind_method(D_METHOD("get_custom_data_layer_by_name", "layer_name"), &TileSet::get_custom_data_layer_by_name);
+	ClassDB::bind_method(D_METHOD("set_custom_data_layer_name", "layer_index", "layer_name"), &TileSet::set_custom_data_layer_name);
+	ClassDB::bind_method(D_METHOD("get_custom_data_layer_name", "layer_index"), &TileSet::get_custom_data_layer_name);
+	ClassDB::bind_method(D_METHOD("set_custom_data_layer_type", "layer_index", "layer_type"), &TileSet::set_custom_data_layer_type);
+	ClassDB::bind_method(D_METHOD("get_custom_data_layer_type", "layer_index"), &TileSet::get_custom_data_layer_type);
 
 	// Tile proxies
 	ClassDB::bind_method(D_METHOD("set_source_level_tile_proxy", "source_from", "source_to"), &TileSet::set_source_level_tile_proxy);
@@ -3456,6 +3494,10 @@ TileSet::~TileSet() {
 void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
 }
+
+void TileSetSource::reset_state() {
+	tile_set = nullptr;
+};
 
 void TileSetSource::_bind_methods() {
 	// Base tiles
@@ -3640,12 +3682,17 @@ void TileSetAtlasSource::remove_custom_data_layer(int p_index) {
 }
 
 void TileSetAtlasSource::reset_state() {
-	// Reset all TileData.
+	tile_set = nullptr;
+
 	for (KeyValue<Vector2i, TileAlternativesData> &E_tile : tiles) {
-		for (KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
-			E_alternative.value->reset_state();
+		for (const KeyValue<int, TileData *> &E_tile_data : E_tile.value.alternatives) {
+			memdelete(E_tile_data.value);
 		}
 	}
+	_coords_mapping_cache.clear();
+	tiles.clear();
+	tiles_ids.clear();
+	_queue_update_padded_texture();
 }
 
 void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
@@ -4805,14 +4852,14 @@ void TileData::notify_tile_data_properties_should_change() {
 	// Convert custom data to the new type.
 	custom_data.resize(tile_set->get_custom_data_layers_count());
 	for (int i = 0; i < custom_data.size(); i++) {
-		if (custom_data[i].get_type() != tile_set->get_custom_data_type(i)) {
+		if (custom_data[i].get_type() != tile_set->get_custom_data_layer_type(i)) {
 			Variant new_val;
 			Callable::CallError error;
-			if (Variant::can_convert(custom_data[i].get_type(), tile_set->get_custom_data_type(i))) {
+			if (Variant::can_convert(custom_data[i].get_type(), tile_set->get_custom_data_layer_type(i))) {
 				const Variant *args[] = { &custom_data[i] };
-				Variant::construct(tile_set->get_custom_data_type(i), new_val, args, 1, error);
+				Variant::construct(tile_set->get_custom_data_layer_type(i), new_val, args, 1, error);
 			} else {
-				Variant::construct(tile_set->get_custom_data_type(i), new_val, nullptr, 0, error);
+				Variant::construct(tile_set->get_custom_data_layer_type(i), new_val, nullptr, 0, error);
 			}
 			custom_data.write[i] = new_val;
 		}
@@ -4973,13 +5020,6 @@ void TileData::move_custom_data_layer(int p_from_index, int p_to_pos) {
 void TileData::remove_custom_data_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, custom_data.size());
 	custom_data.remove_at(p_index);
-}
-
-void TileData::reset_state() {
-	occluders.clear();
-	physics.clear();
-	navigation.clear();
-	custom_data.clear();
 }
 
 void TileData::set_allow_transform(bool p_allow_transform) {
@@ -5626,7 +5666,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			Variant default_val;
 			Callable::CallError error;
 			Variant::construct(custom_data[i].get_type(), default_val, nullptr, 0, error);
-			property_info = PropertyInfo(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
+			property_info = PropertyInfo(tile_set->get_custom_data_layer_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 			if (custom_data[i] == default_val) {
 				property_info.usage ^= PROPERTY_USAGE_STORAGE;
 			}

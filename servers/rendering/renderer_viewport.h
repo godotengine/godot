@@ -48,33 +48,34 @@ public:
 		RID self;
 		RID parent;
 
-		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
+		// use xr interface to override camera positioning and projection matrices and control output
+		bool use_xr = false;
 
 		Size2i internal_size;
 		Size2i size;
 		RID camera;
 		RID scenario;
 
-		RS::ViewportScaling3DMode scaling_3d_mode;
+		RS::ViewportScaling3DMode scaling_3d_mode = RenderingServer::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 		float scaling_3d_scale = 1.0;
 		float fsr_sharpness = 0.2f;
-		float fsr_mipmap_bias = 0.0f;
-		bool fsr_enabled;
-		RS::ViewportUpdateMode update_mode;
+		float texture_mipmap_bias = 0.0f;
+		bool fsr_enabled = false;
+		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
 		RID render_buffers;
 
-		RS::ViewportMSAA msaa;
-		RS::ViewportScreenSpaceAA screen_space_aa;
-		bool use_taa;
-		bool use_debanding;
+		RS::ViewportMSAA msaa = RenderingServer::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportScreenSpaceAA screen_space_aa = RenderingServer::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+		bool use_taa = false;
+		bool use_debanding = false;
 
 		RendererSceneRender::CameraData prev_camera_data;
 		uint64_t prev_camera_data_frame = 0;
 
-		bool use_occlusion_culling;
-		bool occlusion_buffer_dirty;
+		bool use_occlusion_culling = false;
+		bool occlusion_buffer_dirty = false;
 
 		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
@@ -83,10 +84,10 @@ public:
 		bool disable_2d = false;
 		bool disable_environment = false;
 		bool disable_3d = false;
-		bool measure_render_time;
+		bool measure_render_time = false;
 
-		bool snap_2d_transforms_to_pixel;
-		bool snap_2d_vertices_to_pixel;
+		bool snap_2d_transforms_to_pixel = false;
+		bool snap_2d_vertices_to_pixel = false;
 
 		uint64_t time_cpu_begin;
 		uint64_t time_cpu_end;
@@ -95,23 +96,23 @@ public:
 		uint64_t time_gpu_end;
 
 		RID shadow_atlas;
-		int shadow_atlas_size;
+		int shadow_atlas_size = 2048;
 		bool shadow_atlas_16_bits = true;
 
-		bool sdf_active;
+		bool sdf_active = false;
 
 		float mesh_lod_threshold = 1.0;
 
 		uint64_t last_pass = 0;
 
-		RS::ViewportDebugDraw debug_draw;
+		RS::ViewportDebugDraw debug_draw = RenderingServer::VIEWPORT_DEBUG_DRAW_DISABLED;
 
-		RS::ViewportClearMode clear_mode;
+		RS::ViewportClearMode clear_mode = RenderingServer::VIEWPORT_CLEAR_ALWAYS;
 
 		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
-		bool transparent_bg;
+		bool transparent_bg = false;
 
 		struct CanvasKey {
 			int64_t stacking;
@@ -228,7 +229,7 @@ public:
 	void viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode);
 	void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale);
 	void viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness);
-	void viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias);
+	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
 
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
 	void viewport_set_vflip(RID p_viewport, bool p_enable);

@@ -109,7 +109,7 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags);
+	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
@@ -170,6 +170,8 @@ public:
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 
+	Vector<String> get_system_fonts() const;
+	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
@@ -673,6 +675,9 @@ public:
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
+	String get_write_movie_path() const;
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;

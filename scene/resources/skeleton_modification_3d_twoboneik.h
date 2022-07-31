@@ -31,8 +31,8 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
 
-#ifndef SKELETONMODIFICATION3DTWOBONEIK_H
-#define SKELETONMODIFICATION3DTWOBONEIK_H
+#ifndef SKELETON_MODIFICATION_3D_TWOBONEIK_H
+#define SKELETON_MODIFICATION_3D_TWOBONEIK_H
 
 class SkeletonModification3DTwoBoneIK : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DTwoBoneIK, SkeletonModification3D);
@@ -115,4 +115,4 @@ public:
 	~SkeletonModification3DTwoBoneIK();
 };
 
-#endif //SKELETONMODIFICATION3DTWOBONEIK_H
+#endif // SKELETON_MODIFICATION_3D_TWOBONEIK_H

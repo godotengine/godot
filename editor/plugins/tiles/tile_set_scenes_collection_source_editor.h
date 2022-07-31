@@ -142,4 +142,4 @@ public:
 	~TileSetScenesCollectionSourceEditor();
 };
 
-#endif
+#endif // TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H

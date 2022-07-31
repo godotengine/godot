@@ -414,7 +414,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/code_font_custom_variations", "");
 	_initial_set("interface/editor/font_antialiased", true);
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
@@ -544,6 +544,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
 	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
+	_initial_set("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected", true);
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -866,7 +867,6 @@ void EditorSettings::create() {
 		}
 
 		singleton->save_changed_setting = true;
-		singleton->config_file_path = config_file_path;
 
 		print_verbose("EditorSettings: Load OK!");
 
@@ -891,8 +891,8 @@ fail:
 	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
+	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
-	singleton->config_file_path = config_file_path;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
@@ -952,15 +952,10 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path.is_empty()) {
-		ERR_PRINT("Cannot save EditorSettings config, no valid path");
-		return;
-	}
-
-	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
+	Error err = ResourceSaver::save(singleton);
 
 	if (err != OK) {
-		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
+		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {
 		singleton->changed_settings.clear();
 		print_verbose("EditorSettings: Save OK!");
@@ -1102,38 +1097,11 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 	hints[p_hint.name] = p_hint;
 }
 
-// Editor data and config directories
-// EditorPaths::create() is responsible for the creation of these directories.
-
-String EditorSettings::get_templates_dir() const {
-	return EditorPaths::get_singleton()->get_data_dir().plus_file("templates");
-}
-
-String EditorSettings::get_project_settings_dir() const {
-	return EditorPaths::get_singleton()->get_project_data_dir().plus_file("editor");
-}
-
-String EditorSettings::get_text_editor_themes_dir() const {
-	return EditorPaths::get_singleton()->get_config_dir().plus_file("text_editor_themes");
-}
-
-String EditorSettings::get_script_templates_dir() const {
-	return EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates");
-}
-
-String EditorSettings::get_project_script_templates_dir() const {
-	return ProjectSettings::get_singleton()->get("editor/script/templates_search_path");
-}
-
-String EditorSettings::get_feature_profiles_dir() const {
-	return EditorPaths::get_singleton()->get_config_dir().plus_file("feature_profiles");
-}
-
 // Metadata
 
 void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, Variant p_data) {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err;
 	err = cf->load(path);
 	ERR_FAIL_COND_MSG(err != OK && err != ERR_FILE_NOT_FOUND, "Cannot load editor settings from file '" + path + "'.");
@@ -1144,7 +1112,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
 		return p_default;
@@ -1158,7 +1126,7 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
 	} else {
-		favorites_file = get_project_settings_dir().plus_file("favorites");
+		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("favorites");
 	}
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f.is_valid()) {
@@ -1178,7 +1146,7 @@ void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
 	} else {
-		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("recent_dirs");
 	}
 	Ref<FileAccess> f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
 	if (f.is_valid()) {
@@ -1199,8 +1167,8 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
 	} else {
-		favorites_file = get_project_settings_dir().plus_file("favorites");
-		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("favorites");
+		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("recent_dirs");
 	}
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f.is_valid()) {
@@ -1232,7 +1200,7 @@ bool EditorSettings::is_dark_theme() {
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 
-	Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+	Ref<DirAccess> d = DirAccess::open(EditorPaths::get_singleton()->get_text_editor_themes_dir());
 	if (d.is_valid()) {
 		List<String> custom_themes;
 		d->list_dir_begin();
@@ -1263,7 +1231,7 @@ void EditorSettings::load_text_editor_theme() {
 		return; // sorry for "Settings changed" console spam
 	}
 
-	String theme_path = get_text_editor_themes_dir().plus_file(p_file + ".tet");
+	String theme_path = EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(p_file + ".tet");
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error err = cf->load(theme_path);
@@ -1298,9 +1266,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+		Ref<DirAccess> d = DirAccess::open(EditorPaths::get_singleton()->get_text_editor_themes_dir());
 		if (d.is_valid()) {
-			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
+			d->copy(p_file, EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(p_file.get_file()));
 			return true;
 		}
 	}
@@ -1313,7 +1281,7 @@ bool EditorSettings::save_text_editor_theme() {
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
 		return false;
 	}
-	String theme_path = get_text_editor_themes_dir().plus_file(p_file + ".tet");
+	String theme_path = EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(p_file + ".tet");
 	return _save_text_editor_theme(theme_path);
 }
 
@@ -1330,7 +1298,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
 
-		if (p_file.get_base_dir() == get_text_editor_themes_dir()) {
+		if (p_file.get_base_dir() == EditorPaths::get_singleton()->get_text_editor_themes_dir()) {
 			_initial_set("text_editor/theme/color_theme", theme_name);
 			load_text_editor_theme();
 		}
@@ -1346,7 +1314,7 @@ bool EditorSettings::is_default_text_editor_theme() {
 
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
 	Vector<String> templates;
-	String template_dir = get_script_templates_dir();
+	String template_dir = EditorPaths::get_singleton()->get_script_templates_dir();
 	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
@@ -1370,7 +1338,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -1489,7 +1457,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
 			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
@@ -1519,7 +1487,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
 			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
@@ -1652,8 +1620,6 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
-
-	ClassDB::bind_method(D_METHOD("get_project_settings_dir"), &EditorSettings::get_project_settings_dir);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
 	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));

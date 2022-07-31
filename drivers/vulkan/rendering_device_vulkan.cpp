@@ -1834,6 +1834,11 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
 		}
+
+		// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
+		if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format.format != DATA_FORMAT_R8_UINT) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as VRS attachment.");
+		}
 	}
 
 	//some view validation
@@ -3354,6 +3359,11 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 		return false;
 	}
 
+	// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
+	if (p_usage & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format != DATA_FORMAT_R8_UINT) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -3396,7 +3406,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		ERR_FAIL_INDEX_V(p_attachments[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
 		ERR_FAIL_INDEX_V(p_attachments[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
 		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | TEXTURE_USAGE_VRS_ATTACHMENT_BIT)),
-				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth, input or stencil) bit set.");
+				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth-stencil, input or VRS) bit set.");
 
 		VkAttachmentDescription2KHR description = {};
 		description.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
@@ -3762,9 +3772,9 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 		if (context->get_vrs_capabilities().attachment_vrs_supported && pass->vrs_attachment != FramebufferPass::ATTACHMENT_UNUSED) {
 			int32_t attachment = pass->vrs_attachment;
-			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), depth attachment.");
-			ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as vrs, but it's not a vrs attachment.");
-			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer vrs attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer VRS format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), VRS attachment.");
+			ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer VRS format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as VRS, but it's not a VRS attachment.");
+			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer VRS attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 
 			VkAttachmentReference2KHR &vrs_reference = vrs_reference_array[i];
 			vrs_reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
@@ -3807,7 +3817,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		subpass.pNext = subpass_nextptr;
 		subpass.flags = 0;
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.viewMask = view_mask;
+		if (p_view_count == 1) {
+			// VUID-VkSubpassDescription2-multiview-06558: If the multiview feature is not enabled, viewMask must be 0.
+			subpass.viewMask = 0;
+		} else {
+			subpass.viewMask = view_mask;
+		}
 		subpass.inputAttachmentCount = input_references.size();
 		if (input_references.size()) {
 			subpass.pInputAttachments = input_references.ptr();
@@ -3895,8 +3910,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		render_pass_create_info.pDependencies = nullptr;
 	}
 
-	render_pass_create_info.correlatedViewMaskCount = 1;
-	render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+	if (p_view_count == 1) {
+		// VUID-VkRenderPassCreateInfo2-viewMask-03057: If the VkSubpassDescription2::viewMask member of all elements of pSubpasses is 0, correlatedViewMaskCount must be 0.
+		render_pass_create_info.correlatedViewMaskCount = 0;
+		render_pass_create_info.pCorrelatedViewMasks = nullptr;
+	} else {
+		render_pass_create_info.correlatedViewMaskCount = 1;
+		render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+	}
 
 	Vector<uint32_t> view_masks;
 	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
@@ -3997,6 +4018,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	subpass.pNext = nullptr;
 	subpass.flags = 0;
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.viewMask = 0;
 	subpass.inputAttachmentCount = 0; //unsupported for now
 	subpass.pInputAttachments = nullptr;
 	subpass.colorAttachmentCount = 0;

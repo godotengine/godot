@@ -87,7 +87,7 @@ class GDScript : public Script {
 	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, Vector<StringName>> _signals;
-	Vector<Multiplayer::RPCConfig> rpc_functions;
+	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED
 
@@ -250,7 +250,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
+	virtual const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -304,7 +304,7 @@ public:
 
 	void reload_members();
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
+	virtual const Variant get_rpc_config() const;
 
 	GDScriptInstance();
 	~GDScriptInstance();
@@ -524,7 +524,7 @@ public:
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
 public:
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 };

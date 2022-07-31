@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_DEVICE_X11_H
-#define VULKAN_DEVICE_X11_H
+#ifndef VULKAN_CONTEXT_X11_H
+#define VULKAN_CONTEXT_X11_H
 
 #include "drivers/vulkan/vulkan_context.h"
 #include <X11/Xlib.h>
@@ -44,4 +44,4 @@ public:
 	~VulkanContextX11();
 };
 
-#endif // VULKAN_DEVICE_X11_H
+#endif // VULKAN_CONTEXT_X11_H

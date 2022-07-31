@@ -12,12 +12,12 @@ namespace GodotTools.Internals
         public static string UpdateApiAssembliesFromPrebuilt(string config) =>
             internal_UpdateApiAssembliesFromPrebuilt(config);
 
-        public static string FullTemplatesDir =>
-            internal_FullTemplatesDir();
+        public static string FullExportTemplatesDir =>
+            internal_FullExportTemplatesDir();
 
         public static string SimplifyGodotPath(this string path) => internal_SimplifyGodotPath(path);
 
-        public static bool IsOsxAppBundleInstalled(string bundleId) => internal_IsOsxAppBundleInstalled(bundleId);
+        public static bool IsMacOSAppBundleInstalled(string bundleId) => internal_IsMacOSAppBundleInstalled(bundleId);
 
         public static bool GodotIs32Bits() => internal_GodotIs32Bits();
 
@@ -57,13 +57,13 @@ namespace GodotTools.Internals
         private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_FullTemplatesDir();
+        private static extern string internal_FullExportTemplatesDir();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_SimplifyGodotPath(this string path);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_IsOsxAppBundleInstalled(string bundleId);
+        private static extern bool internal_IsMacOSAppBundleInstalled(string bundleId);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_GodotIs32Bits();

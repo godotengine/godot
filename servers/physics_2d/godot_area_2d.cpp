@@ -247,7 +247,7 @@ void GodotArea2D::call_queries() {
 
 				Callable::CallError ce;
 				Variant ret;
-				monitor_callback.call((const Variant **)resptr, 5, ret, ce);
+				monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
 			}
 		} else {
 			monitored_bodies.clear();
@@ -285,7 +285,7 @@ void GodotArea2D::call_queries() {
 
 				Callable::CallError ce;
 				Variant ret;
-				area_monitor_callback.call((const Variant **)resptr, 5, ret, ce);
+				area_monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
 			}
 		} else {
 			monitored_areas.clear();

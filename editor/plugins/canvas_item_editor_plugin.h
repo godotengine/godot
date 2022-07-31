@@ -188,11 +188,10 @@ private:
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
-	HBoxContainer *hb = nullptr;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container = nullptr;
-	HBoxContainer *hbc_context_menu = nullptr;
+	PanelContainer *context_menu_panel = nullptr;
+	HBoxContainer *context_menu_hbox = nullptr;
 
 	Transform2D transform;
 	GridVisibility grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
@@ -215,8 +214,8 @@ private:
 	int primary_grid_steps = 8;
 	int grid_step_multiplier = 0;
 
-	real_t snap_rotation_step = 0.0;
-	real_t snap_rotation_offset = Math::deg2rad(15.0);
+	real_t snap_rotation_step = Math::deg2rad(15.0);
+	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.1f;
 	bool smart_snap_active = false;
 	bool grid_snap_active = false;
@@ -503,8 +502,6 @@ protected:
 
 	static void _bind_methods();
 
-	HBoxContainer *get_panel_hb() { return hb; }
-
 	static CanvasItemEditor *singleton;
 
 public:
@@ -633,4 +630,4 @@ public:
 	~CanvasItemEditorViewport();
 };
 
-#endif //CANVAS_ITEM_EDITOR_PLUGIN_H
+#endif // CANVAS_ITEM_EDITOR_PLUGIN_H

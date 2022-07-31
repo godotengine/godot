@@ -59,17 +59,15 @@ struct hb_sparseset_t
     hb_copy (o, *this);
   }
 
-  void init_shallow () { s.init (); }
   void init ()
   {
     hb_object_init (this);
-    init_shallow ();
+    s.init ();
   }
-  void fini_shallow () { s.fini (); }
   void fini ()
   {
     hb_object_fini (this);
-    fini_shallow ();
+    s.fini ();
   }
 
   explicit operator bool () const { return !is_empty (); }

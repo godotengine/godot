@@ -35,11 +35,11 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/rid.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display_server.h"
-#include "servers/rendering/renderer_thread_pool.h"
 #include "servers/rendering/rendering_device.h"
 
 class RenderingServer : public Object {
@@ -51,8 +51,6 @@ class RenderingServer : public Object {
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
-
-	RendererThreadPool *thread_pool = nullptr;
 
 	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
 	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
@@ -170,6 +168,7 @@ public:
 	virtual RID shader_create() = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
+	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
@@ -798,7 +797,7 @@ public:
 	virtual void viewport_set_scaling_3d_mode(RID p_viewport, ViewportScaling3DMode p_scaling_3d_mode) = 0;
 	virtual void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) = 0;
 	virtual void viewport_set_fsr_sharpness(RID p_viewport, float p_fsr_sharpness) = 0;
-	virtual void viewport_set_fsr_mipmap_bias(RID p_viewport, float p_fsr_mipmap_bias) = 0;
+	virtual void viewport_set_texture_mipmap_bias(RID p_viewport, float p_texture_mipmap_bias) = 0;
 
 	enum ViewportUpdateMode {
 		VIEWPORT_UPDATE_DISABLED,
@@ -1426,9 +1425,9 @@ public:
 
 	virtual void canvas_set_shadow_texture_size(int p_size) = 0;
 
-	/* GLOBAL VARIABLES */
+	/* GLOBAL SHADER UNIFORMS */
 
-	enum GlobalVariableType {
+	enum GlobalShaderUniformType {
 		GLOBAL_VAR_TYPE_BOOL,
 		GLOBAL_VAR_TYPE_BVEC2,
 		GLOBAL_VAR_TYPE_BVEC3,
@@ -1460,20 +1459,20 @@ public:
 		GLOBAL_VAR_TYPE_MAX
 	};
 
-	virtual void global_variable_add(const StringName &p_name, GlobalVariableType p_type, const Variant &p_value) = 0;
-	virtual void global_variable_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_variable_get_list() const = 0;
+	virtual void global_shader_uniform_add(const StringName &p_name, GlobalShaderUniformType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_shader_uniform_get_list() const = 0;
 
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) = 0;
 
-	virtual Variant global_variable_get(const StringName &p_name) const = 0;
-	virtual GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
+	virtual Variant global_shader_uniform_get(const StringName &p_name) const = 0;
+	virtual GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const = 0;
 
-	virtual void global_variables_load_settings(bool p_load_textures) = 0;
-	virtual void global_variables_clear() = 0;
+	virtual void global_shader_uniforms_load_settings(bool p_load_textures) = 0;
+	virtual void global_shader_uniforms_clear() = 0;
 
-	static int global_variable_type_get_shader_datatype(GlobalVariableType p_type);
+	static int global_shader_uniform_type_get_shader_datatype(GlobalShaderUniformType p_type);
 
 	/* FREE */
 
@@ -1649,7 +1648,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
-VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
+VARIANT_ENUM_CAST(RenderingServer::GlobalShaderUniformType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);

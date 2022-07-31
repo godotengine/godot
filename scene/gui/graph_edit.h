@@ -365,4 +365,4 @@ public:
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 
-#endif // GRAPHEdit_H
+#endif // GRAPH_EDIT_H

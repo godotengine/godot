@@ -36,9 +36,11 @@
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 
@@ -217,7 +219,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
 
@@ -287,7 +289,7 @@ void EditorFileSystem::_scan_filesystem() {
 		}
 	}
 
-	String update_cache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
+	String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 
 	if (FileAccess::exists(update_cache)) {
 		{
@@ -330,7 +332,7 @@ void EditorFileSystem::_scan_filesystem() {
 void EditorFileSystem::_save_filesystem_cache() {
 	group_file_cache.clear();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
 
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
@@ -872,7 +874,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_valid = ResourceLoader::is_import_valid(path);
+				fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1023,7 +1025,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 						fi->type = "TextFile";
 					}
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
-					fi->import_valid = ResourceLoader::is_import_valid(path);
+					fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 
 					{
@@ -1455,7 +1457,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
-	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 	for (const String &E : late_update_files) {
@@ -2024,7 +2026,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->type = importer->get_resource_type();
 	fs->files[cpos]->uid = uid;
-	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
+	fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);
@@ -2137,7 +2139,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					data.reimport_from = from;
 					data.reimport_files = reimport_files.ptr();
 
-					import_threads.begin_work(i - from + 1, this, &EditorFileSystem::_reimport_thread, &data);
+					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &data, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 					int current_index = from - 1;
 					do {
 						if (current_index < data.max_index) {
@@ -2145,9 +2147,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);
-					} while (!import_threads.is_done_dispatching());
+					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
 
-					import_threads.end_work();
+					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 					importer->import_threaded_end();
 				}
@@ -2430,12 +2432,10 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	update_script_classes_queued.clear();
-	import_threads.init();
 	ResourceUID::get_singleton()->clear(); //will be updated on scan
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 
 EditorFileSystem::~EditorFileSystem() {
-	import_threads.finish();
 	ResourceSaver::set_get_resource_id_for_path(nullptr);
 }

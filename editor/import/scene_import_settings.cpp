@@ -502,7 +502,7 @@ void SceneImportSettings::_update_camera() {
 	Transform3D xf;
 	xf.basis = Basis(Vector3(1, 0, 0), rot_x) * Basis(Vector3(0, 1, 0), rot_y);
 	xf.origin = center;
-	xf.translate(0, 0, camera_size);
+	xf.translate_local(0, 0, camera_size);
 
 	camera->set_transform(xf);
 }
@@ -1184,7 +1184,7 @@ void SceneImportSettings::_save_dir_confirm() {
 				ERR_CONTINUE(!material_map.has(id));
 				MaterialData &md = material_map[id];
 
-				Error err = ResourceSaver::save(path, md.material);
+				Error err = ResourceSaver::save(md.material, path);
 				if (err != OK) {
 					EditorNode::get_singleton()->add_io_error(TTR("Can't make material external to file, write error:") + "\n\t" + path);
 					continue;

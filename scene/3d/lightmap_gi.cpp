@@ -1219,7 +1219,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	data->set_path(p_image_data_path);
-	Error err = ResourceSaver::save(p_image_data_path, data);
+	Error err = ResourceSaver::save(data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;

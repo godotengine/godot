@@ -323,6 +323,7 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
+	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 }
@@ -2008,7 +2009,7 @@ void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 		}
 		_curve_x = p_curve;
 		if (_curve_x.is_valid()) {
-			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -2021,7 +2022,7 @@ void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 		}
 		_curve_y = p_curve;
 		if (_curve_y.is_valid()) {
-			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -2034,7 +2035,7 @@ void CurveXYZTexture::set_curve_z(Ref<Curve> p_curve) {
 		}
 		_curve_z = p_curve;
 		if (_curve_z.is_valid()) {
-			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}

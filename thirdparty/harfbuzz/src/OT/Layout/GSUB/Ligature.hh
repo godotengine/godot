@@ -5,18 +5,20 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
+template <typename Types>
 struct Ligature
 {
   protected:
-  HBGlyphID16   ligGlyph;               /* GlyphID of ligature to substitute */
-  HeadlessArrayOf<HBGlyphID16>
-                component;              /* Array of component GlyphIDs--start
+  typename Types::HBGlyphID
+		ligGlyph;               /* GlyphID of ligature to substitute */
+  HeadlessArrayOf<typename Types::HBGlyphID>
+		component;              /* Array of component GlyphIDs--start
                                          * with the second  component--ordered
                                          * in writing direction */
   public:
-  DEFINE_SIZE_ARRAY (4, component);
+  DEFINE_SIZE_ARRAY (Types::size + 2, component);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {

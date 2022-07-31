@@ -72,4 +72,4 @@ public:
 	~OpenXRActionSet();
 };
 
-#endif // !OPENXR_ACTION_SET_H
+#endif // OPENXR_ACTION_SET_H

@@ -224,6 +224,7 @@ public:
 	FUNCRIDSPLIT(shader)
 
 	FUNC2(shader_set_code, RID, const String &)
+	FUNC2(shader_set_path_hint, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
 
 	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
@@ -590,7 +591,7 @@ public:
 	FUNC2(viewport_set_scaling_3d_mode, RID, ViewportScaling3DMode)
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
-	FUNC2(viewport_set_fsr_mipmap_bias, RID, float)
+	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 
@@ -899,7 +900,7 @@ public:
 
 	FUNC1(canvas_set_shadow_texture_size, int)
 
-	/* GLOBAL VARIABLES */
+	/* GLOBAL SHADER UNIFORMS */
 
 #undef server_name
 #undef ServerName
@@ -907,16 +908,16 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
-	FUNC3(global_variable_add, const StringName &, GlobalVariableType, const Variant &)
-	FUNC1(global_variable_remove, const StringName &)
-	FUNC0RC(Vector<StringName>, global_variable_get_list)
-	FUNC2(global_variable_set, const StringName &, const Variant &)
-	FUNC2(global_variable_set_override, const StringName &, const Variant &)
-	FUNC1RC(GlobalVariableType, global_variable_get_type, const StringName &)
-	FUNC1RC(Variant, global_variable_get, const StringName &)
+	FUNC3(global_shader_uniform_add, const StringName &, GlobalShaderUniformType, const Variant &)
+	FUNC1(global_shader_uniform_remove, const StringName &)
+	FUNC0RC(Vector<StringName>, global_shader_uniform_get_list)
+	FUNC2(global_shader_uniform_set, const StringName &, const Variant &)
+	FUNC2(global_shader_uniform_set_override, const StringName &, const Variant &)
+	FUNC1RC(GlobalShaderUniformType, global_shader_uniform_get_type, const StringName &)
+	FUNC1RC(Variant, global_shader_uniform_get, const StringName &)
 
-	FUNC1(global_variables_load_settings, bool)
-	FUNC0(global_variables_clear)
+	FUNC1(global_shader_uniforms_load_settings, bool)
+	FUNC0(global_shader_uniforms_clear)
 
 #undef server_name
 #undef ServerName
@@ -980,4 +981,4 @@ public:
 	~RenderingServerDefault();
 };
 
-#endif
+#endif // RENDERING_SERVER_DEFAULT_H

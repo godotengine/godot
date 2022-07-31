@@ -2198,7 +2198,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_fix_selected_and_hovered).unbind(1));
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_source_display).unbind(1));
 	sources_list->connect("item_selected", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::synchronize_sources_list), varray(sources_list, source_sort_button));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileMapEditorTilesPlugin::_update_tile_set_sources_list));
 	split_container_left_side->add_child(sources_list);
@@ -3212,7 +3212,7 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 		terrains_tile_list->set_item_metadata(item_index, list_metadata_dict);
 
 		item_index = terrains_tile_list->add_icon_item(main_vbox_container->get_theme_icon(SNAME("TerrainPath"), SNAME("EditorIcons")));
-		terrains_tile_list->set_item_tooltip(item_index, TTR("Path mode: paints a terrain, thens connects it to the previous tile painted withing the same stroke."));
+		terrains_tile_list->set_item_tooltip(item_index, TTR("Path mode: paints a terrain, thens connects it to the previous tile painted within the same stroke."));
 		list_metadata_dict = Dictionary();
 		list_metadata_dict["type"] = SELECTED_TYPE_PATH;
 		terrains_tile_list->set_item_metadata(item_index, list_metadata_dict);

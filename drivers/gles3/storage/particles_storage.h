@@ -137,4 +137,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !PARTICLES_STORAGE_GLES3_H
+#endif // PARTICLES_STORAGE_GLES3_H

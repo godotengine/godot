@@ -32,8 +32,8 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
 
-#ifndef SKELETONMODIFICATION3DFABRIK_H
-#define SKELETONMODIFICATION3DFABRIK_H
+#ifndef SKELETON_MODIFICATION_3D_FABRIK_H
+#define SKELETON_MODIFICATION_3D_FABRIK_H
 
 class SkeletonModification3DFABRIK : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DFABRIK, SkeletonModification3D);
@@ -121,4 +121,4 @@ public:
 	~SkeletonModification3DFABRIK();
 };
 
-#endif //SKELETONMODIFICATION3DFABRIK_H
+#endif // SKELETON_MODIFICATION_3D_FABRIK_H

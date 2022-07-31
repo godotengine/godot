@@ -33,7 +33,7 @@
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "lsp.hpp"
+#include "godot_lsp.h"
 
 class GDScriptTextDocument : public RefCounted {
 	GDCLASS(GDScriptTextDocument, RefCounted)
@@ -77,4 +77,4 @@ public:
 	GDScriptTextDocument();
 };
 
-#endif
+#endif // GDSCRIPT_TEXT_DOCUMENT_H

@@ -95,8 +95,8 @@ public:
 	Ref<Script> get_script() const override {
 		return Ref<Script>();
 	}
-	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override {
-		return Vector<Multiplayer::RPCConfig>();
+	const Variant get_rpc_config() const override {
+		return Variant();
 	}
 	ScriptLanguage *get_language() override {
 		return nullptr;

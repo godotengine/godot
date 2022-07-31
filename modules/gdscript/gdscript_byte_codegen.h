@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_BYTE_CODEGEN
-#define GDSCRIPT_BYTE_CODEGEN
+#ifndef GDSCRIPT_BYTE_CODEGEN_H
+#define GDSCRIPT_BYTE_CODEGEN_H
 
 #include "gdscript_codegen.h"
 
@@ -419,7 +419,7 @@ public:
 	virtual void start_block() override;
 	virtual void end_block() override;
 
-	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Multiplayer::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) override;
+	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) override;
 	virtual GDScriptFunction *write_end() override;
 
 #ifdef DEBUG_ENABLED
@@ -502,4 +502,4 @@ public:
 	virtual ~GDScriptByteCodeGenerator();
 };
 
-#endif // GDSCRIPT_BYTE_CODEGEN
+#endif // GDSCRIPT_BYTE_CODEGEN_H

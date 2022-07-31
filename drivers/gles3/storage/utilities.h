@@ -156,4 +156,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !UTILITIES_GLES3_H
+#endif // UTILITIES_GLES3_H

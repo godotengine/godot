@@ -57,6 +57,12 @@ class XRServer : public Object {
 	_THREAD_SAFE_CLASS_
 
 public:
+	enum XRMode {
+		XRMODE_DEFAULT, /* Default behaviour, means we check project settings */
+		XRMODE_OFF, /* Ignore project settings, disable OpenXR, disable shaders */
+		XRMODE_ON, /* Ignore project settings, enable OpenXR, enable shaders, run editor in VR (if applicable) */
+	};
+
 	enum TrackerType {
 		TRACKER_HEAD = 0x01, /* tracks the position of the players head (or in case of handheld AR, location of the phone) */
 		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
@@ -75,6 +81,8 @@ public:
 	};
 
 private:
+	static XRMode xr_mode;
+
 	Vector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
 
@@ -90,6 +98,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static XRMode get_xr_mode();
+	static void set_xr_mode(XRMode p_mode);
+
 	static XRServer *get_singleton();
 
 	/*

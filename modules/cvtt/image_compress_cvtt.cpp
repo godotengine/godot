@@ -129,14 +129,6 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 	}
 }
 
-static void _digest_job_queue(void *p_job_queue) {
-	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
-
-	for (uint32_t next_task = job_queue->current_task.increment(); next_task <= job_queue->num_tasks; next_task = job_queue->current_task.increment()) {
-		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
-	}
-}
-
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
 		return; //do not compress, already compressed
@@ -202,7 +194,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	job_queue.job_params.bytes_per_pixel = is_hdr ? 6 : 4;
 	cvtt::Kernels::ConfigureBC7EncodingPlanFromQuality(job_queue.job_params.bc7_plan, 5);
 
-	int num_job_threads = 0;
 	// Amdahl's law (Wikipedia)
 	// If a program needs 20 hours to complete using a single thread, but a one-hour portion of the program cannot be parallelized,
 	// therefore only the remaining 19 hours (p = 0.95) of execution time can be parallelized, then regardless of how many threads are devoted
@@ -229,11 +220,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 			row_task.in_mm_bytes = in_bytes;
 			row_task.out_mm_bytes = out_bytes;
 
-			if (num_job_threads > 0) {
-				tasks.push_back(row_task);
-			} else {
-				_digest_row_task(job_queue.job_params, row_task);
-			}
+			_digest_row_task(job_queue.job_params, row_task);
 
 			out_bytes += 16 * (bw / 4);
 		}
@@ -243,29 +230,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 		h = MAX(h / 2, 1);
 	}
 
-	if (num_job_threads > 0) {
-		Vector<Thread *> threads;
-		threads.resize(num_job_threads);
-
-		Thread **threads_wb = threads.ptrw();
-
-		const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
-
-		job_queue.job_tasks = &tasks_rb[0];
-		job_queue.current_task.set(0);
-		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
-
-		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i] = memnew(Thread);
-			threads_wb[i]->start(_digest_job_queue, &job_queue);
-		}
-		_digest_job_queue(&job_queue);
-
-		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i]->wait_to_finish();
-			memdelete(threads_wb[i]);
-		}
-	}
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 

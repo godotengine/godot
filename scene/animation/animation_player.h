@@ -109,6 +109,9 @@ private:
 		bool loc_used = false;
 		bool rot_used = false;
 		bool scale_used = false;
+		Vector3 init_loc = Vector3(0, 0, 0);
+		Quaternion init_rot = Quaternion(0, 0, 0, 1);
+		Vector3 init_scale = Vector3(1, 1, 1);
 
 		Vector3 loc_accum;
 		Quaternion rot_accum;
@@ -259,6 +262,7 @@ private:
 	bool reset_on_save = true;
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
+	bool movie_quit_on_finish = false;
 	bool processing = false;
 	bool active = true;
 
@@ -312,6 +316,8 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
 
 public:
 	StringName find_animation(const Ref<Animation> &p_animation) const;
@@ -368,6 +374,9 @@ public:
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
 
+	void set_movie_quit_on_finish_enabled(bool p_enabled);
+	bool is_movie_quit_on_finish_enabled() const;
+
 	void seek(double p_time, bool p_update = false);
 	void seek_delta(double p_time, float p_delta);
 	float get_current_animation_position() const;
@@ -395,4 +404,4 @@ public:
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
-#endif
+#endif // ANIMATION_PLAYER_H

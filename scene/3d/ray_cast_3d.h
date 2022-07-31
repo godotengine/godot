@@ -126,4 +126,4 @@ public:
 	RayCast3D();
 };
 
-#endif // RAY_CAST_H
+#endif // RAY_CAST_3D_H

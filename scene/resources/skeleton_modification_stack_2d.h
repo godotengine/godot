@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATIONSTACK2D_H
-#define SKELETONMODIFICATIONSTACK2D_H
+#ifndef SKELETON_MODIFICATION_STACK_2D_H
+#define SKELETON_MODIFICATION_STACK_2D_H
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
@@ -96,4 +96,4 @@ public:
 	SkeletonModificationStack2D();
 };
 
-#endif // SKELETONMODIFICATION2D_H
+#endif // SKELETON_MODIFICATION_STACK_2D_H

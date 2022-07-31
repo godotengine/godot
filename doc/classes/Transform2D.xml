@@ -173,7 +173,7 @@
 				Sets the transform's skew (in radians).
 			</description>
 		</method>
-		<method name="translated" qualifiers="const">
+		<method name="translated_local" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="offset" type="Vector2" />
 			<description>

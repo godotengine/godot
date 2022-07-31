@@ -30,56 +30,59 @@
 
 #include "resource_importer_ogg_vorbis.h"
 
-#include "audio_stream_ogg_vorbis.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "scene/resources/texture.h"
 #include "thirdparty/libogg/ogg/ogg.h"
 #include "thirdparty/libvorbis/vorbis/codec.h"
 
-String ResourceImporterOGGVorbis::get_importer_name() const {
+#ifdef TOOLS_ENABLED
+#include "editor/import/audio_stream_import_settings.h"
+#endif
+
+String ResourceImporterOggVorbis::get_importer_name() const {
 	return "oggvorbisstr";
 }
 
-String ResourceImporterOGGVorbis::get_visible_name() const {
+String ResourceImporterOggVorbis::get_visible_name() const {
 	return "oggvorbisstr";
 }
 
-void ResourceImporterOGGVorbis::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterOggVorbis::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("ogg");
 }
 
-String ResourceImporterOGGVorbis::get_save_extension() const {
+String ResourceImporterOggVorbis::get_save_extension() const {
 	return "oggvorbisstr";
 }
 
-String ResourceImporterOGGVorbis::get_resource_type() const {
-	return "AudioStreamOGGVorbis";
+String ResourceImporterOggVorbis::get_resource_type() const {
+	return "AudioStreamOggVorbis";
 }
 
-bool ResourceImporterOGGVorbis::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+bool ResourceImporterOggVorbis::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
-int ResourceImporterOGGVorbis::get_preset_count() const {
+int ResourceImporterOggVorbis::get_preset_count() const {
 	return 0;
 }
 
-String ResourceImporterOGGVorbis::get_preset_name(int p_idx) const {
+String ResourceImporterOggVorbis::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterOGGVorbis::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterOggVorbis::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,or_greater"), 4));
 }
 
-Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	bool loop = p_options["loop"];
-	float loop_offset = p_options["loop_offset"];
-
-	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
+Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::import_ogg_vorbis(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), Ref<AudioStreamOggVorbis>(), "Cannot open file '" + p_path + "'.");
 
 	uint64_t len = f->get_length();
 
@@ -89,10 +92,10 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 	f->get_buffer(w, len);
 
-	Ref<AudioStreamOGGVorbis> ogg_vorbis_stream;
+	Ref<AudioStreamOggVorbis> ogg_vorbis_stream;
 	ogg_vorbis_stream.instantiate();
 
-	Ref<OGGPacketSequence> ogg_packet_sequence;
+	Ref<OggPacketSequence> ogg_packet_sequence;
 	ogg_packet_sequence.instantiate();
 
 	ogg_stream_state stream_state;
@@ -107,16 +110,16 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	size_t packet_count = 0;
 	bool done = false;
 	while (!done) {
-		ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+		ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
 		while (ogg_sync_pageout(&sync_state, &page) != 1) {
 			if (cursor >= len) {
 				done = true;
 				break;
 			}
-			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
 			char *sync_buf = ogg_sync_buffer(&sync_state, OGG_SYNC_BUFFER_SIZE);
-			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
-			ERR_FAIL_COND_V(cursor > len, Error::ERR_INVALID_DATA);
+			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
+			ERR_FAIL_COND_V(cursor > len, Ref<AudioStreamOggVorbis>());
 			size_t copy_size = len - cursor;
 			if (copy_size > OGG_SYNC_BUFFER_SIZE) {
 				copy_size = OGG_SYNC_BUFFER_SIZE;
@@ -124,22 +127,22 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 			memcpy(sync_buf, &file_data[cursor], copy_size);
 			ogg_sync_wrote(&sync_state, copy_size);
 			cursor += copy_size;
-			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+			ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
 		}
 		if (done) {
 			break;
 		}
-		ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Error::ERR_INVALID_DATA, "Ogg sync error " + itos(err));
+		ERR_FAIL_COND_V_MSG((err = ogg_sync_check(&sync_state)), Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
 
 		// Have a page now.
 		if (!initialized_stream) {
 			if (ogg_stream_init(&stream_state, ogg_page_serialno(&page))) {
-				ERR_FAIL_V_MSG(Error::ERR_OUT_OF_MEMORY, "Failed allocating memory for OGG Vorbis stream.");
+				ERR_FAIL_V_MSG(Ref<AudioStreamOggVorbis>(), "Failed allocating memory for Ogg Vorbis stream.");
 			}
 			initialized_stream = true;
 		}
 		ogg_stream_pagein(&stream_state, &page);
-		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
+		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Ref<AudioStreamOggVorbis>(), "Ogg stream error " + itos(err));
 		int desync_iters = 0;
 
 		Vector<Vector<uint8_t>> packet_data;
@@ -150,7 +153,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 			if (err == -1) {
 				// According to the docs this is usually recoverable, but don't sit here spinning forever.
 				desync_iters++;
-				ERR_FAIL_COND_V_MSG(desync_iters > 100, Error::ERR_INVALID_DATA, "Packet sync issue during ogg import");
+				ERR_FAIL_COND_V_MSG(desync_iters > 100, Ref<AudioStreamOggVorbis>(), "Packet sync issue during Ogg import");
 				continue;
 			} else if (err == 0) {
 				// Not enough data to fully reconstruct a packet. Go on to the next page.
@@ -183,15 +186,48 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	ogg_sync_clear(&sync_state);
 
 	if (ogg_packet_sequence->get_packet_granule_positions().is_empty()) {
-		ERR_FAIL_V_MSG(Error::ERR_FILE_CORRUPT, "OGG Vorbis decoding failed. Check that your data is a valid OGG Vorbis audio stream.");
+		ERR_FAIL_V_MSG(Ref<AudioStreamOggVorbis>(), "Ogg Vorbis decoding failed. Check that your data is a valid Ogg Vorbis audio stream.");
 	}
 
 	ogg_vorbis_stream->set_packet_sequence(ogg_packet_sequence);
-	ogg_vorbis_stream->set_loop(loop);
-	ogg_vorbis_stream->set_loop_offset(loop_offset);
 
-	return ResourceSaver::save(p_save_path + ".oggvorbisstr", ogg_vorbis_stream);
+	return ogg_vorbis_stream;
 }
 
-ResourceImporterOGGVorbis::ResourceImporterOGGVorbis() {
+#ifdef TOOLS_ENABLED
+
+bool ResourceImporterOggVorbis::has_advanced_options() const {
+	return true;
+}
+
+void ResourceImporterOggVorbis::show_advanced_options(const String &p_path) {
+	Ref<AudioStreamOggVorbis> ogg_stream = import_ogg_vorbis(p_path);
+	if (ogg_stream.is_valid()) {
+		AudioStreamImportSettings::get_singleton()->edit(p_path, "oggvorbisstr", ogg_stream);
+	}
+}
+#endif
+
+Error ResourceImporterOggVorbis::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	bool loop = p_options["loop"];
+	float loop_offset = p_options["loop_offset"];
+	double bpm = p_options["bpm"];
+	int beat_count = p_options["beat_count"];
+	int bar_beats = p_options["bar_beats"];
+
+	Ref<AudioStreamOggVorbis> ogg_vorbis_stream = import_ogg_vorbis(p_source_file);
+	if (ogg_vorbis_stream.is_null()) {
+		return ERR_CANT_OPEN;
+	}
+
+	ogg_vorbis_stream->set_loop(loop);
+	ogg_vorbis_stream->set_loop_offset(loop_offset);
+	ogg_vorbis_stream->set_bpm(bpm);
+	ogg_vorbis_stream->set_beat_count(beat_count);
+	ogg_vorbis_stream->set_bar_beats(bar_beats);
+
+	return ResourceSaver::save(ogg_vorbis_stream, p_save_path + ".oggvorbisstr");
+}
+
+ResourceImporterOggVorbis::ResourceImporterOggVorbis() {
 }

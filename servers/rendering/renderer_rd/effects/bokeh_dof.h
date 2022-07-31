@@ -117,4 +117,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !BOKEH_DOF_RD_H
+#endif // BOKEH_DOF_RD_H

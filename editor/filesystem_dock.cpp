@@ -381,7 +381,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
-			current_path->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path), make_binds(false));
+			current_path->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
 
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 
@@ -985,7 +985,9 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			}
 		}
 
-		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
+		String resource_type = ResourceLoader::get_resource_type(fpath);
+
+		if (resource_type == "PackedScene") {
 			bool is_imported = false;
 
 			{
@@ -1005,7 +1007,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			} else {
 				EditorNode::get_singleton()->open_request(fpath);
 			}
-		} else if (ResourceLoader::get_resource_type(fpath) == "AnimationLibrary") {
+		} else if (resource_type == "AnimationLibrary") {
 			bool is_imported = false;
 
 			{
@@ -1025,6 +1027,25 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			} else {
 				EditorNode::get_singleton()->open_request(fpath);
 			}
+		} else if (ResourceLoader::is_imported(fpath)) {
+			// If the importer has advanced settings, show them.
+			int order;
+			bool can_threads;
+			String name;
+			Error err = ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(fpath, order, can_threads, name);
+			bool used_advanced_settings = false;
+			if (err == OK) {
+				Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(name);
+				if (importer.is_valid() && importer->has_advanced_options()) {
+					importer->show_advanced_options(fpath);
+					used_advanced_settings = true;
+				}
+			}
+
+			if (!used_advanced_settings) {
+				EditorNode::get_singleton()->load_resource(fpath);
+			}
+
 		} else {
 			EditorNode::get_singleton()->load_resource(fpath);
 		}
@@ -2032,6 +2053,10 @@ void FileSystemDock::_resource_created() {
 		return;
 	} else if (type_name == "VisualShader") {
 		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 1);
+		make_shader_dialog->popup_centered();
+		return;
+	} else if (type_name == "ShaderInclude") {
+		make_shader_dialog->config(fpath.plus_file("new_shader_include"), false, false, 2);
 		make_shader_dialog->popup_centered();
 		return;
 	}
@@ -3054,7 +3079,7 @@ FileSystemDock::FileSystemDock() {
 	tree_search_box = memnew(LineEdit);
 	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	tree_search_box->set_placeholder(TTR("Filter Files"));
-	tree_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(tree_search_box));
+	tree_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed).bind(tree_search_box));
 	toolbar2_hbc->add_child(tree_search_box);
 
 	tree_button_sort = _create_file_menu_button();
@@ -3099,7 +3124,7 @@ FileSystemDock::FileSystemDock() {
 	file_list_search_box = memnew(LineEdit);
 	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_search_box->set_placeholder(TTR("Filter Files"));
-	file_list_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(file_list_search_box));
+	file_list_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
 
 	file_list_button_sort = _create_file_menu_button();
@@ -3147,7 +3172,7 @@ FileSystemDock::FileSystemDock() {
 	move_dialog = memnew(EditorDirDialog);
 	move_dialog->set_ok_button_text(TTR("Move"));
 	add_child(move_dialog);
-	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm), make_binds(false));
+	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm).bind(false));
 
 	rename_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *rename_dialog_vb = memnew(VBoxContainer);

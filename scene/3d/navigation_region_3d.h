@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_REGION_H
-#define NAVIGATION_REGION_H
+#ifndef NAVIGATION_REGION_3D_H
+#define NAVIGATION_REGION_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -44,10 +44,21 @@ class NavigationRegion3D : public Node3D {
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 
-	Node *debug_view = nullptr;
 	Thread bake_thread;
 
 	void _navigation_changed();
+
+#ifdef DEBUG_ENABLED
+	RID debug_instance;
+	RID debug_edge_connections_instance;
+	Ref<ArrayMesh> debug_mesh;
+	Ref<ArrayMesh> debug_edge_connections_mesh;
+
+private:
+	void _update_debug_mesh();
+	void _update_debug_edge_connections_mesh();
+	void _navigation_map_changed(RID p_map);
+#endif // DEBUG_ENABLED
 
 protected:
 	void _notification(int p_what);
@@ -85,4 +96,4 @@ public:
 	~NavigationRegion3D();
 };
 
-#endif // NAVIGATION_REGION_H
+#endif // NAVIGATION_REGION_3D_H

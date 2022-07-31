@@ -93,7 +93,7 @@ HB_BEGIN_DECLS
  * This method should retrieve the glyph ID for a specified Unicode code point
  * font, with an optional variation selector.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  * Deprecated: 1.2.3
  *
  **/

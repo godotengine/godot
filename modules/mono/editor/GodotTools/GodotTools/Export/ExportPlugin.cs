@@ -337,7 +337,7 @@ namespace GodotTools.Export
 
             string TemplateDirName() => $"data.mono.{platform}.{bits}.{target}";
 
-            string templateDirPath = Path.Combine(Internal.FullTemplatesDir, TemplateDirName());
+            string templateDirPath = Path.Combine(Internal.FullExportTemplatesDir, TemplateDirName());
             bool validTemplatePathFound = true;
 
             if (!Directory.Exists(templateDirPath))
@@ -347,7 +347,7 @@ namespace GodotTools.Export
                 if (isDebug)
                 {
                     target = "debug"; // Support both 'release_debug' and 'debug' for the template data directory name
-                    templateDirPath = Path.Combine(Internal.FullTemplatesDir, TemplateDirName());
+                    templateDirPath = Path.Combine(Internal.FullExportTemplatesDir, TemplateDirName());
                     validTemplatePathFound = true;
 
                     if (!Directory.Exists(templateDirPath))
@@ -380,7 +380,7 @@ namespace GodotTools.Export
 
         private static bool PlatformHasTemplateDir(string platform)
         {
-            // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
+            // macOS export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
             return !new[] { OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform);
         }
 
@@ -398,13 +398,13 @@ namespace GodotTools.Export
 
         private static string GetBclProfileDir(string profile)
         {
-            string templatesDir = Internal.FullTemplatesDir;
+            string templatesDir = Internal.FullExportTemplatesDir;
             return Path.Combine(templatesDir, "bcl", profile);
         }
 
         private static string DeterminePlatformBclDir(string platform)
         {
-            string templatesDir = Internal.FullTemplatesDir;
+            string templatesDir = Internal.FullExportTemplatesDir;
             string platformBclDir = Path.Combine(templatesDir, "bcl", platform);
 
             if (!File.Exists(Path.Combine(platformBclDir, "mscorlib.dll")))

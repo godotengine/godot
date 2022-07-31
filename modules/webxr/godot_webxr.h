@@ -82,4 +82,4 @@ extern int *godot_webxr_get_bounds_geometry();
 }
 #endif
 
-#endif /* GODOT_WEBXR_H */
+#endif // GODOT_WEBXR_H

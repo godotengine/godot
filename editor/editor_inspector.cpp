@@ -554,7 +554,7 @@ void EditorProperty::_focusable_focused(int p_index) {
 }
 
 void EditorProperty::add_focusable(Control *p_control) {
-	p_control->connect("focus_entered", callable_mp(this, &EditorProperty::_focusable_focused), varray(focusables.size()));
+	p_control->connect("focus_entered", callable_mp(this, &EditorProperty::_focusable_focused).bind(focusables.size()));
 	focusables.push_back(p_control);
 }
 
@@ -1637,7 +1637,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 			Variant return_value;
 			Callable::CallError call_error;
-			move_function.call(args_p, 5, return_value, call_error);
+			move_function.callp(args_p, 5, return_value, call_error);
 		} else {
 			WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 		}
@@ -1712,7 +1712,7 @@ void EditorInspectorArray::_clear_array() {
 				const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 				Variant return_value;
 				Callable::CallError call_error;
-				move_function.call(args_p, 5, return_value, call_error);
+				move_function.callp(args_p, 5, return_value, call_error);
 			} else {
 				WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 			}
@@ -1765,7 +1765,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 					Variant return_value;
 					Callable::CallError call_error;
-					move_function.call(args_p, 5, return_value, call_error);
+					move_function.callp(args_p, 5, return_value, call_error);
 				} else {
 					WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 				}
@@ -1784,7 +1784,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 					Variant return_value;
 					Callable::CallError call_error;
-					move_function.call(args_p, 5, return_value, call_error);
+					move_function.callp(args_p, 5, return_value, call_error);
 				} else {
 					WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 				}
@@ -1931,8 +1931,8 @@ void EditorInspectorArray::_setup() {
 		ae.panel->set_tooltip(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
 		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
-		ae.panel->connect("draw", callable_bind(callable_mp(this, &EditorInspectorArray::_panel_draw), i));
-		ae.panel->connect("gui_input", callable_bind(callable_mp(this, &EditorInspectorArray::_panel_gui_input), i));
+		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
+		ae.panel->connect("gui_input", callable_mp(this, &EditorInspectorArray::_panel_gui_input).bind(i));
 		ae.panel->add_theme_style_override(SNAME("panel"), i % 2 ? odd_style : even_style);
 		elements_vbox->add_child(ae.panel);
 
@@ -2026,8 +2026,8 @@ void EditorInspectorArray::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), SNAME("Editor"));
-			odd_style->set_bg_color(color.lightened(0.15));
-			even_style->set_bg_color(color.darkened(0.15));
+			odd_style->set_bg_color(color.darkened(-0.08));
+			even_style->set_bg_color(color.darkened(0.08));
 
 			for (int i = 0; i < (int)array_elements.size(); i++) {
 				ArrayElement &ae = array_elements[i];
@@ -2339,14 +2339,14 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 			ep->object = object;
 			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), varray(), CONNECT_DEFERRED);
+			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
 			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
 			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
 			ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-			ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
-			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
+			ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 			if (F.properties.size()) {
 				if (F.properties.size() == 1) {
@@ -2821,7 +2821,7 @@ void EditorInspector::update_tree() {
 				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
-				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request), varray(array_element_prefix));
+				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 				editor_inspector_array->set_undo_redo(undo_redo);
 			} else if (p.type == Variant::INT) {
 				// Setup the array to use the count property and built-in functions to create/move/delete elements.
@@ -2831,7 +2831,7 @@ void EditorInspector::update_tree() {
 					editor_inspector_array = memnew(EditorInspectorArray);
 					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, use_folding);
-					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request), varray(array_element_prefix));
+					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 					editor_inspector_array->set_undo_redo(undo_redo);
 				}
 			}
@@ -2987,16 +2987,16 @@ void EditorInspector::update_tree() {
 			if (ep) {
 				// Eventually, set other properties/signals after the property editor got added to the tree.
 				bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
-				ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed), varray(update_all));
+				ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(update_all));
 				ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-				ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), varray(), CONNECT_DEFERRED);
+				ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
 				ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
 				ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
 				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
-				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
+				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 				if (!doc_info.description.is_empty()) {
 					ep->set_tooltip(property_prefix + p.name + "::" + doc_info.description);
 				} else {
@@ -3298,7 +3298,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			Variant return_value;
 			Callable::CallError call_error;
 
-			callback.call(p_arguments, 4, return_value, call_error);
+			callback.callp(p_arguments, 4, return_value, call_error);
 			if (call_error.error != Callable::CallError::CALL_OK) {
 				ERR_PRINT("Invalid UndoRedo callback.");
 			}
@@ -3558,7 +3558,7 @@ void EditorInspector::_notification(int p_what) {
 				if (refresh_countdown <= 0) {
 					for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
 						for (EditorProperty *E : F.value) {
-							if (!E->is_cache_valid()) {
+							if (E && !E->is_cache_valid()) {
 								E->update_property();
 								E->update_revert_and_pin_status();
 								E->update_cache();
@@ -3704,20 +3704,25 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 			added.insert(pi.name);
 
 			r_list.insert_before(insert_here, pi);
+
+			List<PropertyInfo>::Element *prop_below = bottom->next();
+			while (prop_below) {
+				if (prop_below->get() == pi) {
+					List<PropertyInfo>::Element *to_delete = prop_below;
+					prop_below = prop_below->next();
+					r_list.erase(to_delete);
+				} else {
+					prop_below = prop_below->next();
+				}
+			}
 		}
 
 		// Script Variables -> NodeA (insert_here) -> A props... -> bottom
 		insert_here = category;
 	}
 
-	// NodeC -> C props... -> NodeB..C..
 	if (script_variables) {
 		r_list.erase(script_variables);
-		List<PropertyInfo>::Element *to_delete = bottom->next();
-		while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
-			r_list.erase(to_delete);
-			to_delete = bottom->next();
-		}
 		r_list.erase(bottom);
 	}
 }

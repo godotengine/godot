@@ -129,10 +129,10 @@ layout(set = 0, binding = 13, std430) restrict readonly buffer Decals {
 }
 decals;
 
-layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 struct SDFVoxelGICascadeData {
 	vec3 position;

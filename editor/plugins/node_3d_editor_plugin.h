@@ -227,6 +227,9 @@ private:
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
 
+	Label *preview_material_label = nullptr;
+	Label *preview_material_label_desc = nullptr;
+
 	VBoxContainer *top_right_vbox = nullptr;
 	ViewportRotationControl *rotation_control = nullptr;
 	Gradient *frame_time_gradient = nullptr;
@@ -244,7 +247,7 @@ private:
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
 	void _select_clicked(bool p_allow_locked);
-	ObjectID _select_ray(const Point2 &p_pos);
+	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
 	Vector3 _get_ray(const Vector2 &p_pos) const;
@@ -272,6 +275,7 @@ private:
 	float get_fov() const;
 
 	ObjectID clicked;
+	ObjectID material_target;
 	Vector<_RayResult> selection_results;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
@@ -399,8 +403,11 @@ private:
 
 	Node *_sanitize_preview_node(Node *p_node) const;
 
-	void _create_preview(const Vector<String> &files) const;
-	void _remove_preview();
+	void _create_preview_node(const Vector<String> &files) const;
+	void _remove_preview_node();
+	bool _apply_preview_material(ObjectID p_target, const Point2 &p_point) const;
+	void _reset_preview_material() const;
+	void _remove_preview_material();
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
 	void _perform_drop_data();
@@ -560,7 +567,7 @@ private:
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled = false;
 	bool grid_init_draw = false;
-	Camera3D::Projection grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;
+	Camera3D::ProjectionType grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;
 	Vector3 grid_camera_last_update_position = Vector3();
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3], axis_gizmo[3];
@@ -592,6 +599,11 @@ private:
 	// Scene drag and drop support
 	Node3D *preview_node = nullptr;
 	AABB preview_bounds;
+
+	Ref<Material> preview_material;
+	Ref<Material> preview_reset_material;
+	ObjectID preview_material_target;
+	int preview_material_surface = -1;
 
 	struct Gizmo {
 		bool visible = false;
@@ -664,11 +676,10 @@ private:
 	void _menu_gizmo_toggled(int p_option);
 	void _update_camera_override_button(bool p_game_running);
 	void _update_camera_override_viewport(Object *p_viewport);
-	HBoxContainer *hbc_menu = nullptr;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container = nullptr;
-	HBoxContainer *hbc_context_menu = nullptr;
+	PanelContainer *context_menu_panel = nullptr;
+	HBoxContainer *context_menu_hbox = nullptr;
 
 	void _generate_selection_boxes();
 	UndoRedo *undo_redo = nullptr;
@@ -850,6 +861,15 @@ public:
 	}
 
 	void set_can_preview(Camera3D *p_preview);
+
+	void set_preview_material(Ref<Material> p_material) { preview_material = p_material; }
+	Ref<Material> get_preview_material() { return preview_material; }
+	void set_preview_reset_material(Ref<Material> p_material) { preview_reset_material = p_material; }
+	Ref<Material> get_preview_reset_material() const { return preview_reset_material; }
+	void set_preview_material_target(ObjectID p_object_id) { preview_material_target = p_object_id; }
+	ObjectID get_preview_material_target() const { return preview_material_target; }
+	void set_preview_material_surface(int p_surface) { preview_material_surface = p_surface; }
+	int get_preview_material_surface() const { return preview_material_surface; }
 
 	Node3DEditorViewport *get_editor_viewport(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);

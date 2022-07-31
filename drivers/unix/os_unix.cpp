@@ -65,7 +65,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined(OSX_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
+#if defined(MACOS_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
 // Random location for getentropy. Fitting.
 #include <sys/random.h>
 #define UNIX_GET_ENTROPY

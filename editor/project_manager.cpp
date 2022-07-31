@@ -491,7 +491,7 @@ private:
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("icon.png"), create_unscaled_default_project_icon());
+						ResourceSaver::save(create_unscaled_default_project_icon(), dir.plus_file("icon.png"));
 						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
 					}
 				} else if (mode == MODE_INSTALL) {
@@ -646,14 +646,6 @@ private:
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method("_browse_path", &ProjectDialog::_browse_path);
-		ClassDB::bind_method("_create_folder", &ProjectDialog::_create_folder);
-		ClassDB::bind_method("_text_changed", &ProjectDialog::_text_changed);
-		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
-		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
-		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
-		ClassDB::bind_method("_install_path_selected", &ProjectDialog::_install_path_selected);
-		ClassDB::bind_method("_browse_install_path", &ProjectDialog::_browse_install_path);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("projects_updated"));
 	}
@@ -1348,8 +1340,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	Color font_color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
-	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input), varray(hb));
+	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
+	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 	hb->set_tooltip(item.description);
 
@@ -1360,7 +1352,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite->set_normal_texture(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
-	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
+	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
 	favorite_box->add_child(favorite);
 	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hb->add_child(favorite_box);
@@ -1433,7 +1425,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		path_hb->add_child(show);
 
 		if (!item.missing) {
-			show->connect("pressed", callable_mp(this, &ProjectList::_show_project), varray(item.path));
+			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
 			show->set_tooltip(TTR("Show in File Manager"));
 		} else {
 			show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
@@ -1998,7 +1990,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		// Pressing Command + Q quits the Project Manager
 		// This is handled by the platform implementation on macOS,
 		// so only define the shortcut on other platforms
-#ifndef OSX_ENABLED
+#ifndef MACOS_ENABLED
 		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::Q)) {
 			_dim_window();
 			get_tree()->quit();
@@ -2451,7 +2443,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 		}
 		if (confirm) {
 			multi_scan_ask->get_ok_button()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
-			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
+			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders).bind(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
 			multi_scan_ask->popup_centered();

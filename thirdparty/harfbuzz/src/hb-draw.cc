@@ -120,6 +120,7 @@ hb_draw_funcs_set_##name##_func (hb_draw_funcs_t	 *dfuncs,		\
     if (dfuncs->destroy)						\
       dfuncs->destroy->name = nullptr;					\
   }									\
+  return;                                                                \
                                                                          \
 fail:                                                                    \
   if (destroy)                                                           \
@@ -137,7 +138,7 @@ HB_DRAW_FUNCS_IMPLEMENT_CALLBACKS
  * Return value: (transfer full):
  * A newly allocated #hb_draw_funcs_t with a reference count of 1. The initial
  * reference count should be released with hb_draw_funcs_destroy when you are
- * done using the #hb_draw_funcs_t. This function never returns %NULL. If
+ * done using the #hb_draw_funcs_t. This function never returns `NULL`. If
  * memory cannot be allocated, a special singleton #hb_draw_funcs_t object will
  * be returned.
  *
@@ -208,6 +209,9 @@ hb_draw_funcs_destroy (hb_draw_funcs_t *dfuncs)
 #undef HB_DRAW_FUNC_IMPLEMENT
   }
 
+  hb_free (dfuncs->destroy);
+  hb_free (dfuncs->user_data);
+
   hb_free (dfuncs);
 }
 
@@ -234,7 +238,7 @@ hb_draw_funcs_make_immutable (hb_draw_funcs_t *dfuncs)
  *
  * Checks whether @dfuncs is immutable.
  *
- * Return value: %true if @dfuncs is immutable, %false otherwise
+ * Return value: `true` if @dfuncs is immutable, `false` otherwise
  *
  * Since: 4.0.0
  **/

@@ -358,6 +358,7 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
+	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
 	virtual String get_class() const override {                                                                                                  \
 		if (_get_extension()) {                                                                                                                  \
 			return _get_extension()->class_name.operator String();                                                                               \
@@ -509,7 +510,6 @@ public:
 		Callable callable;
 
 		uint32_t flags = 0;
-		Vector<Variant> binds;
 		bool operator<(const Connection &p_conn) const;
 
 		operator Variant() const;
@@ -667,6 +667,8 @@ public: // Should be protected, but bug in clang++.
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
+	static constexpr bool _class_is_enabled = true;
+
 	void notify_property_list_changed();
 
 	static void *get_class_ptr_static() {
@@ -826,7 +828,7 @@ public:
 	int get_persistent_signal_connection_count() const;
 	void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	Error connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0);
+	Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
 	void disconnect(const StringName &p_signal, const Callable &p_callable);
 	bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 

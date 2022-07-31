@@ -319,7 +319,7 @@ bool CollisionObject3D::_are_collision_shapes_visible() {
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 	if (_are_collision_shapes_visible()) {
 		if (debug_shapes_to_update.is_empty()) {
-			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferred({}, 0);
+			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferredp({}, 0);
 		}
 		debug_shapes_to_update.insert(p_owner);
 	}
@@ -365,8 +365,7 @@ void CollisionObject3D::_update_debug_shapes() {
 					RS::get_singleton()->instance_set_scenario(s.debug_shape, get_world_3d()->get_scenario());
 
 					if (!s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_shape_changed))) {
-						s.shape->connect("changed", callable_mp(this, &CollisionObject3D::_shape_changed),
-								varray(s.shape), CONNECT_DEFERRED);
+						s.shape->connect("changed", callable_mp(this, &CollisionObject3D::_shape_changed).bind(s.shape), CONNECT_DEFERRED);
 					}
 
 					++debug_shapes_count;
@@ -404,6 +403,9 @@ void CollisionObject3D::_on_transform_changed() {
 		debug_shape_old_transform = get_global_transform();
 		for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 			ShapeData &shapedata = E.value;
+			if (shapedata.disabled) {
+				continue; // If disabled then there are no debug shapes to update.
+			}
 			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);

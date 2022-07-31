@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SOFT_DYNAMIC_BODY_H
-#define SOFT_DYNAMIC_BODY_H
+#ifndef SOFT_DYNAMIC_BODY_3D_H
+#define SOFT_DYNAMIC_BODY_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
@@ -199,4 +199,4 @@ private:
 
 VARIANT_ENUM_CAST(SoftDynamicBody3D::DisableMode);
 
-#endif // SOFT_DYNAMIC_BODY_H
+#endif // SOFT_DYNAMIC_BODY_3D_H

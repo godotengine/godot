@@ -32,21 +32,21 @@
 #define LINUXBSD_EXPORT_PLUGIN_H
 
 #include "core/io/file_access.h"
-#include "editor/editor_export.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export_platform_pc.h"
 #include "platform/linuxbsd/logo.gen.h"
 #include "scene/resources/texture.h"
 
 class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
-	HashMap<String, String> extensions;
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 public:
 	void set_extension(const String &p_extension, const String &p_feature_key = "default");
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
+	virtual void get_export_options(List<ExportOption> *r_options) override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual String get_template_file_name(const String &p_target, const String &p_arch) const override;
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 };
 
-#endif
+#endif // LINUXBSD_EXPORT_PLUGIN_H

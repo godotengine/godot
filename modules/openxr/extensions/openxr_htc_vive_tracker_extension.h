@@ -49,4 +49,4 @@ private:
 	bool available = false;
 };
 
-#endif // !OPENXR_HTC_VIVE_TRACKER_EXTENSION_H
+#endif // OPENXR_HTC_VIVE_TRACKER_EXTENSION_H

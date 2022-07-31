@@ -4,7 +4,7 @@
 		Meta class for playing back audio.
 	</brief_description>
 	<description>
-		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOGGVorbis] for usage.
+		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOggVorbis] for usage.
 	</description>
 	<tutorials>
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
@@ -46,6 +46,11 @@
 			</description>
 		</method>
 		<method name="_stop" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_tag_used_streams" qualifiers="virtual">
 			<return type="void" />
 			<description>
 			</description>

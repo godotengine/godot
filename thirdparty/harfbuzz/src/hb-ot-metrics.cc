@@ -71,12 +71,12 @@ _hb_ot_metrics_get_position_common (hb_font_t           *font,
 #endif
 #define GET_METRIC_X(TABLE, ATTR) \
   (face->table.TABLE->has_data () && \
-    (position && (*position = font->em_scalef_x (_fix_ascender_descender ( \
-      face->table.TABLE->ATTR + GET_VAR, metrics_tag))), true))
+    ((void) (position && (*position = font->em_scalef_x (_fix_ascender_descender ( \
+      face->table.TABLE->ATTR + GET_VAR, metrics_tag)))), true))
 #define GET_METRIC_Y(TABLE, ATTR) \
   (face->table.TABLE->has_data () && \
-    (position && (*position = font->em_scalef_y (_fix_ascender_descender ( \
-      face->table.TABLE->ATTR + GET_VAR, metrics_tag))), true))
+    ((void) (position && (*position = font->em_scalef_y (_fix_ascender_descender ( \
+      face->table.TABLE->ATTR + GET_VAR, metrics_tag)))), true))
 
   case HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER:
     return (face->table.OS2->use_typo_metrics () && GET_METRIC_Y (OS2, sTypoAscender)) ||
@@ -154,10 +154,10 @@ hb_ot_metrics_get_position (hb_font_t           *font,
 #endif
 #define GET_METRIC_X(TABLE, ATTR) \
   (face->table.TABLE->has_data () && \
-    (position && (*position = font->em_scalef_x (face->table.TABLE->ATTR + GET_VAR)), true))
+    ((void) (position && (*position = font->em_scalef_x (face->table.TABLE->ATTR + GET_VAR))), true))
 #define GET_METRIC_Y(TABLE, ATTR) \
   (face->table.TABLE->has_data () && \
-    (position && (*position = font->em_scalef_y (face->table.TABLE->ATTR + GET_VAR)), true))
+    ((void) (position && (*position = font->em_scalef_y (face->table.TABLE->ATTR + GET_VAR))), true))
   case HB_OT_METRICS_TAG_HORIZONTAL_CLIPPING_ASCENT:  return GET_METRIC_Y (OS2, usWinAscent);
   case HB_OT_METRICS_TAG_HORIZONTAL_CLIPPING_DESCENT: return GET_METRIC_Y (OS2, usWinDescent);
 

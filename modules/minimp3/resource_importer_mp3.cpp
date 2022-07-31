@@ -34,6 +34,10 @@
 #include "core/io/resource_saver.h"
 #include "scene/resources/texture.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/import/audio_stream_import_settings.h"
+#endif
+
 String ResourceImporterMP3::get_importer_name() const {
 	return "mp3";
 }
@@ -69,14 +73,26 @@ String ResourceImporterMP3::get_preset_name(int p_idx) const {
 void ResourceImporterMP3::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,or_greater"), 4));
 }
 
-Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	bool loop = p_options["loop"];
-	float loop_offset = p_options["loop_offset"];
+#ifdef TOOLS_ENABLED
+bool ResourceImporterMP3::has_advanced_options() const {
+	return true;
+}
+void ResourceImporterMP3::show_advanced_options(const String &p_path) {
+	Ref<AudioStreamMP3> mp3_stream = import_mp3(p_path);
+	if (mp3_stream.is_valid()) {
+		AudioStreamImportSettings::get_singleton()->edit(p_path, "mp3", mp3_stream);
+	}
+}
+#endif
 
-	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
-	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
+Ref<AudioStreamMP3> ResourceImporterMP3::import_mp3(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V(f.is_null(), Ref<AudioStreamMP3>());
 
 	uint64_t len = f->get_length();
 
@@ -90,11 +106,29 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	mp3_stream.instantiate();
 
 	mp3_stream->set_data(data);
-	ERR_FAIL_COND_V(!mp3_stream->get_data().size(), ERR_FILE_CORRUPT);
+	ERR_FAIL_COND_V(!mp3_stream->get_data().size(), Ref<AudioStreamMP3>());
+
+	return mp3_stream;
+}
+
+Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	bool loop = p_options["loop"];
+	float loop_offset = p_options["loop_offset"];
+	double bpm = p_options["bpm"];
+	float beat_count = p_options["beat_count"];
+	float bar_beats = p_options["bar_beats"];
+
+	Ref<AudioStreamMP3> mp3_stream = import_mp3(p_source_file);
+	if (mp3_stream.is_null()) {
+		return ERR_CANT_OPEN;
+	}
 	mp3_stream->set_loop(loop);
 	mp3_stream->set_loop_offset(loop_offset);
+	mp3_stream->set_bpm(bpm);
+	mp3_stream->set_beat_count(beat_count);
+	mp3_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(p_save_path + ".mp3str", mp3_stream);
+	return ResourceSaver::save(mp3_stream, p_save_path + ".mp3str");
 }
 
 ResourceImporterMP3::ResourceImporterMP3() {

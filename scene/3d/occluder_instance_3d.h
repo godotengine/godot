@@ -211,4 +211,4 @@ public:
 	~OccluderInstance3D();
 };
 
-#endif
+#endif // OCCLUDER_INSTANCE_3D_H

@@ -158,4 +158,4 @@ public:
 	TileAtlasView();
 };
 
-#endif // TILE_ATLAS_VIEW
+#endif // TILE_ATLAS_VIEW_H

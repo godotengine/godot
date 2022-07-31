@@ -733,7 +733,7 @@ void Node3D::rotate_z(real_t p_angle) {
 
 void Node3D::translate(const Vector3 &p_offset) {
 	Transform3D t = get_transform();
-	t.translate(p_offset);
+	t.translate_local(p_offset);
 	set_transform(t);
 }
 
@@ -741,7 +741,7 @@ void Node3D::translate_object_local(const Vector3 &p_offset) {
 	Transform3D t = get_transform();
 
 	Transform3D s;
-	s.translate(p_offset);
+	s.translate_local(p_offset);
 	set_transform(t * s);
 }
 

@@ -55,6 +55,9 @@ struct hb_subset_plan_t
   //layout features which will be preserved
   hb_set_t *layout_features;
 
+  // layout scripts which will be preserved.
+  hb_set_t *layout_scripts;
+
   //glyph ids requested to retain
   hb_set_t *glyphs_requested;
 
@@ -103,7 +106,33 @@ struct hb_subset_plan_t
   //Old -> New layout item variation store delta set index mapping
   hb_map_t *layout_variation_idx_map;
 
+  hb_hashmap_t<hb_tag_t, hb::unique_ptr<hb_blob_t>>* sanitized_table_cache;
+  //normalized axes location map
+  hb_hashmap_t<hb_tag_t, int> *axes_location;
+  //user specified axes location map
+  hb_hashmap_t<hb_tag_t, float> *user_axes_location;
+  bool all_axes_pinned;
+
  public:
+
+  template<typename T>
+  hb_blob_ptr_t<T> source_table()
+  {
+    if (sanitized_table_cache
+        && !sanitized_table_cache->in_error ()
+        && sanitized_table_cache->has (T::tableTag)) {
+      return hb_blob_reference (sanitized_table_cache->get (T::tableTag).get ());
+    }
+
+    hb::unique_ptr<hb_blob_t> table_blob {hb_sanitize_context_t ().reference_table<T> (source)};
+    hb_blob_t* ret = hb_blob_reference (table_blob.get ());
+
+    if (likely (sanitized_table_cache))
+      sanitized_table_cache->set (T::tableTag,
+                                  std::move (table_blob));
+
+    return ret;
+  }
 
   bool in_error () const { return !successful; }
 

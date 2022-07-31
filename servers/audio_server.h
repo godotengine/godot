@@ -43,7 +43,7 @@
 
 class AudioDriverDummy;
 class AudioStream;
-class AudioStreamSample;
+class AudioStreamWAV;
 class AudioStreamPlayback;
 
 class AudioDriver {
@@ -186,6 +186,8 @@ private:
 	int to_mix = 0;
 
 	float playback_speed_scale = 1.0f;
+
+	bool tag_used_audio_streams = false;
 
 	struct Bus {
 		StringName name;
@@ -380,6 +382,7 @@ public:
 	bool is_playback_paused(Ref<AudioStreamPlayback> p_playback);
 
 	uint64_t get_mix_count() const;
+	uint64_t get_mixed_frames() const;
 
 	void notify_listener_changed();
 
@@ -423,6 +426,8 @@ public:
 	Array capture_get_device_list();
 	String capture_get_device();
 	void capture_set_device(const String &p_name);
+
+	void set_enable_tagging_used_audio_streams(bool p_enable);
 
 	AudioServer();
 	virtual ~AudioServer();

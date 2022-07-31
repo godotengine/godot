@@ -25,13 +25,14 @@
 # El_ExpertPlayer <xpertnathan37@gmail.com>, 2022.
 # Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>, 2022.
 # Ednaldo Pereira Confia <filat51823@storypo.com>, 2022.
+# Zé Beato Página Oficial <zebeato@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-11 21:32+0000\n"
-"Last-Translator: Ednaldo Pereira Confia <filat51823@storypo.com>\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
+"Last-Translator: Zé Beato Página Oficial <zebeato@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -2109,14 +2110,15 @@ msgstr "Favoritos:"
 msgid "Recent:"
 msgstr "Recente:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Procurar:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Correspondências:"
@@ -2176,8 +2178,8 @@ msgstr "Procurar Recurso de substituição:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2931,9 +2933,8 @@ msgid "The given export path doesn't exist."
 msgstr "O caminho de exportação não existe:"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Ficheiro Modelo não encontrado:"
+msgstr "Ficheiro Modelo não encontrado"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -5536,6 +5537,10 @@ msgstr "Botões extra do Mouse para Navegar no Histórico"
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Seleção de GridMap"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11719,6 +11724,11 @@ msgstr "Animações:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Nova Animação"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Métodos de filtro"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
