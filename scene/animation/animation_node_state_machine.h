@@ -185,7 +185,7 @@ private:
 
 	void _tree_changed();
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
-	void _rename_transition(const StringName &p_name, const StringName &p_new_name);
+	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
 	bool _can_connect(const StringName &p_name, Vector<AnimationNodeStateMachine *> p_parents = Vector<AnimationNodeStateMachine *>());
 	StringName _get_shortest_path(const StringName &p_path) const;
 
