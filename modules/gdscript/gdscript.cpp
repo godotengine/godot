@@ -325,15 +325,22 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
+
+#ifdef TOOLS_ENABLED
+		r_list->push_back(sptr->get_class_category());
+#endif // TOOLS_ENABLED
+
+		for (const PropertyInfo &E : props) {
+			r_list->push_back(E);
+		}
+
+		props.clear();
+
 		if (!p_include_base) {
 			break;
 		}
 
 		sptr = sptr->_base;
-	}
-
-	for (const PropertyInfo &E : props) {
-		r_list->push_back(E);
 	}
 }
 
@@ -434,16 +441,16 @@ void GDScript::set_source_code(const String &p_code) {
 
 #ifdef TOOLS_ENABLED
 void GDScript::_update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames) {
-	if (base_cache.is_valid()) {
-		base_cache->_update_exports_values(values, propnames);
-	}
-
 	for (const KeyValue<StringName, Variant> &E : member_default_values_cache) {
 		values[E.key] = E.value;
 	}
 
 	for (const PropertyInfo &E : members_cache) {
 		propnames.push_back(E);
+	}
+
+	if (base_cache.is_valid()) {
+		base_cache->_update_exports_values(values, propnames);
 	}
 }
 
@@ -703,6 +710,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			member_default_values_cache.clear();
 			_signals.clear();
 
+			members_cache.push_back(get_class_category());
+
 			for (int i = 0; i < c->members.size(); i++) {
 				const GDScriptParser::ClassNode::Member &member = c->members[i];
 
@@ -727,6 +736,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
 						}
 						_signals[member.signal->identifier->name] = parameters_names;
+					} break;
+					case GDScriptParser::ClassNode::Member::GROUP: {
+						members_cache.push_back(member.annotation->export_info);
 					} break;
 					default:
 						break; // Nothing.
@@ -1510,11 +1522,17 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
 
-		sptr = sptr->_base;
-	}
+#ifdef TOOLS_ENABLED
+		p_properties->push_back(sptr->get_class_category());
+#endif // TOOLS_ENABLED
 
-	for (const PropertyInfo &E : props) {
-		p_properties->push_back(E);
+		for (const PropertyInfo &prop : props) {
+			p_properties->push_back(prop);
+		}
+
+		props.clear();
+
+		sptr = sptr->_base;
 	}
 }
 

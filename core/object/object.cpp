@@ -472,7 +472,6 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 
 void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) const {
 	if (script_instance && p_reversed) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
 	}
 
@@ -503,7 +502,6 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	if (script_instance && !p_reversed) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
 	}
 
