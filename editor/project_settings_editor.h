@@ -61,6 +61,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced = nullptr;
 
+	HBoxContainer *custom_properties = nullptr;
 	LineEdit *property_box = nullptr;
 	OptionButton *feature_box = nullptr;
 	OptionButton *type_box = nullptr;
@@ -77,6 +78,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	UndoRedo *undo_redo = nullptr;
 
 	void _advanced_toggled(bool p_button_pressed);
+	void _update_advanced(bool p_is_advanced);
 	void _property_box_changed(const String &p_text);
 	void _update_property_box();
 	void _feature_selected(int p_index);
