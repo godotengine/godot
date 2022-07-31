@@ -49,9 +49,9 @@ class VoxelGIData : public Resource {
 	float energy = 1.0;
 	float bias = 1.5;
 	float normal_bias = 0.0;
-	float propagation = 0.7;
+	float propagation = 0.5;
 	bool interior = false;
-	bool use_two_bounces = false;
+	bool use_two_bounces = true;
 
 protected:
 	static void _bind_methods();

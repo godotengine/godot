@@ -78,9 +78,9 @@ public:
 		float energy = 1.0;
 		float bias = 1.4;
 		float normal_bias = 0.0;
-		float propagation = 0.7;
+		float propagation = 0.5;
 		bool interior = false;
-		bool use_two_bounces = false;
+		bool use_two_bounces = true;
 
 		uint32_t version = 1;
 		uint32_t data_version = 1;
