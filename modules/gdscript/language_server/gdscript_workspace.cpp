@@ -38,6 +38,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "scene/resources/packed_scene.h"
 

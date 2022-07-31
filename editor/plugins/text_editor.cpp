@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());

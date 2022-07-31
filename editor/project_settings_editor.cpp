@@ -34,6 +34,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "servers/movie_writer/movie_writer.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;

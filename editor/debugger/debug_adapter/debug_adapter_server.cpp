@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 DebugAdapterServer::DebugAdapterServer() {
 	_EDITOR_DEF("network/debug_adapter/remote_port", remote_port);

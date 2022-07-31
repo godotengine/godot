@@ -30,6 +30,7 @@
 
 #include "export_plugin.h"
 
+#include "core/string/translation.h"
 #include "editor/editor_node.h"
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {

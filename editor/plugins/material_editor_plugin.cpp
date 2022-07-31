@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/fog_material.h"
 #include "scene/resources/particles_material.h"

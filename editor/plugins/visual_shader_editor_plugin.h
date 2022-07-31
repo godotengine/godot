@@ -33,6 +33,7 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/code_edit.h"

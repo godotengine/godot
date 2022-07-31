@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  editor_resource_conversion_plugin.cpp                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#include "editor_resource_conversion_plugin.h"
 
-#include "editor/editor_settings.h"
-#include "export_plugin.h"
+void EditorResourceConversionPlugin::_bind_methods() {
+	GDVIRTUAL_BIND(_converts_to);
+	GDVIRTUAL_BIND(_handles, "resource");
+	GDVIRTUAL_BIND(_convert, "resource");
+}
 
-void register_uwp_exporter() {
-#ifdef WINDOWS_ENABLED
-	EDITOR_DEF("export/uwp/signtool", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-	EDITOR_DEF("export/uwp/debug_certificate", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/debug_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx"));
-	EDITOR_DEF("export/uwp/debug_password", "");
-	EDITOR_DEF("export/uwp/debug_algorithm", 2); // SHA256 is the default
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/uwp/debug_algorithm", PROPERTY_HINT_ENUM, "MD5,SHA1,SHA256"));
-#endif // WINDOWS_ENABLED
+String EditorResourceConversionPlugin::converts_to() const {
+	String ret;
+	if (GDVIRTUAL_CALL(_converts_to, ret)) {
+		return ret;
+	}
 
-	Ref<EditorExportPlatformUWP> exporter;
-	exporter.instantiate();
-	EditorExport::get_singleton()->add_export_platform(exporter);
+	return "";
+}
+
+bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_handles, p_resource, ret)) {
+		return ret;
+	}
+
+	return false;
+}
+
+Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<Resource> ret;
+	if (GDVIRTUAL_CALL(_convert, p_resource, ret)) {
+		return ret;
+	}
+
+	return Ref<Resource>();
 }

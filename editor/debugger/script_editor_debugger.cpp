@@ -50,7 +50,6 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/property_editor.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"

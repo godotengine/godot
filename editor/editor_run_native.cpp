@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
 
 void EditorRunNative::_notification(int p_what) {

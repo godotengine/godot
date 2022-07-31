@@ -32,6 +32,7 @@
 
 #include "codesign.h"
 
+#include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 
