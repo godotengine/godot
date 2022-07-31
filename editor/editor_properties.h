@@ -636,6 +636,40 @@ public:
 	EditorPropertyQuaternion();
 };
 
+class EditorPropertyVector4 : public EditorProperty {
+	GDCLASS(EditorPropertyVector4, EditorProperty);
+	EditorSpinSlider *spin[4];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyVector4();
+};
+
+class EditorPropertyVector4i : public EditorProperty {
+	GDCLASS(EditorPropertyVector4i, EditorProperty);
+	EditorSpinSlider *spin[4];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(double p_min, double p_max, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyVector4i();
+};
+
 class EditorPropertyAABB : public EditorProperty {
 	GDCLASS(EditorPropertyAABB, EditorProperty);
 	EditorSpinSlider *spin[6];
@@ -703,6 +737,24 @@ public:
 	virtual void update_using_transform(Transform3D p_transform);
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
 	EditorPropertyTransform3D();
+};
+
+class EditorPropertyProjection : public EditorProperty {
+	GDCLASS(EditorPropertyProjection, EditorProperty);
+	EditorSpinSlider *spin[16];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	virtual void update_using_transform(Projection p_transform);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyProjection();
 };
 
 class EditorPropertyColor : public EditorProperty {

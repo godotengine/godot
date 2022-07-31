@@ -246,6 +246,14 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	}
 }
 
+String Engine::get_write_movie_path() const {
+	return write_movie_path;
+}
+
+void Engine::set_write_movie_path(const String &p_path) {
+	write_movie_path = p_path;
+}
+
 void Engine::set_shader_cache_path(const String &p_path) {
 	shader_cache_path = p_path;
 }

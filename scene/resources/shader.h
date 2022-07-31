@@ -78,7 +78,7 @@ public:
 	void set_code(const String &p_code);
 	String get_code() const;
 
-	void get_param_list(List<PropertyInfo> *p_params) const;
+	void get_param_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
 	bool has_param(const StringName &p_param) const;
 
 	void set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index = 0);
@@ -117,7 +117,7 @@ public:
 
 class ResourceFormatSaverShader : public ResourceFormatSaver {
 public:
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 };

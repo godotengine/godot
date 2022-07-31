@@ -120,7 +120,7 @@ static const char *enum_renames[][2] = {
 	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, // PhysicsServer2D
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, // PhysicsServer3D
 	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
-	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, //AudioStreamSample
+	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, // AudioStreamWAV
 	{ "MATH_RAND", "MATH_RANDF_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
@@ -1250,7 +1250,9 @@ static const char *class_renames[][2] = {
 	{ "AnimatedSprite", "AnimatedSprite2D" },
 	{ "AnimationTreePlayer", "AnimationTree" },
 	{ "Area", "Area3D" }, // Be careful, this will be used everywhere
+	{ "AudioStreamOGGVorbis", "AudioStreamOggVorbis" },
 	{ "AudioStreamRandomPitch", "AudioStreamRandomizer" },
+	{ "AudioStreamSample", "AudioStreamWAV" },
 	{ "BakedLightmap", "LightmapGI" },
 	{ "BakedLightmapData", "LightmapGIData" },
 	{ "BitmapFont", "FontFile" },
@@ -1896,14 +1898,14 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					continue;
 				}
 				if (dir.current_is_dir()) {
-					directories_to_check.append(current_dir + file_name + "/");
+					directories_to_check.append(current_dir.plus_file(file_name) + "/");
 				} else {
 					bool proper_extension = false;
 					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
 						proper_extension = true;
 
 					if (proper_extension) {
-						collected_files.append(current_dir + file_name);
+						collected_files.append(current_dir.plus_file(file_name));
 					}
 				}
 				file_name = dir.get_next();

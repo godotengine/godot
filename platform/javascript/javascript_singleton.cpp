@@ -259,7 +259,7 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 	const Variant *argv[1] = { &arg };
 	Callable::CallError err;
 	Variant ret;
-	obj->_callable.call(argv, 1, ret, err);
+	obj->_callable.callp(argv, 1, ret, err);
 
 	// Set return value
 	godot_js_wrapper_ex exchange;

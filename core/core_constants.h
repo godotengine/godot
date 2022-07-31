@@ -42,4 +42,4 @@ public:
 	static int64_t get_global_constant_value(int p_idx);
 };
 
-#endif // GLOBAL_CONSTANTS_H
+#endif // CORE_CONSTANTS_H

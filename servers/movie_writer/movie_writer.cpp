@@ -30,6 +30,9 @@
 
 #include "movie_writer.h"
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/os/time.h"
+#include "servers/display_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];
 uint32_t MovieWriter::writer_count = 0;
@@ -101,6 +104,7 @@ void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 }
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
+	project_name = GLOBAL_GET("application/config/name");
 	mix_rate = get_audio_mix_rate();
 	AudioDriverDummy::get_dummy_singleton()->set_mix_rate(mix_rate);
 	AudioDriverDummy::get_dummy_singleton()->set_speaker_mode(AudioDriver::SpeakerMode(get_audio_speaker_mode()));
@@ -162,10 +166,47 @@ void MovieWriter::set_extensions_hint() {
 }
 
 void MovieWriter::add_frame(const Ref<Image> &p_image) {
+	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
+	const String movie_time = vformat("%s:%s:%s",
+			String::num(movie_time_seconds / 3600).pad_zeros(2),
+			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
+			String::num(movie_time_seconds % 60).pad_zeros(2));
+
+#ifdef DEBUG_ENABLED
+	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
+#else
+	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
+#endif
+
 	AudioDriverDummy::get_dummy_singleton()->mix_audio(mix_rate / fps, audio_mix_buffer.ptr());
 	write_frame(p_image, audio_mix_buffer.ptr());
 }
 
 void MovieWriter::end() {
 	write_end();
+
+	// Print a report with various statistics.
+	print_line("----------------");
+	String movie_path = Engine::get_singleton()->get_write_movie_path();
+	if (movie_path.is_relative_path()) {
+		// Print absolute path to make finding the file easier,
+		// and to make it clickable in terminal emulators that support this.
+		movie_path = ProjectSettings::get_singleton()->globalize_path("res://").plus_file(movie_path);
+	}
+	print_line(vformat("Done recording movie at path: %s", movie_path));
+
+	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
+	const String movie_time = vformat("%s:%s:%s",
+			String::num(movie_time_seconds / 3600).pad_zeros(2),
+			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
+			String::num(movie_time_seconds % 60).pad_zeros(2));
+
+	const int real_time_seconds = Time::get_singleton()->get_ticks_msec() / 1000;
+	const String real_time = vformat("%s:%s:%s",
+			String::num(real_time_seconds / 3600).pad_zeros(2),
+			String::num((real_time_seconds % 3600) / 60).pad_zeros(2),
+			String::num(real_time_seconds % 60).pad_zeros(2));
+
+	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(movie_time_seconds) / real_time_seconds) * 100));
+	print_line("----------------");
 }

@@ -181,7 +181,6 @@ static bool debug_navigation = false;
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
-static String write_movie_path;
 static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
@@ -344,6 +343,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
+	OS::get_singleton()->print("  --xr-mode <mode>                             Select XR mode (default/off/on).\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Debug options:\n");
@@ -1162,7 +1162,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--write-movie") {
 			if (I->next()) {
-				write_movie_path = I->next()->get();
+				Engine::get_singleton()->set_write_movie_path(I->next()->get());
 				N = I->next()->next();
 				if (fixed_fps == -1) {
 					fixed_fps = 60;
@@ -1182,6 +1182,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--xr-mode") {
+			if (I->next()) {
+				String xr_mode = I->next()->get().to_lower();
+				N = I->next()->next();
+				if (xr_mode == "default") {
+					XRServer::set_xr_mode(XRServer::XRMODE_DEFAULT);
+				} else if (xr_mode == "off") {
+					XRServer::set_xr_mode(XRServer::XRMODE_OFF);
+				} else if (xr_mode == "on") {
+					XRServer::set_xr_mode(XRServer::XRMODE_ON);
+				} else {
+					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
+					goto error;
+				}
+			} else {
+				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
+				goto error;
+			}
+
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1512,7 +1531,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		audio_driver_idx = 0;
 	}
 
-	if (write_movie_path != String()) {
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
 		// Always use dummy driver for audio driver (which is last), also in no threaded mode.
 		audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
 		AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
@@ -1609,7 +1628,7 @@ error:
 	display_driver = "";
 	audio_driver = "";
 	tablet_driver = "";
-	write_movie_path = "";
+	Engine::get_singleton()->set_write_movie_path(String());
 	project_path = "";
 
 	args.clear();
@@ -1784,11 +1803,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		rendering_server->set_print_gpu_profile(true);
 	}
 
-	if (write_movie_path != String()) {
-		movie_writer = MovieWriter::find_writer_for_file(write_movie_path);
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
+		movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
 		if (movie_writer == nullptr) {
-			ERR_PRINT("Can't find movie writer for file type, aborting: " + write_movie_path);
-			write_movie_path = String();
+			ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
+			Engine::get_singleton()->set_write_movie_path(String());
 		}
 	}
 
@@ -2079,7 +2098,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// able to load resources, load the global shader variables.
 		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
-		rendering_server->global_variables_load_settings(!editor);
+		rendering_server->global_shader_uniforms_load_settings(!editor);
 	}
 
 	_start_success = true;
@@ -2411,6 +2430,8 @@ bool Main::start() {
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+			NavigationServer3D::get_singleton()->set_active(true);
+			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
 		}
 #endif
 
@@ -2576,7 +2597,7 @@ bool Main::start() {
 					PropertyInfo(Variant::FLOAT,
 							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
-							"1.0,8.0,0.1"));
+							"0.5,8.0,0.01"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
@@ -2724,7 +2745,7 @@ bool Main::start() {
 	OS::get_singleton()->set_main_loop(main_loop);
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, write_movie_path);
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
@@ -2992,7 +3013,7 @@ void Main::cleanup(bool p_force) {
 	RenderingServer::get_singleton()->sync();
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_variables_clear();
+	rendering_server->global_shader_uniforms_clear();
 
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer

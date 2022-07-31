@@ -272,6 +272,7 @@
 		<method name="push_font">
 			<return type="void" />
 			<argument index="0" name="font" type="Font" />
+			<argument index="1" name="font_size" type="int" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
 			</description>

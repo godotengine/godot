@@ -41,9 +41,9 @@ bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
-Error ResourceFormatSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	int64_t res;
-	if (GDVIRTUAL_CALL(_save, p_path, p_resource, p_flags, res)) {
+	if (GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res)) {
 		return (Error)res;
 	}
 
@@ -75,8 +75,14 @@ void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }
 
-Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
-	String extension = p_path.get_extension();
+Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+	String path = p_path;
+	if (path.is_empty()) {
+		path = p_resource->get_path();
+	}
+	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
+
+	String extension = path.get_extension();
 	Error err = ERR_FILE_UNRECOGNIZED;
 
 	for (int i = 0; i < saver_count; i++) {
@@ -100,21 +106,21 @@ Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource,
 
 		String old_path = p_resource->get_path();
 
-		String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+		String local_path = ProjectSettings::get_singleton()->localize_path(path);
 
 		Ref<Resource> rwcopy = p_resource;
 		if (p_flags & FLAG_CHANGE_PATH) {
 			rwcopy->set_path(local_path);
 		}
 
-		err = saver[i]->save(p_path, p_resource, p_flags);
+		err = saver[i]->save(p_resource, path, p_flags);
 
 		if (err == OK) {
 #ifdef TOOLS_ENABLED
 
 			((Resource *)p_resource.ptr())->set_edited(false);
 			if (timestamp_on_save) {
-				uint64_t mt = FileAccess::get_modified_time(p_path);
+				uint64_t mt = FileAccess::get_modified_time(path);
 
 				((Resource *)p_resource.ptr())->set_last_modified_time(mt);
 			}
@@ -124,8 +130,8 @@ Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource,
 				rwcopy->set_path(old_path);
 			}
 
-			if (save_callback && p_path.begins_with("res://")) {
-				save_callback(p_resource, p_path);
+			if (save_callback && path.begins_with("res://")) {
+				save_callback(p_resource, path);
 			}
 
 			return OK;

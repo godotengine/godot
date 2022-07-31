@@ -1106,4 +1106,4 @@ public:
 			PlaceholderTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
 };
 
-#endif
+#endif // TEXTURE_H

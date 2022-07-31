@@ -191,8 +191,8 @@ struct Decal {
 	float upper_fade = 0.3;
 	float lower_fade = 0.3;
 	bool distance_fade = false;
-	float distance_fade_begin = 10;
-	float distance_fade_length = 1;
+	float distance_fade_begin = 40.0;
+	float distance_fade_length = 10.0;
 	float normal_fade = 0.0;
 
 	Dependency dependency;
@@ -576,4 +576,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !_TEXTURE_STORAGE_RD_H
+#endif // TEXTURE_STORAGE_RD_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHAPE_CAST_2D
-#define SHAPE_CAST_2D
+#ifndef SHAPE_CAST_2D_H
+#define SHAPE_CAST_2D_H
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
@@ -120,4 +120,4 @@ public:
 	TypedArray<String> get_configuration_warnings() const override;
 };
 
-#endif
+#endif // SHAPE_CAST_2D_H

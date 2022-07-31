@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXT_SERVER_FALLBACK_H
-#define TEXT_SERVER_FALLBACK_H
+#ifndef TEXT_SERVER_FB_H
+#define TEXT_SERVER_FB_H
 
 /*************************************************************************/
 /* Fallback Text Server provides simplified TS functionality, without    */
@@ -79,9 +79,9 @@ using namespace godot;
 
 #include "servers/text/text_server_extension.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
@@ -208,10 +208,7 @@ class TextServerFallback : public TextServerExtension {
 		size_t data_size;
 		int face_index = 0;
 
-		mutable ThreadWorkPool work_pool;
-
 		~FontFallback() {
-			work_pool.finish();
 			for (const KeyValue<Vector2i, FontForSizeFallback *> &E : cache) {
 				memdelete(E.value);
 			}
@@ -586,4 +583,4 @@ public:
 	~TextServerFallback();
 };
 
-#endif // TEXT_SERVER_FALLBACK_H
+#endif // TEXT_SERVER_FB_H

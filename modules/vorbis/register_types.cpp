@@ -40,13 +40,13 @@ void initialize_vorbis_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		Ref<ResourceImporterOGGVorbis> ogg_vorbis_importer;
+		Ref<ResourceImporterOggVorbis> ogg_vorbis_importer;
 		ogg_vorbis_importer.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
 	}
 #endif
-	GDREGISTER_CLASS(AudioStreamOGGVorbis);
-	GDREGISTER_CLASS(AudioStreamPlaybackOGGVorbis);
+	GDREGISTER_CLASS(AudioStreamOggVorbis);
+	GDREGISTER_CLASS(AudioStreamPlaybackOggVorbis);
 }
 
 void uninitialize_vorbis_module(ModuleInitializationLevel p_level) {

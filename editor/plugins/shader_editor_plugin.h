@@ -252,4 +252,4 @@ public:
 	~ShaderEditorPlugin();
 };
 
-#endif
+#endif // SHADER_EDITOR_PLUGIN_H

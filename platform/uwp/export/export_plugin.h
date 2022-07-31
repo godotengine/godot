@@ -39,9 +39,9 @@
 #include "core/io/zip_io.h"
 #include "core/object/class_db.h"
 #include "core/version.h"
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/export/editor_export_platform.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -89,12 +89,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
-
-	enum Platform {
-		ARM,
-		X86,
-		X64
-	};
 
 	bool _valid_resource_name(const String &p_name) const {
 		if (p_name.is_empty()) {
@@ -215,8 +209,8 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String version = itos(p_preset->get("version/major")) + "." + itos(p_preset->get("version/minor")) + "." + itos(p_preset->get("version/build")) + "." + itos(p_preset->get("version/revision"));
 		result = result.replace("$version_string$", version);
 
-		Platform arch = (Platform)(int)p_preset->get("architecture/target");
-		String architecture = arch == ARM ? "arm" : (arch == X86 ? "x86" : "x64");
+		String arch = p_preset->get("binary_format/architecture");
+		String architecture = arch == "arm32" ? "arm" : (arch == "x86_32" ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
 		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
@@ -431,7 +425,7 @@ public:
 
 	virtual Ref<Texture2D> get_logo() const override;
 
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
@@ -439,11 +433,11 @@ public:
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
-	virtual void get_platform_features(List<String> *r_features) override;
+	virtual void get_platform_features(List<String> *r_features) const override;
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
 	EditorExportPlatformUWP();
 };
 
-#endif
+#endif // UWP_EXPORT_PLUGIN_H

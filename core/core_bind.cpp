@@ -147,9 +147,9 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
-	return ::ResourceSaver::save(p_path, p_resource, p_flags);
+Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + p_path + "'.");
+	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
@@ -174,7 +174,7 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
@@ -229,6 +229,14 @@ void OS::alert(const String &p_alert, const String &p_title) {
 
 void OS::crash(const String &p_message) {
 	CRASH_NOW_MSG(p_message);
+}
+
+Vector<String> OS::get_system_fonts() const {
+	return ::OS::get_singleton()->get_system_fonts();
+}
+
+String OS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_bold, p_italic);
 }
 
 String OS::get_executable_path() const {
@@ -589,6 +597,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
+	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
@@ -1220,16 +1230,10 @@ Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 String File::get_as_text() const {
 	ERR_FAIL_COND_V_MSG(f.is_null(), String(), "File must be opened before use, or is lacking read-write permission.");
 
-	String text;
 	uint64_t original_pos = f->get_position();
 	const_cast<FileAccess *>(*f)->seek(0);
 
-	String l = get_line();
-	while (!eof_reached()) {
-		text += l + "\n";
-		l = get_line();
-	}
-	text += l;
+	String text = f->get_as_utf8_string();
 
 	const_cast<FileAccess *>(*f)->seek(original_pos);
 
@@ -1844,7 +1848,7 @@ void Thread::_start_func(void *ud) {
 	::Thread::set_name(func_name);
 
 	Callable::CallError ce;
-	t->target_callable.call(nullptr, 0, t->ret, ce);
+	t->target_callable.callp(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
 		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
@@ -2286,6 +2290,10 @@ bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
 }
 
+String Engine::get_write_movie_path() const {
+	return ::Engine::get_singleton()->get_write_movie_path();
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	::Engine::get_singleton()->set_print_error_messages(p_enabled);
 }
@@ -2334,6 +2342,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+
+	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
@@ -2418,7 +2428,7 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	const Variant *args[2] = { &cmd, &data };
 	Variant retval;
 	Callable::CallError err;
-	capture.call(args, 2, retval, err);
+	capture.callp(args, 2, retval, err);
 	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, FAILED, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(capture, args, 2, err));
 	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, "Error calling 'capture' to callable: " + String(capture) + ". Return type is not bool.");
 	r_captured = retval;

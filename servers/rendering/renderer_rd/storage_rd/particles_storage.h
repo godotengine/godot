@@ -562,4 +562,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !PARTICLES_STORAGE_RD_H
+#endif // PARTICLES_STORAGE_RD_H

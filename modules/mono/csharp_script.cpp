@@ -481,11 +481,14 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::VECTOR3,
 		Variant::VECTOR3I,
 		Variant::TRANSFORM2D,
+		Variant::VECTOR4,
+		Variant::VECTOR4I,
 		Variant::PLANE,
 		Variant::QUATERNION,
 		Variant::AABB,
 		Variant::BASIS,
 		Variant::TRANSFORM3D,
+		Variant::PROJECTION,
 		Variant::COLOR,
 		Variant::STRING_NAME,
 		Variant::NODE_PATH,
@@ -2138,8 +2141,8 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
-const Vector<Multiplayer::RPCConfig> CSharpInstance::get_rpc_methods() const {
-	return script->get_rpc_methods();
+const Variant CSharpInstance::get_rpc_config() const {
+	return script->get_rpc_config();
 }
 
 void CSharpInstance::notification(int p_notification) {
@@ -3057,7 +3060,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 	p_script->script_class->fetch_methods_with_godot_api_checks(p_script->native);
 
-	p_script->rpc_functions.clear();
+	p_script->rpc_config.clear();
 
 	GDMonoClass *top = p_script->script_class;
 	while (top && top != p_script->native) {
@@ -3069,12 +3072,9 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 			Vector<GDMonoMethod *> methods = top->get_all_methods();
 			for (int i = 0; i < methods.size(); i++) {
 				if (!methods[i]->is_static()) {
-					Multiplayer::RPCConfig rpc_config = p_script->_member_get_rpc_config(methods[i]);
-					if (rpc_config.rpc_mode != Multiplayer::RPC_MODE_DISABLED) {
-						// RPC annotations can only be used once per method
-						if (p_script->rpc_functions.find(rpc_config) == -1) {
-							p_script->rpc_functions.push_back(rpc_config);
-						}
+					const Variant rpc_config = p_script->_member_get_rpc_config(methods[i]);
+					if (rpc_config.get_type() != Variant::NIL) {
+						p_script->rpc_config[methods[i]->get_name()] = rpc_config;
 					}
 				}
 			}
@@ -3082,9 +3082,6 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 		top = top->get_parent_class();
 	}
-
-	// Sort so we are 100% that they are always the same.
-	p_script->rpc_functions.sort_custom<Multiplayer::SortRPCConfig>();
 
 	p_script->load_script_signals(p_script->script_class, p_script->native);
 }
@@ -3508,23 +3505,24 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-Multiplayer::RPCConfig CSharpScript::_member_get_rpc_config(IMonoClassMember *p_member) const {
-	Multiplayer::RPCConfig rpc_config;
+Variant CSharpScript::_member_get_rpc_config(IMonoClassMember *p_member) const {
+	Variant out;
 
 	MonoObject *rpc_attribute = p_member->get_attribute(CACHED_CLASS(RPCAttribute));
 	if (rpc_attribute != nullptr) {
-		rpc_config.name = p_member->get_name();
-		rpc_config.rpc_mode = (Multiplayer::RPCMode)CACHED_PROPERTY(RPCAttribute, Mode)->get_int_value(rpc_attribute);
-		rpc_config.call_local = CACHED_PROPERTY(RPCAttribute, CallLocal)->get_bool_value(rpc_attribute);
-		rpc_config.transfer_mode = (Multiplayer::TransferMode)CACHED_PROPERTY(RPCAttribute, TransferMode)->get_int_value(rpc_attribute);
-		rpc_config.channel = CACHED_PROPERTY(RPCAttribute, TransferChannel)->get_int_value(rpc_attribute);
+		Dictionary rpc_config;
+		rpc_config["rpc_mode"] = CACHED_PROPERTY(RPCAttribute, Mode)->get_int_value(rpc_attribute);
+		rpc_config["call_local"] = CACHED_PROPERTY(RPCAttribute, CallLocal)->get_bool_value(rpc_attribute);
+		rpc_config["transfer_mode"] = CACHED_PROPERTY(RPCAttribute, TransferMode)->get_int_value(rpc_attribute);
+		rpc_config["channel"] = CACHED_PROPERTY(RPCAttribute, TransferChannel)->get_int_value(rpc_attribute);
+		out = rpc_config;
 	}
 
-	return rpc_config;
+	return out;
 }
 
-const Vector<Multiplayer::RPCConfig> CSharpScript::get_rpc_methods() const {
-	return rpc_functions;
+const Variant CSharpScript::get_rpc_config() const {
+	return rpc_config;
 }
 
 Error CSharpScript::load_source_code(const String &p_path) {
@@ -3632,7 +3630,7 @@ String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path)
 	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
-Error ResourceFormatSaverCSharpScript::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<CSharpScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 

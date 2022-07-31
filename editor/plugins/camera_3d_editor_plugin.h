@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_EDITOR_PLUGIN_H
-#define CAMERA_EDITOR_PLUGIN_H
+#ifndef CAMERA_3D_EDITOR_PLUGIN_H
+#define CAMERA_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -68,4 +68,4 @@ public:
 	~Camera3DEditorPlugin();
 };
 
-#endif // CAMERA_EDITOR_PLUGIN_H
+#endif // CAMERA_3D_EDITOR_PLUGIN_H

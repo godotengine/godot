@@ -497,7 +497,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	if (p_render_data->render_buffers.is_valid()) {
 		render_buffer = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
-	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
@@ -540,7 +539,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES].is_null()) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
-		} else if (env && (env->glow_enabled || env->auto_exposure || camera_effects_uses_dof(p_render_data->camera_effects))) {
+		} else if (p_render_data->environment.is_valid() && (environment_get_glow_enabled(p_render_data->environment) || environment_get_auto_exposure(p_render_data->environment) || camera_effects_uses_dof(p_render_data->camera_effects))) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
 		}
@@ -570,7 +569,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		if (RendererRD::LightStorage::get_singleton()->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			p_render_data->environment = RID(); //no environment on interiors
-			env = nullptr;
 		}
 
 		reverse_cull = true;
@@ -612,7 +610,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
+				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -624,7 +622,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
+				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -648,18 +646,18 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			CameraMatrix projection = p_render_data->cam_projection;
+			Projection projection = p_render_data->cam_projection;
 			if (p_render_data->reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
 
-			RID sky_rid = env->sky;
+			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(env, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.update(p_render_data->environment, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -680,12 +678,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_begin_label("Setup Sky Resolution Buffers");
 
 		if (p_render_data->reflection_probe.is_valid()) {
-			CameraMatrix correction;
+			Projection correction;
 			correction.set_depth_correction(true);
-			CameraMatrix projection = correction * p_render_data->cam_projection;
-			sky.update_res_buffers(env, 1, &projection, p_render_data->cam_transform, time);
+			Projection projection = correction * p_render_data->cam_projection;
+			sky.update_res_buffers(p_render_data->environment, 1, &projection, p_render_data->cam_transform, time);
 		} else {
-			sky.update_res_buffers(env, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			sky.update_res_buffers(p_render_data->environment, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
 		}
 
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
@@ -707,7 +705,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS;
 		}
 
-		if (!is_environment(p_render_data->environment) || environment_is_fog_enabled(p_render_data->environment)) {
+		if (!is_environment(p_render_data->environment) || environment_get_fog_enabled(p_render_data->environment)) {
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_FOG;
 		}
 	}
@@ -758,9 +756,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderList"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
@@ -776,12 +777,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
 			if (p_render_data->reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
-				CameraMatrix projection = correction * p_render_data->cam_projection;
-				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				Projection projection = correction * p_render_data->cam_projection;
+				sky.draw(draw_list, p_render_data->environment, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
-				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.draw(draw_list, p_render_data->environment, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass
@@ -822,10 +823,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_switch_to_next_pass_split(thread_draw_lists.size(), thread_draw_lists.ptr());
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass();
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
@@ -859,9 +862,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
 			} else {
 				//single threaded
@@ -900,7 +905,7 @@ void RenderForwardMobile::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 }
 
-void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
+void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
@@ -994,7 +999,7 @@ void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
 
 /* */
 
-void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
@@ -1040,7 +1045,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardMobile::_render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
 	RD::get_singleton()->draw_command_begin_label("Render UV2");
@@ -1107,11 +1112,11 @@ void RenderForwardMobile::_render_uv2(const PagedArray<GeometryInstance *> &p_in
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
+void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
 	// we don't do GI in low end..
 }
 
-void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
+void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
@@ -1325,7 +1330,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 14;
-			u.append_id(RendererRD::MaterialStorage::get_singleton()->global_variables_get_storage_buffer());
+			u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
 			uniforms.push_back(u);
 		}
 
@@ -1543,11 +1548,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	// This populates our UBO with main scene data that is pushed into set 1
 
-	//CameraMatrix projection = p_render_data->cam_projection;
+	//Projection projection = p_render_data->cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
-	CameraMatrix correction;
+	Projection correction;
 	correction.set_depth_correction(p_flip_y);
-	CameraMatrix projection = correction * p_render_data->cam_projection;
+	Projection projection = correction * p_render_data->cam_projection;
 
 	//store camera into ubo
 	RendererRD::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
@@ -1656,7 +1661,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 			scene_state.ubo.use_ambient_cubemap = false;
 		} else {
 			float energy = environment_get_ambient_light_energy(p_render_data->environment);
-			Color color = environment_get_ambient_light_color(p_render_data->environment);
+			Color color = environment_get_ambient_light(p_render_data->environment);
 			color = color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
@@ -1678,11 +1683,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 			scene_state.ubo.use_reflection_cubemap = false;
 		}
 
-		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_is_ssao_enabled(p_render_data->environment);
-		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
-		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
+		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_get_ssao_enabled(p_render_data->environment);
+		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_channel_affect(p_render_data->environment);
+		scene_state.ubo.ssao_light_affect = environment_get_ssao_direct_light_affect(p_render_data->environment);
 
-		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
+		scene_state.ubo.fog_enabled = environment_get_fog_enabled(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
@@ -1771,7 +1776,7 @@ void RenderForwardMobile::_render_list(RenderingDevice::DrawListID p_draw_list, 
 
 void RenderForwardMobile::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
 	uint32_t render_total = p_params->element_count;
-	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
 	uint32_t render_from = p_thread * render_total / total_threads;
 	uint32_t render_to = (p_thread + 1 == total_threads) ? render_total : ((p_thread + 1) * render_total / total_threads);
 	_render_list(thread_draw_lists[p_thread], p_params->framebuffer_format, p_params, render_from, render_to);
@@ -1783,9 +1788,11 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 
 	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
 		//multi threaded
-		thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+		thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, p_params);
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, p_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 		RD::get_singleton()->draw_list_end(p_params->barrier);
 	} else {
 		//single threaded
@@ -2047,7 +2054,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 /* Geometry instance */
 
-RendererSceneRender::GeometryInstance *RenderForwardMobile::geometry_instance_create(RID p_base) {
+RenderGeometryInstance *RenderForwardMobile::geometry_instance_create(RID p_base) {
 	RS::InstanceType type = RSG::utilities->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
 
@@ -2057,165 +2064,36 @@ RendererSceneRender::GeometryInstance *RenderForwardMobile::geometry_instance_cr
 	ginstance->data->base = p_base;
 	ginstance->data->base_type = type;
 
-	_geometry_instance_mark_dirty(ginstance);
+	ginstance->_mark_dirty();
 
 	return ginstance;
 }
 
-void RenderForwardMobile::geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->data->skeleton = p_skeleton;
+void RenderForwardMobile::GeometryInstanceForwardMobile::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
+	lightmap_instance = p_lightmap_instance;
+	lightmap_uv_scale = p_lightmap_uv_scale;
+	lightmap_slice_index = p_lightmap_slice_index;
 
-	_geometry_instance_mark_dirty(ginstance);
-	ginstance->data->dirty_dependencies = true;
+	_mark_dirty();
 }
 
-void RenderForwardMobile::geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->data->material_override = p_override;
-
-	_geometry_instance_mark_dirty(ginstance);
-	ginstance->data->dirty_dependencies = true;
-}
-
-void RenderForwardMobile::geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_overlay) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->data->material_overlay = p_overlay;
-
-	_geometry_instance_mark_dirty(ginstance);
-	ginstance->data->dirty_dependencies = true;
-}
-
-void RenderForwardMobile::geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->data->surface_materials = p_materials;
-
-	_geometry_instance_mark_dirty(ginstance);
-	ginstance->data->dirty_dependencies = true;
-}
-
-void RenderForwardMobile::geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->mesh_instance = p_mesh_instance;
-
-	_geometry_instance_mark_dirty(ginstance);
-}
-
-void RenderForwardMobile::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->transform = p_transform;
-	ginstance->mirror = p_transform.basis.determinant() < 0;
-	ginstance->data->aabb = p_aabb;
-	ginstance->transformed_aabb = p_transformed_aabb;
-
-	Vector3 model_scale_vec = p_transform.basis.get_scale_abs();
-	// handle non uniform scale here
-
-	float max_scale = MAX(model_scale_vec.x, MAX(model_scale_vec.y, model_scale_vec.z));
-	float min_scale = MIN(model_scale_vec.x, MIN(model_scale_vec.y, model_scale_vec.z));
-	ginstance->non_uniform_scale = max_scale >= 0.0 && (min_scale / max_scale) < 0.9;
-
-	ginstance->lod_model_scale = max_scale;
-}
-
-void RenderForwardMobile::geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->layer_mask = p_layer_mask;
-}
-
-void RenderForwardMobile::geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->lod_bias = p_lod_bias;
-}
-
-void RenderForwardMobile::geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) {
-}
-
-void RenderForwardMobile::geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) {
-}
-
-void RenderForwardMobile::geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) {
-}
-
-void RenderForwardMobile::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->data->use_baked_light = p_enable;
-
-	_geometry_instance_mark_dirty(ginstance);
-}
-
-void RenderForwardMobile::geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) {
-	// !BAS! do we support this in mobile?
-	// GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	// ERR_FAIL_COND(!ginstance);
-	// ginstance->data->use_dynamic_gi = p_enable;
-	// _geometry_instance_mark_dirty(ginstance);
-}
-
-void RenderForwardMobile::geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->lightmap_instance = p_lightmap_instance;
-	ginstance->lightmap_uv_scale = p_lightmap_uv_scale;
-	ginstance->lightmap_slice_index = p_lightmap_slice_index;
-	_geometry_instance_mark_dirty(ginstance);
-}
-
-void RenderForwardMobile::geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
+void RenderForwardMobile::GeometryInstanceForwardMobile::set_lightmap_capture(const Color *p_sh9) {
 	if (p_sh9) {
-		if (ginstance->lightmap_sh == nullptr) {
-			ginstance->lightmap_sh = geometry_instance_lightmap_sh.alloc();
+		if (lightmap_sh == nullptr) {
+			lightmap_sh = RenderForwardMobile::get_singleton()->geometry_instance_lightmap_sh.alloc();
 		}
 
-		memcpy(ginstance->lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
+		memcpy(lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
 	} else {
-		if (ginstance->lightmap_sh != nullptr) {
-			geometry_instance_lightmap_sh.free(ginstance->lightmap_sh);
-			ginstance->lightmap_sh = nullptr;
+		if (lightmap_sh != nullptr) {
+			RenderForwardMobile::get_singleton()->geometry_instance_lightmap_sh.free(lightmap_sh);
+			lightmap_sh = nullptr;
 		}
 	}
-	_geometry_instance_mark_dirty(ginstance);
+	_mark_dirty();
 }
 
-void RenderForwardMobile::geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-	ginstance->shader_parameters_offset = p_offset;
-	_geometry_instance_mark_dirty(ginstance);
-}
-
-void RenderForwardMobile::geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-
-	ginstance->data->cast_double_sided_shadows = p_enable;
-	_geometry_instance_mark_dirty(ginstance);
-}
-
-Transform3D RenderForwardMobile::geometry_instance_get_transform(GeometryInstance *p_instance) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_instance);
-	ERR_FAIL_COND_V(!ginstance, Transform3D());
-	return ginstance->transform;
-}
-
-AABB RenderForwardMobile::geometry_instance_get_aabb(GeometryInstance *p_instance) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_instance);
-	ERR_FAIL_COND_V(!ginstance, AABB());
-	return ginstance->data->aabb;
-}
-
-void RenderForwardMobile::geometry_instance_free(GeometryInstance *p_geometry_instance) {
+void RenderForwardMobile::geometry_instance_free(RenderGeometryInstance *p_geometry_instance) {
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (ginstance->lightmap_sh != nullptr) {
@@ -2235,26 +2113,23 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) + (1 << RS::INSTANCE_REFLECTION_PROBE) + (1 << RS::INSTANCE_DECAL));
 }
 
-void RenderForwardMobile::geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-
-	ginstance->omni_light_count = 0;
-	ginstance->spot_light_count = 0;
+void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) {
+	omni_light_count = 0;
+	spot_light_count = 0;
 
 	for (uint32_t i = 0; i < p_light_instance_count; i++) {
-		RS::LightType type = light_instance_get_type(p_light_instances[i]);
+		RS::LightType type = RenderForwardMobile::get_singleton()->light_instance_get_type(p_light_instances[i]);
 		switch (type) {
 			case RS::LIGHT_OMNI: {
-				if (ginstance->omni_light_count < (uint32_t)MAX_RDL_CULL) {
-					ginstance->omni_lights[ginstance->omni_light_count] = light_instance_get_forward_id(p_light_instances[i]);
-					ginstance->omni_light_count++;
+				if (omni_light_count < (uint32_t)MAX_RDL_CULL) {
+					omni_lights[omni_light_count] = RenderForwardMobile::get_singleton()->light_instance_get_forward_id(p_light_instances[i]);
+					omni_light_count++;
 				}
 			} break;
 			case RS::LIGHT_SPOT: {
-				if (ginstance->spot_light_count < (uint32_t)MAX_RDL_CULL) {
-					ginstance->spot_lights[ginstance->spot_light_count] = light_instance_get_forward_id(p_light_instances[i]);
-					ginstance->spot_light_count++;
+				if (spot_light_count < (uint32_t)MAX_RDL_CULL) {
+					spot_lights[spot_light_count] = RenderForwardMobile::get_singleton()->light_instance_get_forward_id(p_light_instances[i]);
+					spot_light_count++;
 				}
 			} break;
 			default:
@@ -2263,56 +2138,42 @@ void RenderForwardMobile::geometry_instance_pair_light_instances(GeometryInstanc
 	}
 }
 
-void RenderForwardMobile::geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-
-	ginstance->reflection_probe_count = p_reflection_probe_instance_count < (uint32_t)MAX_RDL_CULL ? p_reflection_probe_instance_count : (uint32_t)MAX_RDL_CULL;
-	for (uint32_t i = 0; i < ginstance->reflection_probe_count; i++) {
-		ginstance->reflection_probes[i] = reflection_probe_instance_get_forward_id(p_reflection_probe_instances[i]);
+void RenderForwardMobile::GeometryInstanceForwardMobile::pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) {
+	reflection_probe_count = p_reflection_probe_instance_count < (uint32_t)MAX_RDL_CULL ? p_reflection_probe_instance_count : (uint32_t)MAX_RDL_CULL;
+	for (uint32_t i = 0; i < reflection_probe_count; i++) {
+		reflection_probes[i] = RenderForwardMobile::get_singleton()->reflection_probe_instance_get_forward_id(p_reflection_probe_instances[i]);
 	}
 }
 
-void RenderForwardMobile::geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-
-	ginstance->decals_count = p_decal_instance_count < (uint32_t)MAX_RDL_CULL ? p_decal_instance_count : (uint32_t)MAX_RDL_CULL;
-	for (uint32_t i = 0; i < ginstance->decals_count; i++) {
-		ginstance->decals[i] = decal_instance_get_forward_id(p_decal_instances[i]);
+void RenderForwardMobile::GeometryInstanceForwardMobile::pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) {
+	decals_count = p_decal_instance_count < (uint32_t)MAX_RDL_CULL ? p_decal_instance_count : (uint32_t)MAX_RDL_CULL;
+	for (uint32_t i = 0; i < decals_count; i++) {
+		decals[i] = RenderForwardMobile::get_singleton()->decal_instance_get_forward_id(p_decal_instances[i]);
 	}
 }
 
-void RenderForwardMobile::geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) {
-	// We do not have this here!
+void RenderForwardMobile::GeometryInstanceForwardMobile::set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) {
+	use_projector = p_projector;
+	use_soft_shadow = p_softshadow;
 }
 
-void RenderForwardMobile::geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
-
-	ginstance->use_projector = p_projector;
-	ginstance->use_soft_shadow = p_softshadow;
-}
-
-void RenderForwardMobile::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
-	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
-	if (ginstance->dirty_list_element.in_list()) {
+void RenderForwardMobile::GeometryInstanceForwardMobile::_mark_dirty() {
+	if (dirty_list_element.in_list()) {
 		return;
 	}
 
 	//clear surface caches
-	GeometryInstanceSurfaceDataCache *surf = ginstance->surface_caches;
+	GeometryInstanceSurfaceDataCache *surf = surface_caches;
 
 	while (surf) {
 		GeometryInstanceSurfaceDataCache *next = surf->next;
-		geometry_instance_surface_alloc.free(surf);
+		RenderForwardMobile::get_singleton()->geometry_instance_surface_alloc.free(surf);
 		surf = next;
 	}
 
-	ginstance->surface_caches = nullptr;
+	surface_caches = nullptr;
 
-	geometry_instance_dirty_list.add(&ginstance->dirty_list_element);
+	RenderForwardMobile::get_singleton()->geometry_instance_dirty_list.add(&dirty_list_element);
 }
 
 void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
@@ -2478,7 +2339,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 	}
 }
 
-void RenderForwardMobile::_geometry_instance_update(GeometryInstance *p_geometry_instance) {
+void RenderForwardMobile::_geometry_instance_update(RenderGeometryInstance *p_geometry_instance) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 	RendererRD::ParticlesStorage *particles_storage = RendererRD::ParticlesStorage::get_singleton();
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
@@ -2632,7 +2493,7 @@ void RenderForwardMobile::_geometry_instance_dependency_changed(Dependency::Depe
 		case Dependency::DEPENDENCY_CHANGED_PARTICLES:
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
-			static_cast<RenderForwardMobile *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
+			static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();
 		} break;
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
 			GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_tracker->userdata);
@@ -2646,7 +2507,7 @@ void RenderForwardMobile::_geometry_instance_dependency_changed(Dependency::Depe
 	}
 }
 void RenderForwardMobile::_geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker) {
-	static_cast<RenderForwardMobile *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
+	static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();
 }
 
 /* misc */

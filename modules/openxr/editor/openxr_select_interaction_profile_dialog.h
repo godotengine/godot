@@ -63,4 +63,4 @@ public:
 	OpenXRSelectInteractionProfileDialog();
 };
 
-#endif // !OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H
+#endif // OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H

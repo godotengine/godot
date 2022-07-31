@@ -111,6 +111,18 @@
 			</description>
 		</operator>
 		<operator name="operator *">
+			<return type="Vector4" />
+			<argument index="0" name="right" type="Vector4" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<argument index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>

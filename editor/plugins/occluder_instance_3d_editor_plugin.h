@@ -63,4 +63,4 @@ public:
 	~OccluderInstance3DEditorPlugin();
 };
 
-#endif
+#endif // OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H

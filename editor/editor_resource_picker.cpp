@@ -33,12 +33,12 @@
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/quick_open.h"
 #include "editor/scene_tree_dock.h"
 
 HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
@@ -871,7 +871,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu = memnew(PopupMenu);
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
+	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {

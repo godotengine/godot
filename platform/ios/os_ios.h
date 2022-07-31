@@ -92,6 +92,9 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
+	virtual Vector<String> get_system_fonts() const override;
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
@@ -121,4 +124,4 @@ public:
 
 #endif // OS_IOS_H
 
-#endif // IOS_ENABLED
+#endif // OS_IOS_H

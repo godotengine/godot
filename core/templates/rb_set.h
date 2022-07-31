@@ -708,4 +708,4 @@ public:
 	}
 };
 
-#endif // SET_H
+#endif // RB_SET_H

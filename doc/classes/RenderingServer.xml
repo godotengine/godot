@@ -1293,45 +1293,45 @@
 				If [code]half_resolution[/code] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
-		<method name="global_variable_add">
+		<method name="global_shader_uniform_add">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="type" type="int" enum="RenderingServer.GlobalVariableType" />
+			<argument index="1" name="type" type="int" enum="RenderingServer.GlobalShaderUniformType" />
 			<argument index="2" name="default_value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_get" qualifiers="const">
+		<method name="global_shader_uniform_get" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_get_list" qualifiers="const">
+		<method name="global_shader_uniform_get_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_get_type" qualifiers="const">
-			<return type="int" enum="RenderingServer.GlobalVariableType" />
+		<method name="global_shader_uniform_get_type" qualifiers="const">
+			<return type="int" enum="RenderingServer.GlobalShaderUniformType" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_remove">
+		<method name="global_shader_uniform_remove">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_set">
+		<method name="global_shader_uniform_set">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="global_variable_set_override">
+		<method name="global_shader_uniform_set_override">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="value" type="Variant" />
@@ -3175,14 +3175,6 @@
 				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
-		<method name="viewport_set_fsr_mipmap_bias">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="mipmap_bias" type="float" />
-			<description>
-				Affects the final texture sharpness by reading from a lower or higher mipmap. Negative values make textures sharper, while positive values make textures blurrier. When using FSR, this value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]
-			</description>
-		</method>
 		<method name="viewport_set_fsr_sharpness">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3323,6 +3315,15 @@
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="enabled" type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="viewport_set_texture_mipmap_bias">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mipmap_bias" type="float" />
+			<description>
+				Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member ProjectSettings.rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
+				[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
 			</description>
 		</method>
 		<method name="viewport_set_transparent_background">
@@ -4536,63 +4537,63 @@
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is counterclockwise.
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalShaderUniformType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalVariableType">
+		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalShaderUniformType">
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
 		</constant>

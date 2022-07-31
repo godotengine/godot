@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATIONSTACK3D_H
-#define SKELETONMODIFICATIONSTACK3D_H
+#ifndef SKELETON_MODIFICATION_STACK_3D_H
+#define SKELETON_MODIFICATION_STACK_3D_H
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/skeleton_3d.h"
@@ -88,4 +88,4 @@ public:
 	SkeletonModificationStack3D();
 };
 
-#endif // SKELETONMODIFICATIONSTACK3D_H
+#endif // SKELETON_MODIFICATION_STACK_3D_H

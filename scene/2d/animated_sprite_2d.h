@@ -114,4 +114,4 @@ public:
 	AnimatedSprite2D();
 };
 
-#endif // ANIMATED_SPRITE_H
+#endif // ANIMATED_SPRITE_2D_H

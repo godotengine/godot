@@ -135,4 +135,4 @@ public:
 	virtual float lightmap_get_probe_capture_update_speed() const = 0;
 };
 
-#endif // !LIGHT_STORAGE_H
+#endif // LIGHT_STORAGE_H

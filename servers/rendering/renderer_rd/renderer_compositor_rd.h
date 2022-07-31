@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_COMPOSITOR_RD_H
-#define RENDERING_SERVER_COMPOSITOR_RD_H
+#ifndef RENDERER_COMPOSITOR_RD_H
+#define RENDERER_COMPOSITOR_RD_H
 
 #include "core/os/os.h"
-#include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
@@ -148,4 +147,5 @@ public:
 	RendererCompositorRD();
 	~RendererCompositorRD();
 };
-#endif // RASTERIZER_RD_H
+
+#endif // RENDERER_COMPOSITOR_RD_H

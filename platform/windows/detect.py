@@ -198,7 +198,6 @@ def configure_msvc(env, manual_msvc_config):
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
         # Allow big objects. Only needed for debug, see MinGW branch for rationale.
-        env.AppendUnique(CCFLAGS=["/bigobj"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"]:
@@ -221,6 +220,10 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
+    # Once it was thought that only debug builds would be too large,
+    # but this has recently stopped being true. See the mingw function
+    # for notes on why this shouldn't be enabled for gcc
+    env.AppendUnique(CCFLAGS=["/bigobj"])
 
     if manual_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
@@ -267,6 +270,7 @@ def configure_msvc(env, manual_msvc_config):
         "bcrypt",
         "Avrt",
         "dwmapi",
+        "dwrite",
     ]
 
     if env["vulkan"]:
@@ -438,6 +442,7 @@ def configure_mingw(env):
             "avrt",
             "uuid",
             "dwmapi",
+            "dwrite",
         ]
     )
 

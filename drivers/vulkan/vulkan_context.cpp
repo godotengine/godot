@@ -1827,7 +1827,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pNext*/ nullptr,
 			/*flags*/ 0,
 			/*pipelineBindPoint*/ VK_PIPELINE_BIND_POINT_GRAPHICS,
-			/*viewMask*/ 1,
+			/*viewMask*/ 0,
 			/*inputAttachmentCount*/ 0,
 			/*pInputAttachments*/ nullptr,
 			/*colorAttachmentCount*/ 1,
@@ -1838,7 +1838,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pPreserveAttachments*/ nullptr,
 		};
 
-		uint32_t view_masks = 1;
 		const VkRenderPassCreateInfo2KHR rp_info = {
 			/*sType*/ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR,
 			/*pNext*/ nullptr,
@@ -1849,8 +1848,8 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pSubpasses*/ &subpass,
 			/*dependencyCount*/ 0,
 			/*pDependencies*/ nullptr,
-			/*correlatedViewMaskCount*/ 1,
-			/*pCorrelatedViewMasks*/ &view_masks,
+			/*correlatedViewMaskCount*/ 0,
+			/*pCorrelatedViewMasks*/ nullptr,
 		};
 
 		err = vkCreateRenderPass2KHR(device, &rp_info, nullptr, &window->render_pass);
@@ -2402,7 +2401,7 @@ void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String
 		return;
 	}
 
-	CharString cs = p_label_name.utf8().get_data();
+	CharString cs = p_label_name.utf8();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -2418,7 +2417,7 @@ void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, Strin
 	if (!enabled_debug_utils) {
 		return;
 	}
-	CharString cs = p_label_name.utf8().get_data();
+	CharString cs = p_label_name.utf8();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;

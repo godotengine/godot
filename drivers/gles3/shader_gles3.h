@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_OPENGL_H
-#define SHADER_OPENGL_H
+#ifndef SHADER_GLES3_H
+#define SHADER_GLES3_H
 
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
@@ -248,5 +248,6 @@ public:
 	virtual ~ShaderGLES3();
 };
 
-#endif // SHADER_OPENGL_H
-#endif
+#endif // GLES3_ENABLED
+
+#endif // SHADER_GLES3_H

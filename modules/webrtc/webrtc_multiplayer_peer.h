@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBRTC_MULTIPLAYER_H
-#define WEBRTC_MULTIPLAYER_H
+#ifndef WEBRTC_MULTIPLAYER_PEER_H
+#define WEBRTC_MULTIPLAYER_PEER_H
 
-#include "core/multiplayer/multiplayer_peer.h"
+#include "scene/main/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
 
 class WebRTCMultiplayerPeer : public MultiplayerPeer {
@@ -106,4 +106,4 @@ public:
 	ConnectionStatus get_connection_status() const override;
 };
 
-#endif // WEBRTC_MULTIPLAYER_H
+#endif // WEBRTC_MULTIPLAYER_PEER_H

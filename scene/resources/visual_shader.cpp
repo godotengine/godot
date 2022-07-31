@@ -967,6 +967,12 @@ void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from
 	ERR_FAIL_COND(!g->nodes.has(p_to_node));
 	ERR_FAIL_INDEX(p_to_port, g->nodes[p_to_node].node->get_input_port_count());
 
+	for (const Connection &E : g->connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
+			return;
+		}
+	}
+
 	Connection c;
 	c.from_node = p_from_node;
 	c.from_port = p_from_port;
@@ -3745,7 +3751,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 		}
 		return vformat(RTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
 	} else if (qualifier == Qualifier::QUAL_GLOBAL) {
-		RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(uniform_name);
+		RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(uniform_name);
 		if (gvt == RS::GLOBAL_VAR_TYPE_MAX) {
 			return vformat(RTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
 		}

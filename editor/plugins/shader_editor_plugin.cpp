@@ -208,7 +208,30 @@ void ShaderTextEditor::_load_theme_settings() {
 	// to distinguish from keywords at a quick glance.
 
 	List<String> built_ins;
-	if (shader.is_valid()) {
+
+	if (shader_inc.is_valid()) {
+		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+			for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
+				for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
+					built_ins.push_back(F.key);
+				}
+			}
+
+			const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+
+			for (int j = 0; j < modes.size(); j++) {
+				const ShaderLanguage::ModeInfo &info = modes[j];
+
+				if (!info.options.is_empty()) {
+					for (int k = 0; k < info.options.size(); k++) {
+						built_ins.push_back(String(info.name) + "_" + String(info.options[k]));
+					}
+				} else {
+					built_ins.push_back(String(info.name));
+				}
+			}
+		}
+	} else if (shader.is_valid()) {
 		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()))) {
 			for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
 				built_ins.push_back(F.key);
@@ -286,9 +309,9 @@ void ShaderTextEditor::_check_shader_mode() {
 	}
 }
 
-static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
-	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_variable);
-	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
+static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
+	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_variable);
+	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
 static String complete_from_path;
@@ -335,13 +358,12 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	ShaderLanguage sl;
 	String calltip;
 	ShaderLanguage::ShaderCompileInfo info;
-	info.global_variable_type_func = _get_global_variable_type;
+	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
-	Ref<ShaderInclude> inc = shader_inc;
 	if (shader.is_null()) {
 		info.is_include = true;
 
-		sl.complete(p_code, info, r_options, calltip);
+		sl.complete(code, info, r_options, calltip);
 		get_text_editor()->set_code_hint(calltip);
 		return;
 	}
@@ -350,7 +372,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 
-	sl.complete(p_code, info, r_options, calltip);
+	sl.complete(code, info, r_options, calltip);
 	get_text_editor()->set_code_hint(calltip);
 }
 
@@ -426,7 +448,7 @@ void ShaderTextEditor::_validate_script() {
 		sl.set_warning_flags(flags);
 
 		ShaderLanguage::ShaderCompileInfo info;
-		info.global_variable_type_func = _get_global_variable_type;
+		info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
 		if (shader.is_null()) {
 			info.is_include = true;
@@ -809,18 +831,18 @@ void ShaderEditor::save_external_data(const String &p_str) {
 
 	Ref<Shader> edited_shader = shader_editor->get_edited_shader();
 	if (edited_shader.is_valid()) {
-		ResourceSaver::save(edited_shader->get_path(), edited_shader);
+		ResourceSaver::save(edited_shader);
 	}
 	if (shader.is_valid() && shader != edited_shader) {
-		ResourceSaver::save(shader->get_path(), shader);
+		ResourceSaver::save(shader);
 	}
 
 	Ref<ShaderInclude> edited_shader_inc = shader_editor->get_edited_shader_include();
 	if (edited_shader_inc.is_valid()) {
-		ResourceSaver::save(edited_shader_inc->get_path(), edited_shader_inc);
+		ResourceSaver::save(edited_shader_inc);
 	}
 	if (shader_inc.is_valid() && shader_inc != edited_shader_inc) {
-		ResourceSaver::save(shader_inc->get_path(), shader_inc);
+		ResourceSaver::save(shader_inc);
 	}
 
 	disk_changed->hide();
@@ -1402,7 +1424,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), main_split);
 
 	// Defer connect because Editor class is not in the binding system yet.
-	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), varray(), CONNECT_DEFERRED);
+	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	vb->add_child(shader_create_dialog);

@@ -376,6 +376,12 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::VECTOR3I:
 				color = Color(0.84, 0.49, 0.93);
 				break;
+			case Variant::VECTOR4:
+				color = Color(0.84, 0.49, 0.94);
+				break;
+			case Variant::VECTOR4I:
+				color = Color(0.84, 0.49, 0.94);
+				break;
 			case Variant::TRANSFORM2D:
 				color = Color(0.77, 0.93, 0.41);
 				break;
@@ -681,8 +687,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		gnode->set_meta("__vnode", node);
 		gnode->set_name(itos(E));
-		gnode->connect("dragged", callable_mp(this, &VisualScriptEditor::_node_moved), varray(E));
-		gnode->connect("close_request", callable_mp(this, &VisualScriptEditor::_remove_node), varray(E), CONNECT_DEFERRED);
+		gnode->connect("dragged", callable_mp(this, &VisualScriptEditor::_node_moved).bind(E));
+		gnode->connect("close_request", callable_mp(this, &VisualScriptEditor::_remove_node).bind(E), CONNECT_DEFERRED);
 
 		{
 			Ref<VisualScriptFunction> v = node;
@@ -702,7 +708,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				Button *btn = memnew(Button);
 				btn->set_text(TTR("Add Input Port"));
 				hbnc->add_child(btn);
-				btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_input_port), varray(E), CONNECT_DEFERRED);
+				btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_input_port).bind(E), CONNECT_DEFERRED);
 			}
 			if (nd_list->is_output_port_editable()) {
 				if (nd_list->is_input_port_editable()) {
@@ -712,7 +718,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				Button *btn = memnew(Button);
 				btn->set_text(TTR("Add Output Port"));
 				hbnc->add_child(btn);
-				btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_output_port), varray(E), CONNECT_DEFERRED);
+				btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_output_port).bind(E), CONNECT_DEFERRED);
 			}
 			gnode->add_child(hbnc);
 		} else if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
@@ -722,7 +728,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			line_edit->set_expand_to_text_length_enabled(true);
 			line_edit->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 			gnode->add_child(line_edit);
-			line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E));
+			line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed).bind(E));
 		} else {
 			String text = node->get_text();
 			if (!text.is_empty()) {
@@ -738,7 +744,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_comment(true);
 			gnode->set_resizable(true);
 			gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
-			gnode->connect("resize_request", callable_mp(this, &VisualScriptEditor::_comment_node_resized), varray(E));
+			gnode->connect("resize_request", callable_mp(this, &VisualScriptEditor::_comment_node_resized).bind(E));
 		}
 
 		if (node_styles.has(node->get_category())) {
@@ -841,8 +847,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 						name_box->set_text(left_name);
 						name_box->set_expand_to_text_length_enabled(true);
-						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E));
-						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E, i, true));
+						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size).bind(E));
+						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out).bind(name_box, E, i, true));
 					} else {
 						hbc->add_child(memnew(Label(left_name)));
 					}
@@ -855,13 +861,13 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						opbtn->select(left_type);
 						opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 						hbc->add_child(opbtn);
-						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E, i, true), CONNECT_DEFERRED);
+						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type).bind(E, i, true), CONNECT_DEFERRED);
 					}
 
 					Button *rmbtn = memnew(Button);
 					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					hbc->add_child(rmbtn);
-					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E, i), CONNECT_DEFERRED);
+					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port).bind(E, i), CONNECT_DEFERRED);
 				} else {
 					hbc->add_child(memnew(Label(left_name)));
 				}
@@ -880,7 +886,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 					if (left_type == Variant::COLOR) {
 						button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-						button->connect("draw", callable_mp(this, &VisualScriptEditor::_draw_color_over_button), varray(button, value));
+						button->connect("draw", callable_mp(this, &VisualScriptEditor::_draw_color_over_button).bind(button, value));
 					} else if (left_type == Variant::OBJECT && Ref<Resource>(value).is_valid()) {
 						Ref<Resource> res = value;
 						Array arr;
@@ -935,7 +941,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					} else {
 						button->set_text(value);
 					}
-					button->connect("pressed", callable_mp(this, &VisualScriptEditor::_default_value_edited), varray(button, E, i));
+					button->connect("pressed", callable_mp(this, &VisualScriptEditor::_default_value_edited).bind(button, E, i));
 					hbc2->add_child(button);
 				}
 			} else {
@@ -959,7 +965,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *rmbtn = memnew(Button);
 					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					hbc->add_child(rmbtn);
-					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E, i), CONNECT_DEFERRED);
+					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port).bind(E, i), CONNECT_DEFERRED);
 
 					if (nd_list->is_output_port_type_editable()) {
 						OptionButton *opbtn = memnew(OptionButton);
@@ -969,7 +975,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						opbtn->select(right_type);
 						opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 						hbc->add_child(opbtn);
-						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E, i, false), CONNECT_DEFERRED);
+						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type).bind(E, i, false), CONNECT_DEFERRED);
 					}
 
 					if (nd_list->is_output_port_name_editable()) {
@@ -978,8 +984,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 						name_box->set_text(right_name);
 						name_box->set_expand_to_text_length_enabled(true);
-						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E));
-						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E, i, false));
+						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size).bind(E));
+						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out).bind(name_box, E, i, false));
 					} else {
 						hbc->add_child(memnew(Label(right_name)));
 					}
@@ -1464,7 +1470,7 @@ void VisualScriptEditor::_add_func_input() {
 	func_input_vbox->add_child(hbox);
 	hbox->set_meta("id", hbox->get_index());
 
-	delete_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_func_input), varray(hbox));
+	delete_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_func_input).bind(hbox));
 
 	name_box->select_all();
 	name_box->grab_focus();
@@ -3982,9 +3988,9 @@ void VisualScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_members));
-			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph), varray(-1), CONNECT_DEFERRED);
+			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph).bind(-1), CONNECT_DEFERRED);
 			signal_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_members));
-			signal_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph), varray(-1), CONNECT_DEFERRED);
+			signal_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph).bind(-1), CONNECT_DEFERRED);
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -4602,7 +4608,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	members->set_hide_root(true);
 	members->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_member_button));
 	members->connect("item_edited", callable_mp(this, &VisualScriptEditor::_member_edited));
-	members->connect("cell_selected", callable_mp(this, &VisualScriptEditor::_member_selected), varray(), CONNECT_DEFERRED);
+	members->connect("cell_selected", callable_mp(this, &VisualScriptEditor::_member_selected), CONNECT_DEFERRED);
 	members->connect("gui_input", callable_mp(this, &VisualScriptEditor::_members_gui_input));
 	members->connect("item_mouse_selected", callable_mp(this, &VisualScriptEditor::_member_rmb_selected));
 	members->set_allow_rmb_select(true);
@@ -4821,12 +4827,15 @@ VisualScriptEditor::VisualScriptEditor() {
 	base_type_map.insert("Rect2i", Variant::RECT2I);
 	base_type_map.insert("Vector3", Variant::VECTOR3);
 	base_type_map.insert("Vector3i", Variant::VECTOR3I);
+	base_type_map.insert("Vector4", Variant::VECTOR4);
+	base_type_map.insert("Vector4i", Variant::VECTOR4I);
 	base_type_map.insert("Transform2D", Variant::TRANSFORM2D);
 	base_type_map.insert("Plane", Variant::PLANE);
 	base_type_map.insert("Quaternion", Variant::QUATERNION);
 	base_type_map.insert("AABB", Variant::AABB);
 	base_type_map.insert("Basis", Variant::BASIS);
 	base_type_map.insert("Transform3D", Variant::TRANSFORM3D);
+	base_type_map.insert("Projection", Variant::PROJECTION);
 	base_type_map.insert("Color", Variant::COLOR);
 	base_type_map.insert("NodePath", Variant::NODE_PATH);
 	base_type_map.insert("RID", Variant::RID);

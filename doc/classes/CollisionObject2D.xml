@@ -16,7 +16,8 @@
 			<argument index="1" name="event" type="InputEvent" />
 			<argument index="2" name="shape_idx" type="int" />
 			<description>
-				Accepts unhandled [InputEvent]s. Requires [member input_pickable] to be [code]true[/code]. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				Accepts unhandled [InputEvent]s. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -218,17 +219,19 @@
 			<argument index="1" name="event" type="InputEvent" />
 			<argument index="2" name="shape_idx" type="int" />
 			<description>
-				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set. See [method _input_event] for details.
+				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
 				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject2D] won't cause this signal to be emitted.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
 				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject2D] won't cause this signal to be emitted.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_shape_entered">

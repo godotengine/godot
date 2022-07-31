@@ -103,7 +103,7 @@ String Shader::get_code() const {
 	return code;
 }
 
-void Shader::get_param_list(List<PropertyInfo> *p_params) const {
+void Shader::get_param_list(List<PropertyInfo> *p_params, bool p_get_groups) const {
 	_update_shader();
 
 	List<PropertyInfo> local;
@@ -112,12 +112,16 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 	params_cache_dirty = false;
 
 	for (PropertyInfo &pi : local) {
-		if (default_textures.has(pi.name)) { //do not show default textures
+		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
+		if (!p_get_groups && is_group) {
 			continue;
 		}
-		String original_name = pi.name;
-		pi.name = "shader_param/" + pi.name;
-		params_cache[pi.name] = original_name;
+		if (!is_group) {
+			if (default_textures.has(pi.name)) { //do not show default textures
+				continue;
+			}
+			params_cache[pi.name] = pi.name;
+		}
 		if (p_params) {
 			//small little hack
 			if (pi.type == Variant::RID) {
@@ -247,7 +251,7 @@ String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverShader::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<Shader> shader = p_resource;
 	ERR_FAIL_COND_V(shader.is_null(), ERR_INVALID_PARAMETER);
 

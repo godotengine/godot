@@ -283,4 +283,4 @@ private:
 	Callable callback;
 };
 
-#endif
+#endif // TWEEN_H

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_DRIVER_H
-#define OPENXR_DRIVER_H
+#ifndef OPENXR_API_H
+#define OPENXR_API_H
 
 #include "core/error/error_macros.h"
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/os/memory.h"
@@ -249,7 +249,7 @@ public:
 	Size2 get_recommended_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
-	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, CameraMatrix &p_camera_matrix);
+	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
 	bool process();
 
 	void pre_render();
@@ -292,4 +292,4 @@ public:
 	~OpenXRAPI();
 };
 
-#endif // !OPENXR_DRIVER_H
+#endif // OPENXR_API_H

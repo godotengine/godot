@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORNETWORKPROFILER_H
-#define EDITORNETWORKPROFILER_H
+#ifndef EDITOR_NETWORK_PROFILER_H
+#define EDITOR_NETWORK_PROFILER_H
 
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
@@ -69,4 +69,4 @@ public:
 	EditorNetworkProfiler();
 };
 
-#endif //EDITORNETWORKPROFILER_H
+#endif // EDITOR_NETWORK_PROFILER_H

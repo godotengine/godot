@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_EXTENSION_EDITOR_H
-#define GLTF_EXTENSION_EDITOR_H
+#ifndef GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H
+#define GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H
 
 #include "gltf_document_extension.h"
 
@@ -46,4 +46,5 @@ protected:
 public:
 	Error import_post(Ref<GLTFState> p_state, Node *p_root) override;
 };
-#endif // GLTF_EXTENSION_EDITOR_H
+
+#endif // GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H

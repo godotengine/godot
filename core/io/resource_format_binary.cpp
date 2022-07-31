@@ -81,6 +81,9 @@ enum {
 	VARIANT_VECTOR3I = 47,
 	VARIANT_PACKED_INT64_ARRAY = 48,
 	VARIANT_PACKED_FLOAT64_ARRAY = 49,
+	VARIANT_VECTOR4 = 50,
+	VARIANT_VECTOR4I = 51,
+	VARIANT_PROJECTION = 52,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -237,6 +240,22 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			v.z = f->get_32();
 			r_v = v;
 		} break;
+		case VARIANT_VECTOR4: {
+			Vector4 v;
+			v.x = f->get_real();
+			v.y = f->get_real();
+			v.z = f->get_real();
+			v.w = f->get_real();
+			r_v = v;
+		} break;
+		case VARIANT_VECTOR4I: {
+			Vector4i v;
+			v.x = f->get_32();
+			v.y = f->get_32();
+			v.z = f->get_32();
+			v.w = f->get_32();
+			r_v = v;
+		} break;
 		case VARIANT_PLANE: {
 			Plane v;
 			v.normal.x = f->get_real();
@@ -304,6 +323,26 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			v.origin.x = f->get_real();
 			v.origin.y = f->get_real();
 			v.origin.z = f->get_real();
+			r_v = v;
+		} break;
+		case VARIANT_PROJECTION: {
+			Projection v;
+			v.matrix[0].x = f->get_real();
+			v.matrix[0].y = f->get_real();
+			v.matrix[0].z = f->get_real();
+			v.matrix[0].w = f->get_real();
+			v.matrix[1].x = f->get_real();
+			v.matrix[1].y = f->get_real();
+			v.matrix[1].z = f->get_real();
+			v.matrix[1].w = f->get_real();
+			v.matrix[2].x = f->get_real();
+			v.matrix[2].y = f->get_real();
+			v.matrix[2].z = f->get_real();
+			v.matrix[2].w = f->get_real();
+			v.matrix[3].x = f->get_real();
+			v.matrix[3].y = f->get_real();
+			v.matrix[3].z = f->get_real();
+			v.matrix[3].w = f->get_real();
 			r_v = v;
 		} break;
 		case VARIANT_COLOR: {
@@ -1228,7 +1267,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		Ref<Resource> res = loader.get_resource();
 		ERR_FAIL_COND_V(!res.is_valid(), ERR_FILE_CORRUPT);
 
-		return ResourceFormatSaverBinary::singleton->save(p_path, res);
+		return ResourceFormatSaverBinary::singleton->save(res, p_path);
 	}
 
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
@@ -1499,6 +1538,24 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(val.z);
 
 		} break;
+		case Variant::VECTOR4: {
+			f->store_32(VARIANT_VECTOR4);
+			Vector4 val = p_property;
+			f->store_real(val.x);
+			f->store_real(val.y);
+			f->store_real(val.z);
+			f->store_real(val.w);
+
+		} break;
+		case Variant::VECTOR4I: {
+			f->store_32(VARIANT_VECTOR4I);
+			Vector4i val = p_property;
+			f->store_32(val.x);
+			f->store_32(val.y);
+			f->store_32(val.z);
+			f->store_32(val.w);
+
+		} break;
 		case Variant::PLANE: {
 			f->store_32(VARIANT_PLANE);
 			Plane val = p_property;
@@ -1568,6 +1625,27 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.origin.x);
 			f->store_real(val.origin.y);
 			f->store_real(val.origin.z);
+
+		} break;
+		case Variant::PROJECTION: {
+			f->store_32(VARIANT_PROJECTION);
+			Projection val = p_property;
+			f->store_real(val.matrix[0].x);
+			f->store_real(val.matrix[0].y);
+			f->store_real(val.matrix[0].z);
+			f->store_real(val.matrix[0].w);
+			f->store_real(val.matrix[1].x);
+			f->store_real(val.matrix[1].y);
+			f->store_real(val.matrix[1].z);
+			f->store_real(val.matrix[1].w);
+			f->store_real(val.matrix[2].x);
+			f->store_real(val.matrix[2].y);
+			f->store_real(val.matrix[2].z);
+			f->store_real(val.matrix[2].w);
+			f->store_real(val.matrix[3].x);
+			f->store_real(val.matrix[3].y);
+			f->store_real(val.matrix[3].z);
+			f->store_real(val.matrix[3].w);
 
 		} break;
 		case Variant::COLOR: {
@@ -2126,7 +2204,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	return OK;
 }
 
-Error ResourceFormatSaverBinary::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverBinary::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ResourceFormatSaverBinaryInstance saver;
 	return saver.save(local_path, p_resource, p_flags);

@@ -189,7 +189,7 @@
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis.
 		</member>
-		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.Projection" default="0">
+		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
 		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
@@ -200,13 +200,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PROJECTION_PERSPECTIVE" value="0" enum="Projection">
+		<constant name="PROJECTION_PERSPECTIVE" value="0" enum="ProjectionType">
 			Perspective projection. Objects on the screen becomes smaller when they are far away.
 		</constant>
-		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="Projection">
+		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="ProjectionType">
 			Orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are.
 		</constant>
-		<constant name="PROJECTION_FRUSTUM" value="2" enum="Projection">
+		<constant name="PROJECTION_FRUSTUM" value="2" enum="ProjectionType">
 			Frustum projection. This mode allows adjusting [member frustum_offset] to create "tilted frustum" effects.
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">

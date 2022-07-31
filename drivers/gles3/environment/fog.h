@@ -59,4 +59,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !FOG_GLES3_H
+#endif // FOG_GLES3_H

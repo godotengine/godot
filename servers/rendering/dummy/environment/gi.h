@@ -79,4 +79,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !GI_DUMMY_H
+#endif // GI_DUMMY_H

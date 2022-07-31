@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BOX_SHAPE_H
-#define BOX_SHAPE_H
+#ifndef BOX_SHAPE_3D_H
+#define BOX_SHAPE_3D_H
 
 #include "scene/resources/shape_3d.h"
 
@@ -56,4 +56,4 @@ public:
 	BoxShape3D();
 };
 
-#endif // BOX_SHAPE_H
+#endif // BOX_SHAPE_3D_H

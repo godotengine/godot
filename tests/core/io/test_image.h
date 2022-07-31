@@ -300,4 +300,5 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 			"flip_y() should not leave old pixels behind.");
 }
 } // namespace TestImage
+
 #endif // TEST_IMAGE_H

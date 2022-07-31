@@ -219,21 +219,21 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 	if (p_enter) {
 		if (!vn->enter_callback.is_null()) {
 			if (p_deferred) {
-				vn->enter_callback.call_deferred(nullptr, 0);
+				vn->enter_callback.call_deferredp(nullptr, 0);
 			} else {
 				Variant r;
 				Callable::CallError ce;
-				vn->enter_callback.call(nullptr, 0, r, ce);
+				vn->enter_callback.callp(nullptr, 0, r, ce);
 			}
 		}
 	} else {
 		if (!vn->exit_callback.is_null()) {
 			if (p_deferred) {
-				vn->exit_callback.call_deferred(nullptr, 0);
+				vn->exit_callback.call_deferredp(nullptr, 0);
 			} else {
 				Variant r;
 				Callable::CallError ce;
-				vn->exit_callback.call(nullptr, 0, r, ce);
+				vn->exit_callback.callp(nullptr, 0, r, ce);
 			}
 		}
 	}
@@ -272,7 +272,7 @@ String Utilities::get_captured_timestamp_name(uint32_t p_index) const {
 /* MISC */
 
 void Utilities::update_dirty_resources() {
-	MaterialStorage::get_singleton()->_update_global_variables(); //must do before materials, so it can queue them for update
+	MaterialStorage::get_singleton()->_update_global_shader_uniforms(); //must do before materials, so it can queue them for update
 	MaterialStorage::get_singleton()->_update_queued_materials();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
 	MeshStorage::get_singleton()->_update_dirty_skeletons();

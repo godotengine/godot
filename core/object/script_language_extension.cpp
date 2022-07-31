@@ -74,7 +74,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_members);
 	GDVIRTUAL_BIND(_is_placeholder_fallback_enabled);
 
-	GDVIRTUAL_BIND(_get_rpc_methods);
+	GDVIRTUAL_BIND(_get_rpc_config);
 }
 
 void ScriptLanguageExtension::_bind_methods() {

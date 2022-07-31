@@ -88,7 +88,7 @@ Error ResourceImporterTextureAtlas::import(const String &p_source_file, const St
 	//use an xpm because it's size independent, the editor images are vector and size dependent
 	//it's a simple hack
 	Ref<Image> broken = memnew(Image((const char **)atlas_import_failed_xpm));
-	ResourceSaver::save(p_save_path + ".tex", ImageTexture::create_from_image(broken));
+	ResourceSaver::save(ImageTexture::create_from_image(broken), p_save_path + ".tex");
 
 	return OK;
 }
@@ -386,7 +386,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		}
 
 		String save_path = p_base_paths[E.key] + ".res";
-		ResourceSaver::save(save_path, texture);
+		ResourceSaver::save(texture, save_path);
 		idx++;
 	}
 

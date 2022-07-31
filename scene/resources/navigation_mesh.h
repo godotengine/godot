@@ -204,7 +204,11 @@ public:
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
+#ifndef DISABLE_DEPRECATED
 	Ref<Mesh> get_debug_mesh();
+#endif // DISABLE_DEPRECATED
+
+	Ref<ArrayMesh> _get_debug_mesh();
 
 	NavigationMesh();
 };

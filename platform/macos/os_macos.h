@@ -97,6 +97,8 @@ public:
 
 	virtual String get_locale() const override;
 
+	virtual Vector<String> get_system_fonts() const override;
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
@@ -117,4 +119,4 @@ public:
 	~OS_MacOS();
 };
 
-#endif
+#endif // OS_MACOS_H

@@ -267,7 +267,7 @@
 		Variant *vp = &v;
 		Variant ret;
 		Callable::CallError ce;
-		wd.drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+		wd.drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
 	}
 
 	return NO;

@@ -35,11 +35,11 @@
 		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="resource" type="Resource" />
+			<argument index="0" name="resource" type="Resource" />
+			<argument index="1" name="path" type="String" default="&quot;&quot;" />
 			<argument index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" default="0" />
 			<description>
-				Saves a resource to disk to the given path, using a [ResourceFormatSaver] that recognizes the resource object.
+				Saves a resource to disk to the given path, using a [ResourceFormatSaver] that recognizes the resource object. If [code]path[/code] is empty, [ResourceSaver] will try to use [member Resource.resource_path].
 				The [code]flags[/code] bitmask can be specified to customize the save behavior using [enum SaverFlags] flags.
 				Returns [constant OK] on success.
 			</description>

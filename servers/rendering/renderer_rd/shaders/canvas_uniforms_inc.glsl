@@ -138,10 +138,10 @@ layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
 layout(set = 0, binding = 8) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 /* SET1: Is reserved for the material */
 

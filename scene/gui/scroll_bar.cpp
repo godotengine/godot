@@ -303,7 +303,7 @@ void ScrollBar::_notification(int p_what) {
 
 			if (drag_node) {
 				drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), varray(), CONNECT_ONESHOT);
+				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONESHOT);
 			}
 		} break;
 
@@ -595,7 +595,7 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 
 		if (drag_node) {
 			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), varray(), CONNECT_ONESHOT);
+			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONESHOT);
 		}
 	}
 }

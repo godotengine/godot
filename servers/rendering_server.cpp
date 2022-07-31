@@ -772,19 +772,11 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 					elem_size = 3;
 				}
 
-				{
-					elem_size *= sizeof(float);
-				}
-
-				if (elem_size == 6) {
-					elem_size = 8;
-				}
-
+				elem_size *= sizeof(float);
 			} break;
 			case RS::ARRAY_NORMAL: {
 				elem_size = 4;
 			} break;
-
 			case RS::ARRAY_TANGENT: {
 				elem_size = 4;
 			} break;
@@ -793,12 +785,9 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 			} break;
 			case RS::ARRAY_TEX_UV: {
 				elem_size = 8;
-
 			} break;
-
 			case RS::ARRAY_TEX_UV2: {
 				elem_size = 8;
-
 			} break;
 			case RS::ARRAY_CUSTOM0:
 			case RS::ARRAY_CUSTOM1:
@@ -1410,7 +1399,7 @@ Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_su
 }
 #endif
 
-int RenderingServer::global_variable_type_get_shader_datatype(GlobalVariableType p_type) {
+int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShaderUniformType p_type) {
 	switch (p_type) {
 		case RS::GLOBAL_VAR_TYPE_BOOL:
 			return ShaderLanguage::TYPE_BOOL;
@@ -2184,7 +2173,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_mode", "viewport", "scaling_3d_mode"), &RenderingServer::viewport_set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_scale", "viewport", "scale"), &RenderingServer::viewport_set_scaling_3d_scale);
 	ClassDB::bind_method(D_METHOD("viewport_set_fsr_sharpness", "viewport", "sharpness"), &RenderingServer::viewport_set_fsr_sharpness);
-	ClassDB::bind_method(D_METHOD("viewport_set_fsr_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_fsr_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &RenderingServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &RenderingServer::viewport_set_clear_mode);
 	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &RenderingServer::viewport_get_texture);
@@ -2690,15 +2679,15 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE);
 	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE);
 
-	/* GLOBAL VARIABLES */
+	/* GLOBAL SHADER UNIFORMS */
 
-	ClassDB::bind_method(D_METHOD("global_variable_add", "name", "type", "default_value"), &RenderingServer::global_variable_add);
-	ClassDB::bind_method(D_METHOD("global_variable_remove", "name"), &RenderingServer::global_variable_remove);
-	ClassDB::bind_method(D_METHOD("global_variable_get_list"), &RenderingServer::global_variable_get_list);
-	ClassDB::bind_method(D_METHOD("global_variable_set", "name", "value"), &RenderingServer::global_variable_set);
-	ClassDB::bind_method(D_METHOD("global_variable_set_override", "name", "value"), &RenderingServer::global_variable_set_override);
-	ClassDB::bind_method(D_METHOD("global_variable_get", "name"), &RenderingServer::global_variable_get);
-	ClassDB::bind_method(D_METHOD("global_variable_get_type", "name"), &RenderingServer::global_variable_get_type);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_add", "name", "type", "default_value"), &RenderingServer::global_shader_uniform_add);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_remove", "name"), &RenderingServer::global_shader_uniform_remove);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_get_list"), &RenderingServer::global_shader_uniform_get_list);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_set", "name", "value"), &RenderingServer::global_shader_uniform_set);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_set_override", "name", "value"), &RenderingServer::global_shader_uniform_set_override);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_get", "name"), &RenderingServer::global_shader_uniform_get);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_get_type", "name"), &RenderingServer::global_shader_uniform_get_type);
 
 	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BOOL);
 	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC2);
@@ -2831,7 +2820,6 @@ void RenderingServer::set_render_loop_enabled(bool p_enabled) {
 RenderingServer::RenderingServer() {
 	//ERR_FAIL_COND(singleton);
 
-	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
 }
 
@@ -2947,7 +2935,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/scaling_3d/mode", 0);
 	GLOBAL_DEF("rendering/scaling_3d/scale", 1.0);
 	GLOBAL_DEF("rendering/scaling_3d/fsr_sharpness", 0.2f);
-	GLOBAL_DEF("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
+	GLOBAL_DEF("rendering/textures/default_filters/texture_mipmap_bias", 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
@@ -2962,10 +2950,10 @@ void RenderingServer::init() {
 			PropertyInfo(Variant::FLOAT,
 					"rendering/scaling_3d/fsr_sharpness",
 					PROPERTY_HINT_RANGE, "0,2,0.1"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/fsr_mipmap_bias",
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/texture_mipmap_bias",
 			PropertyInfo(Variant::FLOAT,
-					"rendering/scaling_3d/fsr_mipmap_bias",
-					PROPERTY_HINT_RANGE, "-2,2,0.1"));
+					"rendering/textures/default_filters/texture_mipmap_bias",
+					PROPERTY_HINT_RANGE, "-2,2,0.001"));
 
 	GLOBAL_DEF("rendering/textures/decals/filter", DECAL_FILTER_LINEAR_MIPMAPS);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/decals/filter", PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Nearest+Mipmaps,Linear,Linear+Mipmaps,Linear+Mipmaps Anisotropic (Slow)"));
@@ -3032,6 +3020,5 @@ void RenderingServer::init() {
 }
 
 RenderingServer::~RenderingServer() {
-	memdelete(thread_pool);
 	singleton = nullptr;
 }

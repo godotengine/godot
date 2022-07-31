@@ -72,4 +72,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !VRS_RD_H
+#endif // VRS_RD_H

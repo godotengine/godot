@@ -1906,11 +1906,11 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 			if (!visibility_notifier->enter_callable.is_null()) {
 				if (RSG::threaded) {
-					visibility_notifier->enter_callable.call_deferred(nullptr, 0);
+					visibility_notifier->enter_callable.call_deferredp(nullptr, 0);
 				} else {
 					Callable::CallError ce;
 					Variant ret;
-					visibility_notifier->enter_callable.call(nullptr, 0, ret, ce);
+					visibility_notifier->enter_callable.callp(nullptr, 0, ret, ce);
 				}
 			}
 		} else {
@@ -1919,11 +1919,11 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 				if (!visibility_notifier->exit_callable.is_null()) {
 					if (RSG::threaded) {
-						visibility_notifier->exit_callable.call_deferred(nullptr, 0);
+						visibility_notifier->exit_callable.call_deferredp(nullptr, 0);
 					} else {
 						Callable::CallError ce;
 						Variant ret;
-						visibility_notifier->exit_callable.call(nullptr, 0, ret, ce);
+						visibility_notifier->exit_callable.callp(nullptr, 0, ret, ce);
 					}
 				}
 			}

@@ -115,4 +115,5 @@ public:
 	static Error sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]);
 	static Error sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]);
 };
+
 #endif // CRYPTO_CORE_H

@@ -55,7 +55,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	ActionMapEditor *action_map_editor = nullptr;
 	LocalizationEditor *localization_editor = nullptr;
 	EditorAutoloadSettings *autoload_settings = nullptr;
-	ShaderGlobalsEditor *shaders_global_variables_editor = nullptr;
+	ShaderGlobalsEditor *shaders_global_shader_uniforms_editor = nullptr;
 	EditorPluginSettings *plugin_settings = nullptr;
 
 	LineEdit *search_box = nullptr;

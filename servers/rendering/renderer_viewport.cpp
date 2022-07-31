@@ -138,7 +138,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			p_viewport->internal_size = Size2(render_width, render_height);
 
-			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, p_viewport->fsr_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
+			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, p_viewport->texture_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
 		}
 	}
 }
@@ -154,7 +154,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	if (p_viewport->use_occlusion_culling) {
 		if (p_viewport->occlusion_buffer_dirty) {
 			float aspect = p_viewport->size.aspect();
-			int max_size = occlusion_rays_per_thread * RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+			int max_size = occlusion_rays_per_thread * WorkerThreadPool::get_singleton()->get_thread_count();
 
 			int viewport_size = p_viewport->size.width * p_viewport->size.height;
 			max_size = CLAMP(max_size, viewport_size / (32 * 32), viewport_size / (2 * 2)); // At least one depth pixel for every 16x16 region. At most one depth pixel for every 2x2 region.
@@ -746,11 +746,11 @@ void RendererViewport::viewport_set_fsr_sharpness(RID p_viewport, float p_sharpn
 	_configure_3d_render_buffers(viewport);
 }
 
-void RendererViewport::viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
+void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	viewport->fsr_mipmap_bias = p_mipmap_bias;
+	viewport->texture_mipmap_bias = p_mipmap_bias;
 	_configure_3d_render_buffers(viewport);
 }
 

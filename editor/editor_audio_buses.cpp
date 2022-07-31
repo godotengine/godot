@@ -1007,11 +1007,11 @@ void EditorAudioBuses::_update_buses() {
 		bool is_master = (i == 0);
 		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this, is_master));
 		bus_hb->add_child(audio_bus);
-		audio_bus->connect("delete_request", callable_mp(this, &EditorAudioBuses::_delete_bus), varray(audio_bus), CONNECT_DEFERRED);
-		audio_bus->connect("duplicate_request", callable_mp(this, &EditorAudioBuses::_duplicate_bus), varray(), CONNECT_DEFERRED);
-		audio_bus->connect("vol_reset_request", callable_mp(this, &EditorAudioBuses::_reset_bus_volume), varray(audio_bus), CONNECT_DEFERRED);
+		audio_bus->connect("delete_request", callable_mp(this, &EditorAudioBuses::_delete_bus).bind(audio_bus), CONNECT_DEFERRED);
+		audio_bus->connect("duplicate_request", callable_mp(this, &EditorAudioBuses::_duplicate_bus), CONNECT_DEFERRED);
+		audio_bus->connect("vol_reset_request", callable_mp(this, &EditorAudioBuses::_reset_bus_volume).bind(audio_bus), CONNECT_DEFERRED);
 		audio_bus->connect("drop_end_request", callable_mp(this, &EditorAudioBuses::_request_drop_end));
-		audio_bus->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), varray(), CONNECT_DEFERRED);
+		audio_bus->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), CONNECT_DEFERRED);
 	}
 }
 
@@ -1154,7 +1154,7 @@ void EditorAudioBuses::_request_drop_end() {
 
 		bus_hb->add_child(drop_end);
 		drop_end->set_custom_minimum_size(Object::cast_to<Control>(bus_hb->get_child(0))->get_size());
-		drop_end->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), varray(), CONNECT_DEFERRED);
+		drop_end->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), CONNECT_DEFERRED);
 	}
 }
 
@@ -1174,7 +1174,7 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 
 void EditorAudioBuses::_server_save() {
 	Ref<AudioBusLayout> state = AudioServer::get_singleton()->generate_bus_layout();
-	ResourceSaver::save(edited_path, state);
+	ResourceSaver::save(state, edited_path);
 }
 
 void EditorAudioBuses::_select_layout() {
@@ -1244,7 +1244,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 			AudioServer::get_singleton()->set_bus_layout(empty_state);
 		}
 
-		Error err = ResourceSaver::save(p_string, AudioServer::get_singleton()->generate_bus_layout());
+		Error err = ResourceSaver::save(AudioServer::get_singleton()->generate_bus_layout(), p_string);
 
 		if (err != OK) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_string));

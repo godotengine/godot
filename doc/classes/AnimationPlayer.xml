@@ -220,6 +220,10 @@
 		<member name="method_call_mode" type="int" setter="set_method_call_mode" getter="get_method_call_mode" enum="AnimationPlayer.AnimationMethodCallMode" default="0">
 			The call mode to use for Call Method tracks.
 		</member>
+		<member name="movie_quit_on_finish" type="bool" setter="set_movie_quit_on_finish_enabled" getter="is_movie_quit_on_finish_enabled" default="false">
+			If [code]true[/code] and the engine is running in Movie Maker mode (see [MovieWriter]), exits the engine with [method SceneTree.quit] as soon as an animation is done playing in this [AnimationPlayer]. A message is printed when the engine quits for this reason.
+			[b]Note:[/b] This obeys the same logic as the [signal animation_finished] signal, so it will not quit the engine if the animation is set to be looping.
+		</member>
 		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
 			If [code]true[/code], updates animations in response to process-related notifications.
 		</member>
@@ -253,6 +257,7 @@
 			<argument index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation finished playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="animation_started">

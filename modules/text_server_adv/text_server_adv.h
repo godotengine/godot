@@ -65,11 +65,12 @@
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/classes/ref.hpp>
+#include <godot_cpp/classes/worker_thread_pool.hpp>
 
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/templates/rid_owner.hpp>
-#include <godot_cpp/templates/thread_work_pool.hpp>
+
 #include <godot_cpp/templates/vector.hpp>
 
 using namespace godot;
@@ -77,9 +78,9 @@ using namespace godot;
 #else
 // Headers for building as built-in module.
 
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 #include "servers/text/text_server_extension.h"
 
@@ -252,10 +253,8 @@ class TextServerAdvanced : public TextServerExtension {
 		const uint8_t *data_ptr;
 		size_t data_size;
 		int face_index = 0;
-		mutable ThreadWorkPool work_pool;
 
 		~FontAdvanced() {
-			work_pool.finish();
 			for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : cache) {
 				memdelete(E.value);
 			}

@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef FREEDESKTOP_SCREENSAVER_H
+#define FREEDESKTOP_SCREENSAVER_H
+
 #ifdef DBUS_ENABLED
 
-#include <dbus/dbus.h>
 #include <stdint.h>
 
 class FreeDesktopScreenSaver {
@@ -39,9 +41,11 @@ private:
 	bool unsupported = false;
 
 public:
-	FreeDesktopScreenSaver() {}
+	FreeDesktopScreenSaver();
 	void inhibit();
 	void uninhibit();
 };
 
 #endif // DBUS_ENABLED
+
+#endif // FREEDESKTOP_SCREENSAVER_H

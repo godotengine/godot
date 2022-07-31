@@ -105,12 +105,6 @@
 				Returns project-specific metadata for the [code]section[/code] and [code]key[/code] specified. If the metadata doesn't exist, [code]default[/code] will be returned instead. See also [method set_project_metadata].
 			</description>
 		</method>
-		<method name="get_project_settings_dir" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the project-specific settings path. Projects all have a unique subdirectory inside the settings path where project-specific settings are saved.
-			</description>
-		</method>
 		<method name="get_recent_dirs" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
@@ -200,6 +194,454 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="debugger/profiler_frame_history_size" type="int" setter="" getter="">
+		</member>
+		<member name="docks/filesystem/always_show_folders" type="bool" setter="" getter="">
+		</member>
+		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
+		</member>
+		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
+		</member>
+		<member name="docks/property_editor/auto_refresh_interval" type="float" setter="" getter="">
+		</member>
+		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
+		</member>
+		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
+		</member>
+		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_color1" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_color2" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_ik_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_outline_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_outline_size" type="int" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_selected_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/bone_width" type="int" setter="" getter="">
+		</member>
+		<member name="editors/2d/constrain_editor_view" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/2d/grid_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/guides_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/smart_snapping_line_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/2d/viewport_border_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/3d/default_fov" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/default_z_far" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/default_z_near" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/freelook/freelook_activation_modifier" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/freelook/freelook_base_speed" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/freelook/freelook_inertia" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/freelook/freelook_navigation_scheme" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/freelook/freelook_sensitivity" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/freelook/freelook_speed_zoom_link" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_division_level_bias" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_division_level_max" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_division_level_min" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_size" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_xy_plane" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_xz_plane" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/grid_yz_plane" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/emulate_numpad" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/invert_x_axis" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/invert_y_axis" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/orbit_modifier" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/pan_modifier" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation_feel/orbit_inertia" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation_feel/orbit_sensitivity" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation_feel/translation_inertia" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/navigation_feel/zoom_inertia" type="float" setter="" getter="">
+		</member>
+		<member name="editors/3d/primary_grid_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/3d/primary_grid_steps" type="int" setter="" getter="">
+		</member>
+		<member name="editors/3d/secondary_grid_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/joint" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/shape" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/animation/confirm_insert_track" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/animation/default_create_reset_tracks" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/animation/onion_layers_future_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/animation/onion_layers_past_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
+		</member>
+		<member name="editors/panning/2d_editor_pan_speed" type="int" setter="" getter="">
+		</member>
+		<member name="editors/panning/2d_editor_panning_scheme" type="int" setter="" getter="">
+		</member>
+		<member name="editors/panning/animation_editors_panning_scheme" type="int" setter="" getter="">
+		</member>
+		<member name="editors/panning/simple_panning" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/panning/sub_editors_panning_scheme" type="int" setter="" getter="">
+		</member>
+		<member name="editors/panning/warped_mouse_panning" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/polygon_editor/point_grab_radius" type="int" setter="" getter="">
+		</member>
+		<member name="editors/polygon_editor/show_previous_outline" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/tiles_editor/display_grid" type="bool" setter="" getter="">
+		</member>
+		<member name="editors/tiles_editor/grid_color" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/visual_editors/lines_curvature" type="float" setter="" getter="">
+		</member>
+		<member name="editors/visual_editors/minimap_opacity" type="float" setter="" getter="">
+		</member>
+		<member name="editors/visual_editors/visualshader/port_preview_size" type="int" setter="" getter="">
+		</member>
+		<member name="filesystem/directories/autoscan_project_path" type="String" setter="" getter="">
+		</member>
+		<member name="filesystem/directories/default_project_path" type="String" setter="" getter="">
+		</member>
+		<member name="filesystem/file_dialog/display_mode" type="int" setter="" getter="">
+		</member>
+		<member name="filesystem/file_dialog/show_hidden_files" type="bool" setter="" getter="">
+		</member>
+		<member name="filesystem/file_dialog/thumbnail_size" type="int" setter="" getter="">
+		</member>
+		<member name="filesystem/on_save/compress_binary_resources" type="bool" setter="" getter="">
+		</member>
+		<member name="filesystem/on_save/safe_save_on_backup_then_rename" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/code_font" type="String" setter="" getter="">
+		</member>
+		<member name="interface/editor/code_font_contextual_ligatures" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/code_font_custom_opentype_features" type="String" setter="" getter="">
+		</member>
+		<member name="interface/editor/code_font_custom_variations" type="String" setter="" getter="">
+		</member>
+		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
+		</member>
+		<member name="interface/editor/debug/enable_pseudolocalization" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/display_scale" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/editor_language" type="String" setter="" getter="">
+		</member>
+		<member name="interface/editor/font_antialiased" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/low_processor_mode_sleep_usec" type="float" setter="" getter="">
+		</member>
+		<member name="interface/editor/main_font" type="String" setter="" getter="">
+		</member>
+		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
+		</member>
+		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/separate_distraction_mode" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/show_internal_errors_in_toast_notifications" type="int" setter="" getter="">
+		</member>
+		<member name="interface/editor/single_window_mode" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="float" setter="" getter="">
+		</member>
+		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
+		</member>
+		<member name="interface/inspector/show_low_level_opentype_features" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
+		</member>
+		<member name="interface/scene_tabs/maximum_width" type="int" setter="" getter="">
+		</member>
+		<member name="interface/scene_tabs/show_script_button" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/scene_tabs/show_thumbnail_on_hover" type="bool" setter="" getter="">
+		</member>
+		<member name="interface/theme/accent_color" type="Color" setter="" getter="">
+		</member>
+		<member name="interface/theme/additional_spacing" type="float" setter="" getter="">
+		</member>
+		<member name="interface/theme/base_color" type="Color" setter="" getter="">
+		</member>
+		<member name="interface/theme/border_size" type="int" setter="" getter="">
+		</member>
+		<member name="interface/theme/contrast" type="float" setter="" getter="">
+		</member>
+		<member name="interface/theme/corner_radius" type="int" setter="" getter="">
+		</member>
+		<member name="interface/theme/custom_theme" type="String" setter="" getter="">
+		</member>
+		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
+		</member>
+		<member name="interface/theme/icon_saturation" type="float" setter="" getter="">
+		</member>
+		<member name="interface/theme/preset" type="String" setter="" getter="">
+		</member>
+		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
+		</member>
+		<member name="network/debug/remote_host" type="String" setter="" getter="">
+		</member>
+		<member name="network/debug/remote_port" type="int" setter="" getter="">
+		</member>
+		<member name="network/http_proxy/host" type="String" setter="" getter="">
+		</member>
+		<member name="network/http_proxy/port" type="int" setter="" getter="">
+		</member>
+		<member name="network/ssl/editor_ssl_certificates" type="String" setter="" getter="">
+		</member>
+		<member name="project_manager/sorting_order" type="int" setter="" getter="">
+		</member>
+		<member name="run/auto_save/save_before_running" type="bool" setter="" getter="">
+		</member>
+		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
+		</member>
+		<member name="run/output/always_close_output_on_stop" type="bool" setter="" getter="">
+		</member>
+		<member name="run/output/always_open_output_on_play" type="bool" setter="" getter="">
+		</member>
+		<member name="run/output/font_size" type="int" setter="" getter="">
+		</member>
+		<member name="run/window_placement/rect" type="int" setter="" getter="">
+		</member>
+		<member name="run/window_placement/rect_custom_position" type="Vector2" setter="" getter="">
+		</member>
+		<member name="run/window_placement/screen" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/caret/caret_blink" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/caret/caret_blink_speed" type="float" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/caret/highlight_all_occurrences" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/caret/highlight_current_line" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/guidelines/line_length_guideline_soft_column" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/guidelines/show_line_length_guidelines" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/gutters/highlight_type_safe_lines" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/gutters/show_bookmark_gutter" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/lines/code_folding" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/lines/word_wrap" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/minimap/minimap_width" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/minimap/show_minimap" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/whitespace/draw_spaces" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/whitespace/draw_tabs" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/files/auto_reload_scripts_on_external_change" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/files/autosave_interval_secs" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/files/convert_indent_on_save" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/files/restore_scripts_on_load" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/indent/size" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/indent/type" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/navigation/move_caret_on_right_click" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/navigation/scroll_past_end_of_file" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/navigation/smooth_scrolling" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/navigation/stay_in_script_editor_on_node_selected" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/code_complete_delay" type="float" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/complete_file_paths" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/idle_parse_delay" type="float" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/put_callhint_tooltip_below_current_line" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/completion/use_single_quotes" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/help/help_font_size" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/help/help_source_font_size" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/help/help_title_font_size" type="int" setter="" getter="">
+		</member>
+		<member name="text_editor/help/show_help_index" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/script_list/show_members_overview" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/script_list/sort_members_outline_alphabetically" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/color_theme" type="String" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/background_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/base_type_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/bookmark_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/brace_mismatch_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/breakpoint_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/caret_background_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/caret_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/code_folding_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/comment_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/completion_background_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/completion_existing_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/completion_font_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/completion_scroll_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/completion_scroll_hovered_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/completion_selected_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/control_flow_keyword_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/current_line_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/line_length_guideline_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/line_number_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/mark_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/member_variable_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/number_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/safe_line_number_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/search_result_border_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/search_result_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/selection_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/string_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/symbol_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/text_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/text_selected_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/user_type_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
+		</member>
+	</members>
 	<signals>
 		<signal name="settings_changed">
 			<description>

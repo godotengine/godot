@@ -98,4 +98,5 @@ public:
 
 	int32_t get_bone_attachment_count();
 };
+
 #endif // GLTF_SKELETON_H

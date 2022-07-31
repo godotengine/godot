@@ -106,7 +106,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 		Callable c = frame_drawn_callbacks.front()->get();
 		Variant result;
 		Callable::CallError ce;
-		c.call(nullptr, 0, result, ce);
+		c.callp(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			String err = Variant::get_callable_error_text(c, nullptr, 0, ce);
 			ERR_PRINT("Error calling frame drawn function: " + err);

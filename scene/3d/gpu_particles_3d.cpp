@@ -222,7 +222,7 @@ void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 	draw_passes.write[p_pass] = p_mesh;
 
 	if (Engine::get_singleton()->is_editor_hint() && draw_passes.write[p_pass].is_valid()) {
-		draw_passes.write[p_pass]->connect("changed", callable_mp((Node *)this, &Node::update_configuration_warnings), varray(), CONNECT_DEFERRED);
+		draw_passes.write[p_pass]->connect("changed", callable_mp((Node *)this, &Node::update_configuration_warnings), CONNECT_DEFERRED);
 	}
 
 	RID mesh_rid;

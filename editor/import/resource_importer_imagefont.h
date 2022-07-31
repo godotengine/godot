@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_IMAGE_FONT_H
-#define RESOURCE_IMPORTER_IMAGE_FONT_H
+#ifndef RESOURCE_IMPORTER_IMAGEFONT_H
+#define RESOURCE_IMPORTER_IMAGEFONT_H
 
 #include "core/io/resource_importer.h"
 #include "scene/resources/font.h"
@@ -55,4 +55,4 @@ public:
 	ResourceImporterImageFont();
 };
 
-#endif // RESOURCE_IMPORTER_IMAGE_FONT_H
+#endif // RESOURCE_IMPORTER_IMAGEFONT_H

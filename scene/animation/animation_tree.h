@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_GRAPH_PLAYER_H
-#define ANIMATION_GRAPH_PLAYER_H
+#ifndef ANIMATION_TREE_H
+#define ANIMATION_TREE_H
 
 #include "animation_player.h"
 #include "scene/3d/node_3d.h"
@@ -321,6 +321,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
+
 public:
 	void set_tree_root(const Ref<AnimationNode> &p_root);
 	Ref<AnimationNode> get_tree_root() const;
@@ -359,4 +361,4 @@ public:
 
 VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback)
 
-#endif // ANIMATION_GRAPH_PLAYER_H
+#endif // ANIMATION_TREE_H

@@ -173,28 +173,12 @@ public:
 
 	EXBIND0RC(bool, is_placeholder_fallback_enabled)
 
-	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_rpc_methods)
+	GDVIRTUAL0RC(Variant, _get_rpc_config)
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override {
-		TypedArray<Dictionary> ret;
-		GDVIRTUAL_REQUIRED_CALL(_get_rpc_methods, ret);
-		Vector<Multiplayer::RPCConfig> rpcret;
-		for (int i = 0; i < ret.size(); i++) {
-			Dictionary d = ret[i];
-			Multiplayer::RPCConfig rpc;
-			ERR_CONTINUE(!d.has("name"));
-			rpc.name = d["name"];
-			ERR_CONTINUE(!d.has("rpc_mode"));
-			rpc.rpc_mode = Multiplayer::RPCMode(int(d["rpc_mode"]));
-			ERR_CONTINUE(!d.has("call_local"));
-			rpc.call_local = d["call_local"];
-			ERR_CONTINUE(!d.has("transfer_mode"));
-			rpc.transfer_mode = Multiplayer::TransferMode(int(d["transfer_mode"]));
-			ERR_CONTINUE(!d.has("channel"));
-			rpc.channel = d["channel"];
-			rpcret.push_back(rpc);
-		}
-		return rpcret;
+	virtual const Variant get_rpc_config() const override {
+		Variant ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_rpc_config, ret);
+		return ret;
 	}
 
 	ScriptExtension() {}

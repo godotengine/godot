@@ -453,6 +453,9 @@ void InspectorDock::_bind_methods() {
 
 	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
 
+	ClassDB::bind_method("store_script_properties", &InspectorDock::store_script_properties);
+	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
+
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
 
@@ -565,6 +568,31 @@ EditorPropertyNameProcessor::Style InspectorDock::get_property_name_style() cons
 	return property_name_style;
 }
 
+void InspectorDock::store_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+	si->get_property_state(stored_properties);
+}
+
+void InspectorDock::apply_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+
+	for (const Pair<StringName, Variant> &E : stored_properties) {
+		Variant current;
+		if (si->get(E.first, current) && current.get_type() == E.second.get_type()) {
+			si->set(E.first, E.second);
+		}
+	}
+	stored_properties.clear();
+}
+
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	singleton = this;
 	set_name("Inspector");
@@ -645,7 +673,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->set_tooltip(TTR("Open documentation for this object."));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
-	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option), varray(OBJECT_REQUEST_HELP));
+	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
 	new_resource_dialog = memnew(CreateDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(new_resource_dialog);

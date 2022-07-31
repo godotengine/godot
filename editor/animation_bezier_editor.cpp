@@ -654,9 +654,9 @@ void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
-	connect("clear_selection", Callable(editor, "_clear_selection"), varray(false));
-	connect("select_key", Callable(editor, "_key_selected"), varray(), CONNECT_DEFERRED);
-	connect("deselect_key", Callable(editor, "_key_deselected"), varray(), CONNECT_DEFERRED);
+	connect("clear_selection", Callable(editor, "_clear_selection").bind(false));
+	connect("select_key", Callable(editor, "_key_selected"), CONNECT_DEFERRED);
+	connect("deselect_key", Callable(editor, "_key_deselected"), CONNECT_DEFERRED);
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {

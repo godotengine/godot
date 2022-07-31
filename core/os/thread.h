@@ -123,4 +123,5 @@ public:
 };
 
 #endif // THREAD_H
+
 #endif // PLATFORM_THREAD_OVERRIDE

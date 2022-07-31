@@ -377,4 +377,4 @@ public:
 	static Vector<Vector2i> get_line(TileMap *p_tile_map, Vector2i p_from_cell, Vector2i p_to_cell);
 };
 
-#endif // TILE_MAP_EDITOR_PLUGIN_H
+#endif // TILE_MAP_EDITOR_H

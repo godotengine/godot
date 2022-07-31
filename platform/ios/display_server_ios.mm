@@ -219,7 +219,7 @@ void DisplayServerIOS::_window_callback(const Callable &p_callable, const Varian
 		const Variant *argp = &p_arg;
 		Variant ret;
 		Callable::CallError ce;
-		p_callable.call((const Variant **)&argp, 1, ret, ce);
+		p_callable.callp((const Variant **)&argp, 1, ret, ce);
 	}
 }
 
