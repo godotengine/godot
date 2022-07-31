@@ -2479,6 +2479,8 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
+	StringName type_name;
+
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
@@ -2549,6 +2551,7 @@ void EditorInspector::update_tree() {
 			category_vbox = nullptr; //reset
 
 			String type = p.name;
+			type_name = p.name;
 
 			// Set the category icon.
 			if (!ClassDB::class_exists(type) && !ScriptServer::is_global_class(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
@@ -2582,18 +2585,17 @@ void EditorInspector::update_tree() {
 
 			if (use_doc_hints) {
 				// Sets the category tooltip to show documentation.
-				StringName type2 = p.name;
-				if (!class_descr_cache.has(type2)) {
+				if (!class_descr_cache.has(type_name)) {
 					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
-					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(type2);
+					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(type_name);
 					if (E) {
 						descr = DTR(E->value.brief_description);
 					}
-					class_descr_cache[type2] = descr;
+					class_descr_cache[type_name] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type2].is_empty() ? "" : class_descr_cache[type2]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type_name].is_empty() ? "" : class_descr_cache[type_name]));
 			}
 
 			// Add editors at the start of a category.
@@ -2864,7 +2866,7 @@ void EditorInspector::update_tree() {
 			// Build the doc hint, to use as tooltip.
 
 			// Get the class name.
-			StringName classname = object->get_class_name();
+			StringName classname = type_name == "" ? object->get_class_name() : type_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
 			}
