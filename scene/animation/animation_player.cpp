@@ -687,7 +687,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				} else if (p_is_current && p_delta != 0) {
 					List<int> indices;
-					a->value_track_get_key_indices(i, p_time, p_delta, &indices, p_pingponged);
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
@@ -747,7 +747,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				List<int> indices;
 
-				a->method_track_get_key_indices(i, p_time, p_delta, &indices, p_pingponged);
+				a->track_get_key_indices_in_range(i, p_time, p_delta, &indices, p_pingponged);
 
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
@@ -897,73 +897,49 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
-				if (p_delta == 0 || p_seeked) {
-					//seek
-					int idx = a->track_find_key(i, p_time);
-					if (idx < 0) {
-						continue;
-					}
-
-					double pos = a->track_get_key_time(i, idx);
-
-					StringName anim_name = a->animation_track_get_key_animation(i, idx);
-					if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
-						continue;
-					}
-
-					Ref<Animation> anim = player->get_animation(anim_name);
-
-					double at_anim_pos = 0.0;
-
-					switch (anim->get_loop_mode()) {
-						case Animation::LOOP_NONE: {
-							at_anim_pos = MIN((double)anim->get_length(), p_time - pos); //seek to end
-						} break;
-
-						case Animation::LOOP_LINEAR: {
-							at_anim_pos = Math::fposmod(p_time - pos, (double)anim->get_length()); //seek to loop
-						} break;
-
-						case Animation::LOOP_PINGPONG: {
-							at_anim_pos = Math::pingpong(p_time - pos, (double)anim->get_length());
-						} break;
-
-						default:
-							break;
-					}
-
-					if (player->is_playing() || p_seeked) {
-						player->play(anim_name);
-						player->seek(at_anim_pos);
-						nc->animation_playing = true;
-						playing_caches.insert(nc);
-					} else {
-						player->set_assigned_animation(anim_name);
-						player->seek(at_anim_pos, true);
-					}
-				} else {
-					//find stuff to play
-					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_pingponged);
-					if (to_play.size()) {
-						int idx = to_play.back()->get();
-
-						StringName anim_name = a->animation_track_get_key_animation(i, idx);
-						if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
-							if (playing_caches.has(nc)) {
-								playing_caches.erase(nc);
-								player->stop();
-								nc->animation_playing = false;
-							}
-						} else {
-							player->play(anim_name);
-							player->seek(0.0, true);
-							nc->animation_playing = true;
-							playing_caches.insert(nc);
-						}
-					}
+				//seek
+				int idx = a->track_find_key(i, p_time);
+				if (idx < 0) {
+					continue;
 				}
 
+				double pos = a->track_get_key_time(i, idx);
+
+				StringName anim_name = a->animation_track_get_key_animation(i, idx);
+				if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
+					continue;
+				}
+
+				Ref<Animation> anim = player->get_animation(anim_name);
+
+				double at_anim_pos = 0.0;
+
+				switch (anim->get_loop_mode()) {
+					case Animation::LOOP_NONE: {
+						at_anim_pos = MIN((double)anim->get_length(), p_time - pos); //seek to end
+					} break;
+
+					case Animation::LOOP_LINEAR: {
+						at_anim_pos = Math::fposmod(p_time - pos, (double)anim->get_length()); //seek to loop
+					} break;
+
+					case Animation::LOOP_PINGPONG: {
+						at_anim_pos = Math::pingpong(p_time - pos, (double)anim->get_length());
+					} break;
+
+					default:
+						break;
+				}
+
+				if (player->is_playing() || p_seeked) {
+					player->play(anim_name);
+					player->seek(at_anim_pos);
+					nc->animation_playing = true;
+					playing_caches.insert(nc);
+				} else {
+					player->set_assigned_animation(anim_name);
+					player->seek(at_anim_pos, true);
+				}
 			} break;
 		}
 	}

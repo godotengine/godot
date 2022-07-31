@@ -78,28 +78,151 @@ public:
 	};
 
 private:
-	struct Track {
+	struct Key {
+		real_t transition = 1.0;
+		double time = 0.0; // time in secs
+	};
+
+	class BaseTrack {
+	public:
+		virtual ~BaseTrack() = default;
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // path to something
 		bool imported = false;
 		bool enabled = true;
-		Track() {}
-		virtual ~Track() {}
+		int32_t compressed_track = -1;
+		virtual Key *write_key(int index) = 0;
+		virtual int get_values_size() = 0;
+		virtual void remove_key_at(int index) = 0;
+		virtual Key get_key(int index) = 0;
+		virtual int find_value(double p_time) const = 0;
+		virtual void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) = 0;
+		virtual void clear() = 0;
+		virtual int insert_key(double p_time, Key *p_value) = 0;
+		virtual void set_key_time(int p_key_idx, double p_time) = 0;
 	};
 
-	struct Key {
-		real_t transition = 1.0;
-		double time = 0.0; // time in secs
-	};
-
-	// transform key holds either Vector3 or Quaternion
 	template <class T>
 	struct TKey : public Key {
 		T value;
 	};
 
+	// Templated Track
+	template <class T>
+	class Track : public BaseTrack {
+	public:
+		Vector<TKey<T>> values;
+		Key *write_key(int index) override {
+			return static_cast<Key *>(&values.write[index]);
+		}
+		Key get_key(int index) override {
+			return static_cast<Key>(values.write[index]);
+		}
+		int get_values_size() override {
+			return values.size();
+		}
+		void remove_key_at(int index) override {
+			values.remove_at(index);
+		}
+		int insert_key(double p_time, Key *p_value) override {
+			int idx = values.size();
+			TKey<T> value = *static_cast<TKey<T> *>(p_value);
+			while (true) {
+				// Condition for replacement.
+				if (idx > 0 && Math::is_equal_approx((double)values[idx - 1].time, p_time)) {
+					float transition = values[idx - 1].transition;
+					values.write[idx - 1] = value;
+					values.write[idx - 1].transition = transition;
+					return idx - 1;
+
+					// Condition for insert.
+				} else if (idx == 0 || values[idx - 1].time < p_time) {
+					values.insert(idx, value);
+					return idx;
+				}
+
+				idx--;
+			}
+
+			return -1;
+		};
+		void set_key_time(int p_key_idx, double p_time) override {
+			ERR_FAIL_COND(compressed_track >= 0);
+			ERR_FAIL_INDEX(p_key_idx, values.size());
+			TKey<T> key = values[p_key_idx];
+			key.time = p_time;
+			values.remove_at(p_key_idx);
+			insert_key(p_time, &key);
+		}
+		int find_value(double p_time) const override {
+			int len = values.size();
+			if (len == 0) {
+				return -2;
+			}
+
+			int low = 0;
+			int high = len - 1;
+			int middle = 0;
+
+#ifdef DEBUG_ENABLED
+			if (low > high) {
+				ERR_PRINT("low > high, this may be a bug");
+			}
+#endif
+
+			const TKey<T> *keys = &values[0];
+
+			while (low <= high) {
+				middle = (low + high) / 2;
+
+				if (Math::is_equal_approx(p_time, (double)keys[middle].time)) { //match
+					return middle;
+				} else if (p_time < keys[middle].time) {
+					high = middle - 1; //search low end of array
+				} else {
+					low = middle + 1; //search high end of array
+				}
+			}
+			if (keys[middle].time > p_time) {
+				middle--;
+			}
+
+			return middle;
+		};
+		void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) override {
+			int to = find_value(to_time);
+
+			// can't really send the events == time, will be sent in the next frame.
+			// if event>=len then it will probably never be requested by the anim player.
+
+			if (to >= 0 && get_key(to).time >= to_time) {
+				to--;
+			}
+
+			if (to < 0) {
+				return; // not bother
+			}
+
+			int from = find_value(from_time);
+
+			// position in the right first event.+
+			if (from < 0 || get_key(to).time < from_time) {
+				from++;
+			}
+
+			int max = get_values_size();
+
+			for (int i = from; i <= to; i++) {
+				ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
+				p_indices_out->push_back(i);
+			}
+		};
+		void clear() override {
+			values.clear();
+		};
+	};
 	const int32_t POSITION_TRACK_SIZE = 5;
 	const int32_t ROTATION_TRACK_SIZE = 6;
 	const int32_t SCALE_TRACK_SIZE = 5;
@@ -107,105 +230,88 @@ private:
 
 	/* POSITION TRACK */
 
-	struct PositionTrack : public Track {
-		Vector<TKey<Vector3>> positions;
-		int32_t compressed_track = -1;
+	class PositionTrack : public Track<Vector3> {
+	public:
 		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
 	/* ROTATION TRACK */
 
-	struct RotationTrack : public Track {
-		Vector<TKey<Quaternion>> rotations;
-		int32_t compressed_track = -1;
+	class RotationTrack : public Track<Quaternion> {
+	public:
 		RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
 
 	/* SCALE TRACK */
 
-	struct ScaleTrack : public Track {
-		Vector<TKey<Vector3>> scales;
-		int32_t compressed_track = -1;
+	class ScaleTrack : public Track<Vector3> {
+	public:
 		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
 	/* BLEND SHAPE TRACK */
 
-	struct BlendShapeTrack : public Track {
-		Vector<TKey<float>> blend_shapes;
-		int32_t compressed_track = -1;
+	class BlendShapeTrack : public Track<float> {
+	public:
 		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
 
 	/* PROPERTY VALUE TRACK */
 
-	struct ValueTrack : public Track {
+	class ValueTrack : public Track<Variant> {
+	public:
 		UpdateMode update_mode = UPDATE_CONTINUOUS;
 		bool update_on_seek = false;
-		Vector<TKey<Variant>> values;
-
-		ValueTrack() {
-			type = TYPE_VALUE;
-		}
+		ValueTrack() { type = TYPE_VALUE; }
 	};
 
 	/* METHOD TRACK */
 
-	struct MethodKey : public Key {
+	struct MethodHandle {
 		StringName method;
 		Vector<Variant> params;
 	};
 
-	struct MethodTrack : public Track {
-		Vector<MethodKey> methods;
+	class MethodTrack : public Track<MethodHandle> {
+	public:
 		MethodTrack() { type = TYPE_METHOD; }
 	};
 
 	/* BEZIER TRACK */
-	struct BezierKey {
+	struct BezierHandle {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
 		HandleMode handle_mode = HANDLE_MODE_BALANCED;
 		real_t value = 0.0;
 	};
 
-	struct BezierTrack : public Track {
-		Vector<TKey<BezierKey>> values;
-
-		BezierTrack() {
-			type = TYPE_BEZIER;
-		}
+	class BezierTrack : public Track<BezierHandle> {
+	public:
+		BezierTrack() { type = TYPE_BEZIER; }
 	};
 
 	/* AUDIO TRACK */
 
-	struct AudioKey {
+	struct AudioHandle {
 		Ref<Resource> stream;
 		real_t start_offset = 0.0; //offset from start
 		real_t end_offset = 0.0; //offset from end, if 0 then full length or infinite
-		AudioKey() {
-		}
+		AudioHandle() {}
 	};
 
-	struct AudioTrack : public Track {
-		Vector<TKey<AudioKey>> values;
-
-		AudioTrack() {
-			type = TYPE_AUDIO;
-		}
+	class AudioTrack : public Track<AudioHandle> {
+	public:
+		AudioTrack() { type = TYPE_AUDIO; }
 	};
 
 	/* AUDIO TRACK */
 
-	struct AnimationTrack : public Track {
-		Vector<TKey<StringName>> values;
-
-		AnimationTrack() {
-			type = TYPE_ANIMATION;
-		}
+	class AnimationTrack : public Track<StringName> {
+	public:
+		AnimationTrack() { type = TYPE_ANIMATION; }
 	};
 
-	Vector<Track *> tracks;
+	Vector<BaseTrack *> tracks;
 
 	/*
 	template<class T>
@@ -213,9 +319,6 @@ private:
 
 	template <class T>
 	void _clear(T &p_keys);
-
-	template <class T, class V>
-	int _insert(double p_time, T &p_keys, const V &p_value);
 
 	template <class K>
 
@@ -233,12 +336,6 @@ private:
 
 	template <class T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
-
-	template <class T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
-
-	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const;
-	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const;
 
 	double length = 1.0;
 	real_t step = 0.1;
@@ -330,27 +427,6 @@ private:
 
 	// bind helpers
 private:
-	Vector<int> _value_track_get_key_indices(int p_track, double p_time, double p_delta) const {
-		List<int> idxs;
-		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		Vector<int> idxr;
-
-		for (int &E : idxs) {
-			idxr.push_back(E);
-		}
-		return idxr;
-	}
-	Vector<int> _method_track_get_key_indices(int p_track, double p_time, double p_delta) const {
-		List<int> idxs;
-		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		Vector<int> idxr;
-
-		for (int &E : idxs) {
-			idxr.push_back(E);
-		}
-		return idxr;
-	}
-
 	bool _position_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_alowed_linear_err, real_t p_allowed_angular_error, const Vector3 &p_norm);
 	bool _rotation_track_optimize_key(const TKey<Quaternion> &t0, const TKey<Quaternion> &t1, const TKey<Quaternion> &t2, real_t p_allowed_angular_error, float p_max_optimizable_angle);
 	bool _scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_error);
@@ -452,11 +528,9 @@ public:
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
 	Variant value_track_interpolate(int p_track, double p_time) const;
-	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
-	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 

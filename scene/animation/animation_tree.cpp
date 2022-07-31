@@ -1370,7 +1370,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->object->set_indexed(t->subpath, value);
 							} else {
 								List<int> indices;
-								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+								a->track_get_key_indices_in_range(i, time, delta, &indices, pingponged);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
 									value = _post_process_key_value(a, i, value, t->object);
@@ -1398,7 +1398,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							List<int> indices;
-							a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
+							a->track_get_key_indices_in_range(i, time, delta, &indices, pingponged);
 							for (int &F : indices) {
 								StringName method = a->method_track_get_name(i, F);
 								Vector<Variant> params = a->method_track_get_params(i, F);

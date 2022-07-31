@@ -266,15 +266,6 @@
 				Returns the amount of tracks in the animation.
 			</description>
 		</method>
-		<method name="method_track_get_key_indices" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
-			<argument index="2" name="delta" type="float" />
-			<description>
-				Returns all the key indices of a method track, given a position and delta time.
-			</description>
-		</method>
 		<method name="method_track_get_name" qualifiers="const">
 			<return type="StringName" />
 			<argument index="0" name="track_idx" type="int" />
@@ -532,15 +523,6 @@
 			<argument index="1" name="with_idx" type="int" />
 			<description>
 				Swaps the track [code]idx[/code]'s index position with the track [code]with_idx[/code].
-			</description>
-		</method>
-		<method name="value_track_get_key_indices" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
-			<argument index="2" name="delta" type="float" />
-			<description>
-				Returns all the key indices of a value track, given a position and delta time.
 			</description>
 		</method>
 		<method name="value_track_get_update_mode" qualifiers="const">
