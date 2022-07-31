@@ -553,10 +553,15 @@ void VersionControlEditorPlugin::_item_activated(Object *p_tree) {
 void VersionControlEditorPlugin::_move_item(Tree *p_tree, TreeItem *p_item) {
 	CHECK_PLUGIN_INITIALIZED();
 
+	if (!p_item->has_meta(SNAME("file_path"))) {
+		// We only move items that are coming from files
+		return;
+	}
+
 	if (p_tree == staged_files) {
-		EditorVCSInterface::get_singleton()->unstage_file(p_item->get_meta("file_path"));
+		EditorVCSInterface::get_singleton()->unstage_file(p_item->get_meta(SNAME("file_path")));
 	} else {
-		EditorVCSInterface::get_singleton()->stage_file(p_item->get_meta("file_path"));
+		EditorVCSInterface::get_singleton()->stage_file(p_item->get_meta(SNAME("file_path")));
 	}
 }
 
