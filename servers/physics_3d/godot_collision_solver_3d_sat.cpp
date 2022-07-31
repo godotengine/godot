@@ -2130,77 +2130,81 @@ template <bool withMargin>
 static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotConvexPolygonShape3D *obj1 = static_cast<const GodotConvexPolygonShape3D *>(p_a);
 	const GodotConvexPolygonShape3D *obj2 = static_cast<const GodotConvexPolygonShape3D *>(p_b);
-    Transform3D transform = p_transform_a.inverse()*p_transform_b;
+	Transform3D transform = p_transform_a.inverse()*p_transform_b;
 
-    // Compute a point that is known to be inside the Minkowski difference, and
-    // a ray directed from that point to the origin.
+	// Compute a point that is known to be inside the Minkowski difference, and
+	// a ray directed from that point to the origin.
 
-    Vector3 v0 = _compute_support(obj1, obj2, transform, Vector3(1, 0, 0)) + _compute_support(obj1, obj2, transform, Vector3(-1, 0, 0));
-    if (v0 == Vector3(0, 0, 0)) {
-        // This is a pathological case: the two objects are directly on top of
-        // each other with their centers at exactly the same place. Just
-        // return *some* vaguely plausible contact.
+	Vector3 v0 = _compute_support(obj1, obj2, transform, Vector3(1, 0, 0)) + _compute_support(obj1, obj2, transform, Vector3(-1, 0, 0));
+	if (v0 == Vector3(0, 0, 0)) {
+		// This is a pathological case: the two objects are directly on top of
+		// each other with their centers at exactly the same place. Just
+		// return *some* vaguely plausible contact.
 
 		_add_contact<withMargin>(Vector3(0, 1, 0), obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
-        return;
-    }
+		return;
+	}
 
-    // Select three points that define the initial portal.
+	// Select three points that define the initial portal.
 
-    Vector3 dir1 = -v0.normalized();
-    Vector3 v1 = _compute_support(obj1, obj2, transform, dir1);
-    if (v1.dot(dir1) <= 0.0)
-        return;
-    if (v1.cross(v0) == Vector3(0, 0, 0)) {
+	Vector3 dir1 = -v0.normalized();
+	Vector3 v1 = _compute_support(obj1, obj2, transform, dir1);
+	if (v1.dot(dir1) <= 0.0) {
+		return;
+	}
+	if (v1.cross(v0) == Vector3(0, 0, 0)) {
 		_add_contact<withMargin>(p_transform_a.basis.xform(dir1), obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
-        return;
-    }
-    Vector3 dir2 = v1.cross(v0).normalized();
-    Vector3 v2 = _compute_support(obj1, obj2, transform, dir2);
-    if (v2.dot(dir2) <= 0.0)
-        return;
-    Vector3 dir3 = (v1-v0).cross(v2-v0).normalized();
-    if (dir3.dot(v0) > 0) {
-        Vector3 swap1 = dir1;
-        Vector3 swap2 = v1;
-        dir1 = dir2;
-        v1 = v2;
-        dir2 = swap1;
-        v2 = swap2;
-        dir3 = -dir3;
-    }
-    Vector3 v3 = _compute_support(obj1, obj2, transform, dir3);
-    if (v3.dot(dir3) <= 0.0)
-        return;
-    while (true) {
-        if (v0.dot(v1.cross(v3)) < -1e-14) {
-            dir2 = dir3;
-            v2 = v3;
-        }
-        else if (v0.dot(v3.cross(v2)) < -1e-14) {
-            dir1 = dir3;
-            v1 = v3;
-        }
-        else
-            break;
-        dir3 = (v1-v0).cross(v2-v0).normalized();
-        v3 = _compute_support(obj1, obj2, transform, dir3);
-    }
+		return;
+	}
+	Vector3 dir2 = v1.cross(v0).normalized();
+	Vector3 v2 = _compute_support(obj1, obj2, transform, dir2);
+	if (v2.dot(dir2) <= 0.0) {
+		return;
+	}
+	Vector3 dir3 = (v1-v0).cross(v2-v0).normalized();
+	if (dir3.dot(v0) > 0) {
+		Vector3 swap1 = dir1;
+		Vector3 swap2 = v1;
+		dir1 = dir2;
+		v1 = v2;
+		dir2 = swap1;
+		v2 = swap2;
+		dir3 = -dir3;
+	}
+	Vector3 v3 = _compute_support(obj1, obj2, transform, dir3);
+	if (v3.dot(dir3) <= 0.0) {
+		return;
+	}
+	while (true) {
+		if (v0.dot(v1.cross(v3)) < -1e-14) {
+			dir2 = dir3;
+			v2 = v3;
+		}
+		else if (v0.dot(v3.cross(v2)) < -1e-14) {
+			dir1 = dir3;
+			v1 = v3;
+		}
+		else
+			break;
+		dir3 = (v1-v0).cross(v2-v0).normalized();
+		v3 = _compute_support(obj1, obj2, transform, dir3);
+	}
 
-    // We have a portal that the origin ray passes through. Now we need to
-    // refine it.
+	// We have a portal that the origin ray passes through. Now we need to
+	// refine it.
 
 	int extra_iterations = 0;
-    while (true) {
-        Vector3 portalDir = (v2-v1).cross(v3-v1).normalized();
-        if (portalDir.dot(v0) > 0)
-            portalDir = -portalDir;
-        real_t dist1 = portalDir.dot(v1);
-        Vector3 v4 = _compute_support(obj1, obj2, transform, portalDir);
-        real_t dist4 = portalDir.dot(v4);
-        if (dist1 >= 0.0) {
-            // The origin is inside the portal, so we have an intersection.
-            // If the portal is sufficiently small to give a precise collision
+	while (true) {
+		Vector3 portal_dir = (v2-v1).cross(v3-v1).normalized();
+		if (portal_dir.dot(v0) > 0) {
+			portal_dir = -portal_dir;
+		}
+		real_t dist1 = portal_dir.dot(v1);
+		Vector3 v4 = _compute_support(obj1, obj2, transform, portal_dir);
+		real_t dist4 = portal_dir.dot(v4);
+		if (dist1 >= 0.0) {
+			// The origin is inside the portal, so we have an intersection.
+			// If the portal is sufficiently small to give a precise collision
 			// axis, record the contact.  Otherwise, try iterating a little
 			// longer to define it more precisely.
 
@@ -2210,31 +2214,32 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 				return;
 			}
 			extra_iterations += 1;
-        }
-        if (dist4 <= 0.0)
-            return;
-        Vector3 cross = v4.cross(v0);
-        if (v1.dot(cross) > 0.0) {
-            if (v2.dot(cross) > 0.0) {
-                dir1 = portalDir;
-                v1 = v4;
-            }
-            else {
-                dir3 = portalDir;
-                v3 = v4;
-            }
-        }
-        else {
-            if (v3.dot(cross) > 0.0) {
-                dir2 = portalDir;
-                v2 = v4;
-            }
-            else {
-                dir1 = portalDir;
-                v1 = v4;
-            }
-        }
-    }
+		}
+		if (dist4 <= 0.0) {
+			return;
+		}
+		Vector3 cross = v4.cross(v0);
+		if (v1.dot(cross) > 0.0) {
+			if (v2.dot(cross) > 0.0) {
+				dir1 = portal_dir;
+				v1 = v4;
+			}
+			else {
+				dir3 = portal_dir;
+				v3 = v4;
+			}
+		}
+		else {
+			if (v3.dot(cross) > 0.0) {
+				dir2 = portal_dir;
+				v2 = v4;
+			}
+			else {
+				dir1 = portal_dir;
+				v1 = v4;
+			}
+		}
+	}
 }
 
 template <bool withMargin>
