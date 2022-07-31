@@ -152,6 +152,20 @@ TEST_CASE("[String] UTF16 with BOM") {
 	CHECK(String::utf16(cs) == s);
 }
 
+TEST_CASE("[String] UTF8 with CR") {
+	const String base = U"Hello darkness\r\nMy old friend\nI've come to talk\rWith you again";
+
+	String keep_cr;
+	Error err = keep_cr.parse_utf8(base.utf8().get_data());
+	CHECK(err == OK);
+	CHECK(keep_cr == base);
+
+	String no_cr;
+	err = no_cr.parse_utf8(base.utf8().get_data(), -1, true); // Skip CR.
+	CHECK(err == OK);
+	CHECK(no_cr == base.replace("\r", ""));
+}
+
 TEST_CASE("[String] Invalid UTF8 (non-standard)") {
 	ERR_PRINT_OFF
 	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0xF0, 0x82, 0x82, 0xAC, 0xED, 0xA0, 0x81, 0 };

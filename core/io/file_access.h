@@ -113,7 +113,7 @@ public:
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
-	virtual String get_as_utf8_string() const;
+	virtual String get_as_utf8_string(bool p_skip_cr = false) const;
 
 	/**
 	 * Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
