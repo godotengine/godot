@@ -619,8 +619,18 @@ def detect_visual_c_compiler_version(tools_env):
 def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
 
+    # Syntax changed in SCons 4.4.0.
+    from SCons import __version__ as scons_raw_version
+
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+
     version = get_default_version(env)
-    (host_platform, target_platform, _) = get_host_target(env)
+
+    if scons_ver >= (4, 4, 0):
+        (host_platform, target_platform, _) = get_host_target(env, version)
+    else:
+        (host_platform, target_platform, _) = get_host_target(env)
+
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
 
