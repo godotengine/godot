@@ -830,20 +830,12 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 		anodesm->state_machine_name = p_new_name;
 	}
 
-	for (int i = 0; i < transitions.size(); i++) {
-		if (transitions[i].local_from == p_name) {
-			_rename_transition(transitions[i].from, String(transitions[i].from).replace_first(p_name, p_new_name));
-		}
-
-		if (transitions[i].local_to == p_name) {
-			_rename_transition(transitions[i].to, String(transitions[i].to).replace_first(p_name, p_new_name));
-		}
-	}
+	_rename_transitions(p_name, p_new_name);
 
 	emit_signal("tree_changed");
 }
 
-void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, const StringName &p_new_name) {
+void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, const StringName &p_new_name) {
 	if (updating_transitions) {
 		return;
 	}
@@ -854,10 +846,14 @@ void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, con
 			Vector<String> path = String(transitions[i].to).split("/");
 			if (path.size() > 1) {
 				if (path[0] == "..") {
-					prev_state_machine->_rename_transition(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
+					prev_state_machine->_rename_transitions(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
 				} else {
-					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_to].node)->_rename_transition("../" + p_name, "../" + p_new_name);
+					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_to].node)->_rename_transitions("../" + p_name, "../" + p_new_name);
 				}
+			}
+
+			if (transitions[i].local_from == p_name) {
+				transitions.write[i].local_from = p_new_name;
 			}
 
 			transitions.write[i].from = p_new_name;
@@ -867,10 +863,14 @@ void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, con
 			Vector<String> path = String(transitions[i].from).split("/");
 			if (path.size() > 1) {
 				if (path[0] == "..") {
-					prev_state_machine->_rename_transition(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
+					prev_state_machine->_rename_transitions(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
 				} else {
-					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_from].node)->_rename_transition("../" + p_name, "../" + p_new_name);
+					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_from].node)->_rename_transitions("../" + p_name, "../" + p_new_name);
 				}
+			}
+
+			if (transitions[i].local_to == p_name) {
+				transitions.write[i].local_to = p_new_name;
 			}
 
 			transitions.write[i].to = p_new_name;
