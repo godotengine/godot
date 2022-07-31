@@ -152,6 +152,11 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true;
 		}
 
+		GlobalScriptFlags flags = ScriptServer::get_global_class_flags(p_type);
+		if (!(flags & GLOBAL_SCRIPT_EXPORT)) {
+			return true; // Global class is not exported to editor
+		}
+
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.begins_with("res://addons/")) {
 			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
