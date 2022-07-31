@@ -2088,13 +2088,13 @@ PoolVector<uint8_t> _File::get_buffer(int64_t p_length) const {
 	return data;
 }
 
-String _File::get_as_text() const {
+String _File::get_as_text(bool p_skip_cr) const {
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
 
 	uint64_t original_pos = f->get_position();
 	f->seek(0);
 
-	String text = f->get_as_utf8_string();
+	String text = f->get_as_utf8_string(p_skip_cr);
 
 	f->seek(original_pos);
 
@@ -2286,7 +2286,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer", "len"), &_File::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &_File::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &_File::get_csv_line, DEFVAL(","));
-	ClassDB::bind_method(D_METHOD("get_as_text"), &_File::get_as_text);
+	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &_File::get_as_text, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_md5", "path"), &_File::get_md5);
 	ClassDB::bind_method(D_METHOD("get_sha256", "path"), &_File::get_sha256);
 	ClassDB::bind_method(D_METHOD("get_endian_swap"), &_File::get_endian_swap);
