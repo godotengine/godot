@@ -591,7 +591,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 	}
 
-	Control *c = Object::cast_to<Control>(tab_container->get_tab_control(p_idx));
+	Control *c = tab_container->get_tab_control(p_idx);
 	if (!c) {
 		return;
 	}
@@ -813,7 +813,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (history_pos >= 0) {
 			idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 		}
-		tab_container->set_current_tab(idx);
+		_go_to_tab(idx);
 	} else {
 		_update_selected_editor_menu();
 	}
@@ -1448,20 +1448,20 @@ void ScriptEditor::_menu_option(int p_option) {
 			case WINDOW_MOVE_UP: {
 				if (tab_container->get_current_tab() > 0) {
 					tab_container->move_child(current, tab_container->get_current_tab() - 1);
-					tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+					tab_container->set_current_tab(tab_container->get_current_tab());
 					_update_script_names();
 				}
 			} break;
 			case WINDOW_MOVE_DOWN: {
 				if (tab_container->get_current_tab() < tab_container->get_tab_count() - 1) {
 					tab_container->move_child(current, tab_container->get_current_tab() + 1);
-					tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+					tab_container->set_current_tab(tab_container->get_current_tab());
 					_update_script_names();
 				}
 			} break;
 			default: {
 				if (p_option >= WINDOW_SELECT_BASE) {
-					tab_container->set_current_tab(p_option - WINDOW_SELECT_BASE);
+					_go_to_tab(p_option - WINDOW_SELECT_BASE);
 					_update_script_names();
 				}
 			}
@@ -1494,14 +1494,14 @@ void ScriptEditor::_menu_option(int p_option) {
 				case WINDOW_MOVE_UP: {
 					if (tab_container->get_current_tab() > 0) {
 						tab_container->move_child(help, tab_container->get_current_tab() - 1);
-						tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+						tab_container->set_current_tab(tab_container->get_current_tab());
 						_update_script_names();
 					}
 				} break;
 				case WINDOW_MOVE_DOWN: {
 					if (tab_container->get_current_tab() < tab_container->get_tab_count() - 1) {
 						tab_container->move_child(help, tab_container->get_current_tab() + 1);
-						tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+						tab_container->set_current_tab(tab_container->get_current_tab());
 						_update_script_names();
 					}
 				} break;
@@ -2125,8 +2125,8 @@ void ScriptEditor::_update_script_names() {
 			sd.index = i;
 			sedata.set(i, sd);
 		}
-		tab_container->set_current_tab(new_prev_tab);
-		tab_container->set_current_tab(new_cur_tab);
+		_go_to_tab(new_prev_tab);
+		_go_to_tab(new_cur_tab);
 		_sort_list_on_update = false;
 	}
 
@@ -2154,7 +2154,6 @@ void ScriptEditor::_update_script_names() {
 		}
 		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
 			script_list->select(index);
-			_script_selected(index);
 
 			script_name_label->set_text(sedata_filtered[i].name);
 			script_icon->set_texture(sedata_filtered[i].icon);
