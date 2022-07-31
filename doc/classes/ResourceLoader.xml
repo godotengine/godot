@@ -95,8 +95,10 @@
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
 			<argument index="2" name="use_sub_threads" type="bool" default="false" />
+			<argument index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
 			<description>
 				Loads the resource using threads. If [code]use_sub_threads[/code] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
+				The [code]cache_mode[/code] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">
