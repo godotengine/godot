@@ -189,6 +189,7 @@ opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
 opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable("xml", "Enable verbose XML output for the compilation", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
@@ -452,6 +453,7 @@ if selected_platform in platform_list:
     # manually by the user.
     if env["dev"]:
         env["verbose"] = methods.get_cmdline_bool("verbose", True)
+        env["xml"] = methods.get_cmdline_bool("xml", True)
         env["warnings"] = ARGUMENTS.get("warnings", "extra")
         env["werror"] = methods.get_cmdline_bool("werror", True)
         if env["tools"]:
@@ -810,6 +812,31 @@ if selected_platform in platform_list:
     if not env["verbose"]:
         methods.no_verbose(sys, env)
 
+    if env["xml"]:
+        print("<build>__BUILD_DATA_MAGIC_COOKIE__")
+        env.Append(
+            CCCOMSTR="<cc><target>$TARGET</target><source>$SOURCE</source><cppflags>$CPPFLAGS</cppflags><cflags>$CFLAGS</cflags><ccflags>$CCFLAGS</ccflags><cxxflags>$CXXFLAGS</cxxflags><define>$_CPPDEFFLAGS</define><include>$_CPPINCFLAGS</include></cc>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+        env.Append(
+            CXXCOMSTR="<cxx><target>$TARGET</target><source>$SOURCE</source><cppflags>$CPPFLAGS</cppflags><cflags>$CFLAGS</cflags><ccflags>$CCFLAGS</ccflags><cxxflags>$CXXFLAGS</cxxflags><define>$_CPPDEFFLAGS</define><include>$_CPPINCFLAGS</include></cxx>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+        env.Append(
+            LINKCOMSTR="<link><target>$TARGET</target><sources>$SOURCES</sources><linkflags>$LINKFLAGS</linkflags><libpath>$_LIBDIRFLAGS</libpath><libs>$_LIBFLAGS</libs></link>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+        env.Append(
+            SHLINKCOMSTR="<shlink><target>$TARGET</target><sources>$SOURCES</sources><linkflags>$LINKFLAGS</linkflags><libpath>$_LIBDIRFLAGS</libpath><libs>$_LIBFLAGS</libs></shlink>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+        env.Append(
+            ARCOMSTR="<ar><target>$TARGET</target><sources>$SOURCES</sources><linkflags>$LINKFLAGS</linkflags><libpath>$_LIBDIRFLAGS</libpath><libs>$_LIBFLAGS</libs></ar>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+        env.Append(RANLIBCOMSTR="<ranlib><target>$TARGET</target></ranlib>__BUILD_DATA_MAGIC_COOKIE__")
+        env.Append(
+            SHCCCOMSTR="<shcc><target>$TARGET</target><source>$SOURCE</source><cppflags>$CPPFLAGS</cppflags><cflags>$CFLAGS</cflags><ccflags>$CCFLAGS</ccflags><cxxflags>$CXXFLAGS</cxxflags><define>$_CPPDEFFLAGS</define><include>$_CPPINCFLAGS</include></shcc>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+        env.Append(
+            SHCXXCOMSTR="<shcxx><target>$TARGET</target><source>$SOURCE</source><cppflags>$CPPFLAGS</cppflags><cflags>$CFLAGS</cflags><ccflags>$CCFLAGS</ccflags><cxxflags>$CXXFLAGS</cxxflags><define>$_CPPDEFFLAGS</define><include>$_CPPINCFLAGS</include></shcxx>__BUILD_DATA_MAGIC_COOKIE__"
+        )
+
     GLSL_BUILDERS = {
         "RD_GLSL": env.Builder(
             action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
@@ -903,6 +930,8 @@ def print_elapsed_time():
     elapsed_time_sec = round(time.time() - time_at_start, 3)
     time_ms = round((elapsed_time_sec % 1) * 1000)
     print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    if env["xml"]:
+        print("__BUILD_DATA_MAGIC_COOKIE__</build>")
 
 
 atexit.register(print_elapsed_time)
