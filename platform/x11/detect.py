@@ -151,7 +151,7 @@ def configure(env):
             print("Can't specify both `use_lld=yes` and a non-default `linker`. Remove `use_lld=yes`.")
             sys.exit(255)
         print("The `use_lld=yes` option is deprecated, use `linker=lld` instead.")
-        env["linker"] == "lld"
+        env["linker"] = "lld"
 
     if env["linker"] != "default":
         print("Using linker program: " + env["linker"])
