@@ -1827,7 +1827,16 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				}
 
 				if (generate_lods) {
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle);
+					Vector3 scale = Vector3(1.0, 1.0, 1.0);
+					if (src_mesh_node->get_skin().is_valid() && src_mesh_node->get_skin()->get_bind_count()) {
+						for (int32_t pose_i = 0; pose_i < src_mesh_node->get_skin()->get_bind_count(); pose_i++) {
+							Transform3D pose = src_mesh_node->get_skin()->get_bind_pose(pose_i);
+							if (pose.get_basis().get_scale_abs() > Vector3(ABS(scale.x), ABS(scale.y), ABS(scale.z))) {
+								scale = pose.get_basis().get_scale();
+							}
+						}
+					}
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, scale);
 				}
 
 				if (create_shadow_meshes) {

@@ -43,6 +43,7 @@
 			<return type="void" />
 			<param index="0" name="normal_merge_angle" type="float" />
 			<param index="1" name="normal_split_angle" type="float" />
+			<param index="2" name="scale" type="Vector3" />
 			<description>
 				Generates all lods for this ImporterMesh.
 				[param normal_merge_angle] and [param normal_split_angle] are in degrees and used in the same way as the importer settings in [code]lods[/code]. As a good default, use 25 and 60 respectively.

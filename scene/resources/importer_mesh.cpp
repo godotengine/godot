@@ -254,7 +254,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Vector3 p_scale) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -356,7 +356,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				unique_vertices[v] = LocalVector<Pair<int, int>>();
 				unique_vertices[v].push_back(Pair<int, int>(vcount, j));
 				vertex_inverse_remap.push_back(j);
-				merged_vertices.push_back(v);
+				merged_vertices.push_back(!p_scale.is_equal_approx(Vector3()) ? v * p_scale : v);
 				vertex_remap.push_back(vcount);
 				merged_normals.push_back(normals_ptr[j]);
 				merged_normals_counts.push_back(1);
@@ -1246,7 +1246,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle"), &ImporterMesh::generate_lods);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "scale"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 
