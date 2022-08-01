@@ -118,6 +118,8 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_SAMPLERCUBEARRAY:
 			return 16;
+		case SL::TYPE_SAMPLER2DSCREEN:
+			return 16;
 		case SL::TYPE_STRUCT:
 			return 0;
 		case SL::TYPE_MAX: {
