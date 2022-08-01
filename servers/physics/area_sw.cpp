@@ -228,6 +228,10 @@ void AreaSW::call_queries() {
 
 				Variant::CallError ce;
 				obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
+
+				if (ce.error != Variant::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling monitor callback method " + Variant::get_call_error_text(obj, monitor_callback_method, (const Variant **)resptr, 5, ce));
+				}
 			}
 		} else {
 			monitored_bodies.clear();
@@ -264,6 +268,10 @@ void AreaSW::call_queries() {
 
 				Variant::CallError ce;
 				obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
+
+				if (ce.error != Variant::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling area monitor callback method " + Variant::get_call_error_text(obj, area_monitor_callback_method, (const Variant **)resptr, 5, ce));
+				}
 			}
 		} else {
 			monitored_areas.clear();
