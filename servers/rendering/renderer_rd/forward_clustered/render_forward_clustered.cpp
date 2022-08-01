@@ -2662,7 +2662,11 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 		RD::Uniform u;
 		u.binding = 1;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-		u.append_id(scene_state.instance_buffer[RENDER_LIST_SECONDARY]);
+		RID instance_buffer = scene_state.instance_buffer[RENDER_LIST_SECONDARY];
+		if (instance_buffer == RID()) {
+			instance_buffer = scene_shader.default_vec4_xform_buffer; // any buffer will do since its not used
+		}
+		u.append_id(instance_buffer);
 		uniforms.push_back(u);
 	}
 	{
