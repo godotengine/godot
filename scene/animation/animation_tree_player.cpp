@@ -1399,6 +1399,7 @@ bool AnimationTreePlayer::are_nodes_connected(const StringName &p_src_node, cons
 	ERR_FAIL_COND_V(p_src_node == p_dst_node, false);
 
 	NodeBase *dst = node_map[p_dst_node];
+	ERR_FAIL_INDEX_V(p_dst_input, dst->inputs.size(), false);
 
 	return dst->inputs[p_dst_input].node == p_src_node;
 }
