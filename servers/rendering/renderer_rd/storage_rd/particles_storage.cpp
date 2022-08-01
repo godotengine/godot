@@ -54,8 +54,8 @@ ParticlesStorage::ParticlesStorage() {
 		particles_modes.push_back("");
 		particles_shader.shader.initialize(particles_modes, String());
 	}
-	MaterialStorage::get_singleton()->shader_set_data_request_function(SHADER_TYPE_PARTICLES, _create_particles_shader_funcs);
-	MaterialStorage::get_singleton()->material_set_data_request_function(SHADER_TYPE_PARTICLES, _create_particles_material_funcs);
+	MaterialStorage::get_singleton()->shader_set_data_request_function(MaterialStorage::SHADER_TYPE_PARTICLES, _create_particles_shader_funcs);
+	MaterialStorage::get_singleton()->material_set_data_request_function(MaterialStorage::SHADER_TYPE_PARTICLES, _create_particles_material_funcs);
 
 	{
 		ShaderCompiler::DefaultIdentifierActions actions;
@@ -134,7 +134,7 @@ void process() {
 		material_storage->material_initialize(particles_shader.default_material);
 		material_storage->material_set_shader(particles_shader.default_material, particles_shader.default_shader);
 
-		ParticlesMaterialData *md = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, SHADER_TYPE_PARTICLES));
+		ParticlesMaterialData *md = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, MaterialStorage::SHADER_TYPE_PARTICLES));
 		particles_shader.default_shader_rd = particles_shader.shader.version_get_shader(md->shader_data->version, 0);
 
 		Vector<RD::Uniform> uniforms;
@@ -987,14 +987,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				for (uint32_t i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
 					RID rd_tex;
 					if (i < collision_3d_textures_used) {
-						Texture *t = TextureStorage::get_singleton()->get_texture(collision_3d_textures[i]);
-						if (t && t->type == Texture::TYPE_3D) {
-							rd_tex = t->rd_texture;
+						if (TextureStorage::get_singleton()->texture_get_type(collision_3d_textures[i]) == TextureStorage::TYPE_3D) {
+							rd_tex = TextureStorage::get_singleton()->texture_get_rd_texture(collision_3d_textures[i]);
 						}
 					}
 
 					if (rd_tex == RID()) {
-						rd_tex = texture_storage->texture_rd_get_default(DEFAULT_RD_TEXTURE_3D_WHITE);
+						rd_tex = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 					}
 					u.append_id(rd_tex);
 				}
@@ -1007,7 +1006,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				if (collision_heightmap_texture.is_valid()) {
 					u.append_id(collision_heightmap_texture);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK));
+					u.append_id(texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 				}
 				uniforms.push_back(u);
 			}
@@ -1073,9 +1072,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams) * p_particles->trail_params.size(), p_particles->trail_params.ptr());
 
-	ParticlesMaterialData *m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(p_particles->process_material, SHADER_TYPE_PARTICLES));
+	ParticlesMaterialData *m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(p_particles->process_material, MaterialStorage::SHADER_TYPE_PARTICLES));
 	if (!m) {
-		m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, SHADER_TYPE_PARTICLES));
+		m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, MaterialStorage::SHADER_TYPE_PARTICLES));
 	}
 
 	ERR_FAIL_COND(!m);
@@ -1228,10 +1227,10 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	uint32_t userdata_count = 0;
 
-	const Material *material = MaterialStorage::get_singleton()->get_material(particles->process_material);
-	if (material && material->shader && material->shader->data) {
-		const ParticlesShaderData *shader_data = static_cast<const ParticlesShaderData *>(material->shader->data);
-		userdata_count = shader_data->userdata_count;
+	MaterialStorage::ShaderData *shader_data = MaterialStorage::get_singleton()->material_get_shader_data(particles->process_material);
+	if (shader_data) {
+		const ParticlesShaderData *particle_shader_data = static_cast<const ParticlesShaderData *>(shader_data);
+		userdata_count = particle_shader_data->userdata_count;
 	}
 
 	if (userdata_count != particles->userdata_count) {
@@ -1503,6 +1502,13 @@ void ParticlesStorage::update_particles() {
 	}
 }
 
+Dependency *ParticlesStorage::particles_get_dependency(RID p_particles) const {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL_V(particles, nullptr);
+
+	return &particles->dependency;
+}
+
 bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
 	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.get_or_null(p_particles);
@@ -1685,7 +1691,7 @@ ParticlesStorage::ParticlesShaderData::~ParticlesShaderData() {
 	}
 }
 
-ShaderData *ParticlesStorage::_create_particles_shader_func() {
+MaterialStorage::ShaderData *ParticlesStorage::_create_particles_shader_func() {
 	ParticlesShaderData *shader_data = memnew(ParticlesShaderData);
 	return shader_data;
 }
@@ -1698,7 +1704,7 @@ ParticlesStorage::ParticlesMaterialData::~ParticlesMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-MaterialData *ParticlesStorage::_create_particles_material_func(ParticlesShaderData *p_shader) {
+MaterialStorage::MaterialData *ParticlesStorage::_create_particles_material_func(ParticlesShaderData *p_shader) {
 	ParticlesMaterialData *material_data = memnew(ParticlesMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
@@ -1883,6 +1889,15 @@ bool ParticlesStorage::particles_collision_is_heightfield(RID p_particles_collis
 	ERR_FAIL_COND_V(!particles_collision, false);
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
 }
+
+Dependency *ParticlesStorage::particles_collision_get_dependency(RID p_particles_collision) const {
+	ParticlesCollision *pc = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(pc, nullptr);
+
+	return &pc->dependency;
+}
+
+/* Particles collision instance */
 
 RID ParticlesStorage::particles_collision_instance_create(RID p_collision) {
 	ParticlesCollisionInstance pci;

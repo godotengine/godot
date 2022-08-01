@@ -655,7 +655,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		if (radiance.is_valid() && p_version <= SKY_TEXTURE_SET_QUARTER_RES) {
 			u.append_id(radiance);
 		} else {
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 		}
 		uniforms.push_back(u);
 	}
@@ -671,9 +671,9 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 			}
 		} else {
 			if (p_version < SKY_TEXTURE_SET_CUBEMAP) {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			} else {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			}
 		}
 		uniforms.push_back(u);
@@ -690,9 +690,9 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 			}
 		} else {
 			if (p_version < SKY_TEXTURE_SET_CUBEMAP) {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			} else {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			}
 		}
 		uniforms.push_back(u);
@@ -789,24 +789,24 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 ////////////////////////////////////////////////////////////////////////////////
 // SkyRD
 
-RendererRD::ShaderData *SkyRD::_create_sky_shader_func() {
+RendererRD::MaterialStorage::ShaderData *SkyRD::_create_sky_shader_func() {
 	SkyShaderData *shader_data = memnew(SkyShaderData);
 	return shader_data;
 }
 
-RendererRD::ShaderData *SkyRD::_create_sky_shader_funcs() {
+RendererRD::MaterialStorage::ShaderData *SkyRD::_create_sky_shader_funcs() {
 	// !BAS! Why isn't _create_sky_shader_func not just static too?
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->sky._create_sky_shader_func();
 };
 
-RendererRD::MaterialData *SkyRD::_create_sky_material_func(SkyShaderData *p_shader) {
+RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_func(SkyShaderData *p_shader) {
 	SkyMaterialData *material_data = memnew(SkyMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
 
-RendererRD::MaterialData *SkyRD::_create_sky_material_funcs(RendererRD::ShaderData *p_shader) {
+RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader) {
 	// !BAS! same here, we could just make _create_sky_material_func static?
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->sky._create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
 };
@@ -855,8 +855,8 @@ void SkyRD::init() {
 	}
 
 	// register our shader funds
-	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_SKY, _create_sky_shader_funcs);
-	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_SKY, _create_sky_material_funcs);
+	material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_SKY, _create_sky_shader_funcs);
+	material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_SKY, _create_sky_material_funcs);
 
 	{
 		ShaderCompiler::DefaultIdentifierActions actions;
@@ -937,7 +937,7 @@ void sky() {
 
 		material_storage->material_set_shader(sky_shader.default_material, sky_shader.default_shader);
 
-		SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::SHADER_TYPE_SKY));
+		SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		sky_shader.default_shader_rd = sky_shader.shader.version_get_shader(md->shader_data->version, SKY_VERSION_BACKGROUND);
 
 		sky_scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkySceneState::UBO));
@@ -999,7 +999,7 @@ void sky() {
 			RD::Uniform u;
 			u.binding = 0;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			RID vfog = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+			RID vfog = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 			u.append_id(vfog);
 			uniforms.push_back(u);
 		}
@@ -1033,21 +1033,21 @@ void sky() {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 0;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 
@@ -1080,7 +1080,7 @@ SkyRD::~SkyRD() {
 	// cleanup anything created in init...
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::SHADER_TYPE_SKY));
+	SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	sky_shader.shader.version_free(md->shader_data->version);
 	RD::get_singleton()->free(sky_scene_state.directional_light_buffer);
 	RD::get_singleton()->free(sky_scene_state.uniform_buffer);
@@ -1122,7 +1122,7 @@ void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_ligh
 		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 			if (!material || !material->shader_data->valid) {
 				material = nullptr;
 			}
@@ -1130,7 +1130,7 @@ void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_ligh
 
 		if (!material) {
 			sky_material = sky_shader.default_material;
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		}
 
 		ERR_FAIL_COND(!material);
@@ -1330,7 +1330,7 @@ void SkyRD::update(RID p_env, const Projection &p_projection, const Transform3D 
 	SkyMaterialData *material = nullptr;
 
 	if (sky_material.is_valid()) {
-		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		if (!material || !material->shader_data->valid) {
 			material = nullptr;
 		}
@@ -1338,7 +1338,7 @@ void SkyRD::update(RID p_env, const Projection &p_projection, const Transform3D 
 
 	if (!material) {
 		sky_material = sky_shader.default_material;
-		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	}
 
 	ERR_FAIL_COND(!material);
@@ -1506,7 +1506,7 @@ void SkyRD::draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth
 		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 			if (!material || !material->shader_data->valid) {
 				material = nullptr;
 			}
@@ -1514,13 +1514,13 @@ void SkyRD::draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth
 
 		if (!material) {
 			sky_material = sky_shader.default_material;
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		}
 	}
 
 	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
 		sky_material = sky_scene_state.fog_material;
-		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	}
 
 	ERR_FAIL_COND(!material);
@@ -1610,7 +1610,7 @@ void SkyRD::update_res_buffers(RID p_env, uint32_t p_view_count, const Projectio
 	sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 	if (sky_material.is_valid()) {
-		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		if (!material || !material->shader_data->valid) {
 			material = nullptr;
 		}
@@ -1618,7 +1618,7 @@ void SkyRD::update_res_buffers(RID p_env, uint32_t p_view_count, const Projectio
 
 	if (!material) {
 		sky_material = sky_shader.default_material;
-		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	}
 
 	ERR_FAIL_COND(!material);
@@ -1698,7 +1698,7 @@ void SkyRD::draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_vie
 		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 			if (!material || !material->shader_data->valid) {
 				material = nullptr;
 			}
@@ -1706,13 +1706,13 @@ void SkyRD::draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_vie
 
 		if (!material) {
 			sky_material = sky_shader.default_material;
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		}
 	}
 
 	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
 		sky_material = sky_scene_state.fog_material;
-		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	}
 
 	ERR_FAIL_COND(!material);
