@@ -331,6 +331,16 @@ Vector<String> OS::get_cmdline_args() {
 	return cmdlinev;
 }
 
+Vector<String> OS::get_cmdline_user_args() {
+	List<String> cmdline = ::OS::get_singleton()->get_cmdline_user_args();
+	Vector<String> cmdlinev;
+	for (const String &E : cmdline) {
+		cmdlinev.push_back(E);
+	}
+
+	return cmdlinev;
+}
+
 String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
 }
@@ -614,6 +624,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
+	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
 
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);

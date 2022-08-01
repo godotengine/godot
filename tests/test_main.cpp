@@ -105,7 +105,7 @@ int test_main(int argc, char *argv[]) {
 	for (int i = 0; i < argc; i++) {
 		args.push_back(String::utf8(argv[i]));
 	}
-	OS::get_singleton()->set_cmdline("", args);
+	OS::get_singleton()->set_cmdline("", args, List<String>());
 
 	// Run custom test tools.
 	if (test_commands) {
