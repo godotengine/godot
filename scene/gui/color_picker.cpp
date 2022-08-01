@@ -171,6 +171,9 @@ uniform float v = 1.0;
 void fragment() {
 	float x = UV.x - 0.5;
 	float y = UV.y - 0.5;
+	float h = atan(y, x) / (2.0 * M_PI);
+	float s = sqrt(x * x + y * y) * 2.0;
+	vec3 col = okhsl_to_srgb(vec3(h, s, v));
 	x += 0.001;
 	y += 0.001;
 	float b = float(sqrt(x * x + y * y) < 0.5);
@@ -180,9 +183,6 @@ void fragment() {
 	float b3 = float(sqrt(x * x + y * y) < 0.5);
 	x += 0.002;
 	float b4 = float(sqrt(x * x + y * y) < 0.5);
-	float s = sqrt(x * x + y * y);
-	float h = atan(y, x) / (2.0*M_PI);
-	vec3 col = okhsl_to_srgb(vec3(h, s, v));
 	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
 })");
 }
