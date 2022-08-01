@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationPlayer" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Container and player of [Animation] resources.
+		Player of [Animation] resources.
 	</brief_description>
 	<description>
-		An animation player is used for general-purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
-		[AnimationPlayer] is more suited than [Tween] for animations where you know the final values in advance. For example, fading a screen in and out is more easily done with an [AnimationPlayer] node thanks to the animation tools provided by the editor. That particular example can also be implemented with a [Tween] node, but it requires doing everything by code.
+		An animation player is used for general-purpose playback of [Animation] resources. It contains a dictionary of [AnimationLibrary] resources and custom blend times between animation transitions.
+		Some methods and properties use a single key to refence an animation directly. These keys are formatted as the key for the library, followed by a forward slash, then the key for the animation whithin the library, for example [code]"movement/run"[/code]. If the library's key is an empty string (known as the default library), the forward slash is omitted, being the same key used by the library.
+		[AnimationPlayer] is more suited than [Tween] for animations where you know the final values in advance. For example, fading a screen in and out is more easily done with an [AnimationPlayer] node thanks to the animation tools provided by the editor. That particular example can also be implemented with a [Tween], but it requires doing everything by code.
 		Updating the target properties of animations occurs at process time.
 	</description>
 	<tutorials>
@@ -19,6 +20,7 @@
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="library" type="AnimationLibrary" />
 			<description>
+				Adds [code]library[/code] to the animation player, under the key [code]name[/code].
 			</description>
 		</method>
 		<method name="advance">
@@ -32,7 +34,7 @@
 			<return type="StringName" />
 			<argument index="0" name="anim_from" type="StringName" />
 			<description>
-				Returns the name of the next animation in the queue.
+				Returns the key of the animation which is queued to play after the [code]anim_from[/code] animation.
 			</description>
 		</method>
 		<method name="animation_set_next">
@@ -59,13 +61,14 @@
 			<return type="StringName" />
 			<argument index="0" name="animation" type="Animation" />
 			<description>
-				Returns the name of [code]animation[/code] or an empty string if not found.
+				Returns the key of [code]animation[/code] or an empty [StringName] if not found.
 			</description>
 		</method>
 		<method name="find_animation_library" qualifiers="const">
 			<return type="StringName" />
 			<argument index="0" name="animation" type="Animation" />
 			<description>
+				Returns the key for the [AnimationLibrary] that contains [code]animation[/code] or an empty [StringName] if not found.
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
@@ -79,17 +82,19 @@
 			<return type="AnimationLibrary" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
+				Returns the first [AnimationLibrary] with key [code]name[/code] or [code]null[/code] if not found.
 			</description>
 		</method>
 		<method name="get_animation_library_list" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
+				Returns the list of stored library keys.
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the list of stored animation names.
+				Returns the list of stored animation keys.
 			</description>
 		</method>
 		<method name="get_blend_time" qualifiers="const">
@@ -97,7 +102,7 @@
 			<argument index="0" name="anim_from" type="StringName" />
 			<argument index="1" name="anim_to" type="StringName" />
 			<description>
-				Gets the blend time (in seconds) between two animations, referenced by their names.
+				Gets the blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
 		<method name="get_playing_speed" qualifiers="const">
@@ -109,7 +114,7 @@
 		<method name="get_queue">
 			<return type="PackedStringArray" />
 			<description>
-				Returns a list of the animation names that are currently queued to play.
+				Returns a list of the animation keys that are currently queued to play.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
@@ -123,6 +128,7 @@
 			<return type="bool" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [AnimationLibrary] with key [code]name[/code].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -164,6 +170,7 @@
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
+				Removes the [AnimationLibrary] assosiated with the key [code]name[/code].
 			</description>
 		</method>
 		<method name="rename_animation_library">
@@ -171,6 +178,7 @@
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="newname" type="StringName" />
 			<description>
+				Moves the [AnimationLibrary] associated with the key [code]name[/code] to the key [code]newname[/code].
 			</description>
 		</method>
 		<method name="seek">
@@ -188,7 +196,7 @@
 			<argument index="1" name="anim_to" type="StringName" />
 			<argument index="2" name="sec" type="float" />
 			<description>
-				Specifies a blend time (in seconds) between two animations, referenced by their names.
+				Specifies a blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
 		<method name="stop">
@@ -202,17 +210,17 @@
 	</methods>
 	<members>
 		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
-			If playing, the current animation; otherwise, the animation last played. When set, would change the animation, but would not play it unless currently playing. See also [member current_animation].
+			If playing, the the current animation's key, otherwise, the animation last played. When set, this changes the animation, but will not play it unless already playing. See also [member current_animation].
 		</member>
 		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay" default="&quot;&quot;">
-			The name of the animation to play when the scene loads.
+			The key of the animation to play when the scene loads.
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
-			The name of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
+			The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
 			[b]Note:[/b] while this property appears in the inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
 		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
-			The length (in seconds) of the currently being played animation.
+			The length (in seconds) of the currently playing animation.
 		</member>
 		<member name="current_animation_position" type="float" setter="" getter="get_current_animation_position">
 			The position (in seconds) of the currently playing animation.
@@ -237,8 +245,8 @@
 			The speed scaling ratio. For instance, if this value is 1, then the animation plays at normal speed. If it's 0.5, then it plays at half speed. If it's 2, then it plays at double speed.
 		</member>
 		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
-			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation applied (as if it had been seeked to time 0), then reverted after saving.
-			In other words, the saved scene file will contain the "default pose", as defined by the reset animation, if any, with the editor keeping the values that the nodes had before saving.
+			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
+			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" default="NodePath(&quot;..&quot;)">
 			The node from which node path references will travel.
@@ -249,8 +257,8 @@
 			<argument index="0" name="old_name" type="StringName" />
 			<argument index="1" name="new_name" type="StringName" />
 			<description>
-				Emitted when a queued animation plays after the previous animation was finished. See [method queue].
-				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or from [AnimationTree].
+				Emitted when a queued animation plays after the previous animation finished. See [method queue].
+				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or by an [AnimationTree].
 			</description>
 		</signal>
 		<signal name="animation_finished">
