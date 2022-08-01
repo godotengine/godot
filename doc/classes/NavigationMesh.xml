@@ -28,6 +28,7 @@
 			<argument index="0" name="mesh" type="Mesh" />
 			<description>
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
+				[b]Note:[/b] The given [code]mesh[/code] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
