@@ -618,41 +618,6 @@ namespace Godot
             return tr;
         }
 
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by the basis matrix.
-        /// </summary>
-        /// <seealso cref="XformInv(Vector3)"/>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        public Vector3 Xform(Vector3 v)
-        {
-            return new Vector3
-            (
-                Row0.Dot(v),
-                Row1.Dot(v),
-                Row2.Dot(v)
-            );
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by the transposed basis matrix.
-        ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// basis matrix only if it represents a rotation-reflection.
-        /// </summary>
-        /// <seealso cref="Xform(Vector3)"/>
-        /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transformed vector.</returns>
-        public Vector3 XformInv(Vector3 v)
-        {
-            return new Vector3
-            (
-                Row0[0] * v.x + Row1[0] * v.y + Row2[0] * v.z,
-                Row0[1] * v.x + Row1[1] * v.y + Row2[1] * v.z,
-                Row0[2] * v.x + Row1[2] * v.y + Row2[2] * v.z
-            );
-        }
-
         private static readonly Basis[] _orthoBases = {
             new Basis(1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f),
             new Basis(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f),
@@ -853,6 +818,41 @@ namespace Godot
                 right.Tdotx(left.Row0), right.Tdoty(left.Row0), right.Tdotz(left.Row0),
                 right.Tdotx(left.Row1), right.Tdoty(left.Row1), right.Tdotz(left.Row1),
                 right.Tdotx(left.Row2), right.Tdoty(left.Row2), right.Tdotz(left.Row2)
+            );
+        }
+
+        /// <summary>
+        /// Returns a Vector3 transformed (multiplied) by the basis matrix.
+        /// </summary>
+        /// <param name="basis">The basis matrix transformation to apply.</param>
+        /// <param name="vector">A Vector3 to transform.</param>
+        /// <returns>The transformed Vector3.</returns>
+        public static Vector3 operator *(Basis basis, Vector3 vector)
+        {
+            return new Vector3
+            (
+                basis.Row0.Dot(vector),
+                basis.Row1.Dot(vector),
+                basis.Row2.Dot(vector)
+            );
+        }
+
+        /// <summary>
+        /// Returns a Vector3 transformed (multiplied) by the transposed basis matrix.
+        ///
+        /// Note: This results in a multiplication by the inverse of the
+        /// basis matrix only if it represents a rotation-reflection.
+        /// </summary>
+        /// <param name="vector">A Vector3 to inversely transform.</param>
+        /// <param name="basis">The basis matrix transformation to apply.</param>
+        /// <returns>The inversely transformed vector.</returns>
+        public static Vector3 operator *(Vector3 vector, Basis basis)
+        {
+            return new Vector3
+            (
+                basis.Row0[0] * vector.x + basis.Row1[0] * vector.y + basis.Row2[0] * vector.z,
+                basis.Row0[1] * vector.x + basis.Row1[1] * vector.y + basis.Row2[1] * vector.z,
+                basis.Row0[2] * vector.x + basis.Row1[2] * vector.y + basis.Row2[2] * vector.z
             );
         }
 
