@@ -1607,7 +1607,7 @@ int ProjectConverter3To4::convert() {
 	{
 		String conventer_text = "; Project was converted by built-in tool to Godot 4.0";
 
-		ERR_FAIL_COND_V_MSG(!FileAccess::exists("project.godot"), ERROR_CODE, "Current directory doesn't contains any Godot 3 project");
+		ERR_FAIL_COND_V_MSG(!FileAccess::exists("project.godot"), ERROR_CODE, "Current directory doesn't contain any Godot 3 projects");
 
 		Error err = OK;
 		String project_godot_content = FileAccess::get_file_as_string("project.godot", &err);
