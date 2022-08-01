@@ -37,7 +37,13 @@
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 
+#include <limits.h>
 #include <stdarg.h>
+#ifdef WINDOWS_ENABLED
+#include <winsock.h>
+#else
+#include <unistd.h>
+#endif
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -360,6 +366,20 @@ void OS::ensure_user_data_dir() {
 
 String OS::get_model_name() const {
 	return "GenericDevice";
+}
+
+String OS::get_hostname() const {
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#define HOST_NAME_MAX sysconf(_SC_HOST_NAME_MAX)
+#else if defined(WINDOWS_ENABLED)
+#define HOST_NAME_MAX 256
+#endif
+	char hostname[HOST_NAME_MAX + 1];
+	// Handle maximum-length hostname correctly.
+	hostname[HOST_NAME_MAX] = 0;
+	gethostname(hostname, HOST_NAME_MAX);
+
+	return String(hostname);
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
