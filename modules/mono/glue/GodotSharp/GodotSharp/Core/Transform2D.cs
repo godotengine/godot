@@ -320,14 +320,6 @@ namespace Godot
             return copy;
         }
 
-        private void ScaleBasis(Vector2 scale)
-        {
-            x.x *= scale.x;
-            x.y *= scale.y;
-            y.x *= scale.x;
-            y.y *= scale.y;
-        }
-
         private real_t Tdotx(Vector2 with)
         {
             return (this[0, 0] * with[0]) + (this[1, 0] * with[1]);
