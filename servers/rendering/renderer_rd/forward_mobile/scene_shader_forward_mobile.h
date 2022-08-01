@@ -55,7 +55,7 @@ public:
 		SHADER_VERSION_MAX
 	};
 
-	struct ShaderData : public RendererRD::ShaderData {
+	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -157,12 +157,12 @@ public:
 		virtual ~ShaderData();
 	};
 
-	RendererRD::ShaderData *_create_shader_func();
-	static RendererRD::ShaderData *_create_shader_funcs() {
+	RendererRD::MaterialStorage::ShaderData *_create_shader_func();
+	static RendererRD::MaterialStorage::ShaderData *_create_shader_funcs() {
 		return static_cast<SceneShaderForwardMobile *>(singleton)->_create_shader_func();
 	}
 
-	struct MaterialData : public RendererRD::MaterialData {
+	struct MaterialData : public RendererRD::MaterialStorage::MaterialData {
 		ShaderData *shader_data = nullptr;
 		RID uniform_set;
 		uint64_t last_pass = 0;
@@ -177,8 +177,8 @@ public:
 
 	SelfList<ShaderData>::List shader_list;
 
-	RendererRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RendererRD::MaterialData *_create_material_funcs(RendererRD::ShaderData *p_shader) {
+	RendererRD::MaterialStorage::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RendererRD::MaterialStorage::MaterialData *_create_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader) {
 		return static_cast<SceneShaderForwardMobile *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 

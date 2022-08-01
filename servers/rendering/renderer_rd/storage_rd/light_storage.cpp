@@ -56,7 +56,7 @@ LightStorage::LightStorage() {
 		}
 
 		for (int i = 0; i < lightmap_textures.size(); i++) {
-			lightmap_textures.write[i] = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+			lightmap_textures.write[i] = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		}
 	}
 
@@ -366,6 +366,13 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	ERR_FAIL_V(AABB());
 }
 
+Dependency *LightStorage::light_get_dependency(RID p_light) const {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, nullptr);
+
+	return &light->dependency;
+}
+
 /* REFLECTION PROBE */
 
 RID LightStorage::reflection_probe_allocate() {
@@ -601,6 +608,13 @@ float LightStorage::reflection_probe_get_ambient_color_energy(RID p_probe) const
 	return reflection_probe->ambient_color_energy;
 }
 
+Dependency *LightStorage::reflection_probe_get_dependency(RID p_probe) const {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, nullptr);
+
+	return &reflection_probe->dependency;
+}
+
 /* LIGHTMAP API */
 
 RID LightStorage::lightmap_allocate() {
@@ -628,17 +642,17 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 
 	//erase lightmap users
 	if (lm->light_texture.is_valid()) {
-		RendererRD::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(lm->light_texture);
+		RendererRD::TextureStorage::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(lm->light_texture);
 		if (t) {
 			t->lightmap_users.erase(p_lightmap);
 		}
 	}
 
-	RendererRD::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(p_light);
+	RendererRD::TextureStorage::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(p_light);
 	lm->light_texture = p_light;
 	lm->uses_spherical_harmonics = p_uses_spherical_haromics;
 
-	RID default_2d_array = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+	RID default_2d_array = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 	if (!t) {
 		if (using_lightmap_array) {
 			if (lm->array_index >= 0) {
@@ -723,6 +737,13 @@ PackedInt32Array LightStorage::lightmap_get_probe_capture_bsp_tree(RID p_lightma
 
 void LightStorage::lightmap_set_probe_capture_update_speed(float p_speed) {
 	lightmap_probe_capture_update_speed = p_speed;
+}
+
+Dependency *LightStorage::lightmap_get_dependency(RID p_lightmap) const {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, nullptr);
+
+	return &lm->dependency;
 }
 
 void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {

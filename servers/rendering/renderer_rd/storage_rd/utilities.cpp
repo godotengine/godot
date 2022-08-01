@@ -138,35 +138,37 @@ bool Utilities::free(RID p_rid) {
 
 void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
 	if (MeshStorage::get_singleton()->owns_mesh(p_base)) {
-		Mesh *mesh = MeshStorage::get_singleton()->get_mesh(p_base);
-		p_instance->update_dependency(&mesh->dependency);
+		Dependency *dependency = MeshStorage::get_singleton()->mesh_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (MeshStorage::get_singleton()->owns_multimesh(p_base)) {
-		MultiMesh *multimesh = MeshStorage::get_singleton()->get_multimesh(p_base);
-		p_instance->update_dependency(&multimesh->dependency);
-		if (multimesh->mesh.is_valid()) {
-			base_update_dependency(multimesh->mesh, p_instance);
+		Dependency *dependency = MeshStorage::get_singleton()->multimesh_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
+
+		RID mesh = MeshStorage::get_singleton()->multimesh_get_mesh(p_base);
+		if (mesh.is_valid()) {
+			base_update_dependency(mesh, p_instance);
 		}
 	} else if (LightStorage::get_singleton()->owns_reflection_probe(p_base)) {
-		ReflectionProbe *rp = LightStorage::get_singleton()->get_reflection_probe(p_base);
-		p_instance->update_dependency(&rp->dependency);
+		Dependency *dependency = LightStorage::get_singleton()->reflection_probe_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (TextureStorage::get_singleton()->owns_decal(p_base)) {
-		Decal *decal = TextureStorage::get_singleton()->get_decal(p_base);
-		p_instance->update_dependency(&decal->dependency);
+		Dependency *dependency = TextureStorage::get_singleton()->decal_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (GI::get_singleton()->owns_voxel_gi(p_base)) {
 		GI::VoxelGI *gip = GI::get_singleton()->get_voxel_gi(p_base);
 		p_instance->update_dependency(&gip->dependency);
 	} else if (LightStorage::get_singleton()->owns_lightmap(p_base)) {
-		Lightmap *lm = LightStorage::get_singleton()->get_lightmap(p_base);
-		p_instance->update_dependency(&lm->dependency);
+		Dependency *dependency = LightStorage::get_singleton()->lightmap_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (LightStorage::get_singleton()->owns_light(p_base)) {
-		Light *l = LightStorage::get_singleton()->get_light(p_base);
-		p_instance->update_dependency(&l->dependency);
+		Dependency *dependency = LightStorage::get_singleton()->light_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (ParticlesStorage::get_singleton()->owns_particles(p_base)) {
-		Particles *p = ParticlesStorage::get_singleton()->get_particles(p_base);
-		p_instance->update_dependency(&p->dependency);
+		Dependency *dependency = ParticlesStorage::get_singleton()->particles_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (ParticlesStorage::get_singleton()->owns_particles_collision(p_base)) {
-		ParticlesCollision *pc = ParticlesStorage::get_singleton()->get_particles_collision(p_base);
-		p_instance->update_dependency(&pc->dependency);
+		Dependency *dependency = ParticlesStorage::get_singleton()->particles_collision_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (Fog::get_singleton()->owns_fog_volume(p_base)) {
 		Fog::FogVolume *fv = Fog::get_singleton()->get_fog_volume(p_base);
 		p_instance->update_dependency(&fv->dependency);

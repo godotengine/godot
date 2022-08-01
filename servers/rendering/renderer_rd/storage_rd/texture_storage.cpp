@@ -35,9 +35,9 @@
 using namespace RendererRD;
 
 ///////////////////////////////////////////////////////////////////////////
-// CanvasTexture
+// TextureStorage::CanvasTexture
 
-void CanvasTexture::clear_sets() {
+void TextureStorage::CanvasTexture::clear_sets() {
 	if (cleared_cache) {
 		return;
 	}
@@ -52,14 +52,14 @@ void CanvasTexture::clear_sets() {
 	cleared_cache = true;
 }
 
-CanvasTexture::~CanvasTexture() {
+TextureStorage::CanvasTexture::~CanvasTexture() {
 	clear_sets();
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// Texture
+// TextureStorage::Texture
 
-void Texture::cleanup() {
+void TextureStorage::Texture::cleanup() {
 	if (RD::get_singleton()->texture_is_valid(rd_texture_srgb)) {
 		//erase this first, as it's a dependency of the one below
 		RD::get_singleton()->free(rd_texture_srgb);
@@ -534,7 +534,7 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 
 		ct = t->canvas_texture;
 	} else {
-		ct = get_canvas_texture(p_texture);
+		ct = canvas_texture_owner.get_or_null(p_texture);
 	}
 
 	if (!ct) {
@@ -657,7 +657,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 
 	Texture texture;
 
-	texture.type = Texture::TYPE_2D;
+	texture.type = TextureStorage::TYPE_2D;
 
 	texture.width = p_image->get_width();
 	texture.height = p_image->get_height();
@@ -753,7 +753,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 
 	Texture texture;
 
-	texture.type = Texture::TYPE_LAYERED;
+	texture.type = TextureStorage::TYPE_LAYERED;
 	texture.layered_type = p_layered_type;
 
 	texture.width = p_layers[0]->get_width();
@@ -883,7 +883,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 
 	Texture texture;
 
-	texture.type = Texture::TYPE_3D;
+	texture.type = TextureStorage::TYPE_3D;
 	texture.width = p_width;
 	texture.height = p_height;
 	texture.depth = p_depth;
@@ -975,7 +975,7 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 	ERR_FAIL_COND(p_image->get_width() != tex->width || p_image->get_height() != tex->height);
 	ERR_FAIL_COND(p_image->get_format() != tex->format);
 
-	if (tex->type == Texture::TYPE_LAYERED) {
+	if (tex->type == TextureStorage::TYPE_LAYERED) {
 		ERR_FAIL_INDEX(p_layer, tex->layers);
 	}
 
@@ -995,7 +995,7 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(tex->type != Texture::TYPE_3D);
+	ERR_FAIL_COND(tex->type != TextureStorage::TYPE_3D);
 
 	Image::Image3DValidateError verr = Image::validate_3d_image(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps > 1, p_data);
 	if (verr != Image::VALIDATE_3D_OK) {
@@ -1167,7 +1167,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!tex, Vector<Ref<Image>>());
-	ERR_FAIL_COND_V(tex->type != Texture::TYPE_3D, Vector<Ref<Image>>());
+	ERR_FAIL_COND_V(tex->type != TextureStorage::TYPE_3D, Vector<Ref<Image>>());
 
 	Vector<uint8_t> all_data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 
@@ -1243,7 +1243,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(tex->type != Texture::TYPE_2D);
+	ERR_FAIL_COND(tex->type != TextureStorage::TYPE_2D);
 
 	tex->width_2d = p_width;
 	tex->height_2d = p_height;
@@ -1853,6 +1853,13 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	ERR_FAIL_COND_V(!decal, AABB());
 
 	return AABB(-decal->extents, decal->extents * 2.0);
+}
+
+Dependency *TextureStorage::decal_get_dependency(RID p_decal) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND_V(!decal, nullptr);
+
+	return &decal->dependency;
 }
 
 void TextureStorage::update_decal_atlas() {
