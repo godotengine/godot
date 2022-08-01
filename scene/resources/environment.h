@@ -175,10 +175,10 @@ private:
 
 	// Fog
 	bool fog_enabled = false;
-	Color fog_light_color = Color(0.5, 0.6, 0.7);
+	Color fog_light_color = Color(0.518, 0.553, 0.608);
 	float fog_light_energy = 1.0;
 	float fog_sun_scatter = 0.0;
-	float fog_density = 0.001;
+	float fog_density = 0.01;
 	float fog_height = 0.0;
 	float fog_height_density = 0.0; //can be negative to invert effect
 	float fog_aerial_perspective = 0.0;
@@ -194,8 +194,8 @@ private:
 	float volumetric_fog_anisotropy = 0.2;
 	float volumetric_fog_length = 64.0;
 	float volumetric_fog_detail_spread = 2.0;
-	float volumetric_fog_gi_inject = 0.0;
-	float volumetric_fog_ambient_inject = false;
+	float volumetric_fog_gi_inject = 1.0;
+	float volumetric_fog_ambient_inject = 0.0;
 	bool volumetric_fog_temporal_reproject = true;
 	float volumetric_fog_temporal_reproject_amount = 0.9;
 	void _update_volumetric_fog();
