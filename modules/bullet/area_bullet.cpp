@@ -132,6 +132,10 @@ void AreaBullet::call_event(const OverlappingShapeData &p_overlapping_shape, Phy
 
 	Variant::CallError outResp;
 	areaGodoObject->call(event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp);
+
+	if (outResp.error != Variant::CallError::CALL_OK) {
+		ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_call_error_text(areaGodoObject, event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp));
+	}
 }
 
 int AreaBullet::_overlapping_shape_count(CollisionObjectBullet *p_other_object) {
