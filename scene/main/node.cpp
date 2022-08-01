@@ -1417,12 +1417,12 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	int ccount = data.children.size();
 	for (int i = 0; i < ccount; i++) {
 		if (p_owned && !cptr[i]->data.owner) {
-			continue;
+			goto next_loop;
 		}
 
 		if (!p_pattern.is_empty()) {
 			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
-				continue;
+				goto next_loop;
 			} else if (p_type.is_empty()) {
 				ret.append(cptr[i]);
 			}
@@ -1442,6 +1442,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			}
 		}
 
+	next_loop:
 		if (p_recursive) {
 			ret.append_array(cptr[i]->find_children(p_pattern, p_type, true, p_owned));
 		}
