@@ -1347,7 +1347,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		_multimesh_mark_all_dirty(multimesh, false, true); //update AABB
 	} else if (multimesh->mesh.is_valid()) {
 		//if we have a mesh set, we need to re-generate the AABB from the new data
-		const float *data = multimesh->data_cache.ptr();
+		const float *data = p_buffer.ptr();
 
 		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);

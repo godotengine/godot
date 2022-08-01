@@ -496,7 +496,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 
 	while (sky) {
 		if (sky->radiance == 0) {
-			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) - 2;
+			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) - 1;
 			// Left uninitialized, will attach a texture at render time
 			glGenFramebuffers(1, &sky->radiance_framebuffer);
 
@@ -523,7 +523,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
 
 			glGenTextures(1, &sky->raw_radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->raw_radiance);
@@ -544,7 +544,8 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
+
 			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		}
 
@@ -701,6 +702,7 @@ void RasterizerSceneGLES3::_setup_sky(RID p_env, RID p_render_buffers, const Pag
 		}
 
 		if (!sky->radiance) {
+			_invalidate_sky(sky);
 			_update_dirty_skys();
 		}
 	}
@@ -879,7 +881,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		}
 
 		if (update_single_frame) {
-			for (int i = 0; i <= max_processing_layer; i++) {
+			for (int i = 0; i < max_processing_layer; i++) {
 				_filter_sky_radiance(sky, i);
 			}
 		} else {
@@ -889,7 +891,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 
 		sky->reflection_dirty = false;
 	} else {
-		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer <= max_processing_layer) {
+		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
 			_filter_sky_radiance(sky, sky->processing_layer);
 			sky->processing_layer++;
 		}
@@ -1005,7 +1007,9 @@ void RasterizerSceneGLES3::_filter_sky_radiance(Sky *p_sky, int p_base_layer) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, p_sky->radiance, p_base_layer);
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			WARN_PRINT("Could not bind sky radiance face: " + itos(i) + ", status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+		}
 #endif
 		material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::FACE_ID, i, scene_globals.cubemap_filter_shader_version, mode);
 
@@ -2303,7 +2307,7 @@ void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_
 	glGenTextures(1, &rb->depth_texture);
 	glBindTexture(GL_TEXTURE_2D, rb->depth_texture);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
