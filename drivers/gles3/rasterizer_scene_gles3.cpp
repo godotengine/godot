@@ -2421,6 +2421,8 @@ void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter 
 }
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
+	singleton = this;
+
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 
@@ -2620,6 +2622,8 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	glDeleteBuffers(1, &sky_globals.directional_light_buffer);
 	memdelete_arr(sky_globals.directional_lights);
 	memdelete_arr(sky_globals.last_frame_directional_lights);
+
+	singleton = nullptr;
 }
 
 #endif // GLES3_ENABLED
