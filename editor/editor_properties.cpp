@@ -1580,6 +1580,11 @@ void EditorPropertyEasing::_spin_value_changed(double p_value) {
 	// which can cause crashes and other issues.
 	p_value = CLAMP(p_value, -1'000'000, 1'000'000);
 
+	if (positive_only) {
+		// Force a positive or zero value if a negative value was manually entered by double-clicking.
+		p_value = MAX(0.0, p_value);
+	}
+
 	emit_changed(get_edited_property(), p_value);
 	_spin_focus_exited();
 }
@@ -1591,9 +1596,9 @@ void EditorPropertyEasing::_spin_focus_exited() {
 	easing_draw->update();
 }
 
-void EditorPropertyEasing::setup(bool p_full, bool p_flip) {
+void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
 	flip = p_flip;
-	full = p_full;
+	positive_only = p_positive_only;
 }
 
 void EditorPropertyEasing::_notification(int p_what) {
@@ -1601,13 +1606,13 @@ void EditorPropertyEasing::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			preset->clear();
-			preset->add_icon_item(get_theme_icon(SNAME("CurveConstant"), SNAME("EditorIcons")), "Zero", EASING_ZERO);
 			preset->add_icon_item(get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")), "Linear", EASING_LINEAR);
-			preset->add_icon_item(get_theme_icon(SNAME("CurveIn"), SNAME("EditorIcons")), "In", EASING_IN);
-			preset->add_icon_item(get_theme_icon(SNAME("CurveOut"), SNAME("EditorIcons")), "Out", EASING_OUT);
-			if (full) {
-				preset->add_icon_item(get_theme_icon(SNAME("CurveInOut"), SNAME("EditorIcons")), "In-Out", EASING_IN_OUT);
-				preset->add_icon_item(get_theme_icon(SNAME("CurveOutIn"), SNAME("EditorIcons")), "Out-In", EASING_OUT_IN);
+			preset->add_icon_item(get_theme_icon(SNAME("CurveIn"), SNAME("EditorIcons")), "Ease In", EASING_IN);
+			preset->add_icon_item(get_theme_icon(SNAME("CurveOut"), SNAME("EditorIcons")), "Ease Out", EASING_OUT);
+			preset->add_icon_item(get_theme_icon(SNAME("CurveConstant"), SNAME("EditorIcons")), "Zero", EASING_ZERO);
+			if (!positive_only) {
+				preset->add_icon_item(get_theme_icon(SNAME("CurveInOut"), SNAME("EditorIcons")), "Ease In-Out", EASING_IN_OUT);
+				preset->add_icon_item(get_theme_icon(SNAME("CurveOutIn"), SNAME("EditorIcons")), "Ease Out-In", EASING_OUT_IN);
 			}
 			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SNAME("font"), SNAME("Label"))->get_height(get_theme_font_size(SNAME("font_size"), SNAME("Label"))) * 2));
 		} break;
@@ -4105,20 +4110,20 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::FLOAT: {
 			if (p_hint == PROPERTY_HINT_EXP_EASING) {
 				EditorPropertyEasing *editor = memnew(EditorPropertyEasing);
-				bool full = true;
+				bool positive_only = false;
 				bool flip = false;
-				Vector<String> hints = p_hint_text.split(",");
+				const Vector<String> hints = p_hint_text.split(",");
 				for (int i = 0; i < hints.size(); i++) {
-					String h = hints[i].strip_edges();
-					if (h == "attenuation") {
+					const String hint = hints[i].strip_edges();
+					if (hint == "attenuation") {
 						flip = true;
 					}
-					if (h == "inout") {
-						full = true;
+					if (hint == "positive_only") {
+						positive_only = true;
 					}
 				}
 
-				editor->setup(full, flip);
+				editor->setup(positive_only, flip);
 				return editor;
 
 			} else {
