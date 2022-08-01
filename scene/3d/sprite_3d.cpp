@@ -377,7 +377,7 @@ SpriteBase3D::SpriteBase3D() {
 	RS::get_singleton()->material_set_param(material, "uv1_scale", Vector3(1, 1, 1));
 	RS::get_singleton()->material_set_param(material, "uv2_offset", Vector3(0, 0, 0));
 	RS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
-	RS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.98);
+	RS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.5);
 
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
