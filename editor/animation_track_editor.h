@@ -35,8 +35,12 @@
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
 
+#include "scene/3d/node_3d.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"

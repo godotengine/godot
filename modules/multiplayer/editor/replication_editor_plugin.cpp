@@ -32,9 +32,12 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/inspector_dock.h"
+#include "editor/scene_tree_editor.h"
 #include "modules/multiplayer/multiplayer_synchronizer.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
 void ReplicationEditor::_pick_node_filter_text_changed(const String &p_newtext) {

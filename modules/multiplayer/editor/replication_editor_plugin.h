@@ -40,7 +40,9 @@
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
+class SceneTreeDialog;
 class Tree;
+class TreeItem;
 
 class ReplicationEditor : public VBoxContainer {
 	GDCLASS(ReplicationEditor, VBoxContainer);
