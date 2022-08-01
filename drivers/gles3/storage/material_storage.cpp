@@ -2320,11 +2320,14 @@ void MaterialStorage::global_shader_uniforms_instance_update(RID p_instance, int
 		ShaderLanguage::TYPE_VEC3, // vec3
 		ShaderLanguage::TYPE_IVEC3, //vec3i
 		ShaderLanguage::TYPE_MAX, //xform2d not supported here
+		ShaderLanguage::TYPE_VEC4, //vec4
+		ShaderLanguage::TYPE_IVEC4, //vec4i
 		ShaderLanguage::TYPE_VEC4, //plane
 		ShaderLanguage::TYPE_VEC4, //quat
 		ShaderLanguage::TYPE_MAX, //aabb not supported here
 		ShaderLanguage::TYPE_MAX, //basis not supported here
 		ShaderLanguage::TYPE_MAX, //xform not supported here
+		ShaderLanguage::TYPE_MAX, //projection not supported here
 		ShaderLanguage::TYPE_VEC4 //color
 	};
 
