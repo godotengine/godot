@@ -1430,7 +1430,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 	return ret;
 };
 
-bool String::parse_utf8(const char *p_utf8, int p_len) {
+bool String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 #define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
 
 	if (!p_utf8) {
@@ -1461,6 +1461,11 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
 			if (skip == 0) {
 				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
+
+				if (p_skip_cr && c == '\r') {
+					ptrtmp++;
+					continue;
+				}
 
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0) {
@@ -1518,6 +1523,11 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 	while (cstr_size) {
 		int len = 0;
+
+		if (p_skip_cr && *p_utf8 == '\r') {
+			p_utf8++;
+			continue;
+		}
 
 		/* Determine the number of characters in sequence */
 		if ((*p_utf8 & 0x80) == 0) {
