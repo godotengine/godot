@@ -301,9 +301,9 @@ namespace Godot
         /// </summary>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform2D Rotated(real_t phi)
+        public Transform2D Rotated(real_t angle)
         {
-            return this * new Transform2D(phi, new Vector2());
+            return this * new Transform2D(angle, new Vector2());
         }
 
         /// <summary>
