@@ -1238,13 +1238,13 @@ Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 	return data;
 }
 
-String File::get_as_text() const {
+String File::get_as_text(bool p_skip_cr) const {
 	ERR_FAIL_COND_V_MSG(f.is_null(), String(), "File must be opened before use, or is lacking read-write permission.");
 
 	uint64_t original_pos = f->get_position();
 	const_cast<FileAccess *>(*f)->seek(0);
 
-	String text = f->get_as_utf8_string();
+	String text = f->get_as_utf8_string(p_skip_cr);
 
 	const_cast<FileAccess *>(*f)->seek(original_pos);
 
@@ -1441,7 +1441,7 @@ void File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer", "length"), &File::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &File::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &File::get_csv_line, DEFVAL(","));
-	ClassDB::bind_method(D_METHOD("get_as_text"), &File::get_as_text);
+	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &File::get_as_text, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_md5", "path"), &File::get_md5);
 	ClassDB::bind_method(D_METHOD("get_sha256", "path"), &File::get_sha256);
 	ClassDB::bind_method(D_METHOD("is_big_endian"), &File::is_big_endian);
