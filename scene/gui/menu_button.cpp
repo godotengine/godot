@@ -105,7 +105,11 @@ void MenuButton::pressed() {
 		popup->set_current_index(0);
 	}
 
-	popup->popup();
+	if (popup->is_visible()) {
+		popup->hide();
+	} else {
+		popup->popup();
+	}
 }
 
 void MenuButton::gui_input(const Ref<InputEvent> &p_event) {

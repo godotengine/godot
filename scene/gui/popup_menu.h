@@ -68,7 +68,7 @@ class PopupMenu : public Popup {
 		Key accel = Key::NONE;
 		int _ofs_cache = 0;
 		int _height_cache = 0;
-		int h_ofs = 0;
+		int indent = 0;
 		Ref<Shortcut> shortcut;
 		bool shortcut_is_global = false;
 		bool shortcut_is_disabled = false;
@@ -134,8 +134,11 @@ class PopupMenu : public Popup {
 
 	void _minimum_lifetime_timeout();
 	void _close_pressed();
+	void _menu_changed();
 
 protected:
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -183,7 +186,7 @@ public:
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
-	void set_item_horizontal_offset(int p_idx, int p_offset);
+	void set_item_indent(int p_idx, int p_indent);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
@@ -206,9 +209,11 @@ public:
 	bool is_item_checkable(int p_idx) const;
 	bool is_item_radio_checkable(int p_idx) const;
 	bool is_item_shortcut_disabled(int p_idx) const;
+	bool is_item_shortcut_global(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<Shortcut> get_item_shortcut(int p_idx) const;
-	int get_item_horizontal_offset(int p_idx) const;
+	int get_item_indent(int p_idx) const;
+	int get_item_max_states(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
 	void set_current_index(int p_idx);

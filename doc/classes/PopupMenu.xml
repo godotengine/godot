@@ -195,13 +195,6 @@
 				Returns the accelerator of the item at the given [param index]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
-		<method name="get_item_horizontal_offset" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="index" type="int" />
-			<description>
-				Returns the horizontal offset of the item at the given [param index].
-			</description>
-		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="index" type="int" />
@@ -214,6 +207,13 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the id of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
+			</description>
+		</method>
+		<method name="get_item_indent" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the horizontal offset of the item at the given [param index].
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
@@ -388,14 +388,6 @@
 				Enables/disables the item at the given [param index]. When it is disabled, it can't be selected and its action can't be invoked.
 			</description>
 		</method>
-		<method name="set_item_horizontal_offset">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="offset" type="int" />
-			<description>
-				Sets the horizontal offset of the item at the given [param index].
-			</description>
-		</method>
 		<method name="set_item_icon">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -411,6 +403,14 @@
 			<description>
 				Sets the [param id] of the item at the given [param index].
 				The [param id] is used in [signal id_pressed] and [signal id_focused] signals.
+			</description>
+		</method>
+		<method name="set_item_indent">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="indent" type="int" />
+			<description>
+				Sets the horizontal offset of the item at the given [param index].
 			</description>
 		</method>
 		<method name="set_item_language">
@@ -540,6 +540,10 @@
 				Emitted when an item of some [param index] is pressed or its accelerator is activated.
 			</description>
 		</signal>
+		<signal name="menu_changed">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<theme_items>
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
@@ -565,6 +569,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between the item's elements.
+		</theme_item>
+		<theme_item name="indent" data_type="constant" type="int" default="10">
+			Width of the single indentation level.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
 		</theme_item>
