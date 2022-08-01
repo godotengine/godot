@@ -669,7 +669,7 @@
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
 			<description>
-				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
+				If verbose mode is enabled ([member OS.stdout_verbose] is [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">

@@ -226,6 +226,7 @@ public:
 	bool is_userfs_persistent() const;
 
 	bool is_stdout_verbose() const;
+	void set_stdout_verbose(bool p_verbose) const;
 
 	int get_processor_count() const;
 	String get_processor_name() const;

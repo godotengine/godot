@@ -481,12 +481,6 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="is_stdout_verbose" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the engine was executed with the [code]--verbose[/code] or [code]-v[/code] command line argument, or if [member ProjectSettings.debug/settings/stdout/verbose_stdout] is [code]true[/code]. See also [method @GlobalScope.print_verbose].
-			</description>
-		</method>
 		<method name="is_userfs_persistent" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -605,6 +599,9 @@
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="stdout_verbose" type="bool" setter="set_stdout_verbose" getter="is_stdout_verbose" default="false">
+			If [code]true[/code], prints more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [member ProjectSettings.debug/settings/stdout/verbose_stdout] and [method @GlobalScope.print_verbose].
 		</member>
 	</members>
 	<constants>

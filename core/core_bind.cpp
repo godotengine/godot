@@ -413,6 +413,10 @@ bool OS::is_stdout_verbose() const {
 	return ::OS::get_singleton()->is_stdout_verbose();
 }
 
+void OS::set_stdout_verbose(bool p_verbose) const {
+	::OS::get_singleton()->set_stdout_verbose(p_verbose);
+}
+
 void OS::dump_memory_to_file(const String &p_file) {
 	::OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
 }
@@ -634,6 +638,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &OS::is_stdout_verbose);
+	ClassDB::bind_method(D_METHOD("set_stdout_verbose"), &OS::set_stdout_verbose);
 
 	ClassDB::bind_method(D_METHOD("can_use_threads"), &OS::can_use_threads);
 
@@ -676,11 +681,13 @@ void OS::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stdout_verbose"), "set_stdout_verbose", "is_stdout_verbose");
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
+	ADD_PROPERTY_DEFAULT("stdout_verbose", false);
 
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_VULKAN);
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_OPENGL_3);

@@ -166,6 +166,10 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+void OS::set_stdout_verbose(bool p_verbose) {
+	_verbose_stdout = p_verbose;
+}
+
 bool OS::is_single_window() const {
 	return _single_window;
 }

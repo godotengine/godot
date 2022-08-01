@@ -236,6 +236,8 @@ public:
 	virtual bool is_userfs_persistent() const { return true; }
 
 	bool is_stdout_verbose() const;
+	void set_stdout_verbose(bool p_verbose);
+
 	bool is_stdout_debug_enabled() const;
 
 	bool is_stdout_enabled() const;
