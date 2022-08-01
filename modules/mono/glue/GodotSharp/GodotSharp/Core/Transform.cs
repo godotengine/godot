@@ -190,9 +190,9 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform Rotated(Vector3 axis, real_t phi)
+        public Transform Rotated(Vector3 axis, real_t angle)
         {
-            return new Transform(new Basis(axis, phi), new Vector3()) * this;
+            return new Transform(new Basis(axis, angle), new Vector3()) * this;
         }
 
         /// <summary>
