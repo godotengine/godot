@@ -96,6 +96,7 @@ TextureStorage::TextureStorage() {
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
 		for (int i = 0; i < 16; i++) {
+			// Opaque white.
 			pv.set(i * 4 + 0, 255);
 			pv.set(i * 4 + 1, 255);
 			pv.set(i * 4 + 2, 255);
@@ -109,6 +110,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		for (int i = 0; i < 16; i++) {
+			// Opaque black.
 			pv.set(i * 4 + 0, 0);
 			pv.set(i * 4 + 1, 0);
 			pv.set(i * 4 + 2, 0);
@@ -122,6 +124,21 @@ TextureStorage::TextureStorage() {
 		}
 
 		for (int i = 0; i < 16; i++) {
+			// Transparent black.
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_TRANSPARENT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+
+		for (int i = 0; i < 16; i++) {
+			// Opaque normal map "flat" color.
 			pv.set(i * 4 + 0, 128);
 			pv.set(i * 4 + 1, 128);
 			pv.set(i * 4 + 2, 255);
@@ -135,6 +152,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		for (int i = 0; i < 16; i++) {
+			// Opaque flowmap "flat" color.
 			pv.set(i * 4 + 0, 255);
 			pv.set(i * 4 + 1, 128);
 			pv.set(i * 4 + 2, 255);

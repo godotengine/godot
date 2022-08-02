@@ -195,6 +195,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"SOURCE_COLOR",
 	"HINT_DEFAULT_WHITE_TEXTURE",
 	"HINT_DEFAULT_BLACK_TEXTURE",
+	"HINT_DEFAULT_TRANSPARENT_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
 	"HINT_ANISOTROPY_TEXTURE",
 	"HINT_RANGE",
@@ -354,6 +355,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_NORMAL_TEXTURE, "hint_normal", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_DEFAULT_WHITE_TEXTURE, "hint_default_white", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_DEFAULT_BLACK_TEXTURE, "hint_default_black", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_DEFAULT_TRANSPARENT_TEXTURE, "hint_default_transparent", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ANISOTROPY_TEXTURE, "hint_anisotropy", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_R, "hint_roughness_r", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_G, "hint_roughness_g", CF_UNSPECIFIED, {}, {} },
@@ -1087,6 +1089,9 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 		} break;
 		case ShaderNode::Uniform::HINT_DEFAULT_WHITE: {
 			result = "hint_default_white";
+		} break;
+		case ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+			result = "hint_default_transparent";
 		} break;
 		case ShaderNode::Uniform::HINT_ANISOTROPY: {
 			result = "hint_anisotropy";
@@ -8410,6 +8415,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								case TK_HINT_DEFAULT_WHITE_TEXTURE: {
 									new_hint = ShaderNode::Uniform::HINT_DEFAULT_WHITE;
 								} break;
+								case TK_HINT_DEFAULT_TRANSPARENT_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT;
+								} break;
 								case TK_HINT_NORMAL_TEXTURE: {
 									new_hint = ShaderNode::Uniform::HINT_NORMAL;
 								} break;
@@ -10248,6 +10256,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					options.push_back("hint_anisotropy");
 					options.push_back("hint_default_black");
 					options.push_back("hint_default_white");
+					options.push_back("hint_default_transparent");
 					options.push_back("hint_normal");
 					options.push_back("hint_roughness_a");
 					options.push_back("hint_roughness_b");
