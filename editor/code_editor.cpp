@@ -1045,6 +1045,8 @@ void CodeTextEditor::update_editor_settings() {
 			guideline_cols.append(EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/line_length_guideline_soft_column"));
 		}
 		text_editor->set_line_length_guidelines(guideline_cols);
+	} else {
+		text_editor->set_line_length_guidelines(TypedArray<int>());
 	}
 }
 
