@@ -264,15 +264,7 @@ void ColorPicker::_update_controls() {
 void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
 	color = p_color;
 	if (color != last_color) {
-		if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
-			h = color.get_ok_hsl_h();
-			s = color.get_ok_hsl_s();
-			v = color.get_ok_hsl_l();
-		} else {
-			h = color.get_h();
-			s = color.get_s();
-			v = color.get_v();
-		}
+		_copy_color_to_hsv();
 		last_color = color;
 	}
 
@@ -384,6 +376,26 @@ Vector<float> ColorPicker::get_active_slider_values() {
 	}
 	values.push_back(alpha_slider->get_value());
 	return values;
+}
+
+void ColorPicker::_copy_color_to_hsv() {
+	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
+		h = color.get_ok_hsl_h();
+		s = color.get_ok_hsl_s();
+		v = color.get_ok_hsl_l();
+	} else {
+		h = color.get_h();
+		s = color.get_s();
+		v = color.get_v();
+	}
+}
+
+void ColorPicker::_copy_hsv_to_color() {
+	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
+		color.set_ok_hsl(h, s, v, color.a);
+	} else {
+		color.set_hsv(h, s, v, color.a);
+	}
 }
 
 ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
@@ -498,6 +510,8 @@ Color ColorPicker::get_pick_color() const {
 void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	ERR_FAIL_INDEX(p_shape, SHAPE_MAX);
 	current_shape = p_shape;
+
+	_copy_color_to_hsv();
 
 	_update_controls();
 	_update_color();
@@ -640,8 +654,7 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 		if (rect_old.has_point(mb->get_position())) {
 			// Revert to the old color when left-clicking the old color sample.
-			color = old_color;
-			_update_color();
+			set_pick_color(old_color);
 			emit_signal(SNAME("color_changed"), color);
 		}
 	}
@@ -887,17 +900,14 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 					v = 1.0 - (y - c->get_position().y - corner_y) / real_size.y;
 				}
 			}
+
 			changing_color = true;
-			if (current_picker == SHAPE_OKHSL_CIRCLE) {
-				color.set_ok_hsl(h, s, v, color.a);
-			} else {
-				color.set_hsv(h, s, v, color.a);
-			}
 
+			_copy_hsv_to_color();
 			last_color = color;
-
 			set_pick_color(color);
 			_update_color();
+
 			if (!deferred_mode_enabled) {
 				emit_signal(SNAME("color_changed"), color);
 			}
@@ -940,14 +950,12 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				v = 1.0 - (y - corner_y) / real_size.y;
 			}
 		}
-		if (current_picker != SHAPE_OKHSL_CIRCLE) {
-			color.set_hsv(h, s, v, color.a);
-		} else {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
+
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -970,14 +978,12 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		} else {
 			changing_color = false;
 		}
-		if (actual_shape != SHAPE_OKHSL_CIRCLE) {
-			color.set_hsv(h, s, v, color.a);
-		} else {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
+
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		} else if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
@@ -998,15 +1004,11 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			h = y / w_edit->get_size().height;
 		}
 
-		if (actual_shape == SHAPE_OKHSL_CIRCLE) {
-			color.set_ok_hsl(h, s, v, color.a);
-		} else {
-			color.set_hsv(h, s, v, color.a);
-		}
-
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -1019,7 +1021,6 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			set_pick_color(p_color);
-			_update_color();
 			emit_signal(SNAME("color_changed"), p_color);
 		} else if (bev->is_pressed() && bev->get_button_index() == MouseButton::RIGHT && presets_enabled) {
 			erase_preset(p_color);
