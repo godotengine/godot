@@ -653,21 +653,6 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 	return err;
 }
 
-template <typename... VarArgs>
-Error Node::rpc(const StringName &p_method, VarArgs... p_args) {
-	return rpc_id(0, p_method, p_args...);
-}
-
-template <typename... VarArgs>
-Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
-	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	const Variant *argptrs[sizeof...(p_args) + 1];
-	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-		argptrs[i] = &args[i];
-	}
-	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-}
-
 Error Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	return get_multiplayer()->rpcp(this, p_peer_id, p_method, p_arg, p_argcount);

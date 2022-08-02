@@ -512,4 +512,22 @@ VARIANT_ENUM_CAST(Node::DuplicateFlags);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 
+// Template definitions must be in the header so they are always fully initialized before their usage.
+// See this StackOverflow question for more information: https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
+
+template <typename... VarArgs>
+Error Node::rpc(const StringName &p_method, VarArgs... p_args) {
+	return rpc_id(0, p_method, p_args...);
+}
+
+template <typename... VarArgs>
+Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
+	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+	const Variant *argptrs[sizeof...(p_args) + 1];
+	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+		argptrs[i] = &args[i];
+	}
+	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+}
+
 #endif // NODE_H
