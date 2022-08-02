@@ -941,6 +941,13 @@
 				Returns [code]true[/code] if locale is right-to-left.
 			</description>
 		</method>
+		<method name="is_valid_identifier" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="string" type="String" />
+			<description>
+				Returns [code]true[/code] is [code]string[/code] is a valid identifier.
+			</description>
+		</method>
 		<method name="load_support_data" qualifiers="virtual">
 			<return type="bool" />
 			<argument index="0" name="filename" type="String" />

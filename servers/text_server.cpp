@@ -447,6 +447,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language"), &TextServer::string_get_word_breaks, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
+	ClassDB::bind_method(D_METHOD("is_valid_identifier", "string"), &TextServer::is_valid_identifier);
 
 	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
@@ -545,6 +546,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
 	BIND_ENUM_CONSTANT(FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
+	BIND_ENUM_CONSTANT(FEATURE_UNICODE_IDENTIFIERS);
 
 	/* FT Contour Point Types */
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
@@ -1728,6 +1730,26 @@ Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) 
 	}
 
 	return ret;
+}
+
+bool TextServer::is_valid_identifier(const String &p_string) const {
+	const char32_t *str = p_string.ptr();
+	int len = p_string.length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	if (!is_unicode_identifier_start(str[0])) {
+		return false;
+	}
+
+	for (int i = 1; i < len; i++) {
+		if (!is_unicode_identifier_continue(str[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 TextServer::TextServer() {

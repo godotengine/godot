@@ -39,7 +39,7 @@
 
 namespace TestTextServer {
 
-TEST_SUITE("[[TextServer]") {
+TEST_SUITE("[TextServer]") {
 	TEST_CASE("[TextServer] Init, font loading and shaping") {
 		SUBCASE("[TextServer] Loading fonts") {
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
@@ -489,6 +489,27 @@ TEST_SUITE("[[TextServer]") {
 					ts->free_rid(font[j]);
 				}
 				font.clear();
+			}
+		}
+
+		SUBCASE("[TextServer] Unicode identifiers") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
+
+				static const char32_t *data[19] = { U"-30", U"100", U"10.1", U"10,1", U"1e2", U"1e-2", U"1e2e3", U"0xAB", U"AB", U"Test1", U"1Test", U"Test*1", U"test_testeT", U"test_tes teT", U"عَلَيْكُمْ", U"عَلَيْكُمْTest", U"ӒӖӚӜ", U"_test", U"ÂÃÄÅĀĂĄÇĆĈĊ" };
+				static bool isid[19] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, true, true, true, true, true };
+				for (int j = 0; j < 19; j++) {
+					String s = String(data[j]);
+					CHECK(ts->is_valid_identifier(s) == isid[j]);
+				}
+
+				if (ts->has_feature(TextServer::FEATURE_UNICODE_IDENTIFIERS)) {
+					// Test UAX 3.2 ZW(N)J usage.
+					CHECK(ts->is_valid_identifier(U"\u0646\u0627\u0645\u0647\u200C\u0627\u06CC"));
+					CHECK(ts->is_valid_identifier(U"\u0D26\u0D43\u0D15\u0D4D\u200C\u0D38\u0D3E\u0D15\u0D4D\u0D37\u0D3F"));
+					CHECK(ts->is_valid_identifier(U"\u0DC1\u0DCA\u200D\u0DBB\u0DD3"));
+				}
 			}
 		}
 
