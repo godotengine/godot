@@ -7153,9 +7153,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
-			if (n->get_datatype() != TYPE_INT) {
-				_set_error(RTR("Expected an integer expression."));
-				return ERR_PARSE_ERROR;
+			{
+				const ShaderLanguage::DataType switch_type = n->get_datatype();
+				if (switch_type != TYPE_INT && switch_type != TYPE_UINT) {
+					_set_error(RTR("Expected an integer expression."));
+					return ERR_PARSE_ERROR;
+				}
 			}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
