@@ -605,9 +605,13 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	}
 
 	if (p_antialiased) {
-		float border_size = 2.0;
-		if (p_width < border_size) {
-			border_size = p_width;
+		// Use the same antialiasing feather size as StyleBoxFlat's default
+		// (but doubled, as it's specified for both sides here).
+		// This value is empirically determined to provide good antialiasing quality
+		// while not making lines appear too soft.
+		float border_size = 1.25f;
+		if (p_width < 1.0f) {
+			border_size *= p_width;
 		}
 		Vector2 dir2 = diff.normalized();
 
@@ -774,9 +778,13 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	Color *colors_ptr = colors.ptrw();
 
 	if (p_antialiased) {
-		float border_size = 2.0;
-		if (p_width < border_size) {
-			border_size = p_width;
+		// Use the same antialiasing feather size as StyleBoxFlat's default
+		// (but doubled, as it's specified for both sides here).
+		// This value is empirically determined to provide good antialiasing quality
+		// while not making lines appear too soft.
+		float border_size = 1.25f;
+		if (p_width < 1.0f) {
+			border_size *= p_width;
 		}
 		Color color2 = Color(1, 1, 1, 0);
 
