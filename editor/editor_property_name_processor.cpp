@@ -114,6 +114,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bidi"] = "BiDi";
 	capitalize_string_remaps["bp"] = "BP";
 	capitalize_string_remaps["bpc"] = "BPC";
+	capitalize_string_remaps["bpm"] = "BPM";
 	capitalize_string_remaps["bptc"] = "BPTC";
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
