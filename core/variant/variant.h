@@ -142,14 +142,20 @@ private:
 			Transform2D _transform2d;
 			::AABB _aabb;
 		};
-		union BucketLarge {
-			BucketLarge() {}
-			~BucketLarge() {}
+		union BucketMedium {
+			BucketMedium() {}
+			~BucketMedium() {}
 			Basis _basis;
 			Transform3D _transform3d;
 		};
+		union BucketLarge {
+			BucketLarge() {}
+			~BucketLarge() {}
+			Projection _projection;
+		};
 
 		static PagedAllocator<BucketSmall, true> _bucket_small;
+		static PagedAllocator<BucketMedium, true> _bucket_medium;
 		static PagedAllocator<BucketLarge, true> _bucket_large;
 	};
 

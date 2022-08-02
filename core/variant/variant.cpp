@@ -40,6 +40,7 @@
 #include "core/variant/variant_parser.h"
 
 PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
+PagedAllocator<Variant::Pools::BucketMedium, true> Variant::Pools::_bucket_medium;
 PagedAllocator<Variant::Pools::BucketLarge, true> Variant::Pools::_bucket_large;
 
 String Variant::get_type_name(Variant::Type p_type) {
@@ -1191,15 +1192,16 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Quaternion(*reinterpret_cast<const Quaternion *>(p_variant._data._mem)));
 		} break;
 		case BASIS: {
-			_data._basis = (Basis *)Pools::_bucket_large.alloc();
+			_data._basis = (Basis *)Pools::_bucket_medium.alloc();
 			memnew_placement(_data._basis, Basis(*p_variant._data._basis));
 		} break;
 		case TRANSFORM3D: {
-			_data._transform3d = (Transform3D *)Pools::_bucket_large.alloc();
+			_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
 			memnew_placement(_data._transform3d, Transform3D(*p_variant._data._transform3d));
 		} break;
 		case PROJECTION: {
-			_data._projection = memnew(Projection(*p_variant._data._projection));
+			_data._projection = (Projection *)Pools::_bucket_large.alloc();
+			memnew_placement(_data._projection, Projection(*p_variant._data._projection));
 		} break;
 
 		// misc types
@@ -1401,19 +1403,23 @@ void Variant::_clear_internal() {
 		case BASIS: {
 			if (_data._basis) {
 				_data._basis->~Basis();
-				Pools::_bucket_large.free((Pools::BucketLarge *)_data._basis);
+				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._basis);
 				_data._basis = nullptr;
 			}
 		} break;
 		case TRANSFORM3D: {
 			if (_data._transform3d) {
 				_data._transform3d->~Transform3D();
-				Pools::_bucket_large.free((Pools::BucketLarge *)_data._transform3d);
+				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._transform3d);
 				_data._transform3d = nullptr;
 			}
 		} break;
 		case PROJECTION: {
-			memdelete(_data._projection);
+			if (_data._projection) {
+				_data._projection->~Projection();
+				Pools::_bucket_large.free((Pools::BucketLarge *)_data._projection);
+				_data._projection = nullptr;
+			}
 		} break;
 			// misc types
 		case STRING_NAME: {
@@ -2635,7 +2641,7 @@ Variant::Variant(const ::AABB &p_aabb) {
 
 Variant::Variant(const Basis &p_matrix) {
 	type = BASIS;
-	_data._basis = (Basis *)Pools::_bucket_large.alloc();
+	_data._basis = (Basis *)Pools::_bucket_medium.alloc();
 	memnew_placement(_data._basis, Basis(p_matrix));
 }
 
@@ -2646,13 +2652,14 @@ Variant::Variant(const Quaternion &p_quaternion) {
 
 Variant::Variant(const Transform3D &p_transform) {
 	type = TRANSFORM3D;
-	_data._transform3d = (Transform3D *)Pools::_bucket_large.alloc();
+	_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
 	memnew_placement(_data._transform3d, Transform3D(p_transform));
 }
 
 Variant::Variant(const Projection &pp_projection) {
 	type = PROJECTION;
-	_data._projection = memnew(Projection(pp_projection));
+	_data._projection = (Projection *)Pools::_bucket_large.alloc();
+	memnew_placement(_data._projection, Projection(pp_projection));
 }
 
 Variant::Variant(const Transform2D &p_transform) {
