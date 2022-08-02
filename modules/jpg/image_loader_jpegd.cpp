@@ -167,9 +167,9 @@ static PoolVector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float
 	}
 	ERR_FAIL_COND_V(image->is_compressed(), PoolVector<uint8_t>());
 
-	//if (image->get_format() != Image::FORMAT_RGB8) {
-	//	image->convert(Image::FORMAT_ETC2_RGB8);
-	//}
+	if (image->get_format() != Image::FORMAT_RGB8) {
+		image->convert(Image::FORMAT_RGB8);
+	}
 
 	jpge::params p;
 	p.m_quality = CLAMP(p_quality * 100, 1, 100);
