@@ -271,7 +271,7 @@
 		<member name="tangential_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum equivalent of [member tangential_accel_max].
 		</member>
-		<member name="turbulence_active" type="bool" setter="set_turbulence_active" getter="get_turbulence_active" default="false">
+		<member name="turbulence_enabled" type="bool" setter="set_turbulence_enabled" getter="get_turbulence_enabled" default="false">
 			Enables and disables Turbulence for the particle system.
 		</member>
 		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max" default="0.1">

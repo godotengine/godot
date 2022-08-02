@@ -108,7 +108,7 @@ private:
 			uint32_t attractor_enabled : 1;
 			uint32_t collision_enabled : 1;
 			uint32_t collision_scale : 1;
-			uint32_t turbulence_active : 1;
+			uint32_t turbulence_enabled : 1;
 		};
 
 		uint64_t key = 0;
@@ -156,7 +156,7 @@ private:
 		mk.collision_enabled = collision_enabled;
 		mk.attractor_enabled = attractor_interaction_enabled;
 		mk.collision_scale = collision_scale;
-		mk.turbulence_active = turbulence_active;
+		mk.turbulence_enabled = turbulence_enabled;
 
 		return mk;
 	}
@@ -221,7 +221,7 @@ private:
 		StringName emission_ring_radius;
 		StringName emission_ring_inner_radius;
 
-		StringName turbulence_active;
+		StringName turbulence_enabled;
 		StringName turbulence_noise_strength;
 		StringName turbulence_noise_scale;
 		StringName turbulence_noise_speed;
@@ -282,7 +282,7 @@ private:
 
 	bool anim_loop = false;
 
-	bool turbulence_active;
+	bool turbulence_enabled;
 	Vector3 turbulence_noise_speed;
 	Ref<Texture2D> turbulence_color_ramp;
 	float turbulence_noise_strength = 0.0f;
@@ -364,13 +364,13 @@ public:
 	real_t get_emission_ring_inner_radius() const;
 	int get_emission_point_count() const;
 
-	void set_turbulence_active(bool p_turbulence_active);
+	void set_turbulence_enabled(bool p_turbulence_enabled);
 	void set_turbulence_noise_strength(float p_turbulence_noise_strength);
 	void set_turbulence_noise_scale(float p_turbulence_noise_scale);
 	void set_turbulence_noise_speed_random(float p_turbulence_noise_speed_random);
 	void set_turbulence_noise_speed(const Vector3 &p_turbulence_noise_speed);
 
-	bool get_turbulence_active() const;
+	bool get_turbulence_enabled() const;
 	float get_turbulence_noise_strength() const;
 	float get_turbulence_noise_scale() const;
 	float get_turbulence_noise_speed_random() const;

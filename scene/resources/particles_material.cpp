@@ -98,7 +98,7 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->emission_ring_radius = "emission_ring_radius";
 	shader_names->emission_ring_inner_radius = "emission_ring_inner_radius";
 
-	shader_names->turbulence_active = "turbulence_active";
+	shader_names->turbulence_enabled = "turbulence_enabled";
 	shader_names->turbulence_noise_strength = "turbulence_noise_strength";
 	shader_names->turbulence_noise_scale = "turbulence_noise_scale";
 	shader_names->turbulence_noise_speed = "turbulence_noise_speed";
@@ -292,7 +292,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform float collision_bounce;\n";
 	}
 
-	if (turbulence_active) {
+	if (turbulence_enabled) {
 		code += "uniform float turbulence_noise_strength;\n";
 		code += "uniform float turbulence_noise_scale;\n";
 		code += "uniform float turbulence_influence_min;\n";
@@ -546,7 +546,7 @@ void ParticlesMaterial::_update_shader() {
 	}
 	code += "	if (RESTART_VELOCITY) VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
 	// Apply noise/turbulence: initial displacement.
-	if (turbulence_active) {
+	if (turbulence_enabled) {
 		if (get_turbulence_noise_speed_random() >= 0.0) {
 			code += "	vec3 time_noise = noise_3d( vec3(TIME) * turbulence_noise_speed_random ) * -turbulence_noise_speed;\n";
 		} else {
@@ -680,7 +680,7 @@ void ParticlesMaterial::_update_shader() {
 	}
 
 	// Apply noise/turbulence.
-	if (turbulence_active) {
+	if (turbulence_enabled) {
 		code += "	// apply turbulence\n";
 		if (tex_parameters[PARAM_TURB_INFLUENCE_OVER_LIFE].is_valid()) {
 			code += "	float turbulence_influence = textureLod(turbulence_influence_over_life, vec2(tv, 0.0), 0.0).r;\n";
@@ -837,7 +837,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "		} else {\n";
 		code += "			VELOCITY = vec3(0.0);\n";
 		// If turbulence is enabled, set the noise direction to up so the turbulence color is "neutral"
-		if (turbulence_active) {
+		if (turbulence_enabled) {
 			code += "			noise_direction = vec3(1.0, 0.0, 0.0);\n";
 		}
 		code += "		}\n";
@@ -1311,15 +1311,15 @@ real_t ParticlesMaterial::get_emission_ring_inner_radius() const {
 	return emission_ring_inner_radius;
 }
 
-void ParticlesMaterial::set_turbulence_active(const bool p_turbulence_active) {
-	turbulence_active = p_turbulence_active;
-	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_active, turbulence_active);
+void ParticlesMaterial::set_turbulence_enabled(const bool p_turbulence_enabled) {
+	turbulence_enabled = p_turbulence_enabled;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_enabled, turbulence_enabled);
 	_queue_shader_change();
 	notify_property_list_changed();
 }
 
-bool ParticlesMaterial::get_turbulence_active() const {
-	return turbulence_active;
+bool ParticlesMaterial::get_turbulence_enabled() const {
+	return turbulence_enabled;
 }
 
 void ParticlesMaterial::set_turbulence_noise_strength(float p_turbulence_noise_strength) {
@@ -1423,7 +1423,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (!turbulence_active) {
+	if (!turbulence_enabled) {
 		if (property.name == "turbulence_noise_strength" ||
 				property.name == "turbulence_noise_scale" ||
 				property.name == "turbulence_noise_speed" ||
@@ -1587,8 +1587,8 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "inner_radius"), &ParticlesMaterial::set_emission_ring_inner_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticlesMaterial::get_emission_ring_inner_radius);
 
-	ClassDB::bind_method(D_METHOD("get_turbulence_active"), &ParticlesMaterial::get_turbulence_active);
-	ClassDB::bind_method(D_METHOD("set_turbulence_active", "turbulence_active"), &ParticlesMaterial::set_turbulence_active);
+	ClassDB::bind_method(D_METHOD("get_turbulence_enabled"), &ParticlesMaterial::get_turbulence_enabled);
+	ClassDB::bind_method(D_METHOD("set_turbulence_enabled", "turbulence_enabled"), &ParticlesMaterial::set_turbulence_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_turbulence_noise_strength"), &ParticlesMaterial::get_turbulence_noise_strength);
 	ClassDB::bind_method(D_METHOD("set_turbulence_noise_strength", "turbulence_noise_strength"), &ParticlesMaterial::set_turbulence_noise_strength);
@@ -1706,7 +1706,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "hue_variation_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_HUE_VARIATION);
 
 	ADD_GROUP("Turbulence", "turbulence_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_active"), "set_turbulence_active", "get_turbulence_active");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled"), "set_turbulence_enabled", "get_turbulence_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");
@@ -1815,7 +1815,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_ring_radius(1);
 	set_emission_ring_inner_radius(0);
 
-	set_turbulence_active(false);
+	set_turbulence_enabled(false);
 	set_turbulence_noise_speed(Vector3(0.5, 0.5, 0.5));
 	set_turbulence_noise_strength(1);
 	set_turbulence_noise_scale(9);
