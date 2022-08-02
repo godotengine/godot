@@ -2080,8 +2080,7 @@ static Vector3 _compute_support(const GodotConvexPolygonShape3D* obj1, const God
 }
 
 template <bool withMargin>
-static void _add_contact(const Vector3 axis, const GodotConvexPolygonShape3D *p_a, const Transform3D &p_transform_a, const GodotConvexPolygonShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	SeparatorAxisTest<GodotConvexPolygonShape3D, GodotConvexPolygonShape3D, withMargin> separator(p_a, p_transform_a, p_b, p_transform_b, p_collector, p_margin_a, p_margin_b);
+static void _add_contact(const Vector3 axis, SeparatorAxisTest<GodotConvexPolygonShape3D, GodotConvexPolygonShape3D, withMargin>& separator) {
 	separator.best_axis = axis;
 	separator.generate_contacts();
 }
@@ -2130,6 +2129,10 @@ template <bool withMargin>
 static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotConvexPolygonShape3D *obj1 = static_cast<const GodotConvexPolygonShape3D *>(p_a);
 	const GodotConvexPolygonShape3D *obj2 = static_cast<const GodotConvexPolygonShape3D *>(p_b);
+	SeparatorAxisTest<GodotConvexPolygonShape3D, GodotConvexPolygonShape3D, withMargin> separator(obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	if (!separator.test_previous_axis()) {
+		return;
+	}
 	Transform3D transform = p_transform_a.inverse()*p_transform_b;
 
 	// Compute a point that is known to be inside the Minkowski difference, and
@@ -2141,7 +2144,7 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 		// each other with their centers at exactly the same place. Just
 		// return *some* vaguely plausible contact.
 
-		_add_contact<withMargin>(Vector3(0, 1, 0), obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
+		_add_contact<withMargin>(Vector3(0, 1, 0), separator);
 		return;
 	}
 
@@ -2153,7 +2156,7 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 		return;
 	}
 	if (v1.cross(v0) == Vector3(0, 0, 0)) {
-		_add_contact<withMargin>(p_transform_a.basis.xform(dir1), obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
+		_add_contact<withMargin>(p_transform_a.basis.xform(dir1), separator);
 		return;
 	}
 	Vector3 dir2 = v1.cross(v0).normalized();
@@ -2210,7 +2213,7 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 
 			if (extra_iterations == 5 || (dir1.dot(dir2) > 0.995 && dir2.dot(dir3) > 0.995 && dir3.dot(dir1) > 0.995)) {
 				Vector3 n = (v2-v1).cross(v3-v1).normalized();
-				_add_contact<withMargin>(p_transform_a.basis.xform(-n), obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
+				_add_contact<withMargin>(p_transform_a.basis.xform(-n), separator);
 				return;
 			}
 			extra_iterations += 1;
