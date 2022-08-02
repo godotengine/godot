@@ -262,23 +262,9 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 }
 
 void ScrollContainer::_update_dimensions() {
+	Vector<Control *> controls;
+
 	child_max_size = Size2(0, 0);
-	Size2 size = get_size();
-	Point2 ofs;
-
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
-	size -= sb->get_minimum_size();
-	ofs += sb->get_offset();
-	bool rtl = is_layout_rtl();
-
-	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
-		size.y -= h_scroll->get_minimum_size().y;
-	}
-
-	if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
-		size.x -= v_scroll->get_minimum_size().x;
-	}
-
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible()) {
@@ -290,11 +276,34 @@ void ScrollContainer::_update_dimensions() {
 		if (c == h_scroll || c == v_scroll) {
 			continue;
 		}
+
 		Size2 minsize = c->get_combined_minimum_size();
 		child_max_size.x = MAX(child_max_size.x, minsize.x);
 		child_max_size.y = MAX(child_max_size.y, minsize.y);
 
+		controls.append(c);
+	}
+
+	update_scrollbars();
+
+	Size2 size = get_size();
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
+	size -= sb->get_minimum_size();
+	Point2 ofs = sb->get_offset();
+	bool rtl = is_layout_rtl();
+
+	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+		size.y -= h_scroll->get_minimum_size().y;
+	}
+	if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+		size.x -= v_scroll->get_minimum_size().x;
+	}
+
+	for (int i = 0; i < controls.size(); i++) {
+		Control *c = controls[i];
+		Size2 minsize = c->get_combined_minimum_size();
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
+
 		if (horizontal_scroll_mode == SCROLL_MODE_DISABLED || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
 			r.position.x = 0;
 			if (c->get_h_size_flags() & SIZE_EXPAND) {
@@ -303,6 +312,7 @@ void ScrollContainer::_update_dimensions() {
 				r.size.width = minsize.width;
 			}
 		}
+
 		if (vertical_scroll_mode == SCROLL_MODE_DISABLED || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
 			r.position.y = 0;
 			if (c->get_v_size_flags() & SIZE_EXPAND) {
@@ -311,15 +321,16 @@ void ScrollContainer::_update_dimensions() {
 				r.size.height = minsize.height;
 			}
 		}
+
 		r.position += ofs;
 		if (rtl && v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
+
 		r.position = r.position.floor();
 		fit_child_in_rect(c, r);
 	}
 
-	update_scrollbars();
 	update();
 }
 
