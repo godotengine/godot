@@ -247,6 +247,15 @@ Files generated from upstream source:
 - Step 4: Copy `source/data/out/icudt71l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt71l.dat`.
 
 
+## ies
+
+- Upstream: https://github.com/ray-cast/IES
+- Version: master (d6d36e5fd648049ed4ade087d5427896a54c1a26, 2018)
+- License: MIT
+
+See the standard from https://github.com/ray-cast/ies/blob/master/IES.pdf and from http://www.tc.faa.gov/its/worldpac/Standards/ansi/ansi-ies%20rp-1-04.pdf
+
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor

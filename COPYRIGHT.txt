@@ -236,6 +236,11 @@ Comment: International Components for Unicode
 Copyright: 1991-2021, Unicode
 License: Unicode
 
+Files: ./thirdparty/ies/
+Comment: ies
+Copyright: 2016-2017, Rui
+License: MIT
+
 Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
