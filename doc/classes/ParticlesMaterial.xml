@@ -274,37 +274,37 @@
 		<member name="turbulence_active" type="bool" setter="set_turbulence_active" getter="get_turbulence_active" default="false">
 			Enables and disables Turbulence for the particle system.
 		</member>
-		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max">
+		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max" default="0.1">
 			Minimum turbulence influence on each particle.
 			 The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
 		</member>
-		<member name="turbulence_influence_min" type="float" setter="set_param_min" getter="get_param_min">
+		<member name="turbulence_influence_min" type="float" setter="set_param_min" getter="get_param_min" default="0.1">
 			Maximum turbulence influence on each particle.
 			The actual amount of turbulence influence on each particle is calculated as a random value between [member turbulence_influence_min] and [member turbulence_influence_max] and multiplied by the amount of turbulence influence from [member turbulence_influence_over_life].
 		</member>
 		<member name="turbulence_influence_over_life" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's amount of turbulence will be influenced along this [CurveTexture] over its life time.
 		</member>
-		<member name="turbulence_initial_displacement_max" type="float" setter="set_param_max" getter="get_param_max">
+		<member name="turbulence_initial_displacement_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum displacement of each particles spawn position by the turbulence.
 			The actual amount of displacement will be a factor of the underlying turbulence multiplied by a random value between [member turbulence_initial_displacement_min] and [member turbulence_initial_displacement_max].
 		</member>
-		<member name="turbulence_initial_displacement_min" type="float" setter="set_param_min" getter="get_param_min">
+		<member name="turbulence_initial_displacement_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum displacement of each particles spawn position by the turbulence.
 			The actual amount of displacement will be a factor of the underlying turbulence multiplied by a random value between [member turbulence_initial_displacement_min] and [member turbulence_initial_displacement_max].
 		</member>
-		<member name="turbulence_noise_scale" type="float" setter="set_turbulence_noise_scale" getter="get_turbulence_noise_scale">
+		<member name="turbulence_noise_scale" type="float" setter="set_turbulence_noise_scale" getter="get_turbulence_noise_scale" default="9.0">
 			This value controls the overall scale/frequency of the turbulence noise pattern.
 			A small scale will result in smaller features with more detail while a high scale will result in smoother noise with larger features.
 		</member>
-		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed">
+		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0.5, 0.5, 0.5)">
 			The movement speed of the turbulence pattern. This changes how quickly the noise changes over time.
 			A value of [code]Vector3(0.0, 0.0, 0.0)[/code] will freeze the turbulence pattern in place.
 		</member>
-		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random">
+		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.0">
 			Use to influence the noise speed in a random pattern. This helps to break up visible movement patterns.
 		</member>
-		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength">
+		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
 			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, noise pattern.
 		</member>
 	</members>

@@ -1433,7 +1433,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 				property.name == "turbulence_influence_max" ||
 				property.name == "turbulence_initial_displacement_min" ||
 				property.name == "turbulence_initial_displacement_max") {
-			property.usage = PROPERTY_USAGE_NONE;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }
