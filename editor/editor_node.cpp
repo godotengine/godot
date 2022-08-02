@@ -2202,9 +2202,10 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	Object *prev_inspected_object = InspectorDock::get_inspector_singleton()->get_edited_object();
 
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
-	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
+	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
+	bool skip_main_plugin = false;
 
 	String editable_warning; // None by default.
 
@@ -2241,8 +2242,8 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			NodeDock::get_singleton()->set_node(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			InspectorDock::get_singleton()->update(current_node);
-			if (!inspector_only) {
-				inspector_only = stay_in_script_editor_on_node_selected && ScriptEditor::get_singleton()->is_visible_in_tree();
+			if (!inspector_only && !skip_main_plugin) {
+				skip_main_plugin = stay_in_script_editor_on_node_selected && ScriptEditor::get_singleton()->is_visible_in_tree();
 			}
 		} else {
 			NodeDock::get_singleton()->set_node(nullptr);
@@ -2318,7 +2319,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			}
 		}
 
-		if (main_plugin) {
+		if (main_plugin && !skip_main_plugin) {
 			// Special case if use of external editor is true.
 			Resource *current_res = Object::cast_to<Resource>(current_obj);
 			if (main_plugin->get_name() == "Script" && !current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
