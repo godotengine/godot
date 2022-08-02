@@ -31,6 +31,7 @@
 #include "main.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
@@ -1375,11 +1376,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		quiet_stdout = true;
 	}
 	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
-		_print_error_enabled = false;
+		CoreGlobals::print_error_enabled = false;
 	};
 
 	if (quiet_stdout) {
-		_print_line_enabled = false;
+		CoreGlobals::print_line_enabled = false;
 	}
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
