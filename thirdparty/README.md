@@ -168,6 +168,7 @@ the GLES version Godot targets.
 Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
+- `jpge*.{c,h}`
 
 
 ## libogg
