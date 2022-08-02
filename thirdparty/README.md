@@ -231,6 +231,8 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - the `common` folder
+- `scriptset.*`, `ucln_in.*`, `uspoof.cpp"` and `uspoof_impl.cpp` from the `i18n` folder
+- `uspoof.h` from the `i18n/unicode` folder
 - `LICENSE`
 
 Files generated from upstream source:

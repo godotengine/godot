@@ -446,6 +446,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language"), &TextServer::string_get_word_breaks, DEFVAL(""));
 
+	ClassDB::bind_method(D_METHOD("is_confusable", "string", "dict"), &TextServer::is_confusable);
+	ClassDB::bind_method(D_METHOD("spoof_check", "string"), &TextServer::spoof_check);
+
 	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
 	ClassDB::bind_method(D_METHOD("is_valid_identifier", "string"), &TextServer::is_valid_identifier);
 
@@ -547,6 +550,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
 	BIND_ENUM_CONSTANT(FEATURE_UNICODE_IDENTIFIERS);
+	BIND_ENUM_CONSTANT(FEATURE_UNICODE_SECURITY);
 
 	/* FT Contour Point Types */
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);

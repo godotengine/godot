@@ -347,6 +347,7 @@ bool TextServerAdvanced::has_feature(Feature p_feature) const {
 		case FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION:
 		case FEATURE_USE_SUPPORT_DATA:
 		case FEATURE_UNICODE_IDENTIFIERS:
+		case FEATURE_UNICODE_SECURITY:
 			return true;
 		default: {
 		}
@@ -5638,6 +5639,68 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 		}
 	}
 	return "%";
+}
+
+int TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	UErrorCode status = U_ZERO_ERROR;
+	int match_index = -1;
+
+	Char16String utf16 = p_string.utf16();
+	Vector<UChar *> skeletons;
+	skeletons.resize(p_dict.size());
+
+	USpoofChecker *sc = uspoof_open(&status);
+	uspoof_setChecks(sc, USPOOF_CONFUSABLE, &status);
+	for (int i = 0; i < p_dict.size(); i++) {
+		Char16String word = p_dict[i].utf16();
+		int32_t len = uspoof_getSkeleton(sc, 0, word.get_data(), -1, NULL, 0, &status);
+		skeletons.write[i] = (UChar *)memalloc(++len * sizeof(UChar));
+		status = U_ZERO_ERROR;
+		uspoof_getSkeleton(sc, 0, word.get_data(), -1, skeletons.write[i], len, &status);
+	}
+
+	int32_t len = uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, NULL, 0, &status);
+	UChar *skel = (UChar *)memalloc(++len * sizeof(UChar));
+	status = U_ZERO_ERROR;
+	uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, skel, len, &status);
+	for (int i = 0; i < skeletons.size(); i++) {
+		if (u_strcmp(skel, skeletons[i]) == 0) {
+			match_index = i;
+			break;
+		}
+	}
+	memfree(skel);
+
+	for (int i = 0; i < skeletons.size(); i++) {
+		memfree(skeletons.write[i]);
+	}
+	uspoof_close(sc);
+
+	ERR_FAIL_COND_V_MSG(U_FAILURE(status), -1, u_errorName(status));
+
+	return match_index;
+}
+
+bool TextServerAdvanced::spoof_check(const String &p_string) const {
+	UErrorCode status = U_ZERO_ERROR;
+	Char16String utf16 = p_string.utf16();
+
+	USet *allowed = uset_openEmpty();
+	uset_addAll(allowed, uspoof_getRecommendedSet(&status));
+	uset_addAll(allowed, uspoof_getInclusionSet(&status));
+
+	USpoofChecker *sc = uspoof_open(&status);
+	uspoof_setAllowedChars(sc, allowed, &status);
+	uspoof_setRestrictionLevel(sc, USPOOF_MODERATELY_RESTRICTIVE);
+
+	int32_t bitmask = uspoof_check(sc, utf16.get_data(), -1, NULL, &status);
+
+	uspoof_close(sc);
+	uset_close(allowed);
+
+	ERR_FAIL_COND_V_MSG(U_FAILURE(status), false, u_errorName(status));
+
+	return (bitmask != 0);
 }
 
 String TextServerAdvanced::strip_diacritics(const String &p_string) const {
