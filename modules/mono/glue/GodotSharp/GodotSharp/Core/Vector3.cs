@@ -620,22 +620,6 @@ namespace Godot
             );
         }
 
-        /// <summary>
-        /// Returns a diagonal matrix with the vector as main diagonal.
-        ///
-        /// This is equivalent to a <see cref="Basis"/> with no rotation or shearing and
-        /// this vector's components set as the scale.
-        /// </summary>
-        /// <returns>A <see cref="Basis"/> with the vector as its main diagonal.</returns>
-        public Basis ToDiagonalMatrix()
-        {
-            return new Basis(
-                x, 0, 0,
-                0, y, 0,
-                0, 0, z
-            );
-        }
-
         // Constants
         private static readonly Vector3 _zero = new Vector3(0, 0, 0);
         private static readonly Vector3 _one = new Vector3(1, 1, 1);
