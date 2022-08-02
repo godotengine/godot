@@ -1591,34 +1591,24 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 		push_constant.max_cascades = cascades.size();
 		push_constant.screen_size[0] = p_width;
 		push_constant.screen_size[1] = p_height;
-		push_constant.probe_axis_size = probe_axis_count;
-		push_constant.use_occlusion = uses_occlusion;
 		push_constant.y_mult = y_mult;
 
 		push_constant.z_near = -p_projections[v].get_z_near();
 
-		push_constant.cam_transform[0] = p_transform.basis.rows[0][0];
-		push_constant.cam_transform[1] = p_transform.basis.rows[1][0];
-		push_constant.cam_transform[2] = p_transform.basis.rows[2][0];
-		push_constant.cam_transform[3] = 0;
-		push_constant.cam_transform[4] = p_transform.basis.rows[0][1];
-		push_constant.cam_transform[5] = p_transform.basis.rows[1][1];
-		push_constant.cam_transform[6] = p_transform.basis.rows[2][1];
-		push_constant.cam_transform[7] = 0;
-		push_constant.cam_transform[8] = p_transform.basis.rows[0][2];
-		push_constant.cam_transform[9] = p_transform.basis.rows[1][2];
-		push_constant.cam_transform[10] = p_transform.basis.rows[2][2];
-		push_constant.cam_transform[11] = 0;
-		push_constant.cam_transform[12] = p_transform.origin.x;
-		push_constant.cam_transform[13] = p_transform.origin.y;
-		push_constant.cam_transform[14] = p_transform.origin.z;
-		push_constant.cam_transform[15] = 1;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				push_constant.cam_basis[i][j] = p_transform.basis.rows[j][i];
+			}
+		}
+		push_constant.cam_origin[0] = p_transform.origin[0];
+		push_constant.cam_origin[1] = p_transform.origin[1];
+		push_constant.cam_origin[2] = p_transform.origin[2];
 
 		// need to properly unproject for asymmetric projection matrices in stereo..
 		Projection inv_projection = p_projections[v].inverse();
 		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				push_constant.inv_projection[i * 4 + j] = inv_projection.matrix[i][j];
+			for (int j = 0; j < 3; j++) {
+				push_constant.inv_projection[j][i] = inv_projection.matrix[i][j];
 			}
 		}
 
