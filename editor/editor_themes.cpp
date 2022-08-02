@@ -1660,6 +1660,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_dictionary_add_item->set_expand_margin_size(SIDE_RIGHT, 4 * EDSCALE);
 	theme->set_stylebox("DictionaryAddItem", "EditorStyles", style_dictionary_add_item);
 
+	Ref<StyleBoxEmpty> vshader_label_style = make_empty_stylebox(2, 1, 2, 1);
+	theme->set_stylebox("label_style", "VShaderEditor", vshader_label_style);
+
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
 	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);

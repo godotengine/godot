@@ -42,10 +42,32 @@
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/graph_edit.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 
 #ifdef TOOLS_ENABLED
+
+void VisualScriptEditedProperty::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_edited_property", "value"), &VisualScriptEditedProperty::set_edited_property);
+	ClassDB::bind_method(D_METHOD("get_edited_property"), &VisualScriptEditedProperty::get_edited_property);
+
+	ADD_PROPERTY(PropertyInfo(Variant::NIL, "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_edited_property", "get_edited_property");
+}
+
+void VisualScriptEditedProperty::set_edited_property(Variant p_variant) {
+	edited_property = p_variant;
+}
+
+Variant VisualScriptEditedProperty::get_edited_property() const {
+	return edited_property;
+}
+
+/////////////////
+
 class VisualScriptEditorSignalEdit : public Object {
 	GDCLASS(VisualScriptEditorSignalEdit, Object);
 
@@ -3898,14 +3920,14 @@ int VisualScriptEditor::_create_new_node_from_name(const String &p_text, const V
 	return new_id;
 }
 
-void VisualScriptEditor::_default_value_changed() {
+void VisualScriptEditor::_default_value_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
 	Ref<VisualScriptNode> vsn = script->get_node(editing_id);
 	if (vsn.is_null()) {
 		return;
 	}
 
 	undo_redo->create_action(TTR("Change Input Value"));
-	undo_redo->add_do_method(vsn.ptr(), "set_default_input_value", editing_input, default_value_edit->get_variant());
+	undo_redo->add_do_method(vsn.ptr(), "set_default_input_value", editing_input, p_value);
 	undo_redo->add_undo_method(vsn.ptr(), "set_default_input_value", editing_input, vsn->get_default_input_value(editing_input));
 
 	undo_redo->add_do_method(this, "_update_graph", editing_id);
@@ -3928,9 +3950,6 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
-	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_screen_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y) * graph->get_zoom());
-	default_value_edit->reset_size();
-
 	if (pinfo.type == Variant::NODE_PATH) {
 		Node *edited_scene = get_tree()->get_edited_scene_root();
 		if (edited_scene) { // Fixing an old crash bug ( Visual Script Crashes on editing NodePath with an empty scene open).
@@ -3948,11 +3967,33 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		}
 	}
 
-	if (default_value_edit->edit(nullptr, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
-		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT) {
-			default_value_edit->popup_centered_ratio();
+	edited_default_property_holder->set_edited_property(existing);
+
+	if (default_property_editor) {
+		default_property_editor->disconnect("property_changed", callable_mp(this, &VisualScriptEditor::_default_value_changed));
+		default_property_editor_popup->remove_child(default_property_editor);
+	}
+
+	default_property_editor = EditorInspector::instantiate_property_editor(edited_default_property_holder.ptr(), pinfo.type, "edited_property", pinfo.hint, pinfo.hint_string, PROPERTY_USAGE_NONE);
+	if (default_property_editor) {
+		default_property_editor->set_object_and_property(edited_default_property_holder.ptr(), "edited_property");
+		default_property_editor->update_property();
+		default_property_editor->set_name_split_ratio(0);
+		default_property_editor_popup->add_child(default_property_editor);
+
+		default_property_editor->connect("property_changed", callable_mp(this, &VisualScriptEditor::_default_value_changed));
+
+		Button *button = Object::cast_to<Button>(p_button);
+		if (button) {
+			default_property_editor_popup->set_position(button->get_screen_position() + Vector2(0, button->get_size().height) * graph->get_zoom());
+		}
+
+		default_property_editor_popup->reset_size();
+
+		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT || !button) {
+			default_property_editor_popup->popup_centered_ratio();
 		} else {
-			default_value_edit->popup();
+			default_property_editor_popup->popup();
 		}
 	}
 
@@ -4795,9 +4836,11 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	set_process_input(true);
 
-	default_value_edit = memnew(CustomPropertyEditor);
-	add_child(default_value_edit);
-	default_value_edit->connect("variant_changed", callable_mp(this, &VisualScriptEditor::_default_value_changed));
+	default_property_editor_popup = memnew(PopupPanel);
+	default_property_editor_popup->set_min_size(Size2i(180, 0) * EDSCALE);
+	add_child(default_property_editor_popup);
+
+	edited_default_property_holder.instantiate();
 
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
