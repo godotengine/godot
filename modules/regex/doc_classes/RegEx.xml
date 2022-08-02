@@ -62,6 +62,13 @@
 				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If an error is encountered, details are printed to standard output and an error is returned.
 			</description>
 		</method>
+		<method name="create_from_string" qualifiers="static">
+			<return type="RegEx" />
+			<argument index="0" name="pattern" type="String" />
+			<description>
+				Creates and compiles a new [RegEx] object.
+			</description>
+		</method>
 		<method name="get_group_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -96,7 +103,7 @@
 			</description>
 		</method>
 		<method name="search_all" qualifiers="const">
-			<return type="Array" />
+			<return type="RegExMatch[]" />
 			<argument index="0" name="subject" type="String" />
 			<argument index="1" name="offset" type="int" default="0" />
 			<argument index="2" name="end" type="int" default="-1" />
