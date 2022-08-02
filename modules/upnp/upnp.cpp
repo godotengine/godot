@@ -320,8 +320,6 @@ int UPNP::add_port_mapping(int port, int port_internal, String desc, String prot
 		return UPNP_RESULT_NO_GATEWAY;
 	}
 
-	dev->delete_port_mapping(port, proto);
-
 	return dev->add_port_mapping(port, port_internal, desc, proto, duration);
 }
 
