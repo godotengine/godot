@@ -227,17 +227,18 @@ public:
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = (Basis *)Variant::Pools::_bucket_large.alloc();
+		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_large.alloc();
+		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
-		v->_data._projection = memnew(Projection);
+		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
