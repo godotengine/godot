@@ -155,6 +155,10 @@ String GDScriptWarning::get_message() const {
 		case INT_ASSIGNED_TO_ENUM: {
 			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
 		}
+		case SETTER_MISSING_ASSIGNMENT: {
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The member variable '%s' may not be updated within the setter function.)", symbols[0]);
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -215,6 +219,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"EMPTY_FILE",
 		"SHADOWED_GLOBAL_IDENTIFIER",
 		"INT_ASSIGNED_TO_ENUM",
+		"SETTER_MISSING_ASSIGNMENT",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

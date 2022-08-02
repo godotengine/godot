@@ -78,6 +78,7 @@ public:
 		EMPTY_FILE, // A script file is empty.
 		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
 		INT_ASSIGNED_TO_ENUM, // An integer value was assigned to an enum-typed variable without casting.
+		SETTER_MISSING_ASSIGNMENT, // A setter function does not assign any value to the member variable.
 		WARNING_MAX,
 	};
 
