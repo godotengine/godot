@@ -5024,6 +5024,32 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 	return singleton->immediate_dialog_confirmed;
 }
 
+Color EditorNode::peek_cfg_theme_color() {
+	/*
+	 * This static method is used during the initialization phase of the initial window,
+	 * care should be taken to detect whether each instance of the class is available.
+	 */
+	EditorPaths *editorPaths = EditorPaths::get_singleton();
+	if (editorPaths) {
+		String cfg_dir = editorPaths->get_config_dir();
+		Ref<DirAccess> dir = DirAccess::open(cfg_dir);
+		if (dir != nullptr) {
+			String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
+			String config_file_path = cfg_dir.plus_file(config_file_name);
+			if (dir->file_exists(config_file_name)) {
+				Ref<ConfigFile> config;
+				config.instantiate();
+				Error err = config->load(config_file_path);
+				if (err == OK) {
+					return config->get_value("resource", "interface/theme/base_color");
+				}
+			}
+		}
+	}
+
+	return Color();
+}
+
 int EditorNode::get_current_tab() {
 	return scene_tabs->get_current_tab();
 }

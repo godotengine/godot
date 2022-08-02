@@ -728,6 +728,10 @@ public:
 
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
 
+	// Take the configuration value before the editor initialization.
+	// The function runs only once, not every time a window is created, no more than worrying about the efficiency of creating a window.
+	static Color peek_cfg_theme_color();
+
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }

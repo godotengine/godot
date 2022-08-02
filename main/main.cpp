@@ -1716,6 +1716,15 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 #endif
 
+	/* Define boot splash bg color */
+	Color boot_bg_color;
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+	boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color",
+			(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
+#else
+	boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
+#endif
+
 	/* Initialize Input */
 
 	input = memnew(Input);
@@ -1727,7 +1736,21 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
+
+		/*
+		 * In the case of editor mode, we use the base color defined by Theme.
+		 * Because the user defined splash and the current editor's theme base color may be too high contrast,
+		 * this may cause the background color to flash when any window within the editor is initialized, especially in slow or debug mode.
+		 */
+		Color init_bg_color;
+#if defined(TOOLS_ENABLED)
+		init_bg_color = EditorNode::peek_cfg_theme_color();
+#endif
+		if (!(editor || project_manager)) {
+			init_bg_color = boot_bg_color;
+		}
+
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, init_bg_color, window_size, err);
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
@@ -1736,7 +1759,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, init_bg_color, window_size, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}
@@ -1902,13 +1925,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-		const Color boot_bg_color =
-				GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
-						(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
-#else
-		const Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
-#endif
 		if (boot_logo.is_valid()) {
 			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
 					boot_logo_filter);
