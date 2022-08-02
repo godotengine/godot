@@ -2519,7 +2519,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_enums(Vector<String> &file
 
 			int current_line = 1;
 			for (String &line : file_content) {
-				Array reg_match = reg.search_all(line);
+				TypedArray<RegExMatch> reg_match = reg.search_all(line);
 				if (reg_match.size() > 0) {
 					found_things.append(line_formatter(current_line, colors_renames[current_index][0], colors_renames[current_index][1], line));
 				}
@@ -2596,7 +2596,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &fi
 			line = reg_before.sub(line, "TEMP_RENAMED_CLASS.tscn", true);
 			line = reg_before2.sub(line, "TEMP_RENAMED_CLASS.gd", true);
 
-			Array reg_match = reg.search_all(line);
+			TypedArray<RegExMatch> reg_match = reg.search_all(line);
 			if (reg_match.size() > 0) {
 				found_things.append(line_formatter(current_line, class_renames[current_index][0], class_renames[current_index][1], line));
 			}
@@ -3810,7 +3810,7 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &fil
 
 	int current_line = 1;
 	for (String &line : file_content) {
-		Array reg_match = reg.search_all(line);
+		TypedArray<RegExMatch> reg_match = reg.search_all(line);
 		if (reg_match.size() > 0) {
 			found_things.append(line_formatter(current_line, from.replace("\\.", "."), to, line)); // Without replacing it will print "\.shader" instead ".shader"
 		}
@@ -3841,7 +3841,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[]
 
 		int current_line = 1;
 		for (String &line : file_content) {
-			Array reg_match = reg.search_all(line);
+			TypedArray<RegExMatch> reg_match = reg.search_all(line);
 			if (reg_match.size() > 0) {
 				found_things.append(line_formatter(current_line, array[current_index][0], array[current_index][1], line));
 			}

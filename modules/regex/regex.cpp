@@ -159,6 +159,13 @@ void RegEx::_pattern_info(uint32_t what, void *where) const {
 	pcre2_pattern_info_32((pcre2_code_32 *)code, what, where);
 }
 
+Ref<RegEx> RegEx::create_from_string(const String &p_pattern) {
+	Ref<RegEx> ret;
+	ret.instantiate();
+	ret->compile(p_pattern);
+	return ret;
+}
+
 void RegEx::clear() {
 	if (code) {
 		pcre2_code_free_32((pcre2_code_32 *)code);
@@ -258,11 +265,11 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 	return result;
 }
 
-Array RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
+TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
 	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
 
 	int last_end = -1;
-	Array result;
+	TypedArray<RegExMatch> result;
 	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
 	while (match.is_valid()) {
 		if (last_end == match->get_end(0)) {
@@ -384,6 +391,8 @@ RegEx::~RegEx() {
 }
 
 void RegEx::_bind_methods() {
+	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern"), &RegEx::create_from_string);
+
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
 	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
 	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
