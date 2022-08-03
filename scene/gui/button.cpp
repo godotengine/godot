@@ -34,39 +34,14 @@
 #include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
-	Size2 minsize = text_buf->get_size();
-	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		minsize.width = 0;
+	Ref<Texture2D> _icon;
+	if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
+		_icon = Control::get_theme_icon(SNAME("icon"));
+	} else {
+		_icon = icon;
 	}
 
-	if (!expand_icon) {
-		Ref<Texture2D> _icon;
-		if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
-			_icon = Control::get_theme_icon(SNAME("icon"));
-		} else {
-			_icon = icon;
-		}
-
-		if (!_icon.is_null()) {
-			minsize.height = MAX(minsize.height, _icon->get_height());
-
-			if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
-				minsize.width += _icon->get_width();
-				if (!xl_text.is_empty()) {
-					minsize.width += get_theme_constant(SNAME("h_separation"));
-				}
-			} else {
-				minsize.width = MAX(minsize.width, _icon->get_width());
-			}
-		}
-	}
-	if (!xl_text.is_empty()) {
-		Ref<Font> font = get_theme_font(SNAME("font"));
-		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
-		minsize.height = MAX(font_height, minsize.height);
-	}
-
-	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
+	return get_minimum_size_for_text_and_icon("", _icon);
 }
 
 void Button::_set_internal_margin(Side p_side, float p_value) {
@@ -352,18 +327,62 @@ void Button::_notification(int p_what) {
 	}
 }
 
-void Button::_shape() {
+Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
+	Ref<TextParagraph> paragraph;
+	if (p_text.is_empty()) {
+		paragraph = text_buf;
+	} else {
+		paragraph.instantiate();
+		const_cast<Button *>(this)->_shape(paragraph, p_text);
+	}
+
+	Size2 minsize = paragraph->get_size();
+	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		minsize.width = 0;
+	}
+
+	if (!expand_icon && !p_icon.is_null()) {
+		minsize.height = MAX(minsize.height, p_icon->get_height());
+
+		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
+			minsize.width += p_icon->get_width();
+			if (!xl_text.is_empty() || !p_text.is_empty()) {
+				minsize.width += get_theme_constant(SNAME("hseparation"));
+			}
+		} else {
+			minsize.width = MAX(minsize.width, p_icon->get_width());
+		}
+	}
+
+	if (!xl_text.is_empty() || !p_text.is_empty()) {
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
+		minsize.height = MAX(font_height, minsize.height);
+	}
+
+	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
+}
+
+void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
+	if (p_paragraph.is_null()) {
+		p_paragraph = text_buf;
+	}
+
+	if (p_text.is_empty()) {
+		p_text = xl_text;
+	}
+
 	Ref<Font> font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 
-	text_buf->clear();
+	p_paragraph->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
-		text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+		p_paragraph->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
-		text_buf->set_direction((TextServer::Direction)text_direction);
+		p_paragraph->set_direction((TextServer::Direction)text_direction);
 	}
-	text_buf->add_string(xl_text, font, font_size, language);
-	text_buf->set_text_overrun_behavior(overrun_behavior);
+	p_paragraph->add_string(p_text, font, font_size, language);
+	p_paragraph->set_text_overrun_behavior(overrun_behavior);
 }
 
 void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
