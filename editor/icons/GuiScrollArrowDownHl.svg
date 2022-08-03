@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   clip-rule="evenodd"
+   fill-rule="evenodd"
+   stroke-linejoin="round"
+   stroke-miterlimit="2"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg26"
+   sodipodi:docname="scroll_button_down_hl.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs30" />
+  <sodipodi:namedview
+     id="namedview28"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="53.5"
+     inkscape:cx="5.2242991"
+     inkscape:cy="8"
+     inkscape:window-width="1920"
+     inkscape:window-height="1033"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg26" />
+  <circle
+     cx="8"
+     cy="8"
+     fill="#fefffe"
+     r="6"
+     id="circle22" />
+  <path
+     d="m 11.998945,6.4860002 c 0.004,0.27 -0.102,0.53 -0.293,0.721 L 8.7059456,10.207 c -0.388,0.388 -1.026,0.388 -1.414,0 l -3,-2.9999998 c -0.388,-0.388 -0.388,-1.026 0,-1.414 0.388,-0.388 1.026,-0.388 1.414,0 l 2.293,2.293 2.2929994,-2.293 c 0.388,-0.388 1.026,-0.388 1.414,0 0.184,0.184 0.289,0.433 0.293,0.693 z"
+     fill="#1a1a1a"
+     id="path24" />
+</svg>

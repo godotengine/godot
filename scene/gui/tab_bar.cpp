@@ -559,36 +559,61 @@ void TabBar::_notification(int p_what) {
 			}
 
 			if (dragging_valid_tab) {
-				int x;
+				int tab_hover_ofs;
 
 				int tab_hover = get_hovered_tab();
-				if (tab_hover != -1) {
-					Rect2 tab_rect = get_tab_rect(tab_hover);
+				if (vertical_mode) {
+					if (tab_hover != -1) {
+						Rect2 tab_rect = get_tab_rect(tab_hover);
 
-					x = tab_rect.position.x;
-					if (get_local_mouse_position().x > x + tab_rect.size.width / 2) {
-						x += tab_rect.size.width;
-					}
-				} else {
-					if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
-						x = get_tab_rect(0).position.x;
-						if (rtl) {
-							x += get_tab_rect(0).size.width;
+						tab_hover_ofs = tab_rect.position.y;
+						if (get_local_mouse_position().y > tab_hover_ofs + tab_rect.size.height / 2) {
+							tab_hover_ofs += tab_rect.size.height;
 						}
 					} else {
-						Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+						if (get_local_mouse_position().y < get_tab_rect(0).position.y) {
+							tab_hover_ofs = get_tab_rect(0).position.y;
+							if (rtl) {
+								tab_hover_ofs += get_tab_rect(0).size.height;
+							}
+						} else {
+							Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
 
-						x = tab_rect.position.x;
-						if (!rtl) {
-							x += tab_rect.size.width;
+							tab_hover_ofs = tab_rect.position.y;
+							if (!rtl) {
+								tab_hover_ofs += tab_rect.size.height;
+							}
+						}
+					}
+				} else {
+					if (tab_hover != -1) {
+						Rect2 tab_rect = get_tab_rect(tab_hover);
+
+						tab_hover_ofs = tab_rect.position.x;
+						if (get_local_mouse_position().x > tab_hover_ofs + tab_rect.size.width / 2) {
+							tab_hover_ofs += tab_rect.size.width;
+						}
+					} else {
+						if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
+							tab_hover_ofs = get_tab_rect(0).position.x;
+							if (rtl) {
+								tab_hover_ofs += get_tab_rect(0).size.width;
+							}
+						} else {
+							Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+
+							tab_hover_ofs = tab_rect.position.x;
+							if (!rtl) {
+								tab_hover_ofs += tab_rect.size.width;
+							}
 						}
 					}
 				}
 
-				Ref<Texture2D> drop_mark = get_theme_icon(SNAME("drop_mark"));
+				Ref<Texture2D> drop_mark = get_theme_icon(vertical_mode ? SNAME("vertical_drop_mark") : SNAME("drop_mark"));
 				Color drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
 
-				drop_mark->draw(get_canvas_item(), Point2(x - drop_mark->get_width() / 2, (size.height - drop_mark->get_height()) / 2), drop_mark_color);
+				drop_mark->draw(get_canvas_item(), vertical_mode ? Point2(0, tab_hover_ofs - drop_mark->get_height() / 2) : Point2(tab_hover_ofs - drop_mark->get_width() / 2, (size.height - drop_mark->get_height()) / 2), drop_mark_color);
 			}
 		} break;
 	}
@@ -642,8 +667,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 
 			Rect2 rb_rect;
 			rb_rect.size = style->get_minimum_size() + rb->get_size();
-			rb_rect.position.x = rtl ? -rb_rect.size.width + cb->get_size().width + hseparation
-									 : get_size().width - rb_rect.size.width - cb->get_size().width - hseparation;
+			rb_rect.position.x = rtl ? -rb_rect.size.width + cb->get_size().width + style->get_margin(SIDE_LEFT) + hseparation
+									 : get_size().width - rb_rect.size.width - cb->get_size().width - style->get_margin(SIDE_RIGHT) - hseparation;
 			rb_rect.position.y = p_tab_offset + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
 
 			tabs.write[p_index].rb_rect = rb_rect;
@@ -667,7 +692,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 
 			Rect2 cb_rect;
 			cb_rect.size = style->get_minimum_size() + cb->get_size();
-			cb_rect.position.x = rtl ? style->get_margin(SIDE_LEFT) + cb_rect.size.width / 2 : get_size().width - cb_rect.size.width / 2 + style->get_margin(SIDE_LEFT);
+			cb_rect.position.x = rtl ? style->get_margin(SIDE_LEFT) + cb_rect.size.width / 2 : get_size().width - cb_rect.size.width - style->get_margin(SIDE_RIGHT);
 			cb_rect.position.y = p_tab_offset + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
 
 			tabs.write[p_index].cb_rect = cb_rect;
@@ -680,7 +705,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 				}
 			}
 
-			cb->draw(ci, Point2i(cb_rect.position.x, cb_rect.position.y + style->get_margin(SIDE_TOP)));
+			cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_RIGHT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 		}
 		return;
 	}
@@ -1447,7 +1472,7 @@ bool TabBar::is_vertical_mode() const {
 	return vertical_mode;
 }
 
-void TabBar::set_vertical_tab_alignment(TabBar::VAlignmentMode p_alignment) {
+void TabBar::set_vertical_tab_alignment(VAlignmentMode p_alignment) {
 	ERR_FAIL_INDEX(p_alignment, VALIGNMENT_MAX);
 	vertical_tab_alignment = p_alignment;
 

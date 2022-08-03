@@ -1174,8 +1174,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
 	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRightHl"), SNAME("EditorIcons")));
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
+	theme->set_icon("vertical_increment", "TabBar", theme->get_icon(SNAME("GuiScrollArrowDown"), SNAME("EditorIcons")));
+	theme->set_icon("vertical_decrement", "TabBar", theme->get_icon(SNAME("GuiScrollArrowUp"), SNAME("EditorIcons")));
+	theme->set_icon("vertical_increment_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowDownHl"), SNAME("EditorIcons")));
+	theme->set_icon("vertical_decrement_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowUpHl"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
+	theme->set_icon("vertical_drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabVerticalDropMark"), SNAME("EditorIcons")));
 	theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
 
 	// Content of each tab

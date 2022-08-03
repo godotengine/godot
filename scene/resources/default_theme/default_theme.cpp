@@ -854,6 +854,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("vertical_decrement", "TabBar", icons["scroll_button_up"]);
 	theme->set_icon("vertical_decrement_highlight", "TabBar", icons["scroll_button_up_hl"]);
 	theme->set_icon("drop_mark", "TabBar", icons["tabs_drop_mark"]);
+	theme->set_icon("vertical_drop_mark", "TabBar", icons["vertical_tabs_drop_mark"]);
 	theme->set_icon("close", "TabBar", icons["close"]);
 
 	theme->set_font("font", "TabBar", Ref<Font>());
