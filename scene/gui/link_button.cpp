@@ -36,18 +36,26 @@ void LinkButton::set_text(const String &p_text) {
 	if (text == p_text) {
 		return;
 	}
+
 	text = p_text;
-	xl_text = tr(p_text);
-	update();
 	_change_notify("text");
-	minimum_size_changed();
+	update_text();
 }
 
 void LinkButton::set_url(const String &p_url) {
 	if (url == p_url) {
 		return;
 	}
+
 	url = p_url;
+	_change_notify("url");
+	update_text();
+}
+
+void LinkButton::update_text() {
+	xl_text = tr((text.is_empty()) ? url : text);
+	update();
+	minimum_size_changed();
 }
 
 String LinkButton::get_text() const {
@@ -59,7 +67,7 @@ String LinkButton::get_url() const {
 }
 
 void LinkButton::pressed() {
-	if (url != "") {
+	if (!url.is_empty()) {
 		OS::get_singleton()->shell_open(url);
 	}
 }

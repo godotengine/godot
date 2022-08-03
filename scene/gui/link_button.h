@@ -56,6 +56,8 @@ protected:
 	static void _bind_methods();
 	void pressed();
 
+	void update_text();
+
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
