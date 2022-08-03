@@ -933,6 +933,7 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 
 void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_in_circle", "point", "circle_position", "circle_radius"), &Geometry2D::is_point_in_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_position", "circle_radius"), &Geometry2D::segment_intersects_circle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_segment", "from_a", "to_a", "from_b", "to_b"), &Geometry2D::segment_intersects_segment);
 	ClassDB::bind_method(D_METHOD("line_intersects_line", "from_a", "dir_a", "from_b", "dir_b"), &Geometry2D::line_intersects_line);
 
