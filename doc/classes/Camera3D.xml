@@ -113,7 +113,7 @@
 			<argument index="2" name="z_near" type="float" />
 			<argument index="3" name="z_far" type="float" />
 			<description>
-				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space units.
+				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space units. See also [member frustum_offset].
 			</description>
 		</method>
 		<method name="set_orthogonal">
@@ -179,6 +179,7 @@
 		</member>
 		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset" default="Vector2(0, 0)">
 			The camera's frustum offset. This can be changed from the default to create "tilted frustum" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-shearing[/url].
+			[b]Note:[/b] Only effective if [member projection] is [constant PROJECTION_FRUSTUM].
 		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The horizontal (X) offset of the camera viewport.
