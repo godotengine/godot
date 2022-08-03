@@ -375,6 +375,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseMotion> mm = p_gui_input;
 	if (mm.is_valid()) {
 		Vector2i mpos = mm->get_position();
+
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
@@ -394,12 +395,19 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
 		if (is_code_completion_scroll_hovered != scroll_hovered) {
 			is_code_completion_scroll_hovered = scroll_hovered;
+			accept_event();
 			queue_redraw();
 		}
 
 		if (is_code_completion_scroll_pressed) {
 			_update_scroll_selected_line(mpos.y);
+			accept_event();
 			queue_redraw();
+			return;
+		}
+
+		if (code_completion_active && code_completion_rect.has_point(mm->get_position())) {
+			accept_event();
 			return;
 		}
 	}
