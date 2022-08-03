@@ -297,7 +297,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform by <paramref name="angle"/> (in radians), using matrix multiplication.
+        /// Rotates the transform by <paramref name="angle"/> (in radians).
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
@@ -307,7 +309,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Scales the transform by the given scaling factor, using matrix multiplication.
+        /// Rotates the transform by <paramref name="angle"/> (in radians).
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="angle">The angle to rotate, in radians.</param>
+        /// <returns>The rotated transformation matrix.</returns>
+        public Transform2D RotatedLocal(real_t angle)
+        {
+            return new Transform2D(angle, new Vector2()) * this;
+        }
+
+        /// <summary>
+        /// Scales the transform by the given scaling factor.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
@@ -317,6 +333,21 @@ namespace Godot
             copy.x *= scale;
             copy.y *= scale;
             copy.origin *= scale;
+            return copy;
+        }
+
+        /// <summary>
+        /// Scales the transform by the given scaling factor.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled transformation matrix.</returns>
+        public Transform2D ScaledLocal(Vector2 scale)
+        {
+            Transform2D copy = this;
+            copy.x *= scale;
+            copy.y *= scale;
             return copy;
         }
 
@@ -331,11 +362,23 @@ namespace Godot
         }
 
         /// <summary>
-        /// Translates the transform by the given <paramref name="offset"/>,
-        /// relative to the transform's basis vectors.
-        ///
-        /// Unlike <see cref="Rotated"/> and <see cref="Scaled"/>,
-        /// this does not use matrix multiplication.
+        /// Translates the transform by the given <paramref name="offset"/>.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
+        /// </summary>
+        /// <param name="offset">The offset to translate by.</param>
+        /// <returns>The translated matrix.</returns>
+        public Transform2D Translated(Vector2 offset)
+        {
+            Transform2D copy = this;
+            copy.origin += offset;
+            return copy;
+        }
+
+        /// <summary>
+        /// Translates the transform by the given <paramref name="offset"/>.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>

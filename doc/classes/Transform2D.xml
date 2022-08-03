@@ -141,14 +141,40 @@
 			<return type="Transform2D" />
 			<argument index="0" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians), using matrix multiplication.
+				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians).
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="rotated_local" qualifiers="const">
+			<return type="Transform2D" />
+			<argument index="0" name="angle" type="float" />
+			<description>
+				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians).
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
+				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="scale" type="Vector2" />
 			<description>
-				Returns a copy of the transform scaled by the given [code]scale[/code] factor, using matrix multiplication.
+				Returns a copy of the transform scaled by the given [code]scale[/code] factor.
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="scaled_local" qualifiers="const">
+			<return type="Transform2D" />
+			<argument index="0" name="scale" type="Vector2" />
+			<description>
+				Returns a copy of the transform scaled by the given [code]scale[/code] factor.
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
+				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
 		<method name="set_rotation">
@@ -173,12 +199,24 @@
 				Sets the transform's skew (in radians).
 			</description>
 		</method>
+		<method name="translated" qualifiers="const">
+			<return type="Transform2D" />
+			<argument index="0" name="offset" type="Vector2" />
+			<description>
+				Returns a copy of the transform translated by the given [code]offset[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
 		<method name="translated_local" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="offset" type="Vector2" />
 			<description>
-				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
-				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
+				Returns a copy of the transform translated by the given [code]offset[/code].
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
+				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
 	</methods>
