@@ -347,7 +347,7 @@
 		</member>
 		<member name="editors/visual_editors/minimap_opacity" type="float" setter="" getter="">
 		</member>
-		<member name="editors/visual_editors/visualshader/port_preview_size" type="int" setter="" getter="">
+		<member name="editors/visual_editors/visual_shader/port_preview_size" type="int" setter="" getter="">
 		</member>
 		<member name="filesystem/directories/autoscan_project_path" type="String" setter="" getter="">
 		</member>
