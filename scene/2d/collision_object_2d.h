@@ -151,7 +151,9 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
-	_FORCE_INLINE_ RID get_rid() const { return rid; }
+	_FORCE_INLINE_ RID get_rid() const {
+		return rid;
+	}
 
 	CollisionObject2D();
 	~CollisionObject2D();

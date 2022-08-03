@@ -597,7 +597,9 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	bool has_main_screen() const { return true; }
+	bool has_main_screen() const {
+		return true;
+	}
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
@@ -690,24 +692,42 @@ protected:
 	void set_current_tab(int p_tab);
 
 public:
-	void set_visible_editor(EditorTable p_table) { _editor_select(p_table); }
+	void set_visible_editor(EditorTable p_table) {
+		_editor_select(p_table);
+	}
 
 	bool call_build();
 
 	static void register_editor_types();
 	static void unregister_editor_types();
 
-	static EditorNode *get_singleton() { return singleton; }
+	static EditorNode *get_singleton() {
+		return singleton;
+	}
 
-	static EditorLog *get_log() { return singleton->log; }
-	static EditorData &get_editor_data() { return singleton->editor_data; }
-	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
+	static EditorLog *get_log() {
+		return singleton->log;
+	}
+	static EditorData &get_editor_data() {
+		return singleton->editor_data;
+	}
+	static EditorFolding &get_editor_folding() {
+		return singleton->editor_folding;
+	}
+	static UndoRedo *get_undo_redo() {
+		return &singleton->editor_data.get_undo_redo();
+	}
 
-	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
-	static VSplitContainer *get_top_split() { return singleton->top_split; }
+	static HBoxContainer *get_menu_hb() {
+		return singleton->menu_hb;
+	}
+	static VSplitContainer *get_top_split() {
+		return singleton->top_split;
+	}
 
-	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
+	static bool has_unsaved_changes() {
+		return singleton->unsaved_cache;
+	}
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
 
@@ -723,21 +743,39 @@ public:
 	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
 	static void add_plugin_init_callback(EditorPluginInitializeCallback p_callback);
-	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
+	static void add_init_callback(EditorNodeInitCallback p_callback) {
+		_init_callbacks.push_back(p_callback);
+	}
 	static void add_build_callback(EditorBuildCallback p_callback);
 
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
 
-	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
-	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
-	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
-	EditorSelection *get_editor_selection() { return editor_selection; }
-	EditorSelectionHistory *get_editor_selection_history() { return &editor_history; }
+	EditorPlugin *get_editor_plugin_screen() {
+		return editor_plugin_screen;
+	}
+	EditorPluginList *get_editor_plugins_force_input_forwarding() {
+		return editor_plugins_force_input_forwarding;
+	}
+	EditorPluginList *get_editor_plugins_force_over() {
+		return editor_plugins_force_over;
+	}
+	EditorPluginList *get_editor_plugins_over() {
+		return editor_plugins_over;
+	}
+	EditorSelection *get_editor_selection() {
+		return editor_selection;
+	}
+	EditorSelectionHistory *get_editor_selection_history() {
+		return &editor_history;
+	}
 
-	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
+	ProjectSettingsEditor *get_project_settings() {
+		return project_settings_editor;
+	}
 
-	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
+	void new_inherited_scene() {
+		_menu_option_confirm(FILE_NEW_INHERITED_SCENE, false);
+	}
 
 	void set_docks_visible(bool p_show);
 	bool get_docks_visible() const;
@@ -752,13 +790,17 @@ public:
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
-	void edit_resource(const Ref<Resource> &p_resource) { InspectorDock::get_singleton()->edit_resource(p_resource); };
+	void edit_resource(const Ref<Resource> &p_resource) {
+		InspectorDock::get_singleton()->edit_resource(p_resource);
+	};
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
 
-	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
+	void show_about() {
+		_menu_option_confirm(HELP_ABOUT, false);
+	}
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
@@ -774,10 +816,14 @@ public:
 	bool is_changing_scene() const;
 
 	Control *get_main_control();
-	SubViewport *get_scene_root() { return scene_root; } // Root of the scene being edited.
+	SubViewport *get_scene_root() {
+		return scene_root;
+	} // Root of the scene being edited.
 
 	void set_edited_scene(Node *p_scene);
-	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
+	Node *get_edited_scene() {
+		return editor_data.get_edited_scene_root();
+	}
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
@@ -794,14 +840,20 @@ public:
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
 
-	void set_convert_old_scene(bool p_old) { convert_old = p_old; }
+	void set_convert_old_scene(bool p_old) {
+		convert_old = p_old;
+	}
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const { return editor_run.has_child_process(p_pid); }
+	OS::ProcessID has_child_process(OS::ProcessID p_pid) const {
+		return editor_run.has_child_process(p_pid);
+	}
 	void stop_child_process(OS::ProcessID p_pid);
 
-	Ref<Theme> get_editor_theme() const { return theme; }
+	Ref<Theme> get_editor_theme() const {
+		return theme;
+	}
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
@@ -815,8 +867,12 @@ public:
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
-	Control *get_gui_base() { return gui_base; }
-	Control *get_theme_base() { return gui_base->get_parent_control(); }
+	Control *get_gui_base() {
+		return gui_base;
+	}
+	Control *get_theme_base() {
+		return gui_base->get_parent_control();
+	}
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
 		if (p_with_preview) {
@@ -834,9 +890,13 @@ public:
 
 	void reload_scene(const String &p_path);
 
-	bool is_exiting() const { return exiting; }
+	bool is_exiting() const {
+		return exiting;
+	}
 
-	Button *get_pause_button() { return pause_button; }
+	Button *get_pause_button() {
+		return pause_button;
+	}
 
 	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	void make_bottom_panel_item_visible(Control *p_item);
@@ -862,7 +922,9 @@ public:
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
-	void edit_current() { _edit_current(); };
+	void edit_current() {
+		_edit_current();
+	};
 
 	bool has_scenes_in_session();
 
@@ -888,12 +950,16 @@ public:
 
 struct EditorProgress {
 	String task;
-	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) { return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh); }
+	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) {
+		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
+	}
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false) {
 		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
 		task = p_task;
 	}
-	~EditorProgress() { EditorNode::progress_end_task(task); }
+	~EditorProgress() {
+		EditorNode::progress_end_task(task);
+	}
 };
 
 class EditorPluginList : public Object {
@@ -928,12 +994,16 @@ public:
 
 struct EditorProgressBG {
 	String task;
-	void step(int p_step = -1) { EditorNode::progress_task_step_bg(task, p_step); }
+	void step(int p_step = -1) {
+		EditorNode::progress_task_step_bg(task, p_step);
+	}
 	EditorProgressBG(const String &p_task, const String &p_label, int p_amount) {
 		EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
 		task = p_task;
 	}
-	~EditorProgressBG() { EditorNode::progress_end_task_bg(task); }
+	~EditorProgressBG() {
+		EditorNode::progress_end_task_bg(task);
+	}
 };
 
 #endif // EDITOR_NODE_H

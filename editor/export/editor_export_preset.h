@@ -88,7 +88,9 @@ protected:
 public:
 	Ref<EditorExportPlatform> get_platform() const;
 
-	bool has(const StringName &p_property) const { return values.has(p_property); }
+	bool has(const StringName &p_property) const {
+		return values.has(p_property);
+	}
 
 	void update_files_to_export();
 
@@ -137,7 +139,9 @@ public:
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
 
-	const List<PropertyInfo> &get_properties() const { return properties; }
+	const List<PropertyInfo> &get_properties() const {
+		return properties;
+	}
 
 	EditorExportPreset();
 };

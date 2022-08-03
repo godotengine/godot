@@ -494,9 +494,15 @@ public:
 
 private:
 	// supplemental funcs
-	uint32_t item_get_tree_id(BVHHandle p_handle) const { return _get_extra(p_handle).tree_id; }
-	T *item_get_userdata(BVHHandle p_handle) const { return _get_extra(p_handle).userdata; }
-	int item_get_subindex(BVHHandle p_handle) const { return _get_extra(p_handle).subindex; }
+	uint32_t item_get_tree_id(BVHHandle p_handle) const {
+		return _get_extra(p_handle).tree_id;
+	}
+	T *item_get_userdata(BVHHandle p_handle) const {
+		return _get_extra(p_handle).userdata;
+	}
+	int item_get_subindex(BVHHandle p_handle) const {
+		return _get_extra(p_handle).subindex;
+	}
 
 	void _unpair(BVHHandle p_from, BVHHandle p_to) {
 		tree._handle_sort(p_from, p_to);

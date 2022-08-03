@@ -123,7 +123,9 @@ public:
 	VisualScriptInstance *instance = nullptr;
 	bool with_value = false;
 
-	virtual int get_working_memory_size() const override { return 1; }
+	virtual int get_working_memory_size() const override {
+		return 1;
+	}
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
@@ -379,7 +381,9 @@ public:
 	VisualScriptIterator *node = nullptr;
 	VisualScriptInstance *instance = nullptr;
 
-	virtual int get_working_memory_size() const override { return 2; }
+	virtual int get_working_memory_size() const override {
+		return 2;
+	}
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
@@ -512,7 +516,9 @@ public:
 	VisualScriptInstance *instance = nullptr;
 	int steps = 0;
 
-	virtual int get_working_memory_size() const override { return 1; }
+	virtual int get_working_memory_size() const override {
+		return 1;
+	}
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 

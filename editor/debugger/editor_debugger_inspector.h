@@ -49,7 +49,9 @@ public:
 	List<PropertyInfo> prop_list;
 	HashMap<StringName, Variant> prop_values;
 
-	ObjectID get_remote_object_id() { return remote_object_id; };
+	ObjectID get_remote_object_id() {
+		return remote_object_id;
+	};
 	String get_title();
 
 	Variant get_variant(const StringName &p_name);
@@ -59,7 +61,9 @@ public:
 		prop_values.clear();
 	}
 
-	void update() { notify_property_list_changed(); }
+	void update() {
+		notify_property_list_changed();
+	}
 
 	EditorDebuggerRemoteObject() {}
 };

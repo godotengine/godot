@@ -100,7 +100,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static TileSetEditor *get_singleton() {
+		return singleton;
+	}
 
 	void edit(Ref<TileSet> p_tile_set);
 

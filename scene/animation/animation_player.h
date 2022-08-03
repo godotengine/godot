@@ -207,7 +207,9 @@ private:
 	struct AnimationLibraryData {
 		StringName name;
 		Ref<AnimationLibrary> library;
-		bool operator<(const AnimationLibraryData &p_data) const { return name.operator String() < p_data.name.operator String(); }
+		bool operator<(const AnimationLibraryData &p_data) const {
+			return name.operator String() < p_data.name.operator String();
+		}
 	};
 
 	LocalVector<AnimationLibraryData> animation_libraries;

@@ -99,7 +99,9 @@ protected:
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	AudioStreamPlaybackResampled() { mix_offset = 0; }
+	AudioStreamPlaybackResampled() {
+		mix_offset = 0;
+	}
 };
 
 class AudioStream : public Resource {

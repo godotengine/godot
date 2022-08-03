@@ -59,7 +59,9 @@ protected:
 
 	static void _bind_methods();
 
-	_FORCE_INLINE_ bool is_configured() const { return configured; }
+	_FORCE_INLINE_ bool is_configured() const {
+		return configured;
+	}
 
 public:
 	virtual TypedArray<String> get_configuration_warnings() const override;
@@ -76,7 +78,9 @@ public:
 	void set_exclude_nodes_from_collision(bool p_enable);
 	bool get_exclude_nodes_from_collision() const;
 
-	RID get_joint() const { return joint; }
+	RID get_joint() const {
+		return joint;
+	}
 	Joint2D();
 	~Joint2D();
 };

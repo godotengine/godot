@@ -67,7 +67,9 @@ private:
 	static const char *build_option_identifiers[BUILD_OPTION_MAX];
 	static const bool build_option_disable_values[BUILD_OPTION_MAX];
 
-	String _get_build_option_name(BuildOption p_build_option) { return get_build_option_name(p_build_option); }
+	String _get_build_option_name(BuildOption p_build_option) {
+		return get_build_option_name(p_build_option);
+	}
 
 protected:
 	static void _bind_methods();
@@ -166,7 +168,9 @@ protected:
 public:
 	Ref<EditorBuildProfile> get_current_profile();
 
-	static EditorBuildProfileManager *get_singleton() { return singleton; }
+	static EditorBuildProfileManager *get_singleton() {
+		return singleton;
+	}
 	EditorBuildProfileManager();
 };
 

@@ -171,11 +171,15 @@ public:
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
-	uint64_t get_last_saved_time() { return last_save_time; }
+	uint64_t get_last_saved_time() {
+		return last_save_time;
+	}
 
 	Vector<String> get_optimizer_presets() const;
 
-	List<String> get_input_presets() const { return input_presets; }
+	List<String> get_input_presets() const {
+		return input_presets;
+	}
 
 	void set_disable_feature_overrides(bool p_disable);
 

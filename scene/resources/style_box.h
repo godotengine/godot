@@ -74,7 +74,9 @@ public:
 
 class StyleBoxEmpty : public StyleBox {
 	GDCLASS(StyleBoxEmpty, StyleBox);
-	virtual float get_style_margin(Side p_side) const override { return 0; }
+	virtual float get_style_margin(Side p_side) const override {
+		return 0;
+	}
 
 public:
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override {}

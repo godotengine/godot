@@ -38,19 +38,35 @@
 template <class T>
 struct GDNativeConstPtr {
 	const T *data = nullptr;
-	GDNativeConstPtr(const T *p_assign) { data = p_assign; }
-	static const char *get_name() { return "const void"; }
-	operator const T *() const { return data; }
-	operator Variant() const { return uint64_t(data); }
+	GDNativeConstPtr(const T *p_assign) {
+		data = p_assign;
+	}
+	static const char *get_name() {
+		return "const void";
+	}
+	operator const T *() const {
+		return data;
+	}
+	operator Variant() const {
+		return uint64_t(data);
+	}
 };
 
 template <class T>
 struct GDNativePtr {
 	T *data = nullptr;
-	GDNativePtr(T *p_assign) { data = p_assign; }
-	static const char *get_name() { return "void"; }
-	operator T *() const { return data; }
-	operator Variant() const { return uint64_t(data); }
+	GDNativePtr(T *p_assign) {
+		data = p_assign;
+	}
+	static const char *get_name() {
+		return "void";
+	}
+	operator T *() const {
+		return data;
+	}
+	operator Variant() const {
+		return uint64_t(data);
+	}
 };
 
 #define GDVIRTUAL_NATIVE_PTR(m_type)                                                              \
@@ -58,10 +74,18 @@ struct GDNativePtr {
 	struct GDNativeConstPtr<const m_type> {                                                       \
 		const m_type *data = nullptr;                                                             \
 		GDNativeConstPtr() {}                                                                     \
-		GDNativeConstPtr(const m_type *p_assign) { data = p_assign; }                             \
-		static const char *get_name() { return "const " #m_type; }                                \
-		operator const m_type *() const { return data; }                                          \
-		operator Variant() const { return uint64_t(data); }                                       \
+		GDNativeConstPtr(const m_type *p_assign) {                                                \
+			data = p_assign;                                                                      \
+		}                                                                                         \
+		static const char *get_name() {                                                           \
+			return "const " #m_type;                                                              \
+		}                                                                                         \
+		operator const m_type *() const {                                                         \
+			return data;                                                                          \
+		}                                                                                         \
+		operator Variant() const {                                                                \
+			return uint64_t(data);                                                                \
+		}                                                                                         \
 	};                                                                                            \
 	template <>                                                                                   \
 	struct VariantCaster<GDNativeConstPtr<const m_type>> {                                        \
@@ -73,10 +97,18 @@ struct GDNativePtr {
 	struct GDNativePtr<m_type> {                                                                  \
 		m_type *data = nullptr;                                                                   \
 		GDNativePtr() {}                                                                          \
-		GDNativePtr(m_type *p_assign) { data = p_assign; }                                        \
-		static const char *get_name() { return #m_type; }                                         \
-		operator m_type *() const { return data; }                                                \
-		operator Variant() const { return uint64_t(data); }                                       \
+		GDNativePtr(m_type *p_assign) {                                                           \
+			data = p_assign;                                                                      \
+		}                                                                                         \
+		static const char *get_name() {                                                           \
+			return #m_type;                                                                       \
+		}                                                                                         \
+		operator m_type *() const {                                                               \
+			return data;                                                                          \
+		}                                                                                         \
+		operator Variant() const {                                                                \
+			return uint64_t(data);                                                                \
+		}                                                                                         \
 	};                                                                                            \
 	template <>                                                                                   \
 	struct VariantCaster<GDNativePtr<m_type>> {                                                   \

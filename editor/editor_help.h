@@ -202,7 +202,9 @@ public:
 
 	String get_class();
 
-	void set_focused() { class_desc->grab_focus(); }
+	void set_focused() {
+		class_desc->grab_focus();
+	}
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
@@ -227,7 +229,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	RichTextLabel *get_rich_text() { return rich_text; }
+	RichTextLabel *get_rich_text() {
+		return rich_text;
+	}
 	void set_text(const String &p_text);
 	EditorHelpBit();
 };

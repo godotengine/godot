@@ -101,11 +101,19 @@ struct _NO_DISCARD_ Vector2i {
 	void operator%=(const int32_t &rvalue);
 
 	Vector2i operator-() const;
-	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
+	bool operator<(const Vector2i &p_vec2) const {
+		return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x);
+	}
+	bool operator>(const Vector2i &p_vec2) const {
+		return (x == p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x);
+	}
 
-	bool operator<=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	bool operator<=(const Vector2i &p_vec2) const {
+		return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x);
+	}
+	bool operator>=(const Vector2i &p_vec2) const {
+		return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x);
+	}
 
 	bool operator==(const Vector2i &p_vec2) const;
 	bool operator!=(const Vector2i &p_vec2) const;
@@ -113,9 +121,15 @@ struct _NO_DISCARD_ Vector2i {
 	int64_t length_squared() const;
 	double length() const;
 
-	real_t aspect() const { return width / (real_t)height; }
-	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }
-	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
+	real_t aspect() const {
+		return width / (real_t)height;
+	}
+	Vector2i sign() const {
+		return Vector2i(SIGN(x), SIGN(y));
+	}
+	Vector2i abs() const {
+		return Vector2i(ABS(x), ABS(y));
+	}
 	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
 
 	operator String() const;

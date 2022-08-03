@@ -90,7 +90,9 @@ class MutexImpl {
 public:
 	_ALWAYS_INLINE_ void lock() const {}
 	_ALWAYS_INLINE_ void unlock() const {}
-	_ALWAYS_INLINE_ Error try_lock() const { return OK; }
+	_ALWAYS_INLINE_ Error try_lock() const {
+		return OK;
+	}
 };
 
 template <class MutexT>

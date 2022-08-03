@@ -62,9 +62,15 @@ public:
 	// You should return the pointer to the last struct you define as your result.
 	// If you are not adding any structs, just return `p_next_pointer`.
 	// See existing extensions for examples of this implementation.
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
-	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
-	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) {
+		return p_next_pointer;
+	}
+	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) {
+		return p_next_pointer;
+	}
+	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) {
+		return p_next_pointer;
+	}
 
 	virtual void on_instance_created(const XrInstance p_instance) {}
 	virtual void on_instance_destroyed() {}
@@ -87,7 +93,9 @@ public:
 		return false;
 	}
 
-	OpenXRExtensionWrapper(OpenXRAPI *p_openxr_api) { openxr_api = p_openxr_api; };
+	OpenXRExtensionWrapper(OpenXRAPI *p_openxr_api) {
+		openxr_api = p_openxr_api;
+	};
 	virtual ~OpenXRExtensionWrapper() = default;
 };
 

@@ -206,8 +206,12 @@ public:
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
-	virtual int64_t name_to_tag(const String &p_name) const { return 0; };
-	virtual String tag_to_name(int64_t p_tag) const { return ""; };
+	virtual int64_t name_to_tag(const String &p_name) const {
+		return 0;
+	};
+	virtual String tag_to_name(int64_t p_tag) const {
+		return "";
+	};
 
 	/* Font interface */
 	virtual RID create_font() = 0;
@@ -465,8 +469,12 @@ public:
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const = 0;
 
-	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
-	virtual bool spoof_check(const String &p_string) const { return false; };
+	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+		return -1;
+	};
+	virtual bool spoof_check(const String &p_string) const {
+		return false;
+	};
 
 	virtual String strip_diacritics(const String &p_string) const;
 	virtual bool is_valid_identifier(const String &p_string) const;

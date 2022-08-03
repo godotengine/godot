@@ -90,7 +90,9 @@ private:
 	void _relay(int p_from, int p_to, enet_uint8 p_channel, ENetPacket *p_packet);
 	void _notify_peers(int p_id, bool p_connected);
 	void _destroy_unused(ENetPacket *p_packet);
-	_FORCE_INLINE_ bool _is_active() const { return active_mode != MODE_NONE; }
+	_FORCE_INLINE_ bool _is_active() const {
+		return active_mode != MODE_NONE;
+	}
 
 	IPAddress bind_ip;
 

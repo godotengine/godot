@@ -52,7 +52,9 @@ struct rec_element {
 	int max = 0;
 
 	struct Comparator {
-		bool operator()(const rec_element p_a, const rec_element p_b) const { return p_a.usage < p_b.usage; }
+		bool operator()(const rec_element p_a, const rec_element p_b) const {
+			return p_a.usage < p_b.usage;
+		}
 	};
 };
 

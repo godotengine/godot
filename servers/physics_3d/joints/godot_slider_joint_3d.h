@@ -154,78 +154,216 @@ public:
 	// overrides
 
 	// access
-	const GodotBody3D *getRigidBodyA() const { return A; }
-	const GodotBody3D *getRigidBodyB() const { return B; }
-	const Transform3D &getCalculatedTransformA() const { return m_calculatedTransformA; }
-	const Transform3D &getCalculatedTransformB() const { return m_calculatedTransformB; }
-	const Transform3D &getFrameOffsetA() const { return m_frameInA; }
-	const Transform3D &getFrameOffsetB() const { return m_frameInB; }
-	Transform3D &getFrameOffsetA() { return m_frameInA; }
-	Transform3D &getFrameOffsetB() { return m_frameInB; }
-	real_t getLowerLinLimit() { return m_lowerLinLimit; }
-	void setLowerLinLimit(real_t lowerLimit) { m_lowerLinLimit = lowerLimit; }
-	real_t getUpperLinLimit() { return m_upperLinLimit; }
-	void setUpperLinLimit(real_t upperLimit) { m_upperLinLimit = upperLimit; }
-	real_t getLowerAngLimit() { return m_lowerAngLimit; }
-	void setLowerAngLimit(real_t lowerLimit) { m_lowerAngLimit = lowerLimit; }
-	real_t getUpperAngLimit() { return m_upperAngLimit; }
-	void setUpperAngLimit(real_t upperLimit) { m_upperAngLimit = upperLimit; }
+	const GodotBody3D *getRigidBodyA() const {
+		return A;
+	}
+	const GodotBody3D *getRigidBodyB() const {
+		return B;
+	}
+	const Transform3D &getCalculatedTransformA() const {
+		return m_calculatedTransformA;
+	}
+	const Transform3D &getCalculatedTransformB() const {
+		return m_calculatedTransformB;
+	}
+	const Transform3D &getFrameOffsetA() const {
+		return m_frameInA;
+	}
+	const Transform3D &getFrameOffsetB() const {
+		return m_frameInB;
+	}
+	Transform3D &getFrameOffsetA() {
+		return m_frameInA;
+	}
+	Transform3D &getFrameOffsetB() {
+		return m_frameInB;
+	}
+	real_t getLowerLinLimit() {
+		return m_lowerLinLimit;
+	}
+	void setLowerLinLimit(real_t lowerLimit) {
+		m_lowerLinLimit = lowerLimit;
+	}
+	real_t getUpperLinLimit() {
+		return m_upperLinLimit;
+	}
+	void setUpperLinLimit(real_t upperLimit) {
+		m_upperLinLimit = upperLimit;
+	}
+	real_t getLowerAngLimit() {
+		return m_lowerAngLimit;
+	}
+	void setLowerAngLimit(real_t lowerLimit) {
+		m_lowerAngLimit = lowerLimit;
+	}
+	real_t getUpperAngLimit() {
+		return m_upperAngLimit;
+	}
+	void setUpperAngLimit(real_t upperLimit) {
+		m_upperAngLimit = upperLimit;
+	}
 
-	real_t getSoftnessDirLin() { return m_softnessDirLin; }
-	real_t getRestitutionDirLin() { return m_restitutionDirLin; }
-	real_t getDampingDirLin() { return m_dampingDirLin; }
-	real_t getSoftnessDirAng() { return m_softnessDirAng; }
-	real_t getRestitutionDirAng() { return m_restitutionDirAng; }
-	real_t getDampingDirAng() { return m_dampingDirAng; }
-	real_t getSoftnessLimLin() { return m_softnessLimLin; }
-	real_t getRestitutionLimLin() { return m_restitutionLimLin; }
-	real_t getDampingLimLin() { return m_dampingLimLin; }
-	real_t getSoftnessLimAng() { return m_softnessLimAng; }
-	real_t getRestitutionLimAng() { return m_restitutionLimAng; }
-	real_t getDampingLimAng() { return m_dampingLimAng; }
-	real_t getSoftnessOrthoLin() { return m_softnessOrthoLin; }
-	real_t getRestitutionOrthoLin() { return m_restitutionOrthoLin; }
-	real_t getDampingOrthoLin() { return m_dampingOrthoLin; }
-	real_t getSoftnessOrthoAng() { return m_softnessOrthoAng; }
-	real_t getRestitutionOrthoAng() { return m_restitutionOrthoAng; }
-	real_t getDampingOrthoAng() { return m_dampingOrthoAng; }
-	void setSoftnessDirLin(real_t softnessDirLin) { m_softnessDirLin = softnessDirLin; }
-	void setRestitutionDirLin(real_t restitutionDirLin) { m_restitutionDirLin = restitutionDirLin; }
-	void setDampingDirLin(real_t dampingDirLin) { m_dampingDirLin = dampingDirLin; }
-	void setSoftnessDirAng(real_t softnessDirAng) { m_softnessDirAng = softnessDirAng; }
-	void setRestitutionDirAng(real_t restitutionDirAng) { m_restitutionDirAng = restitutionDirAng; }
-	void setDampingDirAng(real_t dampingDirAng) { m_dampingDirAng = dampingDirAng; }
-	void setSoftnessLimLin(real_t softnessLimLin) { m_softnessLimLin = softnessLimLin; }
-	void setRestitutionLimLin(real_t restitutionLimLin) { m_restitutionLimLin = restitutionLimLin; }
-	void setDampingLimLin(real_t dampingLimLin) { m_dampingLimLin = dampingLimLin; }
-	void setSoftnessLimAng(real_t softnessLimAng) { m_softnessLimAng = softnessLimAng; }
-	void setRestitutionLimAng(real_t restitutionLimAng) { m_restitutionLimAng = restitutionLimAng; }
-	void setDampingLimAng(real_t dampingLimAng) { m_dampingLimAng = dampingLimAng; }
-	void setSoftnessOrthoLin(real_t softnessOrthoLin) { m_softnessOrthoLin = softnessOrthoLin; }
-	void setRestitutionOrthoLin(real_t restitutionOrthoLin) { m_restitutionOrthoLin = restitutionOrthoLin; }
-	void setDampingOrthoLin(real_t dampingOrthoLin) { m_dampingOrthoLin = dampingOrthoLin; }
-	void setSoftnessOrthoAng(real_t softnessOrthoAng) { m_softnessOrthoAng = softnessOrthoAng; }
-	void setRestitutionOrthoAng(real_t restitutionOrthoAng) { m_restitutionOrthoAng = restitutionOrthoAng; }
-	void setDampingOrthoAng(real_t dampingOrthoAng) { m_dampingOrthoAng = dampingOrthoAng; }
-	void setPoweredLinMotor(bool onOff) { m_poweredLinMotor = onOff; }
-	bool getPoweredLinMotor() { return m_poweredLinMotor; }
-	void setTargetLinMotorVelocity(real_t targetLinMotorVelocity) { m_targetLinMotorVelocity = targetLinMotorVelocity; }
-	real_t getTargetLinMotorVelocity() { return m_targetLinMotorVelocity; }
-	void setMaxLinMotorForce(real_t maxLinMotorForce) { m_maxLinMotorForce = maxLinMotorForce; }
-	real_t getMaxLinMotorForce() { return m_maxLinMotorForce; }
-	void setPoweredAngMotor(bool onOff) { m_poweredAngMotor = onOff; }
-	bool getPoweredAngMotor() { return m_poweredAngMotor; }
-	void setTargetAngMotorVelocity(real_t targetAngMotorVelocity) { m_targetAngMotorVelocity = targetAngMotorVelocity; }
-	real_t getTargetAngMotorVelocity() { return m_targetAngMotorVelocity; }
-	void setMaxAngMotorForce(real_t maxAngMotorForce) { m_maxAngMotorForce = maxAngMotorForce; }
-	real_t getMaxAngMotorForce() { return m_maxAngMotorForce; }
-	real_t getLinearPos() { return m_linPos; }
+	real_t getSoftnessDirLin() {
+		return m_softnessDirLin;
+	}
+	real_t getRestitutionDirLin() {
+		return m_restitutionDirLin;
+	}
+	real_t getDampingDirLin() {
+		return m_dampingDirLin;
+	}
+	real_t getSoftnessDirAng() {
+		return m_softnessDirAng;
+	}
+	real_t getRestitutionDirAng() {
+		return m_restitutionDirAng;
+	}
+	real_t getDampingDirAng() {
+		return m_dampingDirAng;
+	}
+	real_t getSoftnessLimLin() {
+		return m_softnessLimLin;
+	}
+	real_t getRestitutionLimLin() {
+		return m_restitutionLimLin;
+	}
+	real_t getDampingLimLin() {
+		return m_dampingLimLin;
+	}
+	real_t getSoftnessLimAng() {
+		return m_softnessLimAng;
+	}
+	real_t getRestitutionLimAng() {
+		return m_restitutionLimAng;
+	}
+	real_t getDampingLimAng() {
+		return m_dampingLimAng;
+	}
+	real_t getSoftnessOrthoLin() {
+		return m_softnessOrthoLin;
+	}
+	real_t getRestitutionOrthoLin() {
+		return m_restitutionOrthoLin;
+	}
+	real_t getDampingOrthoLin() {
+		return m_dampingOrthoLin;
+	}
+	real_t getSoftnessOrthoAng() {
+		return m_softnessOrthoAng;
+	}
+	real_t getRestitutionOrthoAng() {
+		return m_restitutionOrthoAng;
+	}
+	real_t getDampingOrthoAng() {
+		return m_dampingOrthoAng;
+	}
+	void setSoftnessDirLin(real_t softnessDirLin) {
+		m_softnessDirLin = softnessDirLin;
+	}
+	void setRestitutionDirLin(real_t restitutionDirLin) {
+		m_restitutionDirLin = restitutionDirLin;
+	}
+	void setDampingDirLin(real_t dampingDirLin) {
+		m_dampingDirLin = dampingDirLin;
+	}
+	void setSoftnessDirAng(real_t softnessDirAng) {
+		m_softnessDirAng = softnessDirAng;
+	}
+	void setRestitutionDirAng(real_t restitutionDirAng) {
+		m_restitutionDirAng = restitutionDirAng;
+	}
+	void setDampingDirAng(real_t dampingDirAng) {
+		m_dampingDirAng = dampingDirAng;
+	}
+	void setSoftnessLimLin(real_t softnessLimLin) {
+		m_softnessLimLin = softnessLimLin;
+	}
+	void setRestitutionLimLin(real_t restitutionLimLin) {
+		m_restitutionLimLin = restitutionLimLin;
+	}
+	void setDampingLimLin(real_t dampingLimLin) {
+		m_dampingLimLin = dampingLimLin;
+	}
+	void setSoftnessLimAng(real_t softnessLimAng) {
+		m_softnessLimAng = softnessLimAng;
+	}
+	void setRestitutionLimAng(real_t restitutionLimAng) {
+		m_restitutionLimAng = restitutionLimAng;
+	}
+	void setDampingLimAng(real_t dampingLimAng) {
+		m_dampingLimAng = dampingLimAng;
+	}
+	void setSoftnessOrthoLin(real_t softnessOrthoLin) {
+		m_softnessOrthoLin = softnessOrthoLin;
+	}
+	void setRestitutionOrthoLin(real_t restitutionOrthoLin) {
+		m_restitutionOrthoLin = restitutionOrthoLin;
+	}
+	void setDampingOrthoLin(real_t dampingOrthoLin) {
+		m_dampingOrthoLin = dampingOrthoLin;
+	}
+	void setSoftnessOrthoAng(real_t softnessOrthoAng) {
+		m_softnessOrthoAng = softnessOrthoAng;
+	}
+	void setRestitutionOrthoAng(real_t restitutionOrthoAng) {
+		m_restitutionOrthoAng = restitutionOrthoAng;
+	}
+	void setDampingOrthoAng(real_t dampingOrthoAng) {
+		m_dampingOrthoAng = dampingOrthoAng;
+	}
+	void setPoweredLinMotor(bool onOff) {
+		m_poweredLinMotor = onOff;
+	}
+	bool getPoweredLinMotor() {
+		return m_poweredLinMotor;
+	}
+	void setTargetLinMotorVelocity(real_t targetLinMotorVelocity) {
+		m_targetLinMotorVelocity = targetLinMotorVelocity;
+	}
+	real_t getTargetLinMotorVelocity() {
+		return m_targetLinMotorVelocity;
+	}
+	void setMaxLinMotorForce(real_t maxLinMotorForce) {
+		m_maxLinMotorForce = maxLinMotorForce;
+	}
+	real_t getMaxLinMotorForce() {
+		return m_maxLinMotorForce;
+	}
+	void setPoweredAngMotor(bool onOff) {
+		m_poweredAngMotor = onOff;
+	}
+	bool getPoweredAngMotor() {
+		return m_poweredAngMotor;
+	}
+	void setTargetAngMotorVelocity(real_t targetAngMotorVelocity) {
+		m_targetAngMotorVelocity = targetAngMotorVelocity;
+	}
+	real_t getTargetAngMotorVelocity() {
+		return m_targetAngMotorVelocity;
+	}
+	void setMaxAngMotorForce(real_t maxAngMotorForce) {
+		m_maxAngMotorForce = maxAngMotorForce;
+	}
+	real_t getMaxAngMotorForce() {
+		return m_maxAngMotorForce;
+	}
+	real_t getLinearPos() {
+		return m_linPos;
+	}
 
 	// access for ODE solver
-	bool getSolveLinLimit() { return m_solveLinLim; }
-	real_t getLinDepth() { return m_depth[0]; }
-	bool getSolveAngLimit() { return m_solveAngLim; }
-	real_t getAngDepth() { return m_angDepth; }
+	bool getSolveLinLimit() {
+		return m_solveLinLim;
+	}
+	real_t getLinDepth() {
+		return m_depth[0];
+	}
+	bool getSolveAngLimit() {
+		return m_solveAngLim;
+	}
+	real_t getAngDepth() {
+		return m_angDepth;
+	}
 	// shared code used by ODE solver
 	void calculateTransforms();
 	void testLinLimits();
@@ -240,7 +378,9 @@ public:
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const override {
+		return PhysicsServer3D::JOINT_TYPE_SLIDER;
+	}
 };
 
 #endif // GODOT_SLIDER_JOINT_3D_H

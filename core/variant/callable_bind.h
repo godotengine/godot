@@ -52,8 +52,12 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
 
-	Callable get_callable() { return callable; }
-	Vector<Variant> get_binds() { return binds; }
+	Callable get_callable() {
+		return callable;
+	}
+	Vector<Variant> get_binds() {
+		return binds;
+	}
 
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
 	virtual ~CallableCustomBind();
@@ -77,8 +81,12 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
 
-	Callable get_callable() { return callable; }
-	int get_unbinds() { return argcount; }
+	Callable get_callable() {
+		return callable;
+	}
+	int get_unbinds() {
+		return argcount;
+	}
 
 	CallableCustomUnbind(const Callable &p_callable, int p_argcount);
 	virtual ~CallableCustomUnbind();

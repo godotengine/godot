@@ -163,7 +163,9 @@ class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "TextureRegion"; }
+	virtual String get_name() const override {
+		return "TextureRegion";
+	}
 
 	TextureRegionEditorPlugin();
 };

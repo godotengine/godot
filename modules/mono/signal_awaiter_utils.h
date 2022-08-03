@@ -59,7 +59,9 @@ public:
 
 	ObjectID get_object() const override;
 
-	_FORCE_INLINE_ StringName get_signal() const { return signal; }
+	_FORCE_INLINE_ StringName get_signal() const {
+		return signal;
+	}
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 

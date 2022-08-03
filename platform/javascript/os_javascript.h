@@ -67,7 +67,9 @@ public:
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
-	bool pwa_needs_update() const { return pwa_is_waiting; }
+	bool pwa_needs_update() const {
+		return pwa_is_waiting;
+	}
 	Error pwa_update();
 
 	void initialize_joypads() override;
@@ -81,7 +83,9 @@ public:
 	int get_process_id() const override;
 	bool is_process_running(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
-	int get_default_thread_pool_size() const override { return 1; }
+	int get_default_thread_pool_size() const override {
+		return 1;
+	}
 
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
@@ -98,7 +102,9 @@ public:
 	String get_user_data_dir() const override;
 
 	bool is_userfs_persistent() const override;
-	bool is_single_window() const override { return true; }
+	bool is_single_window() const override {
+		return true;
+	}
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

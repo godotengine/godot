@@ -125,8 +125,12 @@ public:
 	void set_padding(Side p_side, int p_padding);
 
 	// Left side.
-	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
-	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
+	void set_texture_grid_visible(bool p_visible) {
+		base_tiles_texture_grid->set_visible(p_visible);
+	};
+	void set_tile_shape_grid_visible(bool p_visible) {
+		base_tiles_shape_grid->set_visible(p_visible);
+	};
 
 	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos) const;
 

@@ -49,7 +49,9 @@ class Material : public Resource {
 	void inspect_native_shader_code();
 
 protected:
-	_FORCE_INLINE_ RID _get_material() const { return material; }
+	_FORCE_INLINE_ RID _get_material() const {
+		return material;
+	}
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const;
 	virtual bool _can_use_render_priority() const;
@@ -554,8 +556,12 @@ private:
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const override;
-	virtual bool _can_do_next_pass() const override { return true; }
-	virtual bool _can_use_render_priority() const override { return true; }
+	virtual bool _can_do_next_pass() const override {
+		return true;
+	}
+	virtual bool _can_use_render_priority() const override {
+		return true;
+	}
 
 public:
 	void set_albedo(const Color &p_albedo);
@@ -814,8 +820,12 @@ public:
 class PlaceholderMaterial : public Material {
 	GDCLASS(PlaceholderMaterial, Material)
 public:
-	virtual RID get_shader_rid() const override { return RID(); }
-	virtual Shader::Mode get_shader_mode() const override { return Shader::MODE_CANVAS_ITEM; }
+	virtual RID get_shader_rid() const override {
+		return RID();
+	}
+	virtual Shader::Mode get_shader_mode() const override {
+		return Shader::MODE_CANVAS_ITEM;
+	}
 };
 
 //////////////////////

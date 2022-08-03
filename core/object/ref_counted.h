@@ -43,7 +43,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
+	_FORCE_INLINE_ bool is_referenced() const {
+		return refcount_init.get() != 1;
+	}
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
@@ -209,8 +211,12 @@ public:
 		}
 	}
 
-	inline bool is_valid() const { return reference != nullptr; }
-	inline bool is_null() const { return reference == nullptr; }
+	inline bool is_valid() const {
+		return reference != nullptr;
+	}
+	inline bool is_null() const {
+		return reference == nullptr;
+	}
 
 	void unref() {
 		// TODO: this should be moved to mutexes, since this engine does not really

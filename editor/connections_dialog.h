@@ -225,7 +225,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
+	void set_undoredo(UndoRedo *p_undo_redo) {
+		undo_redo = p_undo_redo;
+	}
 	void set_node(Node *p_node);
 	void update_tree();
 

@@ -69,7 +69,9 @@ protected:
 	Array _make_mesh_previews(const Array &p_meshes, int p_preview_size);
 
 public:
-	static EditorInterface *get_singleton() { return singleton; }
+	static EditorInterface *get_singleton() {
+		return singleton;
+	}
 
 	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
@@ -131,7 +133,9 @@ class EditorPlugin : public Node {
 	friend class EditorData;
 	UndoRedo *undo_redo = nullptr;
 
-	UndoRedo *_get_undo_redo() { return undo_redo; }
+	UndoRedo *_get_undo_redo() {
+		return undo_redo;
+	}
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
@@ -144,7 +148,9 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	UndoRedo &get_undo_redo() { return *undo_redo; }
+	UndoRedo &get_undo_redo() {
+		return *undo_redo;
+	}
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
@@ -223,10 +229,14 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void set_input_event_forwarding_always_enabled();
-	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }
+	bool is_input_event_forwarding_always_enabled() {
+		return input_event_forwarding_always_enabled;
+	}
 
 	void set_force_draw_over_forwarding_enabled();
-	bool is_force_draw_over_forwarding_enabled() { return force_draw_over_forwarding_enabled; }
+	bool is_force_draw_over_forwarding_enabled() {
+		return force_draw_over_forwarding_enabled;
+	}
 
 	void notify_main_screen_changed(const String &screen_name);
 	void notify_scene_changed(const Node *scn_root);
@@ -329,7 +339,9 @@ class EditorPlugins {
 	}
 
 public:
-	static int get_plugin_count() { return creation_func_count; }
+	static int get_plugin_count() {
+		return creation_func_count;
+	}
 	static EditorPlugin *create(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx]();

@@ -145,8 +145,12 @@ public:
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 	void mark_setting_changed(const String &p_setting);
 
-	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
-	Ref<Resource> get_resource_clipboard() const { return clipboard; }
+	void set_resource_clipboard(const Ref<Resource> &p_resource) {
+		clipboard = p_resource;
+	}
+	Ref<Resource> get_resource_clipboard() const {
+		return clipboard;
+	}
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;

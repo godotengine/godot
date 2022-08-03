@@ -88,8 +88,12 @@ public:
 	static void setup(jobject p_file_access_handler);
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
-	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) override {
+		return 0;
+	}
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override {
+		return FAILED;
+	}
 
 	FileAccessFilesystemJAndroid();
 	~FileAccessFilesystemJAndroid();

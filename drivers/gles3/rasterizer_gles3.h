@@ -71,16 +71,36 @@ protected:
 	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
 
 public:
-	RendererUtilities *get_utilities() { return utilities; }
-	RendererLightStorage *get_light_storage() { return light_storage; }
-	RendererMaterialStorage *get_material_storage() { return material_storage; }
-	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
-	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
-	RendererTextureStorage *get_texture_storage() { return texture_storage; }
-	RendererGI *get_gi() { return gi; }
-	RendererFog *get_fog() { return fog; }
-	RendererCanvasRender *get_canvas() { return canvas; }
-	RendererSceneRender *get_scene() { return scene; }
+	RendererUtilities *get_utilities() {
+		return utilities;
+	}
+	RendererLightStorage *get_light_storage() {
+		return light_storage;
+	}
+	RendererMaterialStorage *get_material_storage() {
+		return material_storage;
+	}
+	RendererMeshStorage *get_mesh_storage() {
+		return mesh_storage;
+	}
+	RendererParticlesStorage *get_particles_storage() {
+		return particles_storage;
+	}
+	RendererTextureStorage *get_texture_storage() {
+		return texture_storage;
+	}
+	RendererGI *get_gi() {
+		return gi;
+	}
+	RendererFog *get_fog() {
+		return fog;
+	}
+	RendererCanvasRender *get_canvas() {
+		return canvas;
+	}
+	RendererSceneRender *get_scene() {
+		return scene;
+	}
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
@@ -103,8 +123,12 @@ public:
 		low_end = true;
 	}
 
-	uint64_t get_frame_number() const { return frame; }
-	double get_frame_delta_time() const { return delta; }
+	uint64_t get_frame_number() const {
+		return frame;
+	}
+	double get_frame_delta_time() const {
+		return delta;
+	}
 
 	RasterizerGLES3();
 	~RasterizerGLES3();

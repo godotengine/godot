@@ -67,7 +67,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ InputMap *get_singleton() {
+		return singleton;
+	}
 
 	bool has_action(const StringName &p_action) const;
 	List<StringName> get_actions() const;

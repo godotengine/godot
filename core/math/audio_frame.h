@@ -54,18 +54,38 @@ struct AudioFrame {
 	//left and right samples
 	float l = 0.f, r = 0.f;
 
-	_ALWAYS_INLINE_ const float &operator[](int idx) const { return idx == 0 ? l : r; }
-	_ALWAYS_INLINE_ float &operator[](int idx) { return idx == 0 ? l : r; }
+	_ALWAYS_INLINE_ const float &operator[](int idx) const {
+		return idx == 0 ? l : r;
+	}
+	_ALWAYS_INLINE_ float &operator[](int idx) {
+		return idx == 0 ? l : r;
+	}
 
-	_ALWAYS_INLINE_ AudioFrame operator+(const AudioFrame &p_frame) const { return AudioFrame(l + p_frame.l, r + p_frame.r); }
-	_ALWAYS_INLINE_ AudioFrame operator-(const AudioFrame &p_frame) const { return AudioFrame(l - p_frame.l, r - p_frame.r); }
-	_ALWAYS_INLINE_ AudioFrame operator*(const AudioFrame &p_frame) const { return AudioFrame(l * p_frame.l, r * p_frame.r); }
-	_ALWAYS_INLINE_ AudioFrame operator/(const AudioFrame &p_frame) const { return AudioFrame(l / p_frame.l, r / p_frame.r); }
+	_ALWAYS_INLINE_ AudioFrame operator+(const AudioFrame &p_frame) const {
+		return AudioFrame(l + p_frame.l, r + p_frame.r);
+	}
+	_ALWAYS_INLINE_ AudioFrame operator-(const AudioFrame &p_frame) const {
+		return AudioFrame(l - p_frame.l, r - p_frame.r);
+	}
+	_ALWAYS_INLINE_ AudioFrame operator*(const AudioFrame &p_frame) const {
+		return AudioFrame(l * p_frame.l, r * p_frame.r);
+	}
+	_ALWAYS_INLINE_ AudioFrame operator/(const AudioFrame &p_frame) const {
+		return AudioFrame(l / p_frame.l, r / p_frame.r);
+	}
 
-	_ALWAYS_INLINE_ AudioFrame operator+(float p_sample) const { return AudioFrame(l + p_sample, r + p_sample); }
-	_ALWAYS_INLINE_ AudioFrame operator-(float p_sample) const { return AudioFrame(l - p_sample, r - p_sample); }
-	_ALWAYS_INLINE_ AudioFrame operator*(float p_sample) const { return AudioFrame(l * p_sample, r * p_sample); }
-	_ALWAYS_INLINE_ AudioFrame operator/(float p_sample) const { return AudioFrame(l / p_sample, r / p_sample); }
+	_ALWAYS_INLINE_ AudioFrame operator+(float p_sample) const {
+		return AudioFrame(l + p_sample, r + p_sample);
+	}
+	_ALWAYS_INLINE_ AudioFrame operator-(float p_sample) const {
+		return AudioFrame(l - p_sample, r - p_sample);
+	}
+	_ALWAYS_INLINE_ AudioFrame operator*(float p_sample) const {
+		return AudioFrame(l * p_sample, r * p_sample);
+	}
+	_ALWAYS_INLINE_ AudioFrame operator/(float p_sample) const {
+		return AudioFrame(l / p_sample, r / p_sample);
+	}
 
 	_ALWAYS_INLINE_ void operator+=(const AudioFrame &p_frame) {
 		l += p_frame.l;

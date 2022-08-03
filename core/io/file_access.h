@@ -77,7 +77,9 @@ private:
 	}
 
 public:
-	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
+	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) {
+		close_fail_notify = p_cbk;
+	}
 
 	virtual void _set_access_type(AccessType p_access);
 
@@ -90,8 +92,12 @@ public:
 
 	virtual bool is_open() const = 0; ///< true when file is open
 
-	virtual String get_path() const { return ""; } /// returns the path for the current open file
-	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
+	virtual String get_path() const {
+		return "";
+	} /// returns the path for the current open file
+	virtual String get_path_absolute() const {
+		return "";
+	} /// returns the absolute path for the current open file
 
 	virtual void seek(uint64_t p_position) = 0; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file with negative offset
@@ -120,8 +126,12 @@ public:
 	 * It's not about the current CPU type but file formats.
 	 * This flag gets reset to `false` (little endian) on each open.
 	 */
-	virtual void set_big_endian(bool p_big_endian) { big_endian = p_big_endian; }
-	inline bool is_big_endian() const { return big_endian; }
+	virtual void set_big_endian(bool p_big_endian) {
+		big_endian = p_big_endian;
+	}
+	inline bool is_big_endian() const {
+		return big_endian;
+	}
 
 	virtual Error get_error() const = 0; ///< get last error
 
@@ -157,8 +167,12 @@ public:
 	static uint32_t get_unix_permissions(const String &p_file);
 	static Error set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
-	static void set_backup_save(bool p_enable) { backup_save = p_enable; };
-	static bool is_backup_save_enabled() { return backup_save; };
+	static void set_backup_save(bool p_enable) {
+		backup_save = p_enable;
+	};
+	static bool is_backup_save_enabled() {
+		return backup_save;
+	};
 
 	static String get_md5(const String &p_file);
 	static String get_sha256(const String &p_file);

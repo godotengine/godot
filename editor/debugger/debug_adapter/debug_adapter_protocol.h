@@ -121,13 +121,21 @@ private:
 public:
 	friend class DebugAdapterServer;
 
-	_FORCE_INLINE_ static DebugAdapterProtocol *get_singleton() { return singleton; }
-	_FORCE_INLINE_ bool is_active() const { return _initialized && clients.size() > 0; }
+	_FORCE_INLINE_ static DebugAdapterProtocol *get_singleton() {
+		return singleton;
+	}
+	_FORCE_INLINE_ bool is_active() const {
+		return _initialized && clients.size() > 0;
+	}
 
 	bool process_message(const String &p_text);
 
-	String get_current_request() const { return _current_request; }
-	Ref<DAPeer> get_current_peer() const { return _current_peer; }
+	String get_current_request() const {
+		return _current_request;
+	}
+	Ref<DAPeer> get_current_peer() const {
+		return _current_peer;
+	}
 
 	void notify_initialized();
 	void notify_process();

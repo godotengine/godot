@@ -624,7 +624,9 @@ protected:
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
 public:
-	static RenderForwardClustered *get_singleton() { return singleton; }
+	static RenderForwardClustered *get_singleton() {
+		return singleton;
+	}
 
 	_FORCE_INLINE_ virtual void update_uniform_sets() override {
 		base_uniform_set_updated = true;

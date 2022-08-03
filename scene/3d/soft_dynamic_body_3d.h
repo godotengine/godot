@@ -50,7 +50,9 @@ class SoftDynamicBodyRenderingServerHandler : public PhysicsServer3DRenderingSer
 
 private:
 	SoftDynamicBodyRenderingServerHandler();
-	bool is_ready(RID p_mesh_rid) const { return mesh.is_valid() && mesh == p_mesh_rid; }
+	bool is_ready(RID p_mesh_rid) const {
+		return mesh.is_valid() && mesh == p_mesh_rid;
+	}
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
 	void open();
@@ -127,7 +129,9 @@ protected:
 	TypedArray<String> get_configuration_warnings() const override;
 
 public:
-	RID get_physics_rid() const { return physics_rid; }
+	RID get_physics_rid() const {
+		return physics_rid;
+	}
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;

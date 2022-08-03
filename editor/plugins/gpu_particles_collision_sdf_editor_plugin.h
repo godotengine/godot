@@ -61,8 +61,12 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "GPUParticlesCollisionSDF3D"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "GPUParticlesCollisionSDF3D";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

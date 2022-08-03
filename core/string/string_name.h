@@ -59,7 +59,9 @@ class StringName {
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
-		String get_name() const { return cname ? String(cname) : name; }
+		String get_name() const {
+			return cname ? String(cname) : name;
+		}
 		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
@@ -94,10 +96,14 @@ class StringName {
 	static bool debug_stringname;
 #endif
 
-	StringName(_Data *p_data) { _data = p_data; }
+	StringName(_Data *p_data) {
+		_data = p_data;
+	}
 
 public:
-	operator const void *() const { return (_data && (_data->cname || !_data->name.is_empty())) ? (void *)1 : nullptr; }
+	operator const void *() const {
+		return (_data && (_data->cname || !_data->name.is_empty())) ? (void *)1 : nullptr;
+	}
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
@@ -183,7 +189,9 @@ public:
 	}
 
 #ifdef DEBUG_ENABLED
-	static void set_debug_stringnames(bool p_enable) { debug_stringname = p_enable; }
+	static void set_debug_stringnames(bool p_enable) {
+		debug_stringname = p_enable;
+	}
 #endif
 };
 

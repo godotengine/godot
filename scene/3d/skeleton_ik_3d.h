@@ -171,12 +171,18 @@ public:
 	const Vector3 &get_magnet_position() const;
 
 	void set_min_distance(real_t p_min_distance);
-	real_t get_min_distance() const { return min_distance; }
+	real_t get_min_distance() const {
+		return min_distance;
+	}
 
 	void set_max_iterations(int p_iterations);
-	int get_max_iterations() const { return max_iterations; }
+	int get_max_iterations() const {
+		return max_iterations;
+	}
 
-	Skeleton3D *get_parent_skeleton() const { return skeleton; }
+	Skeleton3D *get_parent_skeleton() const {
+		return skeleton;
+	}
 
 	bool is_running();
 

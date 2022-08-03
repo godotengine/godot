@@ -185,7 +185,9 @@ protected:
 	void _color_changed(const Color &p_color);
 	void _prepare_edit_menu();
 
-	void _goto_line(int p_line) { goto_line(p_line); }
+	void _goto_line(int p_line) {
+		goto_line(p_line);
+	}
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
 

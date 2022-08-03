@@ -79,7 +79,9 @@ public:
 
 	void clear();
 
-	static ResourceUID *get_singleton() { return singleton; }
+	static ResourceUID *get_singleton() {
+		return singleton;
+	}
 
 	ResourceUID();
 	~ResourceUID();

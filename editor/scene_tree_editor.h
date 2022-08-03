@@ -139,26 +139,36 @@ public:
 	void set_filter(const String &p_filter);
 	String get_filter() const;
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; };
+	void set_undo_redo(UndoRedo *p_undo_redo) {
+		undo_redo = p_undo_redo;
+	};
 	void set_display_foreign_nodes(bool p_display);
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_selected(Node *p_node, bool p_emit_selected = true);
 	Node *get_selected();
-	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }
+	void set_can_rename(bool p_can_rename) {
+		can_rename = p_can_rename;
+	}
 	void set_editor_selection(EditorSelection *p_selection);
 
-	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
+	void set_show_enabled_subscene(bool p_show) {
+		show_enabled_subscene = p_show;
+	}
 	void set_valid_types(const Vector<StringName> &p_valid);
 
-	void update_tree() { _update_tree(); }
+	void update_tree() {
+		_update_tree();
+	}
 
 	void set_auto_expand_selected(bool p_auto, bool p_update_settings);
 	void set_connect_to_script_mode(bool p_enable);
 	void set_connecting_signal(bool p_enable);
 
-	Tree *get_scene_tree() { return tree; }
+	Tree *get_scene_tree() {
+		return tree;
+	}
 
 	void update_warning();
 
@@ -186,8 +196,12 @@ protected:
 
 public:
 	void popup_scenetree_dialog();
-	SceneTreeEditor *get_scene_tree() { return tree; }
-	LineEdit *get_filter_line_edit() { return filter; }
+	SceneTreeEditor *get_scene_tree() {
+		return tree;
+	}
+	LineEdit *get_filter_line_edit() {
+		return filter;
+	}
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };

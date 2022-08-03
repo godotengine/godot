@@ -179,10 +179,14 @@ protected:
 		FORWARD_ID_MAX,
 	};
 
-	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) { return -1; }
+	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) {
+		return -1;
+	}
 	virtual void _free_forward_id(ForwardIDType p_type, ForwardID p_id) {}
 	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) {}
-	virtual bool _uses_forward_ids() const { return false; }
+	virtual bool _uses_forward_ids() const {
+		return false;
+	}
 
 	virtual void _update_shader_quality_settings() {}
 
@@ -750,11 +754,15 @@ private:
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
 public:
-	static RendererSceneRenderRD *get_singleton() { return singleton; }
+	static RendererSceneRenderRD *get_singleton() {
+		return singleton;
+	}
 
 	/* GI */
 
-	RendererRD::GI *get_gi() { return &gi; }
+	RendererRD::GI *get_gi() {
+		return &gi;
+	}
 
 	/* SHADOW ATLAS API */
 
@@ -798,7 +806,9 @@ public:
 	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const override;
 	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override;
 	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override;
-	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
+	RID sdfgi_get_ubo() const {
+		return gi.sdfgi_ubo;
+	}
 
 	/* SKY API */
 
@@ -1097,7 +1107,9 @@ public:
 	virtual void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override;
 	virtual bool voxel_gi_needs_update(RID p_probe) const override;
 	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) override;
-	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override { gi.voxel_gi_quality = p_quality; }
+	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override {
+		gi.voxel_gi_quality = p_quality;
+	}
 
 	/* render buffers */
 
@@ -1167,23 +1179,51 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 
-	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const { return shadows_quality; }
-	_FORCE_INLINE_ RS::ShadowQuality directional_shadow_quality_get() const { return directional_shadow_quality; }
-	_FORCE_INLINE_ float shadows_quality_radius_get() const { return shadows_quality_radius; }
-	_FORCE_INLINE_ float directional_shadow_quality_radius_get() const { return directional_shadow_quality_radius; }
+	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const {
+		return shadows_quality;
+	}
+	_FORCE_INLINE_ RS::ShadowQuality directional_shadow_quality_get() const {
+		return directional_shadow_quality;
+	}
+	_FORCE_INLINE_ float shadows_quality_radius_get() const {
+		return shadows_quality_radius;
+	}
+	_FORCE_INLINE_ float directional_shadow_quality_radius_get() const {
+		return directional_shadow_quality_radius;
+	}
 
-	_FORCE_INLINE_ float *directional_penumbra_shadow_kernel_get() { return directional_penumbra_shadow_kernel; }
-	_FORCE_INLINE_ float *directional_soft_shadow_kernel_get() { return directional_soft_shadow_kernel; }
-	_FORCE_INLINE_ float *penumbra_shadow_kernel_get() { return penumbra_shadow_kernel; }
-	_FORCE_INLINE_ float *soft_shadow_kernel_get() { return soft_shadow_kernel; }
+	_FORCE_INLINE_ float *directional_penumbra_shadow_kernel_get() {
+		return directional_penumbra_shadow_kernel;
+	}
+	_FORCE_INLINE_ float *directional_soft_shadow_kernel_get() {
+		return directional_soft_shadow_kernel;
+	}
+	_FORCE_INLINE_ float *penumbra_shadow_kernel_get() {
+		return penumbra_shadow_kernel;
+	}
+	_FORCE_INLINE_ float *soft_shadow_kernel_get() {
+		return soft_shadow_kernel;
+	}
 
-	_FORCE_INLINE_ int directional_penumbra_shadow_samples_get() const { return directional_penumbra_shadow_samples; }
-	_FORCE_INLINE_ int directional_soft_shadow_samples_get() const { return directional_soft_shadow_samples; }
-	_FORCE_INLINE_ int penumbra_shadow_samples_get() const { return penumbra_shadow_samples; }
-	_FORCE_INLINE_ int soft_shadow_samples_get() const { return soft_shadow_samples; }
+	_FORCE_INLINE_ int directional_penumbra_shadow_samples_get() const {
+		return directional_penumbra_shadow_samples;
+	}
+	_FORCE_INLINE_ int directional_soft_shadow_samples_get() const {
+		return directional_soft_shadow_samples;
+	}
+	_FORCE_INLINE_ int penumbra_shadow_samples_get() const {
+		return penumbra_shadow_samples;
+	}
+	_FORCE_INLINE_ int soft_shadow_samples_get() const {
+		return soft_shadow_samples;
+	}
 
-	_FORCE_INLINE_ RS::LightProjectorFilter light_projectors_get_filter() const { return light_projectors_filter; }
-	_FORCE_INLINE_ RS::DecalFilter decals_get_filter() const { return decals_filter; }
+	_FORCE_INLINE_ RS::LightProjectorFilter light_projectors_get_filter() const {
+		return light_projectors_filter;
+	}
+	_FORCE_INLINE_ RS::DecalFilter decals_get_filter() const {
+		return decals_filter;
+	}
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;

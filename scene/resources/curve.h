@@ -74,7 +74,9 @@ public:
 
 	Curve();
 
-	int get_point_count() const { return _points.size(); }
+	int get_point_count() const {
+		return _points.size();
+	}
 
 	void set_point_count(int p_count);
 
@@ -94,10 +96,14 @@ public:
 
 	Point get_point(int p_index) const;
 
-	real_t get_min_value() const { return _min_value; }
+	real_t get_min_value() const {
+		return _min_value;
+	}
 	void set_min_value(real_t p_min);
 
-	real_t get_max_value() const { return _max_value; }
+	real_t get_max_value() const {
+		return _max_value;
+	}
 	void set_max_value(real_t p_max);
 
 	real_t interpolate(real_t p_offset) const;
@@ -121,7 +127,9 @@ public:
 	void set_data(Array input);
 
 	void bake();
-	int get_bake_resolution() const { return _bake_resolution; }
+	int get_bake_resolution() const {
+		return _bake_resolution;
+	}
 	void set_bake_resolution(int p_resolution);
 	real_t interpolate_baked(real_t p_offset) const;
 

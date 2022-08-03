@@ -48,15 +48,23 @@ public:
 	void set_folder(String folder);
 	void set_filter(const HashSet<String> &exts);
 
-	String get_search_text() const { return _pattern; }
+	String get_search_text() const {
+		return _pattern;
+	}
 
-	bool is_whole_words() const { return _whole_words; }
-	bool is_match_case() const { return _match_case; }
+	bool is_whole_words() const {
+		return _whole_words;
+	}
+	bool is_match_case() const {
+		return _match_case;
+	}
 
 	void start();
 	void stop();
 
-	bool is_searching() const { return _searching; }
+	bool is_searching() const {
+		return _searching;
+	}
 	float get_progress() const;
 
 protected:
@@ -162,7 +170,9 @@ public:
 
 	FindInFilesPanel();
 
-	FindInFiles *get_finder() const { return _finder; }
+	FindInFiles *get_finder() const {
+		return _finder;
+	}
 
 	void set_with_replace(bool with_replace);
 	void set_replace_text(String text);

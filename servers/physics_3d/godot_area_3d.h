@@ -91,8 +91,12 @@ class GodotArea3D : public GodotCollisionObject3D {
 
 	struct BodyState {
 		int state = 0;
-		_FORCE_INLINE_ void inc() { state++; }
-		_FORCE_INLINE_ void dec() { state--; }
+		_FORCE_INLINE_ void inc() {
+			state++;
+		}
+		_FORCE_INLINE_ void dec() {
+			state--;
+		}
 	};
 
 	HashMap<BodyKey, BodyState, BodyKey> monitored_soft_bodies;
@@ -108,10 +112,14 @@ class GodotArea3D : public GodotCollisionObject3D {
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_monitor_callback() const { return !monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_monitor_callback() const {
+		return !monitor_callback.is_null();
+	}
 
 	void set_area_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_area_monitor_callback() const {
+		return !area_monitor_callback.is_null();
+	}
 
 	_FORCE_INLINE_ void add_body_to_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
@@ -125,49 +133,107 @@ public:
 	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
 
-	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
-	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }
+	_FORCE_INLINE_ void set_gravity(real_t p_gravity) {
+		gravity = p_gravity;
+	}
+	_FORCE_INLINE_ real_t get_gravity() const {
+		return gravity;
+	}
 
-	_FORCE_INLINE_ void set_gravity_vector(const Vector3 &p_gravity) { gravity_vector = p_gravity; }
-	_FORCE_INLINE_ Vector3 get_gravity_vector() const { return gravity_vector; }
+	_FORCE_INLINE_ void set_gravity_vector(const Vector3 &p_gravity) {
+		gravity_vector = p_gravity;
+	}
+	_FORCE_INLINE_ Vector3 get_gravity_vector() const {
+		return gravity_vector;
+	}
 
-	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) { gravity_is_point = p_enable; }
-	_FORCE_INLINE_ bool is_gravity_point() const { return gravity_is_point; }
+	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) {
+		gravity_is_point = p_enable;
+	}
+	_FORCE_INLINE_ bool is_gravity_point() const {
+		return gravity_is_point;
+	}
 
-	_FORCE_INLINE_ void set_gravity_distance_scale(real_t scale) { gravity_distance_scale = scale; }
-	_FORCE_INLINE_ real_t get_gravity_distance_scale() const { return gravity_distance_scale; }
+	_FORCE_INLINE_ void set_gravity_distance_scale(real_t scale) {
+		gravity_distance_scale = scale;
+	}
+	_FORCE_INLINE_ real_t get_gravity_distance_scale() const {
+		return gravity_distance_scale;
+	}
 
-	_FORCE_INLINE_ void set_point_attenuation(real_t p_point_attenuation) { point_attenuation = p_point_attenuation; }
-	_FORCE_INLINE_ real_t get_point_attenuation() const { return point_attenuation; }
+	_FORCE_INLINE_ void set_point_attenuation(real_t p_point_attenuation) {
+		point_attenuation = p_point_attenuation;
+	}
+	_FORCE_INLINE_ real_t get_point_attenuation() const {
+		return point_attenuation;
+	}
 
-	_FORCE_INLINE_ void set_linear_damp(real_t p_linear_damp) { linear_damp = p_linear_damp; }
-	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
+	_FORCE_INLINE_ void set_linear_damp(real_t p_linear_damp) {
+		linear_damp = p_linear_damp;
+	}
+	_FORCE_INLINE_ real_t get_linear_damp() const {
+		return linear_damp;
+	}
 
-	_FORCE_INLINE_ void set_angular_damp(real_t p_angular_damp) { angular_damp = p_angular_damp; }
-	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
+	_FORCE_INLINE_ void set_angular_damp(real_t p_angular_damp) {
+		angular_damp = p_angular_damp;
+	}
+	_FORCE_INLINE_ real_t get_angular_damp() const {
+		return angular_damp;
+	}
 
-	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
-	_FORCE_INLINE_ int get_priority() const { return priority; }
+	_FORCE_INLINE_ void set_priority(int p_priority) {
+		priority = p_priority;
+	}
+	_FORCE_INLINE_ int get_priority() const {
+		return priority;
+	}
 
-	_FORCE_INLINE_ void set_wind_force_magnitude(real_t p_wind_force_magnitude) { wind_force_magnitude = p_wind_force_magnitude; }
-	_FORCE_INLINE_ real_t get_wind_force_magnitude() const { return wind_force_magnitude; }
+	_FORCE_INLINE_ void set_wind_force_magnitude(real_t p_wind_force_magnitude) {
+		wind_force_magnitude = p_wind_force_magnitude;
+	}
+	_FORCE_INLINE_ real_t get_wind_force_magnitude() const {
+		return wind_force_magnitude;
+	}
 
-	_FORCE_INLINE_ void set_wind_attenuation_factor(real_t p_wind_attenuation_factor) { wind_attenuation_factor = p_wind_attenuation_factor; }
-	_FORCE_INLINE_ real_t get_wind_attenuation_factor() const { return wind_attenuation_factor; }
+	_FORCE_INLINE_ void set_wind_attenuation_factor(real_t p_wind_attenuation_factor) {
+		wind_attenuation_factor = p_wind_attenuation_factor;
+	}
+	_FORCE_INLINE_ real_t get_wind_attenuation_factor() const {
+		return wind_attenuation_factor;
+	}
 
-	_FORCE_INLINE_ void set_wind_source(const Vector3 &p_wind_source) { wind_source = p_wind_source; }
-	_FORCE_INLINE_ const Vector3 &get_wind_source() const { return wind_source; }
+	_FORCE_INLINE_ void set_wind_source(const Vector3 &p_wind_source) {
+		wind_source = p_wind_source;
+	}
+	_FORCE_INLINE_ const Vector3 &get_wind_source() const {
+		return wind_source;
+	}
 
-	_FORCE_INLINE_ void set_wind_direction(const Vector3 &p_wind_direction) { wind_direction = p_wind_direction; }
-	_FORCE_INLINE_ const Vector3 &get_wind_direction() const { return wind_direction; }
+	_FORCE_INLINE_ void set_wind_direction(const Vector3 &p_wind_direction) {
+		wind_direction = p_wind_direction;
+	}
+	_FORCE_INLINE_ const Vector3 &get_wind_direction() const {
+		return wind_direction;
+	}
 
-	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
-	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
+	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) {
+		constraints.insert(p_constraint);
+	}
+	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) {
+		constraints.erase(p_constraint);
+	}
+	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const {
+		return constraints;
+	}
+	_FORCE_INLINE_ void clear_constraints() {
+		constraints.clear();
+	}
 
 	void set_monitorable(bool p_monitorable);
-	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
+	_FORCE_INLINE_ bool is_monitorable() const {
+		return monitorable;
+	}
 
 	void set_transform(const Transform3D &p_transform);
 
@@ -232,8 +298,12 @@ void GodotArea3D::remove_area_from_query(GodotArea3D *p_area, uint32_t p_area_sh
 struct AreaCMP {
 	GodotArea3D *area = nullptr;
 	int refCount = 0;
-	_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
-	_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
+	_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const {
+		return area->get_self() == p_cmp.area->get_self();
+	}
+	_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const {
+		return area->get_priority() < p_cmp.area->get_priority();
+	}
 	_FORCE_INLINE_ AreaCMP() {}
 	_FORCE_INLINE_ AreaCMP(GodotArea3D *p_area) {
 		area = p_area;

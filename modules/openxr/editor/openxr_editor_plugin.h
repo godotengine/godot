@@ -40,8 +40,12 @@ class OpenXREditorPlugin : public EditorPlugin {
 	OpenXRActionMapEditor *action_map_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "OpenXRPlugin"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "OpenXRPlugin";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;

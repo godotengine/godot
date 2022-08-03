@@ -73,7 +73,9 @@ class FileAccessNetworkClient {
 	static FileAccessNetworkClient *singleton;
 
 public:
-	static FileAccessNetworkClient *get_singleton() { return singleton; }
+	static FileAccessNetworkClient *get_singleton() {
+		return singleton;
+	}
 
 	Error connect(const String &p_host, int p_port, const String &p_password = "");
 

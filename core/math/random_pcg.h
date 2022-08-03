@@ -74,10 +74,16 @@ public:
 		current_seed = p_seed;
 		pcg32_srandom_r(&pcg, current_seed, current_inc);
 	}
-	_FORCE_INLINE_ uint64_t get_seed() { return current_seed; }
+	_FORCE_INLINE_ uint64_t get_seed() {
+		return current_seed;
+	}
 
-	_FORCE_INLINE_ void set_state(uint64_t p_state) { pcg.state = p_state; }
-	_FORCE_INLINE_ uint64_t get_state() const { return pcg.state; }
+	_FORCE_INLINE_ void set_state(uint64_t p_state) {
+		pcg.state = p_state;
+	}
+	_FORCE_INLINE_ uint64_t get_state() const {
+		return pcg.state;
+	}
 
 	void randomize();
 	_FORCE_INLINE_ uint32_t rand() {

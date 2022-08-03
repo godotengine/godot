@@ -521,9 +521,13 @@ public:
 	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
 	real_t snap_angle(real_t p_target, real_t p_start = 0) const;
 
-	Transform2D get_canvas_transform() const { return transform; }
+	Transform2D get_canvas_transform() const {
+		return transform;
+	}
 
-	static CanvasItemEditor *get_singleton() { return singleton; }
+	static CanvasItemEditor *get_singleton() {
+		return singleton;
+	}
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
@@ -538,16 +542,24 @@ public:
 
 	VSplitContainer *get_bottom_split();
 
-	Control *get_viewport_control() { return viewport; }
+	Control *get_viewport_control() {
+		return viewport;
+	}
 
-	Control *get_controls_container() { return controls_vb; }
+	Control *get_controls_container() {
+		return controls_vb;
+	}
 
 	void update_viewport();
 
-	Tool get_current_tool() { return tool; }
+	Tool get_current_tool() {
+		return tool;
+	}
 	void set_current_tool(Tool p_tool);
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
+	void set_undo_redo(UndoRedo *p_undo_redo) {
+		undo_redo = p_undo_redo;
+	}
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
@@ -563,15 +575,21 @@ class CanvasItemEditorPlugin : public EditorPlugin {
 	CanvasItemEditor *canvas_item_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "2D"; }
-	bool has_main_screen() const override { return true; }
+	virtual String get_name() const override {
+		return "2D";
+	}
+	bool has_main_screen() const override {
+		return true;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 	virtual Dictionary get_state() const override;
 	virtual void set_state(const Dictionary &p_state) override;
 
-	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
+	CanvasItemEditor *get_canvas_item_editor() {
+		return canvas_item_editor;
+	}
 
 	CanvasItemEditorPlugin();
 	~CanvasItemEditorPlugin();

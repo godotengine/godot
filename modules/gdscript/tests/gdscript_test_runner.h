@@ -91,8 +91,12 @@ public:
 	TestResult run_test();
 	bool generate_output();
 
-	const String &get_source_file() const { return source_file; }
-	const String &get_output_file() const { return output_file; }
+	const String &get_source_file() const {
+		return source_file;
+	}
+	const String &get_output_file() const {
+		return output_file;
+	}
 
 	GDScriptTest(const String &p_source_path, const String &p_output_path, const String &p_base_dir);
 	GDScriptTest() :

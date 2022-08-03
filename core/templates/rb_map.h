@@ -59,8 +59,12 @@ public:
 		KeyValue<K, V> _data;
 
 	public:
-		KeyValue<K, V> &key_value() { return _data; }
-		const KeyValue<K, V> &key_value() const { return _data; }
+		KeyValue<K, V> &key_value() {
+			return _data;
+		}
+		const KeyValue<K, V> &key_value() const {
+			return _data;
+		}
 
 		const Element *next() const {
 			return _next;
@@ -99,7 +103,9 @@ public:
 		_FORCE_INLINE_ KeyValue<K, V> &operator*() const {
 			return E->key_value();
 		}
-		_FORCE_INLINE_ KeyValue<K, V> *operator->() const { return &E->key_value(); }
+		_FORCE_INLINE_ KeyValue<K, V> *operator->() const {
+			return &E->key_value();
+		}
 		_FORCE_INLINE_ Iterator &operator++() {
 			E = E->next();
 			return *this;
@@ -109,14 +115,22 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const {
+			return E == b.E;
+		}
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const {
+			return E != b.E;
+		}
 		explicit operator bool() const {
 			return E != nullptr;
 		}
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_E) {
+			E = p_E;
+		}
 		Iterator() {}
-		Iterator(const Iterator &p_it) { E = p_it.E; }
+		Iterator(const Iterator &p_it) {
+			E = p_it.E;
+		}
 
 	private:
 		Element *E = nullptr;
@@ -126,7 +140,9 @@ public:
 		_FORCE_INLINE_ const KeyValue<K, V> &operator*() const {
 			return E->key_value();
 		}
-		_FORCE_INLINE_ const KeyValue<K, V> *operator->() const { return &E->key_value(); }
+		_FORCE_INLINE_ const KeyValue<K, V> *operator->() const {
+			return &E->key_value();
+		}
 		_FORCE_INLINE_ ConstIterator &operator++() {
 			E = E->next();
 			return *this;
@@ -136,14 +152,22 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const {
+			return E == b.E;
+		}
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const {
+			return E != b.E;
+		}
 		explicit operator bool() const {
 			return E != nullptr;
 		}
-		ConstIterator(const Element *p_E) { E = p_E; }
+		ConstIterator(const Element *p_E) {
+			E = p_E;
+		}
 		ConstIterator() {}
-		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+		ConstIterator(const ConstIterator &p_it) {
+			E = p_it.E;
+		}
 
 	private:
 		const Element *E = nullptr;

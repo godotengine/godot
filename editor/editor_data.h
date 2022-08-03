@@ -181,7 +181,9 @@ public:
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Variant instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
-	const HashMap<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
+	const HashMap<String, Vector<CustomType>> &get_custom_types() const {
+		return custom_types;
+	}
 
 	void instantiate_object_properties(Object *p_object);
 
@@ -229,7 +231,9 @@ public:
 
 	String script_class_get_icon_path(const String &p_class) const;
 	void script_class_set_icon_path(const String &p_class, const String &p_icon_path);
-	void script_class_clear_icon_paths() { _script_class_icon_paths.clear(); }
+	void script_class_clear_icon_paths() {
+		_script_class_icon_paths.clear();
+	}
 	void script_class_save_icon_paths();
 	void script_class_load_icon_paths();
 
@@ -296,7 +300,9 @@ public:
 	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
 	// Returns the map of selected objects and their metadata.
-	HashMap<Node *, Object *> &get_selection() { return selection; }
+	HashMap<Node *, Object *> &get_selection() {
+		return selection;
+	}
 
 	EditorSelection();
 	~EditorSelection();

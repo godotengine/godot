@@ -351,8 +351,12 @@ public:
 	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) override;
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
-	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override { p_bar->hide(); }; // Not needed here.
-	virtual bool can_lose_focus_on_node_selection() override { return false; }
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override {
+		p_bar->hide();
+	}; // Not needed here.
+	virtual bool can_lose_focus_on_node_selection() override {
+		return false;
+	}
 	virtual void validate() override;
 
 	virtual Control *get_base_editor() const override;
@@ -381,7 +385,9 @@ protected:
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:
-	static VisualScriptCustomNodes *get_singleton() { return singleton; }
+	static VisualScriptCustomNodes *get_singleton() {
+		return singleton;
+	}
 
 	void add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script);
 	void remove_custom_node(const String &p_name, const String &p_category);

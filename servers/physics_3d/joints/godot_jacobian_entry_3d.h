@@ -123,7 +123,9 @@ public:
 		ERR_FAIL_COND(m_Adiag <= real_t(0.0));
 	}
 
-	real_t getDiagonal() const { return m_Adiag; }
+	real_t getDiagonal() const {
+		return m_Adiag;
+	}
 
 	// for two constraints on the same rigidbody (for example vehicle friction)
 	real_t getNonDiagonal(const GodotJacobianEntry3D &jacB, const real_t massInvA) const {

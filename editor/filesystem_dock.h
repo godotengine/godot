@@ -308,7 +308,9 @@ private:
 	static FileSystemDock *singleton;
 
 public:
-	static FileSystemDock *get_singleton() { return singleton; }
+	static FileSystemDock *get_singleton() {
+		return singleton;
+	}
 
 protected:
 	void _notification(int p_what);
@@ -325,18 +327,28 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 
-	int get_split_offset() { return split_box->get_split_offset(); }
-	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+	int get_split_offset() {
+		return split_box->get_split_offset();
+	}
+	void set_split_offset(int p_offset) {
+		split_box->set_split_offset(p_offset);
+	}
 	void select_file(const String &p_file);
 
 	void set_display_mode(DisplayMode p_display_mode);
-	DisplayMode get_display_mode() { return display_mode; }
+	DisplayMode get_display_mode() {
+		return display_mode;
+	}
 
 	void set_file_sort(FileSortOption p_file_sort);
-	FileSortOption get_file_sort() { return file_sort; }
+	FileSortOption get_file_sort() {
+		return file_sort;
+	}
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() {
+		return file_list_display_mode;
+	};
 
 	FileSystemDock();
 	~FileSystemDock();

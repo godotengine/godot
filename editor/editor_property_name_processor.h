@@ -52,7 +52,9 @@ public:
 		STYLE_LOCALIZED,
 	};
 
-	static EditorPropertyNameProcessor *get_singleton() { return singleton; }
+	static EditorPropertyNameProcessor *get_singleton() {
+		return singleton;
+	}
 
 	static Style get_default_inspector_style();
 	static Style get_settings_style();

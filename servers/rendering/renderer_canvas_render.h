@@ -147,7 +147,9 @@ public:
 			polygon_id = singleton->request_polygon(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
 		}
 
-		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
+		_FORCE_INLINE_ Polygon() {
+			polygon_id = 0;
+		}
 		_FORCE_INLINE_ ~Polygon() {
 			if (polygon_id) {
 				singleton->free_polygon(polygon_id);
@@ -256,7 +258,9 @@ public:
 
 			RID texture;
 
-			CommandMesh() { type = TYPE_MESH; }
+			CommandMesh() {
+				type = TYPE_MESH;
+			}
 			~CommandMesh();
 		};
 
@@ -265,19 +269,25 @@ public:
 
 			RID texture;
 
-			CommandMultiMesh() { type = TYPE_MULTIMESH; }
+			CommandMultiMesh() {
+				type = TYPE_MULTIMESH;
+			}
 		};
 
 		struct CommandParticles : public Command {
 			RID particles;
 			RID texture;
 
-			CommandParticles() { type = TYPE_PARTICLES; }
+			CommandParticles() {
+				type = TYPE_PARTICLES;
+			}
 		};
 
 		struct CommandTransform : public Command {
 			Transform2D xform;
-			CommandTransform() { type = TYPE_TRANSFORM; }
+			CommandTransform() {
+				type = TYPE_TRANSFORM;
+			}
 		};
 
 		struct CommandClipIgnore : public Command {
@@ -516,7 +526,9 @@ public:
 	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;
 
-	RendererCanvasRender() { singleton = this; }
+	RendererCanvasRender() {
+		singleton = this;
+	}
 	virtual ~RendererCanvasRender() {}
 };
 

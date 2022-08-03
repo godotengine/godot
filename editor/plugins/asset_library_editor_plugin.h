@@ -119,11 +119,21 @@ public:
 	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash);
 	void add_preview(int p_id, bool p_video, const String &p_url);
 
-	String get_title() { return title; }
-	Ref<Texture2D> get_preview_icon() { return icon; }
-	String get_download_url() { return download_url; }
-	int get_asset_id() { return asset_id; }
-	String get_sha256() { return sha256; }
+	String get_title() {
+		return title;
+	}
+	Ref<Texture2D> get_preview_icon() {
+		return icon;
+	}
+	String get_download_url() {
+		return download_url;
+	}
+	int get_asset_id() {
+		return asset_id;
+	}
+	String get_sha256() {
+		return sha256;
+	}
 	EditorAssetLibraryItemDescription();
 };
 
@@ -161,8 +171,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_external_install(bool p_enable) { external_install = p_enable; }
-	int get_asset_id() { return asset_id; }
+	void set_external_install(bool p_enable) {
+		external_install = p_enable;
+	}
+	int get_asset_id() {
+		return asset_id;
+	}
 	void configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash);
 
 	bool can_install() const;
@@ -325,10 +339,16 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 public:
 	static bool is_available();
 
-	virtual String get_name() const override { return "AssetLib"; }
-	bool has_main_screen() const override { return true; }
+	virtual String get_name() const override {
+		return "AssetLib";
+	}
+	bool has_main_screen() const override {
+		return true;
+	}
 	virtual void edit(Object *p_object) override {}
-	virtual bool handles(Object *p_object) const override { return false; }
+	virtual bool handles(Object *p_object) const override {
+		return false;
+	}
 	virtual void make_visible(bool p_visible) override;
 	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
 	//virtual Dictionary get_state() const;

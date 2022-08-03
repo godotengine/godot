@@ -112,7 +112,9 @@ public:
 
 	uint64_t get_monitor_modification_time();
 
-	static Performance *get_singleton() { return singleton; }
+	static Performance *get_singleton() {
+		return singleton;
+	}
 
 	Performance();
 };

@@ -100,11 +100,17 @@ protected:
 public:
 	void update_keying();
 	void edit(MultiplayerSynchronizer *p_object);
-	bool has_keying() const { return keying; }
-	MultiplayerSynchronizer *get_current() const { return current; }
+	bool has_keying() const {
+		return keying;
+	}
+	MultiplayerSynchronizer *get_current() const {
+		return current;
+	}
 	void property_keyed(const String &p_property);
 
-	Button *get_pin() { return pin; }
+	Button *get_pin() {
+		return pin;
+	}
 	ReplicationEditor();
 	~ReplicationEditor() {}
 };
@@ -139,7 +145,9 @@ class ReplicationEditorPlugin : public EditorPlugin {
 
 public:
 	virtual void edit(Object *p_object) override {}
-	virtual bool handles(Object *p_object) const override { return false; }
+	virtual bool handles(Object *p_object) const override {
+		return false;
+	}
 	virtual void make_visible(bool p_visible) override {}
 
 	ReplicationEditorPlugin() {}

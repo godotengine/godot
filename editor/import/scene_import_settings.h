@@ -197,7 +197,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	bool is_editing_animation() const { return editing_animation; }
+	bool is_editing_animation() const {
+		return editing_animation;
+	}
 	void update_view();
 	void open_settings(const String &p_path, bool p_for_animation = false);
 	static SceneImportSettings *get_singleton();

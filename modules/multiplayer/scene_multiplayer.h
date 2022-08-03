@@ -98,7 +98,9 @@ public:
 	virtual Error poll() override;
 	virtual int get_unique_id() override;
 	virtual Vector<int> get_peer_ids() override;
-	virtual int get_remote_sender_id() override { return remote_sender_override ? remote_sender_override : remote_sender_id; }
+	virtual int get_remote_sender_id() override {
+		return remote_sender_override ? remote_sender_override : remote_sender_id;
+	}
 
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
 
@@ -114,16 +116,22 @@ public:
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 	String get_rpc_md5(const Object *p_obj);
 
-	const HashSet<int> get_connected_peers() const { return connected_peers; }
+	const HashSet<int> get_connected_peers() const {
+		return connected_peers;
+	}
 
-	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }
+	void set_remote_sender_override(int p_id) {
+		remote_sender_override = p_id;
+	}
 	void set_refuse_new_connections(bool p_refuse);
 	bool is_refusing_new_connections() const;
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
 
-	Ref<SceneCacheInterface> get_path_cache() { return cache; }
+	Ref<SceneCacheInterface> get_path_cache() {
+		return cache;
+	}
 
 #ifdef DEBUG_ENABLED
 	void profile_bandwidth(const String &p_inout, int p_size);

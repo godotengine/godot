@@ -214,7 +214,9 @@ public:
 		return _allocate_from_uniforms(p_shader, p_set, h, table_idx, p_uniforms);
 	}
 
-	static UniformSetCacheRD *get_singleton() { return singleton; }
+	static UniformSetCacheRD *get_singleton() {
+		return singleton;
+	}
 
 	UniformSetCacheRD();
 	~UniformSetCacheRD();

@@ -271,7 +271,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "operators"; }
+	virtual String get_category() const override {
+		return "operators";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 

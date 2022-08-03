@@ -44,7 +44,9 @@ public:
 		String type;
 		RID id;
 		int vram = 0;
-		bool operator<(const ResourceInfo &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
+		bool operator<(const ResourceInfo &p_img) const {
+			return vram == p_img.vram ? id < p_img.id : vram > p_img.vram;
+		}
 	};
 
 	struct ResourceUsage {

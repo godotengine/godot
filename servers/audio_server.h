@@ -67,8 +67,12 @@ protected:
 	void input_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
-	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+	_FORCE_INLINE_ void start_counting_ticks() {
+		prof_ticks = OS::get_singleton()->get_ticks_usec();
+	}
+	_FORCE_INLINE_ void stop_counting_ticks() {
+		prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks;
+	}
 #else
 	_FORCE_INLINE_ void start_counting_ticks() {}
 	_FORCE_INLINE_ void stop_counting_ticks() {}
@@ -101,24 +105,42 @@ public:
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
 
-	virtual Error capture_start() { return FAILED; }
-	virtual Error capture_stop() { return FAILED; }
+	virtual Error capture_start() {
+		return FAILED;
+	}
+	virtual Error capture_stop() {
+		return FAILED;
+	}
 	virtual void capture_set_device(const String &p_name) {}
-	virtual String capture_get_device() { return "Default"; }
+	virtual String capture_get_device() {
+		return "Default";
+	}
 	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PackedStringArray
 
-	virtual float get_latency() { return 0; }
+	virtual float get_latency() {
+		return 0;
+	}
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
-	unsigned int get_input_position() { return input_position; }
-	unsigned int get_input_size() { return input_size; }
+	Vector<int32_t> get_input_buffer() {
+		return input_buffer;
+	}
+	unsigned int get_input_position() {
+		return input_position;
+	}
+	unsigned int get_input_size() {
+		return input_size;
+	}
 
 #ifdef DEBUG_ENABLED
-	uint64_t get_profiling_time() const { return prof_time; }
-	void reset_profiling_time() { prof_time = 0; }
+	uint64_t get_profiling_time() const {
+		return prof_time;
+	}
+	void reset_profiling_time() {
+		prof_time = 0;
+	}
 #endif
 
 	AudioDriver() {}

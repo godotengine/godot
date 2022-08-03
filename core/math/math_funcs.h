@@ -49,68 +49,152 @@ public:
 	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
 	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
 
-	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
-	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
+	static _ALWAYS_INLINE_ double sin(double p_x) {
+		return ::sin(p_x);
+	}
+	static _ALWAYS_INLINE_ float sin(float p_x) {
+		return ::sinf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double cos(double p_x) { return ::cos(p_x); }
-	static _ALWAYS_INLINE_ float cos(float p_x) { return ::cosf(p_x); }
+	static _ALWAYS_INLINE_ double cos(double p_x) {
+		return ::cos(p_x);
+	}
+	static _ALWAYS_INLINE_ float cos(float p_x) {
+		return ::cosf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double tan(double p_x) { return ::tan(p_x); }
-	static _ALWAYS_INLINE_ float tan(float p_x) { return ::tanf(p_x); }
+	static _ALWAYS_INLINE_ double tan(double p_x) {
+		return ::tan(p_x);
+	}
+	static _ALWAYS_INLINE_ float tan(float p_x) {
+		return ::tanf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double sinh(double p_x) { return ::sinh(p_x); }
-	static _ALWAYS_INLINE_ float sinh(float p_x) { return ::sinhf(p_x); }
+	static _ALWAYS_INLINE_ double sinh(double p_x) {
+		return ::sinh(p_x);
+	}
+	static _ALWAYS_INLINE_ float sinh(float p_x) {
+		return ::sinhf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
-	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+	static _ALWAYS_INLINE_ float sinc(float p_x) {
+		return p_x == 0 ? 1 : ::sin(p_x) / p_x;
+	}
+	static _ALWAYS_INLINE_ double sinc(double p_x) {
+		return p_x == 0 ? 1 : ::sin(p_x) / p_x;
+	}
 
-	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc((float)Math_PI * p_x); }
-	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
+	static _ALWAYS_INLINE_ float sincn(float p_x) {
+		return sinc((float)Math_PI * p_x);
+	}
+	static _ALWAYS_INLINE_ double sincn(double p_x) {
+		return sinc(Math_PI * p_x);
+	}
 
-	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
-	static _ALWAYS_INLINE_ float cosh(float p_x) { return ::coshf(p_x); }
+	static _ALWAYS_INLINE_ double cosh(double p_x) {
+		return ::cosh(p_x);
+	}
+	static _ALWAYS_INLINE_ float cosh(float p_x) {
+		return ::coshf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double tanh(double p_x) { return ::tanh(p_x); }
-	static _ALWAYS_INLINE_ float tanh(float p_x) { return ::tanhf(p_x); }
+	static _ALWAYS_INLINE_ double tanh(double p_x) {
+		return ::tanh(p_x);
+	}
+	static _ALWAYS_INLINE_ float tanh(float p_x) {
+		return ::tanhf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double asin(double p_x) { return ::asin(p_x); }
-	static _ALWAYS_INLINE_ float asin(float p_x) { return ::asinf(p_x); }
+	static _ALWAYS_INLINE_ double asin(double p_x) {
+		return ::asin(p_x);
+	}
+	static _ALWAYS_INLINE_ float asin(float p_x) {
+		return ::asinf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double acos(double p_x) { return ::acos(p_x); }
-	static _ALWAYS_INLINE_ float acos(float p_x) { return ::acosf(p_x); }
+	static _ALWAYS_INLINE_ double acos(double p_x) {
+		return ::acos(p_x);
+	}
+	static _ALWAYS_INLINE_ float acos(float p_x) {
+		return ::acosf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double atan(double p_x) { return ::atan(p_x); }
-	static _ALWAYS_INLINE_ float atan(float p_x) { return ::atanf(p_x); }
+	static _ALWAYS_INLINE_ double atan(double p_x) {
+		return ::atan(p_x);
+	}
+	static _ALWAYS_INLINE_ float atan(float p_x) {
+		return ::atanf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) { return ::atan2(p_y, p_x); }
-	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return ::atan2f(p_y, p_x); }
+	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) {
+		return ::atan2(p_y, p_x);
+	}
+	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) {
+		return ::atan2f(p_y, p_x);
+	}
 
-	static _ALWAYS_INLINE_ double sqrt(double p_x) { return ::sqrt(p_x); }
-	static _ALWAYS_INLINE_ float sqrt(float p_x) { return ::sqrtf(p_x); }
+	static _ALWAYS_INLINE_ double sqrt(double p_x) {
+		return ::sqrt(p_x);
+	}
+	static _ALWAYS_INLINE_ float sqrt(float p_x) {
+		return ::sqrtf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double fmod(double p_x, double p_y) { return ::fmod(p_x, p_y); }
-	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) { return ::fmodf(p_x, p_y); }
+	static _ALWAYS_INLINE_ double fmod(double p_x, double p_y) {
+		return ::fmod(p_x, p_y);
+	}
+	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) {
+		return ::fmodf(p_x, p_y);
+	}
 
-	static _ALWAYS_INLINE_ double floor(double p_x) { return ::floor(p_x); }
-	static _ALWAYS_INLINE_ float floor(float p_x) { return ::floorf(p_x); }
+	static _ALWAYS_INLINE_ double floor(double p_x) {
+		return ::floor(p_x);
+	}
+	static _ALWAYS_INLINE_ float floor(float p_x) {
+		return ::floorf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double ceil(double p_x) { return ::ceil(p_x); }
-	static _ALWAYS_INLINE_ float ceil(float p_x) { return ::ceilf(p_x); }
+	static _ALWAYS_INLINE_ double ceil(double p_x) {
+		return ::ceil(p_x);
+	}
+	static _ALWAYS_INLINE_ float ceil(float p_x) {
+		return ::ceilf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double pow(double p_x, double p_y) { return ::pow(p_x, p_y); }
-	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) { return ::powf(p_x, p_y); }
+	static _ALWAYS_INLINE_ double pow(double p_x, double p_y) {
+		return ::pow(p_x, p_y);
+	}
+	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) {
+		return ::powf(p_x, p_y);
+	}
 
-	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
-	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
+	static _ALWAYS_INLINE_ double log(double p_x) {
+		return ::log(p_x);
+	}
+	static _ALWAYS_INLINE_ float log(float p_x) {
+		return ::logf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double log1p(double p_x) { return ::log1p(p_x); }
-	static _ALWAYS_INLINE_ float log1p(float p_x) { return ::log1pf(p_x); }
+	static _ALWAYS_INLINE_ double log1p(double p_x) {
+		return ::log1p(p_x);
+	}
+	static _ALWAYS_INLINE_ float log1p(float p_x) {
+		return ::log1pf(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double log2(double p_x) { return ::log2(p_x); }
-	static _ALWAYS_INLINE_ float log2(float p_x) { return ::log2f(p_x); }
+	static _ALWAYS_INLINE_ double log2(double p_x) {
+		return ::log2(p_x);
+	}
+	static _ALWAYS_INLINE_ float log2(float p_x) {
+		return ::log2f(p_x);
+	}
 
-	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
-	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
+	static _ALWAYS_INLINE_ double exp(double p_x) {
+		return ::exp(p_x);
+	}
+	static _ALWAYS_INLINE_ float exp(float p_x) {
+		return ::expf(p_x);
+	}
 
 	static _ALWAYS_INLINE_ bool is_nan(double p_val) {
 #ifdef _MSC_VER
@@ -184,9 +268,15 @@ public:
 #endif
 	}
 
-	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
-	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
-	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ double abs(double g) {
+		return absd(g);
+	}
+	static _ALWAYS_INLINE_ float abs(float g) {
+		return absf(g);
+	}
+	static _ALWAYS_INLINE_ int abs(int g) {
+		return g > 0 ? g : -g;
+	}
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
@@ -229,14 +319,26 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ double deg2rad(double p_y) {
+		return p_y * (Math_PI / 180.0);
+	}
+	static _ALWAYS_INLINE_ float deg2rad(float p_y) {
+		return p_y * (float)(Math_PI / 180.0);
+	}
 
-	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ double rad2deg(double p_y) {
+		return p_y * (180.0 / Math_PI);
+	}
+	static _ALWAYS_INLINE_ float rad2deg(float p_y) {
+		return p_y * (float)(180.0 / Math_PI);
+	}
 
-	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
-	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
+	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) {
+		return p_from + (p_to - p_from) * p_weight;
+	}
+	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) {
+		return p_from + (p_to - p_from) * p_weight;
+	}
 
 	static _ALWAYS_INLINE_ double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
 		return 0.5 *
@@ -285,11 +387,19 @@ public:
 		return p_from + distance * p_weight;
 	}
 
-	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
-	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
+	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
+		return (p_value - p_from) / (p_to - p_from);
+	}
+	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) {
+		return (p_value - p_from) / (p_to - p_from);
+	}
 
-	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
-	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
+	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) {
+		return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value));
+	}
+	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) {
+		return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value));
+	}
 
 	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 		if (is_equal_approx(p_from, p_to)) {
@@ -305,17 +415,33 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
-	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
-	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
 
-	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ double linear2db(double p_linear) {
+		return Math::log(p_linear) * 8.6858896380650365530225783783321;
+	}
+	static _ALWAYS_INLINE_ float linear2db(float p_linear) {
+		return Math::log(p_linear) * (float)8.6858896380650365530225783783321;
+	}
 
-	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ double db2linear(double p_db) {
+		return Math::exp(p_db * 0.11512925464970228420089957273422);
+	}
+	static _ALWAYS_INLINE_ float db2linear(float p_db) {
+		return Math::exp(p_db * (float)0.11512925464970228420089957273422);
+	}
 
-	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
-	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
+	static _ALWAYS_INLINE_ double round(double p_val) {
+		return ::round(p_val);
+	}
+	static _ALWAYS_INLINE_ float round(float p_val) {
+		return ::roundf(p_val);
+	}
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		int64_t range = max - min;
@@ -363,8 +489,12 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
-	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
+	static _ALWAYS_INLINE_ double randd() {
+		return (double)rand() / (double)Math::RANDOM_32BIT_MAX;
+	}
+	static _ALWAYS_INLINE_ float randf() {
+		return (float)rand() / (float)Math::RANDOM_32BIT_MAX;
+	}
 	static double randfn(double mean, double deviation);
 
 	static double random(double from, double to);

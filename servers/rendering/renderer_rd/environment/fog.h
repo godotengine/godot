@@ -230,15 +230,21 @@ private:
 	static RendererRD::MaterialStorage::MaterialData *_create_fog_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader);
 
 public:
-	static Fog *get_singleton() { return singleton; }
+	static Fog *get_singleton() {
+		return singleton;
+	}
 
 	Fog();
 	~Fog();
 
 	/* FOG VOLUMES */
 
-	FogVolume *get_fog_volume(RID p_rid) { return fog_volume_owner.get_or_null(p_rid); };
-	bool owns_fog_volume(RID p_rid) { return fog_volume_owner.owns(p_rid); };
+	FogVolume *get_fog_volume(RID p_rid) {
+		return fog_volume_owner.get_or_null(p_rid);
+	};
+	bool owns_fog_volume(RID p_rid) {
+		return fog_volume_owner.owns(p_rid);
+	};
 
 	virtual RID fog_volume_allocate() override;
 	virtual void fog_volume_initialize(RID p_rid) override;
@@ -254,8 +260,12 @@ public:
 
 	/* FOG VOLUMES INSTANCE */
 
-	FogVolumeInstance *get_fog_volume_instance(RID p_rid) { return fog_volume_instance_owner.get_or_null(p_rid); };
-	bool owns_fog_volume_instance(RID p_rid) { return fog_volume_instance_owner.owns(p_rid); };
+	FogVolumeInstance *get_fog_volume_instance(RID p_rid) {
+		return fog_volume_instance_owner.get_or_null(p_rid);
+	};
+	bool owns_fog_volume_instance(RID p_rid) {
+		return fog_volume_instance_owner.owns(p_rid);
+	};
 
 	RID fog_volume_instance_create(RID p_fog_volume);
 	void fog_instance_free(RID p_rid);

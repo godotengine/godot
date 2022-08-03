@@ -79,7 +79,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	Ref<OpenXRActionSet> get_action_set() { return action_set; };
+	Ref<OpenXRActionSet> get_action_set() {
+		return action_set;
+	};
 	void set_focus_on_entry();
 
 	OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRActionSet> p_action_set);

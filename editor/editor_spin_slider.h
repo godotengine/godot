@@ -110,7 +110,9 @@ public:
 	void set_flat(bool p_enable);
 	bool is_flat() const;
 
-	void setup_and_show() { _focus_entered(); }
+	void setup_and_show() {
+		_focus_entered();
+	}
 	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const override;

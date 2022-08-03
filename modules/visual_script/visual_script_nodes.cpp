@@ -777,7 +777,9 @@ String VisualScriptComposeArray::get_text() const {
 class VisualScriptComposeArrayNode : public VisualScriptNodeInstance {
 public:
 	int input_count = 0;
-	virtual int get_working_memory_size() const override { return 0; }
+	virtual int get_working_memory_size() const override {
+		return 0;
+	}
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (input_count > 0) {
@@ -2967,7 +2969,9 @@ public:
 	int out_count = 0;
 	int work_mem_size = 0;
 
-	virtual int get_working_memory_size() const override { return work_mem_size; }
+	virtual int get_working_memory_size() const override {
+		return work_mem_size;
+	}
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(node, _step)) {
 			Array in_values;
@@ -3496,7 +3500,9 @@ public:
 	VisualScriptInstance *instance = nullptr;
 	StringName name;
 
-	virtual int get_working_memory_size() const override { return 1; }
+	virtual int get_working_memory_size() const override {
+		return 1;
+	}
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = *p_working_mem;
 		return 0;
@@ -3603,7 +3609,9 @@ public:
 	VisualScriptInstance *instance = nullptr;
 	StringName name;
 
-	virtual int get_working_memory_size() const override { return 1; }
+	virtual int get_working_memory_size() const override {
+		return 1;
+	}
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_working_mem = *p_inputs[0];
 		*p_outputs[0] = *p_working_mem;

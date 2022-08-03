@@ -56,7 +56,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	void set_return_type(Variant::Type);
 	Variant::Type get_return_type() const;
@@ -89,7 +91,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -116,7 +120,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -143,7 +149,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -172,7 +180,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	void set_steps(int p_steps);
 	int get_steps() const;
@@ -187,7 +197,9 @@ class VisualScriptSwitch : public VisualScriptNode {
 
 	struct Case {
 		Variant::Type type;
-		Case() { type = Variant::NIL; }
+		Case() {
+			type = Variant::NIL;
+		}
 	};
 
 	Vector<Case> case_values;
@@ -208,7 +220,9 @@ public:
 	virtual bool has_input_sequence_port() const override;
 
 	virtual String get_output_sequence_port_text(int p_port) const override;
-	virtual bool has_mixed_input_and_sequence_ports() const override { return true; }
+	virtual bool has_mixed_input_and_sequence_ports() const override {
+		return true;
+	}
 
 	virtual int get_input_value_port_count() const override;
 	virtual int get_output_value_port_count() const override;
@@ -218,7 +232,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -248,7 +264,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	void set_base_type(const StringName &p_type);
 	StringName get_base_type() const;

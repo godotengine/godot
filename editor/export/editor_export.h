@@ -58,7 +58,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static EditorExport *get_singleton() { return singleton; }
+	static EditorExport *get_singleton() {
+		return singleton;
+	}
 
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
 	int get_export_platform_count();

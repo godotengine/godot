@@ -63,7 +63,9 @@ protected:
 
 public:
 	static Ref<OpenXRAction> new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths); // Helper function to add and configure an action
-	OpenXRActionSet *get_action_set() const { return action_set; } // Get the action set this action belongs to
+	OpenXRActionSet *get_action_set() const {
+		return action_set;
+	} // Get the action set this action belongs to
 
 	String get_name_with_set() const; // Retrieve the name of this action as <action_set>/<action>
 

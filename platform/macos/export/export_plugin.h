@@ -68,11 +68,17 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
-	bool use_codesign() const { return true; }
+	bool use_codesign() const {
+		return true;
+	}
 #ifdef MACOS_ENABLED
-	bool use_dmg() const { return true; }
+	bool use_dmg() const {
+		return true;
+	}
 #else
-	bool use_dmg() const { return false; }
+	bool use_dmg() const {
+		return false;
+	}
 #endif
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
@@ -104,9 +110,15 @@ protected:
 	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 public:
-	virtual String get_name() const override { return "macOS"; }
-	virtual String get_os_name() const override { return "macOS"; }
-	virtual Ref<Texture2D> get_logo() const override { return logo; }
+	virtual String get_name() const override {
+		return "macOS";
+	}
+	virtual String get_os_name() const override {
+		return "macOS";
+	}
+	virtual Ref<Texture2D> get_logo() const override {
+		return logo;
+	}
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;

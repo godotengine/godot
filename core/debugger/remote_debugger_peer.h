@@ -49,7 +49,9 @@ public:
 	virtual void close() = 0;
 	virtual void poll() = 0;
 	virtual int get_max_message_size() const = 0;
-	virtual bool can_block() const { return true; } // If blocking io is allowed on main thread (debug).
+	virtual bool can_block() const {
+		return true;
+	} // If blocking io is allowed on main thread (debug).
 
 	RemoteDebuggerPeer();
 };

@@ -74,7 +74,9 @@ struct _generate_contacts_Pair {
 	bool a = false;
 	int idx = 0;
 	real_t d = 0.0;
-	_FORCE_INLINE_ bool operator<(const _generate_contacts_Pair &l) const { return d < l.d; }
+	_FORCE_INLINE_ bool operator<(const _generate_contacts_Pair &l) const {
+		return d < l.d;
+	}
 };
 
 _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {

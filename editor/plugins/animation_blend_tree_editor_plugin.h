@@ -136,7 +136,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static AnimationNodeBlendTreeEditor *get_singleton() { return singleton; }
+	static AnimationNodeBlendTreeEditor *get_singleton() {
+		return singleton;
+	}
 
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
 	void remove_custom_type(const Ref<Script> &p_script);

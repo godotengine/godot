@@ -102,8 +102,12 @@ public:
 
 	NodePath get_spawn_path() const;
 	void set_spawn_path(const NodePath &p_path);
-	uint32_t get_spawn_limit() const { return spawn_limit; }
-	void set_spawn_limit(uint32_t p_limit) { spawn_limit = p_limit; }
+	uint32_t get_spawn_limit() const {
+		return spawn_limit;
+	}
+	void set_spawn_limit(uint32_t p_limit) {
+		spawn_limit = p_limit;
+	}
 
 	const Variant get_spawn_argument(const ObjectID &p_id) const;
 	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;

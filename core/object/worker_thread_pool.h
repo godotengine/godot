@@ -186,9 +186,13 @@ public:
 	bool is_group_task_completed(GroupID p_group) const;
 	void wait_for_group_task_completion(GroupID p_group);
 
-	_FORCE_INLINE_ int get_thread_count() const { return threads.size(); }
+	_FORCE_INLINE_ int get_thread_count() const {
+		return threads.size();
+	}
 
-	static WorkerThreadPool *get_singleton() { return singleton; }
+	static WorkerThreadPool *get_singleton() {
+		return singleton;
+	}
 	void init(int p_thread_count = -1, bool p_use_native_threads_low_priority = true, float p_low_priority_task_ratio = 0.3);
 	void finish();
 	WorkerThreadPool();

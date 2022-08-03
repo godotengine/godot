@@ -67,11 +67,19 @@ public:
 		return map;
 	}
 
-	void set_enter_cost(float p_enter_cost) { enter_cost = MAX(p_enter_cost, 0.0); }
-	float get_enter_cost() const { return enter_cost; }
+	void set_enter_cost(float p_enter_cost) {
+		enter_cost = MAX(p_enter_cost, 0.0);
+	}
+	float get_enter_cost() const {
+		return enter_cost;
+	}
 
-	void set_travel_cost(float p_travel_cost) { travel_cost = MAX(p_travel_cost, 0.0); }
-	float get_travel_cost() const { return travel_cost; }
+	void set_travel_cost(float p_travel_cost) {
+		travel_cost = MAX(p_travel_cost, 0.0);
+	}
+	float get_travel_cost() const {
+		return travel_cost;
+	}
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;

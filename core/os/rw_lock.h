@@ -78,11 +78,15 @@ class RWLock {
 public:
 	void read_lock() const {}
 	void read_unlock() const {}
-	Error read_try_lock() const { return OK; }
+	Error read_try_lock() const {
+		return OK;
+	}
 
 	void write_lock() {}
 	void write_unlock() {}
-	Error write_try_lock() { return OK; }
+	Error write_try_lock() {
+		return OK;
+	}
 };
 
 #endif

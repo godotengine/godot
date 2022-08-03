@@ -596,7 +596,9 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 		return Vector<StackInfo>();
 	}
 	_recursion_flag_ = true;
-	SCOPE_EXIT { _recursion_flag_ = false; };
+	SCOPE_EXIT {
+		_recursion_flag_ = false;
+	};
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -628,7 +630,9 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 		return Vector<StackInfo>();
 	}
 	_recursion_flag_ = true;
-	SCOPE_EXIT { _recursion_flag_ = false; };
+	SCOPE_EXIT {
+		_recursion_flag_ = false;
+	};
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 

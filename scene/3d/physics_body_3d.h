@@ -247,7 +247,9 @@ public:
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
 
-	virtual real_t get_inverse_mass() const override { return 1.0 / mass; }
+	virtual real_t get_inverse_mass() const override {
+		return 1.0 / mass;
+	}
 
 	void set_inertia(const Vector3 &p_inertia);
 	const Vector3 &get_inertia() const;
@@ -535,7 +537,9 @@ public:
 	};
 
 	struct JointData {
-		virtual JointType get_joint_type() { return JOINT_TYPE_NONE; }
+		virtual JointType get_joint_type() {
+			return JOINT_TYPE_NONE;
+		}
 
 		/// "j" is used to set the parameter inside the PhysicsServer3D
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
@@ -546,7 +550,9 @@ public:
 	};
 
 	struct PinJointData : public JointData {
-		virtual JointType get_joint_type() { return JOINT_TYPE_PIN; }
+		virtual JointType get_joint_type() {
+			return JOINT_TYPE_PIN;
+		}
 
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -558,7 +564,9 @@ public:
 	};
 
 	struct ConeJointData : public JointData {
-		virtual JointType get_joint_type() { return JOINT_TYPE_CONE; }
+		virtual JointType get_joint_type() {
+			return JOINT_TYPE_CONE;
+		}
 
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -572,7 +580,9 @@ public:
 	};
 
 	struct HingeJointData : public JointData {
-		virtual JointType get_joint_type() { return JOINT_TYPE_HINGE; }
+		virtual JointType get_joint_type() {
+			return JOINT_TYPE_HINGE;
+		}
 
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -587,7 +597,9 @@ public:
 	};
 
 	struct SliderJointData : public JointData {
-		virtual JointType get_joint_type() { return JOINT_TYPE_SLIDER; }
+		virtual JointType get_joint_type() {
+			return JOINT_TYPE_SLIDER;
+		}
 
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -630,7 +642,9 @@ public:
 			real_t angular_equilibrium_point = 0.0;
 		};
 
-		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }
+		virtual JointType get_joint_type() {
+			return JOINT_TYPE_6DOF;
+		}
 
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;

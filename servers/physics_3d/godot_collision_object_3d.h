@@ -95,7 +95,9 @@ protected:
 			_update_shapes();
 		}
 	}
-	_FORCE_INLINE_ void _set_inv_transform(const Transform3D &p_transform) { inv_transform = p_transform; }
+	_FORCE_INLINE_ void _set_inv_transform(const Transform3D &p_transform) {
+		inv_transform = p_transform;
+	}
 	void _set_static(bool p_static);
 
 	virtual void _shapes_changed() = 0;
@@ -106,19 +108,31 @@ protected:
 	GodotCollisionObject3D(Type p_type);
 
 public:
-	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
-	_FORCE_INLINE_ RID get_self() const { return self; }
+	_FORCE_INLINE_ void set_self(const RID &p_self) {
+		self = p_self;
+	}
+	_FORCE_INLINE_ RID get_self() const {
+		return self;
+	}
 
-	_FORCE_INLINE_ void set_instance_id(const ObjectID &p_instance_id) { instance_id = p_instance_id; }
-	_FORCE_INLINE_ ObjectID get_instance_id() const { return instance_id; }
+	_FORCE_INLINE_ void set_instance_id(const ObjectID &p_instance_id) {
+		instance_id = p_instance_id;
+	}
+	_FORCE_INLINE_ ObjectID get_instance_id() const {
+		return instance_id;
+	}
 
 	void _shape_changed() override;
 
-	_FORCE_INLINE_ Type get_type() const { return type; }
+	_FORCE_INLINE_ Type get_type() const {
+		return type;
+	}
 	void add_shape(GodotShape3D *p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false);
 	void set_shape(int p_index, GodotShape3D *p_shape);
 	void set_shape_transform(int p_index, const Transform3D &p_transform);
-	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
+	_FORCE_INLINE_ int get_shape_count() const {
+		return shapes.size();
+	}
 	_FORCE_INLINE_ GodotShape3D *get_shape(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].shape;
@@ -140,12 +154,22 @@ public:
 		return shapes[p_index].area_cache;
 	}
 
-	_FORCE_INLINE_ const Transform3D &get_transform() const { return transform; }
-	_FORCE_INLINE_ const Transform3D &get_inv_transform() const { return inv_transform; }
-	_FORCE_INLINE_ GodotSpace3D *get_space() const { return space; }
+	_FORCE_INLINE_ const Transform3D &get_transform() const {
+		return transform;
+	}
+	_FORCE_INLINE_ const Transform3D &get_inv_transform() const {
+		return inv_transform;
+	}
+	_FORCE_INLINE_ GodotSpace3D *get_space() const {
+		return space;
+	}
 
-	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
-	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
+	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) {
+		ray_pickable = p_enable;
+	}
+	_FORCE_INLINE_ bool is_ray_pickable() const {
+		return ray_pickable;
+	}
 
 	void set_shape_disabled(int p_idx, bool p_disabled);
 	_FORCE_INLINE_ bool is_shape_disabled(int p_idx) const {
@@ -157,13 +181,17 @@ public:
 		collision_layer = p_layer;
 		_shape_changed();
 	}
-	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
+	_FORCE_INLINE_ uint32_t get_collision_layer() const {
+		return collision_layer;
+	}
 
 	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
 		collision_mask = p_mask;
 		_shape_changed();
 	}
-	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
+	_FORCE_INLINE_ uint32_t get_collision_mask() const {
+		return collision_mask;
+	}
 
 	_FORCE_INLINE_ bool collides_with(GodotCollisionObject3D *p_other) const {
 		return p_other->collision_layer & collision_mask;
@@ -178,7 +206,9 @@ public:
 
 	virtual void set_space(GodotSpace3D *p_space) = 0;
 
-	_FORCE_INLINE_ bool is_static() const { return _static; }
+	_FORCE_INLINE_ bool is_static() const {
+		return _static;
+	}
 
 	virtual ~GodotCollisionObject3D() {}
 };

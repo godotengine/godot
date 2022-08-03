@@ -54,7 +54,9 @@ private:
 	static SSEffects *singleton;
 
 public:
-	static SSEffects *get_singleton() { return singleton; }
+	static SSEffects *get_singleton() {
+		return singleton;
+	}
 
 	SSEffects();
 	~SSEffects();

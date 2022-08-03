@@ -114,7 +114,9 @@ public:
 		return rb && rb_read_pos.get() != rb_write_pos.get();
 	}
 
-	_FORCE_INLINE_ float *get_write_buffer() { return read_buf; }
+	_FORCE_INLINE_ float *get_write_buffer() {
+		return read_buf;
+	}
 	_FORCE_INLINE_ void write(uint32_t p_frames) {
 		ERR_FAIL_COND(p_frames >= rb_len);
 

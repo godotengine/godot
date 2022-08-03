@@ -44,7 +44,9 @@ class PackedDataContainer : public Resource {
 	struct DictKey {
 		uint32_t hash;
 		Variant key;
-		bool operator<(const DictKey &p_key) const { return hash < p_key.hash; }
+		bool operator<(const DictKey &p_key) const {
+			return hash < p_key.hash;
+		}
 	};
 
 	Vector<uint8_t> data;

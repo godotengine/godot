@@ -103,7 +103,9 @@ struct VariantCaster<const T &> {
 	};                                                                       \
 	template <>                                                              \
 	struct ZeroInitializer<m_enum> {                                         \
-		static void initialize(m_enum &value) { value = (m_enum)0; }         \
+		static void initialize(m_enum &value) {                              \
+			value = (m_enum)0;                                               \
+		}                                                                    \
 	};
 
 #define VARIANT_BITFIELD_CAST(m_enum)                                                  \
@@ -126,7 +128,9 @@ struct VariantCaster<const T &> {
 	};                                                                                 \
 	template <>                                                                        \
 	struct ZeroInitializer<BitField<m_enum>> {                                         \
-		static void initialize(BitField<m_enum> &value) { value = 0; }                 \
+		static void initialize(BitField<m_enum> &value) {                              \
+			value = 0;                                                                 \
+		}                                                                              \
 	};
 
 // Object enum casts must go here

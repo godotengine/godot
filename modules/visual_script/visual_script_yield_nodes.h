@@ -68,7 +68,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	void set_yield_mode(YieldMode p_mode);
 	YieldMode get_yield_mode();
@@ -121,7 +123,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	void set_base_type(const StringName &p_type);
 	StringName get_base_type() const;

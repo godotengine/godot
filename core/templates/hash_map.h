@@ -242,8 +242,12 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ uint32_t get_capacity() const { return hash_table_size_primes[capacity_index]; }
-	_FORCE_INLINE_ uint32_t size() const { return num_elements; }
+	_FORCE_INLINE_ uint32_t get_capacity() const {
+		return hash_table_size_primes[capacity_index];
+	}
+	_FORCE_INLINE_ uint32_t size() const {
+		return num_elements;
+	}
 
 	/* Standard Godot Container API */
 
@@ -380,7 +384,9 @@ public:
 		_FORCE_INLINE_ const KeyValue<TKey, TValue> &operator*() const {
 			return E->data;
 		}
-		_FORCE_INLINE_ const KeyValue<TKey, TValue> *operator->() const { return &E->data; }
+		_FORCE_INLINE_ const KeyValue<TKey, TValue> *operator->() const {
+			return &E->data;
+		}
 		_FORCE_INLINE_ ConstIterator &operator++() {
 			if (E) {
 				E = E->next;
@@ -394,16 +400,24 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const {
+			return E == b.E;
+		}
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const {
+			return E != b.E;
+		}
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return E != nullptr;
 		}
 
-		_FORCE_INLINE_ ConstIterator(const HashMapElement<TKey, TValue> *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator(const HashMapElement<TKey, TValue> *p_E) {
+			E = p_E;
+		}
 		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) {
+			E = p_it.E;
+		}
 		_FORCE_INLINE_ void operator=(const ConstIterator &p_it) {
 			E = p_it.E;
 		}
@@ -416,7 +430,9 @@ public:
 		_FORCE_INLINE_ KeyValue<TKey, TValue> &operator*() const {
 			return E->data;
 		}
-		_FORCE_INLINE_ KeyValue<TKey, TValue> *operator->() const { return &E->data; }
+		_FORCE_INLINE_ KeyValue<TKey, TValue> *operator->() const {
+			return &E->data;
+		}
 		_FORCE_INLINE_ Iterator &operator++() {
 			if (E) {
 				E = E->next;
@@ -430,16 +446,24 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const {
+			return E == b.E;
+		}
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const {
+			return E != b.E;
+		}
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return E != nullptr;
 		}
 
-		_FORCE_INLINE_ Iterator(HashMapElement<TKey, TValue> *p_E) { E = p_E; }
+		_FORCE_INLINE_ Iterator(HashMapElement<TKey, TValue> *p_E) {
+			E = p_E;
+		}
 		_FORCE_INLINE_ Iterator() {}
-		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) {
+			E = p_it.E;
+		}
 		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
 			E = p_it.E;
 		}

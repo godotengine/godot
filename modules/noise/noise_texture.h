@@ -112,7 +112,9 @@ public:
 	int get_height() const override;
 
 	virtual RID get_rid() const override;
-	virtual bool has_alpha() const override { return false; }
+	virtual bool has_alpha() const override {
+		return false;
+	}
 
 	virtual Ref<Image> get_image() const override;
 

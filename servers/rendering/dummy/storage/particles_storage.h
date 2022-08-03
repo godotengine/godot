@@ -39,7 +39,9 @@ class ParticlesStorage : public RendererParticlesStorage {
 public:
 	/* PARTICLES */
 
-	virtual RID particles_allocate() override { return RID(); }
+	virtual RID particles_allocate() override {
+		return RID();
+	}
 	virtual void particles_initialize(RID p_rid) override {}
 	virtual void particles_free(RID p_rid) override {}
 
@@ -56,7 +58,9 @@ public:
 	virtual void particles_set_speed_scale(RID p_particles, double p_scale) override {}
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override {}
 	virtual void particles_set_process_material(RID p_particles, RID p_material) override {}
-	virtual RID particles_get_process_material(RID p_particles) const override { return RID(); }
+	virtual RID particles_get_process_material(RID p_particles) const override {
+		return RID();
+	}
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) override {}
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) override {}
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override {}
@@ -77,14 +81,24 @@ public:
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) override {}
 
 	virtual void particles_request_process(RID p_particles) override {}
-	virtual AABB particles_get_current_aabb(RID p_particles) override { return AABB(); }
-	virtual AABB particles_get_aabb(RID p_particles) const override { return AABB(); }
+	virtual AABB particles_get_current_aabb(RID p_particles) override {
+		return AABB();
+	}
+	virtual AABB particles_get_aabb(RID p_particles) const override {
+		return AABB();
+	}
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) override {}
 
-	virtual bool particles_get_emitting(RID p_particles) override { return false; }
-	virtual int particles_get_draw_passes(RID p_particles) const override { return 0; }
-	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override { return RID(); }
+	virtual bool particles_get_emitting(RID p_particles) override {
+		return false;
+	}
+	virtual int particles_get_draw_passes(RID p_particles) const override {
+		return 0;
+	}
+	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override {
+		return RID();
+	}
 
 	virtual void particles_add_collision(RID p_particles, RID p_instance) override {}
 	virtual void particles_remove_collision(RID p_particles, RID p_instance) override {}
@@ -95,7 +109,9 @@ public:
 
 	/* PARTICLES COLLISION */
 
-	virtual RID particles_collision_allocate() override { return RID(); }
+	virtual RID particles_collision_allocate() override {
+		return RID();
+	}
 	virtual void particles_collision_initialize(RID p_rid) override {}
 	virtual void particles_collision_free(RID p_rid) override {}
 
@@ -109,16 +125,26 @@ public:
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override {}
 	virtual void particles_collision_height_field_update(RID p_particles_collision) override {}
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
-	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override { return AABB(); }
-	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
-	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override { return RID(); }
+	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override {
+		return AABB();
+	}
+	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override {
+		return false;
+	}
+	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override {
+		return RID();
+	}
 
-	virtual RID particles_collision_instance_create(RID p_collision) override { return RID(); }
+	virtual RID particles_collision_instance_create(RID p_collision) override {
+		return RID();
+	}
 	virtual void particles_collision_instance_free(RID p_rid) override {}
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override {}
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override {}
 
-	virtual bool particles_is_inactive(RID p_particles) const override { return false; }
+	virtual bool particles_is_inactive(RID p_particles) const override {
+		return false;
+	}
 };
 
 } // namespace RendererDummy

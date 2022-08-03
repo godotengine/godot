@@ -177,9 +177,15 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
 public:
-	virtual String get_name() const override { return "iOS"; }
-	virtual String get_os_name() const override { return "iOS"; }
-	virtual Ref<Texture2D> get_logo() const override { return logo; }
+	virtual String get_name() const override {
+		return "iOS";
+	}
+	virtual String get_os_name() const override {
+		return "iOS";
+	}
+	virtual Ref<Texture2D> get_logo() const override {
+		return logo;
+	}
 
 	virtual bool should_update_export_options() override {
 		bool export_options_changed = plugins_changed.is_set();

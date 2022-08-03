@@ -47,7 +47,9 @@ public:
 	virtual void set_text(const String &p_code);
 	virtual void reload_from_file() override;
 
-	void set_file_path(const String &p_path) { path = p_path; }
+	void set_file_path(const String &p_path) {
+		path = p_path;
+	}
 	Error load_text(const String &p_path);
 };
 

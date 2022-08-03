@@ -134,7 +134,9 @@ public:
 	void add_frame_metric(const Metric &p_metric);
 	void set_enabled(bool p_enable);
 	bool is_profiling();
-	bool is_seeking() { return seeking; }
+	bool is_seeking() {
+		return seeking;
+	}
 	void disable_seeking();
 
 	void clear();

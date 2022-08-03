@@ -80,7 +80,9 @@ class GradientEditorPlugin : public EditorPlugin {
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Gradient"; }
+	virtual String get_name() const override {
+		return "Gradient";
+	}
 
 	GradientEditorPlugin();
 };

@@ -55,7 +55,9 @@ protected:
 
 public:
 	void set_locale(const String &p_locale);
-	_FORCE_INLINE_ String get_locale() const { return locale; }
+	_FORCE_INLINE_ String get_locale() const {
+		return locale;
+	}
 
 	virtual void add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context = "");
 	virtual void add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context = "");
@@ -125,10 +127,16 @@ class TranslationServer : public Object {
 	void init_locale_info();
 
 public:
-	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static TranslationServer *get_singleton() {
+		return singleton;
+	}
 
-	void set_enabled(bool p_enabled) { enabled = p_enabled; }
-	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
+	void set_enabled(bool p_enabled) {
+		enabled = p_enabled;
+	}
+	_FORCE_INLINE_ bool is_enabled() const {
+		return enabled;
+	}
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;

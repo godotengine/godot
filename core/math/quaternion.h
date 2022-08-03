@@ -67,7 +67,9 @@ struct _NO_DISCARD_ Quaternion {
 
 	Vector3 get_euler_xyz() const;
 	Vector3 get_euler_yxz() const;
-	Vector3 get_euler() const { return get_euler_yxz(); };
+	Vector3 get_euler() const {
+		return get_euler_yxz();
+	};
 
 	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;

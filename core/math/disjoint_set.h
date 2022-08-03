@@ -54,7 +54,9 @@ class DisjointSet {
 public:
 	~DisjointSet();
 
-	_FORCE_INLINE_ void insert(T object) { (void)insert_or_get(object); }
+	_FORCE_INLINE_ void insert(T object) {
+		(void)insert_or_get(object);
+	}
 
 	void create_union(T a, T b);
 

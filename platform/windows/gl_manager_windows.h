@@ -78,11 +78,19 @@ private:
 	// funcs
 	void _internal_set_current_window(GLWindow *p_win);
 
-	GLWindow &get_window(unsigned int id) { return _windows[id]; }
-	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
+	GLWindow &get_window(unsigned int id) {
+		return _windows[id];
+	}
+	const GLWindow &get_window(unsigned int id) const {
+		return _windows[id];
+	}
 
-	const GLDisplay &get_current_display() const { return _displays[_current_window->gldisplay_id]; }
-	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
+	const GLDisplay &get_current_display() const {
+		return _displays[_current_window->gldisplay_id];
+	}
+	const GLDisplay &get_display(unsigned int id) {
+		return _displays[id];
+	}
 
 	bool direct_render;
 	int glx_minor, glx_major;

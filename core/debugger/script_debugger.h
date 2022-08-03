@@ -57,8 +57,12 @@ public:
 	int get_depth() const;
 
 	String breakpoint_find_source(const String &p_source) const;
-	void set_break_language(ScriptLanguage *p_lang) { break_lang = p_lang; }
-	ScriptLanguage *get_break_language() { return break_lang; }
+	void set_break_language(ScriptLanguage *p_lang) {
+		break_lang = p_lang;
+	}
+	ScriptLanguage *get_break_language() {
+		return break_lang;
+	}
 	void set_skip_breakpoints(bool p_skip_breakpoints);
 	bool is_skipping_breakpoints();
 	void insert_breakpoint(int p_line, const StringName &p_source);
@@ -66,7 +70,9 @@ public:
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
-	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
+	const HashMap<int, HashSet<StringName>> &get_breakpoints() const {
+		return breakpoints;
+	}
 
 	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 	ScriptLanguage *get_break_language() const;

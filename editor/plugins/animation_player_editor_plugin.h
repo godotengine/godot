@@ -223,17 +223,27 @@ protected:
 public:
 	AnimationPlayer *get_player() const;
 
-	static AnimationPlayerEditor *get_singleton() { return singleton; }
+	static AnimationPlayerEditor *get_singleton() {
+		return singleton;
+	}
 
-	bool is_pinned() const { return pin->is_pressed(); }
-	void unpin() { pin->set_pressed(false); }
-	AnimationTrackEditor *get_track_editor() { return track_editor; }
+	bool is_pinned() const {
+		return pin->is_pressed();
+	}
+	void unpin() {
+		pin->set_pressed(false);
+	}
+	AnimationTrackEditor *get_track_editor() {
+		return track_editor;
+	}
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
 	void ensure_visibility();
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
+	void set_undo_redo(UndoRedo *p_undo_redo) {
+		undo_redo = p_undo_redo;
+	}
 	void edit(AnimationPlayer *p_player);
 	void forward_force_draw_over_viewport(Control *p_overlay);
 
@@ -253,17 +263,29 @@ protected:
 	void _update_keying();
 
 public:
-	virtual Dictionary get_state() const override { return anim_editor->get_state(); }
-	virtual void set_state(const Dictionary &p_state) override { anim_editor->set_state(p_state); }
+	virtual Dictionary get_state() const override {
+		return anim_editor->get_state();
+	}
+	virtual void set_state(const Dictionary &p_state) override {
+		anim_editor->set_state(p_state);
+	}
 
-	virtual String get_name() const override { return "Anim"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "Anim";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
-	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override {
+		anim_editor->forward_force_draw_over_viewport(p_overlay);
+	}
+	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay) override {
+		anim_editor->forward_force_draw_over_viewport(p_overlay);
+	}
 
 	AnimationPlayerEditorPlugin();
 	~AnimationPlayerEditorPlugin();

@@ -147,7 +147,9 @@ private:
 	void _update_visibility_parent(bool p_update_root);
 
 protected:
-	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
+	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) {
+		data.ignore_notification = p_ignore;
+	}
 
 	_FORCE_INLINE_ void _update_local_transform() const;
 	_FORCE_INLINE_ void _update_rotation_and_scale() const;
@@ -207,8 +209,12 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
 	virtual Transform3D get_local_gizmo_transform() const;
-	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; };
-	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
+	virtual void set_transform_gizmo_visible(bool p_enabled) {
+		data.transform_gizmo_visible = p_enabled;
+	};
+	virtual bool is_transform_gizmo_visible() const {
+		return data.transform_gizmo_visible;
+	};
 #endif
 
 	void set_disable_gizmos(bool p_enabled);
@@ -227,7 +233,9 @@ public:
 	void set_disable_scale(bool p_enabled);
 	bool is_scale_disabled() const;
 
-	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
+	_FORCE_INLINE_ bool is_inside_world() const {
+		return data.inside_world;
+	}
 
 	Transform3D get_relative_transform(const Node *p_parent) const;
 

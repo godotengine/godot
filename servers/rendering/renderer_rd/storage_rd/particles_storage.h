@@ -407,7 +407,9 @@ public:
 
 	/* PARTICLES */
 
-	bool owns_particles(RID p_rid) { return particles_owner.owns(p_rid); }
+	bool owns_particles(RID p_rid) {
+		return particles_owner.owns(p_rid);
+	}
 
 	virtual RID particles_allocate() override;
 	virtual void particles_initialize(RID p_particles_collision) override;
@@ -525,7 +527,9 @@ public:
 
 	/* Particles Collision */
 
-	bool owns_particles_collision(RID p_rid) { return particles_collision_owner.owns(p_rid); }
+	bool owns_particles_collision(RID p_rid) {
+		return particles_collision_owner.owns(p_rid);
+	}
 
 	virtual RID particles_collision_allocate() override;
 	virtual void particles_collision_initialize(RID p_particles_collision) override;
@@ -549,7 +553,9 @@ public:
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
 
 	//used from 2D and 3D
-	bool owns_particles_collision_instance(RID p_rid) { return particles_collision_instance_owner.owns(p_rid); }
+	bool owns_particles_collision_instance(RID p_rid) {
+		return particles_collision_instance_owner.owns(p_rid);
+	}
 
 	virtual RID particles_collision_instance_create(RID p_collision) override;
 	virtual void particles_collision_instance_free(RID p_rid) override;

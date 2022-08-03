@@ -240,7 +240,9 @@ private:
 	struct _RayResult {
 		Node3D *item = nullptr;
 		real_t depth = 0;
-		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
+		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const {
+			return depth < p_rr.depth;
+		}
 	};
 
 	void _update_name();
@@ -432,14 +434,18 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_surface() { surface->update(); }
+	void update_surface() {
+		surface->update();
+	}
 	void update_transform_gizmo_view();
 
 	void set_can_preview(Camera3D *p_preview);
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 	void reset();
-	bool is_freelook_active() const { return freelook_active; }
+	bool is_freelook_active() const {
+		return freelook_active;
+	}
 
 	void focus_selection();
 
@@ -448,8 +454,12 @@ public:
 			AABB *p_preview_bounds,
 			AcceptDialog *p_accept);
 
-	SubViewport *get_viewport_node() { return viewport; }
-	Camera3D *get_camera_3d() { return camera; } // return the default camera object.
+	SubViewport *get_viewport_node() {
+		return viewport;
+	}
+	Camera3D *get_camera_3d() {
+		return camera;
+	} // return the default camera object.
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index);
 	~Node3DEditorViewport();
@@ -787,46 +797,84 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Node3DEditor *get_singleton() { return singleton; }
+	static Node3DEditor *get_singleton() {
+		return singleton;
+	}
 
 	Vector3 snap_point(Vector3 p_target, Vector3 p_start = Vector3(0, 0, 0)) const;
 
-	float get_znear() const { return settings_znear->get_value(); }
-	float get_zfar() const { return settings_zfar->get_value(); }
-	float get_fov() const { return settings_fov->get_value(); }
+	float get_znear() const {
+		return settings_znear->get_value();
+	}
+	float get_zfar() const {
+		return settings_zfar->get_value();
+	}
+	float get_fov() const {
+		return settings_fov->get_value();
+	}
 
-	Transform3D get_gizmo_transform() const { return gizmo.transform; }
+	Transform3D get_gizmo_transform() const {
+		return gizmo.transform;
+	}
 	bool is_gizmo_visible() const;
 
-	ToolMode get_tool_mode() const { return tool_mode; }
-	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
-	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
-	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
+	ToolMode get_tool_mode() const {
+		return tool_mode;
+	}
+	bool are_local_coords_enabled() const {
+		return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed();
+	}
+	void set_local_coords_enabled(bool on) const {
+		tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on);
+	}
+	bool is_snap_enabled() const {
+		return snap_enabled ^ snap_key_enabled;
+	}
 	double get_translate_snap() const;
 	double get_rotate_snap() const;
 	double get_scale_snap() const;
 
-	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
-	Ref<ArrayMesh> get_axis_gizmo(int idx) const { return axis_gizmo[idx]; }
-	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }
-	Ref<ArrayMesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
-	Ref<ArrayMesh> get_scale_gizmo(int idx) const { return scale_gizmo[idx]; }
-	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
+	Ref<ArrayMesh> get_move_gizmo(int idx) const {
+		return move_gizmo[idx];
+	}
+	Ref<ArrayMesh> get_axis_gizmo(int idx) const {
+		return axis_gizmo[idx];
+	}
+	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const {
+		return move_plane_gizmo[idx];
+	}
+	Ref<ArrayMesh> get_rotate_gizmo(int idx) const {
+		return rotate_gizmo[idx];
+	}
+	Ref<ArrayMesh> get_scale_gizmo(int idx) const {
+		return scale_gizmo[idx];
+	}
+	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const {
+		return scale_plane_gizmo[idx];
+	}
 
 	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
-	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
+	void set_custom_camera(Node *p_camera) {
+		custom_camera = p_camera;
+	}
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
+	void set_undo_redo(UndoRedo *p_undo_redo) {
+		undo_redo = p_undo_redo;
+	}
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
-	Ref<Environment> get_viewport_environment() { return viewport_environment; }
+	Ref<Environment> get_viewport_environment() {
+		return viewport_environment;
+	}
 
-	UndoRedo *get_undo_redo() { return undo_redo; }
+	UndoRedo *get_undo_redo() {
+		return undo_redo;
+	}
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
@@ -842,13 +890,19 @@ public:
 
 	VSplitContainer *get_shader_split();
 
-	Node3D *get_single_selected_node() { return selected; }
+	Node3D *get_single_selected_node() {
+		return selected;
+	}
 	bool is_current_selected_gizmo(const EditorNode3DGizmo *p_gizmo);
 	bool is_subgizmo_selected(int p_id);
 	Vector<int> get_subgizmo_selection();
 
-	Ref<EditorNode3DGizmo> get_current_hover_gizmo() const { return current_hover_gizmo; }
-	void set_current_hover_gizmo(Ref<EditorNode3DGizmo> p_gizmo) { current_hover_gizmo = p_gizmo; }
+	Ref<EditorNode3DGizmo> get_current_hover_gizmo() const {
+		return current_hover_gizmo;
+	}
+	void set_current_hover_gizmo(Ref<EditorNode3DGizmo> p_gizmo) {
+		current_hover_gizmo = p_gizmo;
+	}
 
 	void set_current_hover_gizmo_handle(int p_id, bool p_secondary) {
 		current_hover_gizmo_handle = p_id;
@@ -862,14 +916,30 @@ public:
 
 	void set_can_preview(Camera3D *p_preview);
 
-	void set_preview_material(Ref<Material> p_material) { preview_material = p_material; }
-	Ref<Material> get_preview_material() { return preview_material; }
-	void set_preview_reset_material(Ref<Material> p_material) { preview_reset_material = p_material; }
-	Ref<Material> get_preview_reset_material() const { return preview_reset_material; }
-	void set_preview_material_target(ObjectID p_object_id) { preview_material_target = p_object_id; }
-	ObjectID get_preview_material_target() const { return preview_material_target; }
-	void set_preview_material_surface(int p_surface) { preview_material_surface = p_surface; }
-	int get_preview_material_surface() const { return preview_material_surface; }
+	void set_preview_material(Ref<Material> p_material) {
+		preview_material = p_material;
+	}
+	Ref<Material> get_preview_material() {
+		return preview_material;
+	}
+	void set_preview_reset_material(Ref<Material> p_material) {
+		preview_reset_material = p_material;
+	}
+	Ref<Material> get_preview_reset_material() const {
+		return preview_reset_material;
+	}
+	void set_preview_material_target(ObjectID p_object_id) {
+		preview_material_target = p_object_id;
+	}
+	ObjectID get_preview_material_target() const {
+		return preview_material_target;
+	}
+	void set_preview_material_surface(int p_surface) {
+		preview_material_surface = p_surface;
+	}
+	int get_preview_material_surface() const {
+		return preview_material_surface;
+	}
 
 	Node3DEditorViewport *get_editor_viewport(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
@@ -892,16 +962,24 @@ class Node3DEditorPlugin : public EditorPlugin {
 	Node3DEditor *spatial_editor = nullptr;
 
 public:
-	Node3DEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_name() const override { return "3D"; }
-	bool has_main_screen() const override { return true; }
+	Node3DEditor *get_spatial_editor() {
+		return spatial_editor;
+	}
+	virtual String get_name() const override {
+		return "3D";
+	}
+	bool has_main_screen() const override {
+		return true;
+	}
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 
 	virtual Dictionary get_state() const override;
 	virtual void set_state(const Dictionary &p_state) override;
-	virtual void clear() override { spatial_editor->clear(); }
+	virtual void clear() override {
+		spatial_editor->clear();
+	}
 
 	virtual void edited_scene_changed() override;
 

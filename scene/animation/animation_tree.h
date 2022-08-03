@@ -226,18 +226,24 @@ private:
 		float init_value = 0;
 		float value = 0;
 		int shape_index = -1;
-		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
+		TrackCacheBlendShape() {
+			type = Animation::TYPE_BLEND_SHAPE;
+		}
 	};
 
 	struct TrackCacheValue : public TrackCache {
 		Variant init_value;
 		Variant value;
 		Vector<StringName> subpath;
-		TrackCacheValue() { type = Animation::TYPE_VALUE; }
+		TrackCacheValue() {
+			type = Animation::TYPE_VALUE;
+		}
 	};
 
 	struct TrackCacheMethod : public TrackCache {
-		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
+		TrackCacheMethod() {
+			type = Animation::TYPE_METHOD;
+		}
 	};
 
 	struct TrackCacheBezier : public TrackCache {

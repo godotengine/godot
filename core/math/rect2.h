@@ -42,14 +42,26 @@ struct _NO_DISCARD_ Rect2 {
 	Point2 position;
 	Size2 size;
 
-	const Vector2 &get_position() const { return position; }
-	void set_position(const Vector2 &p_pos) { position = p_pos; }
-	const Vector2 &get_size() const { return size; }
-	void set_size(const Vector2 &p_size) { size = p_size; }
+	const Vector2 &get_position() const {
+		return position;
+	}
+	void set_position(const Vector2 &p_pos) {
+		position = p_pos;
+	}
+	const Vector2 &get_size() const {
+		return size;
+	}
+	void set_size(const Vector2 &p_size) {
+		size = p_size;
+	}
 
-	real_t get_area() const { return size.width * size.height; }
+	real_t get_area() const {
+		return size.width * size.height;
+	}
 
-	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
+	_FORCE_INLINE_ Vector2 get_center() const {
+		return position + (size * 0.5f);
+	}
 
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 #ifdef MATH_CHECKS
@@ -208,8 +220,12 @@ struct _NO_DISCARD_ Rect2 {
 
 	bool is_equal_approx(const Rect2 &p_rect) const;
 
-	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	bool operator==(const Rect2 &p_rect) const {
+		return position == p_rect.position && size == p_rect.size;
+	}
+	bool operator!=(const Rect2 &p_rect) const {
+		return position != p_rect.position || size != p_rect.size;
+	}
 
 	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;

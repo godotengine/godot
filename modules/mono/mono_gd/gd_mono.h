@@ -197,33 +197,57 @@ public:
 	String update_api_assemblies_from_prebuilt(const String &p_config, const bool *p_core_api_out_of_sync = nullptr, const bool *p_editor_api_out_of_sync = nullptr);
 #endif
 
-	static GDMono *get_singleton() { return singleton; }
+	static GDMono *get_singleton() {
+		return singleton;
+	}
 
 	[[noreturn]] static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
 
-	UnhandledExceptionPolicy get_unhandled_exception_policy() const { return unhandled_exception_policy; }
+	UnhandledExceptionPolicy get_unhandled_exception_policy() const {
+		return unhandled_exception_policy;
+	}
 
 	// Do not use these, unless you know what you're doing
 	void add_assembly(int32_t p_domain_id, GDMonoAssembly *p_assembly);
 	GDMonoAssembly *get_loaded_assembly(const String &p_name);
 
-	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */; }
+	_FORCE_INLINE_ bool is_runtime_initialized() const {
+		return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */;
+	}
 
-	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
+	_FORCE_INLINE_ bool is_finalizing_scripts_domain() {
+		return finalizing_scripts_domain;
+	}
 
-	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
+	_FORCE_INLINE_ MonoDomain *get_scripts_domain() {
+		return scripts_domain;
+	}
 
-	_FORCE_INLINE_ GDMonoAssembly *get_corlib_assembly() const { return corlib_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const { return core_api_assembly.assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_project_assembly() const { return project_assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_corlib_assembly() const {
+		return corlib_assembly;
+	}
+	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const {
+		return core_api_assembly.assembly;
+	}
+	_FORCE_INLINE_ GDMonoAssembly *get_project_assembly() const {
+		return project_assembly;
+	}
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ GDMonoAssembly *get_editor_api_assembly() const { return editor_api_assembly.assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_tools_assembly() const { return tools_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_tools_project_editor_assembly() const { return tools_project_editor_assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_editor_api_assembly() const {
+		return editor_api_assembly.assembly;
+	}
+	_FORCE_INLINE_ GDMonoAssembly *get_tools_assembly() const {
+		return tools_assembly;
+	}
+	_FORCE_INLINE_ GDMonoAssembly *get_tools_project_editor_assembly() const {
+		return tools_project_editor_assembly;
+	}
 #endif
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-	const MonoRegInfo &get_mono_reg_info() { return mono_reg_info; }
+	const MonoRegInfo &get_mono_reg_info() {
+		return mono_reg_info;
+	}
 #endif
 
 	GDMonoClass *get_class(MonoClass *p_raw_class);
@@ -309,7 +333,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static GodotSharp *get_singleton() { return singleton; }
+	static GodotSharp *get_singleton() {
+		return singleton;
+	}
 
 	void attach_thread();
 	void detach_thread();

@@ -240,7 +240,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static JavaClassWrapper *get_singleton() { return singleton; }
+	static JavaClassWrapper *get_singleton() {
+		return singleton;
+	}
 
 	Ref<JavaClass> wrap(const String &p_class);
 

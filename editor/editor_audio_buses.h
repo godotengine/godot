@@ -94,7 +94,9 @@ class EditorAudioBus : public PanelContainer {
 	void _bus_popup_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);
-	void _name_focus_exit() { _name_changed(track_name->get_text()); }
+	void _name_focus_exit() {
+		_name_changed(track_name->get_text());
+	}
 	void _volume_changed(float p_normalized);
 	float _normalized_volume_to_scaled_db(float normalized);
 	float _scaled_db_to_normalized_volume(float db);
@@ -265,8 +267,12 @@ class AudioBusesEditorPlugin : public EditorPlugin {
 	EditorAudioBuses *audio_bus_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "SampleLibrary"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "SampleLibrary";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;

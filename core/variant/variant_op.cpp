@@ -62,7 +62,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(left).x, PtrToArg<Vector2i>::convert(left).y) * PtrToArg<double>::convert(right), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector2>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector2>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -80,7 +82,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(right).x, PtrToArg<Vector2i>::convert(right).y) * PtrToArg<double>::convert(left), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector2>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector2>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -103,7 +107,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(left).x, PtrToArg<Vector2i>::convert(left).y) / PtrToArg<double>::convert(right), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector2>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector2>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -121,7 +127,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(left).x, PtrToArg<Vector3i>::convert(left).y, PtrToArg<Vector3i>::convert(left).z) * PtrToArg<double>::convert(right), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector3>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector3>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -139,7 +147,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(right).x, PtrToArg<Vector3i>::convert(right).y, PtrToArg<Vector3i>::convert(right).z) * PtrToArg<double>::convert(left), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector3>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector3>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -162,7 +172,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(left).x, PtrToArg<Vector3i>::convert(left).y, PtrToArg<Vector3i>::convert(left).z) / PtrToArg<double>::convert(right), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector3>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector3>::VARIANT_TYPE;
+	}
 };
 
 //
@@ -182,7 +194,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector4>::encode(Vector4(PtrToArg<Vector4i>::convert(left).x, PtrToArg<Vector4i>::convert(left).y, PtrToArg<Vector4i>::convert(left).z, PtrToArg<Vector4i>::convert(left).w) * PtrToArg<double>::convert(right), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector4>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector4>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -200,7 +214,9 @@ public:
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector4>::encode(Vector4(PtrToArg<Vector4i>::convert(right).x, PtrToArg<Vector4i>::convert(right).y, PtrToArg<Vector4i>::convert(right).z, PtrToArg<Vector4i>::convert(right).w) * PtrToArg<double>::convert(left), r_ret);
 	}
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector4>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector4>::VARIANT_TYPE;
+	}
 };
 
 template <>
@@ -226,7 +242,9 @@ public:
 		PtrToArg<Vector4>::encode(Vector4(PtrToArg<Vector4i>::convert(left).x, PtrToArg<Vector4i>::convert(left).y, PtrToArg<Vector4i>::convert(left).z, PtrToArg<Vector4i>::convert(left).w) / PtrToArg<double>::convert(right), r_ret);
 	}
 
-	static Variant::Type get_return_type() { return GetTypeInfo<Vector4>::VARIANT_TYPE; }
+	static Variant::Type get_return_type() {
+		return GetTypeInfo<Vector4>::VARIANT_TYPE;
+	}
 };
 
 void Variant::_register_variant_operators() {

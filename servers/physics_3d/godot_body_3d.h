@@ -181,43 +181,95 @@ public:
 			set_active(true);
 		}
 	}
-	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
+	_FORCE_INLINE_ int get_max_contacts_reported() const {
+		return contacts.size();
+	}
 
-	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.is_empty(); }
+	_FORCE_INLINE_ bool can_report_contacts() const {
+		return !contacts.is_empty();
+	}
 	_FORCE_INLINE_ void add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos);
 
-	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
-	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
-	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
-	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
+	_FORCE_INLINE_ void add_exception(const RID &p_exception) {
+		exceptions.insert(p_exception);
+	}
+	_FORCE_INLINE_ void remove_exception(const RID &p_exception) {
+		exceptions.erase(p_exception);
+	}
+	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const {
+		return exceptions.has(p_exception);
+	}
+	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const {
+		return exceptions;
+	}
 
-	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
-	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+	_FORCE_INLINE_ uint64_t get_island_step() const {
+		return island_step;
+	}
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) {
+		island_step = p_step;
+	}
 
-	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
-	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraint_map.erase(p_constraint); }
-	const HashMap<GodotConstraint3D *, int> &get_constraint_map() const { return constraint_map; }
-	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
+	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint, int p_pos) {
+		constraint_map[p_constraint] = p_pos;
+	}
+	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) {
+		constraint_map.erase(p_constraint);
+	}
+	const HashMap<GodotConstraint3D *, int> &get_constraint_map() const {
+		return constraint_map;
+	}
+	_FORCE_INLINE_ void clear_constraint_map() {
+		constraint_map.clear();
+	}
 
-	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
-	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
+	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) {
+		omit_force_integration = p_omit_force_integration;
+	}
+	_FORCE_INLINE_ bool get_omit_force_integration() const {
+		return omit_force_integration;
+	}
 
-	_FORCE_INLINE_ Basis get_principal_inertia_axes() const { return principal_inertia_axes; }
-	_FORCE_INLINE_ Vector3 get_center_of_mass() const { return center_of_mass; }
-	_FORCE_INLINE_ Vector3 get_center_of_mass_local() const { return center_of_mass_local; }
-	_FORCE_INLINE_ Vector3 xform_local_to_principal(const Vector3 &p_pos) const { return principal_inertia_axes_local.xform(p_pos - center_of_mass_local); }
+	_FORCE_INLINE_ Basis get_principal_inertia_axes() const {
+		return principal_inertia_axes;
+	}
+	_FORCE_INLINE_ Vector3 get_center_of_mass() const {
+		return center_of_mass;
+	}
+	_FORCE_INLINE_ Vector3 get_center_of_mass_local() const {
+		return center_of_mass_local;
+	}
+	_FORCE_INLINE_ Vector3 xform_local_to_principal(const Vector3 &p_pos) const {
+		return principal_inertia_axes_local.xform(p_pos - center_of_mass_local);
+	}
 
-	_FORCE_INLINE_ void set_linear_velocity(const Vector3 &p_velocity) { linear_velocity = p_velocity; }
-	_FORCE_INLINE_ Vector3 get_linear_velocity() const { return linear_velocity; }
+	_FORCE_INLINE_ void set_linear_velocity(const Vector3 &p_velocity) {
+		linear_velocity = p_velocity;
+	}
+	_FORCE_INLINE_ Vector3 get_linear_velocity() const {
+		return linear_velocity;
+	}
 
-	_FORCE_INLINE_ void set_angular_velocity(const Vector3 &p_velocity) { angular_velocity = p_velocity; }
-	_FORCE_INLINE_ Vector3 get_angular_velocity() const { return angular_velocity; }
+	_FORCE_INLINE_ void set_angular_velocity(const Vector3 &p_velocity) {
+		angular_velocity = p_velocity;
+	}
+	_FORCE_INLINE_ Vector3 get_angular_velocity() const {
+		return angular_velocity;
+	}
 
-	_FORCE_INLINE_ Vector3 get_prev_linear_velocity() const { return prev_linear_velocity; }
-	_FORCE_INLINE_ Vector3 get_prev_angular_velocity() const { return prev_angular_velocity; }
+	_FORCE_INLINE_ Vector3 get_prev_linear_velocity() const {
+		return prev_linear_velocity;
+	}
+	_FORCE_INLINE_ Vector3 get_prev_angular_velocity() const {
+		return prev_angular_velocity;
+	}
 
-	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const { return biased_linear_velocity; }
-	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const { return biased_angular_velocity; }
+	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const {
+		return biased_linear_velocity;
+	}
+	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const {
+		return biased_angular_velocity;
+	}
 
 	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_impulse) {
 		linear_velocity += p_impulse * _inv_mass;
@@ -273,14 +325,24 @@ public:
 		constant_torque += p_torque;
 	}
 
-	void set_constant_force(const Vector3 &p_force) { constant_force = p_force; }
-	Vector3 get_constant_force() const { return constant_force; }
+	void set_constant_force(const Vector3 &p_force) {
+		constant_force = p_force;
+	}
+	Vector3 get_constant_force() const {
+		return constant_force;
+	}
 
-	void set_constant_torque(const Vector3 &p_torque) { constant_torque = p_torque; }
-	Vector3 get_constant_torque() const { return constant_torque; }
+	void set_constant_torque(const Vector3 &p_torque) {
+		constant_torque = p_torque;
+	}
+	Vector3 get_constant_torque() const {
+		return constant_torque;
+	}
 
 	void set_active(bool p_active);
-	_FORCE_INLINE_ bool is_active() const { return active; }
+	_FORCE_INLINE_ bool is_active() const {
+		return active;
+	}
 
 	_FORCE_INLINE_ void wakeup() {
 		if ((!get_space()) || mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
@@ -298,19 +360,33 @@ public:
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 
-	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
-	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }
+	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) {
+		continuous_cd = p_enable;
+	}
+	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const {
+		return continuous_cd;
+	}
 
 	void set_space(GodotSpace3D *p_space) override;
 
 	void update_mass_properties();
 	void reset_mass_properties();
 
-	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
-	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
+	_FORCE_INLINE_ real_t get_inv_mass() const {
+		return _inv_mass;
+	}
+	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const {
+		return _inv_inertia;
+	}
+	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const {
+		return _inv_inertia_tensor;
+	}
+	_FORCE_INLINE_ real_t get_friction() const {
+		return friction;
+	}
+	_FORCE_INLINE_ real_t get_bounce() const {
+		return bounce;
+	}
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
 	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;

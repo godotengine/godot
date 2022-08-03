@@ -80,7 +80,9 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
-	virtual Ref<Image> get_image() const { return Ref<Image>(); }
+	virtual Ref<Image> get_image() const {
+		return Ref<Image>();
+	}
 
 	Texture2D();
 };
@@ -716,8 +718,12 @@ public:
 
 	virtual RID get_rid() const override;
 
-	virtual int get_height() const override { return 1; }
-	virtual bool has_alpha() const override { return false; }
+	virtual int get_height() const override {
+		return 1;
+	}
+	virtual bool has_alpha() const override {
+		return false;
+	}
 
 	CurveTexture();
 	~CurveTexture();
@@ -759,8 +765,12 @@ public:
 
 	virtual RID get_rid() const override;
 
-	virtual int get_height() const override { return 1; }
-	virtual bool has_alpha() const override { return false; }
+	virtual int get_height() const override {
+		return 1;
+	}
+	virtual bool has_alpha() const override {
+		return false;
+	}
 
 	CurveXYZTexture();
 	~CurveXYZTexture();
@@ -801,9 +811,15 @@ public:
 	void set_use_hdr(bool p_enabled);
 	bool is_using_hdr() const;
 
-	virtual RID get_rid() const override { return texture; }
-	virtual int get_height() const override { return 1; }
-	virtual bool has_alpha() const override { return true; }
+	virtual RID get_rid() const override {
+		return texture;
+	}
+	virtual int get_height() const override {
+		return 1;
+	}
+	virtual bool has_alpha() const override {
+		return true;
+	}
 
 	virtual Ref<Image> get_image() const override;
 
@@ -872,7 +888,9 @@ public:
 	Repeat get_repeat() const;
 
 	virtual RID get_rid() const override;
-	virtual bool has_alpha() const override { return true; }
+	virtual bool has_alpha() const override {
+		return true;
+	}
 	virtual Ref<Image> get_image() const override;
 
 	GradientTexture2D();

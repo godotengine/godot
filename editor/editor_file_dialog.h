@@ -231,7 +231,9 @@ public:
 	FileMode get_file_mode() const;
 
 	VBoxContainer *get_vbox();
-	LineEdit *get_line_edit() { return file; }
+	LineEdit *get_line_edit() {
+		return file;
+	}
 
 	void set_access(Access p_access);
 	Access get_access() const;

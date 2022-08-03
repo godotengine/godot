@@ -67,7 +67,9 @@ private:
 	static const char *feature_descriptions[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
 
-	String _get_feature_name(Feature p_feature) { return get_feature_name(p_feature); }
+	String _get_feature_name(Feature p_feature) {
+		return get_feature_name(p_feature);
+	}
 
 protected:
 	static void _bind_methods();
@@ -176,7 +178,9 @@ public:
 	Ref<EditorFeatureProfile> get_current_profile();
 	void notify_changed();
 
-	static EditorFeatureProfileManager *get_singleton() { return singleton; }
+	static EditorFeatureProfileManager *get_singleton() {
+		return singleton;
+	}
 	EditorFeatureProfileManager();
 };
 

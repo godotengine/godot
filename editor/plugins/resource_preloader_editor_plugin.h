@@ -78,7 +78,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
+	void set_undo_redo(UndoRedo *p_undo_redo) {
+		undo_redo = p_undo_redo;
+	}
 
 	void edit(ResourcePreloader *p_preloader);
 	ResourcePreloaderEditor();
@@ -91,8 +93,12 @@ class ResourcePreloaderEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "ResourcePreloader"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "ResourcePreloader";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

@@ -98,21 +98,35 @@ protected:
 	static void _bind_methods();
 
 public:
-	Path3D *get_edited_path() { return path; }
+	Path3D *get_edited_path() {
+		return path;
+	}
 
 	static Path3DEditorPlugin *singleton;
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	virtual String get_name() const override { return "Path3D"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "Path3D";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	bool mirror_angle_enabled() { return mirror_handle_angle; }
-	bool mirror_length_enabled() { return mirror_handle_length; }
-	bool is_handle_clicked() { return handle_clicked; }
-	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
+	bool mirror_angle_enabled() {
+		return mirror_handle_angle;
+	}
+	bool mirror_length_enabled() {
+		return mirror_handle_length;
+	}
+	bool is_handle_clicked() {
+		return handle_clicked;
+	}
+	void set_handle_clicked(bool clicked) {
+		handle_clicked = clicked;
+	}
 
 	Path3DEditorPlugin();
 	~Path3DEditorPlugin();

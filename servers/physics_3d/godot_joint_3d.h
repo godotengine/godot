@@ -40,8 +40,12 @@ protected:
 	bool dynamic_B = false;
 
 public:
-	virtual bool setup(real_t p_step) override { return false; }
-	virtual bool pre_solve(real_t p_step) override { return true; }
+	virtual bool setup(real_t p_step) override {
+		return false;
+	}
+	virtual bool pre_solve(real_t p_step) override {
+		return true;
+	}
 	virtual void solve(real_t p_step) override {}
 
 	void copy_settings_from(GodotJoint3D *p_joint) {
@@ -50,7 +54,9 @@ public:
 		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
 	}
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
+	virtual PhysicsServer3D::JointType get_type() const {
+		return PhysicsServer3D::JOINT_TYPE_MAX;
+	}
 	_FORCE_INLINE_ GodotJoint3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) :
 			GodotConstraint3D(p_body_ptr, p_body_count) {
 	}

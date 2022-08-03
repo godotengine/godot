@@ -111,10 +111,16 @@ public:
 	void add_pack_source(PackSource *p_source);
 	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
 
-	void set_disabled(bool p_disabled) { disabled = p_disabled; }
-	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
+	void set_disabled(bool p_disabled) {
+		disabled = p_disabled;
+	}
+	_FORCE_INLINE_ bool is_disabled() const {
+		return disabled;
+	}
 
-	static PackedData *get_singleton() { return singleton; }
+	static PackedData *get_singleton() {
+		return singleton;
+	}
 	Error add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset);
 
 	_FORCE_INLINE_ Ref<FileAccess> try_open_path(const String &p_path);
@@ -149,9 +155,15 @@ class FileAccessPack : public FileAccess {
 
 	Ref<FileAccess> f;
 	virtual Error _open(const String &p_path, int p_mode_flags) override;
-	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
-	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
+	virtual uint64_t _get_modified_time(const String &p_file) override {
+		return 0;
+	}
+	virtual uint32_t _get_unix_permissions(const String &p_file) override {
+		return 0;
+	}
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override {
+		return FAILED;
+	}
 
 public:
 	virtual bool is_open() const override;
@@ -239,9 +251,15 @@ public:
 
 	uint64_t get_space_left() override;
 
-	virtual bool is_link(String p_file) override { return false; }
-	virtual String read_link(String p_file) override { return p_file; }
-	virtual Error create_link(String p_source, String p_target) override { return FAILED; }
+	virtual bool is_link(String p_file) override {
+		return false;
+	}
+	virtual String read_link(String p_file) override {
+		return p_file;
+	}
+	virtual Error create_link(String p_source, String p_target) override {
+		return FAILED;
+	}
 
 	virtual String get_filesystem_type() const override;
 

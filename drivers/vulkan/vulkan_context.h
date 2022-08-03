@@ -270,22 +270,40 @@ public:
 	// Extension calls
 	VkResult vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
 
-	uint32_t get_vulkan_major() const { return vulkan_major; };
-	uint32_t get_vulkan_minor() const { return vulkan_minor; };
-	const SubgroupCapabilities &get_subgroup_capabilities() const { return subgroup_capabilities; };
-	const MultiviewCapabilities &get_multiview_capabilities() const { return multiview_capabilities; };
-	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
-	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
-	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
+	uint32_t get_vulkan_major() const {
+		return vulkan_major;
+	};
+	uint32_t get_vulkan_minor() const {
+		return vulkan_minor;
+	};
+	const SubgroupCapabilities &get_subgroup_capabilities() const {
+		return subgroup_capabilities;
+	};
+	const MultiviewCapabilities &get_multiview_capabilities() const {
+		return multiview_capabilities;
+	};
+	const VRSCapabilities &get_vrs_capabilities() const {
+		return vrs_capabilities;
+	};
+	const ShaderCapabilities &get_shader_capabilities() const {
+		return shader_capabilities;
+	};
+	const StorageBufferCapabilities &get_storage_buffer_capabilities() const {
+		return storage_buffer_capabilities;
+	};
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
-	VkInstance get_instance() { return inst; }
+	VkInstance get_instance() {
+		return inst;
+	}
 	int get_swapchain_image_count() const;
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
 
-	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; };
+	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) {
+		vulkan_hooks = p_vulkan_hooks;
+	};
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);

@@ -44,22 +44,40 @@ protected:
 	bool dynamic_B = false;
 
 public:
-	_FORCE_INLINE_ void set_max_force(real_t p_force) { max_force = p_force; }
-	_FORCE_INLINE_ real_t get_max_force() const { return max_force; }
+	_FORCE_INLINE_ void set_max_force(real_t p_force) {
+		max_force = p_force;
+	}
+	_FORCE_INLINE_ real_t get_max_force() const {
+		return max_force;
+	}
 
-	_FORCE_INLINE_ void set_bias(real_t p_bias) { bias = p_bias; }
-	_FORCE_INLINE_ real_t get_bias() const { return bias; }
+	_FORCE_INLINE_ void set_bias(real_t p_bias) {
+		bias = p_bias;
+	}
+	_FORCE_INLINE_ real_t get_bias() const {
+		return bias;
+	}
 
-	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias = p_bias; }
-	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
+	_FORCE_INLINE_ void set_max_bias(real_t p_bias) {
+		max_bias = p_bias;
+	}
+	_FORCE_INLINE_ real_t get_max_bias() const {
+		return max_bias;
+	}
 
-	virtual bool setup(real_t p_step) override { return false; }
-	virtual bool pre_solve(real_t p_step) override { return false; }
+	virtual bool setup(real_t p_step) override {
+		return false;
+	}
+	virtual bool pre_solve(real_t p_step) override {
+		return false;
+	}
 	virtual void solve(real_t p_step) override {}
 
 	void copy_settings_from(GodotJoint2D *p_joint);
 
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_MAX; }
+	virtual PhysicsServer2D::JointType get_type() const {
+		return PhysicsServer2D::JOINT_TYPE_MAX;
+	}
 	GodotJoint2D(GodotBody2D **p_body_ptr = nullptr, int p_body_count = 0) :
 			GodotConstraint2D(p_body_ptr, p_body_count) {}
 
@@ -92,7 +110,9 @@ class GodotPinJoint2D : public GodotJoint2D {
 	real_t softness = 0.0;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_PIN; }
+	virtual PhysicsServer2D::JointType get_type() const override {
+		return PhysicsServer2D::JOINT_TYPE_PIN;
+	}
 
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
@@ -129,7 +149,9 @@ class GodotGrooveJoint2D : public GodotJoint2D {
 	bool correct = false;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
+	virtual PhysicsServer2D::JointType get_type() const override {
+		return PhysicsServer2D::JOINT_TYPE_GROOVE;
+	}
 
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
@@ -163,7 +185,9 @@ class GodotDampedSpringJoint2D : public GodotJoint2D {
 	real_t v_coef = 0.0;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }
+	virtual PhysicsServer2D::JointType get_type() const override {
+		return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING;
+	}
 
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;

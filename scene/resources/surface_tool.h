@@ -191,7 +191,9 @@ public:
 
 	void clear();
 
-	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
+	LocalVector<Vertex> &get_vertex_array() {
+		return vertex_array;
+	}
 
 	void create_from_triangle_arrays(const Array &p_arrays);
 	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint32_t *r_format = nullptr);

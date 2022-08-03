@@ -80,7 +80,9 @@ public:
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
 
-	static Config *get_singleton() { return singleton; };
+	static Config *get_singleton() {
+		return singleton;
+	};
 
 	Config();
 	~Config();

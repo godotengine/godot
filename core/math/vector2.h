@@ -132,24 +132,36 @@ struct _NO_DISCARD_ Vector2 {
 
 	Vector2 operator*(const real_t &rvalue) const;
 	void operator*=(const real_t &rvalue);
-	void operator*=(const Vector2 &rvalue) { *this = *this * rvalue; }
+	void operator*=(const Vector2 &rvalue) {
+		*this = *this * rvalue;
+	}
 
 	Vector2 operator/(const Vector2 &p_v1) const;
 
 	Vector2 operator/(const real_t &rvalue) const;
 
 	void operator/=(const real_t &rvalue);
-	void operator/=(const Vector2 &rvalue) { *this = *this / rvalue; }
+	void operator/=(const Vector2 &rvalue) {
+		*this = *this / rvalue;
+	}
 
 	Vector2 operator-() const;
 
 	bool operator==(const Vector2 &p_vec2) const;
 	bool operator!=(const Vector2 &p_vec2) const;
 
-	bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	bool operator<(const Vector2 &p_vec2) const {
+		return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x);
+	}
+	bool operator>(const Vector2 &p_vec2) const {
+		return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x);
+	}
+	bool operator<=(const Vector2 &p_vec2) const {
+		return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x);
+	}
+	bool operator>=(const Vector2 &p_vec2) const {
+		return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x);
+	}
 
 	real_t angle() const;
 	static Vector2 from_angle(const real_t p_angle);
@@ -169,7 +181,9 @@ struct _NO_DISCARD_ Vector2 {
 	Vector2 round() const;
 	Vector2 snapped(const Vector2 &p_by) const;
 	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;
-	real_t aspect() const { return width / height; }
+	real_t aspect() const {
+		return width / height;
+	}
 
 	operator String() const;
 	operator Vector2i() const;

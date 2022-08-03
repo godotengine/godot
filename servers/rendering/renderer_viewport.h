@@ -131,7 +131,9 @@ public:
 				int64_t sign = p_layer < 0 ? -1 : 1;
 				stacking = sign * (((int64_t)ABS(p_layer)) << 32) + p_sublayer;
 			}
-			int get_layer() const { return stacking >> 32; }
+			int get_layer() const {
+				return stacking >> 32;
+			}
 		};
 
 		struct CanvasData {

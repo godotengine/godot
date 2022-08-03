@@ -103,7 +103,9 @@ class EditorResourcePicker : public HBoxContainer {
 protected:
 	virtual void _update_resource();
 
-	Button *get_assign_button() { return assign_button; }
+	Button *get_assign_button() {
+		return assign_button;
+	}
 	static void _bind_methods();
 	void _notification(int p_what);
 

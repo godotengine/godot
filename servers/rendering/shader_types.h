@@ -49,7 +49,9 @@ class ShaderTypes {
 	List<String> shader_types_list;
 
 public:
-	static ShaderTypes *get_singleton() { return singleton; }
+	static ShaderTypes *get_singleton() {
+		return singleton;
+	}
 
 	const HashMap<StringName, ShaderLanguage::FunctionInfo> &get_functions(RS::ShaderMode p_mode) const;
 	const Vector<ShaderLanguage::ModeInfo> &get_modes(RS::ShaderMode p_mode) const;

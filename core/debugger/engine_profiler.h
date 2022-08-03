@@ -52,7 +52,9 @@ public:
 
 	Error bind(const String &p_name);
 	Error unbind();
-	bool is_bound() const { return registration.length() > 0; }
+	bool is_bound() const {
+		return registration.length() > 0;
+	}
 
 	GDVIRTUAL2(_toggle, bool, Array);
 	GDVIRTUAL1(_add_frame, Array);

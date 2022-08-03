@@ -99,10 +99,18 @@ protected:
 	void initialized(const Variant &p_params);
 
 public:
-	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
-	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
-	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
-	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
+	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() {
+		return singleton;
+	}
+	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() {
+		return workspace;
+	}
+	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() {
+		return text_document;
+	}
+	_FORCE_INLINE_ bool is_initialized() const {
+		return _initialized;
+	}
 
 	void poll();
 	Error start(int p_port, const IPAddress &p_bind_ip);

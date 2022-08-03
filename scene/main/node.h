@@ -76,11 +76,15 @@ public:
 	};
 
 	struct Comparator {
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
+		bool operator()(const Node *p_a, const Node *p_b) const {
+			return p_b->is_greater_than(p_a);
+		}
 	};
 
 	struct ComparatorWithPriority {
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
+		bool operator()(const Node *p_a, const Node *p_b) const {
+			return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority;
+		}
 	};
 
 	static int orphan_node_count;
@@ -186,8 +190,12 @@ private:
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
-	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
+	_FORCE_INLINE_ bool _is_internal_front() const {
+		return data.parent && data.pos < data.parent->data.internal_children_front;
+	}
+	_FORCE_INLINE_ bool _is_internal_back() const {
+		return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back;
+	}
 
 	friend class SceneTree;
 
@@ -201,8 +209,12 @@ private:
 	void _acquire_unique_name_in_owner();
 
 protected:
-	void _block() { data.blocked++; }
-	void _unblock() { data.blocked--; }
+	void _block() {
+		data.blocked++;
+	}
+	void _unblock() {
+		data.blocked--;
+	}
 
 	void _notification(int p_notification);
 
@@ -325,7 +337,9 @@ public:
 		return data.tree;
 	}
 
-	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
+	_FORCE_INLINE_ bool is_inside_tree() const {
+		return data.inside_tree;
+	}
 
 	bool is_ancestor_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
@@ -465,7 +479,9 @@ public:
 	//hacks for speed
 	static void init_node_hrcr();
 
-	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
+	void force_parent_owned() {
+		data.parent_owned = true;
+	} //hack to avoid duplicate nodes
 
 	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
 	NodePath get_import_path() const;
@@ -476,7 +492,9 @@ public:
 
 	void clear_internal_tree_resource_paths();
 
-	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
+	_FORCE_INLINE_ Viewport *get_viewport() const {
+		return data.viewport;
+	}
 
 	virtual TypedArray<String> get_configuration_warnings() const;
 	String get_configuration_warnings_as_string() const;

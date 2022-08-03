@@ -238,7 +238,9 @@ struct _EVCSort {
 	bool save = false;
 	bool restart_if_changed = false;
 
-	bool operator<(const _EVCSort &p_vcs) const { return order < p_vcs.order; }
+	bool operator<(const _EVCSort &p_vcs) const {
+		return order < p_vcs.order;
+	}
 };
 
 void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {

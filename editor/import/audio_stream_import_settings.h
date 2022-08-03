@@ -106,7 +106,9 @@ protected:
 public:
 	void edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream);
 
-	static AudioStreamImportSettings *get_singleton() { return singleton; }
+	static AudioStreamImportSettings *get_singleton() {
+		return singleton;
+	}
 
 	AudioStreamImportSettings();
 };

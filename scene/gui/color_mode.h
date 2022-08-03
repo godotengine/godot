@@ -41,7 +41,9 @@ public:
 
 	virtual String get_name() const = 0;
 
-	virtual int get_slider_count() const { return 3; };
+	virtual int get_slider_count() const {
+		return 3;
+	};
 	virtual float get_slider_step() const = 0;
 	virtual String get_slider_label(int idx) const = 0;
 	virtual float get_slider_max(int idx) const = 0;
@@ -50,8 +52,12 @@ public:
 	virtual Color get_color() const = 0;
 
 	virtual void slider_draw(int p_which) = 0;
-	virtual bool apply_theme() const { return false; }
-	virtual ColorPicker::PickerShapeType get_shape_override() const { return ColorPicker::SHAPE_MAX; }
+	virtual bool apply_theme() const {
+		return false;
+	}
+	virtual ColorPicker::PickerShapeType get_shape_override() const {
+		return ColorPicker::SHAPE_MAX;
+	}
 
 	ColorMode(ColorPicker *p_color_picker);
 	virtual ~ColorMode(){};
@@ -62,9 +68,13 @@ public:
 	String labels[3] = { "H", "S", "V" };
 	float slider_max[4] = { 359, 100, 100, 255 };
 
-	virtual String get_name() const override { return "HSV"; }
+	virtual String get_name() const override {
+		return "HSV";
+	}
 
-	virtual float get_slider_step() const override { return 1.0; }
+	virtual float get_slider_step() const override {
+		return 1.0;
+	}
 	virtual String get_slider_label(int idx) const override;
 	virtual float get_slider_max(int idx) const override;
 	virtual float get_slider_value(int idx) const override;
@@ -81,9 +91,13 @@ class ColorModeRGB : public ColorMode {
 public:
 	String labels[3] = { "R", "G", "B" };
 
-	virtual String get_name() const override { return "RGB"; }
+	virtual String get_name() const override {
+		return "RGB";
+	}
 
-	virtual float get_slider_step() const override { return 1; }
+	virtual float get_slider_step() const override {
+		return 1;
+	}
 	virtual String get_slider_label(int idx) const override;
 	virtual float get_slider_max(int idx) const override;
 	virtual float get_slider_value(int idx) const override;
@@ -101,9 +115,13 @@ public:
 	String labels[3] = { "R", "G", "B" };
 	float slider_max[4] = { 100, 100, 100, 1 };
 
-	virtual String get_name() const override { return "RAW"; }
+	virtual String get_name() const override {
+		return "RAW";
+	}
 
-	virtual float get_slider_step() const override { return 0.01; }
+	virtual float get_slider_step() const override {
+		return 0.01;
+	}
 	virtual String get_slider_label(int idx) const override;
 	virtual float get_slider_max(int idx) const override;
 	virtual float get_slider_value(int idx) const override;
@@ -122,9 +140,13 @@ public:
 	String labels[3] = { "H", "S", "L" };
 	float slider_max[4] = { 359, 100, 100, 255 };
 
-	virtual String get_name() const override { return "OKHSL"; }
+	virtual String get_name() const override {
+		return "OKHSL";
+	}
 
-	virtual float get_slider_step() const override { return 1.0; }
+	virtual float get_slider_step() const override {
+		return 1.0;
+	}
 	virtual String get_slider_label(int idx) const override;
 	virtual float get_slider_max(int idx) const override;
 	virtual float get_slider_value(int idx) const override;
@@ -132,7 +154,9 @@ public:
 	virtual Color get_color() const override;
 
 	virtual void slider_draw(int p_which) override;
-	virtual ColorPicker::PickerShapeType get_shape_override() const override { return ColorPicker::SHAPE_OKHSL_CIRCLE; }
+	virtual ColorPicker::PickerShapeType get_shape_override() const override {
+		return ColorPicker::SHAPE_OKHSL_CIRCLE;
+	}
 
 	ColorModeOKHSL(ColorPicker *p_color_picker) :
 			ColorMode(p_color_picker){};

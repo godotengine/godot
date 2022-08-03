@@ -40,14 +40,18 @@ struct _NO_DISCARD_ Plane {
 	real_t d = 0;
 
 	void set_normal(const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 get_normal() const { return normal; };
+	_FORCE_INLINE_ Vector3 get_normal() const {
+		return normal;
+	};
 
 	void normalize();
 	Plane normalized() const;
 
 	/* Plane-Point operations */
 
-	_FORCE_INLINE_ Vector3 center() const { return normal * d; }
+	_FORCE_INLINE_ Vector3 center() const {
+		return normal * d;
+	}
 	Vector3 get_any_perpendicular_normal() const;
 
 	_FORCE_INLINE_ bool is_point_over(const Vector3 &p_point) const; ///< Point is over plane
@@ -71,7 +75,9 @@ struct _NO_DISCARD_ Plane {
 
 	/* misc */
 
-	Plane operator-() const { return Plane(-normal, -d); }
+	Plane operator-() const {
+		return Plane(-normal, -d);
+	}
 	bool is_equal_approx(const Plane &p_plane) const;
 	bool is_equal_approx_any_side(const Plane &p_plane) const;
 

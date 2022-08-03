@@ -110,7 +110,9 @@ private:
 	struct PositionTrack : public Track {
 		Vector<TKey<Vector3>> positions;
 		int32_t compressed_track = -1;
-		PositionTrack() { type = TYPE_POSITION_3D; }
+		PositionTrack() {
+			type = TYPE_POSITION_3D;
+		}
 	};
 
 	/* ROTATION TRACK */
@@ -118,7 +120,9 @@ private:
 	struct RotationTrack : public Track {
 		Vector<TKey<Quaternion>> rotations;
 		int32_t compressed_track = -1;
-		RotationTrack() { type = TYPE_ROTATION_3D; }
+		RotationTrack() {
+			type = TYPE_ROTATION_3D;
+		}
 	};
 
 	/* SCALE TRACK */
@@ -126,7 +130,9 @@ private:
 	struct ScaleTrack : public Track {
 		Vector<TKey<Vector3>> scales;
 		int32_t compressed_track = -1;
-		ScaleTrack() { type = TYPE_SCALE_3D; }
+		ScaleTrack() {
+			type = TYPE_SCALE_3D;
+		}
 	};
 
 	/* BLEND SHAPE TRACK */
@@ -134,7 +140,9 @@ private:
 	struct BlendShapeTrack : public Track {
 		Vector<TKey<float>> blend_shapes;
 		int32_t compressed_track = -1;
-		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
+		BlendShapeTrack() {
+			type = TYPE_BLEND_SHAPE;
+		}
 	};
 
 	/* PROPERTY VALUE TRACK */
@@ -158,7 +166,9 @@ private:
 
 	struct MethodTrack : public Track {
 		Vector<MethodKey> methods;
-		MethodTrack() { type = TYPE_METHOD; }
+		MethodTrack() {
+			type = TYPE_METHOD;
+		}
 	};
 
 	/* BEZIER TRACK */

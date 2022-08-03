@@ -63,11 +63,19 @@ struct _NO_DISCARD_ Transform3D {
 	Transform3D translated(const Vector3 &p_translation) const;
 	Transform3D translated_local(const Vector3 &p_translation) const;
 
-	const Basis &get_basis() const { return basis; }
-	void set_basis(const Basis &p_basis) { basis = p_basis; }
+	const Basis &get_basis() const {
+		return basis;
+	}
+	void set_basis(const Basis &p_basis) {
+		basis = p_basis;
+	}
 
-	const Vector3 &get_origin() const { return origin; }
-	void set_origin(const Vector3 &p_origin) { origin = p_origin; }
+	const Vector3 &get_origin() const {
+		return origin;
+	}
+	void set_origin(const Vector3 &p_origin) {
+		origin = p_origin;
+	}
 
 	void orthonormalize();
 	Transform3D orthonormalized() const;

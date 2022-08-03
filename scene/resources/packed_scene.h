@@ -192,8 +192,12 @@ public:
 	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
 	void add_editable_instance(const NodePath &p_path);
 
-	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
-	uint64_t get_last_modified_time() const { return last_modified_time; }
+	virtual void set_last_modified_time(uint64_t p_time) {
+		last_modified_time = p_time;
+	}
+	uint64_t get_last_modified_time() const {
+		return last_modified_time;
+	}
 
 	// Used when saving pointers (saves a path property instead).
 	static String get_meta_pointer_property(const String &p_property);
@@ -213,7 +217,9 @@ class PackedScene : public Resource {
 	Dictionary _get_bundled_scene() const;
 
 protected:
-	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
+	virtual bool editor_can_reload_from_file() override {
+		return false;
+	} // this is handled by editor better
 	static void _bind_methods();
 	virtual void reset_state() override;
 

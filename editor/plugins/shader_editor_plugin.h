@@ -54,7 +54,9 @@ class ShaderTextEditor : public CodeTextEditor {
 	Color marked_line_color = Color(1, 1, 1);
 
 	struct WarningsComparator {
-		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
+		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const {
+			return (p_a.get_line() < p_b.get_line());
+		}
 	};
 
 	Ref<CodeHighlighter> syntax_highlighter;
@@ -80,8 +82,12 @@ protected:
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
 
 public:
-	void set_block_shader_changed(bool p_block) { block_shader_changed = p_block; }
-	uint32_t get_dependencies_version() const { return dependencies_version; }
+	void set_block_shader_changed(bool p_block) {
+		block_shader_changed = p_block;
+	}
+	uint32_t get_dependencies_version() const {
+		return dependencies_version;
+	}
 
 	virtual void _validate_script() override;
 
@@ -177,7 +183,9 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
-	bool was_compilation_successful() const { return compilation_success; }
+	bool was_compilation_successful() const {
+		return compilation_success;
+	}
 	void apply_shaders();
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
@@ -186,7 +194,9 @@ public:
 	void save_external_data(const String &p_str = "");
 	void validate_script();
 
-	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
+	virtual Size2 get_minimum_size() const override {
+		return Size2(0, 200);
+	}
 
 	ShaderEditor();
 };
@@ -235,8 +245,12 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _update_shader_list_status();
 
 public:
-	virtual String get_name() const override { return "Shader"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "Shader";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

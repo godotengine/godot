@@ -57,7 +57,9 @@ protected:
 
 public:
 	void set_bind_count(int p_size);
-	inline int get_bind_count() const { return bind_count; }
+	inline int get_bind_count() const {
+		return bind_count;
+	}
 
 	void add_bind(int p_bone, const Transform3D &p_pose);
 	void add_named_bind(const String &p_name, const Transform3D &p_pose);

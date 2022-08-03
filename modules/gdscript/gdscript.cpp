@@ -261,7 +261,9 @@ StringName GDScript::get_instance_base_type() const {
 struct _GDScriptMemberSort {
 	int index = 0;
 	StringName name;
-	_FORCE_INLINE_ bool operator<(const _GDScriptMemberSort &p_member) const { return index < p_member.index; }
+	_FORCE_INLINE_ bool operator<(const _GDScriptMemberSort &p_member) const {
+		return index < p_member.index;
+	}
 };
 
 #ifdef TOOLS_ENABLED

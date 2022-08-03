@@ -92,8 +92,12 @@ public:
 	// between the number of elements that are currently
 	// in use, and the number of elements that have been reserved.
 	// Using size() would be vague.
-	U used_size() const { return _used_size; }
-	U reserved_size() const { return list.size(); }
+	U used_size() const {
+		return _used_size;
+	}
+	U reserved_size() const {
+		return list.size();
+	}
 
 	T *request(U &r_id) {
 		_used_size++;
@@ -130,9 +134,15 @@ public:
 template <class T, class U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
 class TrackedPooledList {
 public:
-	U pool_used_size() const { return _pool.used_size(); }
-	U pool_reserved_size() const { return _pool.reserved_size(); }
-	U active_size() const { return _active_list.size(); }
+	U pool_used_size() const {
+		return _pool.used_size();
+	}
+	U pool_reserved_size() const {
+		return _pool.reserved_size();
+	}
+	U active_size() const {
+		return _active_list.size();
+	}
 
 	// use with care, see the earlier notes in the PooledList clear()
 	void clear() {
@@ -199,7 +209,9 @@ public:
 		}
 	}
 
-	const LocalVector<U, U> &get_active_list() const { return _active_list; }
+	const LocalVector<U, U> &get_active_list() const {
+		return _active_list;
+	}
 
 private:
 	PooledList<T, U, force_trivial, zero_on_first_request> _pool;

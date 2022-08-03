@@ -75,7 +75,9 @@ protected:
 	static AnimationTreeEditor *singleton;
 
 public:
-	AnimationTree *get_tree() { return tree; }
+	AnimationTree *get_tree() {
+		return tree;
+	}
 	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 
@@ -87,7 +89,9 @@ public:
 	Vector<String> get_edited_path() const;
 
 	void enter_editor(const String &p_path = "");
-	static AnimationTreeEditor *get_singleton() { return singleton; }
+	static AnimationTreeEditor *get_singleton() {
+		return singleton;
+	}
 	void edit(AnimationTree *p_tree);
 	AnimationTreeEditor();
 };
@@ -99,8 +103,12 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "AnimationTree"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "AnimationTree";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

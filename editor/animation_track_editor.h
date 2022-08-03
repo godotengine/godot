@@ -109,7 +109,9 @@ public:
 	void set_animation(const Ref<Animation> &p_animation);
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
-	Range *get_zoom() const { return zoom; }
+	Range *get_zoom() const {
+		return zoom;
+	}
 	void set_undo_redo(UndoRedo *p_undo_redo);
 
 	void set_play_position(float p_pos);
@@ -228,9 +230,15 @@ public:
 
 	int get_track() const;
 	Ref<Animation> get_animation() const;
-	AnimationTimelineEdit *get_timeline() const { return timeline; }
-	AnimationTrackEditor *get_editor() const { return editor; }
-	UndoRedo *get_undo_redo() const { return undo_redo; }
+	AnimationTimelineEdit *get_timeline() const {
+		return timeline;
+	}
+	AnimationTrackEditor *get_editor() const {
+		return editor;
+	}
+	UndoRedo *get_undo_redo() const {
+		return undo_redo;
+	}
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
 	virtual Size2 get_minimum_size() const override;
@@ -406,7 +414,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	struct SelectedKey {
 		int track = 0;
 		int key = 0;
-		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; };
+		bool operator<(const SelectedKey &p_key) const {
+			return track == p_key.track ? key < p_key.key : track < p_key.track;
+		};
 	};
 
 	struct KeyInfo {

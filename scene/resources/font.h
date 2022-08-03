@@ -78,8 +78,12 @@ public:
 	virtual TypedArray<Font> get_fallbacks() const;
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const { return RID(); };
-	virtual RID _get_rid() const { return RID(); };
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const {
+		return RID();
+	};
+	virtual RID _get_rid() const {
+		return RID();
+	};
 	virtual TypedArray<RID> get_rids() const;
 
 	// Font metrics.
@@ -93,7 +97,9 @@ public:
 	virtual String get_font_style_name() const;
 	virtual BitField<TextServer::FontStyle> get_font_style() const;
 
-	virtual int get_spacing(TextServer::SpacingType p_spacing) const { return 0; };
+	virtual int get_spacing(TextServer::SpacingType p_spacing) const {
+		return 0;
+	};
 	virtual Dictionary get_opentype_features() const;
 
 	// Drawing string.

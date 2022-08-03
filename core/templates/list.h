@@ -141,7 +141,9 @@ public:
 		_FORCE_INLINE_ T &operator*() const {
 			return E->get();
 		}
-		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ T *operator->() const {
+			return &E->get();
+		}
 		_FORCE_INLINE_ Iterator &operator++() {
 			E = E->next();
 			return *this;
@@ -151,12 +153,20 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const {
+			return E == b.E;
+		}
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const {
+			return E != b.E;
+		}
 
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_E) {
+			E = p_E;
+		}
 		Iterator() {}
-		Iterator(const Iterator &p_it) { E = p_it.E; }
+		Iterator(const Iterator &p_it) {
+			E = p_it.E;
+		}
 
 	private:
 		Element *E = nullptr;
@@ -166,7 +176,9 @@ public:
 		_FORCE_INLINE_ const T &operator*() const {
 			return E->get();
 		}
-		_FORCE_INLINE_ const T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ const T *operator->() const {
+			return &E->get();
+		}
 		_FORCE_INLINE_ ConstIterator &operator++() {
 			E = E->next();
 			return *this;
@@ -176,12 +188,20 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const {
+			return E == b.E;
+		}
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const {
+			return E != b.E;
+		}
 
-		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator(const Element *p_E) {
+			E = p_E;
+		}
 		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) {
+			E = p_it.E;
+		}
 
 	private:
 		const Element *E = nullptr;

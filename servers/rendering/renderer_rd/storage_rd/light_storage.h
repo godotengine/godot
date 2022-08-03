@@ -129,7 +129,9 @@ public:
 
 	/* LIGHT */
 
-	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
+	bool owns_light(RID p_rid) {
+		return light_owner.owns(p_rid);
+	};
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
 
@@ -265,7 +267,9 @@ public:
 
 	/* REFLECTION PROBE */
 
-	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); };
+	bool owns_reflection_probe(RID p_rid) {
+		return reflection_probe_owner.owns(p_rid);
+	};
 
 	virtual RID reflection_probe_allocate() override;
 	virtual void reflection_probe_initialize(RID p_reflection_probe) override;
@@ -308,7 +312,9 @@ public:
 
 	/* LIGHTMAP */
 
-	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); };
+	bool owns_lightmap(RID p_rid) {
+		return lightmap_owner.owns(p_rid);
+	};
 
 	virtual RID lightmap_allocate() override;
 	virtual void lightmap_initialize(RID p_lightmap) override;

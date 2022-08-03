@@ -232,7 +232,9 @@ public abstract class GodotPlugin {
 	/**
 	 * @see Activity#onBackPressed()
 	 */
-	public boolean onMainBackPressed() { return false; }
+	public boolean onMainBackPressed() {
+		return false;
+	}
 
 	/**
 	 * Invoked on the render thread when the Godot setup is complete.

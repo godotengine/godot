@@ -39,7 +39,9 @@ public:
 	// TODO changed to normal method definition for now
 	// CI complains until we implement this, haven't ported it yet from plugin
 	// virtual XrCompositionLayerBaseHeader *get_composition_layer() = 0;
-	XrCompositionLayerBaseHeader *get_composition_layer() { return nullptr; };
+	XrCompositionLayerBaseHeader *get_composition_layer() {
+		return nullptr;
+	};
 };
 
 #endif // OPENXR_COMPOSITION_LAYER_PROVIDER_H

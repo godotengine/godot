@@ -46,7 +46,9 @@
 class RenameDialog : public ConfirmationDialog {
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
-	virtual void ok_pressed() override { rename(); };
+	virtual void ok_pressed() override {
+		rename();
+	};
 	void _cancel_pressed() {}
 	void _features_toggled(bool pressed);
 	void _insert_text(String text);

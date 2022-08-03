@@ -41,14 +41,26 @@ struct _NO_DISCARD_ Rect2i {
 	Point2i position;
 	Size2i size;
 
-	const Point2i &get_position() const { return position; }
-	void set_position(const Point2i &p_position) { position = p_position; }
-	const Size2i &get_size() const { return size; }
-	void set_size(const Size2i &p_size) { size = p_size; }
+	const Point2i &get_position() const {
+		return position;
+	}
+	void set_position(const Point2i &p_position) {
+		position = p_position;
+	}
+	const Size2i &get_size() const {
+		return size;
+	}
+	void set_size(const Size2i &p_size) {
+		size = p_size;
+	}
 
-	int get_area() const { return size.width * size.height; }
+	int get_area() const {
+		return size.width * size.height;
+	}
 
-	_FORCE_INLINE_ Vector2i get_center() const { return position + (size / 2); }
+	_FORCE_INLINE_ Vector2i get_center() const {
+		return position + (size / 2);
+	}
 
 	inline bool intersects(const Rect2i &p_rect) const {
 #ifdef MATH_CHECKS
@@ -148,8 +160,12 @@ struct _NO_DISCARD_ Rect2i {
 		return true;
 	}
 
-	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	bool operator==(const Rect2i &p_rect) const {
+		return position == p_rect.position && size == p_rect.size;
+	}
+	bool operator!=(const Rect2i &p_rect) const {
+		return position != p_rect.position || size != p_rect.size;
+	}
 
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;

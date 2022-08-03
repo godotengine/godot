@@ -201,9 +201,13 @@ public:
 
 	String get_tooltip_text() const;
 
-	void set_draw_top_bg(bool p_draw) { draw_top_bg = p_draw; }
+	void set_draw_top_bg(bool p_draw) {
+		draw_top_bg = p_draw;
+	}
 
-	bool can_revert_to_default() const { return can_revert; }
+	bool can_revert_to_default() const {
+		return can_revert;
+	}
 
 	void menu_option(int p_option);
 
@@ -606,7 +610,9 @@ public:
 
 	void set_use_wide_editors(bool p_enable);
 	void set_sub_inspector(bool p_enable);
-	bool is_sub_inspector() const { return sub_inspector; }
+	bool is_sub_inspector() const {
+		return sub_inspector;
+	}
 
 	void set_use_deletable_properties(bool p_enabled);
 

@@ -124,7 +124,9 @@ struct NavigationPoly {
 	/// The distance to the destination.
 	float traveled_distance = 0.0;
 
-	NavigationPoly() { poly = nullptr; }
+	NavigationPoly() {
+		poly = nullptr;
+	}
 
 	NavigationPoly(const Polygon *p_poly) :
 			poly(p_poly) {}

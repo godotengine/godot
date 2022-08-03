@@ -76,7 +76,9 @@ public:
 	Object *get_cached_object(int p_from, uint32_t p_cache_id);
 	bool is_cache_confirmed(NodePath p_path, int p_peer);
 
-	SceneCacheInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
+	SceneCacheInterface(SceneMultiplayer *p_multiplayer) {
+		multiplayer = p_multiplayer;
+	}
 };
 
 #endif // SCENE_CACHE_INTERFACE_H

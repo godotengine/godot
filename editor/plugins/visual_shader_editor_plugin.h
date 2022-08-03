@@ -512,7 +512,9 @@ public:
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
-	VisualShaderGraphPlugin *get_graph_plugin() { return graph_plugin.ptr(); }
+	VisualShaderGraphPlugin *get_graph_plugin() {
+		return graph_plugin.ptr();
+	}
 
 	void clear_custom_types();
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);

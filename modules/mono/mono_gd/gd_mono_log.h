@@ -60,7 +60,9 @@ class GDMonoLog {
 	static GDMonoLog *singleton;
 
 public:
-	_FORCE_INLINE_ static GDMonoLog *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static GDMonoLog *get_singleton() {
+		return singleton;
+	}
 
 	void initialize();
 

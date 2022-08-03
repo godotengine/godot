@@ -74,7 +74,9 @@ class GodotPinJoint3D : public GodotJoint3D {
 	Vector3 m_pivotInB;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_PIN; }
+	virtual PhysicsServer3D::JointType get_type() const override {
+		return PhysicsServer3D::JOINT_TYPE_PIN;
+	}
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
@@ -82,11 +84,19 @@ public:
 	void set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::PinJointParam p_param) const;
 
-	void set_pos_a(const Vector3 &p_pos) { m_pivotInA = p_pos; }
-	void set_pos_b(const Vector3 &p_pos) { m_pivotInB = p_pos; }
+	void set_pos_a(const Vector3 &p_pos) {
+		m_pivotInA = p_pos;
+	}
+	void set_pos_b(const Vector3 &p_pos) {
+		m_pivotInB = p_pos;
+	}
 
-	Vector3 get_position_a() { return m_pivotInA; }
-	Vector3 get_position_b() { return m_pivotInB; }
+	Vector3 get_position_a() {
+		return m_pivotInA;
+	}
+	Vector3 get_position_b() {
+		return m_pivotInB;
+	}
 
 	GodotPinJoint3D(GodotBody3D *p_body_a, const Vector3 &p_pos_a, GodotBody3D *p_body_b, const Vector3 &p_pos_b);
 	~GodotPinJoint3D();

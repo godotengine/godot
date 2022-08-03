@@ -48,11 +48,17 @@ class GDMonoProperty : public IMonoClassMember {
 	unsigned int param_buffer_size;
 
 public:
-	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
+	virtual GDMonoClass *get_enclosing_class() const final {
+		return owner;
+	}
 
-	virtual MemberType get_member_type() const final { return MEMBER_TYPE_PROPERTY; }
+	virtual MemberType get_member_type() const final {
+		return MEMBER_TYPE_PROPERTY;
+	}
 
-	virtual StringName get_name() const final { return name; }
+	virtual StringName get_name() const final {
+		return name;
+	}
 
 	virtual bool is_static() final;
 	virtual Visibility get_visibility() final;
@@ -64,7 +70,9 @@ public:
 	bool has_getter();
 	bool has_setter();
 
-	_FORCE_INLINE_ ManagedType get_type() const { return type; }
+	_FORCE_INLINE_ ManagedType get_type() const {
+		return type;
+	}
 
 	void set_value_from_variant(MonoObject *p_object, const Variant &p_value, MonoException **r_exc = nullptr);
 	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = nullptr);

@@ -72,7 +72,9 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	Vector<Instance> instances;
 	Node3D *spatial_node = nullptr;
 
-	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Node3D>(p_node)); }
+	void _set_spatial_node(Node *p_node) {
+		set_spatial_node(Object::cast_to<Node3D>(p_node));
+	}
 
 protected:
 	static void _bind_methods();
@@ -113,12 +115,20 @@ public:
 	virtual void set_subgizmo_transform(int p_id, Transform3D p_transform);
 	virtual void commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel = false);
 
-	void set_selected(bool p_selected) { selected = p_selected; }
-	bool is_selected() const { return selected; }
+	void set_selected(bool p_selected) {
+		selected = p_selected;
+	}
+	bool is_selected() const {
+		return selected;
+	}
 
 	void set_spatial_node(Node3D *p_node);
-	Node3D *get_spatial_node() const { return spatial_node; }
-	Ref<EditorNode3DGizmoPlugin> get_plugin() const { return gizmo_plugin; }
+	Node3D *get_spatial_node() const {
+		return spatial_node;
+	}
+	Ref<EditorNode3DGizmoPlugin> get_plugin() const {
+		return gizmo_plugin;
+	}
 	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
 	void handles_intersect_ray(Camera3D *p_camera, const Vector2 &p_point, bool p_shift_pressed, int &r_id, bool &r_secondary);
 	bool intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal);

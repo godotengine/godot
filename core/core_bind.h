@@ -69,7 +69,9 @@ public:
 		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
 	};
 
-	static ResourceLoader *get_singleton() { return singleton; }
+	static ResourceLoader *get_singleton() {
+		return singleton;
+	}
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
@@ -85,7 +87,9 @@ public:
 	bool exists(const String &p_path, const String &p_type_hint = "");
 	ResourceUID::ID get_resource_uid(const String &p_path);
 
-	ResourceLoader() { singleton = this; }
+	ResourceLoader() {
+		singleton = this;
+	}
 };
 
 class ResourceSaver : public Object {
@@ -107,14 +111,18 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static ResourceSaver *get_singleton() { return singleton; }
+	static ResourceSaver *get_singleton() {
+		return singleton;
+	}
 
 	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
-	ResourceSaver() { singleton = this; }
+	ResourceSaver() {
+		singleton = this;
+	}
 };
 
 class OS : public Object {
@@ -263,9 +271,13 @@ public:
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
 
-	static OS *get_singleton() { return singleton; }
+	static OS *get_singleton() {
+		return singleton;
+	}
 
-	OS() { singleton = this; }
+	OS() {
+		singleton = this;
+	}
 };
 
 class Geometry2D : public Object {
@@ -328,7 +340,9 @@ public:
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
-	Geometry2D() { singleton = this; }
+	Geometry2D() {
+		singleton = this;
+	}
 };
 
 class Geometry3D : public Object {
@@ -356,7 +370,9 @@ public:
 
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
 
-	Geometry3D() { singleton = this; }
+	Geometry3D() {
+		singleton = this;
+	}
 };
 
 class File : public RefCounted {
@@ -529,8 +545,12 @@ public:
 	String utf8_to_base64(const String &p_str);
 	String base64_to_utf8(const String &p_str);
 
-	Marshalls() { singleton = this; }
-	~Marshalls() { singleton = nullptr; }
+	Marshalls() {
+		singleton = this;
+	}
+	~Marshalls() {
+		singleton = nullptr;
+	}
 };
 
 class Mutex : public RefCounted {
@@ -637,7 +657,9 @@ protected:
 	static Engine *singleton;
 
 public:
-	static Engine *get_singleton() { return singleton; }
+	static Engine *get_singleton() {
+		return singleton;
+	}
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
 
@@ -687,7 +709,9 @@ public:
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
-	Engine() { singleton = this; }
+	Engine() {
+		singleton = this;
+	}
 };
 
 class EngineDebugger : public Object {
@@ -701,7 +725,9 @@ protected:
 	static EngineDebugger *singleton;
 
 public:
-	static EngineDebugger *get_singleton() { return singleton; }
+	static EngineDebugger *get_singleton() {
+		return singleton;
+	}
 
 	bool is_active();
 
@@ -720,7 +746,9 @@ public:
 
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
 
-	EngineDebugger() { singleton = this; }
+	EngineDebugger() {
+		singleton = this;
+	}
 	~EngineDebugger();
 };
 

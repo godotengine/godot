@@ -368,7 +368,9 @@ public:
 	virtual void end_sync() override;
 	virtual void finish() override;
 
-	virtual bool is_flushing_queries() const override { return flushing_queries; }
+	virtual bool is_flushing_queries() const override {
+		return flushing_queries;
+	}
 
 	int get_process_info(ProcessInfo p_info) override;
 

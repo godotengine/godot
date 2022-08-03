@@ -91,16 +91,30 @@ public:
 	virtual void set_target_fps(int p_fps);
 	virtual int get_target_fps() const;
 
-	virtual double get_frames_per_second() const { return _fps; }
+	virtual double get_frames_per_second() const {
+		return _fps;
+	}
 
 	uint64_t get_frames_drawn();
 
-	uint64_t get_physics_frames() const { return _physics_frames; }
-	uint64_t get_process_frames() const { return _process_frames; }
-	bool is_in_physics_frame() const { return _in_physics; }
-	uint64_t get_frame_ticks() const { return _frame_ticks; }
-	double get_process_step() const { return _process_step; }
-	double get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
+	uint64_t get_physics_frames() const {
+		return _physics_frames;
+	}
+	uint64_t get_process_frames() const {
+		return _process_frames;
+	}
+	bool is_in_physics_frame() const {
+		return _in_physics;
+	}
+	uint64_t get_frame_ticks() const {
+		return _frame_ticks;
+	}
+	double get_process_step() const {
+		return _process_step;
+	}
+	double get_physics_interpolation_fraction() const {
+		return _physics_interpolation_fraction;
+	}
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
@@ -119,17 +133,29 @@ public:
 	bool is_singleton_user_created(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
-	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
+	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {
+		editor_hint = p_enabled;
+	}
+	_FORCE_INLINE_ bool is_editor_hint() const {
+		return editor_hint;
+	}
 
-	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
-	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
+	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {
+		project_manager_hint = p_enabled;
+	}
+	_FORCE_INLINE_ bool is_project_manager_hint() const {
+		return project_manager_hint;
+	}
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
+	_FORCE_INLINE_ bool is_editor_hint() const {
+		return false;
+	}
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
+	_FORCE_INLINE_ bool is_project_manager_hint() const {
+		return false;
+	}
 #endif
 
 	Dictionary get_version_info() const;

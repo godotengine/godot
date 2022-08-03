@@ -126,9 +126,13 @@ public:
 		return _find_exact(p_val);
 	}
 
-	_FORCE_INLINE_ bool is_empty() const { return _data.is_empty(); }
+	_FORCE_INLINE_ bool is_empty() const {
+		return _data.is_empty();
+	}
 
-	_FORCE_INLINE_ int size() const { return _data.size(); }
+	_FORCE_INLINE_ int size() const {
+		return _data.size();
+	}
 
 	inline T &operator[](int p_index) {
 		return _data.write[p_index];

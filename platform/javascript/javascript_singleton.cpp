@@ -83,7 +83,9 @@ public:
 	void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr) override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) override;
 	JavaScriptObjectImpl() {}
-	JavaScriptObjectImpl(int p_id) { _js_id = p_id; }
+	JavaScriptObjectImpl(int p_id) {
+		_js_id = p_id;
+	}
 	~JavaScriptObjectImpl() {
 		if (_js_id) {
 			godot_js_wrapper_object_unref(_js_id);

@@ -64,7 +64,9 @@ public:
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const {
+			return RS::ShaderNativeSourceCode();
+		}
 
 		virtual ~ShaderData() {}
 	};
@@ -191,7 +193,9 @@ private:
 	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
 
 	mutable RID_Owner<Shader, true> shader_owner;
-	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); }
+	Shader *get_shader(RID p_rid) {
+		return shader_owner.get_or_null(p_rid);
+	}
 
 	/* MATERIAL API */
 
@@ -219,7 +223,9 @@ private:
 
 	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
 	mutable RID_Owner<Material, true> material_owner;
-	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); };
+	Material *get_material(RID p_rid) {
+		return material_owner.get_or_null(p_rid);
+	};
 
 	SelfList<Material>::List material_update_list;
 
@@ -326,7 +332,9 @@ public:
 
 	/* Buffers */
 
-	RID get_quad_index_array() { return quad_index_array; }
+	RID get_quad_index_array() {
+		return quad_index_array;
+	}
 
 	/* GLOBAL SHADER UNIFORM API */
 
@@ -353,7 +361,9 @@ public:
 
 	/* SHADER API */
 
-	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); };
+	bool owns_shader(RID p_rid) {
+		return shader_owner.owns(p_rid);
+	};
 
 	virtual RID shader_allocate() override;
 	virtual void shader_initialize(RID p_shader) override;
@@ -373,7 +383,9 @@ public:
 
 	/* MATERIAL API */
 
-	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); };
+	bool owns_material(RID p_rid) {
+		return material_owner.owns(p_rid);
+	};
 
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();

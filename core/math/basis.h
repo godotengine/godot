@@ -230,15 +230,25 @@ struct _NO_DISCARD_ Basis {
 #endif
 	Basis diagonalize();
 
-	operator Quaternion() const { return get_quaternion(); }
+	operator Quaternion() const {
+		return get_quaternion();
+	}
 
 	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 
-	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
-	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
+	Basis(const Quaternion &p_quaternion) {
+		set_quaternion(p_quaternion);
+	};
+	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) {
+		set_quaternion_scale(p_quaternion, p_scale);
+	}
 
-	Basis(const Vector3 &p_axis, real_t p_angle) { set_axis_angle(p_axis, p_angle); }
-	Basis(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_angle, p_scale); }
+	Basis(const Vector3 &p_axis, real_t p_angle) {
+		set_axis_angle(p_axis, p_angle);
+	}
+	Basis(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) {
+		set_axis_angle_scale(p_axis, p_angle, p_scale);
+	}
 	static Basis from_scale(const Vector3 &p_scale);
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {

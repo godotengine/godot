@@ -446,7 +446,9 @@ struct OSCoreBindImg {
 	int fmt = 0;
 	ObjectID id;
 	int vram = 0;
-	bool operator<(const OSCoreBindImg &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
+	bool operator<(const OSCoreBindImg &p_img) const {
+		return vram == p_img.vram ? id < p_img.id : vram > p_img.vram;
+	}
 };
 
 void OS::print_all_textures_by_size() {

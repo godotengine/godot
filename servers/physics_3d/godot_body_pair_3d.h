@@ -136,8 +136,12 @@ public:
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
-	virtual GodotSoftBody3D *get_soft_body_ptr(int p_index) const override { return soft_body; }
-	virtual int get_soft_body_count() const override { return 1; }
+	virtual GodotSoftBody3D *get_soft_body_ptr(int p_index) const override {
+		return soft_body;
+	}
+	virtual int get_soft_body_count() const override {
+		return 1;
+	}
 
 	GodotBodySoftBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotSoftBody3D *p_B);
 	~GodotBodySoftBodyPair3D();

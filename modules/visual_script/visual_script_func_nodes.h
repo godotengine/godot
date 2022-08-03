@@ -93,7 +93,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	void set_basic_type(Variant::Type p_type);
 	Variant::Type get_basic_type() const;
@@ -205,7 +207,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	void set_base_type(const StringName &p_type);
 	StringName get_base_type() const;
@@ -293,7 +297,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	void set_base_type(const StringName &p_type);
 	StringName get_base_type() const;
@@ -348,7 +354,9 @@ public:
 
 	virtual String get_caption() const override;
 	//virtual String get_text() const;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	void set_signal(const StringName &p_type);
 	StringName get_signal() const;

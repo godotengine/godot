@@ -227,7 +227,9 @@ public:
 	Object *get_remote_object(ObjectID p_id);
 
 	// Needed by _live_edit_set, buttons state.
-	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
+	void set_editor_remote_tree(const Tree *p_tree) {
+		editor_remote_tree = p_tree;
+	}
 
 	void request_remote_tree();
 	const SceneDebuggerTree *get_remote_tree();
@@ -242,16 +244,28 @@ public:
 	void debug_step();
 	void debug_break();
 	void debug_continue();
-	bool is_breaked() const { return breaked; }
-	bool is_debuggable() const { return can_debug; }
-	bool is_session_active() { return peer.is_valid() && peer->is_peer_connected(); };
-	int get_remote_pid() const { return remote_pid; }
+	bool is_breaked() const {
+		return breaked;
+	}
+	bool is_debuggable() const {
+		return can_debug;
+	}
+	bool is_session_active() {
+		return peer.is_valid() && peer->is_peer_connected();
+	};
+	int get_remote_pid() const {
+		return remote_pid;
+	}
 
 	bool is_move_to_foreground() const;
 	void set_move_to_foreground(const bool &p_move_to_foreground);
 
-	int get_error_count() const { return error_count; }
-	int get_warning_count() const { return warning_count; }
+	int get_error_count() const {
+		return error_count;
+	}
+	int get_warning_count() const {
+		return warning_count;
+	}
 	String get_stack_script_file() const;
 	int get_stack_script_line() const;
 	int get_stack_script_frame() const;

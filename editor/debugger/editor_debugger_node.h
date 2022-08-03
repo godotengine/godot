@@ -151,7 +151,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static EditorDebuggerNode *get_singleton() { return singleton; }
+	static EditorDebuggerNode *get_singleton() {
+		return singleton;
+	}
 
 	ScriptEditorDebugger *get_current_debugger() const;
 	ScriptEditorDebugger *get_default_debugger() const;
@@ -169,9 +171,13 @@ public:
 	}
 
 	String get_var_value(const String &p_var) const;
-	Ref<Script> get_dump_stack_script() const { return stack_script; } // Why do we need this?
+	Ref<Script> get_dump_stack_script() const {
+		return stack_script;
+	} // Why do we need this?
 
-	bool get_debug_with_external_editor() { return debug_with_external_editor; }
+	bool get_debug_with_external_editor() {
+		return debug_with_external_editor;
+	}
 
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);

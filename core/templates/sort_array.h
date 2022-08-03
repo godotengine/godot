@@ -42,7 +42,9 @@
 
 template <class T>
 struct _DefaultComparator {
-	_FORCE_INLINE_ bool operator()(const T &a, const T &b) const { return (a < b); }
+	_FORCE_INLINE_ bool operator()(const T &a, const T &b) const {
+		return (a < b);
+	}
 };
 
 #ifdef DEBUG_ENABLED

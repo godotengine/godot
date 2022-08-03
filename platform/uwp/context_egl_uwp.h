@@ -70,8 +70,12 @@ public:
 	int get_window_height();
 	void swap_buffers();
 
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
+	void set_use_vsync(bool use) {
+		vsync = use;
+	}
+	bool is_using_vsync() const {
+		return vsync;
+	}
 
 	Error initialize();
 	void reset();

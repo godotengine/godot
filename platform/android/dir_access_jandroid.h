@@ -79,9 +79,15 @@ public:
 	virtual Error rename(String p_from, String p_to) override;
 	virtual Error remove(String p_name) override;
 
-	virtual bool is_link(String p_file) override { return false; }
-	virtual String read_link(String p_file) override { return p_file; }
-	virtual Error create_link(String p_source, String p_target) override { return FAILED; }
+	virtual bool is_link(String p_file) override {
+		return false;
+	}
+	virtual String read_link(String p_file) override {
+		return p_file;
+	}
+	virtual Error create_link(String p_source, String p_target) override {
+		return FAILED;
+	}
 
 	virtual uint64_t get_space_left() override;
 

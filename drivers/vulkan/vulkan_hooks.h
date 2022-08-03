@@ -39,9 +39,15 @@
 
 class VulkanHooks {
 public:
-	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) { return false; };
-	virtual bool get_physical_device(VkPhysicalDevice *r_device) { return false; };
-	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) { return false; };
+	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) {
+		return false;
+	};
+	virtual bool get_physical_device(VkPhysicalDevice *r_device) {
+		return false;
+	};
+	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) {
+		return false;
+	};
 	virtual ~VulkanHooks(){};
 };
 

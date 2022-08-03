@@ -666,7 +666,9 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
+	const Capabilities *get_device_capabilities() const {
+		return &device_capabilities;
+	};
 
 	enum Features {
 		SUPPORTS_MULTIVIEW,

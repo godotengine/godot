@@ -73,10 +73,18 @@ public:
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
-	virtual bool is_import_valid(const String &p_path) const { return true; }
-	virtual bool is_imported(const String &p_path) const { return false; }
-	virtual int get_import_order(const String &p_path) const { return 0; }
-	virtual String get_import_group_file(const String &p_path) const { return ""; } //no group
+	virtual bool is_import_valid(const String &p_path) const {
+		return true;
+	}
+	virtual bool is_imported(const String &p_path) const {
+		return false;
+	}
+	virtual int get_import_order(const String &p_path) const {
+		return 0;
+	}
+	virtual String get_import_group_file(const String &p_path) const {
+		return "";
+	} //no group
 
 	virtual ~ResourceFormatLoader() {}
 };
@@ -182,8 +190,12 @@ public:
 	static bool is_imported(const String &p_path);
 	static int get_import_order(const String &p_path);
 
-	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
-	static bool get_timestamp_on_load() { return timestamp_on_load; }
+	static void set_timestamp_on_load(bool p_timestamp) {
+		timestamp_on_load = p_timestamp;
+	}
+	static bool get_timestamp_on_load() {
+		return timestamp_on_load;
+	}
 
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) {
@@ -205,8 +217,12 @@ public:
 		dep_err_notify_ud = p_ud;
 	}
 
-	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource = p_abort; }
-	static bool get_abort_on_missing_resources() { return abort_on_missing_resource; }
+	static void set_abort_on_missing_resources(bool p_abort) {
+		abort_on_missing_resource = p_abort;
+	}
+	static bool get_abort_on_missing_resources() {
+		return abort_on_missing_resource;
+	}
 
 	static String path_remap(const String &p_path);
 	static String import_remap(const String &p_path);
@@ -227,7 +243,9 @@ public:
 	static void remove_custom_loaders();
 
 	static void set_create_missing_resources_if_class_unavailable(bool p_enable);
-	_FORCE_INLINE_ static bool is_creating_missing_resources_if_class_unavailable_enabled() { return create_missing_resources_if_class_unavailable; }
+	_FORCE_INLINE_ static bool is_creating_missing_resources_if_class_unavailable_enabled() {
+		return create_missing_resources_if_class_unavailable;
+	}
 
 	static void initialize();
 	static void finalize();

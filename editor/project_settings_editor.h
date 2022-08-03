@@ -111,13 +111,19 @@ protected:
 	static void _bind_methods();
 
 public:
-	static ProjectSettingsEditor *get_singleton() { return singleton; }
+	static ProjectSettingsEditor *get_singleton() {
+		return singleton;
+	}
 	void popup_project_settings();
 	void set_plugins_page();
 	void update_plugins();
 
-	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
-	TabContainer *get_tabs() { return tab_container; }
+	EditorAutoloadSettings *get_autoload_settings() {
+		return autoload_settings;
+	}
+	TabContainer *get_tabs() {
+		return tab_container;
+	}
 
 	void queue_save();
 

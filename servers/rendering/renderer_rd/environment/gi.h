@@ -367,12 +367,18 @@ private:
 	} sdfgi_shader;
 
 public:
-	static GI *get_singleton() { return singleton; }
+	static GI *get_singleton() {
+		return singleton;
+	}
 
 	/* VOXEL GI API */
 
-	VoxelGI *get_voxel_gi(RID p_rid) { return voxel_gi_owner.get_or_null(p_rid); };
-	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); };
+	VoxelGI *get_voxel_gi(RID p_rid) {
+		return voxel_gi_owner.get_or_null(p_rid);
+	};
+	bool owns_voxel_gi(RID p_rid) {
+		return voxel_gi_owner.owns(p_rid);
+	};
 
 	virtual RID voxel_gi_allocate() override;
 	virtual void voxel_gi_free(RID p_voxel_gi) override;
@@ -639,7 +645,9 @@ public:
 
 	/* SDFGI UPDATE */
 
-	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
+	int sdfgi_get_lightprobe_octahedron_size() const {
+		return SDFGI::LIGHTPROBE_OCT_SIZE;
+	}
 
 	/* GI */
 	enum {

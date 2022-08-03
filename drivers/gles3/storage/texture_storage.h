@@ -406,8 +406,12 @@ public:
 
 	/* Canvas Texture API */
 
-	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); };
-	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
+	CanvasTexture *get_canvas_texture(RID p_rid) {
+		return canvas_texture_owner.get_or_null(p_rid);
+	};
+	bool owns_canvas_texture(RID p_rid) {
+		return canvas_texture_owner.owns(p_rid);
+	};
 
 	virtual RID canvas_texture_allocate() override;
 	virtual void canvas_texture_initialize(RID p_rid) override;
@@ -432,7 +436,9 @@ public:
 		}
 		return texture;
 	};
-	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
+	bool owns_texture(RID p_rid) {
+		return texture_owner.owns(p_rid);
+	};
 
 	virtual bool can_create_resources_async() const override;
 
@@ -456,8 +462,12 @@ public:
 	virtual void texture_3d_placeholder_initialize(RID p_texture) override;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override;
-	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); };
-	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); };
+	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override {
+		return Ref<Image>();
+	};
+	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override {
+		return Vector<Ref<Image>>();
+	};
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
@@ -513,8 +523,12 @@ public:
 
 	static GLuint system_fbo;
 
-	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
-	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+	RenderTarget *get_render_target(RID p_rid) {
+		return render_target_owner.get_or_null(p_rid);
+	};
+	bool owns_render_target(RID p_rid) {
+		return render_target_owner.owns(p_rid);
+	};
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

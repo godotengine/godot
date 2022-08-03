@@ -90,7 +90,9 @@ private:
 	ErrorMessage _create_overflow_error(const String &p_what, const String &p_descr);
 	Error _put_msg(String p_message, Array p_data);
 
-	bool is_peer_connected() { return peer->is_peer_connected(); }
+	bool is_peer_connected() {
+		return peer->is_peer_connected();
+	}
 	void flush_output();
 
 	void _send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type);

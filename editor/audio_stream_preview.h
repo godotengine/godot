@@ -46,7 +46,9 @@ class AudioStreamPreview : public RefCounted {
 	uint64_t version = 1;
 
 public:
-	uint64_t get_version() const { return version; }
+	uint64_t get_version() const {
+		return version;
+	}
 	float get_length() const;
 	float get_max(float p_time, float p_time_next) const;
 	float get_min(float p_time, float p_time_next) const;
@@ -98,7 +100,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
+	static AudioStreamPreviewGenerator *get_singleton() {
+		return singleton;
+	}
 
 	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
 

@@ -145,7 +145,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static ProjectManager *get_singleton() { return singleton; }
+	static ProjectManager *get_singleton() {
+		return singleton;
+	}
 
 	ProjectManager();
 	~ProjectManager();

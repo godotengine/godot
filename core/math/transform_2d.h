@@ -52,11 +52,19 @@ struct _NO_DISCARD_ Transform2D {
 
 	Vector2 columns[3];
 
-	_FORCE_INLINE_ real_t tdotx(const Vector2 &v) const { return columns[0][0] * v.x + columns[1][0] * v.y; }
-	_FORCE_INLINE_ real_t tdoty(const Vector2 &v) const { return columns[0][1] * v.x + columns[1][1] * v.y; }
+	_FORCE_INLINE_ real_t tdotx(const Vector2 &v) const {
+		return columns[0][0] * v.x + columns[1][0] * v.y;
+	}
+	_FORCE_INLINE_ real_t tdoty(const Vector2 &v) const {
+		return columns[0][1] * v.x + columns[1][1] * v.y;
+	}
 
-	const Vector2 &operator[](int p_idx) const { return columns[p_idx]; }
-	Vector2 &operator[](int p_idx) { return columns[p_idx]; }
+	const Vector2 &operator[](int p_idx) const {
+		return columns[p_idx];
+	}
+	Vector2 &operator[](int p_idx) {
+		return columns[p_idx];
+	}
 
 	void invert();
 	Transform2D inverse() const;
@@ -82,8 +90,12 @@ struct _NO_DISCARD_ Transform2D {
 	Size2 get_scale() const;
 	void set_scale(const Size2 &p_scale);
 
-	_FORCE_INLINE_ const Vector2 &get_origin() const { return columns[2]; }
-	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { columns[2] = p_origin; }
+	_FORCE_INLINE_ const Vector2 &get_origin() const {
+		return columns[2];
+	}
+	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) {
+		columns[2] = p_origin;
+	}
 
 	Transform2D basis_scaled(const Size2 &p_scale) const;
 	Transform2D scaled(const Size2 &p_scale) const;

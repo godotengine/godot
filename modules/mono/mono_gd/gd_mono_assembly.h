@@ -101,12 +101,20 @@ class GDMonoAssembly {
 public:
 	void unload();
 
-	_FORCE_INLINE_ MonoImage *get_image() const { return image; }
-	_FORCE_INLINE_ MonoAssembly *get_assembly() const { return assembly; }
-	_FORCE_INLINE_ String get_name() const { return name; }
+	_FORCE_INLINE_ MonoImage *get_image() const {
+		return image;
+	}
+	_FORCE_INLINE_ MonoAssembly *get_assembly() const {
+		return assembly;
+	}
+	_FORCE_INLINE_ String get_name() const {
+		return name;
+	}
 
 #ifdef GD_MONO_HOT_RELOAD
-	_FORCE_INLINE_ uint64_t get_modified_time() const { return modified_time; }
+	_FORCE_INLINE_ uint64_t get_modified_time() const {
+		return modified_time;
+	}
 #endif
 
 	String get_path() const;
@@ -122,7 +130,9 @@ public:
 	static String find_assembly(const String &p_name);
 
 	static void fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config = String(), const String &p_custom_bcl_dir = String());
-	static const Vector<String> &get_default_search_dirs() { return search_dirs; }
+	static const Vector<String> &get_default_search_dirs() {
+		return search_dirs;
+	}
 
 	static GDMonoAssembly *load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);

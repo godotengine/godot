@@ -156,7 +156,9 @@ public:
 	void set_capture_input_on_drag(bool p_capture);
 	bool get_capture_input_on_drag() const;
 
-	_FORCE_INLINE_ RID get_rid() const { return rid; }
+	_FORCE_INLINE_ RID get_rid() const {
+		return rid;
+	}
 
 	TypedArray<String> get_configuration_warnings() const override;
 

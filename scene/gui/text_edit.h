@@ -202,10 +202,14 @@ private:
 				_calculate_max_line_width();
 			}
 		}
-		bool is_hidden(int p_line) const { return text[p_line].hidden; }
+		bool is_hidden(int p_line) const {
+			return text[p_line].hidden;
+		}
 		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
 		void remove_range(int p_from_line, int p_to_line);
-		int size() const { return text.size(); }
+		int size() const {
+			return text.size();
+		}
 		void clear();
 
 		void invalidate_cache(int p_line, int p_column = -1, bool p_text_changed = false, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
@@ -220,24 +224,48 @@ private:
 		void remove_gutter(int p_gutter);
 		void move_gutters(int p_from_line, int p_to_line);
 
-		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) { text.write[p_line].gutters.write[p_gutter].metadata = p_metadata; }
-		const Variant &get_line_gutter_metadata(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].metadata; }
+		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) {
+			text.write[p_line].gutters.write[p_gutter].metadata = p_metadata;
+		}
+		const Variant &get_line_gutter_metadata(int p_line, int p_gutter) const {
+			return text[p_line].gutters[p_gutter].metadata;
+		}
 
-		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) { text.write[p_line].gutters.write[p_gutter].text = p_text; }
-		const String &get_line_gutter_text(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].text; }
+		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) {
+			text.write[p_line].gutters.write[p_gutter].text = p_text;
+		}
+		const String &get_line_gutter_text(int p_line, int p_gutter) const {
+			return text[p_line].gutters[p_gutter].text;
+		}
 
-		void set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) { text.write[p_line].gutters.write[p_gutter].icon = p_icon; }
-		const Ref<Texture2D> &get_line_gutter_icon(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].icon; }
+		void set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) {
+			text.write[p_line].gutters.write[p_gutter].icon = p_icon;
+		}
+		const Ref<Texture2D> &get_line_gutter_icon(int p_line, int p_gutter) const {
+			return text[p_line].gutters[p_gutter].icon;
+		}
 
-		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) { text.write[p_line].gutters.write[p_gutter].color = p_color; }
-		const Color &get_line_gutter_item_color(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].color; }
+		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) {
+			text.write[p_line].gutters.write[p_gutter].color = p_color;
+		}
+		const Color &get_line_gutter_item_color(int p_line, int p_gutter) const {
+			return text[p_line].gutters[p_gutter].color;
+		}
 
-		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text.write[p_line].gutters.write[p_gutter].clickable = p_clickable; }
-		bool is_line_gutter_clickable(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].clickable; }
+		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) {
+			text.write[p_line].gutters.write[p_gutter].clickable = p_clickable;
+		}
+		bool is_line_gutter_clickable(int p_line, int p_gutter) const {
+			return text[p_line].gutters[p_gutter].clickable;
+		}
 
 		/* Line style. */
-		void set_line_background_color(int p_line, const Color &p_color) { text.write[p_line].background_color = p_color; }
-		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
+		void set_line_background_color(int p_line, const Color &p_color) {
+			text.write[p_line].background_color = p_color;
+		}
+		const Color get_line_background_color(int p_line) const {
+			return text[p_line].background_color;
+		}
 	};
 
 	/* Text */

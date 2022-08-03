@@ -624,7 +624,9 @@ protected:
 	void _free_sky_data(Sky *p_sky);
 
 public:
-	static RasterizerSceneGLES3 *get_singleton() { return singleton; }
+	static RasterizerSceneGLES3 *get_singleton() {
+		return singleton;
+	}
 
 	RasterizerCanvasGLES3 *canvas;
 

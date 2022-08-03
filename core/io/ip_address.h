@@ -81,8 +81,12 @@ public:
 	}
 
 	void clear();
-	bool is_wildcard() const { return wildcard; }
-	bool is_valid() const { return valid; }
+	bool is_wildcard() const {
+		return wildcard;
+	}
+	bool is_valid() const {
+		return valid;
+	}
 	bool is_ipv4() const;
 	const uint8_t *get_ipv4() const;
 	void set_ipv4(const uint8_t *p_ip);
@@ -93,7 +97,9 @@ public:
 	operator String() const;
 	IPAddress(const String &p_string);
 	IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6 = false);
-	IPAddress() { clear(); }
+	IPAddress() {
+		clear();
+	}
 };
 
 #endif // IP_ADDRESS_H

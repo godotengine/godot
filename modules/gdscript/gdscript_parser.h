@@ -133,10 +133,18 @@ public:
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int> enum_values; // For enums.
 
-		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
-		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
-		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == UNRESOLVED; }
-		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
+		_FORCE_INLINE_ bool is_set() const {
+			return kind != UNRESOLVED;
+		}
+		_FORCE_INLINE_ bool has_no_type() const {
+			return type_source == UNDETECTED;
+		}
+		_FORCE_INLINE_ bool is_variant() const {
+			return kind == VARIANT || kind == UNRESOLVED;
+		}
+		_FORCE_INLINE_ bool is_hard_type() const {
+			return type_source > INFERRED;
+		}
 		String to_string() const;
 
 		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
@@ -297,10 +305,16 @@ public:
 
 		DataType datatype;
 
-		virtual DataType get_datatype() const { return datatype; }
-		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+		virtual DataType get_datatype() const {
+			return datatype;
+		}
+		virtual void set_datatype(const DataType &p_datatype) {
+			datatype = p_datatype;
+		}
 
-		virtual bool is_expression() const { return false; }
+		virtual bool is_expression() const {
+			return false;
+		}
 
 		virtual ~Node() {}
 	};
@@ -311,7 +325,9 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		virtual bool is_expression() const override { return true; }
+		virtual bool is_expression() const override {
+			return true;
+		}
 		virtual ~ExpressionNode() {}
 
 	protected:
@@ -1426,24 +1442,40 @@ private:
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
-	ClassNode *get_tree() const { return head; }
-	bool is_tool() const { return _is_tool; }
+	ClassNode *get_tree() const {
+		return head;
+	}
+	bool is_tool() const {
+		return _is_tool;
+	}
 	static Variant::Type get_builtin_type(const StringName &p_type);
 
-	CompletionContext get_completion_context() const { return completion_context; }
-	CompletionCall get_completion_call() const { return completion_call; }
+	CompletionContext get_completion_context() const {
+		return completion_context;
+	}
+	CompletionCall get_completion_call() const {
+		return completion_call;
+	}
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
 
-	const List<ParserError> &get_errors() const { return errors; }
+	const List<ParserError> &get_errors() const {
+		return errors;
+	}
 	const List<String> get_dependencies() const {
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
 #ifdef DEBUG_ENABLED
-	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
-	int get_last_line_number() const { return current.end_line; }
+	const List<GDScriptWarning> &get_warnings() const {
+		return warnings;
+	}
+	const HashSet<int> &get_unsafe_lines() const {
+		return unsafe_lines;
+	}
+	int get_last_line_number() const {
+		return current.end_line;
+	}
 #endif
 
 	GDScriptParser();

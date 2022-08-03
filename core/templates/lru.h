@@ -101,8 +101,12 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ size_t get_capacity() const { return capacity; }
-	_FORCE_INLINE_ size_t get_size() const { return _map.size(); }
+	_FORCE_INLINE_ size_t get_capacity() const {
+		return capacity;
+	}
+	_FORCE_INLINE_ size_t get_size() const {
+		return _map.size();
+	}
 
 	void set_capacity(size_t p_capacity) {
 		if (capacity > 0) {

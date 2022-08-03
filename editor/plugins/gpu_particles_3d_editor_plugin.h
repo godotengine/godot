@@ -104,8 +104,12 @@ class GPUParticles3DEditorPlugin : public EditorPlugin {
 	GPUParticles3DEditor *particles_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "GPUParticles3D"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "GPUParticles3D";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

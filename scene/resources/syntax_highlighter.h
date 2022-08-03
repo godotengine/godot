@@ -55,7 +55,9 @@ protected:
 	GDVIRTUAL0(_update_cache)
 public:
 	Dictionary get_line_syntax_highlighting(int p_line);
-	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) { return Dictionary(); }
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) {
+		return Dictionary();
+	}
 
 	void clear_highlighting_cache();
 	virtual void _clear_highlighting_cache() {}

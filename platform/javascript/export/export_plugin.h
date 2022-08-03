@@ -124,8 +124,12 @@ public:
 
 	virtual bool poll_export() override;
 	virtual int get_options_count() const override;
-	virtual String get_option_label(int p_index) const override { return p_index ? TTR("Stop HTTP Server") : TTR("Run in Browser"); }
-	virtual String get_option_tooltip(int p_index) const override { return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser."); }
+	virtual String get_option_label(int p_index) const override {
+		return p_index ? TTR("Stop HTTP Server") : TTR("Run in Browser");
+	}
+	virtual String get_option_tooltip(int p_index) const override {
+		return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser.");
+	}
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
@@ -138,7 +142,9 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
-	String get_debug_protocol() const override { return "ws://"; }
+	String get_debug_protocol() const override {
+		return "ws://";
+	}
 
 	EditorExportPlatformJavaScript();
 	~EditorExportPlatformJavaScript();

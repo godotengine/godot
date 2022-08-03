@@ -152,7 +152,9 @@ private:
 
 protected:
 	Viewport *_get_embedder() const;
-	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
+	virtual Rect2i _popup_adjust_rect() const {
+		return Rect2i();
+	}
 
 	virtual void _post_popup() {}
 	virtual Size2 _get_contents_minimum_size() const;
@@ -269,7 +271,9 @@ public:
 
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
+	_FORCE_INLINE_ String atr(const String p_string) const {
+		return is_auto_translating() ? tr(p_string) : p_string;
+	};
 
 	Rect2i get_usable_parent_rect() const;
 

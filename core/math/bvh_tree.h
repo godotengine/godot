@@ -92,18 +92,34 @@ struct BVHCommon {
 // a plus one based ID for clients that expect 0 to be invalid.
 struct BVHHandle {
 	// conversion operator
-	operator uint32_t() const { return _data; }
-	void set(uint32_t p_value) { _data = p_value; }
+	operator uint32_t() const {
+		return _data;
+	}
+	void set(uint32_t p_value) {
+		_data = p_value;
+	}
 
 	uint32_t _data;
 
-	void set_invalid() { _data = BVHCommon::INVALID; }
-	bool is_invalid() const { return _data == BVHCommon::INVALID; }
-	uint32_t id() const { return _data; }
-	void set_id(uint32_t p_id) { _data = p_id; }
+	void set_invalid() {
+		_data = BVHCommon::INVALID;
+	}
+	bool is_invalid() const {
+		return _data == BVHCommon::INVALID;
+	}
+	uint32_t id() const {
+		return _data;
+	}
+	void set_id(uint32_t p_id) {
+		_data = p_id;
+	}
 
-	bool operator==(const BVHHandle &p_h) const { return _data == p_h._data; }
-	bool operator!=(const BVHHandle &p_h) const { return (*this == p_h) == false; }
+	bool operator==(const BVHHandle &p_h) const {
+		return _data == p_h._data;
+	}
+	bool operator!=(const BVHHandle &p_h) const {
+		return (*this == p_h) == false;
+	}
 };
 
 // helper class to make iterative versions of recursive functions
@@ -120,7 +136,9 @@ public:
 	//only used in rare occasions when you run out of alloca memory
 	// because tree is too unbalanced.
 	LocalVector<T> aux_stack;
-	int32_t get_alloca_stacksize() const { return ALLOCA_STACK_SIZE * sizeof(T); }
+	int32_t get_alloca_stacksize() const {
+		return ALLOCA_STACK_SIZE * sizeof(T);
+	}
 
 	T *get_first() const {
 		return &stack[0];

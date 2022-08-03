@@ -99,7 +99,9 @@ class MaterialEditorPlugin : public EditorPlugin {
 	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Material"; }
+	virtual String get_name() const override {
+		return "Material";
+	}
 
 	MaterialEditorPlugin();
 };

@@ -98,8 +98,12 @@ protected:
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
 
-	void set_current_rendering_driver_name(String p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
+	void set_current_rendering_driver_name(String p_driver_name) {
+		_current_rendering_driver_name = p_driver_name;
+	}
+	void set_display_driver_id(int p_display_driver_id) {
+		_display_driver_id = p_display_driver_id;
+	}
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
@@ -116,8 +120,12 @@ public:
 
 	static OS *get_singleton();
 
-	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
-	int get_display_driver_id() const { return _display_driver_id; }
+	String get_current_rendering_driver_name() const {
+		return _current_rendering_driver_name;
+	}
+	int get_display_driver_id() const {
+		return _display_driver_id;
+	}
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -134,21 +142,33 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) { return ERR_UNAVAILABLE; }
-	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) {
+		return ERR_UNAVAILABLE;
+	}
+	virtual Error close_dynamic_library(void *p_library_handle) {
+		return ERR_UNAVAILABLE;
+	}
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) {
+		return ERR_UNAVAILABLE;
+	}
 
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
-	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
-	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const { return String(); };
+	virtual Vector<String> get_system_fonts() const {
+		return Vector<String>();
+	};
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const {
+		return String();
+	};
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
-	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) {
+		return create_process(get_executable_path(), p_arguments, r_child_id);
+	};
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
@@ -162,13 +182,23 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
 	virtual String get_name() const = 0;
-	virtual List<String> get_cmdline_args() const { return _cmdline; }
-	virtual List<String> get_cmdline_user_args() const { return _user_args; }
-	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
+	virtual List<String> get_cmdline_args() const {
+		return _cmdline;
+	}
+	virtual List<String> get_cmdline_user_args() const {
+		return _user_args;
+	}
+	virtual List<String> get_cmdline_platform_args() const {
+		return List<String>();
+	}
 	virtual String get_model_name() const;
 
-	bool is_layered_allowed() const { return _allow_layered; }
-	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	bool is_layered_allowed() const {
+		return _allow_layered;
+	}
+	bool is_hidpi_allowed() const {
+		return _allow_hidpi;
+	}
 
 	void ensure_user_data_dir();
 
@@ -233,7 +263,9 @@ public:
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
 
-	virtual bool is_userfs_persistent() const { return true; }
+	virtual bool is_userfs_persistent() const {
+		return true;
+	}
 
 	bool is_stdout_verbose() const;
 	bool is_stdout_debug_enabled() const;
@@ -246,7 +278,9 @@ public:
 	virtual bool is_single_window() const;
 
 	virtual void disable_crash_handler() {}
-	virtual bool is_disable_crash_handler() const { return false; }
+	virtual bool is_disable_crash_handler() const {
+		return false;
+	}
 	virtual void initialize_debugging() {}
 
 	virtual void dump_memory_to_file(const char *p_file);
@@ -258,7 +292,9 @@ public:
 	virtual uint64_t get_static_memory_peak_usage() const;
 	virtual uint64_t get_free_static_memory() const;
 
-	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	RenderThreadMode get_render_thread_mode() const {
+		return _render_thread_mode;
+	}
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
@@ -290,7 +326,9 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
-	virtual Error move_to_trash(const String &p_path) { return FAILED; }
+	virtual Error move_to_trash(const String &p_path) {
+		return FAILED;
+	}
 
 	virtual void debug_break();
 
@@ -302,7 +340,9 @@ public:
 
 	virtual int get_processor_count() const;
 	virtual String get_processor_name() const;
-	virtual int get_default_thread_pool_size() const { return get_processor_count(); }
+	virtual int get_default_thread_pool_size() const {
+		return get_processor_count();
+	}
 
 	virtual String get_unique_id() const;
 
@@ -316,9 +356,15 @@ public:
 	bool is_restart_on_exit_set() const;
 	List<String> get_restart_on_exit_arguments() const;
 
-	virtual bool request_permission(const String &p_name) { return true; }
-	virtual bool request_permissions() { return true; }
-	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
+	virtual bool request_permission(const String &p_name) {
+		return true;
+	}
+	virtual bool request_permissions() {
+		return true;
+	}
+	virtual Vector<String> get_granted_permissions() const {
+		return Vector<String>();
+	}
 
 	virtual void process_and_drop_events() {}
 	OS();

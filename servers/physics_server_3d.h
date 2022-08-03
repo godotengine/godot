@@ -816,28 +816,58 @@ protected:
 	static void _bind_methods();
 
 public:
-	const PhysicsDirectSpaceState3D::RayParameters &get_parameters() const { return parameters; }
+	const PhysicsDirectSpaceState3D::RayParameters &get_parameters() const {
+		return parameters;
+	}
 
-	void set_from(const Vector3 &p_from) { parameters.from = p_from; }
-	const Vector3 &get_from() const { return parameters.from; }
+	void set_from(const Vector3 &p_from) {
+		parameters.from = p_from;
+	}
+	const Vector3 &get_from() const {
+		return parameters.from;
+	}
 
-	void set_to(const Vector3 &p_to) { parameters.to = p_to; }
-	const Vector3 &get_to() const { return parameters.to; }
+	void set_to(const Vector3 &p_to) {
+		parameters.to = p_to;
+	}
+	const Vector3 &get_to() const {
+		return parameters.to;
+	}
 
-	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
-	uint32_t get_collision_mask() const { return parameters.collision_mask; }
+	void set_collision_mask(uint32_t p_mask) {
+		parameters.collision_mask = p_mask;
+	}
+	uint32_t get_collision_mask() const {
+		return parameters.collision_mask;
+	}
 
-	void set_collide_with_bodies(bool p_enable) { parameters.collide_with_bodies = p_enable; }
-	bool is_collide_with_bodies_enabled() const { return parameters.collide_with_bodies; }
+	void set_collide_with_bodies(bool p_enable) {
+		parameters.collide_with_bodies = p_enable;
+	}
+	bool is_collide_with_bodies_enabled() const {
+		return parameters.collide_with_bodies;
+	}
 
-	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
-	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+	void set_collide_with_areas(bool p_enable) {
+		parameters.collide_with_areas = p_enable;
+	}
+	bool is_collide_with_areas_enabled() const {
+		return parameters.collide_with_areas;
+	}
 
-	void set_hit_from_inside(bool p_enable) { parameters.hit_from_inside = p_enable; }
-	bool is_hit_from_inside_enabled() const { return parameters.hit_from_inside; }
+	void set_hit_from_inside(bool p_enable) {
+		parameters.hit_from_inside = p_enable;
+	}
+	bool is_hit_from_inside_enabled() const {
+		return parameters.hit_from_inside;
+	}
 
-	void set_hit_back_faces(bool p_enable) { parameters.hit_back_faces = p_enable; }
-	bool is_hit_back_faces_enabled() const { return parameters.hit_back_faces; }
+	void set_hit_back_faces(bool p_enable) {
+		parameters.hit_back_faces = p_enable;
+	}
+	bool is_hit_back_faces_enabled() const {
+		return parameters.hit_back_faces;
+	}
 
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;
@@ -852,19 +882,37 @@ protected:
 	static void _bind_methods();
 
 public:
-	const PhysicsDirectSpaceState3D::PointParameters &get_parameters() const { return parameters; }
+	const PhysicsDirectSpaceState3D::PointParameters &get_parameters() const {
+		return parameters;
+	}
 
-	void set_position(const Vector3 &p_position) { parameters.position = p_position; }
-	const Vector3 &get_position() const { return parameters.position; }
+	void set_position(const Vector3 &p_position) {
+		parameters.position = p_position;
+	}
+	const Vector3 &get_position() const {
+		return parameters.position;
+	}
 
-	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
-	uint32_t get_collision_mask() const { return parameters.collision_mask; }
+	void set_collision_mask(uint32_t p_mask) {
+		parameters.collision_mask = p_mask;
+	}
+	uint32_t get_collision_mask() const {
+		return parameters.collision_mask;
+	}
 
-	void set_collide_with_bodies(bool p_enable) { parameters.collide_with_bodies = p_enable; }
-	bool is_collide_with_bodies_enabled() const { return parameters.collide_with_bodies; }
+	void set_collide_with_bodies(bool p_enable) {
+		parameters.collide_with_bodies = p_enable;
+	}
+	bool is_collide_with_bodies_enabled() const {
+		return parameters.collide_with_bodies;
+	}
 
-	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
-	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+	void set_collide_with_areas(bool p_enable) {
+		parameters.collide_with_areas = p_enable;
+	}
+	bool is_collide_with_areas_enabled() const {
+		return parameters.collide_with_areas;
+	}
 
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;
@@ -881,31 +929,61 @@ protected:
 	static void _bind_methods();
 
 public:
-	const PhysicsDirectSpaceState3D::ShapeParameters &get_parameters() const { return parameters; }
+	const PhysicsDirectSpaceState3D::ShapeParameters &get_parameters() const {
+		return parameters;
+	}
 
 	void set_shape(const Ref<Resource> &p_shape_ref);
-	Ref<Resource> get_shape() const { return shape_ref; }
+	Ref<Resource> get_shape() const {
+		return shape_ref;
+	}
 
 	void set_shape_rid(const RID &p_shape);
-	RID get_shape_rid() const { return parameters.shape_rid; }
+	RID get_shape_rid() const {
+		return parameters.shape_rid;
+	}
 
-	void set_transform(const Transform3D &p_transform) { parameters.transform = p_transform; }
-	const Transform3D &get_transform() const { return parameters.transform; }
+	void set_transform(const Transform3D &p_transform) {
+		parameters.transform = p_transform;
+	}
+	const Transform3D &get_transform() const {
+		return parameters.transform;
+	}
 
-	void set_motion(const Vector3 &p_motion) { parameters.motion = p_motion; }
-	const Vector3 &get_motion() const { return parameters.motion; }
+	void set_motion(const Vector3 &p_motion) {
+		parameters.motion = p_motion;
+	}
+	const Vector3 &get_motion() const {
+		return parameters.motion;
+	}
 
-	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
-	real_t get_margin() const { return parameters.margin; }
+	void set_margin(real_t p_margin) {
+		parameters.margin = p_margin;
+	}
+	real_t get_margin() const {
+		return parameters.margin;
+	}
 
-	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
-	uint32_t get_collision_mask() const { return parameters.collision_mask; }
+	void set_collision_mask(uint32_t p_mask) {
+		parameters.collision_mask = p_mask;
+	}
+	uint32_t get_collision_mask() const {
+		return parameters.collision_mask;
+	}
 
-	void set_collide_with_bodies(bool p_enable) { parameters.collide_with_bodies = p_enable; }
-	bool is_collide_with_bodies_enabled() const { return parameters.collide_with_bodies; }
+	void set_collide_with_bodies(bool p_enable) {
+		parameters.collide_with_bodies = p_enable;
+	}
+	bool is_collide_with_bodies_enabled() const {
+		return parameters.collide_with_bodies;
+	}
 
-	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
-	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+	void set_collide_with_areas(bool p_enable) {
+		parameters.collide_with_areas = p_enable;
+	}
+	bool is_collide_with_areas_enabled() const {
+		return parameters.collide_with_areas;
+	}
 
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;
@@ -920,22 +998,44 @@ protected:
 	static void _bind_methods();
 
 public:
-	const PhysicsServer3D::MotionParameters &get_parameters() const { return parameters; }
+	const PhysicsServer3D::MotionParameters &get_parameters() const {
+		return parameters;
+	}
 
-	const Transform3D &get_from() const { return parameters.from; }
-	void set_from(const Transform3D &p_from) { parameters.from = p_from; }
+	const Transform3D &get_from() const {
+		return parameters.from;
+	}
+	void set_from(const Transform3D &p_from) {
+		parameters.from = p_from;
+	}
 
-	const Vector3 &get_motion() const { return parameters.motion; }
-	void set_motion(const Vector3 &p_motion) { parameters.motion = p_motion; }
+	const Vector3 &get_motion() const {
+		return parameters.motion;
+	}
+	void set_motion(const Vector3 &p_motion) {
+		parameters.motion = p_motion;
+	}
 
-	real_t get_margin() const { return parameters.margin; }
-	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
+	real_t get_margin() const {
+		return parameters.margin;
+	}
+	void set_margin(real_t p_margin) {
+		parameters.margin = p_margin;
+	}
 
-	int get_max_collisions() const { return parameters.max_collisions; }
-	void set_max_collisions(int p_max_collisions) { parameters.max_collisions = p_max_collisions; }
+	int get_max_collisions() const {
+		return parameters.max_collisions;
+	}
+	void set_max_collisions(int p_max_collisions) {
+		parameters.max_collisions = p_max_collisions;
+	}
 
-	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
-	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
+	bool is_collide_separation_ray_enabled() const {
+		return parameters.collide_separation_ray;
+	}
+	void set_collide_separation_ray_enabled(bool p_enabled) {
+		parameters.collide_separation_ray = p_enabled;
+	}
 
 	Vector<RID> get_exclude_bodies() const;
 	void set_exclude_bodies(const Vector<RID> &p_exclude);
@@ -943,8 +1043,12 @@ public:
 	Array get_exclude_objects() const;
 	void set_exclude_objects(const Array &p_exclude);
 
-	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
-	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }
+	bool is_recovery_as_collision_enabled() const {
+		return parameters.recovery_as_collision;
+	}
+	void set_recovery_as_collision_enabled(bool p_enabled) {
+		parameters.recovery_as_collision = p_enabled;
+	}
 };
 
 class PhysicsTestMotionResult3D : public RefCounted {
@@ -956,7 +1060,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	PhysicsServer3D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer3D::MotionResult *>(&result); }
+	PhysicsServer3D::MotionResult *get_result_ptr() const {
+		return const_cast<PhysicsServer3D::MotionResult *>(&result);
+	}
 
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;

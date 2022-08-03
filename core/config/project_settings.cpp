@@ -329,7 +329,9 @@ struct _VCSort {
 	int order = 0;
 	uint32_t flags = 0;
 
-	bool operator<(const _VCSort &p_vcs) const { return order == p_vcs.order ? name < p_vcs.name : order < p_vcs.order; }
+	bool operator<(const _VCSort &p_vcs) const {
+		return order == p_vcs.order ? name < p_vcs.name : order < p_vcs.order;
+	}
 };
 
 void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {

@@ -4,7 +4,9 @@ struct ItemRef {
 	uint32_t tnode_id; // -1 is invalid
 	uint32_t item_id; // in the leaf
 
-	bool is_active() const { return tnode_id != BVHCommon::INACTIVE; }
+	bool is_active() const {
+		return tnode_id != BVHCommon::INACTIVE;
+	}
 	void set_inactive() {
 		tnode_id = BVHCommon::INACTIVE;
 		item_id = BVHCommon::INACTIVE;
@@ -78,14 +80,20 @@ public:
 		return item_ref_ids[p_id];
 	}
 
-	bool is_dirty() const { return dirty; }
-	void set_dirty(bool p) { dirty = p; }
+	bool is_dirty() const {
+		return dirty;
+	}
+	void set_dirty(bool p) {
+		dirty = p;
+	}
 
 	void clear() {
 		num_items = 0;
 		set_dirty(true);
 	}
-	bool is_full() const { return num_items >= MAX_ITEMS; }
+	bool is_full() const {
+		return num_items >= MAX_ITEMS;
+	}
 
 	void remove_item_unordered(uint32_t p_id) {
 		BVH_ASSERT(p_id < num_items);
@@ -120,9 +128,15 @@ struct TNode {
 	// (or the highest where there is a tie off)
 	int32_t height;
 
-	bool is_leaf() const { return num_children < 0; }
-	void set_leaf_id(int id) { neg_leaf_id = -id; }
-	int get_leaf_id() const { return -neg_leaf_id; }
+	bool is_leaf() const {
+		return num_children < 0;
+	}
+	void set_leaf_id(int id) {
+		neg_leaf_id = -id;
+	}
+	int get_leaf_id() const {
+		return -neg_leaf_id;
+	}
 
 	void clear() {
 		num_children = 0;
@@ -135,7 +149,9 @@ struct TNode {
 		// other members are not blanked for speed .. they may be uninitialized
 	}
 
-	bool is_full_of_children() const { return num_children >= MAX_CHILDREN; }
+	bool is_full_of_children() const {
+		return num_children >= MAX_CHILDREN;
+	}
 
 	void remove_child_internal(uint32_t child_num) {
 		children[child_num] = children[num_children - 1];

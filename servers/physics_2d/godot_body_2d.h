@@ -111,8 +111,12 @@ class GodotBody2D : public GodotCollisionObject2D {
 	struct AreaCMP {
 		GodotArea2D *area = nullptr;
 		int refCount = 0;
-		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
-		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
+		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const {
+			return area->get_self() == p_cmp.area->get_self();
+		}
+		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const {
+			return area->get_priority() < p_cmp.area->get_priority();
+		}
 		_FORCE_INLINE_ AreaCMP() {}
 		_FORCE_INLINE_ AreaCMP(GodotArea2D *p_area) {
 			area = p_area;
@@ -188,41 +192,89 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
+	_FORCE_INLINE_ int get_max_contacts_reported() const {
+		return contacts.size();
+	}
 
-	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.is_empty(); }
+	_FORCE_INLINE_ bool can_report_contacts() const {
+		return !contacts.is_empty();
+	}
 	_FORCE_INLINE_ void add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos);
 
-	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
-	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
-	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
-	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
+	_FORCE_INLINE_ void add_exception(const RID &p_exception) {
+		exceptions.insert(p_exception);
+	}
+	_FORCE_INLINE_ void remove_exception(const RID &p_exception) {
+		exceptions.erase(p_exception);
+	}
+	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const {
+		return exceptions.has(p_exception);
+	}
+	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const {
+		return exceptions;
+	}
 
-	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
-	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+	_FORCE_INLINE_ uint64_t get_island_step() const {
+		return island_step;
+	}
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) {
+		island_step = p_step;
+	}
 
-	_FORCE_INLINE_ void add_constraint(GodotConstraint2D *p_constraint, int p_pos) { constraint_list.push_back({ p_constraint, p_pos }); }
-	_FORCE_INLINE_ void remove_constraint(GodotConstraint2D *p_constraint, int p_pos) { constraint_list.erase({ p_constraint, p_pos }); }
-	const List<Pair<GodotConstraint2D *, int>> &get_constraint_list() const { return constraint_list; }
-	_FORCE_INLINE_ void clear_constraint_list() { constraint_list.clear(); }
+	_FORCE_INLINE_ void add_constraint(GodotConstraint2D *p_constraint, int p_pos) {
+		constraint_list.push_back({ p_constraint, p_pos });
+	}
+	_FORCE_INLINE_ void remove_constraint(GodotConstraint2D *p_constraint, int p_pos) {
+		constraint_list.erase({ p_constraint, p_pos });
+	}
+	const List<Pair<GodotConstraint2D *, int>> &get_constraint_list() const {
+		return constraint_list;
+	}
+	_FORCE_INLINE_ void clear_constraint_list() {
+		constraint_list.clear();
+	}
 
-	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
-	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
+	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) {
+		omit_force_integration = p_omit_force_integration;
+	}
+	_FORCE_INLINE_ bool get_omit_force_integration() const {
+		return omit_force_integration;
+	}
 
-	_FORCE_INLINE_ void set_linear_velocity(const Vector2 &p_velocity) { linear_velocity = p_velocity; }
-	_FORCE_INLINE_ Vector2 get_linear_velocity() const { return linear_velocity; }
+	_FORCE_INLINE_ void set_linear_velocity(const Vector2 &p_velocity) {
+		linear_velocity = p_velocity;
+	}
+	_FORCE_INLINE_ Vector2 get_linear_velocity() const {
+		return linear_velocity;
+	}
 
-	_FORCE_INLINE_ void set_angular_velocity(real_t p_velocity) { angular_velocity = p_velocity; }
-	_FORCE_INLINE_ real_t get_angular_velocity() const { return angular_velocity; }
+	_FORCE_INLINE_ void set_angular_velocity(real_t p_velocity) {
+		angular_velocity = p_velocity;
+	}
+	_FORCE_INLINE_ real_t get_angular_velocity() const {
+		return angular_velocity;
+	}
 
-	_FORCE_INLINE_ Vector2 get_prev_linear_velocity() const { return prev_linear_velocity; }
-	_FORCE_INLINE_ real_t get_prev_angular_velocity() const { return prev_angular_velocity; }
+	_FORCE_INLINE_ Vector2 get_prev_linear_velocity() const {
+		return prev_linear_velocity;
+	}
+	_FORCE_INLINE_ real_t get_prev_angular_velocity() const {
+		return prev_angular_velocity;
+	}
 
-	_FORCE_INLINE_ void set_biased_linear_velocity(const Vector2 &p_velocity) { biased_linear_velocity = p_velocity; }
-	_FORCE_INLINE_ Vector2 get_biased_linear_velocity() const { return biased_linear_velocity; }
+	_FORCE_INLINE_ void set_biased_linear_velocity(const Vector2 &p_velocity) {
+		biased_linear_velocity = p_velocity;
+	}
+	_FORCE_INLINE_ Vector2 get_biased_linear_velocity() const {
+		return biased_linear_velocity;
+	}
 
-	_FORCE_INLINE_ void set_biased_angular_velocity(real_t p_velocity) { biased_angular_velocity = p_velocity; }
-	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
+	_FORCE_INLINE_ void set_biased_angular_velocity(real_t p_velocity) {
+		biased_angular_velocity = p_velocity;
+	}
+	_FORCE_INLINE_ real_t get_biased_angular_velocity() const {
+		return biased_angular_velocity;
+	}
 
 	_FORCE_INLINE_ void apply_central_impulse(const Vector2 &p_impulse) {
 		linear_velocity += p_impulse * _inv_mass;
@@ -274,14 +326,24 @@ public:
 		constant_torque += p_torque;
 	}
 
-	void set_constant_force(const Vector2 &p_force) { constant_force = p_force; }
-	Vector2 get_constant_force() const { return constant_force; }
+	void set_constant_force(const Vector2 &p_force) {
+		constant_force = p_force;
+	}
+	Vector2 get_constant_force() const {
+		return constant_force;
+	}
 
-	void set_constant_torque(real_t p_torque) { constant_torque = p_torque; }
-	real_t get_constant_torque() const { return constant_torque; }
+	void set_constant_torque(real_t p_torque) {
+		constant_torque = p_torque;
+	}
+	real_t get_constant_torque() const {
+		return constant_torque;
+	}
 
 	void set_active(bool p_active);
-	_FORCE_INLINE_ bool is_active() const { return active; }
+	_FORCE_INLINE_ bool is_active() const {
+		return active;
+	}
 
 	_FORCE_INLINE_ void wakeup() {
 		if ((!get_space()) || mode == PhysicsServer2D::BODY_MODE_STATIC || mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
@@ -299,20 +361,36 @@ public:
 	void set_state(PhysicsServer2D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer2D::BodyState p_state) const;
 
-	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PhysicsServer2D::CCDMode p_mode) { continuous_cd_mode = p_mode; }
-	_FORCE_INLINE_ PhysicsServer2D::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
+	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PhysicsServer2D::CCDMode p_mode) {
+		continuous_cd_mode = p_mode;
+	}
+	_FORCE_INLINE_ PhysicsServer2D::CCDMode get_continuous_collision_detection_mode() const {
+		return continuous_cd_mode;
+	}
 
 	void set_space(GodotSpace2D *p_space) override;
 
 	void update_mass_properties();
 	void reset_mass_properties();
 
-	_FORCE_INLINE_ const Vector2 &get_center_of_mass() const { return center_of_mass; }
-	_FORCE_INLINE_ const Vector2 &get_center_of_mass_local() const { return center_of_mass_local; }
-	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ real_t get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
+	_FORCE_INLINE_ const Vector2 &get_center_of_mass() const {
+		return center_of_mass;
+	}
+	_FORCE_INLINE_ const Vector2 &get_center_of_mass_local() const {
+		return center_of_mass_local;
+	}
+	_FORCE_INLINE_ real_t get_inv_mass() const {
+		return _inv_mass;
+	}
+	_FORCE_INLINE_ real_t get_inv_inertia() const {
+		return _inv_inertia;
+	}
+	_FORCE_INLINE_ real_t get_friction() const {
+		return friction;
+	}
+	_FORCE_INLINE_ real_t get_bounce() const {
+		return bounce;
+	}
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);

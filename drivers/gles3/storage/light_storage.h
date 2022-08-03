@@ -142,8 +142,12 @@ public:
 
 	/* Light API */
 
-	Light *get_light(RID p_rid) { return light_owner.get_or_null(p_rid); };
-	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
+	Light *get_light(RID p_rid) {
+		return light_owner.get_or_null(p_rid);
+	};
+	bool owns_light(RID p_rid) {
+		return light_owner.owns(p_rid);
+	};
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
 
@@ -269,7 +273,9 @@ public:
 	}
 
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;
-	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
+	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override {
+		return 0;
+	}
 	virtual uint64_t light_get_version(RID p_light) const override;
 
 	/* PROBE API */

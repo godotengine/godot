@@ -111,7 +111,9 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() {
+		resize(0);
+	}
 	_FORCE_INLINE_ void reset() {
 		clear();
 		if (data) {
@@ -120,8 +122,12 @@ public:
 			capacity = 0;
 		}
 	}
-	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
-	_FORCE_INLINE_ U get_capacity() const { return capacity; }
+	_FORCE_INLINE_ bool is_empty() const {
+		return count == 0;
+	}
+	_FORCE_INLINE_ U get_capacity() const {
+		return capacity;
+	}
 	_FORCE_INLINE_ void reserve(U p_size) {
 		p_size = tight ? p_size : nearest_power_of_2_templated(p_size);
 		if (p_size > capacity) {
@@ -131,7 +137,9 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ U size() const { return count; }
+	_FORCE_INLINE_ U size() const {
+		return count;
+	}
 	void resize(U p_size) {
 		if (p_size < count) {
 			if (!__has_trivial_destructor(T) && !force_trivial) {

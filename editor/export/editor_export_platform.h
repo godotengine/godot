@@ -132,7 +132,9 @@ public:
 
 	virtual Ref<EditorExportPreset> create_preset();
 
-	virtual void clear_messages() { messages.clear(); }
+	virtual void clear_messages() {
+		messages.clear();
+	}
 	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {
 		ExportMessage msg;
 		msg.category = p_category;
@@ -174,8 +176,12 @@ public:
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
 	virtual void get_export_options(List<ExportOption> *r_options) = 0;
-	virtual bool should_update_export_options() { return false; }
-	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
+	virtual bool should_update_export_options() {
+		return false;
+	}
+	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+		return true;
+	}
 
 	virtual String get_os_name() const = 0;
 	virtual String get_name() const = 0;
@@ -186,12 +192,22 @@ public:
 	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
-	virtual bool poll_export() { return false; }
-	virtual int get_options_count() const { return 0; }
-	virtual String get_options_tooltip() const { return ""; }
+	virtual bool poll_export() {
+		return false;
+	}
+	virtual int get_options_count() const {
+		return 0;
+	}
+	virtual String get_options_tooltip() const {
+		return "";
+	}
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
-	virtual String get_option_label(int p_device) const { return ""; }
-	virtual String get_option_tooltip(int p_device) const { return ""; }
+	virtual String get_option_label(int p_device) const {
+		return "";
+	}
+	virtual String get_option_tooltip(int p_device) const {
+		return "";
+	}
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,
@@ -201,8 +217,12 @@ public:
 		DEBUG_FLAG_VIEW_NAVIGATION = 16,
 	};
 
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
-	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+		return OK;
+	}
+	virtual Ref<Texture2D> get_run_icon() const {
+		return get_logo();
+	}
 
 	String test_etc2() const;
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
@@ -213,7 +233,9 @@ public:
 	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual void get_platform_features(List<String> *r_features) const = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) = 0;
-	virtual String get_debug_protocol() const { return "tcp://"; }
+	virtual String get_debug_protocol() const {
+		return "tcp://";
+	}
 
 	EditorExportPlatform();
 };

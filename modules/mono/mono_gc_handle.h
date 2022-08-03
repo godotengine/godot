@@ -49,10 +49,16 @@ struct MonoGCHandleData {
 	uint32_t handle = 0;
 	gdmono::GCHandleType type = gdmono::GCHandleType::NIL;
 
-	_FORCE_INLINE_ bool is_released() const { return !handle; }
-	_FORCE_INLINE_ bool is_weak() const { return type == gdmono::GCHandleType::WEAK_HANDLE; }
+	_FORCE_INLINE_ bool is_released() const {
+		return !handle;
+	}
+	_FORCE_INLINE_ bool is_weak() const {
+		return type == gdmono::GCHandleType::WEAK_HANDLE;
+	}
 
-	_FORCE_INLINE_ MonoObject *get_target() const { return handle ? mono_gchandle_get_target(handle) : nullptr; }
+	_FORCE_INLINE_ MonoObject *get_target() const {
+		return handle ? mono_gchandle_get_target(handle) : nullptr;
+	}
 
 	void release();
 
@@ -87,12 +93,20 @@ public:
 	static Ref<MonoGCHandleRef> create_strong(MonoObject *p_object);
 	static Ref<MonoGCHandleRef> create_weak(MonoObject *p_object);
 
-	_FORCE_INLINE_ bool is_released() const { return data.is_released(); }
-	_FORCE_INLINE_ bool is_weak() const { return data.is_weak(); }
+	_FORCE_INLINE_ bool is_released() const {
+		return data.is_released();
+	}
+	_FORCE_INLINE_ bool is_weak() const {
+		return data.is_weak();
+	}
 
-	_FORCE_INLINE_ MonoObject *get_target() const { return data.get_target(); }
+	_FORCE_INLINE_ MonoObject *get_target() const {
+		return data.get_target();
+	}
 
-	void release() { data.release(); }
+	void release() {
+		data.release();
+	}
 
 	_FORCE_INLINE_ void set_handle(uint32_t p_handle, gdmono::GCHandleType p_handle_type) {
 		data = MonoGCHandleData(p_handle, p_handle_type);
@@ -101,7 +115,9 @@ public:
 	MonoGCHandleRef(const MonoGCHandleData &p_gc_handle_data) :
 			data(p_gc_handle_data) {
 	}
-	~MonoGCHandleRef() { release(); }
+	~MonoGCHandleRef() {
+		release();
+	}
 };
 
 #endif // MONO_GC_HANDLE_H

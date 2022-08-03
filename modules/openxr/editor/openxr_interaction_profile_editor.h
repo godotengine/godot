@@ -51,7 +51,9 @@ protected:
 	const OpenXRDefs::InteractionProfile *profile_def = nullptr;
 
 public:
-	Ref<OpenXRInteractionProfile> get_interaction_profile() { return interaction_profile; }
+	Ref<OpenXRInteractionProfile> get_interaction_profile() {
+		return interaction_profile;
+	}
 
 	virtual void _update_interaction_profile() {}
 	virtual void _theme_changed() {}

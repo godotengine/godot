@@ -76,7 +76,9 @@ public:
 				instID(INVALID_GEOMETRY_ID) {}
 
 		/*! Tests if we hit something. */
-		_FORCE_INLINE_ explicit operator bool() const { return geomID != INVALID_GEOMETRY_ID; }
+		_FORCE_INLINE_ explicit operator bool() const {
+			return geomID != INVALID_GEOMETRY_ID;
+		}
 
 	public:
 		Vector3 org; //!< Ray origin + tnear

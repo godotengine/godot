@@ -47,7 +47,9 @@ class FogVolume : public VisualInstance3D {
 	RID volume;
 
 protected:
-	_FORCE_INLINE_ RID _get_volume() { return volume; }
+	_FORCE_INLINE_ RID _get_volume() {
+		return volume;
+	}
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 

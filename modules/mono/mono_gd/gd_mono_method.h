@@ -59,9 +59,13 @@ class GDMonoMethod : public IMonoClassMember {
 public:
 	virtual GDMonoClass *get_enclosing_class() const final;
 
-	virtual MemberType get_member_type() const final { return MEMBER_TYPE_METHOD; }
+	virtual MemberType get_member_type() const final {
+		return MEMBER_TYPE_METHOD;
+	}
 
-	virtual StringName get_name() const final { return name; }
+	virtual StringName get_name() const final {
+		return name;
+	}
 
 	virtual bool is_static() final;
 
@@ -71,10 +75,16 @@ public:
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) final;
 	void fetch_attributes();
 
-	_FORCE_INLINE_ MonoMethod *get_mono_ptr() const { return mono_method; }
+	_FORCE_INLINE_ MonoMethod *get_mono_ptr() const {
+		return mono_method;
+	}
 
-	_FORCE_INLINE_ uint16_t get_parameters_count() const { return params_count; }
-	_FORCE_INLINE_ ManagedType get_return_type() const { return return_type; }
+	_FORCE_INLINE_ uint16_t get_parameters_count() const {
+		return params_count;
+	}
+	_FORCE_INLINE_ ManagedType get_return_type() const {
+		return return_type;
+	}
 
 	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = nullptr) const;
 	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = nullptr) const;

@@ -88,7 +88,9 @@ private:
 
 	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol);
 
-	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
+	static void _listener_changed_cb(void *self) {
+		reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true;
+	}
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;

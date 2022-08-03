@@ -46,14 +46,30 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool get_perspective() const { return perspective; }
-	void set_perspective(bool p_val) { perspective = p_val; }
-	float get_fov_size() const { return fov_size; }
-	void set_fov_size(float p_val) { fov_size = p_val; }
-	float get_depth_far() const { return depth_far; }
-	void set_depth_far(float p_val) { depth_far = p_val; }
-	float get_depth_near() const { return depth_near; }
-	void set_depth_near(float p_val) { depth_near = p_val; }
+	bool get_perspective() const {
+		return perspective;
+	}
+	void set_perspective(bool p_val) {
+		perspective = p_val;
+	}
+	float get_fov_size() const {
+		return fov_size;
+	}
+	void set_fov_size(float p_val) {
+		fov_size = p_val;
+	}
+	float get_depth_far() const {
+		return depth_far;
+	}
+	void set_depth_far(float p_val) {
+		depth_far = p_val;
+	}
+	float get_depth_near() const {
+		return depth_near;
+	}
+	void set_depth_near(float p_val) {
+		depth_near = p_val;
+	}
 };
 
 #endif // GLTF_CAMERA_H

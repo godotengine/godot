@@ -369,10 +369,18 @@ public:
 
 		Type type;
 
-		virtual DataType get_datatype() const { return TYPE_VOID; }
-		virtual String get_datatype_name() const { return ""; }
-		virtual int get_array_size() const { return 0; }
-		virtual bool is_indexed() const { return false; }
+		virtual DataType get_datatype() const {
+			return TYPE_VOID;
+		}
+		virtual String get_datatype_name() const {
+			return "";
+		}
+		virtual int get_array_size() const {
+			return 0;
+		}
+		virtual bool is_indexed() const {
+			return false;
+		}
 
 		Node(Type t) :
 				type(t) {}
@@ -397,10 +405,18 @@ public:
 		StringName struct_name;
 		Vector<Node *> arguments;
 
-		virtual DataType get_datatype() const override { return return_cache; }
-		virtual String get_datatype_name() const override { return String(struct_name); }
-		virtual int get_array_size() const override { return return_array_size; }
-		virtual bool is_indexed() const override { return op == OP_INDEX; }
+		virtual DataType get_datatype() const override {
+			return return_cache;
+		}
+		virtual String get_datatype_name() const override {
+			return String(struct_name);
+		}
+		virtual int get_array_size() const override {
+			return return_array_size;
+		}
+		virtual bool is_indexed() const override {
+			return op == OP_INDEX;
+		}
 
 		OperatorNode() :
 				Node(TYPE_OPERATOR) {}
@@ -413,8 +429,12 @@ public:
 		bool is_const = false;
 		bool is_local = false;
 
-		virtual DataType get_datatype() const override { return datatype_cache; }
-		virtual String get_datatype_name() const override { return String(struct_name); }
+		virtual DataType get_datatype() const override {
+			return datatype_cache;
+		}
+		virtual String get_datatype_name() const override {
+			return String(struct_name);
+		}
 
 		VariableNode() :
 				Node(TYPE_VARIABLE) {}
@@ -435,7 +455,9 @@ public:
 		};
 		Vector<Declaration> declarations;
 
-		virtual DataType get_datatype() const override { return datatype; }
+		virtual DataType get_datatype() const override {
+			return datatype;
+		}
 
 		VariableDeclarationNode() :
 				Node(TYPE_VARIABLE_DECLARATION) {}
@@ -452,10 +474,18 @@ public:
 		int array_size = 0;
 		bool is_local = false;
 
-		virtual DataType get_datatype() const override { return call_expression ? call_expression->get_datatype() : datatype_cache; }
-		virtual String get_datatype_name() const override { return call_expression ? call_expression->get_datatype_name() : String(struct_name); }
-		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
-		virtual bool is_indexed() const override { return index_expression != nullptr; }
+		virtual DataType get_datatype() const override {
+			return call_expression ? call_expression->get_datatype() : datatype_cache;
+		}
+		virtual String get_datatype_name() const override {
+			return call_expression ? call_expression->get_datatype_name() : String(struct_name);
+		}
+		virtual int get_array_size() const override {
+			return (index_expression || call_expression) ? 0 : array_size;
+		}
+		virtual bool is_indexed() const override {
+			return index_expression != nullptr;
+		}
 
 		ArrayNode() :
 				Node(TYPE_ARRAY) {}
@@ -466,9 +496,15 @@ public:
 		String struct_name;
 		Vector<Node *> initializer;
 
-		virtual DataType get_datatype() const override { return datatype; }
-		virtual String get_datatype_name() const override { return struct_name; }
-		virtual int get_array_size() const override { return initializer.size(); }
+		virtual DataType get_datatype() const override {
+			return datatype;
+		}
+		virtual String get_datatype_name() const override {
+			return struct_name;
+		}
+		virtual int get_array_size() const override {
+			return initializer.size();
+		}
 
 		ArrayConstructNode() :
 				Node(TYPE_ARRAY_CONSTRUCT) {}
@@ -489,9 +525,15 @@ public:
 		Vector<Value> values;
 		Vector<VariableDeclarationNode::Declaration> array_declarations;
 
-		virtual DataType get_datatype() const override { return datatype; }
-		virtual String get_datatype_name() const override { return struct_name; }
-		virtual int get_array_size() const override { return array_size; }
+		virtual DataType get_datatype() const override {
+			return datatype;
+		}
+		virtual String get_datatype_name() const override {
+			return struct_name;
+		}
+		virtual int get_array_size() const override {
+			return array_size;
+		}
 
 		ConstantNode() :
 				Node(TYPE_CONSTANT) {}
@@ -559,10 +601,18 @@ public:
 		Node *call_expression = nullptr;
 		bool has_swizzling_duplicates = false;
 
-		virtual DataType get_datatype() const override { return call_expression ? call_expression->get_datatype() : datatype; }
-		virtual String get_datatype_name() const override { return call_expression ? call_expression->get_datatype_name() : String(struct_name); }
-		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
-		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
+		virtual DataType get_datatype() const override {
+			return call_expression ? call_expression->get_datatype() : datatype;
+		}
+		virtual String get_datatype_name() const override {
+			return call_expression ? call_expression->get_datatype_name() : String(struct_name);
+		}
+		virtual int get_array_size() const override {
+			return (index_expression || call_expression) ? 0 : array_size;
+		}
+		virtual bool is_indexed() const override {
+			return index_expression != nullptr || call_expression != nullptr;
+		}
 
 		MemberNode() :
 				Node(TYPE_MEMBER) {}
@@ -602,9 +652,15 @@ public:
 		BlockNode *body = nullptr;
 		bool can_discard = false;
 
-		virtual DataType get_datatype() const override { return return_type; }
-		virtual String get_datatype_name() const override { return String(return_struct_name); }
-		virtual int get_array_size() const override { return return_array_size; }
+		virtual DataType get_datatype() const override {
+			return return_type;
+		}
+		virtual String get_datatype_name() const override {
+			return String(return_struct_name);
+		}
+		virtual int get_array_size() const override {
+			return return_array_size;
+		}
 
 		FunctionNode() :
 				Node(TYPE_FUNCTION) {}

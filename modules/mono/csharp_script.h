@@ -220,8 +220,12 @@ public:
 
 	void get_members(HashSet<StringName> *p_members) override;
 
-	bool is_tool() const override { return tool; }
-	bool is_valid() const override { return valid; }
+	bool is_tool() const override {
+		return tool;
+	}
+	bool is_valid() const override {
+		return valid;
+	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -237,7 +241,9 @@ public:
 	const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
-	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
+	bool is_placeholder_fallback_enabled() const override {
+		return placeholder_fallback_enabled;
+	}
 #endif
 
 	Error load_source_code(const String &p_path);
@@ -284,7 +290,9 @@ class CSharpInstance : public ScriptInstance {
 public:
 	MonoObject *get_mono_object() const;
 
-	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
+	_FORCE_INLINE_ bool is_destructing_script_instance() {
+		return destructing_script_instance;
+	}
 
 	Object *get_owner() override;
 
@@ -415,17 +423,27 @@ public:
 
 	StringNameCache string_names;
 
-	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
+	const Mutex &get_language_bind_mutex() {
+		return language_bind_mutex;
+	}
 
-	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
+	_FORCE_INLINE_ int get_language_index() {
+		return lang_idx;
+	}
 	void set_language_index(int p_idx);
 
-	_FORCE_INLINE_ const StringNameCache &get_string_names() { return string_names; }
+	_FORCE_INLINE_ const StringNameCache &get_string_names() {
+		return string_names;
+	}
 
-	_FORCE_INLINE_ static CSharpLanguage *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static CSharpLanguage *get_singleton() {
+		return singleton;
+	}
 
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const { return godotsharp_editor; }
+	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const {
+		return godotsharp_editor;
+	}
 #endif
 
 	static void release_script_gchandle(MonoGCHandleData &p_gchandle);
@@ -439,7 +457,9 @@ public:
 	void reload_assemblies(bool p_soft_reload);
 #endif
 
-	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const { return managed_callable_middleman; }
+	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const {
+		return managed_callable_middleman;
+	}
 
 	void lookup_scripts_in_assembly(GDMonoAssembly *p_assembly);
 
@@ -474,7 +494,9 @@ public:
 	Script *create_script() const override;
 	bool has_named_classes() const override;
 	bool supports_builtin_mode() const override;
-	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override { return -1; }
+	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
+		return -1;
+	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
@@ -489,14 +511,20 @@ public:
 	/* TODO */ void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
 	/* TODO */ void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
 	/* TODO */ void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
-	/* TODO */ String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) override { return ""; }
+	/* TODO */ String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) override {
+		return "";
+	}
 	Vector<StackInfo> debug_get_current_stack_info() override;
 
 	/* PROFILING FUNCTIONS */
 	/* TODO */ void profiling_start() override {}
 	/* TODO */ void profiling_stop() override {}
-	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override { return 0; }
-	/* TODO */ int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override { return 0; }
+	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+		return 0;
+	}
+	/* TODO */ int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+		return 0;
+	}
 
 	void frame() override;
 

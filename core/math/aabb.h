@@ -55,10 +55,18 @@ struct _NO_DISCARD_ AABB {
 		return (size.x <= 0 && size.y <= 0 && size.z <= 0);
 	}
 
-	const Vector3 &get_position() const { return position; }
-	void set_position(const Vector3 &p_pos) { position = p_pos; }
-	const Vector3 &get_size() const { return size; }
-	void set_size(const Vector3 &p_size) { size = p_size; }
+	const Vector3 &get_position() const {
+		return position;
+	}
+	void set_position(const Vector3 &p_pos) {
+		position = p_pos;
+	}
+	const Vector3 &get_size() const {
+		return size;
+	}
+	void set_size(const Vector3 &p_size) {
+		size = p_size;
+	}
 
 	bool operator==(const AABB &p_rval) const;
 	bool operator!=(const AABB &p_rval) const;

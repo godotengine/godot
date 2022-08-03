@@ -96,7 +96,9 @@ public:
 	void process_rpc(int p_from, const uint8_t *p_packet, int p_packet_len);
 	String get_rpc_md5(const Object *p_obj);
 
-	SceneRPCInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
+	SceneRPCInterface(SceneMultiplayer *p_multiplayer) {
+		multiplayer = p_multiplayer;
+	}
 };
 
 #endif // SCENE_RPC_INTERFACE_H

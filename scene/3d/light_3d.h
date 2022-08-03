@@ -97,7 +97,9 @@ protected:
 	Light3D(RenderingServer::LightType p_type);
 
 public:
-	RS::LightType get_light_type() const { return type; }
+	RS::LightType get_light_type() const {
+		return type;
+	}
 
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;

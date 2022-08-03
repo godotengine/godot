@@ -95,7 +95,9 @@ public:
 	VisualScriptYield::YieldMode mode;
 	double wait_time = 0.0;
 
-	virtual int get_working_memory_size() const override { return 1; } //yield needs at least 1
+	virtual int get_working_memory_size() const override {
+		return 1;
+	} //yield needs at least 1
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
@@ -506,7 +508,9 @@ public:
 	VisualScriptYieldSignal *node = nullptr;
 	VisualScriptInstance *instance = nullptr;
 
-	virtual int get_working_memory_size() const override { return 1; }
+	virtual int get_working_memory_size() const override {
+		return 1;
+	}
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 

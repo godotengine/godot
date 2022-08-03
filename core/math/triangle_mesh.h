@@ -89,8 +89,12 @@ public:
 	Vector3 get_area_normal(const AABB &p_aabb) const;
 	Vector<Face3> get_faces() const;
 
-	const Vector<Triangle> &get_triangles() const { return triangles; }
-	const Vector<Vector3> &get_vertices() const { return vertices; }
+	const Vector<Triangle> &get_triangles() const {
+		return triangles;
+	}
+	const Vector<Vector3> &get_vertices() const {
+		return vertices;
+	}
 	void get_indices(Vector<int> *r_triangles_indices) const;
 
 	void create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices = Vector<int32_t>());

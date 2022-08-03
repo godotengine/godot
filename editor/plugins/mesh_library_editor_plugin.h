@@ -70,7 +70,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	MenuButton *get_menu_button() const { return menu; }
+	MenuButton *get_menu_button() const {
+		return menu;
+	}
 
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
@@ -84,8 +86,12 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 	MeshLibraryEditor *mesh_library_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MeshLibrary"; }
-	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override {
+		return "MeshLibrary";
+	}
+	bool has_main_screen() const override {
+		return false;
+	}
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;

@@ -131,7 +131,9 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 		ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + assembly_name + "'.");
 
 		MonoAssemblyName *reusable_aname = new_mono_assembly_name();
-		SCOPE_EXIT { mono_free(reusable_aname); };
+		SCOPE_EXIT {
+			mono_free(reusable_aname);
+		};
 
 		Error err = get_assembly_dependencies(assembly, reusable_aname, search_dirs, r_assembly_dependencies);
 		if (err != OK) {

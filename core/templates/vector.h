@@ -67,10 +67,14 @@ private:
 
 public:
 	bool push_back(T p_elem);
-	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
+	_FORCE_INLINE_ bool append(const T &p_elem) {
+		return push_back(p_elem);
+	} //alias
 	void fill(T p_elem);
 
-	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
+	void remove_at(int p_index) {
+		_cowdata.remove_at(p_index);
+	}
 	void erase(const T &p_val) {
 		int idx = find(p_val);
 		if (idx >= 0) {
@@ -79,25 +83,55 @@ public:
 	}
 	void reverse();
 
-	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ void clear() { resize(0); }
-	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
+	_FORCE_INLINE_ T *ptrw() {
+		return _cowdata.ptrw();
+	}
+	_FORCE_INLINE_ const T *ptr() const {
+		return _cowdata.ptr();
+	}
+	_FORCE_INLINE_ void clear() {
+		resize(0);
+	}
+	_FORCE_INLINE_ bool is_empty() const {
+		return _cowdata.is_empty();
+	}
 
-	_FORCE_INLINE_ T get(int p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const T &get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
-	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
-	Error insert(int p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
-	int find(const T &p_val, int p_from = 0) const { return _cowdata.find(p_val, p_from); }
-	int rfind(const T &p_val, int p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
-	int count(const T &p_val) const { return _cowdata.count(p_val); }
+	_FORCE_INLINE_ T get(int p_index) {
+		return _cowdata.get(p_index);
+	}
+	_FORCE_INLINE_ const T &get(int p_index) const {
+		return _cowdata.get(p_index);
+	}
+	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
+		_cowdata.set(p_index, p_elem);
+	}
+	_FORCE_INLINE_ int size() const {
+		return _cowdata.size();
+	}
+	Error resize(int p_size) {
+		return _cowdata.resize(p_size);
+	}
+	_FORCE_INLINE_ const T &operator[](int p_index) const {
+		return _cowdata.get(p_index);
+	}
+	Error insert(int p_pos, T p_val) {
+		return _cowdata.insert(p_pos, p_val);
+	}
+	int find(const T &p_val, int p_from = 0) const {
+		return _cowdata.find(p_val, p_from);
+	}
+	int rfind(const T &p_val, int p_from = -1) const {
+		return _cowdata.rfind(p_val, p_from);
+	}
+	int count(const T &p_val) const {
+		return _cowdata.count(p_val);
+	}
 
 	void append_array(Vector<T> p_other);
 
-	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
+	_FORCE_INLINE_ bool has(const T &p_val) const {
+		return find(p_val) != -1;
+	}
 
 	void sort() {
 		sort_custom<_DefaultComparator<T>>();
@@ -211,7 +245,9 @@ public:
 		_FORCE_INLINE_ T &operator*() const {
 			return *elem_ptr;
 		}
-		_FORCE_INLINE_ T *operator->() const { return elem_ptr; }
+		_FORCE_INLINE_ T *operator->() const {
+			return elem_ptr;
+		}
 		_FORCE_INLINE_ Iterator &operator++() {
 			elem_ptr++;
 			return *this;
@@ -221,12 +257,20 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const {
+			return elem_ptr == b.elem_ptr;
+		}
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const {
+			return elem_ptr != b.elem_ptr;
+		}
 
-		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
+		Iterator(T *p_ptr) {
+			elem_ptr = p_ptr;
+		}
 		Iterator() {}
-		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
+		Iterator(const Iterator &p_it) {
+			elem_ptr = p_it.elem_ptr;
+		}
 
 	private:
 		T *elem_ptr = nullptr;
@@ -236,7 +280,9 @@ public:
 		_FORCE_INLINE_ const T &operator*() const {
 			return *elem_ptr;
 		}
-		_FORCE_INLINE_ const T *operator->() const { return elem_ptr; }
+		_FORCE_INLINE_ const T *operator->() const {
+			return elem_ptr;
+		}
 		_FORCE_INLINE_ ConstIterator &operator++() {
 			elem_ptr++;
 			return *this;
@@ -246,12 +292,20 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const {
+			return elem_ptr == b.elem_ptr;
+		}
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const {
+			return elem_ptr != b.elem_ptr;
+		}
 
-		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
+		ConstIterator(const T *p_ptr) {
+			elem_ptr = p_ptr;
+		}
 		ConstIterator() {}
-		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
+		ConstIterator(const ConstIterator &p_it) {
+			elem_ptr = p_it.elem_ptr;
+		}
 
 	private:
 		const T *elem_ptr = nullptr;
@@ -281,7 +335,9 @@ public:
 			_cowdata.set(i++, element);
 		}
 	}
-	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ Vector(const Vector &p_from) {
+		_cowdata._ref(p_from._cowdata);
+	}
 
 	_FORCE_INLINE_ ~Vector() {}
 };

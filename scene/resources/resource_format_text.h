@@ -78,8 +78,12 @@ class ResourceLoaderText {
 
 	HashMap<String, String> remaps;
 
-	static Error _parse_sub_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_sub_resource(p_stream, r_res, line, r_err_str); }
-	static Error _parse_ext_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_ext_resource(p_stream, r_res, line, r_err_str); }
+	static Error _parse_sub_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+		return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_sub_resource(p_stream, r_res, line, r_err_str);
+	}
+	static Error _parse_ext_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+		return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_ext_resource(p_stream, r_res, line, r_err_str);
+	}
 
 	Error _parse_sub_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	Error _parse_ext_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
@@ -97,8 +101,12 @@ class ResourceLoaderText {
 		HashMap<String, Ref<Resource>> resource_map;
 	};
 
-	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_sub_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str); }
-	static Error _parse_ext_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_ext_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str); }
+	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+		return _parse_sub_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str);
+	}
+	static Error _parse_ext_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+		return _parse_ext_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str);
+	}
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
@@ -148,7 +156,9 @@ public:
 
 	static Error convert_file_to_binary(const String &p_src_path, const String &p_dst_path);
 
-	ResourceFormatLoaderText() { singleton = this; }
+	ResourceFormatLoaderText() {
+		singleton = this;
+	}
 };
 
 class ResourceFormatSaverTextInstance {
@@ -164,7 +174,9 @@ class ResourceFormatSaverTextInstance {
 	struct NonPersistentKey { //for resource properties generated on the fly
 		Ref<Resource> base;
 		StringName property;
-		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
+		bool operator<(const NonPersistentKey &p_key) const {
+			return base == p_key.base ? property < p_key.property : base < p_key.base;
+		}
 	};
 
 	RBMap<NonPersistentKey, Ref<Resource>> non_persistent_map;

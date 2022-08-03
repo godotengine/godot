@@ -99,11 +99,17 @@ public:
 			p_elem->_root = nullptr;
 		}
 
-		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
-		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
+		_FORCE_INLINE_ SelfList<T> *first() {
+			return _first;
+		}
+		_FORCE_INLINE_ const SelfList<T> *first() const {
+			return _first;
+		}
 
 		_FORCE_INLINE_ List() {}
-		_FORCE_INLINE_ ~List() { ERR_FAIL_COND(_first != nullptr); }
+		_FORCE_INLINE_ ~List() {
+			ERR_FAIL_COND(_first != nullptr);
+		}
 	};
 
 private:
@@ -113,17 +119,29 @@ private:
 	SelfList<T> *_prev = nullptr;
 
 public:
-	_FORCE_INLINE_ bool in_list() const { return _root; }
+	_FORCE_INLINE_ bool in_list() const {
+		return _root;
+	}
 	_FORCE_INLINE_ void remove_from_list() {
 		if (_root) {
 			_root->remove(this);
 		}
 	}
-	_FORCE_INLINE_ SelfList<T> *next() { return _next; }
-	_FORCE_INLINE_ SelfList<T> *prev() { return _prev; }
-	_FORCE_INLINE_ const SelfList<T> *next() const { return _next; }
-	_FORCE_INLINE_ const SelfList<T> *prev() const { return _prev; }
-	_FORCE_INLINE_ T *self() const { return _self; }
+	_FORCE_INLINE_ SelfList<T> *next() {
+		return _next;
+	}
+	_FORCE_INLINE_ SelfList<T> *prev() {
+		return _prev;
+	}
+	_FORCE_INLINE_ const SelfList<T> *next() const {
+		return _next;
+	}
+	_FORCE_INLINE_ const SelfList<T> *prev() const {
+		return _prev;
+	}
+	_FORCE_INLINE_ T *self() const {
+		return _self;
+	}
 
 	_FORCE_INLINE_ SelfList(T *p_self) {
 		_self = p_self;

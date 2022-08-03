@@ -49,7 +49,9 @@ private:
 	static Utilities *singleton;
 
 public:
-	static Utilities *get_singleton() { return singleton; }
+	static Utilities *get_singleton() {
+		return singleton;
+	}
 
 	Utilities();
 	~Utilities();

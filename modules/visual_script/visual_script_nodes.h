@@ -72,7 +72,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "flow_control"; }
+	virtual String get_category() const override {
+		return "flow_control";
+	}
 
 	void add_argument(Variant::Type p_type, const String &p_name, int p_index = -1, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(""));
 	void set_argument_type(int p_argidx, Variant::Type p_type);
@@ -187,7 +189,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "functions"; }
+	virtual String get_category() const override {
+		return "functions";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -216,7 +220,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "operators"; }
+	virtual String get_category() const override {
+		return "operators";
+	}
 
 	void set_operator(Variant::Operator p_op);
 	Variant::Operator get_operator() const;
@@ -253,7 +259,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "operators"; }
+	virtual String get_category() const override {
+		return "operators";
+	}
 
 	void set_typed(Variant::Type p_op);
 	Variant::Type get_typed() const;
@@ -285,7 +293,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	void set_variable(StringName p_variable);
 	StringName get_variable() const;
@@ -317,7 +327,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	void set_variable(StringName p_variable);
 	StringName get_variable() const;
@@ -350,7 +362,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "constants"; }
+	virtual String get_category() const override {
+		return "constants";
+	}
 
 	void set_constant_type(Variant::Type p_type);
 	Variant::Type get_constant_type() const;
@@ -384,7 +398,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	void set_preload(const Ref<Resource> &p_preload);
 	Ref<Resource> get_preload() const;
@@ -410,7 +426,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "operators"; }
+	virtual String get_category() const override {
+		return "operators";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -433,7 +451,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "operators"; }
+	virtual String get_category() const override {
+		return "operators";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -460,7 +480,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "constants"; }
+	virtual String get_category() const override {
+		return "constants";
+	}
 
 	void set_global_constant(int p_which);
 	int get_global_constant();
@@ -493,7 +515,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "constants"; }
+	virtual String get_category() const override {
+		return "constants";
+	}
 
 	void set_class_constant(const StringName &p_which);
 	StringName get_class_constant();
@@ -530,7 +554,9 @@ public:
 
 	virtual String get_caption() const override;
 	virtual String get_text() const override;
-	virtual String get_category() const override { return "constants"; }
+	virtual String get_category() const override {
+		return "constants";
+	}
 
 	void set_basic_type_constant(const StringName &p_which);
 	StringName get_basic_type_constant() const;
@@ -580,7 +606,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "constants"; }
+	virtual String get_category() const override {
+		return "constants";
+	}
 
 	void set_math_constant(MathConstant p_which);
 	MathConstant get_math_constant();
@@ -615,7 +643,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	void set_singleton(const String &p_string);
 	String get_singleton();
@@ -649,7 +679,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	void set_node_path(const NodePath &p_path);
 	NodePath get_node_path();
@@ -681,7 +713,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -711,7 +745,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	void set_resource_path(const String &p_path);
 	String get_resource_path();
@@ -740,7 +776,9 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
 	virtual String get_caption() const override;
-	virtual String get_category() const override { return "data"; }
+	virtual String get_category() const override {
+		return "data";
+	}
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 

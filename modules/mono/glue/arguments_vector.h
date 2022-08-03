@@ -44,9 +44,15 @@ private:
 	ArgumentsVector(const ArgumentsVector &) = delete;
 
 public:
-	T *ptr() { return _ptr; }
-	T &get(int p_idx) { return _ptr[p_idx]; }
-	void set(int p_idx, const T &p_value) { _ptr[p_idx] = p_value; }
+	T *ptr() {
+		return _ptr;
+	}
+	T &get(int p_idx) {
+		return _ptr[p_idx];
+	}
+	void set(int p_idx, const T &p_value) {
+		_ptr[p_idx] = p_value;
+	}
 
 	explicit ArgumentsVector(int p_size) :
 			size(p_size) {

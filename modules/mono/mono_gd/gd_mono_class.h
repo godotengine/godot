@@ -113,11 +113,17 @@ public:
 	bool is_assignable_from(GDMonoClass *p_from) const;
 
 	StringName get_namespace() const;
-	_FORCE_INLINE_ StringName get_name() const { return class_name; }
+	_FORCE_INLINE_ StringName get_name() const {
+		return class_name;
+	}
 	String get_name_for_lookup() const;
 
-	_FORCE_INLINE_ MonoClass *get_mono_ptr() const { return mono_class; }
-	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
+	_FORCE_INLINE_ MonoClass *get_mono_ptr() const {
+		return mono_class;
+	}
+	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const {
+		return assembly;
+	}
 
 	GDMonoClass *get_parent_class() const;
 	GDMonoClass *get_nesting_class() const;

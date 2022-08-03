@@ -65,11 +65,19 @@ struct ScopedLocalRef {
 	JNIEnv *env;
 	T local_ref;
 
-	_FORCE_INLINE_ T get() const { return local_ref; }
-	_FORCE_INLINE_ operator T() const { return local_ref; }
-	_FORCE_INLINE_ operator jvalue() const { return (jvalue)local_ref; }
+	_FORCE_INLINE_ T get() const {
+		return local_ref;
+	}
+	_FORCE_INLINE_ operator T() const {
+		return local_ref;
+	}
+	_FORCE_INLINE_ operator jvalue() const {
+		return (jvalue)local_ref;
+	}
 
-	_FORCE_INLINE_ operator bool() const { return local_ref != nullptr; }
+	_FORCE_INLINE_ operator bool() const {
+		return local_ref != nullptr;
+	}
 
 	_FORCE_INLINE_ bool operator==(std::nullptr_t) const {
 		return local_ref == nullptr;

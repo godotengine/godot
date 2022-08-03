@@ -129,11 +129,19 @@ private:
 	int _cull_aabb_for_body(GodotBody3D *p_body, const AABB &p_aabb);
 
 public:
-	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
-	_FORCE_INLINE_ RID get_self() const { return self; }
+	_FORCE_INLINE_ void set_self(const RID &p_self) {
+		self = p_self;
+	}
+	_FORCE_INLINE_ RID get_self() const {
+		return self;
+	}
 
-	void set_default_area(GodotArea3D *p_area) { area = p_area; }
-	GodotArea3D *get_default_area() const { return area; }
+	void set_default_area(GodotArea3D *p_area) {
+		area = p_area;
+	}
+	GodotArea3D *get_default_area() const {
+		return area;
+	}
 
 	const SelfList<GodotBody3D>::List &get_active_body_list() const;
 	void body_add_to_active_list(SelfList<GodotBody3D> *p_body);
@@ -160,14 +168,30 @@ public:
 	void remove_object(GodotCollisionObject3D *p_object);
 	const HashSet<GodotCollisionObject3D *> &get_objects() const;
 
-	_FORCE_INLINE_ int get_solver_iterations() const { return solver_iterations; }
-	_FORCE_INLINE_ real_t get_contact_recycle_radius() const { return contact_recycle_radius; }
-	_FORCE_INLINE_ real_t get_contact_max_separation() const { return contact_max_separation; }
-	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const { return contact_max_allowed_penetration; }
-	_FORCE_INLINE_ real_t get_contact_bias() const { return contact_bias; }
-	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const { return body_linear_velocity_sleep_threshold; }
-	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const { return body_angular_velocity_sleep_threshold; }
-	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
+	_FORCE_INLINE_ int get_solver_iterations() const {
+		return solver_iterations;
+	}
+	_FORCE_INLINE_ real_t get_contact_recycle_radius() const {
+		return contact_recycle_radius;
+	}
+	_FORCE_INLINE_ real_t get_contact_max_separation() const {
+		return contact_max_separation;
+	}
+	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const {
+		return contact_max_allowed_penetration;
+	}
+	_FORCE_INLINE_ real_t get_contact_bias() const {
+		return contact_bias;
+	}
+	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const {
+		return body_linear_velocity_sleep_threshold;
+	}
+	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const {
+		return body_angular_velocity_sleep_threshold;
+	}
+	_FORCE_INLINE_ real_t get_body_time_to_sleep() const {
+		return body_time_to_sleep;
+	}
 
 	void update();
 	void setup();
@@ -177,37 +201,67 @@ public:
 	void lock();
 	void unlock();
 
-	real_t get_last_step() const { return last_step; }
-	void set_last_step(real_t p_step) { last_step = p_step; }
+	real_t get_last_step() const {
+		return last_step;
+	}
+	void set_last_step(real_t p_step) {
+		last_step = p_step;
+	}
 
 	void set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SpaceParameter p_param) const;
 
-	void set_island_count(int p_island_count) { island_count = p_island_count; }
-	int get_island_count() const { return island_count; }
+	void set_island_count(int p_island_count) {
+		island_count = p_island_count;
+	}
+	int get_island_count() const {
+		return island_count;
+	}
 
-	void set_active_objects(int p_active_objects) { active_objects = p_active_objects; }
-	int get_active_objects() const { return active_objects; }
+	void set_active_objects(int p_active_objects) {
+		active_objects = p_active_objects;
+	}
+	int get_active_objects() const {
+		return active_objects;
+	}
 
-	int get_collision_pairs() const { return collision_pairs; }
+	int get_collision_pairs() const {
+		return collision_pairs;
+	}
 
 	GodotPhysicsDirectSpaceState3D *get_direct_state();
 
-	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
-	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.is_empty(); }
+	void set_debug_contacts(int p_amount) {
+		contact_debug.resize(p_amount);
+	}
+	_FORCE_INLINE_ bool is_debugging_contacts() const {
+		return !contact_debug.is_empty();
+	}
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
 		if (contact_debug_count < contact_debug.size()) {
 			contact_debug.write[contact_debug_count++] = p_contact;
 		}
 	}
-	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contact_debug; }
-	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }
+	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() {
+		return contact_debug;
+	}
+	_FORCE_INLINE_ int get_debug_contact_count() {
+		return contact_debug_count;
+	}
 
-	void set_static_global_body(RID p_body) { static_global_body = p_body; }
-	RID get_static_global_body() { return static_global_body; }
+	void set_static_global_body(RID p_body) {
+		static_global_body = p_body;
+	}
+	RID get_static_global_body() {
+		return static_global_body;
+	}
 
-	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) { elapsed_time[p_time] = p_msec; }
-	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
+	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) {
+		elapsed_time[p_time] = p_msec;
+	}
+	uint64_t get_elapsed_time(ElapsedTime p_time) const {
+		return elapsed_time[p_time];
+	}
 
 	bool test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result);
 

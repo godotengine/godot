@@ -149,8 +149,12 @@ public:
 		return _find(p_val, exact);
 	}
 
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
+	_FORCE_INLINE_ int size() const {
+		return _cowdata.size();
+	}
+	_FORCE_INLINE_ bool is_empty() const {
+		return _cowdata.is_empty();
+	}
 
 	const Pair *get_array() const {
 		return _cowdata.ptr();
@@ -194,7 +198,9 @@ public:
 	}
 
 	_FORCE_INLINE_ VMap() {}
-	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ VMap(const VMap &p_from) {
+		_cowdata._ref(p_from._cowdata);
+	}
 
 	inline void operator=(const VMap &p_from) {
 		_cowdata._ref(p_from._cowdata);

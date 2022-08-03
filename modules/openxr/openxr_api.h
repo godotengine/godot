@@ -215,9 +215,15 @@ private:
 protected:
 	friend class OpenXRVulkanExtension;
 
-	XrInstance get_instance() const { return instance; };
-	XrSystemId get_system_id() const { return system_id; };
-	XrSession get_session() const { return session; };
+	XrInstance get_instance() const {
+		return instance;
+	};
+	XrSystemId get_system_id() const {
+		return system_id;
+	};
+	XrSession get_session() const {
+		return session;
+	};
 
 	// helper method to convert an XrPosef to a Transform3D
 	Transform3D transform_from_pose(const XrPosef &p_pose);
@@ -243,8 +249,12 @@ public:
 	bool initialize_session();
 	void finish();
 
-	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; };
-	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; };
+	XrTime get_next_frame_time() {
+		return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod;
+	};
+	bool can_render() {
+		return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender;
+	};
 
 	Size2 get_recommended_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);

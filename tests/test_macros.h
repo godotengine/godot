@@ -269,7 +269,9 @@ private:
 	}
 
 public:
-	static SignalWatcher *get_singleton() { return singleton; }
+	static SignalWatcher *get_singleton() {
+		return singleton;
+	}
 
 	void watch_signal(Object *p_object, const String &p_signal) {
 		MethodInfo method_info;

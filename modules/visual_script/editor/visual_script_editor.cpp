@@ -198,7 +198,9 @@ public:
 		notify_property_list_changed();
 	}
 
-	VisualScriptEditorSignalEdit() { undo_redo = nullptr; }
+	VisualScriptEditorSignalEdit() {
+		undo_redo = nullptr;
+	}
 };
 
 class VisualScriptEditorVariableEdit : public Object {
@@ -356,7 +358,9 @@ public:
 		notify_property_list_changed();
 	}
 
-	VisualScriptEditorVariableEdit() { undo_redo = nullptr; }
+	VisualScriptEditorVariableEdit() {
+		undo_redo = nullptr;
+	}
 };
 
 static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {

@@ -48,13 +48,17 @@ class Shape3D : public Resource {
 protected:
 	static void _bind_methods();
 
-	_FORCE_INLINE_ RID get_shape() const { return shape; }
+	_FORCE_INLINE_ RID get_shape() const {
+		return shape;
+	}
 	Shape3D(RID p_shape);
 
 	virtual void _update_shape();
 
 public:
-	virtual RID get_rid() const override { return shape; }
+	virtual RID get_rid() const override {
+		return shape;
+	}
 
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() const = 0; // { return Vector<Vector3>(); }

@@ -110,7 +110,9 @@ public:
 		dependencies.clear();
 	}
 
-	~DependencyTracker() { clear(); }
+	~DependencyTracker() {
+		clear();
+	}
 
 private:
 	friend class Dependency;

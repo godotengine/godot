@@ -37,7 +37,9 @@ class CoreStringNames {
 	friend void register_core_types();
 	friend void unregister_core_types();
 
-	static void create() { singleton = memnew(CoreStringNames); }
+	static void create() {
+		singleton = memnew(CoreStringNames);
+	}
 	static void free() {
 		memdelete(singleton);
 		singleton = nullptr;
@@ -46,7 +48,9 @@ class CoreStringNames {
 	CoreStringNames();
 
 public:
-	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static CoreStringNames *get_singleton() {
+		return singleton;
+	}
 
 	static CoreStringNames *singleton;
 

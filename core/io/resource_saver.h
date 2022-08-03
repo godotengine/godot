@@ -86,8 +86,12 @@ public:
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
-	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
-	static bool get_timestamp_on_save() { return timestamp_on_save; }
+	static void set_timestamp_on_save(bool p_timestamp) {
+		timestamp_on_save = p_timestamp;
+	}
+	static bool get_timestamp_on_save() {
+		return timestamp_on_save;
+	}
 
 	static ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
 

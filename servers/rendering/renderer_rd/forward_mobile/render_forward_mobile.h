@@ -52,7 +52,9 @@ class RenderForwardMobile : public RendererSceneRenderRD {
 	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) override;
 	virtual void _free_forward_id(ForwardIDType p_type, ForwardID p_id) override;
 	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) override;
-	virtual bool _uses_forward_ids() const override { return true; }
+	virtual bool _uses_forward_ids() const override {
+		return true;
+	}
 
 protected:
 	/* Scene Shader */
@@ -587,7 +589,9 @@ protected:
 	void _update_shader_quality_settings() override;
 
 public:
-	static RenderForwardMobile *get_singleton() { return singleton; }
+	static RenderForwardMobile *get_singleton() {
+		return singleton;
+	}
 
 	virtual RID reflection_probe_create_framebuffer(RID p_color, RID p_depth) override;
 

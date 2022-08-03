@@ -164,7 +164,9 @@ private:
 
 	//textures can be created from threads, so this RID_Owner is thread safe
 	mutable RID_Owner<Texture, true> texture_owner;
-	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
+	Texture *get_texture(RID p_rid) {
+		return texture_owner.get_or_null(p_rid);
+	};
 
 	struct TextureToRDFormat {
 		RD::DataFormat format;
@@ -245,7 +247,9 @@ private:
 	};
 
 	mutable RID_Owner<Decal, true> decal_owner;
-	Decal *get_decal(RID p_rid) const { return decal_owner.get_or_null(p_rid); };
+	Decal *get_decal(RID p_rid) const {
+		return decal_owner.get_or_null(p_rid);
+	};
 
 	/* RENDER TARGET API */
 
@@ -296,7 +300,9 @@ private:
 	};
 
 	mutable RID_Owner<RenderTarget> render_target_owner;
-	RenderTarget *get_render_target(RID p_rid) const { return render_target_owner.get_or_null(p_rid); };
+	RenderTarget *get_render_target(RID p_rid) const {
+		return render_target_owner.get_or_null(p_rid);
+	};
 
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
@@ -341,7 +347,9 @@ public:
 
 	/* Canvas Texture API */
 
-	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
+	bool owns_canvas_texture(RID p_rid) {
+		return canvas_texture_owner.owns(p_rid);
+	};
 
 	virtual RID canvas_texture_allocate() override;
 	virtual void canvas_texture_initialize(RID p_rid) override;
@@ -357,7 +365,9 @@ public:
 
 	/* Texture API */
 
-	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); };
+	bool owns_texture(RID p_rid) const {
+		return texture_owner.owns(p_rid);
+	};
 
 	virtual bool can_create_resources_async() const override;
 
@@ -445,7 +455,9 @@ public:
 
 	void update_decal_atlas();
 
-	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); };
+	bool owns_decal(RID p_rid) const {
+		return decal_owner.owns(p_rid);
+	};
 
 	RID decal_atlas_get_texture() const;
 	RID decal_atlas_get_texture_srgb() const;
@@ -543,7 +555,9 @@ public:
 
 	/* RENDER TARGET API */
 
-	bool owns_render_target(RID p_rid) const { return render_target_owner.owns(p_rid); };
+	bool owns_render_target(RID p_rid) const {
+		return render_target_owner.owns(p_rid);
+	};
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

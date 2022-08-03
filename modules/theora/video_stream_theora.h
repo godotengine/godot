@@ -177,11 +177,19 @@ public:
 		return pb;
 	}
 
-	void set_file(const String &p_file) { file = p_file; }
-	String get_file() { return file; }
-	void set_audio_track(int p_track) override { audio_track = p_track; }
+	void set_file(const String &p_file) {
+		file = p_file;
+	}
+	String get_file() {
+		return file;
+	}
+	void set_audio_track(int p_track) override {
+		audio_track = p_track;
+	}
 
-	VideoStreamTheora() { audio_track = 0; }
+	VideoStreamTheora() {
+		audio_track = 0;
+	}
 };
 
 class ResourceFormatLoaderTheora : public ResourceFormatLoader {

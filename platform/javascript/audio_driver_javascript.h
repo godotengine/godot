@@ -63,8 +63,12 @@ private:
 protected:
 	void _audio_driver_process(int p_from = 0, int p_samples = 0);
 	void _audio_driver_capture(int p_from = 0, int p_samples = 0);
-	float *get_output_rb() const { return output_rb; }
-	float *get_input_rb() const { return input_rb; }
+	float *get_output_rb() const {
+		return output_rb;
+	}
+	float *get_input_rb() const {
+		return input_rb;
+	}
 
 	virtual Error create(int &p_buffer_samples, int p_channels) = 0;
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) = 0;
@@ -101,12 +105,16 @@ protected:
 	void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
 
 public:
-	virtual const char *get_name() const override { return "ScriptProcessor"; }
+	virtual const char *get_name() const override {
+		return "ScriptProcessor";
+	}
 
 	virtual void lock() override {}
 	virtual void unlock() override {}
 
-	AudioDriverScriptProcessor() { singleton = this; }
+	AudioDriverScriptProcessor() {
+		singleton = this;
+	}
 };
 
 class AudioDriverWorklet : public AudioDriverJavaScript {
@@ -121,12 +129,16 @@ protected:
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
 
 public:
-	virtual const char *get_name() const override { return "AudioWorklet"; }
+	virtual const char *get_name() const override {
+		return "AudioWorklet";
+	}
 
 	virtual void lock() override {}
 	virtual void unlock() override {}
 
-	AudioDriverWorklet() { singleton = this; }
+	AudioDriverWorklet() {
+		singleton = this;
+	}
 };
 #else
 class AudioDriverWorklet : public AudioDriverJavaScript {
@@ -151,7 +163,9 @@ protected:
 	virtual void finish_driver() override;
 
 public:
-	virtual const char *get_name() const override { return "AudioWorklet"; }
+	virtual const char *get_name() const override {
+		return "AudioWorklet";
+	}
 
 	void lock() override;
 	void unlock() override;

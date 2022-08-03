@@ -137,7 +137,9 @@ class AppxPackager {
 	String content_type(String p_extension);
 
 public:
-	void set_progress_task(String p_task) { progress_task = p_task; }
+	void set_progress_task(String p_task) {
+		progress_task = p_task;
+	}
 	void init(Ref<FileAccess> p_fa);
 	Error add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
 	void finish();

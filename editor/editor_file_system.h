@@ -294,11 +294,15 @@ protected:
 	static void _bind_methods();
 
 public:
-	static EditorFileSystem *get_singleton() { return singleton; }
+	static EditorFileSystem *get_singleton() {
+		return singleton;
+	}
 
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
-	bool is_importing() const { return importing; }
+	bool is_importing() const {
+		return importing;
+	}
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();

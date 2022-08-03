@@ -67,12 +67,24 @@ class ComAutoreleaseRef {
 public:
 	T *reference = nullptr;
 
-	_FORCE_INLINE_ T *operator->() { return reference; }
-	_FORCE_INLINE_ const T *operator->() const { return reference; }
-	_FORCE_INLINE_ T *operator*() { return reference; }
-	_FORCE_INLINE_ const T *operator*() const { return reference; }
-	_FORCE_INLINE_ bool is_valid() const { return reference != nullptr; }
-	_FORCE_INLINE_ bool is_null() const { return reference == nullptr; }
+	_FORCE_INLINE_ T *operator->() {
+		return reference;
+	}
+	_FORCE_INLINE_ const T *operator->() const {
+		return reference;
+	}
+	_FORCE_INLINE_ T *operator*() {
+		return reference;
+	}
+	_FORCE_INLINE_ const T *operator*() const {
+		return reference;
+	}
+	_FORCE_INLINE_ bool is_valid() const {
+		return reference != nullptr;
+	}
+	_FORCE_INLINE_ bool is_null() const {
+		return reference == nullptr;
+	}
 	ComAutoreleaseRef() {}
 	~ComAutoreleaseRef() {
 		if (reference != nullptr) {
@@ -201,9 +213,13 @@ public:
 
 	virtual Error move_to_trash(const String &p_path) override;
 
-	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
+	void set_main_window(HWND p_main_window) {
+		main_window = p_main_window;
+	}
 
-	HINSTANCE get_hinstance() { return hInstance; }
+	HINSTANCE get_hinstance() {
+		return hInstance;
+	}
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
 };

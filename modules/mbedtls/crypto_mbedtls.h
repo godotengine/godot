@@ -48,14 +48,20 @@ private:
 
 public:
 	static CryptoKey *create();
-	static void make_default() { CryptoKey::_create = create; }
-	static void finalize() { CryptoKey::_create = nullptr; }
+	static void make_default() {
+		CryptoKey::_create = create;
+	}
+	static void finalize() {
+		CryptoKey::_create = nullptr;
+	}
 
 	virtual Error load(String p_path, bool p_public_only);
 	virtual Error save(String p_path, bool p_public_only);
 	virtual String save_to_string(bool p_public_only);
 	virtual Error load_from_string(String p_string_key, bool p_public_only);
-	virtual bool is_public_only() const { return public_only; };
+	virtual bool is_public_only() const {
+		return public_only;
+	};
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
@@ -65,8 +71,12 @@ public:
 		mbedtls_pk_free(&pkey);
 	}
 
-	_FORCE_INLINE_ void lock() { locks++; }
-	_FORCE_INLINE_ void unlock() { locks--; }
+	_FORCE_INLINE_ void lock() {
+		locks++;
+	}
+	_FORCE_INLINE_ void unlock() {
+		locks--;
+	}
 
 	friend class CryptoMbedTLS;
 	friend class SSLContextMbedTLS;
@@ -79,8 +89,12 @@ private:
 
 public:
 	static X509Certificate *create();
-	static void make_default() { X509Certificate::_create = create; }
-	static void finalize() { X509Certificate::_create = nullptr; }
+	static void make_default() {
+		X509Certificate::_create = create;
+	}
+	static void finalize() {
+		X509Certificate::_create = nullptr;
+	}
 
 	virtual Error load(String p_path);
 	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len);
@@ -94,8 +108,12 @@ public:
 		mbedtls_x509_crt_free(&cert);
 	}
 
-	_FORCE_INLINE_ void lock() { locks++; }
-	_FORCE_INLINE_ void unlock() { locks--; }
+	_FORCE_INLINE_ void lock() {
+		locks++;
+	}
+	_FORCE_INLINE_ void unlock() {
+		locks--;
+	}
 
 	friend class CryptoMbedTLS;
 	friend class SSLContextMbedTLS;
@@ -109,8 +127,12 @@ private:
 
 public:
 	static HMACContext *create();
-	static void make_default() { HMACContext::_create = create; }
-	static void finalize() { HMACContext::_create = nullptr; }
+	static void make_default() {
+		HMACContext::_create = create;
+	}
+	static void finalize() {
+		HMACContext::_create = nullptr;
+	}
 
 	static bool is_md_type_allowed(mbedtls_md_type_t p_md_type);
 

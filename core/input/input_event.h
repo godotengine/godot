@@ -84,7 +84,9 @@ public:
 
 	virtual bool is_action_type() const;
 
-	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
+	virtual bool accumulate(const Ref<InputEvent> &p_event) {
+		return false;
+	}
 
 	InputEvent() {}
 };
@@ -195,7 +197,9 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
-	virtual bool is_action_type() const override { return true; }
+	virtual bool is_action_type() const override {
+		return true;
+	}
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
@@ -258,7 +262,9 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
-	virtual bool is_action_type() const override { return true; }
+	virtual bool is_action_type() const override {
+		return true;
+	}
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
@@ -322,7 +328,9 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
-	virtual bool is_action_type() const override { return true; }
+	virtual bool is_action_type() const override {
+		return true;
+	}
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
@@ -351,7 +359,9 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
-	virtual bool is_action_type() const override { return true; }
+	virtual bool is_action_type() const override {
+		return true;
+	}
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
@@ -444,7 +454,9 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
-	virtual bool is_action_type() const override { return true; }
+	virtual bool is_action_type() const override {
+		return true;
+	}
 
 	virtual String as_text() const override;
 	virtual String to_string() override;

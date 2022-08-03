@@ -51,13 +51,23 @@ private:
 		uint16_t last_sync = 0;
 		uint64_t last_sync_msec = 0;
 
-		bool operator==(const ObjectID &p_other) { return id == p_other; }
+		bool operator==(const ObjectID &p_other) {
+			return id == p_other;
+		}
 
-		Node *get_node() const { return id.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(id)) : nullptr; }
-		MultiplayerSpawner *get_spawner() const { return spawner.is_valid() ? Object::cast_to<MultiplayerSpawner>(ObjectDB::get_instance(spawner)) : nullptr; }
-		MultiplayerSynchronizer *get_synchronizer() const { return synchronizer.is_valid() ? Object::cast_to<MultiplayerSynchronizer>(ObjectDB::get_instance(synchronizer)) : nullptr; }
+		Node *get_node() const {
+			return id.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(id)) : nullptr;
+		}
+		MultiplayerSpawner *get_spawner() const {
+			return spawner.is_valid() ? Object::cast_to<MultiplayerSpawner>(ObjectDB::get_instance(spawner)) : nullptr;
+		}
+		MultiplayerSynchronizer *get_synchronizer() const {
+			return synchronizer.is_valid() ? Object::cast_to<MultiplayerSynchronizer>(ObjectDB::get_instance(synchronizer)) : nullptr;
+		}
 		TrackedNode() {}
-		TrackedNode(const ObjectID &p_id) { id = p_id; }
+		TrackedNode(const ObjectID &p_id) {
+			id = p_id;
+		}
 		TrackedNode(const ObjectID &p_id, uint32_t p_net_id) {
 			id = p_id;
 			net_id = p_net_id;
@@ -81,18 +91,36 @@ private:
 
 	TrackedNode &_track(const ObjectID &p_id);
 	void _untrack(const ObjectID &p_id);
-	bool is_tracked(const ObjectID &p_id) const { return tracked_nodes.has(p_id); }
+	bool is_tracked(const ObjectID &p_id) const {
+		return tracked_nodes.has(p_id);
+	}
 
 public:
-	const HashSet<int> get_peers() const { return known_peers; }
-	const HashSet<ObjectID> &get_spawned_nodes() const { return spawned_nodes; }
-	bool is_spawned_node(const ObjectID &p_id) const { return spawned_nodes.has(p_id); }
-	const HashSet<ObjectID> &get_synced_nodes() const { return synced_nodes; }
-	bool is_synced_node(const ObjectID &p_id) const { return synced_nodes.has(p_id); }
+	const HashSet<int> get_peers() const {
+		return known_peers;
+	}
+	const HashSet<ObjectID> &get_spawned_nodes() const {
+		return spawned_nodes;
+	}
+	bool is_spawned_node(const ObjectID &p_id) const {
+		return spawned_nodes.has(p_id);
+	}
+	const HashSet<ObjectID> &get_synced_nodes() const {
+		return synced_nodes;
+	}
+	bool is_synced_node(const ObjectID &p_id) const {
+		return synced_nodes.has(p_id);
+	}
 
-	MultiplayerSynchronizer *get_synchronizer(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_synchronizer() : nullptr; }
-	MultiplayerSpawner *get_spawner(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_spawner() : nullptr; }
-	Node *get_node(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_node() : nullptr; }
+	MultiplayerSynchronizer *get_synchronizer(const ObjectID &p_id) {
+		return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_synchronizer() : nullptr;
+	}
+	MultiplayerSpawner *get_spawner(const ObjectID &p_id) {
+		return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_spawner() : nullptr;
+	}
+	Node *get_node(const ObjectID &p_id) {
+		return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_node() : nullptr;
+	}
 	bool update_last_node_sync(const ObjectID &p_id, uint16_t p_time);
 	bool update_sync_time(const ObjectID &p_id, uint64_t p_msec);
 

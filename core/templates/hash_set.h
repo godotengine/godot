@@ -227,8 +227,12 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ uint32_t get_capacity() const { return hash_table_size_primes[capacity_index]; }
-	_FORCE_INLINE_ uint32_t size() const { return num_elements; }
+	_FORCE_INLINE_ uint32_t get_capacity() const {
+		return hash_table_size_primes[capacity_index];
+	}
+	_FORCE_INLINE_ uint32_t size() const {
+		return num_elements;
+	}
 
 	/* Standard Godot Container API */
 
@@ -344,8 +348,12 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return keys == b.keys && index == b.index; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return keys != b.keys || index != b.index; }
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const {
+			return keys == b.keys && index == b.index;
+		}
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const {
+			return keys != b.keys || index != b.index;
+		}
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return keys != nullptr;

@@ -89,7 +89,9 @@ class AStar3D : public RefCounted {
 		static uint32_t hash(const Segment &p_seg) {
 			return PairHash<int64_t, int64_t>().hash(p_seg.key);
 		}
-		bool operator==(const Segment &p_s) const { return key == p_s.key; }
+		bool operator==(const Segment &p_s) const {
+			return key == p_s.key;
+		}
 
 		Segment() {}
 		Segment(int64_t p_from, int64_t p_to) {

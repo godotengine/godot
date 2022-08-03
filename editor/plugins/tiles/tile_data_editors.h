@@ -58,7 +58,9 @@ public:
 	void set_tile_set(Ref<TileSet> p_tile_set);
 
 	// Input to handle painting.
-	virtual Control *get_toolbar() { return nullptr; };
+	virtual Control *get_toolbar() {
+		return nullptr;
+	};
 	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){};
 	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){};
 	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event){};
@@ -227,7 +229,9 @@ protected:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value);
 
 public:
-	virtual Control *get_toolbar() override { return toolbar; };
+	virtual Control *get_toolbar() override {
+		return toolbar;
+	};
 	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) override;
@@ -288,7 +292,9 @@ protected:
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 
-	void set_occlusion_layer(int p_occlusion_layer) { occlusion_layer = p_occlusion_layer; }
+	void set_occlusion_layer(int p_occlusion_layer) {
+		occlusion_layer = p_occlusion_layer;
+	}
 
 	TileDataOcclusionShapeEditor();
 };
@@ -323,7 +329,9 @@ protected:
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 
-	void set_physics_layer(int p_physics_layer) { physics_layer = p_physics_layer; }
+	void set_physics_layer(int p_physics_layer) {
+		physics_layer = p_physics_layer;
+	}
 
 	TileDataCollisionEditor();
 	~TileDataCollisionEditor();
@@ -369,7 +377,9 @@ protected:
 	UndoRedo *undo_redo = nullptr;
 
 public:
-	virtual Control *get_toolbar() override { return toolbar; };
+	virtual Control *get_toolbar() override {
+		return toolbar;
+	};
 	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) override;
@@ -408,7 +418,9 @@ protected:
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 
-	void set_navigation_layer(int p_navigation_layer) { navigation_layer = p_navigation_layer; }
+	void set_navigation_layer(int p_navigation_layer) {
+		navigation_layer = p_navigation_layer;
+	}
 
 	TileDataNavigationEditor();
 };

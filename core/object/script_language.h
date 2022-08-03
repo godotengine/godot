@@ -64,7 +64,9 @@ public:
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
-	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
+	_FORCE_INLINE_ static int get_language_count() {
+		return _language_count;
+	}
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
 	static void unregister_language(const ScriptLanguage *p_language);
@@ -89,7 +91,9 @@ public:
 	static void init_languages();
 	static void finish_languages();
 
-	static bool are_languages_finished() { return languages_finished; }
+	static bool are_languages_finished() {
+		return languages_finished;
+	}
 };
 
 class ScriptInstance;
@@ -100,7 +104,9 @@ class Script : public Resource {
 	OBJ_SAVE_TYPE(Script);
 
 protected:
-	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
+	virtual bool editor_can_reload_from_file() override {
+		return false;
+	} // this is handled by editor better
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -122,7 +128,9 @@ public:
 
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
-	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return nullptr; }
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) {
+		return nullptr;
+	}
 	virtual bool instance_has(const Object *p_this) const = 0;
 
 	virtual bool has_source_code() const = 0;
@@ -151,12 +159,16 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
 
-	virtual int get_member_line(const StringName &p_member) const { return -1; }
+	virtual int get_member_line(const StringName &p_member) const {
+		return -1;
+	}
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
 	virtual void get_members(HashSet<StringName> *p_constants) {}
 
-	virtual bool is_placeholder_fallback_enabled() const { return false; }
+	virtual bool is_placeholder_fallback_enabled() const {
+		return false;
+	}
 
 	virtual const Variant get_rpc_config() const = 0;
 
@@ -170,7 +182,9 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const = 0;
 
-	virtual Object *get_owner() { return nullptr; }
+	virtual Object *get_owner() {
+		return nullptr;
+	}
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state);
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
@@ -203,16 +217,22 @@ public:
 	//depends entirely from the script
 
 	virtual void refcount_incremented() {}
-	virtual bool refcount_decremented() { return true; } //return true if it can die
+	virtual bool refcount_decremented() {
+		return true;
+	} //return true if it can die
 
 	virtual Ref<Script> get_script() const = 0;
 
-	virtual bool is_placeholder() const { return false; }
+	virtual bool is_placeholder() const {
+		return false;
+	}
 
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual const Variant get_rpc_config() const { return get_script()->get_rpc_config(); }
+	virtual const Variant get_rpc_config() const {
+		return get_script()->get_rpc_config();
+	}
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
@@ -222,7 +242,9 @@ class ScriptCodeCompletionCache {
 	static ScriptCodeCompletionCache *singleton;
 
 public:
-	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
+	static ScriptCodeCompletionCache *get_singleton() {
+		return singleton;
+	}
 
 	ScriptCodeCompletionCache();
 
@@ -280,20 +302,36 @@ public:
 	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
-	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
-	virtual bool is_using_templates() { return false; }
+	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+		return Ref<Script>();
+	}
+	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) {
+		return Vector<ScriptTemplate>();
+	}
+	virtual bool is_using_templates() {
+		return false;
+	}
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
-	virtual String validate_path(const String &p_path) const { return ""; }
+	virtual String validate_path(const String &p_path) const {
+		return "";
+	}
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
-	virtual bool supports_documentation() const { return false; }
-	virtual bool can_inherit_from_file() const { return false; }
+	virtual bool supports_documentation() const {
+		return false;
+	}
+	virtual bool can_inherit_from_file() const {
+		return false;
+	}
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
-	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
-	virtual bool overrides_external_editor() { return false; }
+	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
+		return ERR_UNAVAILABLE;
+	}
+	virtual bool overrides_external_editor() {
+		return false;
+	}
 
 	/* Keep enum in Sync with:                               */
 	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
@@ -338,7 +376,9 @@ public:
 		}
 	};
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) {
+		return ERR_UNAVAILABLE;
+	}
 
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION,
@@ -362,7 +402,9 @@ public:
 		int location;
 	};
 
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
+	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
+		return ERR_UNAVAILABLE;
+	}
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
@@ -389,11 +431,15 @@ public:
 	virtual String debug_get_stack_level_source(int p_level) const = 0;
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return nullptr; }
+	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) {
+		return nullptr;
+	}
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 
-	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
+	virtual Vector<StackInfo> debug_get_current_stack_info() {
+		return Vector<StackInfo>();
+	}
 
 	virtual void reload_all_scripts() = 0;
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) = 0;
@@ -417,15 +463,23 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 
-	virtual void *alloc_instance_binding_data(Object *p_object) { return nullptr; } //optional, not used by all languages
+	virtual void *alloc_instance_binding_data(Object *p_object) {
+		return nullptr;
+	} //optional, not used by all languages
 	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
 	virtual void refcount_incremented_instance_binding(Object *p_object) {} //optional, not used by all languages
-	virtual bool refcount_decremented_instance_binding(Object *p_object) { return true; } //return true if it can die //optional, not used by all languages
+	virtual bool refcount_decremented_instance_binding(Object *p_object) {
+		return true;
+	} //return true if it can die //optional, not used by all languages
 
 	virtual void frame();
 
-	virtual bool handles_global_class_type(const String &p_type) const { return false; }
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const { return String(); }
+	virtual bool handles_global_class_type(const String &p_type) const {
+		return false;
+	}
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const {
+		return String();
+	}
 
 	virtual ~ScriptLanguage() {}
 };
@@ -455,20 +509,30 @@ public:
 	}
 	virtual void notification(int p_notification) override {}
 
-	virtual Ref<Script> get_script() const override { return script; }
+	virtual Ref<Script> get_script() const override {
+		return script;
+	}
 
-	virtual ScriptLanguage *get_language() override { return language; }
+	virtual ScriptLanguage *get_language() override {
+		return language;
+	}
 
-	Object *get_owner() override { return owner; }
+	Object *get_owner() override {
+		return owner;
+	}
 
 	void update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values); //likely changed in editor
 
-	virtual bool is_placeholder() const override { return true; }
+	virtual bool is_placeholder() const override {
+		return true;
+	}
 
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr) override;
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr) override;
 
-	virtual const Variant get_rpc_config() const override { return Variant(); }
+	virtual const Variant get_rpc_config() const override {
+		return Variant();
+	}
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

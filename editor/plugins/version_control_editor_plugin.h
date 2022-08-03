@@ -127,13 +127,23 @@ public:
 
 	void popup_vcs_metadata_dialog();
 	void popup_vcs_set_up_dialog(const Control *p_gui_base);
-	void set_version_control_tool_button(Button *p_button) { version_control_dock_button = p_button; }
+	void set_version_control_tool_button(Button *p_button) {
+		version_control_dock_button = p_button;
+	}
 
-	PopupMenu *get_version_control_actions_panel() const { return version_control_actions; }
-	VBoxContainer *get_version_commit_dock() const { return version_commit_dock; }
-	PanelContainer *get_version_control_dock() const { return version_control_dock; }
+	PopupMenu *get_version_control_actions_panel() const {
+		return version_control_actions;
+	}
+	VBoxContainer *get_version_commit_dock() const {
+		return version_commit_dock;
+	}
+	PanelContainer *get_version_control_dock() const {
+		return version_control_dock;
+	}
 
-	List<StringName> get_available_vcs_names() const { return available_addons; }
+	List<StringName> get_available_vcs_names() const {
+		return available_addons;
+	}
 	bool is_vcs_initialized() const;
 	const String get_vcs_name() const;
 

@@ -33,18 +33,26 @@
 
 #include "servers/rendering/rendering_device.h"
 
-#define RD_SETGET(m_type, m_member)                                            \
-	void set_##m_member(m_type p_##m_member) { base.m_member = p_##m_member; } \
-	m_type get_##m_member() const { return base.m_member; }
+#define RD_SETGET(m_type, m_member)            \
+	void set_##m_member(m_type p_##m_member) { \
+		base.m_member = p_##m_member;          \
+	}                                          \
+	m_type get_##m_member() const {            \
+		return base.m_member;                  \
+	}
 
 #define RD_BIND(m_variant_type, m_class, m_member)                                                          \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_member); \
 	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member);                      \
 	ADD_PROPERTY(PropertyInfo(m_variant_type, #m_member), "set_" _MKSTR(m_member), "get_" _MKSTR(m_member))
 
-#define RD_SETGET_SUB(m_type, m_sub, m_member)                                                 \
-	void set_##m_sub##_##m_member(m_type p_##m_member) { base.m_sub.m_member = p_##m_member; } \
-	m_type get_##m_sub##_##m_member() const { return base.m_sub.m_member; }
+#define RD_SETGET_SUB(m_type, m_sub, m_member)           \
+	void set_##m_sub##_##m_member(m_type p_##m_member) { \
+		base.m_sub.m_member = p_##m_member;              \
+	}                                                    \
+	m_type get_##m_sub##_##m_member() const {            \
+		return base.m_sub.m_member;                      \
+	}
 
 #define RD_BIND_SUB(m_variant_type, m_class, m_sub, m_member)                                                                           \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_sub) "_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_sub##_##m_member); \
@@ -68,8 +76,12 @@ public:
 	RD_SETGET(RD::TextureSamples, samples)
 	RD_SETGET(uint32_t, usage_bits)
 
-	void add_shareable_format(RD::DataFormat p_format) { base.shareable_formats.push_back(p_format); }
-	void remove_shareable_format(RD::DataFormat p_format) { base.shareable_formats.erase(p_format); }
+	void add_shareable_format(RD::DataFormat p_format) {
+		base.shareable_formats.push_back(p_format);
+	}
+	void remove_shareable_format(RD::DataFormat p_format) {
+		base.shareable_formats.erase(p_format);
+	}
 
 protected:
 	static void _bind_methods() {
@@ -441,8 +453,12 @@ public:
 	RD_SETGET(RD::UniformType, uniform_type)
 	RD_SETGET(int32_t, binding)
 
-	void add_id(const RID &p_id) { base.append_id(p_id); }
-	void clear_ids() { base.clear_ids(); }
+	void add_id(const RID &p_id) {
+		base.append_id(p_id);
+	}
+	void clear_ids() {
+		base.clear_ids();
+	}
 	Array get_ids() const {
 		Array ids;
 		for (uint32_t i = 0; i < base.get_id_count(); i++) {
@@ -483,7 +499,9 @@ public:
 		ERR_FAIL_COND(p_value.get_type() != Variant::BOOL && p_value.get_type() != Variant::INT && p_value.get_type() != Variant::FLOAT);
 		value = p_value;
 	}
-	Variant get_value() const { return value; }
+	Variant get_value() const {
+		return value;
+	}
 
 	void set_constant_id(uint32_t p_id) {
 		constant_id = p_id;
@@ -554,8 +572,12 @@ public:
 	RD_SETGET(bool, enable_alpha_to_coverage)
 	RD_SETGET(bool, enable_alpha_to_one)
 
-	void set_sample_masks(const TypedArray<int64_t> &p_masks) { sample_masks = p_masks; }
-	TypedArray<int64_t> get_sample_masks() const { return sample_masks; }
+	void set_sample_masks(const TypedArray<int64_t> &p_masks) {
+		sample_masks = p_masks;
+	}
+	TypedArray<int64_t> get_sample_masks() const {
+		return sample_masks;
+	}
 
 protected:
 	static void _bind_methods() {

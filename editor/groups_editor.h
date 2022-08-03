@@ -103,7 +103,9 @@ public:
 	};
 
 	void edit();
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
+	void set_undo_redo(UndoRedo *p_undoredo) {
+		undo_redo = p_undoredo;
+	}
 
 	GroupDialog();
 };
@@ -137,7 +139,9 @@ public:
 		COPY_GROUP,
 	};
 
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
+	void set_undo_redo(UndoRedo *p_undoredo) {
+		undo_redo = p_undoredo;
+	}
 	void set_current(Node *p_node);
 
 	GroupsEditor();

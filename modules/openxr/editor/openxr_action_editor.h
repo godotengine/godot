@@ -60,7 +60,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	Ref<OpenXRAction> get_action() { return action; };
+	Ref<OpenXRAction> get_action() {
+		return action;
+	};
 	OpenXRActionEditor(Ref<OpenXRAction> p_action);
 };
 

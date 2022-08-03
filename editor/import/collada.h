@@ -244,7 +244,9 @@ public:
 		struct Weight {
 			int bone_idx = 0;
 			float weight = 0;
-			bool operator<(const Weight w) const { return weight > w.weight; } //heaviest first
+			bool operator<(const Weight w) const {
+				return weight > w.weight;
+			} //heaviest first
 		};
 
 		Vector<Weight> weights;
@@ -363,7 +365,9 @@ public:
 	};
 
 	struct NodeSkeleton : public Node {
-		NodeSkeleton() { type = TYPE_SKELETON; }
+		NodeSkeleton() {
+			type = TYPE_SKELETON;
+		}
 	};
 
 	struct NodeJoint : public Node {
@@ -385,19 +389,25 @@ public:
 		HashMap<String, Material> material_map;
 		Vector<String> skeletons;
 
-		NodeGeometry() { type = TYPE_GEOMETRY; }
+		NodeGeometry() {
+			type = TYPE_GEOMETRY;
+		}
 	};
 
 	struct NodeCamera : public Node {
 		String camera;
 
-		NodeCamera() { type = TYPE_CAMERA; }
+		NodeCamera() {
+			type = TYPE_CAMERA;
+		}
 	};
 
 	struct NodeLight : public Node {
 		String light;
 
-		NodeLight() { type = TYPE_LIGHT; }
+		NodeLight() {
+			type = TYPE_LIGHT;
+		}
 	};
 
 	struct VisualScene {
@@ -468,7 +478,9 @@ public:
 		struct Version {
 			int major = 0, minor = 0, rev = 0;
 
-			bool operator<(const Version &p_ver) const { return (major == p_ver.major) ? ((minor == p_ver.minor) ? (rev < p_ver.rev) : minor < p_ver.minor) : major < p_ver.major; }
+			bool operator<(const Version &p_ver) const {
+				return (major == p_ver.major) ? ((minor == p_ver.minor) ? (rev < p_ver.rev) : minor < p_ver.minor) : major < p_ver.major;
+			}
 			Version(int p_major = 0, int p_minor = 0, int p_rev = 0) {
 				major = p_major;
 				minor = p_minor;

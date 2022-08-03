@@ -75,7 +75,9 @@ private:
 
 		Size2 get_icon_size() const;
 
-		bool operator<(const Item &p_another) const { return text < p_another.text; }
+		bool operator<(const Item &p_another) const {
+			return text < p_another.text;
+		}
 
 		Item() {
 			text_buf.instantiate();
@@ -250,7 +252,9 @@ public:
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 
-	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
+	VScrollBar *get_v_scroll_bar() {
+		return scroll_bar;
+	}
 
 	ItemList();
 	~ItemList();

@@ -52,7 +52,9 @@ private:
 	static NodeDock *singleton;
 
 public:
-	static NodeDock *get_singleton() { return singleton; }
+	static NodeDock *get_singleton() {
+		return singleton;
+	}
 
 protected:
 	static void _bind_methods();

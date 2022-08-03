@@ -89,7 +89,9 @@ protected:
 public:
 	void _check_compress_ctex(Ref<LayeredTextureImport> r_texture_import);
 
-	static ResourceImporterLayeredTexture *get_singleton() { return singleton; }
+	static ResourceImporterLayeredTexture *get_singleton() {
+		return singleton;
+	}
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -117,7 +119,9 @@ public:
 	virtual bool are_import_settings_valid(const String &p_path) const override;
 	virtual String get_import_settings_string() const override;
 
-	void set_mode(Mode p_mode) { mode = p_mode; }
+	void set_mode(Mode p_mode) {
+		mode = p_mode;
+	}
 
 	ResourceImporterLayeredTexture();
 	~ResourceImporterLayeredTexture();

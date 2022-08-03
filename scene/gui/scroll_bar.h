@@ -117,7 +117,9 @@ class HScrollBar : public ScrollBar {
 
 public:
 	HScrollBar() :
-			ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
+			ScrollBar(HORIZONTAL) {
+		set_v_size_flags(0);
+	}
 };
 
 class VScrollBar : public ScrollBar {
@@ -125,7 +127,9 @@ class VScrollBar : public ScrollBar {
 
 public:
 	VScrollBar() :
-			ScrollBar(VERTICAL) { set_h_size_flags(0); }
+			ScrollBar(VERTICAL) {
+		set_h_size_flags(0);
+	}
 };
 
 #endif // SCROLL_BAR_H

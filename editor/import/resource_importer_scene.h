@@ -230,13 +230,19 @@ class ResourceImporterScene : public ResourceImporter {
 	bool animation_importer = false;
 
 public:
-	static ResourceImporterScene *get_scene_singleton() { return scene_singleton; }
-	static ResourceImporterScene *get_animation_singleton() { return animation_singleton; }
+	static ResourceImporterScene *get_scene_singleton() {
+		return scene_singleton;
+	}
+	static ResourceImporterScene *get_animation_singleton() {
+		return animation_singleton;
+	}
 
 	static void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
 	static void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
-	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
+	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const {
+		return importers;
+	}
 
 	static void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
 	static void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
@@ -271,7 +277,9 @@ public:
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 	// Import scenes *after* everything else (such as textures).
-	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
+	virtual int get_import_order() const override {
+		return ResourceImporter::IMPORT_ORDER_SCENE;
+	}
 
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
 	Node *_pre_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
@@ -289,7 +297,9 @@ public:
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 
-	virtual bool can_import_threaded() const override { return false; }
+	virtual bool can_import_threaded() const override {
+		return false;
+	}
 
 	ResourceImporterScene(bool p_animation_import = false);
 

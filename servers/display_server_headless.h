@@ -52,28 +52,56 @@ private:
 	}
 
 public:
-	bool has_feature(Feature p_feature) const override { return false; }
-	String get_name() const override { return "headless"; }
+	bool has_feature(Feature p_feature) const override {
+		return false;
+	}
+	String get_name() const override {
+		return "headless";
+	}
 
-	int get_screen_count() const override { return 0; }
-	Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return Point2i(); }
-	Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return Size2i(); }
-	Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return Rect2i(); }
-	int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return 96; /* 0 might cause issues */ }
-	float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return 1; }
-	float screen_get_max_scale() const override { return 1; }
-	float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return SCREEN_REFRESH_RATE_FALLBACK; }
+	int get_screen_count() const override {
+		return 0;
+	}
+	Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override {
+		return Point2i();
+	}
+	Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override {
+		return Size2i();
+	}
+	Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override {
+		return Rect2i();
+	}
+	int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override {
+		return 96; /* 0 might cause issues */
+	}
+	float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override {
+		return 1;
+	}
+	float screen_get_max_scale() const override {
+		return 1;
+	}
+	float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override {
+		return SCREEN_REFRESH_RATE_FALLBACK;
+	}
 
-	Vector<DisplayServer::WindowID> get_window_list() const override { return Vector<DisplayServer::WindowID>(); }
+	Vector<DisplayServer::WindowID> get_window_list() const override {
+		return Vector<DisplayServer::WindowID>();
+	}
 
-	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override { return 0; }
+	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override {
+		return 0;
+	}
 	void show_window(WindowID p_id) override {}
 	void delete_sub_window(WindowID p_id) override {}
 
-	WindowID get_window_at_screen_position(const Point2i &p_position) const override { return 0; }
+	WindowID get_window_at_screen_position(const Point2i &p_position) const override {
+		return 0;
+	}
 
 	void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override {}
-	ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override { return ObjectID(); }
+	ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return ObjectID();
+	}
 
 	void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {}
 
@@ -86,41 +114,65 @@ public:
 
 	void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override {}
 
-	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override { return -1; }
+	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return -1;
+	}
 	void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override {}
 
-	Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override { return Point2i(); }
+	Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return Point2i();
+	}
 	void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	void window_set_transient(WindowID p_window, WindowID p_parent) override {}
 
 	void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override {}
-	Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
+	Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return Size2i();
+	}
 
 	void window_set_min_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override {}
-	Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
+	Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return Size2i();
+	}
 
 	void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override {}
-	Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
-	Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
+	Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return Size2i();
+	}
+	Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return Size2i();
+	}
 
 	void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override {}
-	WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override { return WINDOW_MODE_MINIMIZED; }
+	WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return WINDOW_MODE_MINIMIZED;
+	}
 
 	void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override {}
-	VSyncMode window_get_vsync_mode(WindowID p_window) const override { return VSyncMode::VSYNC_ENABLED; }
+	VSyncMode window_get_vsync_mode(WindowID p_window) const override {
+		return VSyncMode::VSYNC_ENABLED;
+	}
 
-	bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
+	bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return false;
+	}
 
 	void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override {}
-	bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
+	bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override {
+		return false;
+	}
 
 	void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override {}
 	void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override {}
 
-	bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
+	bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override {
+		return false;
+	}
 
-	bool can_any_window_draw() const override { return false; }
+	bool can_any_window_draw() const override {
+		return false;
+	}
 
 	void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override {}
 	void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override {}

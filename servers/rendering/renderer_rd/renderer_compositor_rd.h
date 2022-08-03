@@ -101,20 +101,40 @@ protected:
 	static uint64_t frame;
 
 public:
-	RendererUtilities *get_utilities() { return utilities; };
-	RendererLightStorage *get_light_storage() { return light_storage; }
-	RendererMaterialStorage *get_material_storage() { return material_storage; }
-	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
-	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
-	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+	RendererUtilities *get_utilities() {
+		return utilities;
+	};
+	RendererLightStorage *get_light_storage() {
+		return light_storage;
+	}
+	RendererMaterialStorage *get_material_storage() {
+		return material_storage;
+	}
+	RendererMeshStorage *get_mesh_storage() {
+		return mesh_storage;
+	}
+	RendererParticlesStorage *get_particles_storage() {
+		return particles_storage;
+	}
+	RendererTextureStorage *get_texture_storage() {
+		return texture_storage;
+	}
 	RendererGI *get_gi() {
 		ERR_FAIL_NULL_V(scene, nullptr);
 		return scene->get_gi();
 	}
-	RendererFog *get_fog() { return fog; }
-	EffectsRD *get_effects() { return effects; }
-	RendererCanvasRender *get_canvas() { return canvas; }
-	RendererSceneRender *get_scene() { return scene; }
+	RendererFog *get_fog() {
+		return fog;
+	}
+	EffectsRD *get_effects() {
+		return effects;
+	}
+	RendererCanvasRender *get_canvas() {
+		return canvas;
+	}
+	RendererSceneRender *get_scene() {
+		return scene;
+	}
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
 
@@ -126,9 +146,15 @@ public:
 	void end_frame(bool p_swap_buffers);
 	void finalize();
 
-	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
-	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
-	_ALWAYS_INLINE_ double get_total_time() const { return time; }
+	_ALWAYS_INLINE_ uint64_t get_frame_number() const {
+		return frame;
+	}
+	_ALWAYS_INLINE_ double get_frame_delta_time() const {
+		return delta;
+	}
+	_ALWAYS_INLINE_ double get_total_time() const {
+		return time;
+	}
 
 	static Error is_viable() {
 		return OK;

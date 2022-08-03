@@ -287,12 +287,24 @@ class BitField {
 	uint32_t value = 0;
 
 public:
-	_FORCE_INLINE_ void set_flag(T p_flag) { value |= p_flag; }
-	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & p_flag; }
-	_FORCE_INLINE_ void clear_flag(T p_flag) { return value &= ~p_flag; }
-	_FORCE_INLINE_ BitField(uint32_t p_value) { value = p_value; }
-	_FORCE_INLINE_ operator uint32_t() const { return value; }
-	_FORCE_INLINE_ operator Variant() const { return value; }
+	_FORCE_INLINE_ void set_flag(T p_flag) {
+		value |= p_flag;
+	}
+	_FORCE_INLINE_ bool has_flag(T p_flag) const {
+		return value & p_flag;
+	}
+	_FORCE_INLINE_ void clear_flag(T p_flag) {
+		return value &= ~p_flag;
+	}
+	_FORCE_INLINE_ BitField(uint32_t p_value) {
+		value = p_value;
+	}
+	_FORCE_INLINE_ operator uint32_t() const {
+		return value;
+	}
+	_FORCE_INLINE_ operator Variant() const {
+		return value;
+	}
 };
 
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \
@@ -337,18 +349,24 @@ struct ZeroInitializer {
 
 template <>
 struct ZeroInitializer<bool> {
-	static void initialize(bool &value) { value = false; }
+	static void initialize(bool &value) {
+		value = false;
+	}
 };
 
 template <typename T>
 struct ZeroInitializer<T *> {
-	static void initialize(T *&value) { value = nullptr; }
+	static void initialize(T *&value) {
+		value = nullptr;
+	}
 };
 
-#define ZERO_INITIALIZER_NUMBER(m_type)                      \
-	template <>                                              \
-	struct ZeroInitializer<m_type> {                         \
-		static void initialize(m_type &value) { value = 0; } \
+#define ZERO_INITIALIZER_NUMBER(m_type)         \
+	template <>                                 \
+	struct ZeroInitializer<m_type> {            \
+		static void initialize(m_type &value) { \
+			value = 0;                          \
+		}                                       \
 	};
 
 ZERO_INITIALIZER_NUMBER(uint8_t)

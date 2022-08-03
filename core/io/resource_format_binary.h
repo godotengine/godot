@@ -97,7 +97,9 @@ public:
 	Error load();
 	void set_translation_remapped(bool p_remapped);
 
-	void set_remaps(const HashMap<String, String> &p_remaps) { remaps = p_remaps; }
+	void set_remaps(const HashMap<String, String> &p_remaps) {
+		remaps = p_remaps;
+	}
 	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
 	String recognize(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
@@ -134,7 +136,9 @@ class ResourceFormatSaverBinaryInstance {
 	struct NonPersistentKey { //for resource properties generated on the fly
 		Ref<Resource> base;
 		StringName property;
-		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
+		bool operator<(const NonPersistentKey &p_key) const {
+			return base == p_key.base ? property < p_key.property : base < p_key.base;
+		}
 	};
 
 	RBMap<NonPersistentKey, Ref<Resource>> non_persistent_map;

@@ -65,8 +65,12 @@ public:
 	virtual String _get_name() const;
 	virtual Array _get_supported_languages() const;
 
-	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resourse = p_res; }
-	Ref<RefCounted> _get_edited_resource() { return edited_resourse; }
+	void _set_edited_resource(const Ref<Resource> &p_res) {
+		edited_resourse = p_res;
+	}
+	Ref<RefCounted> _get_edited_resource() {
+		return edited_resourse;
+	}
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const;
 };
@@ -79,20 +83,28 @@ private:
 
 public:
 	virtual void _update_cache() override;
-	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override {
+		return highlighter->get_line_syntax_highlighting(p_line);
+	}
 
-	virtual String _get_name() const override { return TTR("Standard"); }
+	virtual String _get_name() const override {
+		return TTR("Standard");
+	}
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 
-	EditorStandardSyntaxHighlighter() { highlighter.instantiate(); }
+	EditorStandardSyntaxHighlighter() {
+		highlighter.instantiate();
+	}
 };
 
 class EditorPlainTextSyntaxHighlighter : public EditorSyntaxHighlighter {
 	GDCLASS(EditorPlainTextSyntaxHighlighter, EditorSyntaxHighlighter)
 
 public:
-	virtual String _get_name() const override { return TTR("Plain Text"); }
+	virtual String _get_name() const override {
+		return TTR("Plain Text");
+	}
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
@@ -162,7 +174,9 @@ public:
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
-	virtual bool can_lose_focus_on_node_selection() { return true; }
+	virtual bool can_lose_focus_on_node_selection() {
+		return true;
+	}
 	virtual void update_toggle_scripts_button() {}
 
 	virtual bool show_members_overview() = 0;
@@ -473,7 +487,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static ScriptEditor *get_singleton() { return script_editor; }
+	static ScriptEditor *get_singleton() {
+		return script_editor;
+	}
 
 	bool toggle_scripts_panel();
 	bool is_scripts_panel_toggled();
@@ -484,7 +500,9 @@ public:
 
 	void ensure_select_current();
 
-	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
+	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) {
+		return edit(p_resource, -1, 0, p_grab_focus);
+	}
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
 	void get_breakpoints(List<String> *p_breakpoints);
@@ -507,12 +525,16 @@ public:
 
 	void close_builtin_scripts_from_scene(const String &p_scene);
 
-	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
+	void goto_help(const String &p_desc) {
+		_help_class_goto(p_desc);
+	}
 	void update_doc(const String &p_name);
 
 	bool can_take_away_focus() const;
 
-	VSplitContainer *get_left_list_split() { return list_split; }
+	VSplitContainer *get_left_list_split() {
+		return list_split;
+	}
 
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
@@ -531,8 +553,12 @@ class ScriptEditorPlugin : public EditorPlugin {
 	ScriptEditor *script_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "Script"; }
-	bool has_main_screen() const override { return true; }
+	virtual String get_name() const override {
+		return "Script";
+	}
+	bool has_main_screen() const override {
+		return true;
+	}
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

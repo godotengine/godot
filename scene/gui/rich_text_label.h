@@ -101,7 +101,9 @@ private:
 		int char_offset = 0;
 		int char_count = 0;
 
-		Line() { text_buf.instantiate(); }
+		Line() {
+			text_buf.instantiate();
+		}
 
 		_FORCE_INLINE_ float get_height(float line_separation) const {
 			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * line_separation;
@@ -124,7 +126,9 @@ private:
 			}
 		}
 
-		virtual ~Item() { _clear_children(); }
+		virtual ~Item() {
+			_clear_children();
+		}
 	};
 
 	struct ItemFrame : public Item {
@@ -154,7 +158,9 @@ private:
 
 	struct ItemText : public Item {
 		String text;
-		ItemText() { type = ITEM_TEXT; }
+		ItemText() {
+			type = ITEM_TEXT;
+		}
 	};
 
 	struct ItemDropcap : public Item {
@@ -165,7 +171,9 @@ private:
 		int ol_size = 0;
 		Color ol_color;
 		Rect2 dropcap_margins;
-		ItemDropcap() { type = ITEM_DROPCAP; }
+		ItemDropcap() {
+			type = ITEM_DROPCAP;
+		}
 	};
 
 	struct ItemImage : public Item {
@@ -173,51 +181,71 @@ private:
 		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 		Size2 size;
 		Color color;
-		ItemImage() { type = ITEM_IMAGE; }
+		ItemImage() {
+			type = ITEM_IMAGE;
+		}
 	};
 
 	struct ItemFont : public Item {
 		Ref<Font> font;
 		int font_size = 0;
-		ItemFont() { type = ITEM_FONT; }
+		ItemFont() {
+			type = ITEM_FONT;
+		}
 	};
 
 	struct ItemFontSize : public Item {
 		int font_size = 16;
-		ItemFontSize() { type = ITEM_FONT_SIZE; }
+		ItemFontSize() {
+			type = ITEM_FONT_SIZE;
+		}
 	};
 
 	struct ItemColor : public Item {
 		Color color;
-		ItemColor() { type = ITEM_COLOR; }
+		ItemColor() {
+			type = ITEM_COLOR;
+		}
 	};
 
 	struct ItemOutlineSize : public Item {
 		int outline_size = 0;
-		ItemOutlineSize() { type = ITEM_OUTLINE_SIZE; }
+		ItemOutlineSize() {
+			type = ITEM_OUTLINE_SIZE;
+		}
 	};
 
 	struct ItemOutlineColor : public Item {
 		Color color;
-		ItemOutlineColor() { type = ITEM_OUTLINE_COLOR; }
+		ItemOutlineColor() {
+			type = ITEM_OUTLINE_COLOR;
+		}
 	};
 
 	struct ItemUnderline : public Item {
-		ItemUnderline() { type = ITEM_UNDERLINE; }
+		ItemUnderline() {
+			type = ITEM_UNDERLINE;
+		}
 	};
 
 	struct ItemStrikethrough : public Item {
-		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
+		ItemStrikethrough() {
+			type = ITEM_STRIKETHROUGH;
+		}
 	};
 
 	struct ItemMeta : public Item {
 		Variant meta;
-		ItemMeta() { type = ITEM_META; }
+		ItemMeta() {
+			type = ITEM_META;
+		}
 	};
 
 	struct ItemHint : public Item {
 		String description;
-		ItemHint() { type = ITEM_HINT; }
+		ItemHint() {
+			type = ITEM_HINT;
+		}
 	};
 
 	struct ItemParagraph : public Item {
@@ -225,23 +253,31 @@ private:
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
-		ItemParagraph() { type = ITEM_PARAGRAPH; }
+		ItemParagraph() {
+			type = ITEM_PARAGRAPH;
+		}
 	};
 
 	struct ItemIndent : public Item {
 		int level = 0;
-		ItemIndent() { type = ITEM_INDENT; }
+		ItemIndent() {
+			type = ITEM_INDENT;
+		}
 	};
 
 	struct ItemList : public Item {
 		ListType list_type = LIST_DOTS;
 		bool capitalize = false;
 		int level = 0;
-		ItemList() { type = ITEM_LIST; }
+		ItemList() {
+			type = ITEM_LIST;
+		}
 	};
 
 	struct ItemNewline : public Item {
-		ItemNewline() { type = ITEM_NEWLINE; }
+		ItemNewline() {
+			type = ITEM_NEWLINE;
+		}
 	};
 
 	struct ItemTable : public Item {
@@ -259,14 +295,18 @@ private:
 		int total_width = 0;
 		int total_height = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
-		ItemTable() { type = ITEM_TABLE; }
+		ItemTable() {
+			type = ITEM_TABLE;
+		}
 	};
 
 	struct ItemFade : public Item {
 		int starting_index = 0;
 		int length = 0;
 
-		ItemFade() { type = ITEM_FADE; }
+		ItemFade() {
+			type = ITEM_FADE;
+		}
 	};
 
 	struct ItemFX : public Item {
@@ -280,7 +320,9 @@ private:
 		uint64_t _previous_rng = 0;
 		Vector2 prev_off;
 
-		ItemShake() { type = ITEM_SHAKE; }
+		ItemShake() {
+			type = ITEM_SHAKE;
+		}
 
 		void reroll_random() {
 			_previous_rng = _current_rng;
@@ -303,7 +345,9 @@ private:
 		float amplitude = 1.0f;
 		Vector2 prev_off;
 
-		ItemWave() { type = ITEM_WAVE; }
+		ItemWave() {
+			type = ITEM_WAVE;
+		}
 	};
 
 	struct ItemTornado : public ItemFX {
@@ -311,7 +355,9 @@ private:
 		float frequency = 1.0f;
 		Vector2 prev_off;
 
-		ItemTornado() { type = ITEM_TORNADO; }
+		ItemTornado() {
+			type = ITEM_TORNADO;
+		}
 	};
 
 	struct ItemRainbow : public ItemFX {
@@ -319,17 +365,23 @@ private:
 		float value = 0.8f;
 		float frequency = 1.0f;
 
-		ItemRainbow() { type = ITEM_RAINBOW; }
+		ItemRainbow() {
+			type = ITEM_RAINBOW;
+		}
 	};
 
 	struct ItemBGColor : public Item {
 		Color color;
-		ItemBGColor() { type = ITEM_BGCOLOR; }
+		ItemBGColor() {
+			type = ITEM_BGCOLOR;
+		}
 	};
 
 	struct ItemFGColor : public Item {
 		Color color;
-		ItemFGColor() { type = ITEM_FGCOLOR; }
+		ItemFGColor() {
+			type = ITEM_FGCOLOR;
+		}
 	};
 
 	struct ItemCustomFX : public ItemFX {
@@ -601,7 +653,9 @@ public:
 	int get_content_height() const;
 	int get_content_width() const;
 
-	VScrollBar *get_v_scroll_bar() { return vscroll; }
+	VScrollBar *get_v_scroll_bar() {
+		return vscroll;
+	}
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual Variant get_drag_data(const Point2 &p_point) override;

@@ -50,7 +50,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ const StringName &get_name() const { return name; }
+	_FORCE_INLINE_ const StringName &get_name() const {
+		return name;
+	}
 	Variant _new();
 	Object *instantiate();
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
@@ -174,28 +176,46 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual bool is_valid() const override { return valid; }
+	virtual bool is_valid() const override {
+		return valid;
+	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
-	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
-	const HashMap<StringName, Variant> &get_constants() const { return constants; }
-	const HashSet<StringName> &get_members() const { return members; }
+	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const {
+		return subclasses;
+	}
+	const HashMap<StringName, Variant> &get_constants() const {
+		return constants;
+	}
+	const HashSet<StringName> &get_members() const {
+		return members;
+	}
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
 	}
-	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
-	const Ref<GDScriptNativeClass> &get_native() const { return native; }
-	const String &get_script_class_name() const { return name; }
+	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const {
+		return member_functions;
+	}
+	const Ref<GDScriptNativeClass> &get_native() const {
+		return native;
+	}
+	const String &get_script_class_name() const {
+		return name;
+	}
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	bool is_tool() const override { return tool; }
+	bool is_tool() const override {
+		return tool;
+	}
 	Ref<GDScript> get_base() const;
 
-	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
+	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const {
+		return member_indices;
+	}
 	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
@@ -222,7 +242,9 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
-	void set_script_path(const String &p_path) { path = p_path; } //because subclasses need a path too...
+	void set_script_path(const String &p_path) {
+		path = p_path;
+	} //because subclasses need a path too...
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 
@@ -253,7 +275,9 @@ public:
 	virtual const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
-	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
+	virtual bool is_placeholder_fallback_enabled() const override {
+		return placeholder_fallback_enabled;
+	}
 #endif
 
 	GDScript();
@@ -280,7 +304,9 @@ class GDScriptInstance : public ScriptInstance {
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
 public:
-	virtual Object *get_owner() { return owner; }
+	virtual Object *get_owner() {
+		return owner;
+	}
 
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
@@ -291,7 +317,9 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
+	Variant debug_get_member_by_index(int p_idx) const {
+		return members[p_idx];
+	}
 
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
@@ -427,12 +455,22 @@ public:
 
 	} strings;
 
-	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
-	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
-	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
-	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const { return named_globals; }
+	_FORCE_INLINE_ int get_global_array_size() const {
+		return global_array.size();
+	}
+	_FORCE_INLINE_ Variant *get_global_array() {
+		return _global_array;
+	}
+	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const {
+		return globals;
+	}
+	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const {
+		return named_globals;
+	}
 
-	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() {
+		return singleton;
+	}
 
 	virtual String get_name() const override;
 
@@ -456,7 +494,9 @@ public:
 	virtual bool has_named_classes() const override;
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
-	virtual bool can_inherit_from_file() const override { return true; }
+	virtual bool can_inherit_from_file() const override {
+		return true;
+	}
 	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;

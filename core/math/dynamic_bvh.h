@@ -65,15 +65,21 @@ public:
 		Node *node = nullptr;
 
 	public:
-		_FORCE_INLINE_ bool is_valid() const { return node != nullptr; }
+		_FORCE_INLINE_ bool is_valid() const {
+			return node != nullptr;
+		}
 	};
 
 private:
 	struct Volume {
 		Vector3 min, max;
 
-		_FORCE_INLINE_ Vector3 get_center() const { return ((min + max) / 2); }
-		_FORCE_INLINE_ Vector3 get_length() const { return (max - min); }
+		_FORCE_INLINE_ Vector3 get_center() const {
+			return ((min + max) / 2);
+		}
+		_FORCE_INLINE_ Vector3 get_length() const {
+			return (max - min);
+		}
 
 		_FORCE_INLINE_ bool contains(const Volume &a) const {
 			return ((min.x <= a.min.x) &&
@@ -186,8 +192,12 @@ private:
 			void *data;
 		};
 
-		_FORCE_INLINE_ bool is_leaf() const { return childs[1] == nullptr; }
-		_FORCE_INLINE_ bool is_internal() const { return (!is_leaf()); }
+		_FORCE_INLINE_ bool is_leaf() const {
+			return childs[1] == nullptr;
+		}
+		_FORCE_INLINE_ bool is_internal() const {
+			return (!is_leaf());
+		}
 
 		_FORCE_INLINE_ int get_index_in_parent() const {
 			ERR_FAIL_COND_V(!parent, 0);
@@ -287,7 +297,9 @@ private:
 public:
 	// Methods
 	void clear();
-	bool is_empty() const { return (nullptr == bvh_root); }
+	bool is_empty() const {
+		return (nullptr == bvh_root);
+	}
 	void optimize_bottom_up();
 	void optimize_top_down(int bu_threshold = 128);
 	void optimize_incremental(int passes);

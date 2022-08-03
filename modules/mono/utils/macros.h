@@ -55,14 +55,18 @@ template <typename F>
 struct ScopeExit {
 	ScopeExit(F p_exit_func) :
 			exit_func(p_exit_func) {}
-	~ScopeExit() { exit_func(); }
+	~ScopeExit() {
+		exit_func();
+	}
 	F exit_func;
 };
 
 class ScopeExitAux {
 public:
 	template <typename F>
-	ScopeExit<F> operator+(F p_exit_func) { return ScopeExit<F>(p_exit_func); }
+	ScopeExit<F> operator+(F p_exit_func) {
+		return ScopeExit<F>(p_exit_func);
+	}
 };
 } // namespace gdmono
 

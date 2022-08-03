@@ -398,7 +398,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		return;
 	}
 	_recursion_flag_ = true;
-	SCOPE_EXIT { _recursion_flag_ = false; };
+	SCOPE_EXIT {
+		_recursion_flag_ = false;
+	};
 
 	ScriptLanguage::StackInfo separator;
 	separator.file = String();

@@ -323,8 +323,12 @@ public:
 	void set_minimap_enabled(bool p_enable);
 	bool is_minimap_enabled() const;
 
-	GraphEditFilter *get_top_layer() const { return top_layer; }
-	GraphEditMinimap *get_minimap() const { return minimap; }
+	GraphEditFilter *get_top_layer() const {
+		return top_layer;
+	}
+	GraphEditMinimap *get_minimap() const {
+		return minimap;
+	}
 	void get_connection_list(List<Connection> *r_connections) const;
 
 	void set_right_disconnects(bool p_enable);

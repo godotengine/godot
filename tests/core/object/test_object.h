@@ -54,8 +54,12 @@ protected:
 	}
 
 public:
-	void set_property(int value) { property_value = value; }
-	int get_property() const { return property_value; }
+	void set_property(int value) {
+		property_value = value;
+	}
+	int get_property() const {
+		return property_value;
+	}
 };
 
 namespace TestObject {

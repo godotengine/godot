@@ -252,7 +252,9 @@ static inline uint64_t BSWAP64(uint64_t x) {
 // Generic comparator used in Map, List, etc.
 template <class T>
 struct Comparator {
-	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
+	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const {
+		return (p_a < p_b);
+	}
 };
 
 // Global lock macro, relies on the static Mutex::_global_mutex.
@@ -260,8 +262,12 @@ void _global_lock();
 void _global_unlock();
 
 struct _GlobalLock {
-	_GlobalLock() { _global_lock(); }
-	~_GlobalLock() { _global_unlock(); }
+	_GlobalLock() {
+		_global_lock();
+	}
+	~_GlobalLock() {
+		_global_unlock();
+	}
 };
 
 #define GLOBAL_LOCK_FUNCTION _GlobalLock _global_lock_;

@@ -79,7 +79,9 @@ public:
 
 	void mix_audio(int p_frames, int32_t *p_buffer);
 
-	static AudioDriverDummy *get_dummy_singleton() { return singleton; }
+	static AudioDriverDummy *get_dummy_singleton() {
+		return singleton;
+	}
 
 	AudioDriverDummy();
 	~AudioDriverDummy() {}

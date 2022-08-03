@@ -40,7 +40,9 @@ class Utilities : public RendererUtilities {
 public:
 	/* INSTANCES */
 
-	virtual RS::InstanceType get_base_type(RID p_rid) const override { return RS::INSTANCE_NONE; }
+	virtual RS::InstanceType get_base_type(RID p_rid) const override {
+		return RS::INSTANCE_NONE;
+	}
 	virtual bool free(RID p_rid) override {
 		if (RendererDummy::TextureStorage::get_singleton()->owns_texture(p_rid)) {
 			RendererDummy::TextureStorage::get_singleton()->texture_free(p_rid);
@@ -55,25 +57,39 @@ public:
 
 	/* VISIBILITY NOTIFIER */
 
-	virtual RID visibility_notifier_allocate() override { return RID(); }
+	virtual RID visibility_notifier_allocate() override {
+		return RID();
+	}
 	virtual void visibility_notifier_initialize(RID p_notifier) override {}
 	virtual void visibility_notifier_free(RID p_notifier) override {}
 
 	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) override {}
 	virtual void visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) override {}
 
-	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const override { return AABB(); }
+	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const override {
+		return AABB();
+	}
 	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override {}
 
 	/* TIMING */
 
 	virtual void capture_timestamps_begin() override {}
 	virtual void capture_timestamp(const String &p_name) override {}
-	virtual uint32_t get_captured_timestamps_count() const override { return 0; }
-	virtual uint64_t get_captured_timestamps_frame() const override { return 0; }
-	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override { return 0; }
-	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override { return 0; }
-	virtual String get_captured_timestamp_name(uint32_t p_index) const override { return String(); }
+	virtual uint32_t get_captured_timestamps_count() const override {
+		return 0;
+	}
+	virtual uint64_t get_captured_timestamps_frame() const override {
+		return 0;
+	}
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override {
+		return 0;
+	}
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override {
+		return 0;
+	}
+	virtual String get_captured_timestamp_name(uint32_t p_index) const override {
+		return String();
+	}
 
 	/* MISC */
 
@@ -86,11 +102,21 @@ public:
 
 	virtual void update_memory_info() override {}
 
-	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override { return 0; }
-	virtual String get_video_adapter_name() const override { return String(); }
-	virtual String get_video_adapter_vendor() const override { return String(); }
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
-	virtual String get_video_adapter_api_version() const override { return String(); }
+	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override {
+		return 0;
+	}
+	virtual String get_video_adapter_name() const override {
+		return String();
+	}
+	virtual String get_video_adapter_vendor() const override {
+		return String();
+	}
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const override {
+		return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
+	}
+	virtual String get_video_adapter_api_version() const override {
+		return String();
+	}
 };
 
 } // namespace RendererDummy

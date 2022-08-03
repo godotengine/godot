@@ -69,7 +69,9 @@ public:
 
 	virtual String get_output_sequence_port_text(int p_port) const = 0;
 
-	virtual bool has_mixed_input_and_sequence_ports() const { return false; }
+	virtual bool has_mixed_input_and_sequence_ports() const {
+		return false;
+	}
 
 	virtual int get_input_value_port_count() const = 0;
 	virtual int get_output_value_port_count() const = 0;
@@ -146,17 +148,29 @@ public:
 
 	};
 
-	_FORCE_INLINE_ int get_input_port_count() const { return input_port_count; }
-	_FORCE_INLINE_ int get_output_port_count() const { return output_port_count; }
-	_FORCE_INLINE_ int get_sequence_output_count() const { return sequence_output_count; }
+	_FORCE_INLINE_ int get_input_port_count() const {
+		return input_port_count;
+	}
+	_FORCE_INLINE_ int get_output_port_count() const {
+		return output_port_count;
+	}
+	_FORCE_INLINE_ int get_sequence_output_count() const {
+		return sequence_output_count;
+	}
 
-	_FORCE_INLINE_ int get_id() const { return id; }
+	_FORCE_INLINE_ int get_id() const {
+		return id;
+	}
 
-	virtual int get_working_memory_size() const { return 0; }
+	virtual int get_working_memory_size() const {
+		return 0;
+	}
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) = 0; // Do a step, return which sequence port to go out.
 
-	Ref<VisualScriptNode> get_base_node() { return Ref<VisualScriptNode>(base); }
+	Ref<VisualScriptNode> get_base_node() {
+		return Ref<VisualScriptNode>(base);
+	}
 
 	VisualScriptNodeInstance();
 	virtual ~VisualScriptNodeInstance();
@@ -222,7 +236,9 @@ private:
 
 	struct Function {
 		int func_id;
-		Function() { func_id = -1; }
+		Function() {
+			func_id = -1;
+		}
 	};
 
 	struct Variable {
@@ -437,8 +453,12 @@ public:
 
 	virtual Ref<Script> get_script() const;
 
-	_FORCE_INLINE_ VisualScript *get_script_ptr() { return script.ptr(); }
-	_FORCE_INLINE_ Object *get_owner_ptr() { return owner; }
+	_FORCE_INLINE_ VisualScript *get_script_ptr() {
+		return script.ptr();
+	}
+	_FORCE_INLINE_ Object *get_owner_ptr() {
+		return owner;
+	}
 
 	void create(const Ref<VisualScript> &p_script, Object *p_owner);
 

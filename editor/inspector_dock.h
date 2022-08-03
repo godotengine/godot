@@ -110,7 +110,9 @@ class InspectorDock : public VBoxContainer {
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
-	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
+	void _open_resource_selector() {
+		_load_resource();
+	}; // just used to call from arg-less signal
 	void _resource_file_selected(String p_file);
 	void _save_resource(bool save_as);
 	void _unref_resource();
@@ -133,8 +135,12 @@ private:
 	static InspectorDock *singleton;
 
 public:
-	static InspectorDock *get_singleton() { return singleton; }
-	static EditorInspector *get_inspector_singleton() { return singleton->inspector; }
+	static InspectorDock *get_singleton() {
+		return singleton;
+	}
+	static EditorInspector *get_inspector_singleton() {
+		return singleton->inspector;
+	}
 
 protected:
 	static void _bind_methods();
@@ -148,7 +154,9 @@ public:
 	void set_warning(const String &p_message);
 	void update(Object *p_object);
 	Container *get_addon_area();
-	EditorInspector *get_inspector() { return inspector; }
+	EditorInspector *get_inspector() {
+		return inspector;
+	}
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 

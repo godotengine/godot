@@ -69,7 +69,9 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
 		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
+		static Variant::Type get_type() {                                                                                            \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                         \
+		}                                                                                                                            \
 	};
 
 #define SETGET_NUMBER_STRUCT(m_base_type, m_member_type, m_member)                                                                \
@@ -103,7 +105,9 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                \
 			PtrToArg<m_base_type>::encode(b, base);                                                                               \
 		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
+		static Variant::Type get_type() {                                                                                         \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                      \
+		}                                                                                                                         \
 	};
 
 #define SETGET_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                                         \
@@ -134,7 +138,9 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
 		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
+		static Variant::Type get_type() {                                                                                            \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                         \
+		}                                                                                                                            \
 	};
 
 #define SETGET_NUMBER_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                               \
@@ -168,7 +174,9 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                \
 			PtrToArg<m_base_type>::encode(b, base);                                                                               \
 		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
+		static Variant::Type get_type() {                                                                                         \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                      \
+		}                                                                                                                         \
 	};
 
 #define SETGET_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                                \
@@ -199,7 +207,9 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
 		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
+		static Variant::Type get_type() {                                                                                           \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                        \
+		}                                                                                                                           \
 	};
 
 #define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                         \
@@ -233,7 +243,9 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
 		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
+		static Variant::Type get_type() {                                                                                           \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                        \
+		}                                                                                                                           \
 	};
 
 #define SETGET_STRUCT_FUNC_INDEX(m_base_type, m_member_type, m_member, m_setter, m_getter, m_index)                                          \
@@ -264,7 +276,9 @@
 			b.m_setter(m_index, PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                          \
 		}                                                                                                                                    \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                                 \
+		static Variant::Type get_type() {                                                                                                    \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE;                                                                                 \
+		}                                                                                                                                    \
 	};
 
 SETGET_NUMBER_STRUCT(Vector2, double, x)

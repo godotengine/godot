@@ -40,7 +40,9 @@ class SceneStringNames {
 
 	static SceneStringNames *singleton;
 
-	static void create() { singleton = memnew(SceneStringNames); }
+	static void create() {
+		singleton = memnew(SceneStringNames);
+	}
 	static void free() {
 		memdelete(singleton);
 		singleton = nullptr;
@@ -49,7 +51,9 @@ class SceneStringNames {
 	SceneStringNames();
 
 public:
-	_FORCE_INLINE_ static SceneStringNames *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static SceneStringNames *get_singleton() {
+		return singleton;
+	}
 
 	StringName _estimate_cost;
 	StringName _compute_cost;

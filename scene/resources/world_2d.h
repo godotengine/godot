@@ -62,7 +62,9 @@ public:
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
 
-	_FORCE_INLINE_ const HashSet<Viewport *> &get_viewports() { return viewports; }
+	_FORCE_INLINE_ const HashSet<Viewport *> &get_viewports() {
+		return viewports;
+	}
 
 	World2D();
 	~World2D();

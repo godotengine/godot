@@ -463,7 +463,9 @@ private:
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
-	virtual bool _can_consume_input_events() const { return true; }
+	virtual bool _can_consume_input_events() const {
+		return true;
+	}
 	uint64_t event_count = 0;
 
 protected:
@@ -478,7 +480,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	uint64_t get_processed_events_count() const { return event_count; }
+	uint64_t get_processed_events_count() const {
+		return event_count;
+	}
 
 	AudioListener2D *get_audio_listener_2d() const;
 	Camera2D *get_camera_2d() const;

@@ -116,23 +116,45 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 public:
 	GodotSoftBody3D();
 
-	const AABB &get_bounds() const { return bounds; }
+	const AABB &get_bounds() const {
+		return bounds;
+	}
 
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 
-	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
-	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
+	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) {
+		constraints.insert(p_constraint);
+	}
+	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) {
+		constraints.erase(p_constraint);
+	}
+	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const {
+		return constraints;
+	}
+	_FORCE_INLINE_ void clear_constraints() {
+		constraints.clear();
+	}
 
-	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
-	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
-	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
-	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
+	_FORCE_INLINE_ void add_exception(const RID &p_exception) {
+		exceptions.insert(p_exception);
+	}
+	_FORCE_INLINE_ void remove_exception(const RID &p_exception) {
+		exceptions.erase(p_exception);
+	}
+	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const {
+		return exceptions.has(p_exception);
+	}
+	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const {
+		return exceptions;
+	}
 
-	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
-	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+	_FORCE_INLINE_ uint64_t get_island_step() const {
+		return island_step;
+	}
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) {
+		island_step = p_step;
+	}
 
 	_FORCE_INLINE_ void add_area(GodotArea3D *p_area) {
 		int index = areas.find(AreaCMP(p_area));
@@ -180,32 +202,52 @@ public:
 	Vector3 get_face_normal(uint32_t p_face_index) const;
 
 	void set_iteration_count(int p_val);
-	_FORCE_INLINE_ real_t get_iteration_count() const { return iteration_count; }
+	_FORCE_INLINE_ real_t get_iteration_count() const {
+		return iteration_count;
+	}
 
 	void set_total_mass(real_t p_val);
-	_FORCE_INLINE_ real_t get_total_mass() const { return total_mass; }
-	_FORCE_INLINE_ real_t get_total_inv_mass() const { return inv_total_mass; }
+	_FORCE_INLINE_ real_t get_total_mass() const {
+		return total_mass;
+	}
+	_FORCE_INLINE_ real_t get_total_inv_mass() const {
+		return inv_total_mass;
+	}
 
 	void set_collision_margin(real_t p_val);
-	_FORCE_INLINE_ real_t get_collision_margin() const { return collision_margin; }
+	_FORCE_INLINE_ real_t get_collision_margin() const {
+		return collision_margin;
+	}
 
 	void set_linear_stiffness(real_t p_val);
-	_FORCE_INLINE_ real_t get_linear_stiffness() const { return linear_stiffness; }
+	_FORCE_INLINE_ real_t get_linear_stiffness() const {
+		return linear_stiffness;
+	}
 
 	void set_pressure_coefficient(real_t p_val);
-	_FORCE_INLINE_ real_t get_pressure_coefficient() const { return pressure_coefficient; }
+	_FORCE_INLINE_ real_t get_pressure_coefficient() const {
+		return pressure_coefficient;
+	}
 
 	void set_damping_coefficient(real_t p_val);
-	_FORCE_INLINE_ real_t get_damping_coefficient() const { return damping_coefficient; }
+	_FORCE_INLINE_ real_t get_damping_coefficient() const {
+		return damping_coefficient;
+	}
 
 	void set_drag_coefficient(real_t p_val);
-	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
+	_FORCE_INLINE_ real_t get_drag_coefficient() const {
+		return drag_coefficient;
+	}
 
 	void predict_motion(real_t p_delta);
 	void solve_constraints(real_t p_delta);
 
-	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return static_cast<Node *>(p_node)->index; }
-	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return static_cast<Face *>(p_face)->index; }
+	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const {
+		return static_cast<Node *>(p_node)->index;
+	}
+	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const {
+		return static_cast<Face *>(p_face)->index;
+	}
 
 	// Return true to stop the query.
 	// p_index is the node index for AABB query, face index for Ray query.
@@ -252,20 +294,34 @@ class GodotSoftBodyShape3D : public GodotShape3D {
 	GodotSoftBody3D *soft_body = nullptr;
 
 public:
-	GodotSoftBody3D *get_soft_body() const { return soft_body; }
+	GodotSoftBody3D *get_soft_body() const {
+		return soft_body;
+	}
 
-	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SOFT_BODY; }
-	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override { r_min = r_max = 0.0; }
-	virtual Vector3 get_support(const Vector3 &p_normal) const override { return Vector3(); }
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }
+	virtual PhysicsServer3D::ShapeType get_type() const override {
+		return PhysicsServer3D::SHAPE_SOFT_BODY;
+	}
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override {
+		r_min = r_max = 0.0;
+	}
+	virtual Vector3 get_support(const Vector3 &p_normal) const override {
+		return Vector3();
+	}
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override {
+		r_amount = 0;
+	}
 
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const override;
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
-	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override { return Vector3(); }
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override {
+		return Vector3();
+	}
 
 	virtual void set_data(const Variant &p_data) override {}
-	virtual Variant get_data() const override { return Variant(); }
+	virtual Variant get_data() const override {
+		return Variant();
+	}
 
 	void update_bounds();
 

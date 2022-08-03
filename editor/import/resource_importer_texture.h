@@ -79,7 +79,9 @@ protected:
 public:
 	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality);
 
-	static ResourceImporterTexture *get_singleton() { return singleton; }
+	static ResourceImporterTexture *get_singleton() {
+		return singleton;
+	}
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;

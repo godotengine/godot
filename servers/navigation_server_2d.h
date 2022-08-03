@@ -48,10 +48,14 @@ protected:
 
 public:
 	/// Thread safe, can be used across many threads.
-	static const NavigationServer2D *get_singleton() { return singleton; }
+	static const NavigationServer2D *get_singleton() {
+		return singleton;
+	}
 
 	/// MUST be used in single thread!
-	static NavigationServer2D *get_singleton_mut() { return singleton; }
+	static NavigationServer2D *get_singleton_mut() {
+		return singleton;
+	}
 
 	virtual Array get_maps() const;
 
