@@ -58,6 +58,14 @@ public:
 		int line = 0;
 	};
 
+	struct Region {
+		String file;
+		int from_line = -1;
+		int to_line = -1;
+		bool enabled = false;
+		Region *parent = nullptr;
+	};
+
 private:
 	struct Token {
 		char32_t text;
@@ -134,10 +142,13 @@ private:
 		RBSet<String> includes;
 		List<uint64_t> cyclic_include_hashes; // Holds code hash of includes.
 		int include_depth = 0;
-		String current_include;
+		String current_filename;
 		String current_shader_type;
 		String error;
 		List<FilePosition> include_positions;
+		bool save_regions = false;
+		RBMap<String, List<Region>> regions;
+		Region *previous_region = nullptr;
 		RBMap<String, Vector<SkippedCondition *>> skipped_conditions;
 		bool disabled = false;
 		CompletionType completion_type = COMPLETION_TYPE_NONE;
@@ -167,6 +178,7 @@ private:
 	void process_pragma(Tokenizer *p_tokenizer);
 	void process_undef(Tokenizer *p_tokenizer);
 
+	void add_region(int p_line, bool p_enabled, Region *p_parent_region);
 	void start_branch_condition(Tokenizer *p_tokenizer, bool p_success);
 
 	void expand_output_macros(int p_start, int p_line);
@@ -188,7 +200,7 @@ private:
 public:
 	typedef void (*IncludeCompletionFunction)(List<ScriptLanguage::CodeCompletionOption> *);
 
-	Error preprocess(const String &p_code, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
+	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 
 	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords);
 	static void get_pragma_list(List<String> *r_pragmas);

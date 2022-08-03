@@ -47,6 +47,50 @@
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
+/*** SHADER SYNTAX HIGHLIGHTER ****/
+
+Dictionary GDShaderSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
+	Dictionary color_map;
+
+	for (const Point2i &region : disabled_branch_regions) {
+		if (p_line >= region.x && p_line <= region.y) {
+			Dictionary highlighter_info;
+			highlighter_info["color"] = disabled_branch_color;
+
+			color_map[0] = highlighter_info;
+			return color_map;
+		}
+	}
+
+	return CodeHighlighter::_get_line_syntax_highlighting_impl(p_line);
+}
+
+void GDShaderSyntaxHighlighter::add_disabled_branch_region(const Point2i &p_region) {
+	ERR_FAIL_COND(p_region.x < 0);
+	ERR_FAIL_COND(p_region.y < 0);
+
+	for (int i = 0; i < disabled_branch_regions.size(); i++) {
+		ERR_FAIL_COND_MSG(disabled_branch_regions[i].x == p_region.x, "Branch region with a start line '" + itos(p_region.x) + "' already exists.");
+	}
+
+	Point2i disabled_branch_region;
+	disabled_branch_region.x = p_region.x;
+	disabled_branch_region.y = p_region.y;
+	disabled_branch_regions.push_back(disabled_branch_region);
+
+	clear_highlighting_cache();
+}
+
+void GDShaderSyntaxHighlighter::clear_disabled_branch_regions() {
+	disabled_branch_regions.clear();
+	clear_highlighting_cache();
+}
+
+void GDShaderSyntaxHighlighter::set_disabled_branch_color(const Color &p_color) {
+	disabled_branch_color = p_color;
+	clear_highlighting_cache();
+}
+
 /*** SHADER SCRIPT EDITOR ****/
 
 static bool saved_warnings_enabled = false;
@@ -264,6 +308,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
+	syntax_highlighter->set_disabled_branch_color(comment_color);
 
 	text_editor->clear_comment_delimiters();
 	text_editor->add_comment_delimiter("/*", "*/", false);
@@ -346,7 +391,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	if (!complete_from_path.ends_with("/")) {
 		complete_from_path += "/";
 	}
-	preprocessor.preprocess(p_code, code, nullptr, nullptr, nullptr, &pp_options, _complete_include_paths);
+	preprocessor.preprocess(p_code, "", code, nullptr, nullptr, nullptr, nullptr, &pp_options, _complete_include_paths);
 	complete_from_path = String();
 	if (pp_options.size()) {
 		for (const ScriptLanguage::CodeCompletionOption &E : pp_options) {
@@ -392,11 +437,29 @@ void ShaderTextEditor::_validate_script() {
 	String code_pp;
 	String error_pp;
 	List<ShaderPreprocessor::FilePosition> err_positions;
-	last_compile_result = preprocessor.preprocess(code, code_pp, &error_pp, &err_positions);
+	List<ShaderPreprocessor::Region> regions;
+	String filename;
+	if (shader.is_valid()) {
+		filename = shader->get_path();
+	} else if (shader_inc.is_valid()) {
+		filename = shader_inc->get_path();
+	}
+	last_compile_result = preprocessor.preprocess(code, filename, code_pp, &error_pp, &err_positions, &regions);
 
 	for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 		get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
+
+	syntax_highlighter->clear_disabled_branch_regions();
+	for (const ShaderPreprocessor::Region &region : regions) {
+		if (!region.enabled) {
+			if (filename != region.file) {
+				continue;
+			}
+			syntax_highlighter->add_disabled_branch_region(Point2i(region.from_line, region.to_line));
+		}
+	}
+
 	set_error("");
 	set_error_count(0);
 
