@@ -55,7 +55,14 @@ struct CSGBrush {
 	Vector<Face> faces;
 	Vector<Ref<Material>> materials;
 
-	inline void _regen_face_aabbs();
+	inline void _regen_face_aabbs() {
+		for (int i = 0; i < faces.size(); i++) {
+			faces.write[i].aabb = AABB();
+			faces.write[i].aabb.position = faces[i].vertices[0];
+			faces.write[i].aabb.expand_to(faces[i].vertices[1]);
+			faces.write[i].aabb.expand_to(faces[i].vertices[2]);
+		}
+	}
 
 	// Create a brush from faces.
 	void build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces);
@@ -68,7 +75,6 @@ struct CSGBrushOperation {
 		OPERATION_INTERSECTION,
 		OPERATION_SUBTRACTION,
 	};
-
 	void merge_brushes(Operation p_operation, const CSGBrush &p_brush_a, const CSGBrush &p_brush_b, CSGBrush &r_merged_brush, float p_vertex_snap);
 
 	struct MeshMerge {
