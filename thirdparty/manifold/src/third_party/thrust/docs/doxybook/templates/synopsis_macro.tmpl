@@ -1,0 +1,7 @@
+{%- include "synopsis_leading_line_break.tmpl" -%}
+{%- set child.synopsis_indent_width = default(synopsis_indent_width, 0) -%}
+<span>{{ noop() -}}
+  {{- render("synopsis_kind.tmpl", child) -}}
+  <b><a href="{{ child.url }}">{{- render("name_qualified.tmpl", child) -}}</a></b>{{ noop() -}}
+  {{- render("synopsis_initializer_abbreviated.tmpl", child) -}};{{ noop() -}}
+</span>

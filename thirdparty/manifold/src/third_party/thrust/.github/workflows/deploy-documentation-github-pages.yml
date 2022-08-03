@@ -1,0 +1,24 @@
+name: Deploy Documentation GitHub Pages
+
+on:
+  push:
+    branches:
+      - feature/new-docs
+
+jobs:
+  deploy-documentation-github-pages:
+    runs-on: ubuntu-latest
+    container: gpuci/cccl:cuda11.5.1-devel-ubuntu20.04-gcc9
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Generate documentation markdown
+        run: ./docs/generate_markdown.bash --clean
+      - name: Deploy generated documentation markdown to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build_docs/github_pages
+          enable_jekyll: true
+          commit_message: "Deploy Documentation: ${{ github.event.head_commit.message }}"

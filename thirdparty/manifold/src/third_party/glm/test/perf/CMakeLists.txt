@@ -1,0 +1,6 @@
+glmCreateTestGTC(perf_matrix_div)
+glmCreateTestGTC(perf_matrix_inverse)
+glmCreateTestGTC(perf_matrix_mul)
+glmCreateTestGTC(perf_matrix_mul_vector)
+glmCreateTestGTC(perf_matrix_transpose)
+glmCreateTestGTC(perf_vector_mul_matrix)

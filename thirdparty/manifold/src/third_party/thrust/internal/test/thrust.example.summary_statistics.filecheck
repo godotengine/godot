@@ -1,0 +1,10 @@
+     CHECK: ******Summary Statistics Example*****
+CHECK-NEXT: The data: 4 7 13 16 
+CHECK-NEXT: Count              : 4
+CHECK-NEXT: Minimum            : 4
+CHECK-NEXT: Maximum            : 16
+CHECK-NEXT: Mean               : 10
+CHECK-NEXT: Variance           : 30
+CHECK-NEXT: Standard Deviation : 4.74342
+CHECK-NEXT: Skewness           : 0
+CHECK-NEXT: Kurtosis           : 1.36

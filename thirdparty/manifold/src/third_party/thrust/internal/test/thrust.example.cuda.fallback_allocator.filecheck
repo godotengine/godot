@@ -1,0 +1,8 @@
+     CHECK: Testing fallback_allocator on device
+CHECK-SAME: with {{[0-9]+}} bytes of device memory
+     CHECK: attempting to sort {{[0-9]+}} values
+     CHECK:   allocated {{[0-9]+}} bytes of device memory
+     CHECK:   allocated {{[0-9]+}} bytes of device memory
+     CHECK: attempting to sort {{[0-9]+}} values
+     CHECK:   allocated {{[0-9]+}} bytes of device memory
+     CHECK:   allocated {{[0-9]+}} bytes of pinned host memory (fallback successful)

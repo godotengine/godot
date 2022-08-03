@@ -1,0 +1,3 @@
+     CHECK: range        10 20 30 40 
+CHECK-NEXT: two tiles:   10 20 30 40 10 20 30 40 
+CHECK-NEXT: three tiles: 10 20 30 40 10 20 30 40 10 20 30 40 

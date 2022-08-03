@@ -1,0 +1,19 @@
+{%- include "synopsis_leading_line_break.tmpl" -%}
+{%- include "synopsis_inherited_from.tmpl" -%}
+{%- set child.synopsis_indent_width = default(synopsis_indent_width, 0) -%}
+{{- render("synopsis_brief.tmpl", child) -}}
+{{- render("synopsis_template_parameters.tmpl", child) -}}
+{#- Unfortunately, the refid and URL for a friend class  -#}{{ noop() -}}
+{#- incorrectly refers to a definition on the local      -#}{{ noop() -}}
+{#- page, instead of the friend class's own page.        -#}{{ noop() -}}
+{#- So we don't link to friend classes.                  -#}{{ noop() -}}
+<span>{{ noop() -}}
+  {%- include "synopsis_indent.tmpl" -%}
+  friend {{- render("synopsis_type_and_leading_specifiers.tmpl", child) -}}
+</span>
+<span>{{ noop() -}}
+  {%- include "synopsis_indent.tmpl" -%}
+  <b>{{- render("name_qualified.tmpl", child) -}}</b>{{ noop() -}}
+  ({{- render("synopsis_function_parameters.tmpl", child) -}}){{ noop() -}}
+  {{- render("synopsis_function_trailing_specifiers.tmpl", child) -}};{{ noop() -}}
+</span>

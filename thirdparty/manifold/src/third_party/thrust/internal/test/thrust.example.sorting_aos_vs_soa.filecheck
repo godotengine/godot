@@ -1,0 +1,2 @@
+     CHECK: AoS sort took {{[0-9.]+}} milliseconds
+CHECK-NEXT: SoA sort took {{[0-9.]+}} milliseconds

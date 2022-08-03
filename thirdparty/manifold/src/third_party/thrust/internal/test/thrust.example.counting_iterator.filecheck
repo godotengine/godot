@@ -1,0 +1,5 @@
+     CHECK: found 4 nonzero values at indices:
+CHECK-NEXT: 1
+CHECK-NEXT: 2
+CHECK-NEXT: 5
+CHECK-NEXT: 7

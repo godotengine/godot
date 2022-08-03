@@ -1,0 +1,8 @@
+     CHECK: Text sample:
+CHECK-NEXT:   But the raven, sitting lonely on the placid bust, spoke only,
+CHECK-NEXT:   That one word, as if his soul in that one word he did outpour.
+CHECK-NEXT:   Nothing further then he uttered - not a feather then he fluttered -
+CHECK-NEXT:   Till I scarcely more than muttered `Other friends have flown before -
+CHECK-NEXT:   On the morrow he will leave me, as my hopes have flown before.'
+CHECK-NEXT:   Then the bird said, `Nevermore.'
+     CHECK: Text sample contains 65 words

@@ -1268,13 +1268,11 @@ static const char *class_renames[][2] = {
 	{ "CPUParticles", "CPUParticles3D" },
 	{ "CSGBox", "CSGBox3D" },
 	{ "CSGCombiner", "CSGCombiner3D" },
-	{ "CSGCylinder", "CSGCylinder3D" },
 	{ "CSGMesh", "CSGMesh3D" },
 	{ "CSGPolygon", "CSGPolygon3D" },
 	{ "CSGPrimitive", "CSGPrimitive3D" },
 	{ "CSGShape", "CSGShape3D" },
 	{ "CSGSphere", "CSGSphere3D" },
-	{ "CSGTorus", "CSGTorus3D" },
 	{ "Camera", "Camera3D" }, // Be careful, this will be used everywhere
 	{ "CapsuleShape", "CapsuleShape3D" },
 	{ "ClippedCamera", "Camera3D" },

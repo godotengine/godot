@@ -1,0 +1,92 @@
+shallow_clone: true
+
+platform:
+  - x86
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+image:
+  - Visual Studio 2013
+  - Visual Studio 2015
+  - Visual Studio 2017
+  - Visual Studio 2019
+
+environment:
+  matrix:
+    - GLM_ARGUMENTS: -DGLM_TEST_FORCE_PURE=ON
+    - GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_SSE2=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON
+    - GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON
+    - GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON -DGLM_TEST_ENABLE_CXX_14=ON
+    - GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON -DGLM_TEST_ENABLE_CXX_17=ON
+
+matrix:
+    exclude:
+    - image: Visual Studio 2013
+      GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON
+    - image: Visual Studio 2013
+      GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON -DGLM_TEST_ENABLE_CXX_14=ON
+    - image: Visual Studio 2013
+      GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON -DGLM_TEST_ENABLE_CXX_17=ON
+    - image: Visual Studio 2013
+      configuration: Debug
+    - image: Visual Studio 2015
+      GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_SSE2=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON
+    - image: Visual Studio 2015
+      GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON -DGLM_TEST_ENABLE_CXX_14=ON
+    - image: Visual Studio 2015
+      GLM_ARGUMENTS: -DGLM_TEST_ENABLE_SIMD_AVX=ON -DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON -DGLM_TEST_ENABLE_CXX_17=ON
+    - image: Visual Studio 2015
+      platform: x86
+    - image: Visual Studio 2015
+      configuration: Debug
+    - image: Visual Studio 2017
+      platform: x86
+    - image: Visual Studio 2017
+      configuration: Debug
+    - image: Visual Studio 2019
+      platform: x64
+
+branches:
+  only:
+    - master
+
+before_build:
+  - ps: |
+      mkdir build
+      cd build
+
+      if ("$env:APPVEYOR_JOB_NAME" -match "Image: Visual Studio 2013") {
+          $env:generator="Visual Studio 12 2013"
+      } 
+      if ("$env:APPVEYOR_JOB_NAME" -match "Image: Visual Studio 2015") {
+          $env:generator="Visual Studio 14 2015"
+      } 
+      if ("$env:APPVEYOR_JOB_NAME" -match "Image: Visual Studio 2017") {
+          $env:generator="Visual Studio 15 2017"
+      }
+      if ("$env:APPVEYOR_JOB_NAME" -match "Image: Visual Studio 2019") {
+          $env:generator="Visual Studio 16 2019"
+      }
+      if ($env:PLATFORM -eq "x64") {
+          $env:generator="$env:generator Win64"
+      }
+      echo generator="$env:generator"
+      cmake .. -G "$env:generator" -DCMAKE_INSTALL_PREFIX="$env:APPVEYOR_BUILD_FOLDER/install" -DGLM_QUIET=ON -DGLM_TEST_ENABLE=ON "$env:GLM_ARGUMENTS"
+
+build_script:
+  - cmake --build . --parallel --config %CONFIGURATION% -- /m /v:minimal
+  - cmake --build . --target install --parallel --config %CONFIGURATION% -- /m /v:minimal
+
+test_script:
+  - ctest --parallel 4 --verbose -C %CONFIGURATION%
+  - cd ..
+  - ps: |
+      mkdir build_test_cmake
+      cd build_test_cmake
+      cmake ..\test\cmake\ -G "$env:generator" -DCMAKE_PREFIX_PATH="$env:APPVEYOR_BUILD_FOLDER/install"
+  - cmake --build . --parallel --config %CONFIGURATION% -- /m /v:minimal
+
+deploy: off

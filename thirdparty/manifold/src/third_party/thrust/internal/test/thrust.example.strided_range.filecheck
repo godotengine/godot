@@ -1,0 +1,4 @@
+     CHECK: data: 10 20 30 40 50 60 70 80 
+CHECK-NEXT: sum of even indices: 160
+CHECK-NEXT: sum of odd indices:  200
+CHECK-NEXT: setting odd indices to zero: 10 0 30 0 50 0 70 0 

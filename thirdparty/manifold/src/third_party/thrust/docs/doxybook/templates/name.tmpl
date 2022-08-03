@@ -1,0 +1,5 @@
+{%- if default(names_qualified, true) -%}
+  {{- render("name_qualified.tmpl", child) -}}
+{%- else -%}
+  {{- render("name_unqualified.tmpl", child) -}}
+{%- endif -%}

@@ -1,0 +1,43 @@
+<code class="doxybook">
+{%- if exists("includes") -%}
+  <span>#include {{includes}}</span>{{ noop() -}}
+  <br>
+{%- endif -%}
+<span>{%- include "synopsis_kind.tmpl" -%}{% include "name_qualified.tmpl" %} {</span>
+{%- set synopsis_needs_leading_line_break = true -%}
+{%- set names_qualified = false -%}
+{%- if exists("namespaces") -%}
+  {%- for child in namespaces -%}
+    {%- include "synopsis_namespace_abbreviated.tmpl" -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicClasses") -%}
+  {%- for child in publicClasses -%}
+    {%- include "synopsis_class.tmpl" -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicTypes") -%}
+  {%- for child in publicTypes -%}
+    {%- include "synopsis_type.tmpl" -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicAttributes") -%}
+  {%- for child in publicAttributes -%}
+    {%- include "synopsis_variable.tmpl" -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicFunctions") -%}
+  {%- for child in publicFunctions -%}
+    {%- if existsIn(child, "type") -%}
+      {#- If the child doesn't have a type, it's probably a    -#}{{- noop() -}}
+      {#- constructor that Doxygen put into a non-class entity -#}{{- noop() -}}
+      {#- due to a bug whose nature is beyond me.              -#}{{- noop() -}}
+      {%- include "synopsis_function.tmpl" -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+<span>} {{ noop() -}}
+  /* {%- include "synopsis_kind.tmpl" -%}{% include "name_qualified.tmpl" %} */{{ noop() -}}
+</span>
+</code>
+

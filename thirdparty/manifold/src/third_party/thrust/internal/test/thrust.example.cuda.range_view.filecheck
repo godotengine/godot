@@ -1,0 +1,4 @@
+     CHECK: z[0]= 7
+CHECK-NEXT: z[1]= 8
+CHECK-NEXT: z[2]= 9
+CHECK-NEXT: z[3]= 10

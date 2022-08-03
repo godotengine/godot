@@ -1,0 +1,210 @@
+{%- if exists("publicClasses") or exists("publicTypes") or exists("publicAttributes") or exists("publicFunctions") or exists("friends") -%}
+  {%- set has_public_members = true -%}
+{%- endif -%}
+{%- if exists("protectedClasses") or exists("protectedTypes") or exists("protectedAttributes") or exists("protectedFunctions") -%}
+  {%- set has_protected_members = true -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}
+  {%- for base in baseClasses -%}
+    {%- if existsIn(base, "publicClasses") or existsIn(base, "publicTypes") or existsIn(base, "publicAttributes") or existsIn(base, "publicFunctions") or existsIn(base, "friends") -%}
+      {%- set has_public_members = true -%}
+    {%- endif -%}
+    {%- if existsIn(base, "protectedClasses") or existsIn(base, "protectedTypes") or existsIn(base, "protectedAttributes") or existsIn(base, "protectedFunctions") -%}
+      {%- set has_protected_members = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+<code class="doxybook">
+{%- if exists("includes") -%}
+  <span>#include {{includes}}</span>{{ noop() -}}
+  <br>
+{%- endif -%}
+{%- include "synopsis_template_parameters.tmpl" -%}
+<span>{%- include "synopsis_kind.tmpl" -%}{% include "name_qualified.tmpl" %} {</span>
+{%- set synopsis_indent_width = 2 -%}
+{%- set names_qualified = false -%}
+{%- if default(has_public_members, false) -%}
+  <span>public:</span>{{- noop() -}}
+{%- endif -%}
+{%- if exists("publicTypes") -%}
+  {%- for child in publicTypes -%}
+    {%- include "synopsis_type.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "publicTypes") -%}
+    {%- for child in base.publicTypes -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_type.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("publicClasses") -%}
+  {%- for child in publicClasses -%}
+    {%- include "synopsis_class.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "publicClasses") -%}
+    {%- for child in base.publicClasses -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_class.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("friends") -%}
+  {%- for child in friends -%}
+    {%- if child.type == "class" or child.type == "struct" -%}
+      {%- include "synopsis_friend_class.tmpl" -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "friends") -%}
+    {%- for child in base.friends -%}
+      {%- if child.type == "class" or child.type == "struct" -%}
+        {%- set synopsis_is_inherited = true -%}
+        {%- include "synopsis_friend_class.tmpl" -%}
+        {%- set synopsis_is_inherited = false -%}
+        {%- set synopsis_needs_leading_line_break = true -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("publicAttributes") -%}
+  {%- for child in publicAttributes -%}
+    {%- include "synopsis_variable.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "publicAttributes") -%}
+    {%- for child in base.publicAttributes -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_variable.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("publicFunctions") -%}
+  {%- for child in publicFunctions -%}
+    {%- include "synopsis_function.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "publicFunctions") -%}
+    {%- for child in base.publicFunctions -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_function.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("friends") -%}
+  {%- for child in friends -%}
+    {%- if child.type != "class" and child.type != "struct" -%}
+      {%- include "synopsis_friend_function.tmpl" -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "friends") -%}
+    {%- for child in base.friends -%}
+      {%- if child.type != "class" and child.type != "struct" -%}
+        {%- set synopsis_is_inherited = true -%}
+        {%- include "synopsis_friend_function.tmpl" -%}
+        {%- set synopsis_is_inherited = false -%}
+        {%- set synopsis_needs_leading_line_break = true -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if default(has_public_members, false) -%}
+  {%- if default(has_protected_members, false) -%}
+    <br>
+  {%- endif -%}
+{%- endif -%}
+{#- Reset leading line breaks for protected members -#}{{ noop() -}}
+{%- set synopsis_needs_leading_line_break = false -%}
+{%- if default(has_protected_members, false) -%}
+  <span>protected:</span>{{- noop() -}}
+{%- endif -%}
+{%- if exists("protectedTypes") -%}
+  {%- for child in protectedTypes -%}
+    {%- include "synopsis_type.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "protectedTypes") -%}
+    {%- for child in base.protectedTypes -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_type.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("protectedClasses") -%}
+  {%- for child in protectedClasses -%}
+    {%- include "synopsis_class.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "protectedClasses") -%}
+    {%- for child in base.protectedClasses -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_class.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("protectedAttributes") -%}
+  {%- for child in protectedAttributes -%}
+    {%- include "synopsis_variable.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "protectedAttributes") -%}
+    {%- for child in base.protectedAttributes -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_variable.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- if exists("protectedFunctions") -%}
+  {%- for child in protectedFunctions -%}
+    {%- include "synopsis_function.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("baseClasses") -%}{%- for base in baseClasses -%}
+  {%- if existsIn(base, "protectedFunctions") -%}
+    {%- for child in base.protectedFunctions -%}
+      {%- set synopsis_is_inherited = true -%}
+      {%- include "synopsis_function.tmpl" -%}
+      {%- set synopsis_is_inherited = false -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
+{%- set synopsis_indent_width = 0 -%}
+<span>};</span>
+</code>
+

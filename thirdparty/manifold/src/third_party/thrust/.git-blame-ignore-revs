@@ -1,0 +1,16 @@
+# Exclude these commits from git-blame and similar tools.
+#
+# To use this file, run the following command from the repo root:
+#
+# ```
+# $ git config blame.ignoreRevsFile .git-blame-ignore-revs
+# ```
+#
+# Include a brief comment with each commit added, for example:
+#
+# ```
+# d92d9f8baac5ec48a8f8718dd69f415a45efe372 # Initial clang-format
+# ```
+#
+# Only add commits that are pure formatting changes (e.g.
+# clang-format version changes, etc).

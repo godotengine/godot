@@ -1,0 +1,14 @@
+{%- if exists("templateParams") -%}
+  <span>{% include "synopsis_indent.tmpl" -%}template &lt;{{ noop() -}}
+  {%- for param in templateParams -%}
+    {%- if not loop.is_first %}{% include "synopsis_indent.tmpl" -%}&nbsp;&nbsp;{% endif -%}
+    {{- param.type -}}
+    {%- if not isEmpty(param.name) %} {% endif -%}
+    {{- param.name -}}
+    {%- if existsIn(param, "defvalPlain") %} = {{ escape(param.defvalPlain) }}{% endif -%}
+    {%- if not loop.is_last -%}
+      ,</span>
+      {{- noop() }}<span>{% include "synopsis_indent.tmpl" -%}
+    {%- endif -%}
+  {%- endfor -%}&gt;</span>
+{%- endif -%}

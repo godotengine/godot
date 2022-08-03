@@ -1,0 +1,10 @@
+     CHECK: SAXPY (functor method)
+CHECK-NEXT: 2 * 1 + 1 = 3
+CHECK-NEXT: 2 * 2 + 1 = 5
+CHECK-NEXT: 2 * 3 + 1 = 7
+CHECK-NEXT: 2 * 4 + 1 = 9
+CHECK-NEXT: SAXPY (placeholder method)
+CHECK-NEXT: 2 * 1 + 1 = 3
+CHECK-NEXT: 2 * 2 + 1 = 5
+CHECK-NEXT: 2 * 3 + 1 = 7
+CHECK-NEXT: 2 * 4 + 1 = 9

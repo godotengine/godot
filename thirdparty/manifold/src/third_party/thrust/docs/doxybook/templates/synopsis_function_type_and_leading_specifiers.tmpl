@@ -1,0 +1,6 @@
+{%- if default(virtual, false) or default(static, false) or default(explicit, false) or default(type, false) -%}
+  <span>{{ noop() -}}
+    {%- include "synopsis_indent.tmpl" -%}
+    {%- include "synopsis_type_and_leading_specifiers.tmpl" -%}
+  </span>{{ noop() -}}
+{%- endif -%}

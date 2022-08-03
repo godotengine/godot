@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# converts all files in the current directory with extensions .h .inl or .cu to unix format
+
+#find . -type f \( -name "*.h" -o -name "*.inl" -o -name "*.cu" \) -a \( -not -wholename "*\.hg/*" \) -print
+find . -type f \( -name "*.h" -o -name "*.inl" -o -name "*.cu" \) -a \( -not -wholename "*\.hg/*" \) -exec fromdos -d {} \;
+

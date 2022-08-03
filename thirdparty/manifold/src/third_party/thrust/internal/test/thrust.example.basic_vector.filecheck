@@ -1,0 +1,8 @@
+     CHECK: H has size 4
+CHECK-NEXT: H[0] = 14
+CHECK-NEXT: H[1] = 20
+CHECK-NEXT: H[2] = 38
+CHECK-NEXT: H[3] = 46
+CHECK-NEXT: H now has size 2
+CHECK-NEXT: D[0] = 99
+CHECK-NEXT: D[1] = 88

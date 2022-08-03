@@ -1,0 +1,3 @@
+     CHECK: [ 10 17 64 90 97 27 56 45 33 76 ]
+CHECK-NEXT: minimum = 10
+CHECK-NEXT: maximum = 97

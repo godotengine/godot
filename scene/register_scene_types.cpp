@@ -982,13 +982,11 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("CPUParticles", "CPUParticles3D");
 	ClassDB::add_compatibility_class("CSGBox", "CSGBox3D");
 	ClassDB::add_compatibility_class("CSGCombiner", "CSGCombiner3D");
-	ClassDB::add_compatibility_class("CSGCylinder", "CSGCylinder3D");
 	ClassDB::add_compatibility_class("CSGMesh", "CSGMesh3D");
 	ClassDB::add_compatibility_class("CSGPolygon", "CSGPolygon3D");
 	ClassDB::add_compatibility_class("CSGPrimitive", "CSGPrimitive3D");
 	ClassDB::add_compatibility_class("CSGShape", "CSGShape3D");
 	ClassDB::add_compatibility_class("CSGSphere", "CSGSphere3D");
-	ClassDB::add_compatibility_class("CSGTorus", "CSGTorus3D");
 	ClassDB::add_compatibility_class("CubeMesh", "BoxMesh");
 	ClassDB::add_compatibility_class("CylinderShape", "CylinderShape3D");
 	ClassDB::add_compatibility_class("DirectionalLight", "DirectionalLight3D");

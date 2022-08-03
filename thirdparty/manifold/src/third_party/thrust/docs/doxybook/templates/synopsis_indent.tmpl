@@ -1,0 +1,5 @@
+{%- if default(synopsis_indent_width, false) -%}
+  {%- for i in range(synopsis_indent_width) -%}
+    &nbsp;{{ noop() -}}
+  {%- endfor -%}
+{%- endif -%}

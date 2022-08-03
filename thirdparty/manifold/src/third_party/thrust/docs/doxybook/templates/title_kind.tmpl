@@ -1,0 +1,4 @@
+{%- if child.kind == "using" %}Type Alias{{ noop() -}}
+{%- else -%}{{ title(child.kind) -}}
+{%- endif -%}
+{%- if child.kind == "enum" and child.strong %} Class{%- endif -%}

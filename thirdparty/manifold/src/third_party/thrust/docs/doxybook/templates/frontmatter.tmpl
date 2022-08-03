@@ -1,0 +1,43 @@
+---
+{%- if exists("title") -%}
+  title: {{title}}
+{%- else if exists("name") -%}
+  title: {{name}}
+{%- endif -%}
+{%- if exists("summary") -%}
+  summary: {{summary}}
+{%- endif -%}
+{%- if exists("moduleBreadcrumbs") -%}
+  {%- if length(moduleBreadcrumbs) > 0 -%}
+    parent: {{ get(last(moduleBreadcrumbs), "title") }}
+  {%- endif -%}
+  {%- if length(moduleBreadcrumbs) > 1 -%}
+    grand_parent: {{ get(index(moduleBreadcrumbs, -2), "title") }}
+  {%- else if length(moduleBreadcrumbs == 1) and exists("kind") and kind == "group" -%}
+    grand_parent: API
+  {%- endif -%}
+{%- else if exists("kind") and kind == "group" -%}
+  parent: API
+{%- endif -%}
+{%- if exists("kind") and kind == "group" -%}
+  nav_exclude: false
+{%- else -%}
+  nav_exclude: true
+{%- endif -%}
+has_children: true
+has_toc: false
+---
+
+{%- if exists("title") -%}
+  {%- if exists("kind") and kind in ["class", "struct", "namespace"] -%}
+    # {{title(kind)}} `{{title}}`
+  {%- else -%}
+    # {{title}}
+  {%- endif -%}
+{%- else if exists("name") -%}
+  {%- if exists("kind") and kind != "page" -%}
+    # {{name}} {{title(kind)}} Reference
+  {%- else -%}
+    # {{name}}
+  {%- endif -%}
+{%- endif %}

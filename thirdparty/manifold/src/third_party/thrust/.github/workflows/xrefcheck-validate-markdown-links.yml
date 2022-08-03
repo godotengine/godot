@@ -1,0 +1,18 @@
+name: Check bad links
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  xrefcheck:
+    name: Check links
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: serokell/xrefcheck-action@v1
+      with:
+        xrefcheck-version: 0.2
+        xrefcheck-args: --ignored dependencies

@@ -1,0 +1,35 @@
+{%- if exists("publicClasses") -%}## Member Classes
+
+  {%- for child in publicClasses -%}
+    {% include "title_nonmember.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("publicTypes") -%}## Types
+
+  {%- for child in publicTypes -%}
+    {% include "title_nonmember.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("publicAttributes") %}## Variables
+
+  {%- for child in publicAttributes -%}
+    {% include "title_nonmember.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("publicFunctions") %}## Functions
+
+  {%- for child in publicFunctions -%}
+    {% include "title_nonmember.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("defines") %}## Macros
+
+  {%- for child in defines -%}
+    {% include "title_nonmember.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}

@@ -1,0 +1,16 @@
+     CHECK: cached_allocator::allocate(): num_bytes == {{[0-9]+}}
+CHECK-NEXT: cached_allocator::allocate(): allocating new block
+CHECK-NEXT: cached_allocator::deallocate(): ptr == {{(0x)?}}{{[0-9a-z]+}}
+CHECK-NEXT: cached_allocator::allocate(): num_bytes == {{[0-9]+}}
+CHECK-NEXT: cached_allocator::allocate(): found a free block
+CHECK-NEXT: cached_allocator::deallocate(): ptr == {{(0x)?}}{{[0-9a-z]+}}
+CHECK-NEXT: cached_allocator::allocate(): num_bytes == {{[0-9]+}}
+CHECK-NEXT: cached_allocator::allocate(): found a free block
+CHECK-NEXT: cached_allocator::deallocate(): ptr == {{(0x)?}}{{[0-9a-z]+}}
+CHECK-NEXT: cached_allocator::allocate(): num_bytes == {{[0-9]+}}
+CHECK-NEXT: cached_allocator::allocate(): found a free block
+CHECK-NEXT: cached_allocator::deallocate(): ptr == {{(0x)?}}{{[0-9a-z]+}}
+CHECK-NEXT: cached_allocator::allocate(): num_bytes == {{[0-9]+}}
+CHECK-NEXT: cached_allocator::allocate(): found a free block
+CHECK-NEXT: cached_allocator::deallocate(): ptr == {{(0x)?}}{{[0-9a-z]+}}
+CHECK-NEXT: cached_allocator::free_all()

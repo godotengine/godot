@@ -1,0 +1,11 @@
+     CHECK: [Inititialize {{[0-9]+}}x{{[0-9]+}} Image]
+CHECK-NEXT:   ( {{[0-9.]+}}ms )
+CHECK-NEXT: [Copy to Device]
+CHECK-NEXT:   ( {{[0-9.]+}}ms )
+CHECK-NEXT: [JFA stepping]
+CHECK-NEXT:   ( {{[0-9.]+}}ms )
+CHECK-NEXT:   ( {{[0-9.]+}} MPixel/s ) 
+CHECK-NEXT: [Device to Host Copy]
+CHECK-NEXT:   ( {{[0-9.]+}}ms )
+CHECK-NEXT: [PGM Export]
+CHECK-NEXT:   ( {{[0-9.]+}}ms )

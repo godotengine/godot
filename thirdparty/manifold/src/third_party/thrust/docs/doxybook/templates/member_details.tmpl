@@ -1,0 +1,39 @@
+{%- if exists("type") and type in ["class", "struct"] -%}
+  <code class="doxybook">
+  {%- include "synopsis_class.tmpl" -%}
+  </code>
+{%- else if kind == "enum" -%}
+  {%- include "table_header_enum.tmpl" -%}
+  {%- for enumerator in enumvalues -%}{{- render("table_row_enum.tmpl", enumerator) -}}
+  {%- endfor %}
+{%- else if kind in ["typedef", "using"] -%}
+  <code class="doxybook">
+  {%- include "synopsis_template_parameters.tmpl" -%}
+  <span>{%- include "synopsis_kind.tmpl" -%}<b>{{name}}</b>{%- include "synopsis_initializer.tmpl" -%};</span>{{- noop() -}}
+  </code>
+{%- else if kind in ["variable", "property"] -%}
+  <code class="doxybook">
+  {%- include "synopsis_template_parameters.tmpl" -%}
+  <span>{%- include "synopsis_type_and_leading_specifiers.tmpl" -%}<b>{{name}}</b>{%- include "synopsis_initializer.tmpl" -%};</span>{{- noop() -}}
+  </code>
+{%- else if kind in ["function", "slot", "signal", "event"] -%}
+  <code class="doxybook">
+  {%- include "synopsis_template_parameters.tmpl" -%}
+  {% include "synopsis_function_type_and_leading_specifiers.tmpl" -%}
+  <span><b>{{name}}</b>({%- include "synopsis_function_parameters.tmpl" -%}){%- include "synopsis_function_trailing_specifiers.tmpl" -%};</span>{{- noop() -}}
+  </code>
+{%- else if kind == "friend" -%}
+  {%- if type != "class" and type != "struct" -%}
+    <code class="doxybook">
+    {% include "synopsis_template_parameters.tmpl" -%}
+    {% include "synopsis_function_type_and_leading_specifiers.tmpl" -%}
+    <span><b>{{name}}</b>({%- include "synopsis_function_parameters.tmpl" -%}){%- include "synopsis_function_trailing_specifiers.tmpl" -%};</span>{{- noop() -}}
+    </code>
+  {%- endif -%}
+{%- else if kind == "define" -%}
+  {#- We have no way to get the parameters to function-like     -#}{{ noop() -}}
+  {#- macros, and the macro definitions in `initializer` fields -#}{{ noop() -}}
+  {#- don't have line breaks. So we can't render a useful       -#}{{ noop() -}}
+  {#- synopsis.                                                 -#}{{ noop() -}}
+{% endif -%}
+{% include "details.tmpl" -%}

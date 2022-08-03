@@ -1,0 +1,12 @@
+{%- include "synopsis_leading_line_break.tmpl" -%}
+{%- include "synopsis_inherited_from.tmpl" -%}
+{%- set child.synopsis_indent_width = default(synopsis_indent_width, 0) -%}
+{{- render("synopsis_brief.tmpl", child) -}}
+{{- render("synopsis_template_parameters.tmpl", child) -}}
+{{- render("synopsis_function_type_and_leading_specifiers.tmpl", child) -}}
+<span>{{ noop() -}}
+  {%- include "synopsis_indent.tmpl" -%}
+  <b><a href="{{ child.url }}">{% include "name.tmpl" %}</a></b>{{ noop() -}}
+  ({{- render("synopsis_function_parameters.tmpl", child) -}}){{ noop() -}}
+  {{- render("synopsis_function_trailing_specifiers.tmpl", child) -}};{{- noop() -}}
+</span>

@@ -93,6 +93,8 @@ public:
 		VaryingType type;
 
 		Varying() {
+			mode = {};
+			type = {};
 		}
 
 		Varying(String p_name, VaryingMode p_mode, VaryingType p_type) :

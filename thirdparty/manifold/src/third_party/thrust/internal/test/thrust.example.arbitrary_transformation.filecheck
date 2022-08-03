@@ -1,0 +1,5 @@
+     CHECK: 3 + 6 * 2 = 15
+CHECK-NEXT: 4 + 7 * 5 = 39
+CHECK-NEXT: 0 + 2 * 7 = 14
+CHECK-NEXT: 8 + 1 * 4 = 12
+CHECK-NEXT: 2 + 8 * 3 = 26

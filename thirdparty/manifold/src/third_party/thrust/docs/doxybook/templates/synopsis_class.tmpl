@@ -1,0 +1,16 @@
+{%- include "synopsis_leading_line_break.tmpl" -%}
+{%- include "synopsis_inherited_from.tmpl" -%}
+{%- set child.synopsis_indent_width = default(synopsis_indent_width, 0) -%}
+{{- render("synopsis_brief.tmpl", child) -}}
+{#- The Doxygen metadata that a parent has on its nested   -#}{{ noop() -}}
+{#- classes doesn't include their template parameters.     -#}{{ noop() -}}
+{#- Fortunately, we have the refid of the nested class, so -#}{{ noop() -}}
+{#- so we can just load the data from their page.          -#}{{ noop() -}}
+{%- set child_class = load(child.refid)) -%}
+{%- set child_class.synopsis_indent_width = default(synopsis_indent_width, 0) -%}
+{{- render("synopsis_template_parameters.tmpl", child_class) -}}
+<span>{{ noop() -}}
+  {%- include "synopsis_indent.tmpl" -%}
+  {{- render("synopsis_kind_abbreviated.tmpl", child) -}}
+  <b><a href="{{ child.url }}">{% include "name.tmpl" %}</a></b>;{{ noop() -}}
+</span>

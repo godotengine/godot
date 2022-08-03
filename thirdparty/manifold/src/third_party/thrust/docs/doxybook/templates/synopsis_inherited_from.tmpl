@@ -1,0 +1,4 @@
+{%- if default(synopsis_is_inherited, false) != false -%}
+  {%- set base.synopsis_indent_width = default(synopsis_indent_width, 0) -%}
+  {{- render("synopsis_inherited_from_comment.tmpl", base) -}}
+{%- endif -%}

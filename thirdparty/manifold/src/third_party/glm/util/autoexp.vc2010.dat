@@ -1,0 +1,3896 @@
+; AutoExp.Dat - templates for automatically expanding data
+; Copyright(c) Microsoft Corporation. All Rights Reserved.
+;---------------------------------------------------------------
+;
+; While debugging, Data Tips and items in the Watch and Variable
+; windows are automatically expanded to show their most important
+; elements. The expansion follows the format given by the rules
+; in this file. You can add rules for your types or change the
+; predefined rules.
+;
+; For good examples, read the rules in this file.
+;
+; To find what the debugger considers the type of a variable to
+; be, add it to the Watch window and look at the Type column.
+;
+; An AutoExpand rule is a line with the name of a type, an equals
+; sign, and text with replaceable parts in angle brackets. The
+; part in angle brackets names a member of the type and an
+; optional Watch format specifier.
+;
+; AutoExpand rules use the following syntax. The equals sign (=),
+; angle brackets (<>), and comma are taken literally. Square
+; brackets ([]) indicate optional items.
+;
+; type=[text]<member[,format]>...
+;
+; type		Name of the type (may be followed by <*> for template
+;			types such as the ATL types listed below).
+;
+; text		Any text.Usually the name of the member to display,
+;			or a shorthand name for the member.
+;
+; member	Name of a member to display.
+;
+; format	Watch format specifier. One of the following:
+;
+;	Letter	Description					Sample		   Display
+;	------	--------------------------	------------   -------------
+;	d,i		Signed decimal integer		0xF000F065,d   -268373915
+;	u		Unsigned decimal integer	0x0065,u	   101
+;	o		Unsigned octal integer		0xF065,o	   0170145
+;	x,X		Hexadecimal integer			61541,X		   0X0000F065
+;	l,h		long or short prefix for	00406042,hx    0x0c22
+;			  d, i, u, o, x, X
+;	f		Signed floating-point		3./2.,f		   1.500000
+;	e		Signed scientific-notation	3./2.,e		   1.500000e+000
+;	g		Shorter of e and f			3./2.,g		   1.5
+;	c		Single character			0x0065,c	   'e'
+;	s		Zero-terminated string		pVar,s		   "Hello world"
+;	su		Unicode string				pVar,su		   "Hello world"
+;
+; For details of other format specifiers see Help under:
+; "format specifiers/watch variable"
+;
+; The special format <,t> specifies the name of the most-derived
+; type of the object. This is especially useful with pointers or
+; references to a base class.
+;
+; If there is no rule for a class, the base classes are checked for
+; a matching rule.
+;
+; There are some special entries allowed in the AutoExpand section:
+; $BUILTIN is used to display more complex types that need to do more
+; than just show a member variable or two.
+; $ADDIN allows external DLLs to be added to display even more complex
+; types via the EE Add-in API. The first argument is the DLL name, the
+; second argument is the name of the export from the DLL to use. For
+; further information on this API see the sample called EEAddIn.
+;
+; WARNING: if hexadecimal mode is on in the watch window, all numbers here are
+; evaluated in hex, e.g. 42 becomes 0x42
+
+[AutoExpand]
+
+; from windef.h
+tagPOINT =x=<x> y=<y>
+tagRECT =top=<top> bottom=<bottom> left=<left> right=<right>
+
+; from winuser.h
+tagMSG =msg=<message,x> wp=<wParam,x> lp=<lParam,x>
+
+; intrinsics
+__m64 =<m64_i64,x>
+__m128=$BUILTIN(M128)
+__m128i=$BUILTIN(M128I)
+__m128d=$BUILTIN(M128D)
+
+; from afxwin.h
+CDC =hDC=<m_hDC> attrib=<m_hAttribDC>
+CPaintDC =<,t> hWnd=<m_hWnd>
+CPoint =x=<x> y=<y>
+CRect =top=<top> bottom=<bottom> left=<left> right=<right>
+CSize =cx=<cx> cy=<cy>
+CWnd =<,t> hWnd=<m_hWnd>
+CWinApp =<,t> <m_pszAppName,s>
+CWinThread =<,t> h=<m_hThread> proc=<m_pfnThreadProc>
+
+; from afxcoll.h
+CPtrList =cnt=<m_nCount>
+
+; from afxstat_.h
+CProcessLocalObject =<,t>
+CThreadLocalObject =<,t>
+
+; from afx.h
+CArchiveException =cause=<m_cause>
+CFile =hFile=<m_hFile> name=<m_strFileName.m_pchData,s>
+CFileException =cause=<m_cause> OS Error=m_lOsError
+CMemFile =pos=<m_nPosition> size=<m_nFileSize>
+CObject =<,t>
+CRuntimeClass =<m_lpszClassName,s>
+CStdioFile =FILE*=<m_pStream> name=<m_strFilename.m_pchData,s>
+CTimeSpan =time=<m_time>
+CTime =time=<m_time>
+
+; from afxcoll.h
+CByteArray =count=<m_nCount>
+CStringList =count=<m_nCount>
+; same for all CXXXArray classes
+; same for CXXXList
+; same for CMapXXToXX
+
+; various string classes from MFC & ATL
+
+_com_error=<m_hresult,hr>
+_bstr_t=<m_Data->m_wstr,su> (<m_Data->m_RefCount,u>)
+_com_ptr_t<*>=<m_pInterface>
+_LARGE_INTEGER=<QuadPart>
+_ULARGE_INTEGER=<QuadPart>
+ATL::CComPtr<*>=<p>
+
+ATL::CComQIPtr<*>=<p>
+
+tagVARIANT=$BUILTIN(VARIANT)
+VARIANT=$BUILTIN(VARIANT)
+_GUID=$BUILTIN(GUID)
+
+; see EEAddIn sample for how to use these
+;_SYSTEMTIME=$ADDIN(EEAddIn.dll,AddIn_SystemTime)
+;_FILETIME=$ADDIN(EEAddIn.dll,AddIn_FileTime)
+
+[Visualizer]
+; This section contains visualizers for STL and ATL containers
+; DO NOT MODIFY
+ATL::CStringT<char,*>|CSimpleStringT<char,*>|ATL::CSimpleStringT<char,*>{
+		preview			([$e.m_pszData,s])
+		stringview		([$e.m_pszData,sb])
+}
+ATL::CStringT<wchar_t,*>|CSimpleStringT<wchar_t,*>|ATL::CSimpleStringT<wchar_t,*>|ATL::CStringT<unsigned short,*>|CSimpleStringT<unsigned short,*>|ATL::CSimpleStringT<unsigned short,*>{
+		preview			([$e.m_pszData,su])
+		stringview		([$e.m_pszData,sub])
+}
+ATL::CComBSTR{
+		preview			([$e.m_str,su])
+		stringview		([$e.m_str,sub])
+}
+
+
+; Many visualizers use nested #()s.
+; Why not use #(foo, bar) instead of #(#(foo), #(bar))?
+; The former alphabetically sorts its fields, while the latter does not.
+
+;------------------------------------------------------------------------------
+;  std::pair from <utility>
+;------------------------------------------------------------------------------
+std::pair<*>{
+	; pair is previewed with "(<first>, <second>)".
+	preview (
+		#(
+			"(",
+			$e.first,
+			", ",
+			$e.second,
+			")"
+		)
+	)
+
+	; We gloss over the fact that first and second are actually stored in _Pair_base.
+	children (
+		#(
+			#(first : $e.first),
+			#(second : $e.second)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::plus, etc. from <functional>
+;------------------------------------------------------------------------------
+; STL functors are previewed with their names.
+; They have no state, so they have no children.
+std::plus<*>{
+	preview ( "plus" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::minus<*>{
+	preview ( "minus" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::multiplies<*>{
+	preview ( "multiplies" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::divides<*>{
+	preview ( "divides" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::modulus<*>{
+	preview ( "modulus" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::negate<*>{
+	preview ( "negate" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::equal_to<*>{
+	preview ( "equal_to" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::not_equal_to<*>{
+	preview ( "not_equal_to" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::greater<*>{
+	preview ( "greater" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::less<*>{
+	preview ( "less" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::greater_equal<*>{
+	preview ( "greater_equal" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::less_equal<*>{
+	preview ( "less_equal" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::logical_and<*>{
+	preview ( "logical_and" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::logical_or<*>{
+	preview ( "logical_or" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::logical_not<*>{
+	preview ( "logical_not" )
+	children ( #array(expr: 0, size: 0) )
+}
+
+;------------------------------------------------------------------------------
+;  std::not1() from <functional>
+;  std::not2() from <functional>
+;------------------------------------------------------------------------------
+; STL negators are previewed with "not[12](<stored functor>)".
+; They have a child with the fake name of [pred], so that the
+; stored functor can be inspected.
+std::unary_negate<*>{
+	preview (
+		#(
+			"not1(",
+			$e._Functor,
+			")"
+		)
+	)
+
+	children (
+		#([pred] : $e._Functor)
+	)
+}
+std::binary_negate<*>{
+	preview (
+		#(
+			"not2(",
+			$e._Functor,
+			")"
+		)
+	)
+
+	children (
+		#([pred] : $e._Functor)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::bind1st() from <functional>
+;  std::bind2nd() from <functional>
+;------------------------------------------------------------------------------
+; STL binders are previewed with "bind1st(<op>, <value>)" or "bind2nd(<op>, <value>)".
+; We gloss over the fact that they derive from unary_function.
+std::binder1st<*>{
+	preview (
+		#(
+			"bind1st(",
+			$e.op,
+			", ",
+			$e.value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#(op : $e.op),
+			#(value : $e.value)
+		)
+	)
+}
+std::binder2nd<*>{
+	preview (
+		#(
+			"bind2nd(",
+			$e.op,
+			", ",
+			$e.value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#(op : $e.op),
+			#(value : $e.value)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::ptr_fun() from <functional>
+;------------------------------------------------------------------------------
+; STL function pointer adaptors are previewed with "ptr_fun(<stored function pointer>)".
+; Function pointers have no children, so the adaptors have no children.
+std::pointer_to_unary_function<*>|std::pointer_to_binary_function<*>{
+	preview (
+		#(
+			"ptr_fun(",
+			$e._Pfun,
+			")"
+		)
+	)
+
+	children ( #array(expr: 0, size: 0) )
+}
+
+;------------------------------------------------------------------------------
+;  std::mem_fun() from <functional>
+;  std::mem_fun_ref() from <functional>
+;------------------------------------------------------------------------------
+; See ptr_fun().
+std::mem_fun_t<*>|std::mem_fun1_t<*>|std::const_mem_fun_t<*>|std::const_mem_fun1_t<*>{
+	preview (
+		#(
+			"mem_fun(",
+			$e._Pmemfun,
+			")"
+		)
+	)
+
+	children ( #array(expr: 0, size: 0) )
+}
+std::mem_fun_ref_t<*>|std::mem_fun1_ref_t<*>|std::const_mem_fun_ref_t<*>|std::const_mem_fun1_ref_t<*>{
+	preview (
+		#(
+			"mem_fun_ref(",
+			$e._Pmemfun,
+			")"
+		)
+	)
+
+	children ( #array(expr: 0, size: 0) )
+}
+
+;------------------------------------------------------------------------------
+;  std::auto_ptr from <memory>
+;------------------------------------------------------------------------------
+std::auto_ptr<*>{
+	; An empty auto_ptr is previewed with "empty".
+	; Otherwise, it is previewed with "auto_ptr <object>".
+	preview (
+		#if ($e._Myptr == 0) (
+			"empty"
+		) #else (
+			#(
+				"auto_ptr ",
+				*$e._Myptr
+			 )
+		)
+	)
+
+	; An empty auto_ptr has no children.
+	; Otherwise, it has a single child, its stored pointer, with a fake name of [ptr].
+	children (
+		#if ($e._Myptr == 0) (
+			#array(expr: 0, size: 0)
+		) #else (
+			#([ptr] : $e._Myptr)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::basic_string from <string>
+;------------------------------------------------------------------------------
+; basic_string is previewed with its stored string.
+; It has [size] and [capacity] children, followed by [0], [1], [2], etc. children
+; displaying its stored characters.
+; The ($e._Myres) < ($e._BUF_SIZE) test determines whether the Small String Optimization
+; is in effect.
+; NOTE: The parentheses in ($e._Myres) < ($e._BUF_SIZE) are necessary.
+std::basic_string<char,*>{
+	preview		( #if (($e._Myres) < ($e._BUF_SIZE)) ( [$e._Bx._Buf,s] ) #else ( [$e._Bx._Ptr,s] ))
+	stringview	( #if (($e._Myres) < ($e._BUF_SIZE)) ( [$e._Bx._Buf,sb] ) #else ( [$e._Bx._Ptr,sb] ))
+
+	children (
+		#(
+			#([size] : $e._Mysize),
+			#([capacity] : $e._Myres),
+			#if (($e._Myres) < ($e._BUF_SIZE)) (
+				#array(expr: $e._Bx._Buf[$i], size: $e._Mysize)
+			) #else (
+				#array(expr: $e._Bx._Ptr[$i], size: $e._Mysize)
+			)
+		)
+	)
+}
+std::basic_string<unsigned short,*>|std::basic_string<wchar_t,*>{
+	preview		( #if (($e._Myres) < ($e._BUF_SIZE)) ( [$e._Bx._Buf,su] ) #else ( [$e._Bx._Ptr,su] ))
+	stringview	( #if (($e._Myres) < ($e._BUF_SIZE)) ( [$e._Bx._Buf,sub] ) #else ( [$e._Bx._Ptr,sub] ))
+
+	children (
+		#(
+			#([size] : $e._Mysize),
+			#([capacity] : $e._Myres),
+			#if (($e._Myres) < ($e._BUF_SIZE)) (
+				#array(expr: $e._Bx._Buf[$i], size: $e._Mysize)
+			) #else (
+				#array(expr: $e._Bx._Ptr[$i], size: $e._Mysize)
+			)
+		)
+	)
+}
+std::_String_iterator<char,*>|std::_String_const_iterator<char,*>{
+	preview		( [$e._Ptr,s] )
+	stringview	( [$e._Ptr,sb] )
+	children	( #([ptr] : $e._Ptr) )
+}
+std::_String_iterator<unsigned short,*>|std::_String_const_iterator<unsigned short,*>|std::_String_iterator<wchar_t,*>|std::_String_const_iterator<wchar_t,*>{
+	preview		( [$e._Ptr,su] )
+	stringview	( [$e._Ptr,sub] )
+	children	( #([ptr] : $e._Ptr) )
+}
+
+;------------------------------------------------------------------------------
+;  std::vector<bool> from <vector>
+;------------------------------------------------------------------------------
+; Despite its packed representation, vector<bool> is visualized like vector<T>.
+std::vector<bool,*>{
+	preview (
+		#(
+			"[",
+			$e._Mysize,
+			"](",
+			#array(
+				expr: (bool)(($e._Myvec._Myfirst[$i / _VBITS] >> ($i % _VBITS)) & 1),
+				size: $e._Mysize
+			),
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([size] : $e._Mysize),
+			#([capacity] : ($e._Myvec._Myend - $e._Myvec._Myfirst) * _VBITS),
+			#array(
+				expr: (bool)(($e._Myvec._Myfirst[$i / _VBITS] >> ($i % _VBITS)) & 1),
+				size: $e._Mysize
+			)
+		)
+	)
+}
+std::_Vb_reference<*>|std::_Vb_iterator<*>|std::_Vb_const_iterator<*>{
+	preview (
+		(bool)((*$e._Myptr >> $e._Myoff) & 1)
+	)
+
+	children (
+		#(
+			#([ptr] : $e._Myptr),
+			#([offset] : $e._Myoff)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::vector from <vector>
+;------------------------------------------------------------------------------
+; vector is previewed with "[<size>](<elements>)".
+; It has [size] and [capacity] children, followed by its elements.
+; The other containers follow its example.
+std::vector<*>{
+	preview (
+		#(
+			"[",
+			$e._Mylast - $e._Myfirst,
+			"](",
+			#array(
+				expr: $e._Myfirst[$i],
+				size: $e._Mylast - $e._Myfirst
+			),
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([size] : $e._Mylast - $e._Myfirst),
+			#([capacity] : $e._Myend - $e._Myfirst),
+			#array(
+				expr: $e._Myfirst[$i],
+				size: $e._Mylast - $e._Myfirst
+			)
+		)
+	)
+}
+std::_Vector_iterator<*>|std::_Vector_const_iterator<*>{
+	preview (
+		*$e._Ptr
+	)
+
+	children (
+		#([ptr] : $e._Ptr)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::deque from <deque>
+;------------------------------------------------------------------------------
+std::deque<*>{
+	preview (
+		#(
+			"[",
+			$e._Mysize,
+			"](",
+			#array(
+				expr: $e._Map[(($i + $e._Myoff) / $e._EEN_DS) % $e._Mapsize][($i + $e._Myoff) % $e._EEN_DS],
+				size: $e._Mysize
+			),
+			")"
+		)
+	)
+
+	children (
+		#(
+			#array(
+				expr: $e._Map[(($i + $e._Myoff) / $e._EEN_DS) % $e._Mapsize][($i + $e._Myoff) % $e._EEN_DS],
+				size: $e._Mysize
+			)
+		)
+	)
+}
+std::_Deque_iterator<*,*>|std::_Deque_const_iterator<*,*>{
+	preview (
+		#if ($e._Myoff >= ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Myoff + ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Mysize) (
+			"end"
+		) #else (
+			((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Map[($e._Myoff / ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_EEN_DS) % ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Mapsize][$e._Myoff % ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_EEN_DS]
+		)
+	)
+
+	children (
+		#if ($e._Myoff >= ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Myoff + ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Mysize) (
+			#array(expr: 0, size: 0)
+		) #else (
+			#(
+				#([index] : $e._Myoff - ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Myoff),
+				#([ptr] : &((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Map[($e._Myoff / ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_EEN_DS) % ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_Mapsize][$e._Myoff % ((std::deque<$T1,$T2> *)$e._Myproxy->_Mycont)->_EEN_DS] )
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::list from <list>
+;------------------------------------------------------------------------------
+std::list<*>{
+	preview (
+		#(
+			"[",
+			$e._Mysize,
+			"](",
+			#list(
+				head: $e._Myhead->_Next,
+				size: $e._Mysize,
+				next: _Next
+			) : $e._Myval,
+			")"
+		)
+	)
+
+	children (
+		#list(
+			head: $e._Myhead->_Next,
+			size: $e._Mysize,
+			next: _Next
+		) : $e._Myval
+	)
+}
+std::_List_iterator<*>|std::_List_const_iterator<*>{
+	preview ( $e._Ptr->_Myval )
+	children ( #([ptr] : &$e._Ptr->_Myval) )
+}
+
+;------------------------------------------------------------------------------
+;  std::queue from <queue>
+;  std::stack from <stack>
+;------------------------------------------------------------------------------
+std::queue<*>|std::stack<*>{
+	preview ( $e.c )
+	children ( #(c : $e.c) )
+}
+
+;------------------------------------------------------------------------------
+;  std::priority_queue from <queue>
+;------------------------------------------------------------------------------
+std::priority_queue<*>{
+	preview ( $e.c )
+
+	children (
+		#(
+			#(c [heap]: $e.c),
+			#(comp : $e.comp)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::map from <map>
+;  std::multimap from <map>
+;  std::set from <set>
+;  std::multiset from <set>
+;------------------------------------------------------------------------------
+std::map<*>|std::multimap<*>|std::set<*>|std::multiset<*>{
+	preview (
+		#(
+			"[",
+			$e._Mysize,
+			"](",
+			#tree(
+				head: $e._Myhead->_Parent,
+				skip: $e._Myhead,
+				left: _Left,
+				right: _Right,
+				size: $e._Mysize
+			) : $e._Myval,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([comp] : $e.comp),
+			#tree(
+				head: $e._Myhead->_Parent,
+				skip: $e._Myhead,
+				left: _Left,
+				right: _Right,
+				size: $e._Mysize
+			) : $e._Myval
+		)
+	)
+}
+std::_Tree_iterator<*>|std::_Tree_const_iterator<*>{
+	preview ( $e._Ptr->_Myval )
+	children ( #([ptr] : &$e._Ptr->_Myval) )
+}
+
+;------------------------------------------------------------------------------
+;  std::bitset from <bitset>
+;------------------------------------------------------------------------------
+std::bitset<*>{
+	preview (
+		#(
+			"[",
+			$e._EEN_BITS,
+			"](",
+			#array(
+				expr: [($e._Array[$i / $e._Bitsperword] >> ($i % $e._Bitsperword)) & 1,d],
+				size: $e._EEN_BITS
+			),
+			")"
+		)
+	)
+
+	children (
+		#array(
+			expr: [($e._Array[$i / $e._Bitsperword] >> ($i % $e._Bitsperword)) & 1,d],
+			size: $e._EEN_BITS
+		)
+	)
+}
+std::bitset<*>::reference{
+	preview (
+		[($e._Pbitset->_Array[$i / $e._Pbitset->_Bitsperword] >> ($e._Mypos % $e._Pbitset->_Bitsperword)) & 1,d]
+	)
+
+	children (
+		#(
+			#([bitset] : $e._Pbitset),
+			#([pos] : $e._Mypos)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::reverse_iterator from <iterator>
+;------------------------------------------------------------------------------
+std::reverse_iterator<std::_String_iterator<*> >|std::reverse_iterator<std::_String_const_iterator<*> >{
+	preview (
+		#(
+			"reverse_iterator to ",
+			$e.current._Ptr[-1]
+		)
+	)
+
+	children (
+		#(
+			#([to] : $e.current._Ptr - 1),
+			#(current : $e.current)
+		)
+	)
+}
+std::reverse_iterator<std::_Vb_iterator<*> >|std::reverse_iterator<std::_Vb_const_iterator<*> >{
+	preview (
+		#(
+			"reverse_iterator to ",
+			#if ($e.current._Myoff != 0) (
+				(bool)((*$e.current._Myptr >> ($e.current._Myoff - 1)) & 1)
+			) #else (
+				(bool)(($e.current._Myptr[-1] >> (_VBITS - 1)) & 1)
+			)
+		)
+	)
+
+	children (
+		#if ($e.current._Myoff != 0) (
+			#(
+				#([to ptr] : $e.current._Myptr),
+				#([to offset] : $e.current._Myoff - 1),
+				#(current : $e.current)
+			)
+		) #else (
+			#(
+				#([to ptr] : $e.current._Myptr - 1),
+				#([to offset] : _VBITS - 1),
+				#(current : $e.current)
+			)
+		)
+	)
+}
+std::reverse_iterator<std::_Vector_iterator<*> >|std::reverse_iterator<std::_Vector_const_iterator<*> >{
+	preview (
+		#(
+			"reverse_iterator to ",
+			$e.current._Ptr[-1]
+		)
+	)
+
+	children (
+		#(
+			#([to] : $e.current._Ptr - 1),
+			#(current : $e.current)
+		)
+	)
+}
+std::reverse_iterator<std::_Deque_iterator<*,*> >|std::reverse_iterator<std::_Deque_const_iterator<*,*> >{
+	preview (
+		#(
+			"reverse_iterator to ",
+			#if ($e.current._Myoff == ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Myoff) (
+				"end"
+			) #else (
+				((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Map[(($e.current._Myoff - 1) / ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_EEN_DS) % ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Mapsize][($e.current._Myoff - 1) % ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_EEN_DS]
+			)
+		)
+	)
+
+	children (
+		#if ($e.current._Myoff == ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Myoff) (
+			#(current : $e.current)
+		) #else (
+			#(
+				#([to index] : ($e.current._Myoff - 1) - ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Myoff),
+				#([to ptr] : &((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Map[(($e.current._Myoff - 1) / ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_EEN_DS) % ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_Mapsize][($e.current._Myoff - 1) % ((std::deque<$T1,$T2> *)$e.current._Myproxy->_Mycont)->_EEN_DS] ),
+				#(current : $e.current)
+			)
+		)
+	)
+}
+std::reverse_iterator<std::_List_iterator<*> >|std::reverse_iterator<std::_List_const_iterator<*> >{
+	preview (
+		#(
+			"reverse_iterator to ",
+			$e.current._Ptr->_Prev->_Myval
+		)
+	)
+
+	children (
+		#(
+			#([to] : &$e.current._Ptr->_Prev->_Myval),
+			#(current : $e.current)
+		)
+	)
+}
+std::reverse_iterator<std::_Array_iterator<*> >|std::reverse_iterator<std::_Array_const_iterator<*> >{
+	preview (
+		#(
+			"reverse_iterator to ",
+			#if ($e.current._EEN_IDL == 0) (
+				$e.current._Ptr[-1]
+			) #else (
+				#if ($e.current._Idx == 0) (
+					"end"
+				) #else (
+					$e.current._Ptr[$e.current._Idx - 1]
+				)
+			)
+		)
+	)
+
+	children (
+		#if ($e.current._EEN_IDL == 0) (
+			#(
+				#([to] : $e.current._Ptr - 1),
+				#(current : $e.current)
+			)
+		) #else (
+			#if ($e.current._Idx == 0) (
+				#(current : $e.current)
+			) #else (
+				#(
+					#([to] : $e.current._Ptr + $e.current._Idx - 1),
+					#(current : $e.current)
+				)
+			)
+		)
+	)
+}
+std::reverse_iterator<*>{
+	preview (
+		#(
+			"reverse_iterator current ",
+			$e.current
+		)
+	)
+
+	children (
+		#(current : $e.current)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::complex from <complex>
+;------------------------------------------------------------------------------
+std::complex<*>{
+	preview (
+		#if ($e._Val[1] == 0) (
+			; Purely real.
+			$e._Val[0]
+		) #else (
+			#if ($e._Val[0] == 0) (
+				; Purely imaginary.
+				#if ($e._Val[1] < 0) (
+					#("-i*", -$e._Val[1])
+				) #else (
+					#("i*", $e._Val[1])
+				)
+			) #else (
+				; Mixed.
+				#if ($e._Val[1] < 0) (
+					#($e._Val[0], "-i*", -$e._Val[1])
+				) #else (
+					#($e._Val[0], "+i*", $e._Val[1])
+				)
+			)
+		)
+	)
+
+	children (
+		#(
+			#(real : $e._Val[0]),
+			#(imag : $e._Val[1])
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::valarray from <valarray>
+;------------------------------------------------------------------------------
+std::valarray<*>{
+	preview (
+		#(
+			"[",
+			$e._Mysize,
+			"](",
+			#array(
+				expr: $e._Myptr[$i],
+				size: $e._Mysize
+			),
+			")"
+		)
+	)
+
+	children (
+		#array(
+			expr: $e._Myptr[$i],
+			size: $e._Mysize
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::reference_wrapper from <functional>
+;------------------------------------------------------------------------------
+std::tr1::reference_wrapper<*>{
+	preview (
+		#if ($e._Callee._EEN_INDIRECT == 1) (
+			; For ordinary T, reference_wrapper<T> stores a T * _Callee._Ptr
+			; which is non-null. Actual references are previewed with what they
+			; refer to, so reference_wrapper<T> is previewed with dereferencing its
+			; stored pointer.
+			*$e._Callee._Ptr
+		) #else (
+			; When T is a pointer to data member type, reference_wrapper<T>
+			; stores a T _Callee._Object directly.
+			$e._Callee._Object
+		)
+	)
+
+	children (
+		#if ($e._Callee._EEN_INDIRECT == 1) (
+			; Actual references have the same children as what they refer to.
+			; Unfortunately, there appears to be no way to imitate this exactly.
+			; Therefore, we make reference_wrapper<T> appear to have a single
+			; child, its stored pointer, with a fake name of [ptr].
+			#([ptr] : $e._Callee._Ptr)
+		) #else (
+			; When T is a pointer to data member type, T has no children,
+			; so we make reference_wrapper<T> appear to have no children.
+			#array(expr: 0, size: 0)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::shared_ptr from <memory>
+;------------------------------------------------------------------------------
+std::tr1::_Ref_count<*>{
+	preview ( "default" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ref_count_del<*>{
+	preview ( "custom deleter" )
+	children ( #([deleter] : $e._Dtor) )
+}
+std::tr1::_Ref_count_del_alloc<*>{
+	preview ( "custom deleter, custom allocator" )
+	children (
+		#(
+			#([deleter] : $e._Dtor),
+			#([allocator] : $e._Myal)
+		)
+	)
+}
+std::tr1::_Ref_count_obj<*>{
+	preview ( "make_shared" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ref_count_obj_alloc<*>{
+	preview ( "allocate_shared" )
+	children ( #([allocator] : $e._Myal) )
+}
+std::tr1::shared_ptr<*>{
+	preview (
+		; shared_ptr<T> stores a T * _Ptr .
+		#if ($e._Ptr == 0) (
+			; A default-constructed shared_ptr has a null _Ptr and a null _Rep,
+			; and is formally said to be empty.
+			; A shared_ptr constructed from a null pointer has a null _Ptr
+			; and a NON-null _Rep . It is formally said to own the null pointer.
+			; We preview both with "empty".
+			"empty"
+		) #else (
+			; Raw pointers are previewed with "<pointer value> <object>".
+			; auto_ptr is previewed with "auto_ptr <object>".
+			; Following these examples, shared_ptr is previewed with
+			; "shared_ptr <object> [N strong refs, M weak refs]".
+			#(
+				"shared_ptr ",
+				*$e._Ptr,
+				" [",
+				$e._Rep->_Uses,
+				#if ($e._Rep->_Uses == 1) (" strong ref") #else (" strong refs"),
+				#if ($e._Rep->_Weaks - 1 > 0) (
+					#(
+						", ",
+						$e._Rep->_Weaks - 1,
+						#if ($e._Rep->_Weaks - 1 == 1) (" weak ref") #else (" weak refs")
+					)
+				),
+				"] [",
+				*$e._Rep,
+				"]"
+			)
+			; Note: _Rep->_Uses counts how many shared_ptrs share ownership of the object,
+			; so we directly display it as the strong reference count.
+			; _Rep->_Weaks counts how many shared_ptrs and weak_ptrs share ownership of
+			; the "representation object" (or "control block"). All of the shared_ptrs are
+			; counted as a single owner. That is, _Weaks is initialized to 1, and when
+			; _Uses falls to 0, _Weaks is decremented. This avoids incrementing and decrementing
+			; _Weaks every time that a shared_ptr gains or loses ownership. Therefore,
+			; _Weaks - 1 is the weak reference count, the number of weak_ptrs that are observing
+			; the shared object.
+		)
+	)
+
+	children (
+		#if ($e._Ptr == 0) (
+			; We make empty shared_ptrs (and shared_ptrs that own
+			; the null pointer) appear to have no children.
+			#array(expr: 0, size: 0)
+		) #else (
+			#(
+				; We make shared_ptr appear to have two children:
+
+				; Its stored pointer, with a fake name of [ptr].
+				#([ptr] : $e._Ptr),
+
+				; Its deleter and allocator, which may be default or custom.
+				#([deleter and allocator] : *$e._Rep)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::weak_ptr from <memory>
+;------------------------------------------------------------------------------
+std::tr1::weak_ptr<*>{
+	preview (
+		#if ($e._Ptr == 0) (
+			"empty"
+		) #elif ($e._Rep->_Uses == 0) (
+			; weak_ptr is just like shared_ptr, except that a weak_ptr can be expired.
+			#(
+				"expired [",
+				*$e._Rep,
+				"]"
+			)
+		) #else (
+			#(
+				"weak_ptr ",
+				*$e._Ptr,
+				" [",
+				$e._Rep->_Uses,
+				#if ($e._Rep->_Uses == 1) (" strong ref") #else (" strong refs"),
+				#if ($e._Rep->_Weaks - 1 > 0) (
+					#(
+						", ",
+						$e._Rep->_Weaks - 1,
+						#if ($e._Rep->_Weaks - 1 == 1) (" weak ref") #else (" weak refs")
+					)
+				),
+				"] [",
+				*$e._Rep,
+				"]"
+			)
+		)
+	)
+
+	children (
+		#if ($e._Ptr == 0) (
+			#array(expr: 0, size: 0)
+		) #elif ($e._Rep->_Uses == 0) (
+			; When a weak_ptr is expired, we show its deleter and allocator.
+			; The deleter has already been used, but the control block has not yet been deallocated.
+			#([deleter and allocator] : *$e._Rep)
+		) #else (
+			#(
+				#([ptr] : $e._Ptr),
+				#([deleter and allocator] : *$e._Rep)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::mem_fn() from <functional>
+;------------------------------------------------------------------------------
+; Note that when mem_fn() is given a data member pointer, it returns a _Call_wrapper<_Callable_pmd<*> > .
+; Data member pointers themselves don't have useful previews, so we don't attempt to visualize this.
+; When mem_fn() is given a member function pointer, it returns a _Mem_fn[N], which we can visualize.
+std::tr1::_Mem_fn1<*>|std::tr1::_Mem_fn2<*>|std::tr1::_Mem_fn3<*>|std::tr1::_Mem_fn4<*>|std::tr1::_Mem_fn5<*>|std::tr1::_Mem_fn6<*>|std::tr1::_Mem_fn7<*>|std::tr1::_Mem_fn8<*>|std::tr1::_Mem_fn9<*>|std::tr1::_Mem_fn10<*>{
+	preview (
+		; We preview the functor returned by mem_fn() with "mem_fn(<stored member function pointer>)".
+		#(
+			"mem_fn(",
+			$e._Callee._Object,
+			")"
+		)
+	)
+
+	children (
+		; Member function pointers have no children.
+		#array(expr: 0, size: 0)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::bind() from <functional>
+;------------------------------------------------------------------------------
+; bind() placeholders are previewed with their names.
+; They have no state, so they have no children.
+std::tr1::_Ph<1>{
+	preview ( "_1" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<2>{
+	preview ( "_2" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<3>{
+	preview ( "_3" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<4>{
+	preview ( "_4" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<5>{
+	preview ( "_5" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<6>{
+	preview ( "_6" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<7>{
+	preview ( "_7" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<8>{
+	preview ( "_8" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<9>{
+	preview ( "_9" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::_Ph<10>{
+	preview ( "_10" )
+	children ( #array(expr: 0, size: 0) )
+}
+
+; The functor returned by bind(f, t1, t2) is previewed with "bind(f, t1, t2)".
+; It has children with the fake names of [f], [t1], [t2], etc.
+std::tr1::_Bind<*,*,std::tr1::_Bind0<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind0<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind1<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind1<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind2<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind2<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind3<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind3<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind4<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind4<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind5<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind5<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			", ", $e._Bx._Vx4,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3),
+			#([t5] : $e._Bx._Vx4)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind6<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind6<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			", ", $e._Bx._Vx4,
+			", ", $e._Bx._Vx5,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3),
+			#([t5] : $e._Bx._Vx4),
+			#([t6] : $e._Bx._Vx5)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind7<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind7<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			", ", $e._Bx._Vx4,
+			", ", $e._Bx._Vx5,
+			", ", $e._Bx._Vx6,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3),
+			#([t5] : $e._Bx._Vx4),
+			#([t6] : $e._Bx._Vx5),
+			#([t7] : $e._Bx._Vx6)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind8<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind8<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			", ", $e._Bx._Vx4,
+			", ", $e._Bx._Vx5,
+			", ", $e._Bx._Vx6,
+			", ", $e._Bx._Vx7,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3),
+			#([t5] : $e._Bx._Vx4),
+			#([t6] : $e._Bx._Vx5),
+			#([t7] : $e._Bx._Vx6),
+			#([t8] : $e._Bx._Vx7)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind9<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind9<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			", ", $e._Bx._Vx4,
+			", ", $e._Bx._Vx5,
+			", ", $e._Bx._Vx6,
+			", ", $e._Bx._Vx7,
+			", ", $e._Bx._Vx8,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3),
+			#([t5] : $e._Bx._Vx4),
+			#([t6] : $e._Bx._Vx5),
+			#([t7] : $e._Bx._Vx6),
+			#([t8] : $e._Bx._Vx7),
+			#([t9] : $e._Bx._Vx8)
+		)
+	)
+}
+std::tr1::_Bind<*,*,std::tr1::_Bind10<*> >|std::tr1::_Bind_fty<*,*,std::tr1::_Bind10<*> >{
+	preview (
+		#(
+			"bind(", $e._Bx._Callee._Object,
+			", ", $e._Bx._Vx0,
+			", ", $e._Bx._Vx1,
+			", ", $e._Bx._Vx2,
+			", ", $e._Bx._Vx3,
+			", ", $e._Bx._Vx4,
+			", ", $e._Bx._Vx5,
+			", ", $e._Bx._Vx6,
+			", ", $e._Bx._Vx7,
+			", ", $e._Bx._Vx8,
+			", ", $e._Bx._Vx9,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([f] : $e._Bx._Callee._Object),
+			#([t1] : $e._Bx._Vx0),
+			#([t2] : $e._Bx._Vx1),
+			#([t3] : $e._Bx._Vx2),
+			#([t4] : $e._Bx._Vx3),
+			#([t5] : $e._Bx._Vx4),
+			#([t6] : $e._Bx._Vx5),
+			#([t7] : $e._Bx._Vx6),
+			#([t8] : $e._Bx._Vx7),
+			#([t9] : $e._Bx._Vx8),
+			#([t10] : $e._Bx._Vx9)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::function from <functional>
+;------------------------------------------------------------------------------
+std::tr1::_Impl_no_alloc0<*>|std::tr1::_Impl_no_alloc1<*>|std::tr1::_Impl_no_alloc2<*>|std::tr1::_Impl_no_alloc3<*>|std::tr1::_Impl_no_alloc4<*>|std::tr1::_Impl_no_alloc5<*>|std::tr1::_Impl_no_alloc6<*>|std::tr1::_Impl_no_alloc7<*>|std::tr1::_Impl_no_alloc8<*>|std::tr1::_Impl_no_alloc9<*>|std::tr1::_Impl_no_alloc10<*>{
+	preview ( $e._Callee._Object )
+	children ( #([functor] : $e._Callee._Object) )
+}
+std::tr1::_Impl0<*>|std::tr1::_Impl1<*>|std::tr1::_Impl2<*>|std::tr1::_Impl3<*>|std::tr1::_Impl4<*>|std::tr1::_Impl5<*>|std::tr1::_Impl6<*>|std::tr1::_Impl7<*>|std::tr1::_Impl8<*>|std::tr1::_Impl9<*>|std::tr1::_Impl10<*>{
+	preview ( $e._Callee._Object )
+	children (
+		#(
+			#([functor] : $e._Callee._Object),
+			#([allocator] : $e._Myal)
+		)
+	)
+}
+std::tr1::function<*>{
+	preview (
+		#if ($e._Impl == 0) (
+			; Detecting empty functions is trivial.
+			"empty"
+		) #else (
+			*$e._Impl
+		)
+	)
+
+	children (
+		#if ($e._Impl == 0) (
+			; We make empty functions appear to have no children.
+			#array(expr: 0, size: 0)
+		) #else (
+			#([functor and allocator] : *$e._Impl)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::tuple from <tuple>
+;------------------------------------------------------------------------------
+; tuple is visualized like pair, except that we have to give fake names to tuple's children.
+std::tr1::tuple<std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		"()"
+	)
+
+	children (
+		#array(expr: 0, size: 0)
+	)
+}
+std::tr1::tuple<*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value,
+			[4] : $e._Impl._Tail._Tail._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,*,*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value,
+			[4] : $e._Impl._Tail._Tail._Tail._Tail._Value,
+			[5] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,*,*,*,std::tr1::_Nil,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value,
+			[4] : $e._Impl._Tail._Tail._Tail._Tail._Value,
+			[5] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			[6] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,*,*,*,*,std::tr1::_Nil,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value,
+			[4] : $e._Impl._Tail._Tail._Tail._Tail._Value,
+			[5] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			[6] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			[7] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,*,*,*,*,*,std::tr1::_Nil>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value,
+			[4] : $e._Impl._Tail._Tail._Tail._Tail._Value,
+			[5] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			[6] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			[7] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			[8] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value
+		)
+	)
+}
+std::tr1::tuple<*,*,*,*,*,*,*,*,*,*>{
+	preview (
+		#(
+			"(", $e._Impl._Value,
+			", ", $e._Impl._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			", ", $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			")"
+		)
+	)
+
+	children (
+		#(
+			[0] : $e._Impl._Value,
+			[1] : $e._Impl._Tail._Value,
+			[2] : $e._Impl._Tail._Tail._Value,
+			[3] : $e._Impl._Tail._Tail._Tail._Value,
+			[4] : $e._Impl._Tail._Tail._Tail._Tail._Value,
+			[5] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Value,
+			[6] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			[7] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			[8] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value,
+			[9] : $e._Impl._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Value
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::array from <array>
+;------------------------------------------------------------------------------
+std::tr1::array<*>{
+	preview (
+		; An actual array is previewed with its address.
+		; array<T, N> is previewed like vector<T>.
+		#(
+			"[",
+			$e._EEN_SIZE,
+			"](",
+			#array(expr: $e._Elems[$i], size: $e._EEN_SIZE),
+			")"
+		)
+	)
+
+	children (
+		; Just like an actual array.
+		#array(expr: $e._Elems[$i], size: $e._EEN_SIZE)
+	)
+}
+std::_Array_iterator<*>|std::_Array_const_iterator<*>{
+	preview (
+		#if ($e._EEN_IDL == 0) (
+			*$e._Ptr
+		) #else (
+			#if ($e._Idx == $e._EEN_SIZE) (
+				; array iterators are represented by _Ptr + _Idx,
+				; and they know how large their parent arrays are. Therefore, detecting
+				; end iterators is trivial.
+				"end"
+			) #else (
+				; Like vector iterators, array iterators are previewed with what they point to.
+				$e._Ptr[$e._Idx]
+			)
+		)
+	)
+
+	children (
+		#if ($e._EEN_IDL == 0) (
+			#([ptr] : $e._Ptr)
+		) #else (
+			#if ($e._Idx == $e._EEN_SIZE) (
+				; We make end iterators appear to have no children.
+				#array(expr: 0, size: 0)
+			) #else (
+				; An array iterator is conceptually a pointer, so we make it appear to store one.
+				#([ptr] : $e._Ptr + $e._Idx)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  stdext::hash_map from <hash_map>
+;  stdext::hash_multimap from <hash_map>
+;  stdext::hash_set from <hash_set>
+;  stdext::hash_multiset from <hash_set>
+;------------------------------------------------------------------------------
+stdext::hash_map<*>|stdext::hash_multimap<*>|stdext::hash_set<*>|stdext::hash_multiset<*>{
+	preview (
+		#(
+			"[",
+			$e._List._Mysize,
+			"](",
+			#list(
+				head: $e._List._Myhead->_Next,
+				size: $e._List._Mysize,
+				next: _Next
+			) : $e._Myval,
+			")"
+		)
+	)
+
+	children (
+		#list(
+			head: $e._List._Myhead->_Next,
+			size: $e._List._Mysize,
+			next: _Next
+		) : $e._Myval
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::unordered_map from <unordered_map>
+;  std::tr1::unordered_multimap from <unordered_map>
+;  std::tr1::unordered_set from <unordered_set>
+;  std::tr1::unordered_multiset from <unordered_set>
+;------------------------------------------------------------------------------
+std::hash<*>{
+	preview ( "hash" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::tr1::unordered_map<*>|std::tr1::unordered_multimap<*>|std::tr1::unordered_set<*>|std::tr1::unordered_multiset<*>{
+	preview (
+		#(
+			"[",
+			$e._List._Mysize,
+			"](",
+			#list(
+				head: $e._List._Myhead->_Next,
+				size: $e._List._Mysize,
+				next: _Next
+			) : $e._Myval,
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([hash] : $e.comp._Hashobj),
+			#([equal] : $e.comp._Keyeqobj),
+			#list(
+				head: $e._List._Myhead->_Next,
+				size: $e._List._Mysize,
+				next: _Next
+			) : $e._Myval
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::basic_regex from <regex>
+;------------------------------------------------------------------------------
+std::tr1::basic_regex<*>{
+	preview (
+		#if ($e._Rep == 0) (
+			; Default construction creates an empty basic_regex.
+			"empty"
+		) #elif ($e._EEN_VIS == 1) (
+			; By default, _ENHANCED_REGEX_VISUALIZER is defined to be 1 in debug and 0 in ship.
+			; When it is 1, basic_regex stores the string from which it was constructed.
+			; When it is 0, basic_regex stores only the resulting finite state machine.
+			$e._Visualization
+		) #else (
+			; basic_regex contains many static const flags, which would be shown in the preview by default.
+			; Its actual members are _Rep and _Traits. _Rep holds the finite state machine, so we
+			; use it to preview basic_regex. (It does contain some human-readable information.)
+			*$e._Rep
+		)
+	)
+
+	children (
+		#if ($e._Rep == 0) (
+			; We make empty basic_regexes appear to have no children.
+			#array(expr: 0, size: 0)
+		) #elif ($e._EEN_VIS == 1) (
+			; We want to hide those static const flags.
+			; We also want to give _Visualization a fake name.
+			#(
+				#([str] : $e._Visualization),
+				#(_Rep : $e._Rep),
+				#(_Traits : $e._Traits)
+			)
+		) #else (
+			; We want to hide those static const flags.
+			#(
+				_Rep : $e._Rep,
+				_Traits : $e._Traits
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::sub_match from <regex>
+;------------------------------------------------------------------------------
+std::tr1::sub_match<char const *>|std::tr1::sub_match<wchar_t const *>|std::tr1::sub_match<unsigned short const *>|std::tr1::sub_match<char *>|std::tr1::sub_match<wchar_t *>|std::tr1::sub_match<unsigned short *>{
+	preview (
+		; It would be nice if we could preview sub_match with its str().
+		; However, visualizers cannot handle strings represented by pointer pairs.
+		; Therefore, our preview contains more limited information.
+		#if ($e.matched) (
+			; If this sub_match participated in a match,
+			; we preview it with its length().
+			$e.second - $e.first
+		) #else (
+			; Otherwise, we preview it with its matched bool (i.e. "false").
+			; (Why not length() (i.e. "0")? It's meaningful to have
+			; matched == true and length() == 0.
+			"false"
+		)
+	)
+
+	children (
+		#(
+			; sub_match's three data members are public, but we list them here
+			; (a) to display matched before first and second, and
+			; (b) to gloss over the fact that sub_match derives from std::pair.
+			#(matched : $e.matched),
+			#(first : $e.first),
+			#(second : $e.second)
+		)
+	)
+}
+std::tr1::sub_match<std::_String_const_iterator<*> >|std::tr1::sub_match<std::_String_iterator<*> >{
+	preview (
+		#if ($e.matched) (
+			; We visualize ssub_match and wssub_match just like csub_match and wcsub_match,
+			; except that when determining the length(), we can't subtract iterators.
+			; We have to subtract their stored pointers.
+			$e.second._Ptr - $e.first._Ptr
+		) #else (
+			"false"
+		)
+	)
+
+	children (
+		#(
+			#(matched : $e.matched),
+			#(first : $e.first),
+			#(second : $e.second)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::match_results from <regex>
+;------------------------------------------------------------------------------
+std::tr1::match_results<*>{
+	preview (
+		; A match_results object is empty iff its vector _Matches is empty.
+		#if ($e._Matches._Myfirst == $e._Matches._Mylast) (
+			"empty"
+		) #else (
+			; We preview a non-empty match_results object with its vector.
+			$e._Matches
+		)
+	)
+
+	children (
+		#if ($e._Matches._Myfirst == $e._Matches._Mylast) (
+			; We make empty match_results appear to have no children.
+			#array(expr: 0, size: 0)
+		) #else (
+			; As match_results has operator[](), prefix(), and suffix() member functions,
+			; we make it appear to directly contain [0], [1], [2], etc. elements,
+			; as well as [prefix] and [suffix] elements.
+			#(
+				#array(expr: $e._Matches._Myfirst[$i], size: $e._Matches._Mylast - $e._Matches._Myfirst),
+				#([prefix] : $e._Prefix),
+				#([suffix] : $e._Suffix)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::regex_iterator from <regex>
+;------------------------------------------------------------------------------
+std::tr1::regex_iterator<*>{
+	preview (
+		#if ($e._MyRe == 0) (
+			; We represent end-of-sequence regex_iterators with null regex pointers.
+			"end"
+		) #else (
+			; Dereferenceable regex_iterators return match_results when dereferenced,
+			; so we'll preview them with that.
+			$e._MyVal
+		)
+	)
+
+	children (
+		#if ($e._MyRe == 0) (
+			; We make end-of-sequence regex_iterators appear to have no children.
+			#array(expr: 0, size: 0)
+		) #else (
+			; For ease of understanding, we make dereferenceable regex_iterators
+			; appear to have data members with the "for exposition only" names from TR1.
+			#(
+				#([begin] : $e._Begin),
+				#([end] : $e._End),
+				#([pregex] : $e._MyRe),
+				#([flags] : $e._Flags),
+				#([match] : $e._MyVal)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::tr1::regex_token_iterator from <regex>
+;------------------------------------------------------------------------------
+std::tr1::regex_token_iterator<*>{
+	preview (
+		#if ($e._Res == 0) (
+			; We represent end-of-sequence regex_token_iterators with null result pointers.
+			"end"
+		) #else (
+			; Dereferenceable regex_token_iterators return *result when dereferenced,
+			; so we'll preview them with that.
+			*$e._Res
+		)
+	)
+
+	children (
+		#if ($e._Res == 0) (
+			; We make end-of-sequence regex_token_iterators appear to have no children.
+			#array(expr: 0, size: 0)
+		) #else (
+			; For ease of understanding, we make dereferenceable regex_token_iterators
+			; appear to have data members with the "for exposition only" names from TR1.
+			#(
+				#([position] : $e._Pos),
+				#([result] : $e._Res),
+				#([suffix] : $e._Suffix),
+				#([N] : $e._Cur),
+				#([subs] : $e._Subs)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::identity, etc. from <functional>
+;------------------------------------------------------------------------------
+std::identity<*>{
+	preview ( "identity" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::bit_and<*>{
+	preview ( "bit_and" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::bit_or<*>{
+	preview ( "bit_or" )
+	children ( #array(expr: 0, size: 0) )
+}
+std::bit_xor<*>{
+	preview ( "bit_xor" )
+	children ( #array(expr: 0, size: 0) )
+}
+
+;------------------------------------------------------------------------------
+;  std::unique_ptr from <memory>
+;------------------------------------------------------------------------------
+std::unique_ptr<*>{
+	preview (
+		#if ($e._Myptr == 0) (
+			"empty"
+		) #else (
+			#(
+				"unique_ptr ",
+				*$e._Myptr
+			 )
+		)
+	)
+
+	children (
+		#if ($e._Myptr == 0) (
+			#array(expr: 0, size: 0)
+		) #else (
+			#([ptr] : $e._Myptr)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::forward_list from <forward_list>
+;------------------------------------------------------------------------------
+std::forward_list<*>{
+	preview (
+		#(
+			"(",
+			#list(
+				head: $e._Myhead,
+				next: _Next
+			) : $e._Myval,
+			")"
+		)
+	)
+
+	children (
+		#list(
+			head: $e._Myhead,
+			next: _Next
+		) : $e._Myval
+	)
+}
+std::_Flist_iterator<*>|std::_Flist_const_iterator<*>{
+	preview (
+		#if ($e._Ptr == 0) (
+			"end"
+		) #else (
+			$e._Ptr->_Myval
+		)
+	)
+
+	children (
+		#if ($e._Ptr == 0) (
+			#array(expr: 0, size: 0)
+		) #else (
+			#([ptr] : &$e._Ptr->_Myval)
+		)
+	)
+}
+
+
+;------------------------------------------------------------------------------
+;  PROPVARIANT
+;------------------------------------------------------------------------------
+; Visualizers for VT_VECTOR C arrays
+tagCAC|tagCAUB|tagCAI|tagCAUI|tagCAL|tagCAUL|tagCAFLT|tagCADBL|tagCACY|tagCADATE|tagCABSTR|tagCABSTRBLOB|tagCABOOL|tagCASCODE|tagCAPROPVARIANT|tagCAH|tagCAUH|tagCALPSTR|tagCALPWSTR|tagCAFILETIME|tagCACLIPDATA|tagCACLSID{
+	preview(
+		#(
+			"[", $e.cElems , "](",
+			#array
+			(
+				expr :	($e.pElems)[$i],
+				size :	$e.cElems
+			),
+			")"
+		)
+	)
+	children
+	(
+		#array
+		(
+			expr :	($e.pElems)[$i],
+			size :	$e.cElems
+		)
+	)
+}
+; Visualizers for SAFE ARRAY
+tagSAFEARRAY|SAFEARRAY{
+	preview(
+		#if ($e.fFeatures & 0x0080)		; FADF_HAVEVARTYPE
+		(
+			; Switch on the variant type field - which is stored 4 bytes
+			; before the beginning of the SAFEARRAY type
+			#switch( ((unsigned *)&($e))[-1] )
+			#case 0x2		; VT_I2 | VT_ARRAY
+			(
+				#(
+					"safearray of I2 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((signed short *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x3		; VT_I4 | VT_ARRAY
+			(
+				#(
+					"safearray of I4 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((signed int *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x4		; VT_R4 | VT_ARRAY
+			(
+				#(
+					"safearray of R4 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((float *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x5		; VT_R8 | VT_ARRAY
+			(
+				#(
+					"safearray of R8 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((double *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				 )
+			)
+			#case 0x6		; VT_CY | VT_ARRAY
+			(
+				#(
+					"safearray of CY = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((CY *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x7		; VT_DATE | VT_ARRAY
+			(
+				#(
+					"safearray of DATE = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((DATE *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x8		; VT_BSTR | VT_ARRAY
+			(
+				#(
+					"safearray of BSTR = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((wchar_t **)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0xa		; VT_ERROR | VT_ARRAY
+			(
+				#(
+					"safearray of ERROR = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((long *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0xb		; VT_BOOL | VT_ARRAY
+			(
+				#(
+					"safearray of BOOL = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((short *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0xc		; VT_VARIANT | VT_ARRAY
+			(
+				#(
+					"safearray of VARIANT = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((tagVARIANT *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x10		; VT_I1 | VT_ARRAY
+			(
+				#(
+					"safearray of I1 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((signed char *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x11		; VT_UI1 | VT_ARRAY
+			(
+				#(
+					"safearray of UI1 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((unsigned char *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x12		; VT_UI2 | VT_ARRAY
+			(
+				#(
+					"safearray of UI2 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((unsigned short *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					  ),
+				")"
+				)
+			)
+			#case 0x13		; VT_UI4 | VT_ARRAY
+			(
+				#(
+					"safearray of UI4 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((unsigned int *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x14		; VT_I8 | VT_ARRAY
+			(
+				#(
+					"safearray of I8 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((signed __int64 *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x15		; VT_UI8 | VT_ARRAY
+			(
+				#(
+					"safearray of UI8 = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((unsigned __int64 *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x16		; VT_INT | VT_ARRAY
+			(
+				#(
+					"safearray of INT = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((int *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x17		; VT_UINT | VT_ARRAY
+			(
+				#(
+					"safearray of UINT = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((unsigned *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x1e		; VT_LPSTR | VT_ARRAY
+			(
+				#(
+					"safearray of LPSTR = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((char **)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x1f		; VT_LPWSTR | VT_ARRAY
+			(
+				#(
+					"safearray of LPWSTR = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((wchar_t **)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x40		; VT_FILETIME | VT_ARRAY
+			(
+				#(
+					"safearray of FILETIME = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((FILETIME *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x47		; VT_CLIPDATA | VT_ARRAY
+			(
+				#(
+					"safearray of CLIPDATA = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((CLIPDATA *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+			#case 0x48		; VT_CLSID | VT_ARRAY
+			(
+				#(
+					"safearray of CLSID = [",
+					; output the rank array
+					#array( expr: $e.rgsabound[$i].cElements, size: $e.cDims),
+					"](",
+					; output the data elements
+					#array(
+						expr: ((CLSID *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					),
+					")"
+				)
+			)
+		)
+		#elif ($e.fFeatures & 0x0100)	; FADF_BSTR
+		(
+			#("safearray of BSTR = ",#array(expr: $e.rgsabound[$i].cElements, size: $e.cDims) : #("[",$e,"]"), "(", #array(expr: ((wchar_t * *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound ), ")")
+		)
+		#elif ($e.fFeatures & 0x0200)	; FADF_UNKNOWN
+		(
+			#("safearray of IUnknown* = [",#array(expr: $e.rgsabound[$i].cElements, size: $e.cDims), "](", #array(expr: ((IUnknown * *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound ), ")")
+		)
+		#elif ($e.fFeatures & 0x0400)	; FADF_DISPATCH
+		(
+			#("safearray of IDispatch* = [",#array(expr: $e.rgsabound[$i].cElements, size: $e.cDims), "](", #array(expr: ((IDispatch * *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound ), ")")
+		)
+		#elif ($e.fFeatures & 0x0800)	; FADF_VARIANT
+		(
+				#("safearray of VARIANT = ",#array(expr: $e.rgsabound[$i].cElements, size: $e.cDims) : #("[",$e,"]"), "(", #array(expr: ((tagVARIANT *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound ), ")")
+		)
+	)
+	children
+	(
+		#(		;[actual members]: [$e,!],
+			#if ($e.fFeatures & 0x0080)		; FADF_HAVEVARTYPE
+			(
+				#switch( ((unsigned *)&($e))[-1] )		; for some reason the VT field is before the SAFEARRAY struct
+				#case 2 ; VT_I2|VT_ARRAY
+				(
+					#array(
+						expr: ((signed short *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 3 ; VT_I4|VT_ARRAY
+				(
+					#array(
+						expr: ((signed int	 *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 4 ; VT_R4|VT_ARRAY
+				(
+					#array(
+						expr: ((float *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 5 ; VT_R8|VT_ARRAY
+				(
+					#array(
+						expr: ((double	*)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x10		; VT_I1|VT_ARRAY
+				(
+					#array(
+						expr: ((signed char *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x11		; VT_UI1|VT_ARRAY
+				(
+					#array(
+						expr: ((unsigned char *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x12		; VT_UI2|VT_ARRAY
+				(
+					#array(
+						expr: ((unsigned short *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x13		; VT_UI4|VT_ARRAY
+				(
+					#array(
+						expr: ((unsigned int *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x14		; VT_I8|VT_ARRAY
+				(
+					#array(
+						expr: ((signed __int64 *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x15		; VT_UI8|VT_ARRAY
+				(
+					#array(
+						expr: ((unsigned __int64 *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x1e		; VT_LPSTR|VT_ARRAY
+				(
+					#array(
+						expr: ((char * *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x1f		; VT_LPWSTR|VT_ARRAY
+				(
+					#array(
+						expr: ((wchar_t **)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0xc		; VT_VARIANT|VT_ARRAY
+				(
+					#array(
+						expr: ((tagVARIANT *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0xb		; VT_BOOL|VT_ARRAY
+				(
+					#array(
+						expr: ((short *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0xa		; VT_ERROR|VT_ARRAY
+				(
+					#array(
+						expr: ((long *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 6 ; VT_CY|VT_ARRAY
+				(
+					#array(
+						expr: ((CY *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 7 ; VT_DATE|VT_ARRAY
+				(
+					#array(
+						expr: ((DATE *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x40		; VT_FILETIME|VT_ARRAY
+				(
+					#array(
+						expr: ((FILETIME *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x48		; VT_CLSID|VT_ARRAY
+				(
+					#array(
+						expr: ((CLSID *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x47		; VT_CF|VT_ARRAY
+				(
+					#array(
+						expr: ((CLIPDATA *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 8 ; VT_BSTR|VT_ARRAY
+				(
+					#array(
+						expr: ((wchar_t * *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x16		; VT_INT|VT_ARRAY
+				(
+					#array(
+						expr: ((int *)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#case 0x17		; VT_UINT|VT_ARRAY
+				(
+					#array(
+						expr: ((unsigned int*)$e.pvData)[$i],
+						size: $e.rgsabound[$r].cElements,
+						rank: $e.cDims,
+						base: $e.rgsabound[$r].lLbound
+					)
+				)
+				#default
+				(
+						#([actual members]: [$e,!])
+				)
+				#except
+				(
+						#([actual members]: [$e,!])
+				)
+			)
+			#elif ($e.fFeatures & 0x0100)	; FADF_BSTR
+			(
+					#array(expr: ((wchar_t * *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound )
+			)
+			#elif ($e.fFeatures & 0x0200)	; FADF_UNKNOWN
+			(
+					#array(expr: ((IUnknown * *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound )
+			)
+			#elif ($e.fFeatures & 0x0400)	; FADF_DISPATCH
+			(
+					#array(expr: ((IDispatch * *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound )
+			)
+			#elif ($e.fFeatures & 0x0800)	; FADF_VARIANT
+			(
+					#array(expr: ((tagVARIANT *)$e.pvData)[$i], size: $e.rgsabound[$r].cElements, rank: $e.cDims, base: $e.rgsabound[$r].lLbound )
+			)
+		)
+	)
+}
+tagPROPVARIANT|tagVARIANT|PROPVARIANT|VARIANT{
+	preview(
+		#switch ($e.vt)
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;;		Base Types		;;
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		#case 0 ( #("Empty") )	; VT_EMPTY
+		#case 1 ( #("NULL") )	; VT_NULL
+		#case 2 ( #("I2 = ", $e.iVal) ) ; VT_I2
+		#case 3 ( #("I4 = ", $e.lVal) ) ; VT_I4
+		#case 4 ( #("R4 = ", $e.fltVal) )		; VT_R4
+		#case 5 ( #("R8 = ", $e.dblVal) )		; VT_R8
+		#case 6 ( #("CY = ", $e.cyVal) )		; VT_CY
+		#case 7 ( #("DATE =  ", $e.date) )		; VT_DATE
+		#case 8 ( #("BSTR = ", $e.bstrVal) )	; VT_BSTR
+		#case 9 ( #("DISPATCH =  ", $e.pdispVal) )		; VT_DISPATCH
+		#case 10 ( #("ERROR =  ", $e.scode) )	; VT_ERROR
+		#case 0xB ( #("BOOL =  ", $e.boolVal) ) ; VT_BOOL
+		#case 0xC ( #("VARIANT ") )		; VT_VARIANT
+		#case 0xD ( #("UNKNOWN =  ", $e.punkVal) )		; VT_UNKOWN
+		#case 0xE ( #("DECIMAL = ", $e.decVal) )		; VT_DECIMAL
+		#case 0x10 ( #("I1 =  ", $e.cVal) )		; VT_I1
+		#case 0x11 ( #("UI1 =  ", $e.bVal) )	; VT_UI1
+		#case 0x12 ( #("UI2 =  ", $e.uiVal) )	; VT_UI2
+		#case 0x13 ( #("UI4 =  ", $e.ulVal) )	; VT_UI4
+		#case 0x14 ( #("I8 =  ", *(__int64*)&$e.dblVal) )	; VT_I8
+		#case 0x15 ( #("UI8 =  ", *(unsigned __int64*)&$e.dblVal) )	; VT_UI8
+		#case 0x16 ( #("INT =  ", $e.intVal) )	; VT_INT
+		#case 0x17 ( #("UINT = ", $e.uintVal) ) ; VT_UINT
+		#case 0x18 ( #("VOID ") )		; VT_VOID
+		#case 0x19 ( #("HRESULT ") )	; VT_HRESULT
+		#case 0x1A ( #("PTR ") )		; VT_PTR
+		#case 0x1B ( #("SAFEARRAY ") )	; VT_SAFEARRAY
+		#case 0x1C ( #("CARRAY ") )		; VT_CARRAY
+		#case 0x1D ( #("USERDEFINED ") )		; VT_USERDEFINED
+		#case 0x1E ( #("LPSTR =  ", $e.pszVal) )		; VT_LPSTR
+		#case 0x1F ( #("LPWSTR =  ", $e.pwszVal) )		; VT_LPWSTR
+		#case 0x24 ( #("RECORD	") )	; VT_RECORD
+		#case 0x26 ( #("UINT_PTR ") )	; VT_UINT_PTR
+		#case 0x40 ( #("FILETIME =	", $e.filetime) )	; VT_FILETIME
+		#case 0x42 ( #("STREAM =  ", $e.pStream) )		; VT_STREAM
+		#case 0x43 ( #("STORAGE = ", $e.pStorage) )		; VT_STORAGE
+		#case 0x44 ( #("STREAMED_OBJECT =  ", $e.pStream) )		; VT_STREAMED_OBJECT
+		#case 0x45 ( #("STORED_OBJECT =  ", $e.pStorage) )		; VT_STORED_OBJECT
+		#case 0x46 ( #("BLOB_OBJECT = ", $e.blob ) )	; VT_BLOB_OBJECT
+		#case 0x47 ( #("CF =  ", $e.pclipdata) )		; VT_CF
+		#case 0x48 ( #("CLSID = ", $e.puuid) )	; VT_CLSID
+		#case 0x49 ( #("VERSIONED_STREAM = ", $e.pVersionedStream) )	; VT_VERSIONED_STREAM
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;;	 Vector types		;;
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		#case 0x1002 ( #("vector of I2 = ", $e.cai) )	; VT_I2|VT_VECTOR
+		#case 0x1003 ( #("vector of I4 = ", $e.cal) )	; VT_I4|VT_VECTOR
+		#case 0x1004 ( #("vector of R4 = ", $e.caflt) ) ; VT_R4|VT_VECTOR
+		#case 0x1005 ( #("vector of R8 = ", $e.cadbl) ) ; VT_R8|VT_VECTOR
+		#case 0x1010 ( #("vector of I1 =  ", $e.cac) )	; VT_I1|VT_VECTOR
+		#case 0x1011 ( #("vector of UI1 =  ", $e.caub) )		; VT_UI1|VT_VECTOR
+		#case 0x1012 ( #("vector of UI2 =  ", $e.caui) )		; VT_UI2|VT_VECTOR
+		#case 0x1013 ( #("vector of UI4 =  ", $e.caul) )		; VT_UI4|VT_VECTOR
+		#case 0x1014 ( #("vector of I8 =  ", $e.cah) )	; VT_I8|VT_VECTOR
+		#case 0x1015 ( #("vector of UI8 =  ", $e.cauh) )		; VT_UI8|VT_VECTOR
+		#case 0x101E ( #("vector of LPSTR =  ", $e.calpstr) )	; VT_LPSTR|VT_VECTOR
+		#case 0x101F ( #("vector of LPWSTR =  ", $e.calpwstr) ) ; VT_LPWSTR|VT_VECTOR
+		#case 0x100C ( #("vector of VARIANT ", $e.capropvar) )	; VT_VARIANT|VT_VECTOR
+		#case 0x100B ( #("vector of BOOL =	", $e.cabool) )		; VT_BOOL|VT_VECTOR
+		#case 0x100A ( #("vector of ERROR =  ", $e.cascode) )	; VT_ERROR|VT_VECTOR
+		#case 0x1006 ( #("vector of CY = ", $e.cacy) )	; VT_CY|VT_VECTOR
+		#case 0x1007 ( #("vector of DATE =	", $e.cadate) )		; VT_DATE|VT_VECTOR
+		#case 0x1040 ( #("vector of FILETIME =	", $e.cafiletime) )		; VT_FILETIME|VT_VECTOR
+		#case 0x1048 ( #("vector of CLSID = ", $e.cauuid) )		; VT_CLSID|VT_VECTOR
+		#case 0x1047 ( #("vector of CF =  ", $e.caclipdata) )	; VT_CF|VT_VECTOR
+		#case 0x1008 ( #("vector of BSTR = ", $e.cabstr) )		; VT_BSTR|VT_VECTOR
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;;	 Byref Types		;;
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		#case 0x4016 ( #("byref of INT =  ", $e.pintVal) )		; VT_INT|VT_BYREF
+		#case 0x4017 ( #("byref of UINT = ", $e.puintVal) )		; VT_UINT|VT_BYREF
+		#case 0x4002 ( #("byref of I2 = ", $e.piVal) )	; VT_I2|VT_BYREF
+		#case 0x4003 ( #("byref of I4 = ", $e.plVal) )	; VT_I4|VT_BYREF
+		#case 0x4004 ( #("byref of R4 = ", $e.pfltVal) )		; VT_R4|VT_BYREF
+		#case 0x4005 ( #("byref of R8 = ", $e.pdblVal) )		; VT_R8|VT_BYREF
+		#case 0x4010 ( #("byref of I1 =  ", $e.pcVal) ) ; VT_I1|VT_BYREF
+		#case 0x4011 ( #("byref of UI1 =  ", $e.pbVal) )		; VT_UI1|VT_BYREF
+		#case 0x4012 ( #("byref of UI2 =  ", $e.puiVal) )		; VT_UI2|VT_BYREF
+		#case 0x4013 ( #("byref of UI4 =  ", $e.pulVal) )		; VT_UI4|VT_BYREF
+		#case 0x4014 ( #("byref of I8 =  ", (__int64*)$e.pdblVal) )		; VT_I8|VT_BYREF
+		#case 0x4015 ( #("byref of UI8 =  ", (unsigned __int64*)$e.pudblVal) )		; VT_UI8|VT_BYREF
+		#case 0x400C ( #("byref of VARIANT ", $e.pvarVal) )		; VT_VARIANT|VT_BYREF
+		#case 0x400B ( #("byref of BOOL =  ", $e.pboolVal) )	; VT_BOOL|VT_BYREF
+		#case 0x400A ( #("byref of ERROR =	", $e.pscode) )		; VT_ERROR|VT_BYREF
+		#case 0x4006 ( #("byref of CY = ", $e.pcyVal) ) ; VT_CY|VT_BYREF
+		#case 0x4007 ( #("byref of DATE =  ", $e.pdate) )		; VT_DATE|VT_BYREF
+		#case 0x4008 ( #("byref of BSTR = ", $e.pbstrVal) )		; VT_BSTR|VT_BYREF
+		#case 0x400E ( #("byref of DECIMAL = ", $e.pdecVal) )	; VT_DECIMAL|VT_BYREF
+		#case 0x400D ( #("byref of UNKNOWN =  ", $e.ppunkVal) ) ; VT_UNKOWN|VT_BYREF
+		#case 0x4009 ( #("byref of DISPATCH =  ", $e.ppdispVal) )		; VT_DISPATCH|VT_BYREF
+		#case 0x6000 ( #("byref of ARRAY =	", $e.pparray) )	; VT_ARRAY|VT_BYREF
+		#default
+		(
+			#if ($e.vt & 0x2000) ( $e.parray)
+			#else ( #("Unknown vt type = ", $e.vt))
+		)
+	)
+	children(
+		#(
+			vt: $e.vt,
+			#switch ($e.vt)
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			;;		Base Types		;;
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			#case 0x2 ( #(I2  : $e.iVal) )	; VT_I2
+			#case 0x3 ( #(I4  : $e.lVal) )	; VT_I4
+			#case 0x4 ( #(R4  : $e.fltVal) )		; VT_R4
+			#case 0x5 ( #(R8  : $e.dblVal) )		; VT_R8
+			#case 0x6 ( #(CY  : $e.cyVal) ) ; VT_CY
+			#case 0x7 ( #(DATE	 : $e.date) )		; VT_DATE
+			#case 0x8 ( #(BSTR	: $e.bstrVal) )		; VT_BSTR
+			#case 0x9 ( #(DISPATCH	 : $e.pdispVal) )		; VT_DISPATCH
+			#case 0xA ( #(ERROR   : $e.scode) )		; VT_ERROR
+			#case 0xB ( #(BOOL	 : $e.boolVal) )	; VT_BOOL
+			#case 0xD ( #(UNKNOWN	: $e.punkVal) ) ; VT_UNKOWN
+			#case 0xE ( #(DECIMAL  : $e.decVal) )	; VT_DECIMAL
+			#case 0x10 ( #(I1	: $e.cVal) )		; VT_I1
+			#case 0x11 ( #(UI1	 : $e.bVal) )		; VT_UI1
+			#case 0x12 ( #(UI2	 : $e.uiVal) )		; VT_UI2
+			#case 0x13 ( #(UI4	 : $e.ulVal) )		; VT_UI4
+			#case 0x14 ( #(I8	: *(__int64*)&$e.dblVal) )		; VT_I8
+			#case 0x15 ( #(UI8	 : *(unsigned __int64*)&$e.dblVal) )		; VT_UI8
+			#case 0x16 ( #(INT	 : $e.intVal) )		; VT_INT
+			#case 0x17 ( #(UINT  : $e.uintVal) )	; VT_UINT
+			#case 0x1E ( #(LPSTR   : $e.pszVal) )	; VT_LPSTR
+			#case 0x1F ( #(LPWSTR	: $e.pwszVal) ) ; VT_LPWSTR
+			#case 0x40 ( #(FILETIME   : $e.filetime) )		; VT_FILETIME
+			#case 0x42 ( #(STREAM	: $e.pStream) ) ; VT_STREAM
+			#case 0x43 ( #(STORAGE	: $e.pStorage) )		; VT_STORAGE
+			#case 0x44 ( #(STREAMED_OBJECT	 : $e.pStream) )		; VT_STREAMED_OBJECT
+			#case 0x45 ( #(STORED_OBJECT   : $e.pStorage) ) ; VT_STORED_OBJECT
+			#case 0x46 ( #(BLOB_OBJECT	: $e.blob ) )		; VT_BLOB_OBJECT
+			#case 0x47 ( #(CF	: $e.pclipdata) )	; VT_CF
+			#case 0x48 ( #(CLSID  : $e.puuid) )		; VT_CLSID
+			#case 0x49 ( #(VERSIONED_STREAM  : $e.pVersionedStream) )		; VT_VERSIONED_STREAM
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			;;	 Vector types		;;
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			#case 0x1002 ( #(vector of I2  : $e.cai) )		; VT_I2|VT_VECTOR
+			#case 0x1003 ( #(vector of I4  : $e.cal) )		; VT_I4|VT_VECTOR
+			#case 0x1004 ( #(vector of R4  : $e.caflt) )	; VT_R4|VT_VECTOR
+			#case 0x1005 ( #(vector of R8  : $e.cadbl) )	; VT_R8|VT_VECTOR
+			#case 0x1010 ( #(vector of I1	: $e.cac) )		; VT_I1|VT_VECTOR
+			#case 0x1011 ( #(vector of UI1	 : $e.caub) )	; VT_UI1|VT_VECTOR
+			#case 0x1012 ( #(vector of UI2	 : $e.caui) )	; VT_UI2|VT_VECTOR
+			#case 0x1013 ( #(vector of UI4	 : $e.caul) )	; VT_UI4|VT_VECTOR
+			#case 0x1014 ( #(vector of I8	: $e.cah) )		; VT_I8|VT_VECTOR
+			#case 0x1015 ( #(vector of UI8	 : $e.cauh) )	; VT_UI8|VT_VECTOR
+			#case 0x101E ( #(vector of LPSTR   : $e.calpstr) )		; VT_LPSTR|VT_VECTOR
+			#case 0x101F ( #(vector of LPWSTR	: $e.calpwstr) )	; VT_LPWSTR|VT_VECTOR
+			#case 0x100C ( #(vector of VARIANT : $e.capropvar) )	; VT_VARIANT|VT_VECTOR
+			#case 0x100B ( #(vector of BOOL   : $e.cabool) )		; VT_BOOL|VT_VECTOR
+			#case 0x100A ( #(vector of ERROR   : $e.cascode) )		; VT_ERROR|VT_VECTOR
+			#case 0x1006 ( #(vector of CY  : $e.cacy) )		; VT_CY|VT_VECTOR
+			#case 0x1007 ( #(vector of DATE   : $e.cadate) )		; VT_DATE|VT_VECTOR
+			#case 0x1040 ( #(vector of FILETIME   : $e.cafiletime) )		; VT_FILETIME|VT_VECTOR
+			#case 0x1048 ( #(vector of CLSID  : $e.cauuid) )		; VT_CLSID|VT_VECTOR
+			#case 0x1047 ( #(vector of CF	: $e.caclipdata) )		; VT_CF|VT_VECTOR
+			#case 0x1008 ( #(vector of BSTR  : $e.cabstr) ) ; VT_BSTR|VT_VECTOR
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			;;	 Byref Types		;;
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			#case 0x4016 ( #(byref of INT	: $e.pintVal) ) ; VT_INT|VT_BYREF
+			#case 0x4017 ( #(byref of UINT	: $e.puintVal) )		; VT_UINT|VT_BYREF
+			#case 0x4002 ( #(byref of I2  : $e.piVal) )		; VT_I2|VT_BYREF
+			#case 0x4003 ( #(byref of I4  : $e.plVal) )		; VT_I4|VT_BYREF
+			#case 0x4004 ( #(byref of R4  : $e.pfltVal) )	; VT_R4|VT_BYREF
+			#case 0x4005 ( #(byref of R8  : $e.pdblVal) )	; VT_R8|VT_BYREF
+			#case 0x4010 ( #(byref of I1   : $e.pcVal) )	; VT_I1|VT_BYREF
+			#case 0x4011 ( #(byref of UI1	: $e.pbVal) )	; VT_UI1|VT_BYREF
+			#case 0x4012 ( #(byref of UI2	: $e.puiVal) )	; VT_UI2|VT_BYREF
+			#case 0x4013 ( #(byref of UI4	: $e.pulVal) )	; VT_UI4|VT_BYREF
+			#case 0x4014 ( #(byref of I8	: (__int64*)$e.pdblVal) )	; VT_I8|VT_BYREF
+			#case 0x4015 ( #(byref of UI8	: (unsigned __int64*)$e.pdblVal) ) ; VT_UI8|VT_BYREF
+			#case 0x400C ( #(byref of VARIANT : $e.pvarVal) )		; VT_VARIANT|VT_BYREF
+			#case 0x400B ( #(byref of BOOL	 : $e.pboolVal) )		; VT_BOOL|VT_BYREF
+			#case 0x400A ( #(byref of ERROR   : $e.pscode) )		; VT_ERROR|VT_BYREF
+			#case 0x4006 ( #(byref of CY  : $e.pcyVal) )	; VT_CY|VT_BYREF
+			#case 0x4007 ( #(byref of DATE	 : $e.pdate) )	; VT_DATE|VT_BYREF
+			#case 0x4008 ( #(byref of BSTR	: $e.pbstrVal) )		; VT_BSTR|VT_BYREF
+			#case 0x400E ( #(byref of DECIMAL  : $e.pdecVal) )		; VT_DECIMAL|VT_BYREF
+			#case 0x400D ( #(byref of UNKNOWN	: $e.ppunkVal) )	; VT_UNKOWN|VT_BYREF
+			#case 0x4009 ( #(byref of DISPATCH	 : $e.ppdispVal) )	; VT_DISPATCH|VT_BYREF
+			#case 0x6000 ( #(byref of ARRAY   : $e.pparray) )		; VT_ARRAY|VT_BYREF
+
+			; the following are either empty or invalid vt values for a variant
+			; #case 0 ( #(Empty :) )		; VT_EMPTY
+			; #case 0x1 ( #(NULL :) )		; VT_NULL
+			; #case 0xC ( #(VARIANT :) )	; VT_VARIANT
+			; #case 0x18 ( #(VOID :) )		; VT_VOID
+			; #case 0x19 ( #(HRESULT :) )	; VT_HRESULT
+			; #case 0x1A ( #(PTR :) )		; VT_PTR
+			; #case 0x1B ( #(SAFEARRAY :) ) ; VT_SAFEARRAY
+			; #case 0x1C ( #(CARRAY :) )	; VT_CARRAY
+			; #case 0x1D ( #(USERDEFINED :) )		; VT_USERDEFINED
+			; #case 0x24 ( #(RECORD  :) )	; VT_RECORD
+			; #case 0x26 ( #(UINT_PTR :) )	; VT_UINT_PTR
+			#default
+			(
+				#if ($e.vt & 0x2000 )
+					( #(safearray: $e.parray))
+				#else
+				(
+					#(
+						[raw members]: [$e,!]	; unformatted data members
+					 )
+				 )
+			)
+			#except
+			(
+				#(
+					[raw members]: [$e,!]	; unformatted data members
+				 )
+			)
+		)
+	)
+}
+
+; Visualizers for data structures in namespace Concurrency
+;------------------------------------------------------------------------------
+;  Concurrency::message from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::message<*>{
+	preview (
+		#(
+			$e.payload
+		)
+	)
+
+	children (
+		#(
+			#(payload: $e.payload),
+			#([msg_id]: $e._M_id)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::multi_link_registry from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::multi_link_registry<*>{
+	preview (
+		#(
+			"[",
+			$e._M_vector._M_index,
+			"](",
+			#array(
+				expr: *($e._M_vector._M_array[$i]),
+				size: $e._M_vector._M_index
+			),
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([size]: $e._M_vector._M_index),
+			#array(
+				expr: *($e._M_vector._M_array[$i]),
+				size: $e._M_vector._M_index
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::_Queue from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::details::_Queue<*>{
+	preview (
+		#(
+			"[", 
+			$e._M_count, 
+			"](",
+			#list(
+				head: $e._M_pHead,
+				next: _M_pNext,
+				size: _M_count 
+			),
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([size]: $e._M_count),
+			#list(
+				head: $e._M_pHead,
+				next: _M_pNext,
+				size: _M_count 
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::unbounded_buffer from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::unbounded_buffer<*>{
+	preview (
+		#(
+			$e._M_messageBuffer
+		)
+	)
+
+	children (
+		#(
+			#(unprocessed_messages: $e._M_messageProcessor._M_queuedMessages._M_queue),
+			#(messages: $e._M_messageBuffer),
+			#(message_filter: *($e._M_pFilter)),
+			#(linked_sources: $e._M_connectedSources._M_links),
+			#(linked_targets: $e._M_connectedTargets),
+			#(reserving_target: *($e._M_pReservedFor)),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::overwrite_buffer from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::overwrite_buffer<*>{
+	preview (
+		#(
+			$e._M_pMessage
+		)
+	)
+
+	children (
+		#(
+			#(value: *($e._M_pMessage)),
+			#(unprocessed_messages: $e._M_messageProcessor._M_queuedMessages._M_queue),
+			#(message_filter: *($e._M_pFilter)),
+			#(linked_sources: $e._M_connectedSources._M_links),
+			#(linked_targets: $e._M_connectedTargets),
+			#(reserving_target: *($e._M_pReservedFor)),
+			#(reserved_message: *($e._M_pReservedMessage)),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::single_assignment from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::single_assignment<*>{
+	preview (
+		#(
+			$e._M_pMessage
+		)
+	)
+
+	children (
+		#(
+			#(value: *($e._M_pMessage)),
+			#(unprocessed_messages: $e._M_messageProcessor._M_queuedMessages._M_queue),
+			#(message_filter: *($e._M_pFilter)),
+			#(linked_sources: $e._M_connectedSources._M_links),
+			#(linked_targets: $e._M_connectedTargets),
+			#(reserving_target: *($e._M_pReservedFor)),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::call from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::call<*>{
+	preview (
+		#(
+			$e._M_pFunc
+		)
+	)
+	
+	children (
+		#(
+			#(call_method: $e._M_pFunc),
+			#(unprocessed_messages: $e._M_messageProcessor._M_queuedMessages._M_queue),
+			#(message_filter: *($e._M_pFilter)),
+			#(linked_sources: $e._M_connectedSources._M_links),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::transformer from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::transformer<*>{
+	preview (
+		#(
+			$e._M_pFunc
+		)
+	)
+
+	children (
+		#(
+			#(transform_method: $e._M_pFunc),
+			#(unprocessed_messages: $e._M_messageProcessor._M_queuedMessages._M_queue),
+			#(messages: $e._M_messageBuffer),
+			#(message_filter: *($e._M_pFilter)),
+			#(linked_sources: $e._M_connectedSources._M_links),
+			#(linked_target: *($e._M_connectedTargets._M_connectedLink)),
+			#(reserving_target: *($e._M_pReservedFor)),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::choice from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::choice<*>{
+	preview (
+		#(
+			"[",
+			#if ($e._M_pSingleAssignment->_M_fIsInitialized) ("initialized")
+			#else ("not_initialized"),
+			"] ",
+			$e._M_sourceTuple
+		)
+	)
+	
+	children (
+		#(
+			#([input_count]: $e._M_pSingleAssignment->_M_connectedSources._M_links._M_vector._M_index),
+			#(index: $e._M_pSingleAssignment->_M_pMessage->payload),
+			#(source_tuple: $e._M_sourceTuple),
+			#(linked_sources: $e._M_pSingleAssignment->_M_connectedSources._M_links),
+			#(linked_targets: $e._M_pSingleAssignment->_M_connectedTargets),
+			#(reserving_target: *($e._M_pSingleAssignment->_M_pReservedFor)),
+			#(Scheduler: *($e._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_pScheduleGroup)),
+			#([raw _M_pSourceChoices] : $e._M_pSourceChoices)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::join<*,*>::_MessageArray from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::join<*,*>::_MessageArray{
+	preview (
+		#(
+			"[",
+			$e._M_count,
+			"](",
+			#array(
+				expr: *(((Concurrency::message<$T1>**)$e._M_messages)[$i]),
+				size: $e._M_count
+			),
+			")"
+		)
+	)
+	
+	children (
+		#(
+			#([size]: $e._M_count),
+			#array(
+				expr: *(((Concurrency::message<$T1>**)$e._M_messages)[$i]),
+				size: $e._M_count
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::join<*,*>::_SavedMessageIdArray from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::join<*,*>::_SavedMessageIdArray{
+	preview (
+		#(
+			"[",
+			$e._M_count,
+			"](",
+			#array(
+				expr: ((int*)$e._M_savedIds)[$i],
+				size: $e._M_count
+			),
+			")"
+		)
+	)
+	
+	children (
+		#(
+			#([size]: $e._M_count),
+			#array(
+				expr: ((int*)$e._M_savedIds)[$i],
+				size: $e._M_count
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::join from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::join<*,*>{
+	preview (
+		#(
+			"[",
+			$e._M_messageArray._M_count - $e._M_messagesRemaining,
+			"/",
+			$e._M_messageArray._M_count,
+			"](",
+			#array(
+				expr: *($e._M_connectedSources._M_links._M_vector._M_array[$i]),
+				size: $e._M_connectedSources._M_links._M_vector._M_index
+			),
+			")"
+		)
+	)
+	
+	children (
+		#(
+			#([join_type]: (Concurrency::join_type)$T2),
+			#([offer_count]: $e._M_messageArray._M_count - $e._M_messagesRemaining),
+			#(offer_IDs: $e._M_savedMessageIdArray),
+			#([input_count]: $e._M_messageArray._M_count),
+			#(input_values: $e._M_messageArray),
+			#(messages: $e._M_messageBuffer),
+			#(message_filter: *($e._M_pFilter)),
+			#(linked_sources: $e._M_connectedSources._M_links),
+			#(linked_target: $e._M_connectedTargets._M_connectedLink),
+			#(reserving_target: *($e._M_pReservedFor)),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::multitype_join from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::multitype_join<*,*>{
+	preview (
+		#(
+			"[",
+			$e._M_pJoinNode->_M_connectedSources._M_links._M_vector._M_index - $e._M_pJoinNode->_M_counter,
+			"/",
+			$e._M_pJoinNode->_M_connectedSources._M_links._M_vector._M_index,
+			"]",
+			$e._M_sourceTuple
+		)
+	)
+	
+	children (
+		#(
+			#([join_type]: (Concurrency::join_type)$T2),
+			#([offer_count]: $e._M_pJoinNode->_M_connectedSources._M_links._M_vector._M_index - $e._M_pJoinNode->_M_counter),
+			#([input_count]: $e._M_pJoinNode->_M_connectedSources._M_links._M_vector._M_index),
+			#(source_tuple: $e._M_sourceTuple),
+			#(messages: $e._M_pJoinNode->_M_messageBuffer),
+			#(linked_sources: $e._M_pJoinNode->_M_connectedSources._M_links),
+			#(linked_target: $e._M_pJoinNode->_M_connectedTargets._M_connectedLink),
+			#(reserving_target: *($e._M_pJoinNode->_M_pReservedFor)),
+			#(Scheduler: *($e._M_pJoinNode->_M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_pJoinNode->_M_messageProcessor._M_pScheduleGroup)),
+			#([raw _M_pSourceJoins] : $e._M_pSourceJoins)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::timer from <agents.h>
+;------------------------------------------------------------------------------
+Concurrency::timer<*>{
+	preview ( 
+		#(
+			$e._M_state
+		)
+	)
+	
+	children (
+		#(
+			#(state: $e._M_state),
+			#(value: $e._M_value),
+			#(repeating: $e._M_fRepeating),
+			#(interval_ms: $e._M_ms),
+			#(linked_target: *($e._M_connectedTargets._M_connectedLink)),
+			#(reserving_target: *($e._M_pReservedFor)),
+			#(Scheduler: *($e._M_messageProcessor._M_pScheduler)),
+			#(ScheduleGroup: *($e._M_messageProcessor._M_pScheduleGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::SchedulerBase from <SchedulerBase.h>
+;  Concurrency::details::ThreadScheduler from <ThreadScheduler.h>
+;  Concurrency::details::UMSThreadScheduler from <UMSThreadScheduler.h>
+;------------------------------------------------------------------------------
+Concurrency::details::SchedulerBase|Concurrency::details::ThreadScheduler|Concurrency::details::UMSThreadScheduler{
+	preview ( 
+		#(
+			"[",
+			$e.m_id,
+			"] ",
+			#if ($e.m_schedulerKind == 0) ("ThreadScheduler")
+			#else ("UmsScheduler"),
+			#if ($e.m_id == $e.s_pDefaultScheduler->m_id) (", default")
+			#else ("")
+		)
+	)
+
+	children (
+		#(
+			#(ID: $e.m_id),
+			#(SchedulerPolicy: $e.m_policy),
+			#(VirtualProcessorCount: $e.m_virtualProcessorCount),
+			#(ReferenceCount: $e.m_refCount),
+			#([isDefaultScheduler]: $e.m_id == $e.s_pDefaultScheduler->m_id)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::ScheduleGroupBase from <ScheduleGroupBase.h>
+;  Concurrency::details::CacheLocalScheduleGroup from <CacheLocalScheduleGroup.h>
+;  Concurrency::details::FairScheduleGroup from <FairScheduleGroup.h>
+;------------------------------------------------------------------------------
+Concurrency::details::ScheduleGroupBase|Concurrency::details::CacheLocalScheduleGroup|Concurrency::details::FairScheduleGroup{
+	preview ( 
+		#(
+			"[",
+			$e.m_id,
+			"]",
+			#if ($e.m_kind & 4) (" AnonymousScheduleGroup")
+			#else ("")
+		)
+	)
+
+	children (
+		#(
+			#(ID: $e.m_id),
+			#(Scheduler: *($e.m_pScheduler))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::ContextBase from <ContextBase.h>
+;  Concurrency::details::InternalContextBase from <InternalContextBase.h>
+;  Concurrency::details::ThreadInternalContext from <ThreadInternalContext.h>
+;  Concurrency::details::UMSThreadInternalContext from <UMSThreadInternalContext.h>
+;------------------------------------------------------------------------------
+Concurrency::details::ContextBase|Concurrency::details::InternalContextBase|Concurrency::details::ThreadInternalContext|Concurrency::details::UMSThreadInternalContext{
+	preview ( 
+		#(
+			"[",
+			$e.m_threadId,
+			"] ",
+			#if ($e.m_blockedState == 0) ("not_concrt_blocked")
+			#elif ($e.m_blockedState == 1) ("concrt_blocked")
+			#elif ($e.m_blockedState == 2) ("ums_sync_blocked")
+			#elif ($e.m_blockedState == 4) ("ums_async_blocked")
+			#else ("")
+		)
+	)
+
+	children (
+		#(
+			#(ID: $e.m_id),
+			#(ThreadID: $e.m_threadId),
+			#(Scheduler: *($e.m_pScheduler)),
+			#(ScheduleGroup: *($e.m_pGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::ExternalContextBase from <ExternalContextBase.h>
+;------------------------------------------------------------------------------
+Concurrency::details::ExternalContextBase{
+	preview ( 
+		#(
+			"[",
+			$e.m_threadId,
+			"] ",
+			#if ($e.m_contextSwitchingFence == 1) ("concrt_blocked")
+			#else ("not_concrt_blocked")
+		)
+	)
+
+	children (
+		#(
+			#(ID: $e.m_id),
+			#(ThreadID: $e.m_threadId),
+			#(Scheduler: *($e.m_pScheduler)),
+			#(ScheduleGroup: *($e.m_pGroup))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::SchedulerPolicy from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::SchedulerPolicy{
+	preview ( 
+		#(
+			$e._M_pPolicyBag->_M_values._M_specificValues._M_schedulerKind,
+			", Min=",
+			$e._M_pPolicyBag->_M_values._M_specificValues._M_minConcurrency,
+			", Max=",
+			$e._M_pPolicyBag->_M_values._M_specificValues._M_maxConcurrency
+		)
+	)
+
+	children (
+		#(
+			#(SchedulerKind: $e._M_pPolicyBag->_M_values._M_specificValues._M_schedulerKind),
+			#(MinConcurrency: $e._M_pPolicyBag->_M_values._M_specificValues._M_minConcurrency),
+			#(MaxConcurrency: $e._M_pPolicyBag->_M_values._M_specificValues._M_maxConcurrency),
+			#(TargetOversubscriptionFactor: $e._M_pPolicyBag->_M_values._M_specificValues._M_targetOversubscriptionFactor),
+			#(LocalContextCacheSize: $e._M_pPolicyBag->_M_values._M_specificValues._M_localContextCacheSize),
+			#(ContextStackSize: $e._M_pPolicyBag->_M_values._M_specificValues._M_contextStackSize),
+			#(ContextPriority: $e._M_pPolicyBag->_M_values._M_specificValues._M_contextPriority),
+			#(SchedulingProtocol: $e._M_pPolicyBag->_M_values._M_specificValues._M_schedulingProtocol),
+			#(DynamicProgressFeedback: $e._M_pPolicyBag->_M_values._M_specificValues._M_dynamicProgressFeedback)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::event from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::event{
+	preview ( 
+		#(
+			#if ($e._M_pWaitChain == 1) ("set")
+			#else ("not_set")
+		)
+	)
+
+	children (
+		#(
+			#([is_set]: ($e._M_pWaitChain == 1)),
+			#([has_waiters]: (($e._M_pWaitChain != 0) && ($e._M_pWaitChain != 1)))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::critical_section from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::critical_section{
+	preview ( 
+		#(
+			#if ($e._M_pHead != 0) ("locked")
+			#else ("not_locked")
+		)
+	)
+
+	children (
+		#(
+			#([is_locked]: ($e._M_pHead != 0)),
+			#(OwningContext: *((Concurrency::Context*)($e._M_activeNode[0])))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::critical_section::scoped_lock from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::critical_section::scoped_lock{
+	preview ( 
+		#(
+			$e._M_critical_section
+		)
+	)
+
+	children (
+		#(
+			CriticalSection: $e._M_critical_section
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::reader_writer_lock from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::reader_writer_lock{
+	preview ( 
+		#(
+			#if (($e._M_lockState < 8) && ($e._M_lockState & 2)) ("held_by_writer")
+			#elif ($e._M_lockState >= 8) (
+				#(
+					"held_by_reader(s) [",
+					($e._M_lockState / 8),
+					"]"
+				)
+			)
+			#else ("not_held")
+		)
+	)
+
+	children (
+		#(
+			#([is_reader_lock_held]: ($e._M_lockState >= 8)),
+			#([num_reader_lock_holders]: ($e._M_lockState / 8)),
+			#([is_writer_lock_held]: ($e._M_lockState < 8) && ($e._M_lockState & 2)),
+			#(OwningWriterContext: *((Concurrency::Context*)($e._M_activeWriter[0])))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::reader_writer_lock::scoped_lock from <concrt.h>
+;  Concurrency::reader_writer_lock::scoped_lock_read from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::reader_writer_lock::scoped_lock|Concurrency::reader_writer_lock::scoped_lock_read{
+	preview ( 
+		#(
+			$e._M_reader_writer_lock
+		)
+	)
+
+	children (
+		#(
+			ReaderWriterLock: $e._M_reader_writer_lock
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::_TaskCollectionBase from <concrt.h>
+;------------------------------------------------------------------------------
+Concurrency::details::_TaskCollectionBase{
+	preview ( 
+		#(
+			#if ((((int)$e._M_pException & ~0x3) != 0) && (((int)$e._M_pException & ~0x3) != 0xC)) ("exception")
+			#else ("no_exception")
+		)
+	)
+
+	children (
+		#(
+			#([has_exception]: (((int)$e._M_pException & ~0x3) != 0) && (((int)$e._M_pException & ~0x3) != 0xC)),
+			#(CreatingContext: *((Concurrency::Context*)$e._M_pOwningContext))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::task_group from <ppl.h>
+;  Concurrency::structured_task_group from <ppl.h>
+;------------------------------------------------------------------------------
+Concurrency::task_group|Concurrency::structured_task_group{
+	preview ( 
+		#(
+			#if ((((int)$e._M_task_collection._M_pException & ~0x3) != 0) && (((int)$e._M_task_collection._M_pException & ~0x3) != 0xC)) ("exception")
+			#else ("no_exception")
+		)
+	)
+
+	children (
+		#(
+			#([has_exception]: (((int)$e._M_task_collection._M_pException & ~0x3) != 0) && (((int)$e._M_task_collection._M_pException & ~0x3) != 0xC)),
+			#(CreatingContext: *((Concurrency::Context*)$e._M_task_collection._M_pOwningContext))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::task_handle from <ppl.h>
+;------------------------------------------------------------------------------
+Concurrency::task_handle<*>{
+	preview ( 
+		#(
+			$e._M_function
+		)
+	)
+
+	children (
+		#(
+			#(Function: $e._M_function),
+			#(RuntimeOwnsLifetime: $e._M_fRuntimeOwnsLifetime),
+			#(TaskCollection: *($e._M_pTaskCollection))
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::combinable from <ppl.h>
+;------------------------------------------------------------------------------
+Concurrency::combinable<*>{
+	preview(
+		#(
+			"(",
+			#array(
+				expr: *($e._M_buckets[$i]),
+				size: $e._M_size
+			) : #list(
+				head: $e,
+				next: _M_chain
+			) : $e._M_value,
+			")"
+		)
+	) 
+	children(
+		#(
+			#array(
+				expr: *($e._M_buckets[$i]),
+				size: $e._M_size
+			) : #list(
+				head: $e,
+				next: _M_chain
+			) : $e._M_value,
+			#(InitFunction : $e._M_fnInitialize)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::concurrent_vector from <concurrent_vector.h>
+;------------------------------------------------------------------------------
+Concurrency::concurrent_vector<*,*>{
+	preview(
+		#(
+			"[",
+			$e._My_early_size._M_value,
+			"](",
+			#array (
+				expr: #(
+						 #if (($i >> 1) == 0) ((($T1*)$e._My_segment._M_value[0]._My_array)[$i])
+						 #else ((($T1*)$e._My_segment._M_value[__log2($i)]._My_array)[$i - (0x1 << __log2($i))])
+					   ), 
+				size: $e._My_early_size._M_value
+			),
+			")"
+		)
+	) 
+	children(
+		#(
+			[size] : $e._My_early_size._M_value,
+			#array (
+				expr: #(
+						 #if (($i >> 1) == 0) ((($T1*)$e._My_segment._M_value[0]._My_array)[$i])
+						 #else ((($T1*)$e._My_segment._M_value[__log2($i)]._My_array)[$i - (0x1 << __log2($i))])
+					   ),
+				size: $e._My_early_size._M_value
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::_Vector_iterator from <concurrent_vector.h>
+;------------------------------------------------------------------------------
+Concurrency::details::_Vector_iterator<Concurrency::concurrent_vector<*,*>,*>{
+	preview(
+		#(
+			#if (($e._My_index >> 1) == 0) ((($T1*)$e._My_vector->_My_segment._M_value[0]._My_array)[$e._My_index])
+			#else ((($T1*)$e._My_vector->_My_segment._M_value[__log2($e._My_index)]._My_array)[$e._My_index - (0x1 << __log2($e._My_index))])
+		)
+	) 
+	children(
+		#(
+			[ptr]: #if (($e._My_index >> 1) == 0) (&((($T1*)$e._My_vector->_My_segment._M_value[0]._My_array)[$e._My_index]))
+				   #else (&((($T1*)$e._My_vector->_My_segment._M_value[__log2($e._My_index)]._My_array)[$e._My_index - (0x1 << __log2($e._My_index))]))
+
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::concurrent_queue from <concurrent_queue.h>
+;------------------------------------------------------------------------------
+Concurrency::concurrent_queue<*,*>{
+	preview
+	(
+		#(
+			"[",
+			$e._My_rep->_Tail_counter._M_value - $e._My_rep->_Head_counter._M_value,
+			"](",
+			#array
+			(
+				expr : #if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 0) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 1) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 2) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 3) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 4) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 5) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 6) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 7) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 8) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 9) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 10) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 11) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 12) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 13) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 14) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 15) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 16) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 17) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 18) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 19) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])))))))))))))))))))),
+				size : #if ($e._My_rep->_Tail_counter._M_value-$e._My_rep->_Head_counter._M_value < 20*8*$e._Items_per_page) ($e._My_rep->_Tail_counter._M_value-$e._My_rep->_Head_counter._M_value)
+					   #else (20*8*$e._Items_per_page)
+			),
+			")"
+		)
+	)
+	children
+	(
+		#(
+			#([unsafe_size]: $e._My_rep->_Tail_counter._M_value-$e._My_rep->_Head_counter._M_value),
+			#array
+			(
+				expr : #if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 0) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 1) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 2) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 3) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 4) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 5) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 6) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 7) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 8) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 9) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 10) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 11) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 12) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 13) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 14) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 15) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 16) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 17) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 18) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else (#if (($i+($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)))/(8*$e._Items_per_page)-($e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>(8*($e._Items_per_page-1)))*($i%8+$e._My_rep->_Head_counter._M_value%(8*$e._Items_per_page)>=(8*$e._Items_per_page)) == 19) ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])
+					   #else ((($T1*)(($e._My_rep->_Array[(($i+$e._My_rep->_Head_counter._M_value)*3%8)]._Head_page._M_value->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next->_Next) + 1))[(($i+$e._My_rep->_Head_counter._M_value)&-8)/8&$e._Items_per_page-1])))))))))))))))))))),
+				size : #if ($e._My_rep->_Tail_counter._M_value-$e._My_rep->_Head_counter._M_value < 20*8*$e._Items_per_page) ($e._My_rep->_Tail_counter._M_value-$e._My_rep->_Head_counter._M_value)
+					   #else (20*8*$e._Items_per_page)
+			)
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  Concurrency::details::_Concurrent_queue_iterator from <concurrent_queue.h>
+;------------------------------------------------------------------------------
+Concurrency::details::_Concurrent_queue_iterator<Concurrency::concurrent_queue<*,*>,*>{
+	preview(
+		#(
+			*(($T1*)$e._My_item)
+		)
+	) 
+	children(
+		#(
+			[ptr]: (($T1*)$e._My_item)
+
+		)
+	)
+}
+
+; This section lets you define your own errors for the HRESULT display.
+; You need to list the error code in unsigned decimal, followed by the message.
+; Changes will take effect the next time you redisplay the variable.
+
+[hresult]
+;1234=my custom error code
+
+[Visualizer]
+
+glm::detail::tvec2<*>{
+    preview (
+        #(#($c.x,$c.y))
+    )
+    children (
+            #([x]: $c.x,[y]: $c.y)
+    )
+}
+
+glm::detail::tvec3<*>{
+    preview (
+        #($e.x,$e.y,$e.z)
+    )
+    children (
+            #([x]: $e.x,[y]: $e.y,[z]: $e.z)
+    )
+}
+
+glm::detail::tvec4<*>{
+    preview (
+        #($c.x,$c.y,$c.z,$c.w)
+    )
+    children (
+            #([x]: $e.x,[y]: $e.y,[z]: $e.z, #([w]: $e.w))
+    )
+}

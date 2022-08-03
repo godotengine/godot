@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+  GLM debugger visualizers for Visual Studio
+  
+  Makes debugging code using GLM easier by making data more easily accessible
+  from the debugger watch windows. 
+  
+  For example, a variable declared like this: 
+  
+  glm::vec4 v = glm::vec4(1, 2, 3, 4);
+  
+  Will show up like this in the default debugger windows:
+  
+   Name    Value
+  ..............................................................
+    v      {x=1.000000 r=1.000000 s=1.000000 y=2.000000 ...}
+  
+  But if you use this file, it will show up like this:
+  
+   Name   Value
+  ..................
+    v     [1 2 3 4]
+  
+  === How to Use ===
+  
+  Copy this file to the project directory of each project using GLM, or just copy it to
+  
+  %USERPROFILE%\Douments\Visual Studio 2019\Visualizers\ (replace '2019' when necessary)
+  or
+  %VSINSTALLDIR%\Common7\Packages\Debugger\Visualizers\ (requires admin access)
+  
+  if you want to use this from every project.
+  See also https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects 
+-->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="glm::vec&lt;1,*,*&gt;">
+    <DisplayString>[{x,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x,g</Item>
+    </Expand>
+  </Type>
+  
+  <Type Name="glm::vec&lt;2,*,*&gt;">
+    <DisplayString>[{x,g} {y,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;3,*,*&gt;">
+    <DisplayString>[{x,g} {y,g} {z,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;4,*,*&gt;">
+    <DisplayString>[{x,g} {y,g} {z,g} {w,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+      <Item Name="w">w,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;1,bool,*&gt;" Priority="High">
+    <DisplayString>[{(int)x}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;2,bool,*&gt;" Priority="High">
+    <DisplayString>[{(int)x} {(int)y}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x</Item>
+      <Item Name="y">y</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;3,bool,*&gt;" Priority="High">
+    <DisplayString>[{(int)x,g} {(int)y,g} {(int)z,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x</Item>
+      <Item Name="y">y</Item>
+      <Item Name="z">z</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;4,bool,*&gt;" Priority="High">
+    <DisplayString>[{(int)x,g} {(int)y,g} {(int)z,g} {(int)w,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x</Item>
+      <Item Name="y">y</Item>
+      <Item Name="z">z</Item>
+      <Item Name="w">w</Item>
+    </Expand>
+  </Type>
+  
+  <Type Name="glm::vec&lt;2,float,*&gt;" Priority="High">
+    <DisplayString>[{x,g} {y,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5F3759DF - ((*(int *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(float *)&amp;i</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0f,g</Item>
+        </If>
+      </CustomListItems>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;3,float,*&gt;" Priority="High">
+    <DisplayString>[{x,g} {y,g} {z,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y+z*z"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5F3759DF - ((*(int *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(float *)&amp;i</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0f,g</Item>
+        </If>
+      </CustomListItems>
+      <Synthetic Name="[rgba]">
+        <DisplayString>
+          <!-- hex RGBA color - alpha is assumed to be 255 -->
+          #{
+          (unsigned((x&lt;0?0:(x&gt;1?1:x))*255.5f) &lt;&lt; 24) |
+          (unsigned((y&lt;0?0:(y&gt;1?1:y))*255.5f) &lt;&lt; 16) |
+          (unsigned((z&lt;0?0:(z&gt;1?1:z))*255.5f) &lt;&lt; 8) | 0xFF,Xb
+          }
+        </DisplayString>
+      </Synthetic>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;4,float,*&gt;" Priority="High">
+    <DisplayString>[{x,g} {y,g} {z,g} {w,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y+z*z+w*w"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5F3759DF - ((*(int *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(float *)&amp;i</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0f,g</Item>
+        </If>
+      </CustomListItems>
+      <Synthetic Name="[rgba]">
+        <DisplayString>
+          <!-- hex RGBA color -->
+          #{
+          (unsigned((x&lt;0?0:(x&gt;1?1:x))*255.5f) &lt;&lt; 24) |
+          (unsigned((y&lt;0?0:(y&gt;1?1:y))*255.5f) &lt;&lt; 16) |
+          (unsigned((z&lt;0?0:(z&gt;1?1:z))*255.5f) &lt;&lt; 8) |
+          (unsigned((w&lt;0?0:(w&gt;1?1:w))*255.5f) &lt;&lt; 0),Xb
+          }
+        </DisplayString>
+      </Synthetic>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+      <Item Name="w">w,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;2,double,*&gt;" Priority="High">
+    <DisplayString>[{x,g} {y,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5FE6EB50C7B537A9 - ((*(long long *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(double *)&amp;i</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0,g</Item>
+        </If>
+      </CustomListItems>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;3,double,*&gt;" Priority="High">
+    <DisplayString>[{x,g} {y,g} {z,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y+z*z"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5FE6EB50C7B537A9 - ((*(long long *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(double *)&amp;i</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0,g</Item>
+        </If>
+      </CustomListItems>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::vec&lt;4,double,*&gt;" Priority="High">
+    <DisplayString>[{x,g} {y,g} {z,g} {w,g}]</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y+z*z+w*w"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5FE6EB50C7B537A9 - ((*(long long *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(double *)&amp;i</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0,g</Item>
+        </If>
+      </CustomListItems>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+      <Item Name="w">w,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::qua&lt;*,*&gt;">
+    <DisplayString>{w,g} + {x,g}i + {y,g}j + {z,g}k</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+      <Item Name="w">w,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::qua&lt;float,*&gt;" Priority="High">
+    <DisplayString>{w,g} + {x,g}i + {y,g}j + {z,g}k</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y+z*z+w*w"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5F3759DF - ((*(int *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(float *)&amp;i</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Exec>k = k * (1.5f - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0f,g</Item>
+        </If>
+      </CustomListItems>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+      <Item Name="w">w,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::qua&lt;double,*&gt;" Priority="High">
+    <DisplayString>{w,g} + {x,g}i + {y,g}j + {z,g}k</DisplayString>
+    <Expand HideRawView="1">
+      <CustomListItems MaxItemsPerView="1">
+        <!-- calculate length using fast inverse sqrt -->
+        <Variable Name="k" InitialValue="x*x+y*y+z*z+w*w"/>
+        <Variable Name="n" InitialValue="k/2"/>
+        <Variable Name="i" InitialValue="0x5FE6EB50C7B537A9 - ((*(long long *)&amp;k) &gt;&gt; 1)"/>
+        <If Condition="k != 0">
+          <Exec>k = *(double *)&amp;i</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Exec>k = k * (1.5 - (n * k * k))</Exec>
+          <Item Name="[len]">1/k,g</Item>
+        </If>
+        <If Condition="k == 0">
+          <Item Name="[len]">0.0,g</Item>
+        </If>
+      </CustomListItems>
+      <Item Name="x">x,g</Item>
+      <Item Name="y">y,g</Item>
+      <Item Name="z">z,g</Item>
+      <Item Name="w">w,g</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;2,2,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;2,3,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 3">
+        <DisplayString>[{value[0].z,g} {value[1].z,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;2,4,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 3">
+        <DisplayString>[{value[0].z,g} {value[1].z,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 4">
+        <DisplayString>[{value[0].w,g} {value[1].w,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;3,2*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]} {value[2]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g} {value[2].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g} {value[2].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+          <Item Name="col 3">value[2]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;3,3,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]} {value[2]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g} {value[2].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g} {value[2].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 3">
+        <DisplayString>[{value[0].z,g} {value[1].z,g} {value[2].z,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+          <Item Name="col 3">value[2]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;3,4,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]} {value[2]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g} {value[2].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g} {value[2].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 3">
+        <DisplayString>[{value[0].z,g} {value[1].z,g} {value[2].z,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 4">
+        <DisplayString>[{value[0].w,g} {value[1].w,g} {value[2].w,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+          <Item Name="col 3">value[2]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat4x2&lt;4,2,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]} {value[2]} {value[3]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g} {value[2].x,g} {value[3].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g} {value[2].y,g} {value[3].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+          <Item Name="col 3">value[2]</Item>
+          <Item Name="col 4">value[3]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat4x3&lt;4,3,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]} {value[2]} {value[3]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g} {value[2].x,g} {value[3].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g} {value[2].y,g} {value[3].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 3">
+        <DisplayString>[{value[0].z,g} {value[1].z,g} {value[2].z,g} {value[3].z,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+          <Item Name="col 3">value[2]</Item>
+          <Item Name="col 4">value[3]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::mat&lt;4,4,*,*&gt;">
+    <DisplayString>[{value[0]} {value[1]} {value[2]} {value[3]}]</DisplayString>
+    <Expand HideRawView="1">
+      <!-- display matrix in row major order - it makes more sense -->
+      <Synthetic Name="row 1">
+        <DisplayString>[{value[0].x,g} {value[1].x,g} {value[2].x,g} {value[3].x,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 2">
+        <DisplayString>[{value[0].y,g} {value[1].y,g} {value[2].y,g} {value[3].y,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 3">
+        <DisplayString>[{value[0].z,g} {value[1].z,g} {value[2].z,g} {value[3].z,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="row 4">
+        <DisplayString>[{value[0].w,g} {value[1].w,g} {value[2].w,g} {value[3].w,g}]</DisplayString>
+      </Synthetic>
+      <Synthetic Name="columns">
+        <Expand>
+          <Item Name="col 1">value[0]</Item>
+          <Item Name="col 2">value[1]</Item>
+          <Item Name="col 3">value[2]</Item>
+          <Item Name="col 4">value[3]</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="glm::tdualquat&lt;*&gt;">
+    <DisplayString>[r: {real}] [d: {dual}]</DisplayString>
+    <Expand HideRawView="1">
+      <Item Name="real">real</Item>
+      <Item Name="dual">dual</Item>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

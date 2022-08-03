@@ -1,0 +1,60 @@
+{%- if exists("groups") %}## Groups
+
+  {%- for child in sort(groups) -%}* **[{{ child.title }}]({{ child.url }})**{% if existsIn(child, "brief") %}: {{ child.brief }}{% endif %}
+  {%- endfor %}
+{% endif -%}
+{%- if exists("dirs") %}## Directories
+
+  {%- for child in dirs -%}* **[`{{ child.name }}`]({{ child.url }})**{% if existsIn(child, "brief") %}: {{ child.brief }}{% endif %}
+  {%- endfor %}
+{% endif -%}
+{%- if exists("files") %}## Files
+
+  {%- include "table_header_brief.tmpl" -%}
+  {%- for child in files -%}{{- render("table_row_brief.tmpl", child) -}}
+  {%- endfor %}
+{% endif -%}
+<code class="doxybook">
+{%- if exists("namespaces") -%}
+  {%- for child in namespaces -%}
+    {%- include "synopsis_namespace_abbreviated.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicClasses") -%}
+  {%- for child in publicClasses -%}
+    {%- include "synopsis_class.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicTypes") -%}
+  {%- for child in publicTypes -%}
+    {%- include "synopsis_type.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicAttributes") -%}
+  {%- for child in publicAttributes -%}
+    {%- include "synopsis_variable.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("publicFunctions") -%}
+  {%- for child in publicFunctions -%}
+    {%- if existsIn(child, "type") -%}
+      {#- If the child doesn't have a type, it's probably a    -#}{{- noop() -}}
+      {#- constructor that Doxygen put into a non-class entity -#}{{- noop() -}}
+      {#- due to a bug whose nature is beyond me.              -#}{{- noop() -}}
+      {%- include "synopsis_function.tmpl" -%}
+      {%- set synopsis_needs_leading_line_break = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if exists("defines") -%}
+  {%- for child in defines -%}
+    {%- include "synopsis_macro.tmpl" -%}
+    {%- set synopsis_needs_leading_line_break = true -%}
+  {%- endfor -%}
+{%- endif -%}
+</code>
+

@@ -1,0 +1,47 @@
+title: Thrust
+
+repository: nvidia/thrust
+
+remote_theme: pmarsceill/just-the-docs
+
+color_scheme: nvidia
+logo: /assets/images/nvidia_logo.png
+
+search_enabled: true
+search.heading_level: 4
+
+incremental: true
+
+# just-the-docs ignores these filenames by default.
+include: [ "contributing.md", "code_of_conduct.md" ]
+
+exclude: [ "node_modules", "doxybook_templates",
+           "generate_markdown.bash", "serve_docs_locally.bash" ]
+
+plugins:
+  - jekyll-optional-front-matter # GitHub Pages.
+  - jekyll-default-layout        # GitHub Pages.
+  - jekyll-titles-from-headings  # GitHub Pages.
+  - jekyll-relative-links        # GitHub Pages.
+  - jekyll-include-cache
+
+defaults:
+  -
+    scope:
+      path: overview.md
+    values:
+      title: Overview
+      nav_order: 0
+      permalink: /
+  -
+    scope:
+      path: contributing/code_of_conduct.md
+    values:
+      parent: Contributing
+      nav_order: 2
+  -
+    scope:
+      path: releases/changelog.md
+    values:
+      parent: Releases
+      nav_order: 0

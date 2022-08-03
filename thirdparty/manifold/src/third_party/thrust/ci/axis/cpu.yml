@@ -1,0 +1,104 @@
+# Copyright (c) 2018-2020 NVIDIA Corporation
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+# Released under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+
+SDK_TYPE:
+  - cuda
+  - nvhpc
+
+SDK_VER:
+  - 11.5.1-devel
+  - 22.1-devel-cuda11.5
+
+OS_TYPE:
+  - ubuntu
+
+OS_VER:
+  - 20.04
+
+CXX_TYPE:
+  - nvcxx
+  - clang
+  - gcc
+  - icc
+
+CXX_VER:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 22.1
+  - latest
+
+exclude:
+  # Excludes by `SDK_TYPE`.
+  - CXX_TYPE: gcc
+    SDK_TYPE: nvhpc
+  - CXX_TYPE: clang
+    SDK_TYPE: nvhpc
+  - CXX_TYPE: icc
+    SDK_TYPE: nvhpc
+  - CXX_TYPE: nvcxx
+    SDK_TYPE: cuda
+  # Excludes by `SDK_VER`.
+  - SDK_TYPE: cuda
+    SDK_VER: 22.1-devel-cuda11.5
+  - SDK_TYPE: nvhpc
+    SDK_VER: 11.5.1-devel
+  # Excludes by `CXX_VER`.
+  - CXX_TYPE: nvcxx
+    CXX_VER: 5
+  - CXX_TYPE: nvcxx
+    CXX_VER: 6
+  - CXX_TYPE: nvcxx
+    CXX_VER: 7
+  - CXX_TYPE: nvcxx
+    CXX_VER: 8
+  - CXX_TYPE: nvcxx
+    CXX_VER: 9
+  - CXX_TYPE: nvcxx
+    CXX_VER: 10
+  - CXX_TYPE: nvcxx
+    CXX_VER: 11
+  - CXX_TYPE: nvcxx
+    CXX_VER: 12
+  - CXX_TYPE: nvcxx
+    CXX_VER: latest
+  - CXX_TYPE: gcc
+    CXX_VER: 12
+  - CXX_TYPE: gcc
+    CXX_VER: 22.1
+  - CXX_TYPE: gcc
+    CXX_VER: latest
+  - CXX_TYPE: clang
+    CXX_VER: 5
+  - CXX_TYPE: clang
+    CXX_VER: 6
+  - CXX_TYPE: clang
+    CXX_VER: 22.1
+  - CXX_TYPE: clang
+    CXX_VER: latest
+  - CXX_TYPE: icc
+    CXX_VER: 5
+  - CXX_TYPE: icc
+    CXX_VER: 6
+  - CXX_TYPE: icc
+    CXX_VER: 7
+  - CXX_TYPE: icc
+    CXX_VER: 8
+  - CXX_TYPE: icc
+    CXX_VER: 9
+  - CXX_TYPE: icc
+    CXX_VER: 10
+  - CXX_TYPE: icc
+    CXX_VER: 11
+  - CXX_TYPE: icc
+    CXX_VER: 12
+  - CXX_TYPE: icc
+    CXX_VER: 22.1
+

@@ -1,0 +1,28 @@
+[Visualizer]
+
+glm::detail::tvec2<*>{
+    preview (
+        #(#($c.x,$c.y))
+    )
+    children (
+            #([x]: $c.x,[y]: $c.y)
+    )
+}
+
+glm::detail::tvec3<*>{
+    preview (
+        #($e.x,$e.y,$e.z)
+    )
+    children (
+            #([x]: $e.x,[y]: $e.y,[z]: $e.z)
+    )
+}
+
+glm::detail::tvec4<*>{
+    preview (
+        #($c.x,$c.y,$c.z,$c.w)
+    )
+    children (
+            #([x]: $e.x,[y]: $e.y,[z]: $e.z, #([w]: $e.w))
+    )
+}

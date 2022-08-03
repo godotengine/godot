@@ -1,0 +1,6 @@
+     CHECK: Before A->B Copy
+CHECK-NEXT: A: 0 1 2 3 4 
+CHECK-NEXT: B: 0 0 0 0 0 
+CHECK-NEXT: After A->B Copy
+CHECK-NEXT: A: 0 1 2 3 4 
+CHECK-NEXT: B: 0 1 2 3 4 

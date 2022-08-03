@@ -1,0 +1,49 @@
+{%- if exists("publicClasses") -%}## Member Classes
+
+  {%- for child in publicClasses -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("publicTypes") -%}## Member Types
+
+  {%- for child in publicTypes -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("publicAttributes") %}## Member Variables
+
+  {%- for child in publicAttributes -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("publicFunctions") %}## Member Functions
+
+  {%- for child in publicFunctions -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("protectedTypes") -%}## Protected Member Types
+  {%- for child in publicTypes -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{% endif -%}
+{%- if exists("protectedAttributes") -%}## Protected Member Variables
+
+  {%- for child in protectedAttributes -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+{%- if exists("protectedFunctions") -%}## Protected Member Functions
+
+  {%- for child in protectedFunctions -%}
+    {% include "title_member.tmpl" %}
+    {{- render("member_details.tmpl", child) -}}
+  {%- endfor %}
+{%- endif -%}
+

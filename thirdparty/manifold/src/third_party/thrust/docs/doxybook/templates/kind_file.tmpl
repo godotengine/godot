@@ -1,0 +1,10 @@
+{% include "frontmatter.tmpl" -%}
+{%- if hasDetails -%}{% include "details.tmpl" -%}{%- endif -%}
+{% include "nonclass_members_details.tmpl" -%}
+{% include "nonclass_members.tmpl" -%}
+{%- if exists("programlisting") -%}
+
+```cpp
+{{programlisting}}
+```
+{%- endif -%}

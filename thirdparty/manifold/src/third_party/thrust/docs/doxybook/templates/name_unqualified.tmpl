@@ -1,0 +1,5 @@
+{%- if exists("name") -%}
+  {{- escape(stripNamespace(name)) -}}
+{%- else -%}
+  {{- escape(stripNamespace(title)) -}}
+{%- endif -%}

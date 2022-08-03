@@ -1,0 +1,22 @@
+# Copyright (c) 2018-2020 NVIDIA Corporation
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+# Released under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+
+SDK_TYPE:
+  - cuda
+
+SDK_VER:
+  - 11.5.1-devel
+
+OS_TYPE:
+  - ubuntu
+
+OS_VER:
+  - 20.04
+
+CXX_TYPE:
+  - gcc
+
+CXX_VER:
+  - 9

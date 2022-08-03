@@ -1,0 +1,145 @@
+$body-line-height: 1.4;
+$content-line-height: 1.4;
+.highlight { line-height: 1.0 !important; }
+
+/* h1 size. We make this smaller so the README title fits on one line. */
+$font-size-9: 30px;
+
+/* Inline code. */
+code,
+code.highlighter-rouge
+{ font-size: 0.85em !important; }
+
+/* Code blocks. */
+pre.highlight code { font-size: 0.9em !important; }
+
+/* Doxybook generated code snippets. */
+code.doxybook { display: block; }
+
+/* Line wrap with an indent of four characters in Doxybook-generated code snippets. */
+code.doxybook span
+{ display: block; text-indent: -4ex !important; padding-left: 4ex !important; }
+
+/* Line wrap with an indent of eight characters in Doxybook-generated code snippets. */
+code.doxybook span
+{ display: block; text-indent: -8ex !important; padding-left: 8ex !important; }
+
+/* Disable line wrap for indent <span>s. */
+code.doxybook
+{ display: block; text-indent: 0ex !important; padding-left: 0ex !important; }
+
+h3 { margin-bottom: 1.0em !important; }
+
+$nav-width: 300px;
+
+$body-background-color: $grey-dk-300;
+$sidebar-color: $grey-dk-300;
+$border-color: $grey-dk-200;
+
+$body-text-color: $grey-lt-300;
+$body-heading-color: $grey-lt-000;
+$nav-child-link-color: $grey-dk-000;
+$search-result-preview-color: $grey-dk-000;
+
+$link-color: #76b900;
+$btn-primary-color: #76b900;
+$base-button-color: $grey-dk-250;
+
+$code-background-color: $grey-dk-250;
+$search-background-color: $grey-dk-250;
+$table-background-color: $grey-dk-250;
+$feedback-color: darken($sidebar-color, 3%);
+
+div.highlighter-rouge,
+pre.highlight code,
+code.doxybook
+{ background-color: #111 !important; }
+
+span.doxybook-comment code
+{ background-color: #111 !important; border: none !important; }
+
+.highlight span.err { color: #ff0000; font-weight: bold; } /* Error */
+
+.highlight span.ow, /* Operator.Word */
+.highlight span.k,  /* Keyword */
+.highlight span.kc, /* Keyword.Constant */
+.highlight span.kd, /* Keyword.Declaration */
+.highlight span.kp, /* Keyword.Pseudo */
+.highlight span.kr, /* Keyword.Reserved */
+.highlight span.bp, /* Name.Builtin.Pseudo */
+.highlight span.vc, /* Name.Variable.Class */
+.highlight span.vg, /* Name.Variable.Global */
+.highlight span.vi  /* Name.Variable.Instance */
+{ color: #76b900; font-weight: bold; }
+
+.highlight span.n,  /* Name */
+.highlight span.h,  /* Name */
+.highlight span.na, /* Name.Attribute */
+.highlight span.nb, /* Name.Builtin */
+.highlight span.nc, /* Name.Class */
+.highlight span.no, /* Name.Constant */
+.highlight span.nd, /* Name.Decorator */
+.highlight span.ni, /* Name.Entity */
+.highlight span.ne, /* Name.Exception */
+.highlight span.nf, /* Name.Function */
+.highlight span.nl, /* Name.Label */
+.highlight span.nn, /* Name.Namespace */
+.highlight span.nx, /* Name.Other */
+.highlight span.py, /* Name.Property */
+.highlight span.nt, /* Name.Tag */
+.highlight span.nv, /* Name.Variable */
+.highlight span.kt  /* Keyword.Type */
+{ color: $grey-lt-300 }
+
+.highlight span.c,  /* Comment */
+.highlight span.cm, /* Comment.Multiline */
+.highlight span.c1, /* Comment.Single */
+.highlight span.cs, /* Comment.Special */
+span.doxybook-comment
+{ color: #009966; font-family: $body-font-family; font-style: italic; }
+
+.highlight span.cp  /* Preprocessor */
+.highlight span.kn, /* Keyword.Namespace */
+{ color: $grey-dk-000 }
+
+.highlight span.o, /* Operator */
+.highlight span.p  /* Punctuation */
+{ color: #00ff00; }
+
+.highlight span.ge { font-style: italic; } /* Generic.Emph */
+
+.highlight span.gs { font-weight: bold; } /* Generic.Strong */
+
+.highlight span.l,  /* Literal */
+.highlight span.ld, /* Literal.Date */
+.highlight span.m,  /* Literal.Number */
+.highlight span.mf, /* Literal.Number.Float */
+.highlight span.mh, /* Literal.Number.Hex */
+.highlight span.mi, /* Literal.Number.Integer */
+.highlight span.mo, /* Literal.Number.Oct */
+.highlight span.il, /* Literal.Number.Integer.Long */
+.highlight span.s,  /* Literal.String */
+.highlight span.sb, /* Literal.String.Backtick */
+.highlight span.sc, /* Literal.String.Char */
+.highlight span.sd, /* Literal.String.Doc */
+.highlight span.s2, /* Literal.String.Double */
+.highlight span.se, /* Literal.String.Escape */
+.highlight span.sh, /* Literal.String.Heredoc */
+.highlight span.si, /* Literal.String.Interpol */
+.highlight span.sx, /* Literal.String.Other */
+.highlight span.sr, /* Literal.String.Regex */
+.highlight span.s1, /* Literal.String.Single */
+.highlight span.ss  /* Literal.String.Symbol */
+{ color: #119911; }
+
+.highlight span.w { color: #00cc00; } /* Text.Whitespace */
+
+.highlight span.gh, /* Generic.Heading */
+.highlight span.gp, /* Generic.Prompt */
+.highlight span.gu  /* Generic.Subheading */
+{ color: #00ff00; font-weight: bold; }
+
+.highlight span.gd { color: #ff0000; } /* Generic.Deleted */
+.highlight span.gi { color: #00ff00; } /* Generic.Inserted */
+
+.search-input { color: $body-text-color; }

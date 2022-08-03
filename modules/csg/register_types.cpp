@@ -45,8 +45,6 @@ void initialize_csg_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(CSGMesh3D);
 		GDREGISTER_CLASS(CSGSphere3D);
 		GDREGISTER_CLASS(CSGBox3D);
-		GDREGISTER_CLASS(CSGCylinder3D);
-		GDREGISTER_CLASS(CSGTorus3D);
 		GDREGISTER_CLASS(CSGPolygon3D);
 		GDREGISTER_CLASS(CSGCombiner3D);
 	}

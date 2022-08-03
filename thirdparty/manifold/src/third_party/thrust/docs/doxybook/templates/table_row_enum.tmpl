@@ -1,0 +1,1 @@
+| `{{ name }}` | {% if exists("initializer") -%}`{{ escape(replace(initializer, "= ", "")) }}`{%- endif %} | {% if exists("brief") -%}{{ brief }}{%- endif %} |

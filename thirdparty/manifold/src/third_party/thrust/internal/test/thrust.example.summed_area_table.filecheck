@@ -1,0 +1,22 @@
+     CHECK: [step 0] initial array
+CHECK-NEXT:        1        1        1        1 
+CHECK-NEXT:        1        1        1        1 
+CHECK-NEXT:        1        1        1        1 
+CHECK-NEXT: [step 1] scan horizontally
+CHECK-NEXT:        1        2        3        4 
+CHECK-NEXT:        1        2        3        4 
+CHECK-NEXT:        1        2        3        4 
+CHECK-NEXT: [step 2] transpose array
+CHECK-NEXT:        1        1        1 
+CHECK-NEXT:        2        2        2 
+CHECK-NEXT:        3        3        3 
+CHECK-NEXT:        4        4        4 
+CHECK-NEXT: [step 3] scan transpose horizontally
+CHECK-NEXT:        1        2        3 
+CHECK-NEXT:        2        4        6 
+CHECK-NEXT:        3        6        9 
+CHECK-NEXT:        4        8       12 
+CHECK-NEXT: [step 4] transpose the transpose
+CHECK-NEXT:        1        2        3        4 
+CHECK-NEXT:        2        4        6        8 
+CHECK-NEXT:        3        6        9       12 

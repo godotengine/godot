@@ -1,0 +1,206 @@
+{%- if exists("brief") -%}{{brief}}
+
+{% endif -%}
+{%- if exists("details") -%}{{details}}
+
+{% endif -%}
+{%- if exists("inbody") -%}{{inbody}}
+
+{% endif -%}
+{%- if exists("tests") -%}**Test**:
+  {%- if length(tests) == 1 -%}{{first(tests)}}
+  {%- else -%}
+    {%- for item in tests -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("note") -%}**Note**:
+  {%- if length(note) == 1 -%}{{first(note)}}
+  {%- else -%}
+    {%- for item in note -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("remark") -%}**Remark**:
+  {%- if length(remark) == 1 -%}{{first(remark)}}
+  {%- else -%}
+    {%- for item in remark -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("attention") -%}**Attention**:
+  {%- if length(attention) == 1 -%}{{first(attention)}}
+  {%- else -%}
+    {%- for item in attention -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("bugs") -%}**Bug**:
+  {%- if length(bugs) == 1 -%}{{first(bugs)}}
+  {%- else -%}
+    {%- for item in bugs -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("warning") -%}**Warning**:
+  {%- if length(warning) == 1 -%}{{first(warning)}}
+  {%- else -%}
+    {%- for item in warning -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("todos") -%}**TODO**:
+  {%- if length(todos) == 1 -%}{{first(todos)}}
+  {%- else -%}
+    {%- for item in todos -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("templateParamsList") -%}**Template Parameters**:
+  {%- if length(templateParamsList) == 1 -%}**`{{get(first(templateParamsList), "name")}}`**: {{get(first(templateParamsList), "text")}}
+  {%- else -%}
+    {%- for param in templateParamsList -%}* **`{{param.name}}`** {{param.text}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("paramList") -%}**Function Parameters**:
+  {%- if length(paramList) == 1 -%}**`{{get(first(paramList), "name")}}`**: {{get(first(paramList), "text")}}
+  {%- else -%}
+    {%- for param in paramList -%}* **`{{param.name}}`** {{param.text}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("pre") -%}**Preconditions**:
+  {%- if length(pre) == 1 -%}{{first(pre)}}
+  {%- else -%}
+    {%- for item in pre -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("post") -%}**Postconditions**:
+  {%- if length(post) == 1 -%}{{first(post)}}
+  {%- else -%}
+    {%- for item in post -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("invariant") -%}**Invariant**:
+  {%- if length(invariant) == 1 -%}{{first(invariant)}}
+  {%- else -%}
+    {%- for item in invariant -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("returns") or exists("returnsList") -%}**Returns**:
+  {%- if exists("returns") and exists("returnsList") -%}
+    {%- for item in returns -%}* {{item}}
+    {%- endfor -%}
+    {%- for item in returnsList -%}* **`{{item.name}}`**: {{item.text}}
+    {%- endfor -%}
+  {%- else if exists("returns") -%}
+    {%- if length(returns) == 1 -%}{{first(returns)}}
+    {%- else -%} 
+      {%- for item in returns -%}* {{item}}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- else if exists("returnsList") -%}
+    {%- if length(returnsList) == 1 -%}**`{{get(first(returnsList), "name")}}`** {{get(first(returnsList), "text")}}
+    {%- else -%} 
+      {%- for item in returnsList -%}* **`{{item.name}}`**: {{item.text}}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("exceptionsList") -%}**Exceptions**:
+  {%- if length(exceptionsList) == 1 -%}**`{{get(first(exceptionsList), "name")}}`**: {{get(first(exceptionsList), "text")}}
+  {%- else -%}
+    {%- for param in exceptionsList -%}* **`{{param.name}}`**: {{param.text}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("deprecated") -%}**Deprecated**: {{deprecated}}
+
+{% endif -%}
+{%- if exists("authors") -%}**Author**:
+  {%- if length(authors) == 1 -%}{{first(authors)}}
+  {%- else -%}
+    {%- for item in authors -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("copyright") -%}**Copyright**:
+  {%- if length(copyright) == 1 -%}{{first(copyright)}}
+  {%- else -%}
+    {%- for item in copyright -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("version") -%}**Version**:
+  {%- if length(version) == 1 -%}{{first(version)}}
+  {%- else -%}
+    {%- for item in version -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("since") -%}**Since**:
+  {%- if length(since) == 1 -%}{{first(since)}}
+  {%- else -%}
+    {%- for item in since -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("date") -%}**Date**:
+  {%- if length(date) == 1 -%}{{first(date)}}
+  {%- else -%}
+    {%- for item in date -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("baseClasses") -%}**Inherits From**:
+  {%- if length(baseClasses) == 1 -%}
+    {%- if existsIn(first(baseClasses), "url") -%}[`{{get(first(baseClasses), "name")}}`]({{get(first(baseClasses), "url")}})
+    {%- else -%}`{{get(first(baseClasses), "name")}}`
+    {%- endif -%}
+  {%- else -%}
+    {%- for base in baseClasses -%}
+      {%- if existsIn(baseClasses, "url") -%}* [`{{base.name}}`]({{base.url}})
+      {%- else -%}* `{{base.name}}`
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("derivedClasses") -%}**Inherited By**:
+  {%- if length(derivedClasses) == 1 -%}
+    {%- if existsIn(first(derivedClasses), "url") -%}[`{{get(first(derivedClasses), "name")}}`]({{get(first(derivedClasses), "url")}})
+    {%- else -%}`{{get(first(derivedClasses), "name")}}`
+    {%- endif -%}
+  {%- else -%}
+    {%- for derived in derivedClasses -%}
+      {%- if existsIn(first(derivedClasses), "url") -%}* [`{{derived.name}}`]({{derived.url}})
+      {%- else -%}* `{{derived.name}}`{%- endif -%}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("reimplements") -%}**Implements**: [`{{reimplements.name}}`]({{reimplements.url}})
+
+{% endif -%}
+{%- if exists("reimplementedBy") -%}**Implemented By**:
+  {%- if length(reimplementedBy) == 1 -%}
+    {%- if existsIn(first(reimplementedBy), "url") -%}[`{{get(first(reimplementedBy), "name")}}`]({{get(first(reimplementedBy), "url")}})
+    {%- else -%}`{{get(first(reimplementedBy), "name")}}`
+    {%- endif -%}
+  {%- else -%}
+    {%- for impl in reimplementedBy -%}
+      {%- if existsIn(first(reimplementedBy), "url") -%}* [`{{impl.name}}`]({{impl.url}})
+      {%- else -%}* `{{impl.name}}`
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}
+{%- if exists("see") -%}**See**:
+  {%- if length(see) == 1 -%}{{first(see)}}
+  {%- else -%}
+    {%- for item in see -%}* {{item}}
+    {%- endfor -%}
+  {%- endif %}
+{% endif -%}

@@ -1,0 +1,14 @@
+{%- if exists("children") -%}{%- for child in children -%}
+  {%- for i in range(default(index_depth, 0)) -%}
+    {{- noop() }}  {{ noop() -}}
+  {%- endfor -%}
+  * {{ noop() -}}
+  <b><a href="{{ child.url }}">{{ render("name_qualified.tmpl", child) }}</a></b>{{ noop() -}}
+  {%- if existsIn(child, "brief") -%}
+    {{- noop() }} <br> {{ child.brief -}}
+  {%- endif %}
+  {%- if existsIn(child, "children") -%}
+    {%- set child.index_depth = default(index_depth, 0) + 1 -%}
+    {{- render("index.tmpl", child) -}}
+  {%- endif -%}
+{%- endfor -%}{%- endif -%}
