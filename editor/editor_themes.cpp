@@ -641,6 +641,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Add a highlight line at the top of the selected tab.
 	style_tab_selected->set_border_width_all(0);
+	style_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x - border_width);
 	style_tab_selected->set_border_width(SIDE_TOP, Math::round(2 * EDSCALE));
 	// Make the highlight line prominent, but not too prominent as to not be distracting.
 	Color tab_highlight = dark_color_2.lerp(accent_color, 0.75);
@@ -652,6 +653,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
 	// We can't prevent them with both rounded corners and non-zero border width, though
 	style_tab_selected->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
+
+	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
+	style_tab_selected->set_expand_margin_size(SIDE_LEFT, -border_width);
 
 	style_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
 	style_tab_selected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
