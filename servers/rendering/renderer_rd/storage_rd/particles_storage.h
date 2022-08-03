@@ -159,7 +159,7 @@ private:
 		real_t randomness = 0.0;
 		bool restart_request = false;
 		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
-		bool use_local_coords = true;
+		bool use_local_coords = false;
 		bool has_collision_cache = false;
 
 		bool has_sdf_collision = false;
