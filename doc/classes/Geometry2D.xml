@@ -188,6 +188,16 @@
 				Returns if [code]point[/code] is inside the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code].
 			</description>
 		</method>
+		<method name="segment_intersects_circle">
+			<return type="float" />
+			<argument index="0" name="segment_from" type="Vector2" />
+			<argument index="1" name="segment_to" type="Vector2" />
+			<argument index="2" name="circle_position" type="Vector2" />
+			<argument index="3" name="circle_radius" type="float" />
+			<description>
+				Given the 2D segment ([code]segment_from[/code], [code]segment_to[/code]), returns the position on the segment (as a number between 0 and 1) at which the segment hits the circle that is located at position [code]circle_position[/code] and has radius [code]circle_radius[/code]. If the segment does not intersect the circle, -1 is returned (this is also the case if the line extending the segment would intersect the circle, but the segment does not).
+			</description>
+		</method>
 		<method name="segment_intersects_segment">
 			<return type="Variant" />
 			<argument index="0" name="from_a" type="Vector2" />
