@@ -819,6 +819,12 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		if (r_translation_remapped) {
 			*r_translation_remapped = true;
 		}
+
+		// Fallback to p_path if new_path does not exist.
+		if (!FileAccess::exists(new_path)) {
+			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
+			new_path = p_path;
+		}
 	}
 
 	if (path_remaps.has(new_path)) {

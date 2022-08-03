@@ -36,6 +36,7 @@
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
+class FileSystemDock;
 
 class LocalizationEditor : public VBoxContainer {
 	GDCLASS(LocalizationEditor, VBoxContainer);
@@ -81,6 +82,9 @@ class LocalizationEditor : public VBoxContainer {
 	void _pot_generate(const String &p_file);
 	void _update_pot_file_extensions();
 
+	void _filesystem_files_moved(const String &p_old_file, const String &p_new_file);
+	void _filesystem_file_removed(const String &p_file);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -88,6 +92,7 @@ protected:
 public:
 	void add_translation(const String &p_translation);
 	void update_translations();
+	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
 
 	LocalizationEditor();
 };
