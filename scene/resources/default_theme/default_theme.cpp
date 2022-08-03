@@ -797,6 +797,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_unselected->duplicate();
 	style_tab_disabled->set_bg_color(style_disabled_color);
 
+	Ref<StyleBoxFlat> style_vertical_tab_selected = make_flat_stylebox(style_normal_color, 4, 10, 4, 10, 0);
+	style_vertical_tab_selected->set_border_width(SIDE_LEFT, Math::round(2 * scale));
+	style_vertical_tab_selected->set_border_color(style_focus_color);
+	Ref<StyleBoxFlat> style_vertical_tab_unselected = make_flat_stylebox(style_pressed_color, 4, 10, 4, 10, 0);
+	// Add some spacing between unselected tabs to make them easier to distinguish from each other.
+	style_vertical_tab_unselected->set_border_width(SIDE_TOP, Math::round(scale));
+	style_vertical_tab_unselected->set_border_width(SIDE_BOTTOM, Math::round(scale));
+	style_vertical_tab_unselected->set_border_color(style_popup_border_color);
+	Ref<StyleBoxFlat> style_vertical_tab_disabled = style_vertical_tab_unselected->duplicate();
+	style_vertical_tab_disabled->set_bg_color(style_disabled_color);
+
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
@@ -828,6 +839,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("vertical_tab_selected", "TabBar", style_vertical_tab_selected);
+	theme->set_stylebox("vertical_tab_unselected", "TabBar", style_vertical_tab_unselected);
+	theme->set_stylebox("vertical_tab_disabled", "TabBar", style_vertical_tab_disabled);
 	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
 	theme->set_stylebox("button_highlight", "TabBar", button_normal);
 
@@ -835,6 +849,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);
 	theme->set_icon("decrement", "TabBar", icons["scroll_button_left"]);
 	theme->set_icon("decrement_highlight", "TabBar", icons["scroll_button_left_hl"]);
+	theme->set_icon("vertical_increment", "TabBar", icons["scroll_button_down"]);
+	theme->set_icon("vertical_increment_highlight", "TabBar", icons["scroll_button_down_hl"]);
+	theme->set_icon("vertical_decrement", "TabBar", icons["scroll_button_up"]);
+	theme->set_icon("vertical_decrement_highlight", "TabBar", icons["scroll_button_up_hl"]);
 	theme->set_icon("drop_mark", "TabBar", icons["tabs_drop_mark"]);
 	theme->set_icon("close", "TabBar", icons["close"]);
 
