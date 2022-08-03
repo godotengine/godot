@@ -121,6 +121,9 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (screen != nullptr && screen->is_visible()) {
+				// Ensure that the ColorPickerButton is updated, since it is currently not
+				// possible for screen object to receive InputEventMouseButton when clicked.
+				emit_signal(SNAME("color_changed"), color);
 				screen->hide();
 			}
 		} break;
@@ -1371,6 +1374,8 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// These events are currently never received, workaround added to _notification
+	// when a NOTIFICATION_WM_CLOSE_REQUEST is received.
 	Ref<InputEventMouseButton> bev = p_event;
 	if (bev.is_valid() && bev->get_button_index() == MouseButton::LEFT && !bev->is_pressed()) {
 		emit_signal(SNAME("color_changed"), color);
@@ -1390,6 +1395,9 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 			Color c = img->get_pixel(ofs.x, ofs.y);
 
 			set_pick_color(c);
+			if (!deferred_mode_enabled) {
+				emit_signal(SNAME("color_changed"), color);
+			}
 		}
 	}
 }
@@ -1403,27 +1411,34 @@ void ColorPicker::_add_preset_pressed() {
 	emit_signal(SNAME("preset_added"), color);
 }
 
-void ColorPicker::_screen_pick_pressed() {
+void ColorPicker::_screen_pick_toggled(bool p_button_pressed) {
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	Viewport *r = get_tree()->get_root();
-	if (!screen) {
-		screen = memnew(Control);
-		r->add_child(screen);
-		screen->set_as_top_level(true);
-		screen->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
-		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
-		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed").bind(false));
+	if (p_button_pressed) {
+		if (!screen) {
+			Viewport *r = get_tree()->get_root();
+			screen = memnew(Control);
+			r->add_child(screen);
+			screen->set_as_top_level(true);
+			screen->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+			screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
+			screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
+			// It immediately toggles off in the first press otherwise.
+			screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed").bind(false));
+		} else {
+			screen->show();
+		}
+		screen->move_to_front();
+		// TODO: show modal no longer works, needs to be converted to a popup.
+		//screen->show_modal();
 	} else {
-		screen->show();
+		if (screen != nullptr && screen->is_visible()) {
+			screen->hide();
+			// TODO: Revert pick color, which has been modified if the screen was moused over.
+		}
 	}
-	screen->move_to_front();
-	// TODO: show modal no longer works, needs to be converted to a popup.
-	//screen->show_modal();
 }
 
 void ColorPicker::_html_focus_exit() {
@@ -1593,10 +1608,11 @@ ColorPicker::ColorPicker() :
 	add_child(sample_hbc, false, INTERNAL_MODE_FRONT);
 
 	btn_pick = memnew(Button);
+	btn_pick->set_flat(false);
 	sample_hbc->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
 	btn_pick->set_tooltip_text(RTR("Pick a color from the editor window."));
-	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
+	btn_pick->connect("toggled", callable_mp(this, &ColorPicker::_screen_pick_toggled));
 
 	sample = memnew(TextureRect);
 	sample_hbc->add_child(sample);
