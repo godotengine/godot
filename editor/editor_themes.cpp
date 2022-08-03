@@ -834,6 +834,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("pressed", "CheckButton", style_menu);
 	theme->set_stylebox("disabled", "CheckButton", style_menu);
 	theme->set_stylebox("hover", "CheckButton", style_menu);
+	theme->set_stylebox("hover_pressed", "CheckButton", style_menu);
 
 	theme->set_icon("on", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), SNAME("EditorIcons")));
 	theme->set_icon("on_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), SNAME("EditorIcons")));
@@ -871,6 +872,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("pressed", "CheckBox", sb_checkbox);
 	theme->set_stylebox("disabled", "CheckBox", sb_checkbox);
 	theme->set_stylebox("hover", "CheckBox", sb_checkbox);
+	theme->set_stylebox("hover_pressed", "CheckBox", sb_checkbox);
 	theme->set_icon("checked", "CheckBox", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));
 	theme->set_icon("unchecked", "CheckBox", theme->get_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons")));
 	theme->set_icon("radio_checked", "CheckBox", theme->get_icon(SNAME("GuiRadioChecked"), SNAME("EditorIcons")));
