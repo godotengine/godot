@@ -39,6 +39,7 @@
 
 #include "tts_macos.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -1891,6 +1892,20 @@ float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
+void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
+	if (screen_keep_on_assertion) {
+		IOPMAssertionRelease(screen_keep_on_assertion);
+		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
+	if (p_enable) {
+		String app_name_string = ProjectSettings::get_singleton()->get("application/config/name");
+		NSString *name = [NSString stringWithUTF8String:(app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data())];
+		NSString *reason = @"Godot Engine running with display/window/energy_saving/keep_screen_on = true";
+		IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep, (__bridge CFStringRef)name, (__bridge CFStringRef)reason, (__bridge CFStringRef)reason, nullptr, 0, nullptr, &screen_keep_on_assertion);
+	}
+}
+
 Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
@@ -3266,9 +3281,16 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		RendererCompositorRD::make_current();
 	}
 #endif
+
+	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
 }
 
 DisplayServerMacOS::~DisplayServerMacOS() {
+	if (screen_keep_on_assertion) {
+		IOPMAssertionRelease(screen_keep_on_assertion);
+		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
 	// Destroy all windows.
 	for (HashMap<WindowID, WindowData>::Iterator E = windows.begin(); E;) {
 		HashMap<WindowID, WindowData>::Iterator F = E;
