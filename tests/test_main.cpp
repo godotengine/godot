@@ -70,6 +70,7 @@
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
 #include "tests/core/templates/test_paged_array.h"
+#include "tests/core/templates/test_rid.h"
 #include "tests/core/templates/test_vector.h"
 #include "tests/core/test_crypto.h"
 #include "tests/core/test_hashing_context.h"
