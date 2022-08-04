@@ -64,7 +64,24 @@ struct Ligature
      * as a "ligated" substitution. */
     if (unlikely (count == 1))
     {
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->sync_so_far ();
+	c->buffer->message (c->font,
+			    "replacing glyph at %d (ligature substitution)",
+			    c->buffer->idx);
+      }
+
       c->replace_glyph (ligGlyph);
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "replaced glyph at %d (ligature substitution)",
+			    c->buffer->idx - 1);
+      }
+
       return_trace (true);
     }
 
@@ -85,12 +102,45 @@ struct Ligature
       return_trace (false);
     }
 
+    unsigned pos = 0;
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      unsigned delta = c->buffer->sync_so_far ();
+
+      pos = c->buffer->idx;
+
+      char buf[HB_MAX_CONTEXT_LENGTH * 16] = {0};
+      char *p = buf;
+
+      match_end += delta;
+      for (unsigned i = 0; i < count; i++)
+      {
+	match_positions[i] += delta;
+	if (i)
+	  *p++ = ',';
+	sprintf (p, "%u", match_positions[i]);
+	p += strlen(p);
+      }
+
+      c->buffer->message (c->font,
+			  "ligating glyphs at %s",
+			  buf);
+    }
+
     ligate_input (c,
                   count,
                   match_positions,
                   match_end,
                   ligGlyph,
                   total_component_count);
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->sync_so_far ();
+      c->buffer->message (c->font,
+			  "ligated glyph at %d",
+			  pos);
+    }
 
     return_trace (true);
   }

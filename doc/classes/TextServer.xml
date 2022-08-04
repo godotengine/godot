@@ -1679,6 +1679,9 @@
 		<constant name="GRAPHEME_IS_CONNECTED" value="1024" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is connected to the previous grapheme. Breaking line before this grapheme is not safe.
 		</constant>
+		<constant name="GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL" value="2048" enum="GraphemeFlag" is_bitfield="true">
+			It is safe to insert a U+0640 before this grapheme for elongation.
+		</constant>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
 			Disables font hinting (smoother but less crisp).
 		</constant>

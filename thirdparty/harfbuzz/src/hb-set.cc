@@ -145,7 +145,7 @@ hb_set_set_user_data (hb_set_t           *set,
  * Since: 0.9.2
  **/
 void *
-hb_set_get_user_data (hb_set_t           *set,
+hb_set_get_user_data (const hb_set_t     *set,
 		      hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (set, key);

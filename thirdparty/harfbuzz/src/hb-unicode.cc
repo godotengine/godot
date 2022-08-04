@@ -308,8 +308,8 @@ hb_unicode_funcs_set_user_data (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 void *
-hb_unicode_funcs_get_user_data (hb_unicode_funcs_t *ufuncs,
-				hb_user_data_key_t *key)
+hb_unicode_funcs_get_user_data (const hb_unicode_funcs_t *ufuncs,
+				hb_user_data_key_t       *key)
 {
   return hb_object_get_user_data (ufuncs, key);
 }

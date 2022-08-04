@@ -4718,6 +4718,11 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 							if (sd_glyphs[i].font_rid != RID()) {
 								Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size);
 								if ((sd_glyphs[i].flags & GRAPHEME_IS_VALID) == GRAPHEME_IS_VALID) {
+#if HB_VERSION_ATLEAST(5, 1, 0)
+									if ((i > 0) && ((sd_glyphs[i - 1].flags & GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL) != GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL)) {
+										continue;
+									}
+#endif
 									gl.start = sd_glyphs[i].start;
 									gl.end = sd_glyphs[i].end;
 									gl.repeat = 0;
@@ -4908,11 +4913,16 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
 	hb_buffer_set_direction(p_sd->hb_buffer, p_direction);
+	int flags = (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0);
 	if (p_sd->preserve_control) {
-		hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES | (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0)));
+		flags |= HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES;
 	} else {
-		hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_DEFAULT | (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0)));
+		flags |= HB_BUFFER_FLAG_DEFAULT;
 	}
+#if HB_VERSION_ATLEAST(5, 1, 0)
+	flags |= HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL;
+#endif
+	hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)flags);
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
 	if (p_sd->spans[p_span].language.is_empty()) {
@@ -4979,6 +4989,12 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			if (glyph_info[i].mask & HB_GLYPH_FLAG_DEFINED) {
 				gl.flags |= GRAPHEME_IS_CONNECTED;
 			}
+
+#if HB_VERSION_ATLEAST(5, 1, 0)
+			if (glyph_info[i].mask & HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL) {
+				gl.flags |= GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL;
+			}
+#endif
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {

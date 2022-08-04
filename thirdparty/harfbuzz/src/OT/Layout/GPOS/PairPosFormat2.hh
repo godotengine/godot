@@ -217,9 +217,22 @@ struct PairPosFormat2_4
     }
     bail:
 
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "kerning glyphs at %d,%d",
+			  c->buffer->idx, skippy_iter.idx);
+    }
 
     applied_first = valueFormat1.apply_value (c, this, v, buffer->cur_pos());
     applied_second = valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "kerned glyphs at %d,%d",
+			  c->buffer->idx, skippy_iter.idx);
+    }
 
     success:
     if (applied_first || applied_second)
