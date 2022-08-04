@@ -235,7 +235,7 @@ namespace Godot
         /// <returns>The scaled transformation matrix.</returns>
         public Transform3D ScaledLocal(Vector3 scale)
         {
-            Basis tmpBasis = new Basis(new Vector3(scale.x, 0, 0), new Vector3(0, scale.y, 0), new Vector3(0, 0, scale.z));
+            Basis tmpBasis = Basis.FromScale(scale);
             return new Transform3D(basis * tmpBasis, origin);
         }
 

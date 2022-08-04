@@ -828,6 +828,22 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a pure scale basis matrix with no rotation or shearing.
+        /// The scale values are set as the main diagonal of the matrix,
+        /// and all of the other parts of the matrix are zero.
+        /// </summary>
+        /// <param name="scale">The scale Vector3.</param>
+        /// <returns>A pure scale Basis matrix.</returns>
+        public static Basis FromScale(Vector3 scale)
+        {
+            return new Basis(
+                scale.x, 0, 0,
+                0, scale.y, 0,
+                0, 0, scale.z
+            );
+        }
+
+        /// <summary>
         /// Composes these two basis matrices by multiplying them
         /// together. This has the effect of transforming the second basis
         /// (the child) by the first basis (the parent).
