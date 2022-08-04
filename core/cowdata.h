@@ -32,6 +32,7 @@
 #define COWDATA_H
 
 #include <string.h>
+#include <type_traits>
 
 #include "core/error_macros.h"
 #include "core/os/memory.h"
@@ -195,7 +196,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 	// clean up
 
-	if (!__has_trivial_destructor(T)) {
+	if (!std::is_trivially_destructible<T>::value) {
 		uint32_t *count = _get_size();
 		T *data = (T *)(count + 1);
 
@@ -230,7 +231,7 @@ uint32_t CowData<T>::_copy_on_write() {
 		T *_data = (T *)(mem_new);
 
 		// initialize new elements
-		if (__has_trivial_copy(T)) {
+		if (std::is_trivially_copyable<T>::value) {
 			memcpy(mem_new, _ptr, current_size * sizeof(T));
 
 		} else {
@@ -293,7 +294,7 @@ Error CowData<T>::resize(int p_size) {
 
 		// construct the newly created elements
 
-		if (!__has_trivial_constructor(T)) {
+		if (!std::is_trivially_constructible<T>::value) {
 			for (int i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
@@ -302,7 +303,7 @@ Error CowData<T>::resize(int p_size) {
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-		if (!__has_trivial_destructor(T)) {
+		if (!std::is_trivially_destructible<T>::value) {
 			// deinitialize no longer needed elements
 			for (uint32_t i = p_size; i < *_get_size(); i++) {
 				T *t = &_ptr[i];
