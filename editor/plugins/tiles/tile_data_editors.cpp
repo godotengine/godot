@@ -40,6 +40,10 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_server_3d.h"
+#endif // DEBUG_ENABLED
+
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
 	call_deferred(SNAME("_tile_set_changed_deferred_update"));
@@ -2674,7 +2678,9 @@ void TileDataNavigationEditor::_tile_set_changed() {
 void TileDataNavigationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			polygon_editor->set_polygons_color(get_tree()->get_debug_navigation_color());
+#ifdef DEBUG_ENABLED
+			polygon_editor->set_polygons_color(NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color());
+#endif // DEBUG_ENABLED
 		} break;
 	}
 }
@@ -2701,7 +2707,10 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 			return;
 		}
 
-		Color color = p_canvas_item->get_tree()->get_debug_navigation_color();
+		Color color = Color(0.5, 1.0, 1.0, 1.0);
+#ifdef DEBUG_ENABLED
+		color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+#endif // DEBUG_ENABLED
 		if (p_selected) {
 			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
