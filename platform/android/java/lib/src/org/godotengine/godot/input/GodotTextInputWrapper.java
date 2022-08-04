@@ -115,7 +115,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 		}
 		for (int i = 0; i < count; ++i) {
 			int key = newChars[i];
-			if ((key == '\n') && !mEdit.isMultiline()) {
+			if ((key == '\n') && !(mEdit.getKeyboardType() == GodotEditText.VirtualKeyboardType.KEYBOARD_TYPE_MULTILINE)) {
 				// Return keys are handled through action events
 				continue;
 			}
