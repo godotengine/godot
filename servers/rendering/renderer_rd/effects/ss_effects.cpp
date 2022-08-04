@@ -32,6 +32,7 @@
 
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 using namespace RendererRD;
@@ -333,6 +334,22 @@ SSEffects::SSEffects() {
 			}
 		}
 	}
+
+	// Subsurface scattering
+	{
+		Vector<String> sss_modes;
+		sss_modes.push_back("\n#define USE_11_SAMPLES\n");
+		sss_modes.push_back("\n#define USE_17_SAMPLES\n");
+		sss_modes.push_back("\n#define USE_25_SAMPLES\n");
+
+		sss.shader.initialize(sss_modes);
+
+		sss.shader_version = sss.shader.version_create();
+
+		for (int i = 0; i < sss_modes.size(); i++) {
+			sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
+		}
+	}
 }
 
 SSEffects::~SSEffects() {
@@ -374,6 +391,11 @@ SSEffects::~SSEffects() {
 		ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
 
 		RD::get_singleton()->free(ssao.importance_map_load_counter);
+	}
+
+	{
+		// Cleanup Subsurface scattering
+		sss.shader.version_free(sss.shader_version);
 	}
 
 	singleton = nullptr;
@@ -1711,5 +1733,75 @@ void SSEffects::ssr_free(SSRRenderBuffers &p_ssr_buffers) {
 		p_ssr_buffers.depth_scaled = RID();
 		RD::get_singleton()->free(p_ssr_buffers.normal_scaled);
 		p_ssr_buffers.normal_scaled = RID();
+	}
+}
+
+/* Subsurface scattering */
+
+void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RenderingServer::SubSurfaceScatteringQuality p_quality) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	// Our intermediate buffer is only created if we haven't created it already.
+	RD::DataFormat format = p_render_buffers->get_base_data_format();
+	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	uint32_t layers = 1; // We only need one layer, we're handling one view at a time
+	uint32_t mipmaps = 1; // Image::get_image_required_mipmaps(p_screen_size.x, p_screen_size.y, Image::FORMAT_RGBAH);
+	RID intermediate = p_render_buffers->create_texture(SNAME("SSR"), SNAME("intermediate"), format, usage_bits, RD::TEXTURE_SAMPLES_1, p_screen_size, layers, mipmaps);
+
+	Plane p = p_camera.xform4(Plane(1, 0, -1, 1));
+	p.normal /= p.d;
+	float unit_size = p.normal.x;
+
+	{ //scale color and depth to half
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+		sss.push_constant.camera_z_far = p_camera.get_z_far();
+		sss.push_constant.camera_z_near = p_camera.get_z_near();
+		sss.push_constant.orthogonal = p_camera.is_orthogonal();
+		sss.push_constant.unit_size = unit_size;
+		sss.push_constant.screen_size[0] = p_screen_size.x;
+		sss.push_constant.screen_size[1] = p_screen_size.y;
+		sss.push_constant.vertical = false;
+		sss.push_constant.scale = p_scale;
+		sss.push_constant.depth_scale = p_depth_scale;
+
+		RID shader = sss.shader.version_get_shader(sss.shader_version, p_quality - 1);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sss.pipelines[p_quality - 1]);
+
+		RD::Uniform u_diffuse_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_diffuse }));
+		RD::Uniform u_diffuse(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_diffuse }));
+		RD::Uniform u_intermediate_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, intermediate }));
+		RD::Uniform u_intermediate(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ intermediate }));
+		RD::Uniform u_depth_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_depth }));
+
+		// horizontal
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_diffuse_with_sampler), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_intermediate), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 2, u_depth_with_sampler), 2);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &sss.push_constant, sizeof(SubSurfaceScatteringPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.width, p_screen_size.height, 1);
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		// vertical
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_intermediate_with_sampler), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_diffuse), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 2, u_depth_with_sampler), 2);
+
+		sss.push_constant.vertical = true;
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &sss.push_constant, sizeof(SubSurfaceScatteringPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.width, p_screen_size.height, 1);
+
+		RD::get_singleton()->compute_list_end();
 	}
 }

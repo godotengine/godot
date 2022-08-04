@@ -108,115 +108,6 @@ RID EffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bool p_use_m
 	return uniform_set;
 }
 
-void EffectsRD::fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness) {
-	memset(&FSR_upscale.push_constant, 0, sizeof(FSRUpscalePushConstant));
-
-	int dispatch_x = (p_size.x + 15) / 16;
-	int dispatch_y = (p_size.y + 15) / 16;
-
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, FSR_upscale.pipeline);
-
-	FSR_upscale.push_constant.resolution_width = p_internal_size.width;
-	FSR_upscale.push_constant.resolution_height = p_internal_size.height;
-	FSR_upscale.push_constant.upscaled_width = p_size.width;
-	FSR_upscale.push_constant.upscaled_height = p_size.height;
-	FSR_upscale.push_constant.sharpness = p_fsr_upscale_sharpness;
-
-	//FSR Easc
-	FSR_upscale.push_constant.pass = FSR_UPSCALE_PASS_EASU;
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_secondary_texture), 1);
-
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &FSR_upscale.push_constant, sizeof(FSRUpscalePushConstant));
-
-	RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_x, dispatch_y, 1);
-	RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-	//FSR Rcas
-	FSR_upscale.push_constant.pass = FSR_UPSCALE_PASS_RCAS;
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_secondary_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_destination_texture), 1);
-
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &FSR_upscale.push_constant, sizeof(FSRUpscalePushConstant));
-
-	RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_x, dispatch_y, 1);
-
-	RD::get_singleton()->compute_list_end(compute_list);
-}
-
-void EffectsRD::taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far) {
-	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
-	ERR_FAIL_NULL(uniform_set_cache);
-
-	RID shader = TAA_resolve.shader.version_get_shader(TAA_resolve.shader_version, 0);
-	ERR_FAIL_COND(shader.is_null());
-
-	memset(&TAA_resolve.push_constant, 0, sizeof(TAAResolvePushConstant));
-	TAA_resolve.push_constant.resolution_width = p_resolution.width;
-	TAA_resolve.push_constant.resolution_height = p_resolution.height;
-	TAA_resolve.push_constant.disocclusion_threshold = 0.025f;
-	TAA_resolve.push_constant.disocclusion_scale = 10.0f;
-
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, TAA_resolve.pipeline);
-
-	RD::Uniform u_frame_source(RD::UNIFORM_TYPE_IMAGE, 0, { p_frame });
-	RD::Uniform u_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, { default_sampler, p_depth });
-	RD::Uniform u_velocity(RD::UNIFORM_TYPE_IMAGE, 2, { p_velocity });
-	RD::Uniform u_prev_velocity(RD::UNIFORM_TYPE_IMAGE, 3, { p_prev_velocity });
-	RD::Uniform u_history(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 4, { default_sampler, p_history });
-	RD::Uniform u_frame_dest(RD::UNIFORM_TYPE_IMAGE, 5, { p_temp });
-
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_frame_source, u_depth, u_velocity, u_prev_velocity, u_history, u_frame_dest), 0);
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &TAA_resolve.push_constant, sizeof(TAAResolvePushConstant));
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_resolution.width, p_resolution.height, 1);
-	RD::get_singleton()->compute_list_end();
-}
-
-void EffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RenderingServer::SubSurfaceScatteringQuality p_quality) {
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-	Plane p = p_camera.xform4(Plane(1, 0, -1, 1));
-	p.normal /= p.d;
-	float unit_size = p.normal.x;
-
-	{ //scale color and depth to half
-		sss.push_constant.camera_z_far = p_camera.get_z_far();
-		sss.push_constant.camera_z_near = p_camera.get_z_near();
-		sss.push_constant.orthogonal = p_camera.is_orthogonal();
-		sss.push_constant.unit_size = unit_size;
-		sss.push_constant.screen_size[0] = p_screen_size.x;
-		sss.push_constant.screen_size[1] = p_screen_size.y;
-		sss.push_constant.vertical = false;
-		sss.push_constant.scale = p_scale;
-		sss.push_constant.depth_scale = p_depth_scale;
-
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sss.pipelines[p_quality - 1]);
-
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_diffuse), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_diffuse2), 1);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth), 2);
-
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &sss.push_constant, sizeof(SubSurfaceScatteringPushConstant));
-
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.width, p_screen_size.height, 1);
-
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_diffuse2), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_diffuse), 1);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth), 2);
-
-		sss.push_constant.vertical = true;
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &sss.push_constant, sizeof(SubSurfaceScatteringPushConstant));
-
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.width, p_screen_size.height, 1);
-
-		RD::get_singleton()->compute_list_end();
-	}
-}
-
 void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute version of luminance reduction with the mobile renderer.");
 
@@ -377,27 +268,6 @@ void EffectsRD::sort_buffer(RID p_uniform_set, int p_size) {
 }
 
 EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
-	{
-		Vector<String> FSR_upscale_modes;
-
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
-		// MoltenVK does not support some of the operations used by the normal mode of FSR. Fallback works just fine though.
-		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
-#else
-		// Everyone else can use normal mode when available.
-		if (RD::get_singleton()->has_feature(RD::SUPPORTS_FSR_HALF_FLOAT)) {
-			FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_NORMAL\n");
-		} else {
-			FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
-		}
-#endif
-
-		FSR_upscale.shader.initialize(FSR_upscale_modes);
-
-		FSR_upscale.shader_version = FSR_upscale.shader.version_create();
-		FSR_upscale.pipeline = RD::get_singleton()->compute_pipeline_create(FSR_upscale.shader.version_get_shader(FSR_upscale.shader_version, 0));
-	}
-
 	prefer_raster_effects = p_prefer_raster_effects;
 
 	if (prefer_raster_effects) {
@@ -445,23 +315,6 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		roughness_limiter.pipeline = RD::get_singleton()->compute_pipeline_create(roughness_limiter.shader.version_get_shader(roughness_limiter.shader_version, 0));
 	}
 
-	if (!prefer_raster_effects) {
-		{
-			Vector<String> sss_modes;
-			sss_modes.push_back("\n#define USE_11_SAMPLES\n");
-			sss_modes.push_back("\n#define USE_17_SAMPLES\n");
-			sss_modes.push_back("\n#define USE_25_SAMPLES\n");
-
-			sss.shader.initialize(sss_modes);
-
-			sss.shader_version = sss.shader.version_create();
-
-			for (int i = 0; i < sss_modes.size(); i++) {
-				sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
-			}
-		}
-	}
-
 	{
 		Vector<String> sort_modes;
 		sort_modes.push_back("\n#define MODE_SORT_BLOCK\n");
@@ -475,14 +328,6 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		for (int i = 0; i < SORT_MODE_MAX; i++) {
 			sort.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sort.shader.version_get_shader(sort.shader_version, i));
 		}
-	}
-
-	{
-		Vector<String> taa_modes;
-		taa_modes.push_back("\n#define MODE_TAA_RESOLVE");
-		TAA_resolve.shader.initialize(taa_modes);
-		TAA_resolve.shader_version = TAA_resolve.shader.version_create();
-		TAA_resolve.pipeline = RD::get_singleton()->compute_pipeline_create(TAA_resolve.shader.version_get_shader(TAA_resolve.shader_version, 0));
 	}
 
 	RD::SamplerState sampler;
@@ -523,8 +368,6 @@ EffectsRD::~EffectsRD() {
 	RD::get_singleton()->free(default_mipmap_sampler);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 
-	FSR_upscale.shader.version_free(FSR_upscale.shader_version);
-	TAA_resolve.shader.version_free(TAA_resolve.shader_version);
 	if (prefer_raster_effects) {
 		luminance_reduce_raster.shader.version_free(luminance_reduce_raster.shader_version);
 	} else {
@@ -532,7 +375,6 @@ EffectsRD::~EffectsRD() {
 	}
 	if (!prefer_raster_effects) {
 		roughness_limiter.shader.version_free(roughness_limiter.shader_version);
-		sss.shader.version_free(sss.shader_version);
 	}
 	sort.shader.version_free(sort.shader_version);
 }

@@ -33,11 +33,21 @@
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/effects/resolve.h"
+#include "servers/rendering/renderer_rd/effects/taa.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/utilities.h"
+
+#define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
+
+#define RB_TEX_SPECULAR SNAME("specular")
+#define RB_TEX_SPECULAR_MSAA SNAME("specular_msaa")
+#define RB_TEX_ROUGHNESS SNAME("normal_roughnesss")
+#define RB_TEX_ROUGHNESS_MSAA SNAME("normal_roughnesss_msaa")
+#define RB_TEX_VOXEL_GI SNAME("voxel_gi")
+#define RB_TEX_VOXEL_GI_MSAA SNAME("voxel_gi_msaa")
 
 namespace RendererSceneRenderImplementation {
 
@@ -81,73 +91,67 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	/* Framebuffer */
 
-	struct RenderBufferDataForwardClustered : public RenderBufferData {
+	class RenderBufferDataForwardClustered : public RenderBufferCustomDataRD {
+		GDCLASS(RenderBufferDataForwardClustered, RenderBufferCustomDataRD)
+
+	private:
+		RenderSceneBuffersRD *render_buffers = nullptr;
+		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
+
+	public:
 		//for rendering, may be MSAAd
 
-		RID color;
-		RID depth;
-		RID specular;
-		RID normal_roughness_buffer;
-		RID voxelgi_buffer;
-		RID velocity_buffer;
-
-		RS::ViewportMSAA msaa;
-		RD::TextureSamples texture_samples;
-		bool use_taa;
-
-		RID color_msaa;
-		RID depth_msaa;
-		RID specular_msaa;
-		RID normal_roughness_buffer_msaa;
-		RID voxelgi_buffer_msaa;
-		RID velocity_buffer_msaa;
-
-		RID depth_fb;
-		RID depth_normal_roughness_fb;
-		RID depth_normal_roughness_voxelgi_fb;
-		RID color_only_fb;
-		RID specular_only_fb;
-
-		RID vrs;
-
-		int width, height;
-		HashMap<uint32_t, RID> color_framebuffers;
-
-		// for multiview
-		uint32_t view_count = 1;
-		RID color_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
-		RID depth_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
-		RID specular_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID specular_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID color_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID depth_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID normal_roughness_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID normal_roughness_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID voxelgi_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID voxelgi_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID vrs_views[RendererSceneRender::MAX_RENDER_VIEWS];
+		enum DepthFrameBufferType {
+			DEPTH_FB,
+			DEPTH_FB_ROUGHNESS,
+			DEPTH_FB_ROUGHNESS_VOXELGI
+		};
 
 		RID render_sdfgi_uniform_set;
-		void ensure_specular();
-		void ensure_voxelgi();
-		void ensure_velocity();
-		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture);
-		RID get_color_pass_fb(uint32_t p_color_pass_flags);
 
-		~RenderBufferDataForwardClustered();
+		RID get_color_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_COLOR_MSAA); }
+		RID get_color_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_COLOR_MSAA, p_layer, 0); }
+
+		RID get_depth_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DEPTH_MSAA); }
+		RID get_depth_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DEPTH_MSAA, p_layer, 0); }
+
+		void ensure_specular();
+		bool has_specular() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_SPECULAR); }
+		RID get_specular() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_SPECULAR); }
+		RID get_specular(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_SPECULAR, p_layer, 0); }
+		RID get_specular_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_SPECULAR_MSAA, p_layer, 0); }
+
+		void ensure_normal_roughness_texture();
+		bool has_normal_roughness() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_ROUGHNESS); }
+		RID get_normal_roughness() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_ROUGHNESS); }
+		RID get_normal_roughness(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_ROUGHNESS, p_layer, 0); }
+		RID get_normal_roughness_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_ROUGHNESS_MSAA); }
+		RID get_normal_roughness_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_ROUGHNESS_MSAA, p_layer, 0); }
+
+		void ensure_voxelgi();
+		bool has_voxelgi() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI); }
+		RID get_voxelgi() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI); }
+		RID get_voxelgi(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI, p_layer, 0); }
+		RID get_voxelgi_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI_MSAA, p_layer, 0); }
+
+		RID get_color_only_fb();
+		RID get_color_pass_fb(uint32_t p_color_pass_flags);
+		RID get_depth_fb(DepthFrameBufferType p_type = DEPTH_FB);
+		RID get_specular_only_fb();
+
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
+		virtual void free_data() override;
 	};
 
-	virtual RenderBufferData *_create_render_buffer_data() override;
-	void _allocate_normal_roughness_texture(RenderBufferDataForwardClustered *rb);
+	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
 	RID render_base_uniform_set;
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
 	virtual void _base_uniforms_changed() override;
-	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
-	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) override;
+	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
 	bool base_uniform_set_updated = false;
 	void _update_render_base_uniform_set();
@@ -612,6 +616,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	virtual void _update_shader_quality_settings() override;
 
 	RendererRD::Resolve *resolve_effects = nullptr;
+	RendererRD::TAA *taa = nullptr;
 
 protected:
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
@@ -623,7 +628,7 @@ protected:
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
+	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
 public:

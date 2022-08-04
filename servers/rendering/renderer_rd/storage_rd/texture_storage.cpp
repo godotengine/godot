@@ -2120,6 +2120,7 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	if (rt->color.is_valid()) {
 		RD::get_singleton()->free(rt->color);
 	}
+	rt->color_slices.clear(); // these are automatically freed.
 
 	if (rt->color_multisample.is_valid()) {
 		RD::get_singleton()->free(rt->color_multisample);
@@ -2174,6 +2175,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		}
 		rd_color_attachment_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_color_attachment_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		rd_color_attachment_format.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT; // FIXME we need this only when FSR is enabled
 		rd_color_attachment_format.shareable_formats.push_back(rt->color_format);
 		rd_color_attachment_format.shareable_formats.push_back(rt->color_format_srgb);
 		if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -2390,6 +2392,24 @@ RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {
 	ERR_FAIL_COND_V(!rt, RID());
 
 	return rt->color;
+}
+
+RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (rt->view_count == 1) {
+		return rt->color;
+	} else {
+		ERR_FAIL_UNSIGNED_INDEX_V(p_layer, rt->view_count, RID());
+		if (rt->color_slices.size() == 0) {
+			for (uint32_t v = 0; v < rt->view_count; v++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->color, v, 0);
+				rt->color_slices.push_back(slice);
+			}
+		}
+		return rt->color_slices[p_layer];
+	}
 }
 
 RID TextureStorage::render_target_get_rd_backbuffer(RID p_render_target) {

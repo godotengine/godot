@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
+#include "storage/render_scene_buffers.h"
 
 class RendererViewport {
 public:
@@ -64,7 +65,7 @@ public:
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
-		RID render_buffers;
+		Ref<RenderSceneBuffers> render_buffers;
 
 		RS::ViewportMSAA msaa_2d = RenderingServer::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportMSAA msaa_3d = RenderingServer::VIEWPORT_MSAA_DISABLED;

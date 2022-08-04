@@ -464,6 +464,32 @@ public:
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
 
+		bool operator==(const TextureFormat &b) const {
+			if (format != b.format) {
+				return false;
+			} else if (width != b.width) {
+				return false;
+			} else if (height != b.height) {
+				return false;
+			} else if (depth != b.depth) {
+				return false;
+			} else if (array_layers != b.array_layers) {
+				return false;
+			} else if (mipmaps != b.mipmaps) {
+				return false;
+			} else if (texture_type != b.texture_type) {
+				return false;
+			} else if (samples != b.samples) {
+				return false;
+			} else if (usage_bits != b.usage_bits) {
+				return false;
+			} else if (shareable_formats != b.shareable_formats) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
 		TextureFormat() {
 			format = DATA_FORMAT_R8_UNORM;
 			width = 1;

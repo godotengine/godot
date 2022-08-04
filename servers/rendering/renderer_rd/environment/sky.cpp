@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -1109,7 +1110,7 @@ SkyRD::~SkyRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
 
-void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+void SkyRD::setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
@@ -1294,24 +1295,25 @@ void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_ligh
 	//setup fog variables
 	sky_scene_state.ubo.volumetric_fog_enabled = false;
 	if (p_render_buffers.is_valid()) {
-		if (p_scene_render->render_buffers_has_volumetric_fog(p_render_buffers)) {
+		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
+			Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
 			sky_scene_state.ubo.volumetric_fog_enabled = true;
 
-			float fog_end = p_scene_render->render_buffers_get_volumetric_fog_end(p_render_buffers);
+			float fog_end = fog->length;
 			if (fog_end > 0.0) {
 				sky_scene_state.ubo.volumetric_fog_inv_length = 1.0 / fog_end;
 			} else {
 				sky_scene_state.ubo.volumetric_fog_inv_length = 1.0;
 			}
 
-			float fog_detail_spread = p_scene_render->render_buffers_get_volumetric_fog_detail_spread(p_render_buffers); //reverse lookup
+			float fog_detail_spread = fog->spread; //reverse lookup
 			if (fog_detail_spread > 0.0) {
 				sky_scene_state.ubo.volumetric_fog_detail_spread = 1.0 / fog_detail_spread;
 			} else {
 				sky_scene_state.ubo.volumetric_fog_detail_spread = 1.0;
 			}
 
-			sky_scene_state.fog_uniform_set = p_scene_render->render_buffers_get_volumetric_fog_sky_uniform_set(p_render_buffers);
+			sky_scene_state.fog_uniform_set = fog->sky_uniform_set;
 		}
 	}
 

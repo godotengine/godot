@@ -110,8 +110,7 @@ Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() 
 void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 	if (p_viewport->render_buffers.is_valid()) {
 		if (p_viewport->size.width == 0 || p_viewport->size.height == 0) {
-			RSG::scene->free(p_viewport->render_buffers);
-			p_viewport->render_buffers = RID();
+			p_viewport->render_buffers.unref();
 		} else {
 			const float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
@@ -177,7 +176,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			// to compensate for the loss of sharpness.
 			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
 
-			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
+			p_viewport->render_buffers->configure(p_viewport->render_target, Size2i(render_width, render_height), Size2(width, height), p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
 		}
 	}
 }
@@ -784,7 +783,9 @@ void RendererViewport::viewport_set_fsr_sharpness(RID p_viewport, float p_sharpn
 	ERR_FAIL_COND(!viewport);
 
 	viewport->fsr_sharpness = p_sharpness;
-	_configure_3d_render_buffers(viewport);
+	if (viewport->render_buffers.is_valid()) {
+		viewport->render_buffers->set_fsr_sharpness(p_sharpness);
+	}
 }
 
 void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
@@ -792,7 +793,9 @@ void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_
 	ERR_FAIL_COND(!viewport);
 
 	viewport->texture_mipmap_bias = p_mipmap_bias;
-	_configure_3d_render_buffers(viewport);
+	if (viewport->render_buffers.is_valid()) {
+		viewport->render_buffers->set_texture_mipmap_bias(p_mipmap_bias);
+	}
 }
 
 void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) {
@@ -1128,7 +1131,9 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 		return;
 	}
 	viewport->use_debanding = p_use_debanding;
-	_configure_3d_render_buffers(viewport);
+	if (viewport->render_buffers.is_valid()) {
+		viewport->render_buffers->set_use_debanding(p_use_debanding);
+	}
 }
 
 void RendererViewport::viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) {
@@ -1284,7 +1289,7 @@ bool RendererViewport::free(RID p_rid) {
 		RSG::texture_storage->render_target_free(viewport->render_target);
 		RSG::scene->free(viewport->shadow_atlas);
 		if (viewport->render_buffers.is_valid()) {
-			RSG::scene->free(viewport->render_buffers);
+			viewport->render_buffers.unref();
 		}
 
 		while (viewport->canvas_map.begin()) {
