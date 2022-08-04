@@ -816,6 +816,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<PhysicsRayQueryParameters3D> create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const Vector<RID> &p_exclude);
 	const PhysicsDirectSpaceState3D::RayParameters &get_parameters() const { return parameters; }
 
 	void set_from(const Vector3 &p_from) { parameters.from = p_from; }
