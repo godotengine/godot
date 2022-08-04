@@ -74,18 +74,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Projection"/> from an existing <see cref="Projection"/>.
-        /// </summary>
-        /// <param name="proj">The existing <see cref="Projection"/>.</param>
-        public Projection(Projection proj)
-        {
-            x = proj.x;
-            y = proj.y;
-            z = proj.z;
-            w = proj.w;
-        }
-
-        /// <summary>
         /// Constructs a new <see cref="Projection"/> from a <see cref="Transform3D"/>.
         /// </summary>
         /// <param name="transform">The <see cref="Transform3D"/>.</param>

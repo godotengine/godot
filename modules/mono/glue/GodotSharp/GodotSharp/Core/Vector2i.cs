@@ -350,27 +350,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Vector2i"/> from an existing <see cref="Vector2i"/>.
-        /// </summary>
-        /// <param name="vi">The existing <see cref="Vector2i"/>.</param>
-        public Vector2i(Vector2i vi)
-        {
-            this.x = vi.x;
-            this.y = vi.y;
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="Vector2i"/> from an existing <see cref="Vector2"/>
-        /// by rounding the components via <see cref="Mathf.RoundToInt(real_t)"/>.
-        /// </summary>
-        /// <param name="v">The <see cref="Vector2"/> to convert.</param>
-        public Vector2i(Vector2 v)
-        {
-            this.x = Mathf.RoundToInt(v.x);
-            this.y = Mathf.RoundToInt(v.y);
-        }
-
-        /// <summary>
         /// Adds each component of the <see cref="Vector2i"/>
         /// with the components of the given <see cref="Vector2i"/>.
         /// </summary>
@@ -674,7 +653,10 @@ namespace Godot
         /// <param name="value">The vector to convert.</param>
         public static explicit operator Vector2i(Vector2 value)
         {
-            return new Vector2i(value);
+            return new Vector2i(
+                Mathf.RoundToInt(value.x),
+                Mathf.RoundToInt(value.y)
+            );
         }
 
         /// <summary>
