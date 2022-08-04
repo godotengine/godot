@@ -323,6 +323,7 @@ private:
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
 		// booleans
 		uint64_t deep_parallax : 1;
+		uint64_t heightmap_corrected_z : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
 
@@ -371,6 +372,7 @@ private:
 		mk.specular_mode = specular_mode;
 		mk.billboard_mode = billboard_mode;
 		mk.deep_parallax = deep_parallax;
+		mk.heightmap_corrected_z = heightmap_corrected_z;
 		mk.grow = grow_enabled;
 		mk.proximity_fade = proximity_fade_enabled;
 		mk.distance_fade = distance_fade;
@@ -509,6 +511,7 @@ private:
 	DetailUV detail_uv = DETAIL_UV_1;
 
 	bool deep_parallax = false;
+	bool heightmap_corrected_z = true;
 	int deep_parallax_min_layers = 0;
 	int deep_parallax_max_layers = 0;
 	bool heightmap_parallax_flip_tangent = false;
@@ -599,6 +602,9 @@ public:
 
 	void set_heightmap_scale(float p_heightmap_scale);
 	float get_heightmap_scale() const;
+
+	void set_heightmap_corrected_z(bool p_enable);
+	bool is_heightmap_corrected_z_enabled() const;
 
 	void set_heightmap_deep_parallax(bool p_enable);
 	bool is_heightmap_deep_parallax_enabled() const;

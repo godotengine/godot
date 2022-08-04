@@ -1067,7 +1067,11 @@ void BaseMaterial3D::_update_shader() {
 			code += "		float num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
 			code += "		float layer_depth = 1.0 / num_layers;\n";
 			code += "		float current_layer_depth = 0.0;\n";
-			code += "		vec2 P = view_dir.xy * heightmap_scale;\n";
+			if (!heightmap_corrected_z) {
+				code += "		vec2 P = view_dir.xy * heightmap_scale;\n";
+			} else {
+				code += "		vec2 P = view_dir.xy / view_dir.z * heightmap_scale;\n";
+			}
 			code += "		vec2 delta = P / num_layers;\n";
 			code += "		vec2 ofs = base_uv;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
@@ -2141,6 +2145,16 @@ bool BaseMaterial3D::get_particles_anim_loop() const {
 	return particles_anim_loop;
 }
 
+void BaseMaterial3D::set_heightmap_corrected_z(bool p_enable) {
+	heightmap_corrected_z = p_enable;
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+bool BaseMaterial3D::is_heightmap_corrected_z_enabled() const {
+	return heightmap_corrected_z;
+}
+
 void BaseMaterial3D::set_heightmap_deep_parallax(bool p_enable) {
 	deep_parallax = p_enable;
 	_queue_shader_change();
@@ -2586,6 +2600,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &BaseMaterial3D::set_particles_anim_loop);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &BaseMaterial3D::get_particles_anim_loop);
 
+	ClassDB::bind_method(D_METHOD("set_heightmap_corrected_z", "enable"), &BaseMaterial3D::set_heightmap_corrected_z);
+	ClassDB::bind_method(D_METHOD("is_heightmap_corrected_z_enabled"), &BaseMaterial3D::is_heightmap_corrected_z_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_heightmap_deep_parallax", "enable"), &BaseMaterial3D::set_heightmap_deep_parallax);
 	ClassDB::bind_method(D_METHOD("is_heightmap_deep_parallax_enabled"), &BaseMaterial3D::is_heightmap_deep_parallax_enabled);
 
@@ -2733,6 +2750,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Height", "heightmap_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_enabled"), "set_feature", "get_feature", FEATURE_HEIGHT_MAPPING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "heightmap_scale", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_heightmap_scale", "get_heightmap_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_corrected_z"), "set_heightmap_corrected_z", "is_heightmap_corrected_z_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_deep_parallax"), "set_heightmap_deep_parallax", "is_heightmap_deep_parallax_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_min_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_heightmap_deep_parallax_min_layers", "get_heightmap_deep_parallax_min_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_max_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_heightmap_deep_parallax_max_layers", "get_heightmap_deep_parallax_max_layers");
