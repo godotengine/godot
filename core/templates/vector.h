@@ -89,6 +89,7 @@ public:
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	Error resize_zeroed(int p_size) { return _cowdata.template resize<true>(p_size); }
 	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
 	Error insert(int p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
 	int find(const T &p_val, int p_from = 0) const { return _cowdata.find(p_val, p_from); }
