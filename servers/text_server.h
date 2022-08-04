@@ -116,6 +116,7 @@ public:
 		GRAPHEME_IS_PUNCTUATION = 1 << 8, // Punctuation, except underscore (can be used as word break, but not line break or justifiction).
 		GRAPHEME_IS_UNDERSCORE = 1 << 9, // Underscore (can be used as word break).
 		GRAPHEME_IS_CONNECTED = 1 << 10, // Connected to previous grapheme.
+		GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL = 1 << 11, // It is safe to insert a U+0640 before this grapheme for elongation.
 	};
 
 	enum Hinting {

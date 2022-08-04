@@ -331,7 +331,7 @@ arabic_joining (hb_buffer_t *buffer)
     if (entry->prev_action != NONE && prev != UINT_MAX)
     {
       info[prev].arabic_shaping_action() = entry->prev_action;
-      buffer->unsafe_to_break (prev, i + 1);
+      buffer->safe_to_insert_tatweel (prev, i + 1);
     }
     else
     {
@@ -365,7 +365,7 @@ arabic_joining (hb_buffer_t *buffer)
     if (entry->prev_action != NONE && prev != UINT_MAX)
     {
       info[prev].arabic_shaping_action() = entry->prev_action;
-      buffer->unsafe_to_break (prev, buffer->len);
+      buffer->safe_to_insert_tatweel (prev, buffer->len);
     }
     else if (2 <= state && state <= 5) /* States that have a possible prev_action. */
     {
