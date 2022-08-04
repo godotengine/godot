@@ -268,7 +268,17 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		String warning = p_node->get_configuration_warnings_as_string();
 		if (!warning.is_empty()) {
-			item->add_button(0, get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + warning);
+			const int num_warnings = p_node->get_configuration_warnings().size();
+			String warning_icon;
+			if (num_warnings == 1) {
+				warning_icon = SNAME("NodeWarning");
+			} else if (num_warnings <= 3) {
+				warning_icon = vformat("NodeWarnings%d", num_warnings);
+			} else {
+				warning_icon = SNAME("NodeWarnings4Plus");
+			}
+
+			item->add_button(0, get_theme_icon(warning_icon, SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + warning);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
