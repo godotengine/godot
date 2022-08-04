@@ -1666,7 +1666,22 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	if (present_mode_available) {
 		window->presentMode = requested_present_mode;
 	} else {
-		WARN_PRINT("Requested VSync mode is not available!");
+		String present_mode_string;
+		switch (window->vsync_mode) {
+			case DisplayServer::VSYNC_MAILBOX:
+				present_mode_string = "Mailbox";
+				break;
+			case DisplayServer::VSYNC_ADAPTIVE:
+				present_mode_string = "Adaptive";
+				break;
+			case DisplayServer::VSYNC_ENABLED:
+				present_mode_string = "Enabled";
+				break;
+			case DisplayServer::VSYNC_DISABLED:
+				present_mode_string = "Disabled";
+				break;
+		}
+		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_string));
 		window->vsync_mode = DisplayServer::VSYNC_ENABLED; // Set to default.
 	}
 
@@ -2471,12 +2486,12 @@ String VulkanContext::get_device_pipeline_cache_uuid() const {
 }
 
 DisplayServer::VSyncMode VulkanContext::get_vsync_mode(DisplayServer::WindowID p_window) const {
-	ERR_FAIL_COND_V_MSG(!windows.has(p_window), DisplayServer::VSYNC_ENABLED, "Could not get VSync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
+	ERR_FAIL_COND_V_MSG(!windows.has(p_window), DisplayServer::VSYNC_ENABLED, "Could not get V-Sync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
 	return windows[p_window].vsync_mode;
 }
 
 void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode) {
-	ERR_FAIL_COND_MSG(!windows.has(p_window), "Could not set VSync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
+	ERR_FAIL_COND_MSG(!windows.has(p_window), "Could not set V-Sync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
 	windows[p_window].vsync_mode = p_mode;
 	_update_swap_chain(&windows[p_window]);
 }

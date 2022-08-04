@@ -494,11 +494,11 @@ int64_t DisplayServer::window_get_native_handle(HandleType p_handle_type, Window
 }
 
 void DisplayServer::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	WARN_PRINT("Changing the V-Sync mode is not supported by this display server.");
 }
 
 DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window) const {
-	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	WARN_PRINT("Changing the V-Sync mode is not supported by this display server.");
 	return VSyncMode::VSYNC_ENABLED;
 }
 
