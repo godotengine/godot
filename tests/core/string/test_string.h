@@ -697,7 +697,9 @@ TEST_CASE("[String] sprintf") {
 	format = "fish %-05d frog";
 	args.clear();
 	args.push_back(-5);
+	ERR_PRINT_OFF; // Silence warning about 0 ignored.
 	output = format.sprintf(args, &error);
+	ERR_PRINT_ON;
 	REQUIRE(error == false);
 	CHECK(output == String("fish -5    frog"));
 
@@ -795,7 +797,9 @@ TEST_CASE("[String] sprintf") {
 	format = "fish %-011f frog";
 	args.clear();
 	args.push_back(-99.99);
+	ERR_PRINT_OFF; // Silence warning about 0 ignored.
 	output = format.sprintf(args, &error);
+	ERR_PRINT_ON;
 	REQUIRE(error == false);
 	CHECK(output == String("fish -99.990000  frog"));
 

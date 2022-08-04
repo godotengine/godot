@@ -431,6 +431,7 @@ Error Main::test_setup() {
 
 	/** INITIALIZE SERVERS **/
 	register_server_types();
+	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 

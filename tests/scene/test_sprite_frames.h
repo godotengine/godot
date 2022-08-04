@@ -144,7 +144,7 @@ TEST_CASE("[SpriteFrames] Animation Speed getter and setter") {
 			frames.get_animation_speed(test_animation_name) == 5.0,
 			"Sets new animation to default speed");
 
-	frames.set_animation_speed("GodotTest", 123.0004);
+	frames.set_animation_speed(test_animation_name, 123.0004);
 
 	CHECK_MESSAGE(
 			frames.get_animation_speed(test_animation_name) == 123.0004,
@@ -197,7 +197,7 @@ TEST_CASE("[SpriteFrames] Animation Loop getter and setter") {
 }
 
 // TODO
-TEST_CASE("[SpriteFrames] Frame addition, removal, and retrival") {
+TEST_CASE("[SpriteFrames] Frame addition, removal, and retrieval") {
 	Ref<Texture2D> dummy_frame1;
 	dummy_frame1.instantiate();
 
@@ -212,13 +212,14 @@ TEST_CASE("[SpriteFrames] Frame addition, removal, and retrival") {
 
 	frames.add_frame(test_animation_name, dummy_frame1, 0);
 	frames.add_frame(test_animation_name, dummy_frame1, 1);
+	frames.add_frame(test_animation_name, dummy_frame1, 2);
 
 	CHECK_MESSAGE(
-			frames.get_frame_count(test_animation_name) == 2,
+			frames.get_frame_count(test_animation_name) == 3,
 			"Adds multiple frames");
 
-	frames.remove_frame(test_animation_name, 0);
 	frames.remove_frame(test_animation_name, 1);
+	frames.remove_frame(test_animation_name, 0);
 
 	CHECK_MESSAGE(
 			frames.get_frame_count(test_animation_name) == 1,

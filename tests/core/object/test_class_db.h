@@ -493,13 +493,13 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not exposed.", class_name).utf8().get_data());
+			MESSAGE(vformat("Ignoring class '%s' because it's not exposed.", class_name));
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not enabled.", class_name).utf8().get_data());
+			MESSAGE(vformat("Ignoring class '%s' because it's not enabled.", class_name));
 			class_list.pop_front();
 			continue;
 		}
