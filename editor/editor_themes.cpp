@@ -674,6 +674,36 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_disabled->set_expand_margin_size(SIDE_BOTTOM, 0);
 	style_tab_disabled->set_border_color(disabled_bg_color);
 
+	Ref<StyleBoxFlat> style_vertical_tab_selected = style_tab_selected->duplicate();
+
+	// Add a highlight line at the left of the selected vertical tab.
+	style_vertical_tab_selected->set_border_width(SIDE_LEFT, Math::round(2 * EDSCALE));
+
+	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
+	// We can't prevent them with both rounded corners and non-zero border width, though
+	style_vertical_tab_selected->set_expand_margin_size(SIDE_RIGHT, corner_width > 0 ? corner_width : border_width);
+
+	style_vertical_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
+	style_vertical_tab_selected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
+	style_vertical_tab_selected->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
+	style_vertical_tab_selected->set_default_margin(SIDE_TOP, widget_default_margin.y);
+	style_vertical_tab_selected->set_bg_color(base_color);
+
+	Ref<StyleBoxFlat> style_vertical_tab_unselected = style_vertical_tab_selected->duplicate();
+	style_vertical_tab_unselected->set_bg_color(dark_color_1);
+	style_vertical_tab_unselected->set_expand_margin_size(SIDE_BOTTOM, 0);
+	// Add some spacing between unselected tabs to make them easier to distinguish from each other
+	style_vertical_tab_unselected->set_border_color(Color(0, 0, 0, 0));
+	style_vertical_tab_unselected->set_border_width(SIDE_TOP, Math::round(1 * EDSCALE));
+	style_vertical_tab_unselected->set_border_width(SIDE_BOTTOM, Math::round(1 * EDSCALE));
+	style_vertical_tab_unselected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
+	style_vertical_tab_unselected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
+
+	Ref<StyleBoxFlat> style_vertical_tab_disabled = style_vertical_tab_selected->duplicate();
+	style_vertical_tab_disabled->set_bg_color(disabled_bg_color);
+	style_vertical_tab_disabled->set_expand_margin_size(SIDE_RIGHT, 0);
+	style_vertical_tab_disabled->set_border_color(disabled_bg_color);
+
 	// Editor background
 	Color background_color_opaque = background_color;
 	background_color_opaque.a = 1.0;
@@ -1153,6 +1183,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("vertical_tab_selected", "TabBar", style_vertical_tab_selected);
+	theme->set_stylebox("vertical_tab_unselected", "TabBar", style_vertical_tab_unselected);
+	theme->set_stylebox("vertical_tab_disabled", "TabBar", style_vertical_tab_disabled);
 	theme->set_stylebox("button_pressed", "TabBar", style_menu);
 	theme->set_stylebox("button_highlight", "TabBar", style_menu);
 	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
