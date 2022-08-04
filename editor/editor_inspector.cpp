@@ -3251,6 +3251,11 @@ void EditorInspector::update_tree() {
 	}
 
 	if (!hide_metadata) {
+		// Add 4px of spacing between the "Add Metadata" button and the content above it.
+		Control *spacer = memnew(Control);
+		spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
+		main_vbox->add_child(spacer);
+
 		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
 		add_md->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		add_md->connect(SNAME("pressed"), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
