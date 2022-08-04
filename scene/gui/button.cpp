@@ -258,7 +258,8 @@ void Button::_notification(int p_what) {
 				}
 
 				if (icon_region.size.width > 0) {
-					draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
+					Rect2 icon_region_rounded = Rect2(icon_region.position.round(), icon_region.size.round());
+					draw_texture_rect(_icon, icon_region_rounded, false, color_icon);
 				}
 			}
 
