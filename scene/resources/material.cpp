@@ -1067,7 +1067,8 @@ void BaseMaterial3D::_update_shader() {
 			code += "		float num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
 			code += "		float layer_depth = 1.0 / num_layers;\n";
 			code += "		float current_layer_depth = 0.0;\n";
-			code += "		vec2 P = view_dir.xy * heightmap_scale;\n";
+			// Multiply the heightmap scale by 0.01 to improve heightmap scale usability.
+			code += "		vec2 P = view_dir.xy * heightmap_scale * 0.01;\n";
 			code += "		vec2 delta = P / num_layers;\n";
 			code += "		vec2 ofs = base_uv;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
@@ -1103,7 +1104,8 @@ void BaseMaterial3D::_update_shader() {
 			}
 			// Use offset limiting to improve the appearance of non-deep parallax.
 			// This reduces the impression of depth, but avoids visible warping in the distance.
-			code += "		vec2 ofs = base_uv - view_dir.xy * depth * heightmap_scale;\n";
+			// Multiply the heightmap scale by 0.01 to improve heightmap scale usability.
+			code += "		vec2 ofs = base_uv - view_dir.xy * depth * heightmap_scale * 0.01;\n";
 		}
 
 		code += "		base_uv=ofs;\n";
@@ -2965,7 +2967,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_clearcoat(1);
 	set_clearcoat_roughness(0.5);
 	set_anisotropy(0);
-	set_heightmap_scale(0.05);
+	set_heightmap_scale(5.0);
 	set_subsurface_scattering_strength(0);
 	set_backlight(Color(0, 0, 0));
 	set_transmittance_color(Color(1, 1, 1, 1));
