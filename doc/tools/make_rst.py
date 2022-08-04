@@ -237,8 +237,7 @@ class State:
                 if desc_element is not None:
                     annotation_desc = desc_element.text
 
-                return_type = TypeName("void")
-                annotation_def = MethodDef(annotation_name, return_type, params, annotation_desc, qualifiers)
+                annotation_def = AnnotationDef(annotation_name, params, annotation_desc, qualifiers)
                 if annotation_name not in class_def.annotations:
                     class_def.annotations[annotation_name] = []
 
@@ -359,6 +358,20 @@ class SignalDef:
         self.description = description
 
 
+class AnnotationDef:
+    def __init__(
+        self,
+        name: str,
+        parameters: List[ParameterDef],
+        description: Optional[str],
+        qualifiers: Optional[str],
+    ) -> None:
+        self.name = name
+        self.parameters = parameters
+        self.description = description
+        self.qualifiers = qualifiers
+
+
 class MethodDef:
     def __init__(
         self,
@@ -411,7 +424,7 @@ class ClassDef:
         self.methods: OrderedDict[str, List[MethodDef]] = OrderedDict()
         self.operators: OrderedDict[str, List[MethodDef]] = OrderedDict()
         self.signals: OrderedDict[str, SignalDef] = OrderedDict()
-        self.annotations: OrderedDict[str, List[MethodDef]] = OrderedDict()
+        self.annotations: OrderedDict[str, List[AnnotationDef]] = OrderedDict()
         self.theme_items: OrderedDict[str, ThemeItemDef] = OrderedDict()
         self.inherits: Optional[str] = None
         self.brief_description: Optional[str] = None
@@ -791,6 +804,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             f.write("\n\n")
 
+    # Annotations
     if len(class_def.annotations) > 0:
         f.write(make_heading("Annotations", "-"))
         index = 0
@@ -803,8 +817,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 if i == 0:
                     f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name.strip("@")))
 
-                ret_type, signature = make_method_signature(class_def, m, "", state)
-                f.write("- {} {}\n\n".format(ret_type, signature))
+                _, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {}\n\n".format(signature))
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(rstize_text(m.description.strip(), state) + "\n\n")
@@ -1396,32 +1410,36 @@ def make_enum(t: str, state: State) -> str:
 
 
 def make_method_signature(
-    class_def: ClassDef, method_def: Union[MethodDef, SignalDef], ref_type: str, state: State
+    class_def: ClassDef, definition: Union[AnnotationDef, MethodDef, SignalDef], ref_type: str, state: State
 ) -> Tuple[str, str]:
-    ret_type = " "
+    ret_type = ""
 
-    is_method_def = isinstance(method_def, MethodDef)
+    is_method_def = isinstance(definition, MethodDef)
     if is_method_def:
-        ret_type = method_def.return_type.to_rst(state)
+        ret_type = definition.return_type.to_rst(state)
+
+    qualifiers = None
+    if is_method_def or isinstance(definition, AnnotationDef):
+        qualifiers = definition.qualifiers
 
     out = ""
 
     if is_method_def and ref_type != "":
         if ref_type == "operator":
             out += ":ref:`{0}<class_{1}_{2}_{3}_{4}>` ".format(
-                method_def.name.replace("<", "\\<"),  # So operator "<" gets correctly displayed.
+                definition.name.replace("<", "\\<"),  # So operator "<" gets correctly displayed.
                 class_def.name,
                 ref_type,
-                sanitize_operator_name(method_def.name, state),
-                method_def.return_type.type_name,
+                sanitize_operator_name(definition.name, state),
+                definition.return_type.type_name,
             )
         else:
-            out += ":ref:`{0}<class_{1}_{2}_{0}>` ".format(method_def.name, class_def.name, ref_type)
+            out += ":ref:`{0}<class_{1}_{2}_{0}>` ".format(definition.name, class_def.name, ref_type)
     else:
-        out += "**{}** ".format(method_def.name)
+        out += "**{}** ".format(definition.name)
 
     out += "**(**"
-    for i, arg in enumerate(method_def.parameters):
+    for i, arg in enumerate(definition.parameters):
         if i > 0:
             out += ", "
         else:
@@ -1432,18 +1450,18 @@ def make_method_signature(
         if arg.default_value is not None:
             out += "=" + arg.default_value
 
-    if isinstance(method_def, MethodDef) and method_def.qualifiers is not None and "vararg" in method_def.qualifiers:
-        if len(method_def.parameters) > 0:
+    if qualifiers is not None and "vararg" in qualifiers:
+        if len(definition.parameters) > 0:
             out += ", ..."
         else:
             out += " ..."
 
     out += " **)**"
 
-    if isinstance(method_def, MethodDef) and method_def.qualifiers is not None:
+    if qualifiers is not None:
         # Use substitutions for abbreviations. This is used to display tooltips on hover.
         # See `make_footer()` for descriptions.
-        for qualifier in method_def.qualifiers.split():
+        for qualifier in qualifiers.split():
             out += " |" + qualifier + "|"
 
     return ret_type, out
