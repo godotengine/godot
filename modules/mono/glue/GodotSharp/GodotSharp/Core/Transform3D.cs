@@ -21,6 +21,85 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform3D : IEquatable<Transform3D>
     {
+
+        /// <summary>
+        /// Returns the locally translated forward vector.
+        /// which is equivalent to calling "-basis.z"
+        /// Refer to <see cref="Basis"/> for more information. 
+        /// </summary>
+        public Vector3 Forward 
+        {
+            get 
+            {
+                return -basis.z;
+            }
+        }
+
+        /// <summary>
+        /// Returns the locally translated backwards vector.
+        /// which is equivalent to calling "basis.z"
+        /// Refer to <see cref="Basis"/> for more information. 
+        /// </summary>
+        public Vector3 Backwards 
+        {
+            get 
+            {
+                return basis.z;
+            }
+        }
+
+        /// <summary>
+        /// Returns the locally translated right vector.
+        /// which is equivalent to calling "basis.x"
+        /// Refer to <see cref="Basis"/> for more information. 
+        /// </summary>
+        public Vector3 Right 
+        {
+            get 
+            {
+                return basis.x;
+            }
+        }
+
+        /// <summary>
+        /// Returns the locally translated left vector.
+        /// which is equivalent to calling "-basis.x"
+        /// Refer to <see cref="Basis"/> for more information. 
+        /// </summary>
+        public Vector3 Left 
+        {
+            get 
+            {
+                return -basis.x;
+            }
+        }
+
+        /// <summary>
+        /// Returns the locally translated up vector.
+        /// which is equivalent to calling "basis.y"
+        /// Refer to <see cref="Basis"/> for more information. 
+        /// </summary>
+        public Vector3 Up 
+        {
+            get 
+            {
+                return basis.y;
+            }
+        }
+
+        /// <summary>
+        /// Returns the locally translated down vector.
+        /// which is equivalent to calling "-basis.y"
+        /// Refer to <see cref="Basis"/> for more information. 
+        /// </summary>
+        public Vector3 Down 
+        {
+            get 
+            {
+                return -basis.y;
+            }
+        }
+
         /// <summary>
         /// The <see cref="Basis"/> of this transform. Contains the X, Y, and Z basis
         /// vectors (columns 0 to 2) and is responsible for rotation and scale.
