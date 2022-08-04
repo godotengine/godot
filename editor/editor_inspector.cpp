@@ -3016,7 +3016,6 @@ void EditorInspector::update_tree() {
 
 			Vector<String> class_name_components = String(p.class_name).split(",");
 
-			array_element_prefix = class_name_components[1];
 			int page_size = 5;
 			bool movable = true;
 			bool numbered = false;
@@ -3052,8 +3051,8 @@ void EditorInspector::update_tree() {
 				editor_inspector_array->set_undo_redo(undo_redo);
 			} else if (p.type == Variant::INT) {
 				// Setup the array to use the count property and built-in functions to create/move/delete elements.
-
-				if (class_name_components.size() > 2) {
+				if (class_name_components.size() >= 2) {
+					array_element_prefix = class_name_components[1];
 					editor_inspector_array = memnew(EditorInspectorArray);
 					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 
