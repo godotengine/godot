@@ -1823,7 +1823,20 @@ HashMap<int, Vector<StringName>> GraphEdit::_layering(const HashSet<StringName> 
 		}
 		if (!selected) {
 			current_layer++;
+			uint32_t previous_size_z = z.size();
 			_set_operations(GraphEdit::UNION, z, u);
+			if (z.size() == previous_size_z) {
+				WARN_PRINT("Graph contains cycle(s). The cycle(s) will not be rearranged accurately.");
+				Vector<StringName> t;
+				if (l.has(0)) {
+					t.append_array(l[0]);
+				}
+				for (const StringName &E : p) {
+					t.push_back(E);
+				}
+				l.insert(0, t);
+				break;
+			}
 		}
 		selected = false;
 	}
@@ -2138,7 +2151,7 @@ void GraphEdit::arrange_nodes() {
 			HashSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
-				if (E->get().to == gn->get_name() && p_from->is_selected()) {
+				if (E->get().to == gn->get_name() && p_from->is_selected() && E->get().to != E->get().from) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
 					}
