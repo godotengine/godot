@@ -45,8 +45,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-23 03:57+0000\n"
-"Last-Translator: FellowMustard <rachmawanng33@gmail.com>\n"
+"PO-Revision-Date: 2022-07-31 18:34+0000\n"
+"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -427,9 +427,8 @@ msgid "Command"
 msgstr "Perintah"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (Secara fisik)"
+msgstr "(Secara fisik)"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -2805,13 +2804,12 @@ msgstr ""
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed with errors."
+msgid "Completed with warnings."
 msgstr "Salin Lokasi Node"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Paket Sukses Terpasang!"
+msgstr "Sukses."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3290,9 +3288,8 @@ msgid "Save a File"
 msgstr "Simpan sebuah File"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Access"
-msgstr "Sukses!"
+msgstr "Akses"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #, fuzzy
@@ -12382,9 +12379,8 @@ msgid "Available Node-based types:"
 msgstr "Profil yang Tersedia:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Type name is empty!"
-msgstr "Nama berkas kosong."
+msgstr "Nama tipe kosong!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -19289,9 +19285,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "Tidak dapat menemukan keystore, tidak bisa ekspor."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "Tidak dapat memulai subproses!"
+msgstr "Tidak dapat memulai apksigner."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -19324,9 +19319,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Nama berkas tidak valid! APK Android memerlukan ekstensi *.apk ."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Format ekspor tidak didukung!\n"
+msgstr "Format ekspor tidak didukung!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19337,15 +19331,12 @@ msgstr ""
 "versinya. Silakan pasang ulang dari menu 'Proyek'."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Versi build Android tidak cocok:\n"
-"   Templat terpasang: %s\n"
-"   Versi Godot: %s\n"
-"Silakan pasang ulang templat build Android dari menu 'Project'."
+"Versi build Android tidak cocok: Templat terpasang: %s, Versi Godot: %s. "
+"Silakan pasang ulang templat build Android dari menu 'Proyek'."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19353,9 +19344,8 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Tidak dapat menyunting proyek gradle dalam lokasi proyek\n"
+msgstr "Tidak dapat mengekspor file proyek ke dalam lokasi proyek gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19366,13 +19356,12 @@ msgid "Building Android Project (gradle)"
 msgstr "Membangun Proyek Android (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Pembangunan proyek Android gagal, periksa output untuk galatnya.\n"
-"Atau kunjungi docs.godotengine.org untuk dokumentasi build Android."
+"Pembangunan proyek Android gagal, periksa output untuk galatnya. Atau "
+"kunjungi docs.godotengine.org untuk dokumentasi build Android."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -19397,11 +19386,8 @@ msgid "Creating APK..."
 msgstr "Membuat kontur..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"Tidak dapat menemukan contoh APK untuk ekspor:\n"
-"%s"
+msgstr "Tidak dapat menemukan contoh APK untuk ekspor: \"%s\""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19560,9 +19546,8 @@ msgid "Capabilities"
 msgstr "Kapabilitas"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Access Wi-Fi"
-msgstr "Sukses!"
+msgstr "Akses Wi-Fi"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -20110,9 +20095,8 @@ msgid "Could not open icon file \"%s\"."
 msgstr "Tidak dapat ekspor berkas proyek"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "Tidak dapat memulai subproses!"
+msgstr "Tidak dapat memulai subproses xcrun."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20190,9 +20174,8 @@ msgid "DMG Creation"
 msgstr "Arah"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "Tidak dapat memulai subproses!"
+msgstr "Tidak dapat memulai subproses hdiutil."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -20274,7 +20257,7 @@ msgstr "Proyeksi"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Tidak dapat menyunting proyek gradle dalam lokasi proyek\n"
+msgstr "Tidak dapat membuka file untuk membaca dari jalur \"%s\"."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20659,15 +20642,15 @@ msgstr "Tidak dapat menemukan keystore, tidak bisa ekspor."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Ekstensi tidak valid."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20691,15 +20674,15 @@ msgstr "Nama tidak sah."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Ekstensi tidak valid."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -25445,9 +25428,8 @@ msgid "Draw 2D Outlines"
 msgstr "Buat Garis Tepi"
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "Arah"
+msgstr "Refleksi"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
@@ -26803,9 +26785,8 @@ msgstr ""
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
-#, fuzzy
 msgid "2"
-msgstr "2D"
+msgstr "2"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
