@@ -703,46 +703,44 @@ void ShaderPreprocessor::expand_output_macros(int p_start, int p_line_number) {
 }
 
 Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, String &r_expanded) {
-	Vector<Pair<String, Define *>> active_defines;
-	active_defines.resize(state->defines.size());
-	int index = 0;
-	for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
-		active_defines.set(index++, Pair<String, Define *>(E->key(), E->get()));
-	}
+	String iterative = p_string;
+	int pass_count = 0;
+	bool expanded = true;
 
-	return expand_macros(p_string, p_line, active_defines, r_expanded);
-}
+	while (expanded) {
+		expanded = false;
 
-Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, Vector<Pair<String, Define *>> p_defines, String &r_expanded) {
-	r_expanded = p_string;
-	// When expanding macros we must only evaluate them once.
-	// Later we continue expanding but with the already
-	// evaluated macros removed.
-	for (int i = 0; i < p_defines.size(); i++) {
-		Pair<String, Define *> define_pair = p_defines[i];
-
-		Error error = expand_macros_once(r_expanded, p_line, define_pair, r_expanded);
-		if (error != OK) {
-			return error;
+		// As long as we find something to expand, keep going.
+		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
+			if (expand_macros_once(iterative, p_line, E, iterative)) {
+				expanded = true;
+			}
 		}
 
-		// Remove expanded macro and recursively replace remaining.
-		p_defines.remove_at(i);
-		return expand_macros(r_expanded, p_line, p_defines, r_expanded);
+		pass_count++;
+		if (pass_count > 50) {
+			set_error(RTR("Macro expansion limit exceeded."), p_line);
+			break;
+		}
 	}
 
+	r_expanded = iterative;
+
+	if (!state->error.is_empty()) {
+		return FAILED;
+	}
 	return OK;
 }
 
-Error ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_number, Pair<String, Define *> p_define_pair, String &r_expanded) {
+bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded) {
 	String result = p_line;
 
-	const String &key = p_define_pair.first;
-	const Define *define = p_define_pair.second;
+	const String &key = p_define_pair->key();
+	const Define *define = p_define_pair->value();
 
 	int index_start = 0;
 	int index = 0;
-	while (find_match(result, key, index, index_start)) {
+	if (find_match(result, key, index, index_start)) {
 		String body = define->body;
 		if (define->arguments.size() > 0) {
 			// Complex macro with arguments.
@@ -750,14 +748,14 @@ Error ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_nu
 			int args_end = p_line.find(")", args_start);
 			if (args_start == -1 || args_end == -1) {
 				set_error(RTR("Missing macro argument parenthesis."), p_line_number);
-				return FAILED;
+				return false;
 			}
 
 			String values = result.substr(args_start + 1, args_end - (args_start + 1));
 			Vector<String> args = values.split(",");
 			if (args.size() != define->arguments.size()) {
 				set_error(RTR("Invalid macro argument count."), p_line_number);
-				return FAILED;
+				return false;
 			}
 
 			// Insert macro arguments into the body.
@@ -779,11 +777,13 @@ Error ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_nu
 			// Manually reset index_start to where the body value of the define finishes.
 			// This ensures we don't skip another instance of this macro in the string.
 			index_start = index + body.length() + 1;
-			break;
 		}
+
+		r_expanded = result;
+		return true;
 	}
-	r_expanded = result;
-	return OK;
+
+	return false;
 }
 
 bool ShaderPreprocessor::find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start) {
