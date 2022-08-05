@@ -3829,7 +3829,23 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 		if (mesh != nullptr) {
 			MeshInstance *mesh_instance = memnew(MeshInstance);
 			mesh_instance->set_mesh(mesh);
-			mesh_instance->set_name(path.get_file().get_basename());
+
+			// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+			String name = path.get_file().get_basename();
+			switch (ProjectSettings::get_singleton()->get("node/name_casing").operator int()) {
+				case NAME_CASING_PASCAL_CASE:
+					name = name.capitalize().replace(" ", "");
+					break;
+				case NAME_CASING_CAMEL_CASE:
+					name = name.capitalize().replace(" ", "");
+					name[0] = name.to_lower()[0];
+					break;
+				case NAME_CASING_SNAKE_CASE:
+					name = name.capitalize().replace(" ", "_").to_lower();
+					break;
+			}
+			mesh_instance->set_name(name);
+
 			instanced_scene = mesh_instance;
 		} else {
 			if (!scene.is_valid()) { // invalid scene
@@ -3980,6 +3996,7 @@ void SpatialEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p
 	}
 
 	bool is_shift = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+	bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 	selected_files.clear();
 	Dictionary d = p_data;
@@ -3987,29 +4004,31 @@ void SpatialEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p
 		selected_files = d["files"];
 	}
 
-	List<Node *> list = editor->get_editor_selection()->get_selected_node_list();
-	if (list.size() == 0) {
-		Node *root_node = editor->get_edited_scene();
-		if (root_node) {
-			list.push_back(root_node);
-		} else {
-			accept->set_text(TTR("No parent to instance a child at."));
-			accept->popup_centered_minsize();
-			_remove_preview();
-			return;
+	List<Node *> selected_nodes = editor->get_editor_selection()->get_selected_node_list();
+	Node *root_node = editor->get_edited_scene();
+	if (selected_nodes.size() == 1) {
+		Node *selected_node = selected_nodes[0];
+		target_node = root_node;
+		if (is_ctrl) {
+			target_node = selected_node;
+		} else if (is_shift && selected_node != root_node) {
+			target_node = selected_node->get_parent();
 		}
-	}
-	if (list.size() != 1) {
-		accept->set_text(TTR("This operation requires a single selected node."));
-		accept->popup_centered_minsize();
+	} else if (selected_nodes.size() == 0) {
+		if (root_node) {
+			target_node = root_node;
+		} else {
+			// Create a root node so we can add child nodes to it.
+			EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Spatial));
+			target_node = get_tree()->get_edited_scene_root();
+		}
+	} else {
+		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));
+		accept->popup_centered();
 		_remove_preview();
 		return;
 	}
 
-	target_node = list[0];
-	if (is_shift && target_node != editor->get_edited_scene()) {
-		target_node = target_node->get_parent();
-	}
 	drop_pos = p_point;
 
 	_perform_drop_data();
