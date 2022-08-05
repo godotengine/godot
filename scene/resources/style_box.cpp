@@ -129,7 +129,6 @@ void StyleBox::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_default_margin", "margin", "offset"), &StyleBox::set_default_margin);
 	ClassDB::bind_method(D_METHOD("set_default_margin_all", "offset"), &StyleBox::set_default_margin_all);
-	ClassDB::bind_method(D_METHOD("set_default_margin_individual", "offset_left", "offset_top", "offset_right", "offset_bottom"), &StyleBox::set_default_margin_individual);
 	ClassDB::bind_method(D_METHOD("get_default_margin", "margin"), &StyleBox::get_default_margin);
 
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &StyleBox::get_margin);
@@ -326,12 +325,10 @@ void StyleBoxTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_margin_size", "margin", "size"), &StyleBoxTexture::set_margin_size);
 	ClassDB::bind_method(D_METHOD("set_margin_size_all", "size"), &StyleBoxTexture::set_margin_size_all);
-	ClassDB::bind_method(D_METHOD("set_margin_size_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxTexture::set_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBoxTexture::set_expand_margin_size);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxTexture::set_expand_margin_size_all);
-	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxTexture::set_expand_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_expand_margin_size", "margin"), &StyleBoxTexture::get_expand_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "region"), &StyleBoxTexture::set_region_rect);
@@ -899,7 +896,6 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_border_blend", "blend"), &StyleBoxFlat::set_border_blend);
 	ClassDB::bind_method(D_METHOD("get_border_blend"), &StyleBoxFlat::get_border_blend);
 
-	ClassDB::bind_method(D_METHOD("set_corner_radius_individual", "radius_top_left", "radius_top_right", "radius_bottom_right", "radius_bottom_left"), &StyleBoxFlat::set_corner_radius_individual);
 	ClassDB::bind_method(D_METHOD("set_corner_radius_all", "radius"), &StyleBoxFlat::set_corner_radius_all);
 
 	ClassDB::bind_method(D_METHOD("set_corner_radius", "corner", "radius"), &StyleBoxFlat::set_corner_radius);
@@ -907,7 +903,6 @@ void StyleBoxFlat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxFlat::set_expand_margin_size);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_size_all);
-	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxFlat::set_expand_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxFlat::get_expand_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &StyleBoxFlat::set_draw_center);

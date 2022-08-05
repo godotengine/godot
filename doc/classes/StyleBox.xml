@@ -104,16 +104,6 @@
 				Sets the default margin to [param offset] pixels for all sides.
 			</description>
 		</method>
-		<method name="set_default_margin_individual">
-			<return type="void" />
-			<param index="0" name="offset_left" type="float" />
-			<param index="1" name="offset_top" type="float" />
-			<param index="2" name="offset_right" type="float" />
-			<param index="3" name="offset_bottom" type="float" />
-			<description>
-				Sets the default margin for each side to [param offset_left], [param offset_top], [param offset_right], and [param offset_bottom] pixels.
-			</description>
-		</method>
 		<method name="test_mask" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2" />
