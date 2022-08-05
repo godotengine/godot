@@ -83,7 +83,16 @@ void SoftDynamicBodyRenderingServerHandler::set_vertex(int p_vertex_id, const vo
 }
 
 void SoftDynamicBodyRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
+	// Store normal vector in A2B10G10R10 format.
+	Vector3 n;
+	memcpy(&n, p_vector3, sizeof(Vector3));
+	n *= Vector3(0.5, 0.5, 0.5);
+	n += Vector3(0.5, 0.5, 0.5);
+	uint32_t value = 0;
+	value |= CLAMP(int(n.x * 1023.0), 0, 1023);
+	value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
+	value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], &value, sizeof(uint32_t));
 }
 
 void SoftDynamicBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
