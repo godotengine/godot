@@ -5,4 +5,5 @@ Import("env_modules")
 
 env_gridmap = env_modules.Clone()
 
+# Godot source files
 env_gridmap.add_source_files(env.modules_sources, "*.cpp")
