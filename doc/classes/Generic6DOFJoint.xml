@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Generic6DOFJoint" inherits="Joint" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Generic6DOFJoint" inherits="Joint" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		The generic 6-degrees-of-freedom joint can implement a variety of joint types by locking certain axes' rotation or translation.
 	</brief_description>
