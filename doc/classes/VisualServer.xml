@@ -961,7 +961,19 @@
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
-				Tries to free an object in the VisualServer.
+				Destroys an object created by the VisualServer. If the [RID] passed is not one created by the server that created it (e.g. VisualServer, PhysicsServer, etc.), an error will be sent to the console.
+				[b]Note:[/b] After freeing the object, the RID now has a reference to invalid memory. It is not safe to use or free an invalid RID. Before using the RID again, make sure to assign it to [code]RID()[/code] or any other valid RID.
+				[codeblock]
+				var r: RID = VisualServer.get_test_cube()
+				VisualServer.free_rid(r)
+				print("ID: ", r.get_id())   # It is not safe to access or free an invalid RID
+				r = RID()                   # Reset the RID so it is safe to use again.
+				print("ID: ", r.get_id())
+
+				# Output:
+				# ID: 157     # Freed RID has invalid data
+				# ID: 0       # RID has been properly reset
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_render_info">

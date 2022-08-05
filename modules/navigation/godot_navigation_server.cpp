@@ -553,6 +553,10 @@ COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_
 }
 
 COMMAND_1(free, RID, p_object) {
+	if (!p_object.is_valid()) {
+		ERR_FAIL_MSG("Invalid RID.");
+		return;
+	}
 	if (map_owner.owns(p_object)) {
 		NavMap *map = map_owner.getornull(p_object);
 
@@ -601,7 +605,7 @@ COMMAND_1(free, RID, p_object) {
 		memdelete(agent);
 
 	} else {
-		ERR_FAIL_COND("Invalid ID.");
+		ERR_FAIL_COND("Invalid RID.");
 	}
 }
 
