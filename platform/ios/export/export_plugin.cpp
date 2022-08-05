@@ -1528,8 +1528,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 		//write
 
-		file = file.replace_first("ios/", "");
-
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
 		} else if (file.begins_with("libgodot.ios")) {
