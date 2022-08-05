@@ -175,51 +175,18 @@ void PathFollow2D::_update_transform() {
 	if (path_length == 0) {
 		return;
 	}
-	Vector2 pos = c->sample_baked(progress, cubic);
 
 	if (rotates) {
-		real_t ahead = progress + lookahead;
-
-		if (loop && ahead >= path_length) {
-			// If our lookahead will loop, we need to check if the path is closed.
-			int point_count = c->get_point_count();
-			if (point_count > 0) {
-				Vector2 start_point = c->get_point_position(0);
-				Vector2 end_point = c->get_point_position(point_count - 1);
-				if (start_point == end_point) {
-					// Since the path is closed we want to 'smooth off'
-					// the corner at the start/end.
-					// So we wrap the lookahead back round.
-					ahead = Math::fmod(ahead, path_length);
-				}
-			}
-		}
-
-		Vector2 ahead_pos = c->sample_baked(ahead, cubic);
-
-		Vector2 tangent_to_curve;
-		if (ahead_pos == pos) {
-			// This will happen at the end of non-looping or non-closed paths.
-			// We'll try a look behind instead, in order to get a meaningful angle.
-			tangent_to_curve =
-					(pos - c->sample_baked(progress - lookahead, cubic)).normalized();
-		} else {
-			tangent_to_curve = (ahead_pos - pos).normalized();
-		}
-
-		Vector2 normal_of_curve = -tangent_to_curve.orthogonal();
-
-		pos += tangent_to_curve * h_offset;
-		pos += normal_of_curve * v_offset;
-
-		set_rotation(tangent_to_curve.angle());
-
+		Transform2D xform = c->sample_baked_with_rotation(progress, cubic, loop, lookahead);
+		xform.translate_local(v_offset, h_offset);
+		set_rotation(xform[1].angle());
+		set_position(xform[2]);
 	} else {
+		Vector2 pos = c->sample_baked(progress, cubic);
 		pos.x += h_offset;
 		pos.y += v_offset;
+		set_position(pos);
 	}
-
-	set_position(pos);
 }
 
 void PathFollow2D::_notification(int p_what) {
