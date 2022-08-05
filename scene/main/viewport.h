@@ -295,6 +295,7 @@ private:
 		// info used when this is a window
 
 		bool key_event_accepted;
+		bool mouse_in_window;
 		Control *mouse_focus;
 		Control *last_mouse_focus;
 		Control *mouse_click_grabber;
