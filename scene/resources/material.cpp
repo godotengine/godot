@@ -1278,38 +1278,21 @@ void BaseMaterial3D::_update_shader() {
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!RenderingServer::get_singleton()->is_low_end()) {
 				code += "	{\n";
+
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
 					code += "		float fade_distance = abs((VIEW_MATRIX * MODEL_MATRIX[3]).z);\n";
 
 				} else {
-					code += "		float fade_distance=-VERTEX.z;\n";
+					code += "		float fade_distance = -VERTEX.z;\n";
 				}
+				// Use interleaved gradient noise, which is fast but still looks good.
+				code += "		const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);";
+				code += "		float fade = clamp(smoothstep(distance_fade_min, distance_fade_max, fade_distance), 0.0, 1.0);\n";
+				// Use a hard cap to prevent a few stray pixels from remaining when past the fade-out distance.
+				code += "		if (fade < 0.001 || fade < fract(magic.z * fract(dot(FRAGCOORD.xy, magic.xy)))) {\n";
+				code += "			discard;\n";
+				code += "		}\n";
 
-				code += "		float fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
-				code += "		int x = int(FRAGCOORD.x) % 4;\n";
-				code += "		int y = int(FRAGCOORD.y) % 4;\n";
-				code += "		int index = x + y * 4;\n";
-				code += "		float limit = 0.0;\n\n";
-				code += "		if (x < 8) {\n";
-				code += "			if (index == 0) limit = 0.0625;\n";
-				code += "			if (index == 1) limit = 0.5625;\n";
-				code += "			if (index == 2) limit = 0.1875;\n";
-				code += "			if (index == 3) limit = 0.6875;\n";
-				code += "			if (index == 4) limit = 0.8125;\n";
-				code += "			if (index == 5) limit = 0.3125;\n";
-				code += "			if (index == 6) limit = 0.9375;\n";
-				code += "			if (index == 7) limit = 0.4375;\n";
-				code += "			if (index == 8) limit = 0.25;\n";
-				code += "			if (index == 9) limit = 0.75;\n";
-				code += "			if (index == 10) limit = 0.125;\n";
-				code += "			if (index == 11) limit = 0.625;\n";
-				code += "			if (index == 12) limit = 1.0;\n";
-				code += "			if (index == 13) limit = 0.5;\n";
-				code += "			if (index == 14) limit = 0.875;\n";
-				code += "			if (index == 15) limit = 0.375;\n";
-				code += "		}\n\n";
-				code += "	if (fade < limit)\n";
-				code += "		discard;\n";
 				code += "	}\n\n";
 			}
 
