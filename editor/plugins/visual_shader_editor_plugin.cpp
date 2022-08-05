@@ -6228,7 +6228,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 		}
 		if (src_mat && src_mat->get_shader().is_valid()) {
 			List<PropertyInfo> params;
-			src_mat->get_shader()->get_param_list(&params);
+			src_mat->get_shader()->get_shader_uniform_list(&params);
 			for (const PropertyInfo &E : params) {
 				material->set(E.name, src_mat->get(E.name));
 			}

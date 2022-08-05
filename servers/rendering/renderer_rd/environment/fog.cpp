@@ -378,7 +378,7 @@ void Fog::FogShaderData::set_default_texture_param(const StringName &p_name, RID
 	}
 }
 
-void Fog::FogShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void Fog::FogShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	RBMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {

@@ -164,7 +164,7 @@ void SkyRD::SkyShaderData::set_default_texture_param(const StringName &p_name, R
 	}
 }
 
-void SkyRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void SkyRD::SkyShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {

@@ -227,7 +227,7 @@ public:
 	FUNC2(shader_set_path_hint, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
 
-	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
+	FUNC2SC(shader_get_shader_uniform_list, RID, List<PropertyInfo> *)
 
 	FUNC4(shader_set_default_texture_param, RID, const StringName &, RID, int)
 	FUNC3RC(RID, shader_get_default_texture_param, RID, const StringName &, int)
@@ -773,10 +773,10 @@ public:
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 	FUNC2(instance_geometry_set_transparency, RID, float)
-	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
-	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
-	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
-	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+	FUNC3(instance_geometry_set_shader_uniform, RID, const StringName &, const Variant &)
+	FUNC2RC(Variant, instance_geometry_get_shader_uniform, RID, const StringName &)
+	FUNC2RC(Variant, instance_geometry_get_shader_uniform_default_value, RID, const StringName &)
+	FUNC2C(instance_geometry_get_shader_uniform_list, RID, List<PropertyInfo> *)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const Vector<RID> &, const Size2i &)
 

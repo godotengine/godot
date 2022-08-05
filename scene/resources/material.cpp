@@ -154,18 +154,18 @@ Material::~Material() {
 
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_param(p_name);
+		StringName pr = shader->remap_uniform(p_name);
 		if (!pr) {
 			String n = p_name;
 			if (n.find("param/") == 0) { //backwards compatibility
 				pr = n.substr(6, n.length());
 			}
-			if (n.find("shader_param/") == 0) { //backwards compatibility
-				pr = n.replace_first("shader_param/", "");
+			if (n.find("shader_uniform/") == 0) { //backwards compatibility
+				pr = n.replace_first("shader_uniform/", "");
 			}
 		}
 		if (pr) {
-			set_shader_param(pr, p_value);
+			set_shader_uniform(pr, p_value);
 			return true;
 		}
 	}
@@ -175,14 +175,14 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_param(p_name);
+		StringName pr = shader->remap_uniform(p_name);
 		if (!pr) {
 			String n = p_name;
 			if (n.find("param/") == 0) { //backwards compatibility
 				pr = n.substr(6, n.length());
 			}
-			if (n.find("shader_param/") == 0) { //backwards compatibility
-				pr = n.replace_first("shader_param/", "");
+			if (n.find("shader_uniform/") == 0) { //backwards compatibility
+				pr = n.replace_first("shader_uniform/", "");
 			}
 		}
 
@@ -203,7 +203,7 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (!shader.is_null()) {
 		List<PropertyInfo> list;
-		shader->get_param_list(&list, true);
+		shader->get_shader_uniform_list(&list, true);
 
 		HashMap<String, HashMap<String, List<PropertyInfo>>> groups;
 		{
@@ -299,7 +299,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 bool ShaderMaterial::property_can_revert(const String &p_name) {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_param(p_name);
+		StringName pr = shader->remap_uniform(p_name);
 		if (pr) {
 			Variant default_value = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
 			Variant current_value;
@@ -313,7 +313,7 @@ bool ShaderMaterial::property_can_revert(const String &p_name) {
 Variant ShaderMaterial::property_get_revert(const String &p_name) {
 	Variant r_ret;
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_param(p_name);
+		StringName pr = shader->remap_uniform(p_name);
 		if (pr) {
 			r_ret = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
 		}
@@ -349,7 +349,7 @@ Ref<Shader> ShaderMaterial::get_shader() const {
 	return shader;
 }
 
-void ShaderMaterial::set_shader_param(const StringName &p_param, const Variant &p_value) {
+void ShaderMaterial::set_shader_uniform(const StringName &p_param, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		param_cache.erase(p_param);
 		RS::get_singleton()->material_set_param(_get_material(), p_param, Variant());
@@ -369,7 +369,7 @@ void ShaderMaterial::set_shader_param(const StringName &p_param, const Variant &
 	}
 }
 
-Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
+Variant ShaderMaterial::get_shader_uniform(const StringName &p_param) const {
 	if (param_cache.has(p_param)) {
 		return param_cache[p_param];
 	} else {
@@ -384,8 +384,8 @@ void ShaderMaterial::_shader_changed() {
 void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shader", "shader"), &ShaderMaterial::set_shader);
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
-	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
-	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
+	ClassDB::bind_method(D_METHOD("set_shader_uniform", "param", "value"), &ShaderMaterial::set_shader_uniform);
+	ClassDB::bind_method(D_METHOD("get_shader_uniform", "param"), &ShaderMaterial::get_shader_uniform);
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ShaderMaterial::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ShaderMaterial::property_get_revert);
 
@@ -394,12 +394,12 @@ void ShaderMaterial::_bind_methods() {
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	String f = p_function.operator String();
-	if ((f == "get_shader_param" || f == "set_shader_param") && p_idx == 0) {
+	if ((f == "get_shader_uniform" || f == "set_shader_uniform") && p_idx == 0) {
 		if (shader.is_valid()) {
 			List<PropertyInfo> pl;
-			shader->get_param_list(&pl);
+			shader->get_shader_uniform_list(&pl);
 			for (const PropertyInfo &E : pl) {
-				r_options->push_back(E.name.replace_first("shader_param/", "").quote());
+				r_options->push_back(E.name.replace_first("shader_uniform/", "").quote());
 			}
 		}
 	}

@@ -426,9 +426,9 @@ public:
 			PropertyInfo info;
 		};
 
-		HashMap<StringName, InstanceShaderParameter> instance_shader_parameters;
-		bool instance_allocated_shader_parameters = false;
-		int32_t instance_allocated_shader_parameters_offset = -1;
+		HashMap<StringName, InstanceShaderParameter> instance_shader_uniforms;
+		bool instance_allocated_shader_uniforms = false;
+		int32_t instance_allocated_shader_uniforms_offset = -1;
 
 		//
 
@@ -967,12 +967,12 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_parameters_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_uniforms_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
 
-	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
-	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
-	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const;
-	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const;
+	virtual void instance_geometry_set_shader_uniform(RID p_instance, const StringName &p_parameter, const Variant &p_value);
+	virtual void instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
+	virtual Variant instance_geometry_get_shader_uniform(RID p_instance, const StringName &p_parameter) const;
+	virtual Variant instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &p_parameter) const;
 
 	_FORCE_INLINE_ void _update_instance(Instance *p_instance);
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);

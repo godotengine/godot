@@ -1426,19 +1426,19 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// Render every past/future step with the capture shader.
 
 	RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
-	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
-	onion.capture.material->set_shader_param("differences_only", onion.differences_only);
-	onion.capture.material->set_shader_param("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
+	onion.capture.material->set_shader_uniform("bkg_color", GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+	onion.capture.material->set_shader_uniform("differences_only", onion.differences_only);
+	onion.capture.material->set_shader_uniform("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
 
 	int step_off_a = onion.past ? -onion.steps : 0;
 	int step_off_b = onion.future ? onion.steps : 0;
 	int cidx = 0;
-	onion.capture.material->set_shader_param("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
+	onion.capture.material->set_shader_uniform("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
 	for (int step_off = step_off_a; step_off <= step_off_b; step_off++) {
 		if (step_off == 0) {
 			// Skip present step and switch to the color of future.
 			if (!onion.force_white_modulate) {
-				onion.capture.material->set_shader_param("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
+				onion.capture.material->set_shader_uniform("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
 			}
 			continue;
 		}

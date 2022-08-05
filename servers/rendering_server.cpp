@@ -1500,9 +1500,9 @@ TypedArray<Image> RenderingServer::_texture_3d_get(RID p_texture) const {
 	return ret;
 }
 
-TypedArray<Dictionary> RenderingServer::_shader_get_param_list(RID p_shader) const {
+TypedArray<Dictionary> RenderingServer::_shader_get_shader_uniform_list(RID p_shader) const {
 	List<PropertyInfo> l;
-	shader_get_param_list(p_shader, &l);
+	shader_get_shader_uniform_list(p_shader, &l);
 	return convert_property_list(&l);
 }
 
@@ -1625,9 +1625,9 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 	return d;
 }
 
-Array RenderingServer::_instance_geometry_get_shader_parameter_list(RID p_instance) const {
+Array RenderingServer::_instance_geometry_get_shader_uniform_list(RID p_instance) const {
 	List<PropertyInfo> params;
-	instance_geometry_get_shader_parameter_list(p_instance, &params);
+	instance_geometry_get_shader_uniform_list(p_instance, &params);
 	return convert_property_list(&params);
 }
 
@@ -1701,7 +1701,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &RenderingServer::shader_set_code);
 	ClassDB::bind_method(D_METHOD("shader_set_path_hint", "shader", "path"), &RenderingServer::shader_set_path_hint);
 	ClassDB::bind_method(D_METHOD("shader_get_code", "shader"), &RenderingServer::shader_get_code);
-	ClassDB::bind_method(D_METHOD("shader_get_param_list", "shader"), &RenderingServer::_shader_get_param_list);
+	ClassDB::bind_method(D_METHOD("shader_get_shader_uniform_list", "shader"), &RenderingServer::_shader_get_shader_uniform_list);
 	ClassDB::bind_method(D_METHOD("shader_get_param_default", "shader", "param"), &RenderingServer::shader_get_param_default);
 
 	ClassDB::bind_method(D_METHOD("shader_set_default_texture_param", "shader", "param", "texture", "index"), &RenderingServer::shader_set_default_texture_param, DEFVAL(0));
@@ -2484,10 +2484,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_lightmap", "instance", "lightmap", "lightmap_uv_scale", "lightmap_slice"), &RenderingServer::instance_geometry_set_lightmap);
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_lod_bias", "instance", "lod_bias"), &RenderingServer::instance_geometry_set_lod_bias);
 
-	ClassDB::bind_method(D_METHOD("instance_geometry_set_shader_parameter", "instance", "parameter", "value"), &RenderingServer::instance_geometry_set_shader_parameter);
-	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_parameter);
-	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter_default_value", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_parameter_default_value);
-	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter_list", "instance"), &RenderingServer::_instance_geometry_get_shader_parameter_list);
+	ClassDB::bind_method(D_METHOD("instance_geometry_set_shader_uniform", "instance", "parameter", "value"), &RenderingServer::instance_geometry_set_shader_uniform);
+	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_uniform", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_uniform);
+	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_uniform_default_value", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_uniform_default_value);
+	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_uniform_list", "instance"), &RenderingServer::_instance_geometry_get_shader_uniform_list);
 
 	ClassDB::bind_method(D_METHOD("instances_cull_aabb", "aabb", "scenario"), &RenderingServer::_instances_cull_aabb_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &RenderingServer::_instances_cull_ray_bind, DEFVAL(RID()));

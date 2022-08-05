@@ -2522,11 +2522,11 @@ String MaterialStorage::shader_get_code(RID p_shader) const {
 	return shader->code;
 }
 
-void MaterialStorage::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
+void MaterialStorage::shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
 	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 	if (shader->data) {
-		return shader->data->get_param_list(p_param_list);
+		return shader->data->get_shader_uniform_list(p_param_list);
 	}
 }
 
@@ -2758,14 +2758,14 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 	return true; //by default everything casts shadows
 }
 
-void MaterialStorage::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
+void MaterialStorage::material_get_instance_shader_uniforms(RID p_material, List<InstanceShaderParam> *r_parameters) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 	if (material->shader && material->shader->data) {
 		material->shader->data->get_instance_param_list(r_parameters);
 
 		if (material->next_pass.is_valid()) {
-			material_get_instance_shader_parameters(material->next_pass, r_parameters);
+			material_get_instance_shader_uniforms(material->next_pass, r_parameters);
 		}
 	}
 }
@@ -2873,7 +2873,7 @@ void CanvasShaderData::set_default_texture_param(const StringName &p_name, RID p
 	}
 }
 
-void CanvasShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void CanvasShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
@@ -3110,7 +3110,7 @@ void SkyShaderData::set_default_texture_param(const StringName &p_name, RID p_te
 	}
 }
 
-void SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void SkyShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	RBMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
@@ -3435,7 +3435,7 @@ void SceneShaderData::set_default_texture_param(const StringName &p_name, RID p_
 	}
 }
 
-void SceneShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void SceneShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	RBMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
