@@ -587,6 +587,14 @@ bool type_is_generic_idictionary(MonoReflectionType *p_reftype) {
 	return (bool)res;
 }
 
+bool type_has_flags_attribute(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = nullptr;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeHasFlagsAttribute).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
 void get_generic_type_definition(MonoReflectionType *p_reftype, MonoReflectionType **r_generic_reftype) {
 	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, GetGenericTypeDefinition).invoke(p_reftype, r_generic_reftype, &exc);
