@@ -531,10 +531,43 @@ DisplayServer::ScreenOrientation DisplayServerWindows::screen_get_orientation(in
 }
 
 void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
+	if (keep_screen_on == p_enable) {
+		return;
+	}
+
+	if (p_enable) {
+		const String reason = "Godot Engine running with display/window/energy_saving/keep_screen_on = true";
+		Char16String reason_utf16 = reason.utf16();
+
+		REASON_CONTEXT context;
+		context.Version = POWER_REQUEST_CONTEXT_VERSION;
+		context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
+		context.Reason.SimpleReasonString = (LPWSTR)(reason_utf16.ptrw());
+		power_request = PowerCreateRequest(&context);
+		if (power_request == INVALID_HANDLE_VALUE) {
+			print_error("Failed to enable screen_keep_on.");
+			return;
+		}
+		if (PowerSetRequest(power_request, POWER_REQUEST_TYPE::PowerRequestSystemRequired) == 0) {
+			print_error("Failed to request system sleep override.");
+			return;
+		}
+		if (PowerSetRequest(power_request, POWER_REQUEST_TYPE::PowerRequestDisplayRequired) == 0) {
+			print_error("Failed to request display timeout override.");
+			return;
+		}
+	} else {
+		PowerClearRequest(power_request, POWER_REQUEST_TYPE::PowerRequestSystemRequired);
+		PowerClearRequest(power_request, POWER_REQUEST_TYPE::PowerRequestDisplayRequired);
+		CloseHandle(power_request);
+		power_request = nullptr;
+	}
+
+	keep_screen_on = p_enable;
 }
 
 bool DisplayServerWindows::screen_is_kept_on() const {
-	return false;
+	return keep_screen_on;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
@@ -3619,6 +3652,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Init TTS
 	tts = memnew(TTS_Windows);
 
+	// Enforce default keep screen on value.
+	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {
@@ -3821,6 +3857,9 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (user_proc) {
 		SetWindowLongPtr(windows[MAIN_WINDOW_ID].hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	}
+
+	// Close power request handle.
+	screen_set_keep_on(false);
 
 #ifdef GLES3_ENABLED
 	// destroy windows .. NYI?
