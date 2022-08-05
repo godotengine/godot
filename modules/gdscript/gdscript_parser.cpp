@@ -2341,6 +2341,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 			operation->operand = parse_precedence(PREC_SIGN, false);
 			if (operation->operand == nullptr) {
 				push_error(R"(Expected expression after "-" operator.)");
+			} else {
+				if (operation->operand->type == Node::LITERAL) {
+					LiteralNode *literal = static_cast<LiteralNode *>(operation->operand);
+					if (literal->value.get_type() == Variant::INT || literal->value.get_type() == Variant::FLOAT) {
+						operation->reduced = true;
+						operation->reduced_value = Variant::evaluate(operation->variant_op, literal->value, Variant());
+					}
+				}
 			}
 			break;
 		case GDScriptTokenizer::Token::PLUS:
@@ -2349,6 +2357,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 			operation->operand = parse_precedence(PREC_SIGN, false);
 			if (operation->operand == nullptr) {
 				push_error(R"(Expected expression after "+" operator.)");
+			} else {
+				if (operation->operand->type == Node::LITERAL) {
+					LiteralNode *literal = static_cast<LiteralNode *>(operation->operand);
+					if (literal->value.get_type() == Variant::INT || literal->value.get_type() == Variant::FLOAT) {
+						operation->reduced = true;
+						operation->reduced_value = Variant::evaluate(operation->variant_op, literal->value, Variant());
+					}
+				}
 			}
 			break;
 		case GDScriptTokenizer::Token::TILDE:
@@ -3641,12 +3657,12 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 				}
 				[[fallthrough]];
 			default: {
-				if (argument->type != Node::LITERAL) {
+				if (argument->type != Node::LITERAL && !argument->reduced) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s".)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
 					return false;
 				}
 
-				Variant value = static_cast<LiteralNode *>(argument)->value;
+				Variant value = argument->reduced ? argument->reduced_value : static_cast<LiteralNode *>(argument)->value;
 				if (!Variant::can_convert_strict(value.get_type(), parameter.type)) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s".)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
 					return false;
