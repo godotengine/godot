@@ -515,6 +515,7 @@ if env["builtin_msdfgen"] and msdfgen_enabled:
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
 if env["builtin_freetype"] and freetype_enabled:
+    env_text_server_adv.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
 if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
