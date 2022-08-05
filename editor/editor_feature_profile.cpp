@@ -324,6 +324,11 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 			}
 			_update_profile_list(current_profile);
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			// Make sure that the icons are correctly adjusted if the theme's lightness was switched.
+			_update_selected_profile();
+		} break;
 	}
 }
 
