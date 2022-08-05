@@ -4237,13 +4237,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Control *ctrl = Object::cast_to<Control>(canvas_item);
 
 			if (key_pos) {
-				te->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), p_on_existing);
+				te->insert_node_value_key(ctrl, "position", ctrl->get_position(), p_on_existing);
 			}
 			if (key_rot) {
-				te->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation(), p_on_existing);
+				te->insert_node_value_key(ctrl, "rotation", ctrl->get_rotation(), p_on_existing);
 			}
 			if (key_scale) {
-				te->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), p_on_existing);
+				te->insert_node_value_key(ctrl, "size", ctrl->get_size(), p_on_existing);
 			}
 		}
 	}

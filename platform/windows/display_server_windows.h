@@ -331,6 +331,8 @@ class DisplayServerWindows : public DisplayServer {
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
 	bool app_focused = false;
+	bool keep_screen_on = false;
+	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
 

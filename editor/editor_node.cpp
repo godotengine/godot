@@ -141,6 +141,7 @@
 #include "editor/plugins/bone_map_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/cast_2d_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/collision_shape_2d_editor_plugin.h"
 #include "editor/plugins/control_editor_plugin.h"
@@ -176,7 +177,6 @@
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
 #include "editor/plugins/polygon_3d_editor_plugin.h"
-#include "editor/plugins/ray_cast_2d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -7192,7 +7192,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(NavigationPolygonEditorPlugin));
 	add_editor_plugin(memnew(Path2DEditorPlugin));
 	add_editor_plugin(memnew(Polygon2DEditorPlugin));
-	add_editor_plugin(memnew(RayCast2DEditorPlugin));
+	add_editor_plugin(memnew(Cast2DEditorPlugin));
 	add_editor_plugin(memnew(Skeleton2DEditorPlugin));
 	add_editor_plugin(memnew(Sprite2DEditorPlugin));
 	add_editor_plugin(memnew(TilesEditorPlugin));

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ray_cast_2d_editor_plugin.cpp                                        */
+/*  cast_2d_editor_plugin.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "ray_cast_2d_editor_plugin.h"
+#include "cast_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
+#include "scene/2d/ray_cast_2d.h"
+#include "scene/2d/shape_cast_2d.h"
 
-void RayCast2DEditor::_notification(int p_what) {
+void Cast2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &RayCast2DEditor::_node_removed));
+			get_tree()->connect("node_removed", callable_mp(this, &Cast2DEditor::_node_removed));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			get_tree()->disconnect("node_removed", callable_mp(this, &RayCast2DEditor::_node_removed));
+			get_tree()->disconnect("node_removed", callable_mp(this, &Cast2DEditor::_node_removed));
 		} break;
 	}
 }
 
-void RayCast2DEditor::_node_removed(Node *p_node) {
+void Cast2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
 	}
 }
 
-bool RayCast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
+bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	if (!node || !node->is_visible_in_tree()) {
 		return false;
 	}
@@ -60,10 +62,12 @@ bool RayCast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+		Vector2 target_position = node->get("target_position");
+
 		if (mb->is_pressed()) {
-			if (xform.xform(node->get_target_position()).distance_to(mb->get_position()) < 8) {
+			if (xform.xform(target_position).distance_to(mb->get_position()) < 8) {
 				pressed = true;
-				original_target_position = node->get_target_position();
+				original_target_position = target_position;
 
 				return true;
 			} else {
@@ -73,9 +77,9 @@ bool RayCast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (pressed) {
 			undo_redo->create_action(TTR("Set target_position"));
-			undo_redo->add_do_method(node, "set_target_position", node->get_target_position());
+			undo_redo->add_do_property(node, "target_position", target_position);
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(node, "set_target_position", original_target_position);
+			undo_redo->add_undo_property(node, "target_position", original_target_position);
 			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			undo_redo->commit_action();
 
@@ -90,7 +94,7 @@ bool RayCast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 point = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
 		point = node->get_global_transform().affine_inverse().xform(point);
 
-		node->set_target_position(point);
+		node->set("target_position", point);
 		canvas_item_editor->update_viewport();
 		node->notify_property_list_changed();
 
@@ -100,7 +104,7 @@ bool RayCast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void RayCast2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
+void Cast2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	if (!node || !node->is_visible_in_tree()) {
 		return;
 	}
@@ -108,16 +112,16 @@ void RayCast2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
-	p_overlay->draw_texture(handle, gt.xform(node->get_target_position()) - handle->get_size() / 2);
+	p_overlay->draw_texture(handle, gt.xform((Vector2)node->get("target_position")) - handle->get_size() / 2);
 }
 
-void RayCast2DEditor::edit(Node *p_node) {
+void Cast2DEditor::edit(Node2D *p_node) {
 	if (!canvas_item_editor) {
 		canvas_item_editor = CanvasItemEditor::get_singleton();
 	}
 
-	if (p_node) {
-		node = Object::cast_to<RayCast2D>(p_node);
+	if (Object::cast_to<RayCast2D>(p_node) || Object::cast_to<ShapeCast2D>(p_node)) {
+		node = p_node;
 	} else {
 		node = nullptr;
 	}
@@ -125,27 +129,27 @@ void RayCast2DEditor::edit(Node *p_node) {
 	canvas_item_editor->update_viewport();
 }
 
-RayCast2DEditor::RayCast2DEditor() {
+Cast2DEditor::Cast2DEditor() {
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 }
 
 ///////////////////////
 
-void RayCast2DEditorPlugin::edit(Object *p_object) {
-	ray_cast_2d_editor->edit(Object::cast_to<RayCast2D>(p_object));
+void Cast2DEditorPlugin::edit(Object *p_object) {
+	cast_2d_editor->edit(Object::cast_to<Node2D>(p_object));
 }
 
-bool RayCast2DEditorPlugin::handles(Object *p_object) const {
-	return Object::cast_to<RayCast2D>(p_object) != nullptr;
+bool Cast2DEditorPlugin::handles(Object *p_object) const {
+	return Object::cast_to<RayCast2D>(p_object) != nullptr || Object::cast_to<ShapeCast2D>(p_object) != nullptr;
 }
 
-void RayCast2DEditorPlugin::make_visible(bool p_visible) {
+void Cast2DEditorPlugin::make_visible(bool p_visible) {
 	if (!p_visible) {
 		edit(nullptr);
 	}
 }
 
-RayCast2DEditorPlugin::RayCast2DEditorPlugin() {
-	ray_cast_2d_editor = memnew(RayCast2DEditor);
-	EditorNode::get_singleton()->get_gui_base()->add_child(ray_cast_2d_editor);
+Cast2DEditorPlugin::Cast2DEditorPlugin() {
+	cast_2d_editor = memnew(Cast2DEditor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(cast_2d_editor);
 }

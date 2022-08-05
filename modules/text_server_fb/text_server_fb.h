@@ -98,6 +98,10 @@ using namespace godot;
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_CONFIG_OPTIONS_H
+#if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
+#warning FreeType is configured without Brotli support, built-in fonts will not be available.
+#endif
 #endif
 
 /*************************************************************************/

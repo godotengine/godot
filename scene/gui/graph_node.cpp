@@ -450,7 +450,7 @@ void GraphNode::_validate_property(PropertyInfo &property) const {
 	Control::_validate_property(property);
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
-		if (property.name == "rect_position") {
+		if (property.name == "position") {
 			property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
