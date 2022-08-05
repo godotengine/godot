@@ -4706,7 +4706,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 		for (int i = 0; i < sd_size; i++) {
 			if (sd_glyphs[i].count > 0) {
 				char32_t c = sd->text[sd_glyphs[i].start - sd->start];
-				if (c == 0x0640) {
+				if (c == 0x0640 && sd_glyphs[i].start == sd_glyphs[i].end - 1) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_ELONGATION;
 				}
 				if (sd->jstops.has(sd_glyphs[i].start)) {
