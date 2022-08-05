@@ -2004,6 +2004,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	}
 
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	if (p_data.size()) {
 		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
@@ -2133,6 +2136,9 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	_add_dependency(id, p_with_texture);
 
 	return id;
@@ -2252,6 +2258,9 @@ RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, Dat
 	}
 
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	return id;
 }
@@ -2377,6 +2386,9 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	_add_dependency(id, p_with_texture);
 
 	return id;
@@ -4082,7 +4094,11 @@ RID RenderingDeviceVulkan::framebuffer_create_empty(const Size2i &p_size, Textur
 	framebuffer.size = p_size;
 	framebuffer.view_count = 1;
 
-	return framebuffer_owner.make_rid(framebuffer);
+	RID id = framebuffer_owner.make_rid(framebuffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check, uint32_t p_view_count) {
@@ -4162,6 +4178,9 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 	framebuffer.view_count = p_view_count;
 
 	RID id = framebuffer_owner.make_rid(framebuffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		if (p_texture_attachments[i].is_valid()) {
@@ -4239,7 +4258,11 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 	VkResult res = vkCreateSampler(device, &sampler_create_info, nullptr, &sampler);
 	ERR_FAIL_COND_V_MSG(res, RID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
-	return sampler_owner.make_rid(sampler);
+	RID id = sampler_owner.make_rid(sampler);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 /**********************/
@@ -4268,7 +4291,11 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
 	}
 
-	return vertex_buffer_owner.make_rid(buffer);
+	RID id = vertex_buffer_owner.make_rid(buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 // Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
@@ -4429,7 +4456,11 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		_buffer_update(&index_buffer, 0, r, data_size);
 		_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
 	}
-	return index_buffer_owner.make_rid(index_buffer);
+	RID id = index_buffer_owner.make_rid(index_buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RID RenderingDeviceVulkan::index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) {
@@ -5526,7 +5557,11 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		ERR_FAIL_V_MSG(RID(), error_text);
 	}
 
-	return shader_owner.make_rid(shader);
+	RID id = shader_owner.make_rid(shader);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
@@ -5559,7 +5594,11 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 		_buffer_update(&buffer, 0, r, data_size);
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
 	}
-	return uniform_buffer_owner.make_rid(buffer);
+	RID id = uniform_buffer_owner.make_rid(buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, uint32_t p_usage) {
@@ -5630,7 +5669,11 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	}
 
 	//allocate the view
-	return texture_buffer_owner.make_rid(texture_buffer);
+	RID id = texture_buffer_owner.make_rid(texture_buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_allocate(const DescriptorPoolKey &p_key) {
@@ -6209,6 +6252,9 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	uniform_set.shader_id = p_shader;
 
 	RID id = uniform_set_owner.make_rid(uniform_set);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	//add dependencies
 	_add_dependency(id, p_shader);
 	for (uint32_t i = 0; i < uniform_count; i++) {
@@ -6831,6 +6877,9 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 #endif
 	//create ID to associate with this pipeline
 	RID id = render_pipeline_owner.make_rid(pipeline);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
@@ -6920,6 +6969,9 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 
 	//create ID to associate with this pipeline
 	RID id = compute_pipeline_owner.make_rid(pipeline);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
