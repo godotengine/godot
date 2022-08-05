@@ -392,6 +392,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		uint32_t storage_mask = 0;
 		Vector<RID> texture_ids;
+		InvalidationCallback invalidated_callback = nullptr;
+		void *invalidated_callback_userdata = nullptr;
 
 		struct Version {
 			VkFramebuffer framebuffer = VK_NULL_HANDLE;
@@ -747,7 +749,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		LocalVector<AttachableTexture> attachable_textures; //used for validation
 		Vector<Texture *> mutable_sampled_textures; //used for layout change
 		Vector<Texture *> mutable_storage_textures; //used for layout change
-		UniformSetInvalidatedCallback invalidated_callback = nullptr;
+		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
 
@@ -1059,13 +1061,15 @@ public:
 	/*********************/
 
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1);
-	virtual FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1);
+	virtual FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1);
 	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass = 0);
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
-	virtual RID framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
+	virtual RID framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, const Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
 	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID);
+	virtual bool framebuffer_is_valid(RID p_framebuffer) const;
+	virtual void framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata);
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
 
@@ -1110,7 +1114,7 @@ public:
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
-	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata);
+	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL); //works for any buffer
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL);
