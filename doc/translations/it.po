@@ -30,8 +30,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-07-23 03:56+0000\n"
-"Last-Translator: AndreWharn <andrewharnofficial@gmail.com>\n"
+"PO-Revision-Date: 2022-07-31 16:43+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/it/>\n"
 "Language: it\n"
@@ -62,6 +62,7 @@ msgid "Theme Properties"
 msgstr "Proprietà del tema"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Signals"
 msgstr "Segnali"
 
@@ -56960,7 +56961,7 @@ msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid "Introduction to 3D"
-msgstr ""
+msgstr "Introduzione al 3D"
 
 #: doc/classes/Spatial.xml doc/classes/Vector3.xml
 msgid "All 3D Demos"
