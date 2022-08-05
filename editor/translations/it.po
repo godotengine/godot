@@ -76,8 +76,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-23 03:57+0000\n"
-"Last-Translator: ale piccia <picciatialessio2@gmail.com>\n"
+"PO-Revision-Date: 2022-07-31 18:34+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -473,6 +473,7 @@ msgid "Physical Scancode"
 msgstr "Scancode Fisico"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Unicode"
 msgstr "Unicode"
 
@@ -900,6 +901,7 @@ msgid "Modules"
 msgstr "Moduli"
 
 #: core/register_core_types.cpp
+#, fuzzy
 msgid "TCP"
 msgstr "TCP"
 
@@ -2113,6 +2115,7 @@ msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Sei sicuro di voler rimuovere tutte le connessioni dal segnale \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
+#, fuzzy
 msgid "Signals"
 msgstr "Segnali"
 
@@ -2811,7 +2814,7 @@ msgstr "Esportazione del progetto per la piattaforma:"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed with errors."
+msgid "Completed with warnings."
 msgstr "Completato con errori."
 
 #: editor/editor_export.cpp
@@ -6995,6 +6998,7 @@ msgstr "Anisotropico"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -18020,7 +18024,6 @@ msgid "Expression"
 msgstr "Espressione"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Return"
 msgstr "Ritorno"
 
@@ -18680,7 +18683,6 @@ msgid "Hand Tracking Frequency"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Passthrough"
 msgstr "Passthrough"
 
@@ -20336,15 +20338,15 @@ msgstr "Non è stato possibile trovare keystore, impossible esportare."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Estensione non valida."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20368,15 +20370,15 @@ msgstr "Nome non valido."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Estensione non valida."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20924,9 +20926,8 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Fixed FPS"
-msgstr "Vedi FPS"
+msgstr "FPS fisso"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -26411,7 +26412,6 @@ msgid "Sky Contribution"
 msgstr "Condizione"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Fog"
 msgstr "Nebbia"
 
@@ -26758,7 +26758,7 @@ msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Is sRGB"
-msgstr ""
+msgstr "È sRGB"
 
 #: scene/resources/material.cpp servers/visual_server.cpp
 #, fuzzy
@@ -26876,9 +26876,8 @@ msgid "Flowmap"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Ambient Occlusion"
-msgstr "Occlusione"
+msgstr "Occlusione ambientale"
 
 #: scene/resources/material.cpp
 msgid "Deep Parallax"
