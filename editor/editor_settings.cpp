@@ -256,7 +256,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
-		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Some locales are not properly supported currently in Godot due to lack of font shaping
 		// (e.g. Arabic or Hindi), so even though we have work in progress translations for them,
@@ -264,6 +263,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		const Vector<String> locales_to_skip = String("ar,bn,fa,he,hi,ml,si,ta,te,ur").split(",");
 
 		String best;
+		int best_score = 0;
 		const Vector<String> &locales = get_editor_locales();
 		for (int i = 0; i < locales.size(); i++) {
 			const String &locale = locales[i];
@@ -278,16 +278,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			lang_hint += ",";
 			lang_hint += locale;
 
-			if (host_lang == locale) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > 0 && score >= best_score) {
 				best = locale;
-			}
-
-			if (best == String() && host_lang.begins_with(locale)) {
-				best = locale;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
 		}
 
-		if (best == String()) {
+		if (best_score == 0) {
 			best = "en";
 		}
 
