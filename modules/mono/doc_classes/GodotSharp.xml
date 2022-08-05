@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GodotSharp" inherits="Object" category="Core" version="3.5">
+<class name="GodotSharp" inherits="Object" category="Core" version="3.6">
 	<brief_description>
 		Bridge between Godot and the Mono runtime (Mono-enabled builds only).
 	</brief_description>
