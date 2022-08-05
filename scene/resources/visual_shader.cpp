@@ -1036,11 +1036,11 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 	}
 }
 
-Array VisualShader::_get_node_connections(Type p_type) const {
+TypedArray<Dictionary> VisualShader::_get_node_connections(Type p_type) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Array());
 	const Graph *g = &graph[p_type];
 
-	Array ret;
+	TypedArray<Dictionary> ret;
 	for (const Connection &E : g->connections) {
 		Dictionary d;
 		d["from_node"] = E.from_node;

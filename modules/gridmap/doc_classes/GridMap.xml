@@ -102,13 +102,13 @@
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector3i[]" />
 			<description>
 				Returns an array of [Vector3] with the non-empty cell coordinates in the grid map.
 			</description>
 		</method>
 		<method name="get_used_cells_by_item" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector3i[]" />
 			<param index="0" name="item" type="int" />
 			<description>
 				Returns an array of all cells with the given item index specified in [code]item[/code].

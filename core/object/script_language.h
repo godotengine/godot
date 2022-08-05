@@ -37,6 +37,8 @@
 #include "core/templates/rb_map.h"
 
 class ScriptLanguage;
+template <typename T>
+class TypedArray;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
@@ -108,9 +110,9 @@ protected:
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
 
 	Variant _get_property_default_value(const StringName &p_property);
-	Array _get_script_property_list();
-	Array _get_script_method_list();
-	Array _get_script_signal_list();
+	TypedArray<Dictionary> _get_script_property_list();
+	TypedArray<Dictionary> _get_script_method_list();
+	TypedArray<Dictionary> _get_script_signal_list();
 	Dictionary _get_script_constant_map();
 
 public:

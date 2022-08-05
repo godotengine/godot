@@ -1049,23 +1049,23 @@ float GridMap::get_cell_scale() const {
 	return cell_scale;
 }
 
-Array GridMap::get_used_cells() const {
-	Array a;
+TypedArray<Vector3i> GridMap::get_used_cells() const {
+	TypedArray<Vector3i> a;
 	a.resize(cell_map.size());
 	int i = 0;
 	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
-		Vector3 p(E.key.x, E.key.y, E.key.z);
+		Vector3i p(E.key.x, E.key.y, E.key.z);
 		a[i++] = p;
 	}
 
 	return a;
 }
 
-Array GridMap::get_used_cells_by_item(int p_item) const {
-	Array a;
+TypedArray<Vector3i> GridMap::get_used_cells_by_item(int p_item) const {
+	TypedArray<Vector3i> a;
 	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
 		if (E.value.item == p_item) {
-			Vector3 p(E.key.x, E.key.y, E.key.z);
+			Vector3i p(E.key.x, E.key.y, E.key.z);
 			a.push_back(p);
 		}
 	}

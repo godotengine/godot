@@ -39,7 +39,7 @@
 			</description>
 		</method>
 		<method name="get_gizmos" qualifiers="const">
-			<return type="Array" />
+			<return type="Node3DGizmo[]" />
 			<description>
 				Returns all the gizmos attached to this [code]Node3D[/code].
 			</description>

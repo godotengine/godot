@@ -24,13 +24,13 @@
 			</description>
 		</method>
 		<method name="get_local_addresses" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Returns all the user's current IPv4 and IPv6 addresses as an array.
 			</description>
 		</method>
 		<method name="get_local_interfaces" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns all network adapters as an array.
 				Each adapter is a dictionary of the form:
@@ -74,7 +74,7 @@
 			</description>
 		</method>
 		<method name="resolve_hostname_addresses">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<param index="0" name="host" type="String" />
 			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
 			<description>

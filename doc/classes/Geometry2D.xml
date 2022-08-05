@@ -10,7 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="clip_polygons">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="clip_polyline_with_polygon">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polyline" type="PackedVector2Array" />
 			<param index="1" name="polygon" type="PackedVector2Array" />
 			<description>
@@ -34,7 +34,7 @@
 			</description>
 		</method>
 		<method name="exclude_polygons">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
@@ -71,7 +71,7 @@
 			</description>
 		</method>
 		<method name="intersect_polygons">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
@@ -80,7 +80,7 @@
 			</description>
 		</method>
 		<method name="intersect_polyline_with_polygon">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polyline" type="PackedVector2Array" />
 			<param index="1" name="polygon" type="PackedVector2Array" />
 			<description>
@@ -130,7 +130,7 @@
 			</description>
 		</method>
 		<method name="merge_polygons">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
@@ -139,7 +139,7 @@
 			</description>
 		</method>
 		<method name="offset_polygon">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon" type="PackedVector2Array" />
 			<param index="1" name="delta" type="float" />
 			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />
@@ -166,7 +166,7 @@
 			</description>
 		</method>
 		<method name="offset_polyline">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="polyline" type="PackedVector2Array" />
 			<param index="1" name="delta" type="float" />
 			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />

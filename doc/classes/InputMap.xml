@@ -41,7 +41,7 @@
 			</description>
 		</method>
 		<method name="action_get_events">
-			<return type="Array" />
+			<return type="InputEvent[]" />
 			<param index="0" name="action" type="StringName" />
 			<description>
 				Returns an array of [InputEvent]s associated with a given action.
@@ -91,7 +91,7 @@
 			</description>
 		</method>
 		<method name="get_actions">
-			<return type="Array" />
+			<return type="StringName[]" />
 			<description>
 				Returns an array of all actions in the [InputMap].
 			</description>

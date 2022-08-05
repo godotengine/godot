@@ -128,7 +128,7 @@
 			</description>
 		</method>
 		<method name="get_maps" qualifiers="const">
-			<return type="Array" />
+			<return type="RID[]" />
 			<description>
 				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
 			</description>
@@ -150,7 +150,7 @@
 			</description>
 		</method>
 		<method name="map_get_agents" qualifiers="const">
-			<return type="Array" />
+			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [param map].
@@ -198,7 +198,7 @@
 			</description>
 		</method>
 		<method name="map_get_regions" qualifiers="const">
-			<return type="Array" />
+			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [param map].

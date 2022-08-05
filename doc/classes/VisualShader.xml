@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="get_node_connections" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Returns the list of connected nodes with the specified type.

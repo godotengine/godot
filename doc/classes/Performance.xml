@@ -79,7 +79,7 @@
 			</description>
 		</method>
 		<method name="get_custom_monitor_names">
-			<return type="Array" />
+			<return type="StringName[]" />
 			<description>
 				Returns the names of active custom monitors in an [Array].
 			</description>

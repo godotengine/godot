@@ -262,7 +262,7 @@
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
-			<return type="Array" />
+			<return type="StringName[]" />
 			<description>
 				Returns an array listing the groups that the node is a member of.
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.

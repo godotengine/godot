@@ -32,6 +32,7 @@
 
 #include "core/object/message_queue.h"
 #include "core/os/os.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
@@ -240,11 +241,11 @@ Variant Performance::get_custom_monitor(const StringName &p_id) {
 	return return_value;
 }
 
-Array Performance::get_custom_monitor_names() {
+TypedArray<StringName> Performance::get_custom_monitor_names() {
 	if (!_monitor_map.size()) {
-		return Array();
+		return TypedArray<StringName>();
 	}
-	Array return_array;
+	TypedArray<StringName> return_array;
 	return_array.resize(_monitor_map.size());
 	int index = 0;
 	for (KeyValue<StringName, MonitorCall> i : _monitor_map) {

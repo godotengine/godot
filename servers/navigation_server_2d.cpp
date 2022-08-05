@@ -263,11 +263,11 @@ NavigationServer2D::~NavigationServer2D() {
 	singleton = nullptr;
 }
 
-Array FORWARD_0_C(get_maps);
+TypedArray<RID> FORWARD_0_C(get_maps);
 
-Array FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
+TypedArray<RID> FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
 
-Array FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
+TypedArray<RID> FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
 
 RID FORWARD_1_C(region_get_map, RID, p_region, rid_to_rid);
 

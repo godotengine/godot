@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -102,8 +103,8 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 	return pi;
 }
 
-Array convert_property_list(const List<PropertyInfo> *p_list) {
-	Array va;
+TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
+	TypedArray<Dictionary> va;
 	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
 		va.push_back(Dictionary(E->get()));
 	}
@@ -912,16 +913,16 @@ void Object::remove_meta(const StringName &p_name) {
 	set_meta(p_name, Variant());
 }
 
-Array Object::_get_property_list_bind() const {
+TypedArray<Dictionary> Object::_get_property_list_bind() const {
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
 	return convert_property_list(&lpi);
 }
 
-Array Object::_get_method_list_bind() const {
+TypedArray<Dictionary> Object::_get_method_list_bind() const {
 	List<MethodInfo> ml;
 	get_method_list(&ml);
-	Array ret;
+	TypedArray<Dictionary> ret;
 
 	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
 		Dictionary d = E->get();
@@ -1109,11 +1110,11 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	add_user_signal(mi);
 }
 
-Array Object::_get_signal_list() const {
+TypedArray<Dictionary> Object::_get_signal_list() const {
 	List<MethodInfo> signal_list;
 	get_signal_list(&signal_list);
 
-	Array ret;
+	TypedArray<Dictionary> ret;
 	for (const MethodInfo &E : signal_list) {
 		ret.push_back(Dictionary(E));
 	}
@@ -1121,11 +1122,11 @@ Array Object::_get_signal_list() const {
 	return ret;
 }
 
-Array Object::_get_signal_connection_list(const StringName &p_signal) const {
+TypedArray<Dictionary> Object::_get_signal_connection_list(const StringName &p_signal) const {
 	List<Connection> conns;
 	get_all_signal_connections(&conns);
 
-	Array ret;
+	TypedArray<Dictionary> ret;
 
 	for (const Connection &c : conns) {
 		if (c.signal.get_name() == p_signal) {
@@ -1136,8 +1137,8 @@ Array Object::_get_signal_connection_list(const StringName &p_signal) const {
 	return ret;
 }
 
-Array Object::_get_incoming_connections() const {
-	Array ret;
+TypedArray<Dictionary> Object::_get_incoming_connections() const {
+	TypedArray<Dictionary> ret;
 	int connections_amount = connections.size();
 	for (int idx_conn = 0; idx_conn < connections_amount; idx_conn++) {
 		ret.push_back(connections[idx_conn]);
@@ -1553,7 +1554,12 @@ void Object::_bind_methods() {
 	miget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_OBJ_CORE_METHOD(miget);
 
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::ARRAY, "_get_property_list"));
+	MethodInfo plget("_get_property_list");
+	plget.return_val.type = Variant::ARRAY;
+	plget.return_val.hint = PROPERTY_HINT_ARRAY_TYPE;
+	plget.return_val.hint_string = "Dictionary";
+	BIND_OBJ_CORE_METHOD(plget);
+
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
 	MethodInfo mipgr("_property_get_revert", PropertyInfo(Variant::STRING_NAME, "property"));
 	mipgr.return_val.name = "Variant";

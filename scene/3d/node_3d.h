@@ -216,7 +216,7 @@ public:
 	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void clear_subgizmo_selection();
 	Vector<Ref<Node3DGizmo>> get_gizmos() const;
-	Array get_gizmos_bind() const;
+	TypedArray<Node3DGizmo> get_gizmos_bind() const;
 	void add_gizmo(Ref<Node3DGizmo> p_gizmo);
 	void remove_gizmo(Ref<Node3DGizmo> p_gizmo);
 	void clear_gizmos();

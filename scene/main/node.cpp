@@ -1778,8 +1778,8 @@ void Node::remove_from_group(const StringName &p_identifier) {
 	data.grouped.remove(E);
 }
 
-Array Node::_get_groups() const {
-	Array groups;
+TypedArray<StringName> Node::_get_groups() const {
+	TypedArray<StringName> groups;
 	List<GroupInfo> gi;
 	get_groups(&gi);
 	for (const GroupInfo &E : gi) {

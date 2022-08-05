@@ -36,6 +36,9 @@
 #include "core/object/object.h"
 #include "core/templates/hash_map.h"
 
+template <typename T>
+class TypedArray;
+
 class InputMap : public Object {
 	GDCLASS(InputMap, Object);
 
@@ -60,8 +63,8 @@ private:
 
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr) const;
 
-	Array _action_get_events(const StringName &p_action);
-	Array _get_actions();
+	TypedArray<InputEvent> _action_get_events(const StringName &p_action);
+	TypedArray<StringName> _get_actions();
 
 protected:
 	static void _bind_methods();

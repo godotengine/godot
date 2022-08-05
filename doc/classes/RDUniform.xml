@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="get_ids" qualifiers="const">
-			<return type="Array" />
+			<return type="RID[]" />
 			<description>
 			</description>
 		</method>

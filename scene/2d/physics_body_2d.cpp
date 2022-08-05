@@ -849,7 +849,7 @@ RigidDynamicBody2D::CCDMode RigidDynamicBody2D::get_continuous_collision_detecti
 }
 
 TypedArray<Node2D> RigidDynamicBody2D::get_colliding_bodies() const {
-	ERR_FAIL_COND_V(!contact_monitor, Array());
+	ERR_FAIL_COND_V(!contact_monitor, TypedArray<Node2D>());
 
 	TypedArray<Node2D> ret;
 	ret.resize(contact_monitor->body_map.size());
