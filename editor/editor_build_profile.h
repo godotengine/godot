@@ -53,7 +53,19 @@ public:
 		BUILD_OPTION_RENDERING_DEVICE,
 		BUILD_OPTION_OPENGL,
 		BUILD_OPTION_VULKAN,
-		BUILD_OPTION_MAX
+		BUILD_OPTION_TEXT_SERVER_FALLBACK,
+		BUILD_OPTION_TEXT_SERVER_ADVANCED,
+		BUILD_OPTION_DYNAMIC_FONTS,
+		BUILD_OPTION_WOFF2_FONTS,
+		BUILD_OPTION_GRPAHITE_FONTS,
+		BUILD_OPTION_MSDFGEN,
+		BUILD_OPTION_MAX,
+	};
+
+	enum BuildOptionCategory {
+		BUILD_OPTION_CATEGORY_GENERAL,
+		BUILD_OPTION_CATEGORY_TEXT_SERVER,
+		BUILD_OPTION_CATEGORY_MAX,
 	};
 
 private:
@@ -65,7 +77,9 @@ private:
 
 	bool build_options_disabled[BUILD_OPTION_MAX] = {};
 	static const char *build_option_identifiers[BUILD_OPTION_MAX];
+	static const bool build_option_disabled_by_default[BUILD_OPTION_MAX];
 	static const bool build_option_disable_values[BUILD_OPTION_MAX];
+	static const BuildOptionCategory build_option_category[BUILD_OPTION_MAX];
 
 	String _get_build_option_name(BuildOption p_build_option) { return get_build_option_name(p_build_option); }
 
@@ -93,11 +107,15 @@ public:
 	static String get_build_option_name(BuildOption p_build_option);
 	static String get_build_option_description(BuildOption p_build_option);
 	static bool get_build_option_disable_value(BuildOption p_build_option);
+	static BuildOptionCategory get_build_option_category(BuildOption p_build_option);
+
+	static String get_build_option_category_name(BuildOptionCategory p_build_option_category);
 
 	EditorBuildProfile();
 };
 
 VARIANT_ENUM_CAST(EditorBuildProfile::BuildOption)
+VARIANT_ENUM_CAST(EditorBuildProfile::BuildOptionCategory)
 
 class EditorFileSystemDirectory;
 

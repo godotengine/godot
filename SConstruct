@@ -337,21 +337,27 @@ for path in module_search_paths:
 
 # Add module options.
 for name, path in modules_detected.items():
+    sys.path.insert(0, path)
+    import config
+
     if env_base["modules_enabled_by_default"]:
         enabled = True
-
-        sys.path.insert(0, path)
-        import config
-
         try:
             enabled = config.is_enabled()
         except AttributeError:
             pass
-        sys.path.remove(path)
-        sys.modules.pop("config")
     else:
         enabled = False
 
+    # Add module-specific options.
+    try:
+        for opt in config.get_opts(selected_platform):
+            opts.Add(opt)
+    except AttributeError:
+        pass
+
+    sys.path.remove(path)
+    sys.modules.pop("config")
     opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)

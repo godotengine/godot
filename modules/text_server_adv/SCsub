@@ -113,8 +113,11 @@ if env["builtin_harfbuzz"]:
     if freetype_enabled:
         thirdparty_sources += [
             "src/hb-ft.cc",
-            "src/hb-graphite2.cc",
         ]
+        if env["graphite"]:
+            thirdparty_sources += [
+                "src/hb-graphite2.cc",
+            ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
@@ -133,7 +136,7 @@ if env["builtin_harfbuzz"]:
         )
         if env["builtin_freetype"]:
             env_harfbuzz.Prepend(CPPPATH=["#thirdparty/freetype/include"])
-        if env["builtin_graphite"]:
+        if env["builtin_graphite"] and env["graphite"]:
             env_harfbuzz.Prepend(CPPPATH=["#thirdparty/graphite/include"])
             env_harfbuzz.Append(CCFLAGS=["-DGRAPHITE2_STATIC"])
 
@@ -165,7 +168,7 @@ if env["builtin_harfbuzz"]:
         env.Append(LIBS=[lib])
 
 
-if env["builtin_graphite"] and freetype_enabled:
+if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
     env_graphite = env_modules.Clone()
     env_graphite.disable_warnings()
 
@@ -514,7 +517,7 @@ if env["builtin_msdfgen"] and msdfgen_enabled:
 if env["builtin_freetype"] and freetype_enabled:
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
-if env["builtin_graphite"] and freetype_enabled:
+if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/graphite/include"])
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
