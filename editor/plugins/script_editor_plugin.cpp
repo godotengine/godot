@@ -1853,10 +1853,12 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 	if (members_overview_enabled && se->show_members_overview()) {
 		members_overview_alphabeta_sort_button->set_visible(true);
+		filter_methods->set_visible(true);
 		members_overview->set_visible(true);
 		overview_vbox->set_visible(true);
 	} else {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		filter_methods->set_visible(false);
 		members_overview->set_visible(false);
 		overview_vbox->set_visible(false);
 	}
@@ -1911,6 +1913,7 @@ void ScriptEditor::_update_help_overview_visibility() {
 
 	if (help_overview_enabled) {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		filter_methods->set_visible(false);
 		help_overview->set_visible(true);
 		overview_vbox->set_visible(true);
 		filename->set_text(se->get_name());
