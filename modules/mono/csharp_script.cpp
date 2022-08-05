@@ -95,13 +95,6 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[186];
-[[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
-#ifdef TOOLS_ENABLED
-extern void *godotsharp_editor_pinvoke_funcs[28];
-[[maybe_unused]] volatile void **do_not_strip_godotsharp_editor_pinvoke_funcs;
-#endif
-
 void CSharpLanguage::init() {
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
@@ -110,12 +103,6 @@ void CSharpLanguage::init() {
 		class_db_api_to_json("user://class_db_api_editor.json", ClassDB::API_EDITOR);
 #endif
 	}
-#endif
-
-	// Hopefully this will be enough for all compilers. Otherwise we could use the printf on fake getenv trick.
-	do_not_strip_godotsharp_pinvoke_funcs = (volatile void **)godotsharp_pinvoke_funcs;
-#ifdef TOOLS_ENABLED
-	do_not_strip_godotsharp_editor_pinvoke_funcs = (volatile void **)godotsharp_editor_pinvoke_funcs;
 #endif
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
@@ -1094,8 +1081,12 @@ void CSharpLanguage::_on_scripts_domain_about_to_unload() {
 void CSharpLanguage::_editor_init_callback() {
 	// Load GodotTools and initialize GodotSharpEditor
 
+	int32_t interop_funcs_size = 0;
+	const void **interop_funcs = godotsharp::get_editor_interop_funcs(interop_funcs_size);
+
 	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
-			GodotSharpDirs::get_data_editor_tools_dir().plus_file("GodotTools.dll").utf16());
+			GodotSharpDirs::get_data_editor_tools_dir().plus_file("GodotTools.dll").utf16(),
+			interop_funcs, interop_funcs_size);
 	CRASH_COND(editor_plugin_obj == nullptr);
 
 	EditorPlugin *godotsharp_editor = Object::cast_to<EditorPlugin>(editor_plugin_obj);

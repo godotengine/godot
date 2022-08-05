@@ -72,7 +72,8 @@ namespace GodotPlugins
         [UnmanagedCallersOnly]
         // ReSharper disable once UnusedMember.Local
         private static unsafe godot_bool InitializeFromEngine(IntPtr godotDllHandle, godot_bool editorHint,
-            PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks)
+            PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks,
+            IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
             {
@@ -82,6 +83,7 @@ namespace GodotPlugins
                 NativeLibrary.SetDllImportResolver(CoreApiAssembly, _dllImportResolver);
 
                 AlcReloadCfg.Configure(alcReloadEnabled: editorHint.ToBool());
+                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
 
                 if (editorHint.ToBool())
                 {
@@ -112,7 +114,7 @@ namespace GodotPlugins
         private struct PluginsCallbacks
         {
             public unsafe delegate* unmanaged<char*, godot_string*, godot_bool> LoadProjectAssemblyCallback;
-            public unsafe delegate* unmanaged<char*, IntPtr> LoadToolsAssemblyCallback;
+            public unsafe delegate* unmanaged<char*, IntPtr, int, IntPtr> LoadToolsAssemblyCallback;
             public unsafe delegate* unmanaged<godot_bool> UnloadProjectPluginCallback;
         }
 
@@ -143,7 +145,8 @@ namespace GodotPlugins
         }
 
         [UnmanagedCallersOnly]
-        private static unsafe IntPtr LoadToolsAssembly(char* nAssemblyPath)
+        private static unsafe IntPtr LoadToolsAssembly(char* nAssemblyPath,
+            IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
             {
@@ -166,7 +169,9 @@ namespace GodotPlugins
                         "InternalCreateInstance");
                 }
 
-                return (IntPtr?)method.Invoke(null, null) ?? IntPtr.Zero;
+                return (IntPtr?)method
+                           .Invoke(null, new object[] { unmanagedCallbacks, unmanagedCallbacksSize })
+                       ?? IntPtr.Zero;
             }
             catch (Exception e)
             {

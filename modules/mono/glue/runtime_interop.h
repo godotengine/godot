@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_internal_calls.h                                              */
+/*  runtime_interop.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_INTERNAL_CALLS_H
-#define EDITOR_INTERNAL_CALLS_H
+#ifndef RUNTIME_INTEROP_H
+#define RUNTIME_INTEROP_H
 
 #include "core/typedefs.h"
 
 namespace godotsharp {
-const void **get_editor_interop_funcs(int32_t &r_size);
+const void **get_runtime_interop_funcs(int32_t &r_size);
 }
 
-#endif // EDITOR_INTERNAL_CALLS_H
+#endif // RUNTIME_INTEROP_H

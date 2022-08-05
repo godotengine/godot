@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools.Shared", "GodotT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators", "..\Godot.NET.Sdk\Godot.SourceGenerators\Godot.SourceGenerators.csproj", "{D8C421B2-8911-41EB-B983-F675C7141EB7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Internal", "..\..\glue\GodotSharp\Godot.SourceGenerators.Internal\Godot.SourceGenerators.Internal.csproj", "{55666071-BEC1-4A52-8A98-9A4A7A947DBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,5 +57,9 @@ Global
 		{D8C421B2-8911-41EB-B983-F675C7141EB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8C421B2-8911-41EB-B983-F675C7141EB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8C421B2-8911-41EB-B983-F675C7141EB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55666071-BEC1-4A52-8A98-9A4A7A947DBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

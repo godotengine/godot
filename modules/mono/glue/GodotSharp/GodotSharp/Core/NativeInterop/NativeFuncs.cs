@@ -1,697 +1,522 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+using Godot.SourceGenerators.Internal;
 
 // ReSharper disable InconsistentNaming
 
 namespace Godot.NativeInterop
 {
     /*
-     * TODO:
-     * P/Invoke pins by-ref parameters in case the managed memory is moved.
-     * That's not needed here since we use "ref structs" which are stack-only.
-     * Unfortunately, the runtime is not smart enough and pins them anyway.
-     * We want to avoid pinning, so we must wrap these DllImports in methods
-     * that reinterpret refs and pointers with CustomUnsafe.AsPointer/AsRef.
-     * I wish such unnecessary boilerplate wasn't needed...
+     * IMPORTANT:
+     * The order of the methods defined in NativeFuncs must match the order
+     * in the array defined at the bottom of 'glue/runtime_interop.cpp'.
      */
 
-    [SuppressMessage("Interoperability", "CA1401",
-        MessageId = "P/Invokes should not be visible" /* Meh. What are you gonna do about it? */)]
+    [GenerateUnmanagedCallbacks(typeof(UnmanagedCallbacks))]
     public static unsafe partial class NativeFuncs
     {
-        private const string GodotDllName = "__Internal";
+        private static bool initialized = false;
+
+        // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
+        public static void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
+        {
+            if (initialized)
+                throw new InvalidOperationException("Already initialized");
+            initialized = true;
+
+            if (unmanagedCallbacksSize != sizeof(UnmanagedCallbacks))
+                throw new ArgumentException("Unmanaged callbacks size mismatch");
+
+            _unmanagedCallbacks = Unsafe.AsRef<UnmanagedCallbacks>((void*)unmanagedCallbacks);
+        }
+
+        private partial struct UnmanagedCallbacks
+        {
+        }
 
         // Custom functions
 
-        [DllImport(GodotDllName)]
-        public static extern IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
+        public static partial IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
             in godot_string_name p_methodname);
 
-        [DllImport(GodotDllName)]
-        public static extern delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
+        public static partial delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
             in godot_string_name p_classname);
 
-        [DllImport(GodotDllName)]
-        public static extern IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
+        public static partial IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
 
 
-        [DllImport(GodotDllName)]
-        internal static extern Error godotsharp_stack_info_vector_resize(
+        internal static partial Error godotsharp_stack_info_vector_resize(
             ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector, int p_size);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_stack_info_vector_destroy(
+        internal static partial void godotsharp_stack_info_vector_destroy(
             ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
+        internal static partial void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
             in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,
             godot_bool p_warning, in DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
-        [DllImport(GodotDllName)]
-        internal static extern bool godotsharp_internal_script_debugger_is_active();
+        internal static partial bool godotsharp_internal_script_debugger_is_active();
 
-        [DllImport(GodotDllName)]
-        internal static extern IntPtr godotsharp_internal_object_get_associated_gchandle(IntPtr ptr);
+        internal static partial IntPtr godotsharp_internal_object_get_associated_gchandle(IntPtr ptr);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_object_disposed(IntPtr ptr, IntPtr gcHandleToFree);
+        internal static partial void godotsharp_internal_object_disposed(IntPtr ptr, IntPtr gcHandleToFree);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_refcounted_disposed(IntPtr ptr, IntPtr gcHandleToFree,
+        internal static partial void godotsharp_internal_refcounted_disposed(IntPtr ptr, IntPtr gcHandleToFree,
             godot_bool isFinalizer);
 
-        [DllImport(GodotDllName)]
-        internal static extern Error godotsharp_internal_signal_awaiter_connect(IntPtr source,
+        internal static partial Error godotsharp_internal_signal_awaiter_connect(IntPtr source,
             in godot_string_name signal,
             IntPtr target, IntPtr awaiterHandlePtr);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_tie_native_managed_to_unmanaged(IntPtr gcHandleIntPtr,
+        internal static partial void godotsharp_internal_tie_native_managed_to_unmanaged(IntPtr gcHandleIntPtr,
             IntPtr unmanaged, in godot_string_name nativeName, godot_bool refCounted);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_tie_user_managed_to_unmanaged(IntPtr gcHandleIntPtr,
+        internal static partial void godotsharp_internal_tie_user_managed_to_unmanaged(IntPtr gcHandleIntPtr,
             IntPtr unmanaged, godot_ref* scriptPtr, godot_bool refCounted);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
+        internal static partial void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
             IntPtr gcHandleIntPtr, IntPtr unmanaged);
 
-        [DllImport(GodotDllName)]
-        internal static extern IntPtr godotsharp_internal_unmanaged_get_script_instance_managed(IntPtr p_unmanaged,
+        internal static partial IntPtr godotsharp_internal_unmanaged_get_script_instance_managed(IntPtr p_unmanaged,
             out godot_bool r_has_cs_script_instance);
 
-        [DllImport(GodotDllName)]
-        internal static extern IntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(IntPtr p_unmanaged);
+        internal static partial IntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(IntPtr p_unmanaged);
 
-        [DllImport(GodotDllName)]
-        internal static extern IntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(IntPtr p_unmanaged,
+        internal static partial IntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(IntPtr p_unmanaged,
             IntPtr oldGCHandlePtr);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_new_csharp_script(godot_ref* r_dest);
+        internal static partial void godotsharp_internal_new_csharp_script(godot_ref* r_dest);
 
-        [DllImport(GodotDllName)]
-        internal static extern godot_bool godotsharp_internal_script_load(in godot_string p_path, godot_ref* r_dest);
+        internal static partial godot_bool godotsharp_internal_script_load(in godot_string p_path, godot_ref* r_dest);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_reload_registered_script(IntPtr scriptPtr);
+        internal static partial void godotsharp_internal_reload_registered_script(IntPtr scriptPtr);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_array_filter_godot_objects_by_native(in godot_string_name p_native_name,
+        internal static partial void godotsharp_array_filter_godot_objects_by_native(in godot_string_name p_native_name,
             in godot_array p_input, out godot_array r_output);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_array_filter_godot_objects_by_non_native(in godot_array p_input,
+        internal static partial void godotsharp_array_filter_godot_objects_by_non_native(in godot_array p_input,
             out godot_array r_output);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest,
+        public static partial void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest,
             IntPtr p_ref_counted_ptr);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_ref_destroy(ref godot_ref p_instance);
+        public static partial void godotsharp_ref_destroy(ref godot_ref p_instance);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_name_new_from_string(out godot_string_name r_dest,
+        public static partial void godotsharp_string_name_new_from_string(out godot_string_name r_dest,
             in godot_string p_name);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_new_from_string(out godot_node_path r_dest,
+        public static partial void godotsharp_node_path_new_from_string(out godot_node_path r_dest,
             in godot_string p_name);
 
-        [DllImport(GodotDllName)]
-        public static extern void
+        public static partial void
             godotsharp_string_name_as_string(out godot_string r_dest, in godot_string_name p_name);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_as_string(out godot_string r_dest, in godot_node_path p_np);
+        public static partial void godotsharp_node_path_as_string(out godot_string r_dest, in godot_node_path p_np);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_byte_array godotsharp_packed_byte_array_new_mem_copy(byte* p_src,
+        public static partial godot_packed_byte_array godotsharp_packed_byte_array_new_mem_copy(byte* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_int32_array godotsharp_packed_int32_array_new_mem_copy(int* p_src,
+        public static partial godot_packed_int32_array godotsharp_packed_int32_array_new_mem_copy(int* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_int64_array godotsharp_packed_int64_array_new_mem_copy(long* p_src,
+        public static partial godot_packed_int64_array godotsharp_packed_int64_array_new_mem_copy(long* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_float32_array godotsharp_packed_float32_array_new_mem_copy(float* p_src,
+        public static partial godot_packed_float32_array godotsharp_packed_float32_array_new_mem_copy(float* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_float64_array godotsharp_packed_float64_array_new_mem_copy(double* p_src,
+        public static partial godot_packed_float64_array godotsharp_packed_float64_array_new_mem_copy(double* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_vector2_array godotsharp_packed_vector2_array_new_mem_copy(Vector2* p_src,
+        public static partial godot_packed_vector2_array godotsharp_packed_vector2_array_new_mem_copy(Vector2* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_vector3_array godotsharp_packed_vector3_array_new_mem_copy(Vector3* p_src,
+        public static partial godot_packed_vector3_array godotsharp_packed_vector3_array_new_mem_copy(Vector3* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_color_array godotsharp_packed_color_array_new_mem_copy(Color* p_src,
+        public static partial godot_packed_color_array godotsharp_packed_color_array_new_mem_copy(Color* p_src,
             int p_length);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_string_array_add(ref godot_packed_string_array r_dest,
+        public static partial void godotsharp_packed_string_array_add(ref godot_packed_string_array r_dest,
             in godot_string p_element);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle,
+        public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle,
             out godot_callable r_callable);
 
-        [DllImport(GodotDllName)]
-        internal static extern godot_bool godotsharp_callable_get_data_for_marshalling(in godot_callable p_callable,
+        internal static partial godot_bool godotsharp_callable_get_data_for_marshalling(in godot_callable p_callable,
             out IntPtr r_delegate_handle, out IntPtr r_object, out godot_string_name r_name);
 
-        [DllImport(GodotDllName)]
-        internal static extern godot_variant godotsharp_callable_call(in godot_callable p_callable,
+        internal static partial godot_variant godotsharp_callable_call(in godot_callable p_callable,
             godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_callable_call_deferred(in godot_callable p_callable,
+        internal static partial void godotsharp_callable_call_deferred(in godot_callable p_callable,
             godot_variant** p_args, int p_arg_count);
 
         // GDNative functions
 
         // gdnative.h
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_method_bind_ptrcall(IntPtr p_method_bind, IntPtr p_instance, void** p_args,
+        public static partial void godotsharp_method_bind_ptrcall(IntPtr p_method_bind, IntPtr p_instance, void** p_args,
             void* p_ret);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_variant godotsharp_method_bind_call(IntPtr p_method_bind, IntPtr p_instance,
+        public static partial godot_variant godotsharp_method_bind_call(IntPtr p_method_bind, IntPtr p_instance,
             godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error);
 
         // variant.h
 
-        [DllImport(GodotDllName)]
-        public static extern void
+        public static partial void
             godotsharp_variant_new_string_name(out godot_variant r_dest, in godot_string_name p_s);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_copy(out godot_variant r_dest, in godot_variant p_src);
+        public static partial void godotsharp_variant_new_copy(out godot_variant r_dest, in godot_variant p_src);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_node_path(out godot_variant r_dest, in godot_node_path p_np);
+        public static partial void godotsharp_variant_new_node_path(out godot_variant r_dest, in godot_node_path p_np);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_object(out godot_variant r_dest, IntPtr p_obj);
+        public static partial void godotsharp_variant_new_object(out godot_variant r_dest, IntPtr p_obj);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
+        public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_vector4(out godot_variant r_dest, in Vector4 p_vec4);
+        public static partial void godotsharp_variant_new_vector4(out godot_variant r_dest, in Vector4 p_vec4);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_vector4i(out godot_variant r_dest, in Vector4i p_vec4i);
+        public static partial void godotsharp_variant_new_vector4i(out godot_variant r_dest, in Vector4i p_vec4i);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_basis(out godot_variant r_dest, in Basis p_basis);
+        public static partial void godotsharp_variant_new_basis(out godot_variant r_dest, in Basis p_basis);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_transform3d(out godot_variant r_dest, in Transform3D p_trans);
+        public static partial void godotsharp_variant_new_transform3d(out godot_variant r_dest, in Transform3D p_trans);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_projection(out godot_variant r_dest, in Projection p_proj);
+        public static partial void godotsharp_variant_new_projection(out godot_variant r_dest, in Projection p_proj);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_aabb(out godot_variant r_dest, in AABB p_aabb);
+        public static partial void godotsharp_variant_new_aabb(out godot_variant r_dest, in AABB p_aabb);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_dictionary(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_dictionary(out godot_variant r_dest,
             in godot_dictionary p_dict);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_array(out godot_variant r_dest, in godot_array p_arr);
+        public static partial void godotsharp_variant_new_array(out godot_variant r_dest, in godot_array p_arr);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_byte_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_byte_array(out godot_variant r_dest,
             in godot_packed_byte_array p_pba);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_int32_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_int32_array(out godot_variant r_dest,
             in godot_packed_int32_array p_pia);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_int64_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_int64_array(out godot_variant r_dest,
             in godot_packed_int64_array p_pia);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_float32_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_float32_array(out godot_variant r_dest,
             in godot_packed_float32_array p_pra);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_float64_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_float64_array(out godot_variant r_dest,
             in godot_packed_float64_array p_pra);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_string_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_string_array(out godot_variant r_dest,
             in godot_packed_string_array p_psa);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_vector2_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_vector2_array(out godot_variant r_dest,
             in godot_packed_vector2_array p_pv2a);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_vector3_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_vector3_array(out godot_variant r_dest,
             in godot_packed_vector3_array p_pv3a);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_new_packed_color_array(out godot_variant r_dest,
+        public static partial void godotsharp_variant_new_packed_color_array(out godot_variant r_dest,
             in godot_packed_color_array p_pca);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_bool godotsharp_variant_as_bool(in godot_variant p_self);
+        public static partial godot_bool godotsharp_variant_as_bool(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Int64 godotsharp_variant_as_int(in godot_variant p_self);
+        public static partial Int64 godotsharp_variant_as_int(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern double godotsharp_variant_as_float(in godot_variant p_self);
+        public static partial double godotsharp_variant_as_float(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_string godotsharp_variant_as_string(in godot_variant p_self);
+        public static partial godot_string godotsharp_variant_as_string(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Vector2 godotsharp_variant_as_vector2(in godot_variant p_self);
+        public static partial Vector2 godotsharp_variant_as_vector2(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Vector2i godotsharp_variant_as_vector2i(in godot_variant p_self);
+        public static partial Vector2i godotsharp_variant_as_vector2i(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Rect2 godotsharp_variant_as_rect2(in godot_variant p_self);
+        public static partial Rect2 godotsharp_variant_as_rect2(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Rect2i godotsharp_variant_as_rect2i(in godot_variant p_self);
+        public static partial Rect2i godotsharp_variant_as_rect2i(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Vector3 godotsharp_variant_as_vector3(in godot_variant p_self);
+        public static partial Vector3 godotsharp_variant_as_vector3(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Vector3i godotsharp_variant_as_vector3i(in godot_variant p_self);
+        public static partial Vector3i godotsharp_variant_as_vector3i(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Transform2D godotsharp_variant_as_transform2d(in godot_variant p_self);
+        public static partial Transform2D godotsharp_variant_as_transform2d(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Vector4 godotsharp_variant_as_vector4(in godot_variant p_self);
+        public static partial Vector4 godotsharp_variant_as_vector4(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Vector4i godotsharp_variant_as_vector4i(in godot_variant p_self);
+        public static partial Vector4i godotsharp_variant_as_vector4i(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Plane godotsharp_variant_as_plane(in godot_variant p_self);
+        public static partial Plane godotsharp_variant_as_plane(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Quaternion godotsharp_variant_as_quaternion(in godot_variant p_self);
+        public static partial Quaternion godotsharp_variant_as_quaternion(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern AABB godotsharp_variant_as_aabb(in godot_variant p_self);
+        public static partial AABB godotsharp_variant_as_aabb(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Basis godotsharp_variant_as_basis(in godot_variant p_self);
+        public static partial Basis godotsharp_variant_as_basis(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Transform3D godotsharp_variant_as_transform3d(in godot_variant p_self);
+        public static partial Transform3D godotsharp_variant_as_transform3d(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Projection godotsharp_variant_as_projection(in godot_variant p_self);
+        public static partial Projection godotsharp_variant_as_projection(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern Color godotsharp_variant_as_color(in godot_variant p_self);
+        public static partial Color godotsharp_variant_as_color(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_string_name godotsharp_variant_as_string_name(in godot_variant p_self);
+        public static partial godot_string_name godotsharp_variant_as_string_name(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_node_path godotsharp_variant_as_node_path(in godot_variant p_self);
+        public static partial godot_node_path godotsharp_variant_as_node_path(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern RID godotsharp_variant_as_rid(in godot_variant p_self);
+        public static partial RID godotsharp_variant_as_rid(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_callable godotsharp_variant_as_callable(in godot_variant p_self);
+        public static partial godot_callable godotsharp_variant_as_callable(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_signal godotsharp_variant_as_signal(in godot_variant p_self);
+        public static partial godot_signal godotsharp_variant_as_signal(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_dictionary godotsharp_variant_as_dictionary(in godot_variant p_self);
+        public static partial godot_dictionary godotsharp_variant_as_dictionary(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_array godotsharp_variant_as_array(in godot_variant p_self);
+        public static partial godot_array godotsharp_variant_as_array(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_byte_array godotsharp_variant_as_packed_byte_array(in godot_variant p_self);
+        public static partial godot_packed_byte_array godotsharp_variant_as_packed_byte_array(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_int32_array godotsharp_variant_as_packed_int32_array(in godot_variant p_self);
+        public static partial godot_packed_int32_array godotsharp_variant_as_packed_int32_array(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_int64_array godotsharp_variant_as_packed_int64_array(in godot_variant p_self);
+        public static partial godot_packed_int64_array godotsharp_variant_as_packed_int64_array(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_float32_array godotsharp_variant_as_packed_float32_array(
+        public static partial godot_packed_float32_array godotsharp_variant_as_packed_float32_array(
             in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_float64_array godotsharp_variant_as_packed_float64_array(
+        public static partial godot_packed_float64_array godotsharp_variant_as_packed_float64_array(
             in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_string_array godotsharp_variant_as_packed_string_array(
+        public static partial godot_packed_string_array godotsharp_variant_as_packed_string_array(
             in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_vector2_array godotsharp_variant_as_packed_vector2_array(
+        public static partial godot_packed_vector2_array godotsharp_variant_as_packed_vector2_array(
             in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_vector3_array godotsharp_variant_as_packed_vector3_array(
+        public static partial godot_packed_vector3_array godotsharp_variant_as_packed_vector3_array(
             in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_packed_color_array godotsharp_variant_as_packed_color_array(in godot_variant p_self);
+        public static partial godot_packed_color_array godotsharp_variant_as_packed_color_array(in godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_bool godotsharp_variant_equals(in godot_variant p_a, in godot_variant p_b);
+        public static partial godot_bool godotsharp_variant_equals(in godot_variant p_a, in godot_variant p_b);
 
         // string.h
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_new_with_utf16_chars(out godot_string r_dest, char* p_contents);
+        public static partial void godotsharp_string_new_with_utf16_chars(out godot_string r_dest, char* p_contents);
 
         // string_name.h
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_name_new_copy(out godot_string_name r_dest,
+        public static partial void godotsharp_string_name_new_copy(out godot_string_name r_dest,
             in godot_string_name p_src);
 
         // node_path.h
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_new_copy(out godot_node_path r_dest, in godot_node_path p_src);
+        public static partial void godotsharp_node_path_new_copy(out godot_node_path r_dest, in godot_node_path p_src);
 
         // array.h
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_array_new(out godot_array r_dest);
+        public static partial void godotsharp_array_new(out godot_array r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_array_new_copy(out godot_array r_dest, in godot_array p_src);
+        public static partial void godotsharp_array_new_copy(out godot_array r_dest, in godot_array p_src);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_variant* godotsharp_array_ptrw(ref godot_array p_self);
+        public static partial godot_variant* godotsharp_array_ptrw(ref godot_array p_self);
 
         // dictionary.h
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_new(out godot_dictionary r_dest);
+        public static partial void godotsharp_dictionary_new(out godot_dictionary r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_new_copy(out godot_dictionary r_dest,
+        public static partial void godotsharp_dictionary_new_copy(out godot_dictionary r_dest,
             in godot_dictionary p_src);
 
         // destroy functions
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_byte_array_destroy(ref godot_packed_byte_array p_self);
+        public static partial void godotsharp_packed_byte_array_destroy(ref godot_packed_byte_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_int32_array_destroy(ref godot_packed_int32_array p_self);
+        public static partial void godotsharp_packed_int32_array_destroy(ref godot_packed_int32_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_int64_array_destroy(ref godot_packed_int64_array p_self);
+        public static partial void godotsharp_packed_int64_array_destroy(ref godot_packed_int64_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_float32_array_destroy(ref godot_packed_float32_array p_self);
+        public static partial void godotsharp_packed_float32_array_destroy(ref godot_packed_float32_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_float64_array_destroy(ref godot_packed_float64_array p_self);
+        public static partial void godotsharp_packed_float64_array_destroy(ref godot_packed_float64_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_string_array_destroy(ref godot_packed_string_array p_self);
+        public static partial void godotsharp_packed_string_array_destroy(ref godot_packed_string_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_vector2_array_destroy(ref godot_packed_vector2_array p_self);
+        public static partial void godotsharp_packed_vector2_array_destroy(ref godot_packed_vector2_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_vector3_array_destroy(ref godot_packed_vector3_array p_self);
+        public static partial void godotsharp_packed_vector3_array_destroy(ref godot_packed_vector3_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_packed_color_array_destroy(ref godot_packed_color_array p_self);
+        public static partial void godotsharp_packed_color_array_destroy(ref godot_packed_color_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_variant_destroy(ref godot_variant p_self);
+        public static partial void godotsharp_variant_destroy(ref godot_variant p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_destroy(ref godot_string p_self);
+        public static partial void godotsharp_string_destroy(ref godot_string p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_name_destroy(ref godot_string_name p_self);
+        public static partial void godotsharp_string_name_destroy(ref godot_string_name p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_destroy(ref godot_node_path p_self);
+        public static partial void godotsharp_node_path_destroy(ref godot_node_path p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_signal_destroy(ref godot_signal p_self);
+        public static partial void godotsharp_signal_destroy(ref godot_signal p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_callable_destroy(ref godot_callable p_self);
+        public static partial void godotsharp_callable_destroy(ref godot_callable p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_array_destroy(ref godot_array p_self);
+        public static partial void godotsharp_array_destroy(ref godot_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_destroy(ref godot_dictionary p_self);
+        public static partial void godotsharp_dictionary_destroy(ref godot_dictionary p_self);
 
         // Array
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_array_add(ref godot_array p_self, in godot_variant p_item);
+        public static partial int godotsharp_array_add(ref godot_array p_self, in godot_variant p_item);
 
-        [DllImport(GodotDllName)]
-        public static extern void
+        public static partial void
             godotsharp_array_duplicate(ref godot_array p_self, godot_bool p_deep, out godot_array r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_array_index_of(ref godot_array p_self, in godot_variant p_item);
+        public static partial int godotsharp_array_index_of(ref godot_array p_self, in godot_variant p_item);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_array_insert(ref godot_array p_self, int p_index, in godot_variant p_item);
+        public static partial void godotsharp_array_insert(ref godot_array p_self, int p_index, in godot_variant p_item);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_array_remove_at(ref godot_array p_self, int p_index);
+        public static partial void godotsharp_array_remove_at(ref godot_array p_self, int p_index);
 
-        [DllImport(GodotDllName)]
-        public static extern Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
+        public static partial Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
 
-        [DllImport(GodotDllName)]
-        public static extern Error godotsharp_array_shuffle(ref godot_array p_self);
+        public static partial Error godotsharp_array_shuffle(ref godot_array p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
+        public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
 
         // Dictionary
 
-        [DllImport(GodotDllName)]
-        public static extern godot_bool godotsharp_dictionary_try_get_value(ref godot_dictionary p_self,
+        public static partial godot_bool godotsharp_dictionary_try_get_value(ref godot_dictionary p_self,
             in godot_variant p_key,
             out godot_variant r_value);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_set_value(ref godot_dictionary p_self, in godot_variant p_key,
+        public static partial void godotsharp_dictionary_set_value(ref godot_dictionary p_self, in godot_variant p_key,
             in godot_variant p_value);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_keys(ref godot_dictionary p_self, out godot_array r_dest);
+        public static partial void godotsharp_dictionary_keys(ref godot_dictionary p_self, out godot_array r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_values(ref godot_dictionary p_self, out godot_array r_dest);
+        public static partial void godotsharp_dictionary_values(ref godot_dictionary p_self, out godot_array r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_dictionary_count(ref godot_dictionary p_self);
+        public static partial int godotsharp_dictionary_count(ref godot_dictionary p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_key_value_pair_at(ref godot_dictionary p_self, int p_index,
+        public static partial void godotsharp_dictionary_key_value_pair_at(ref godot_dictionary p_self, int p_index,
             out godot_variant r_key, out godot_variant r_value);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_add(ref godot_dictionary p_self, in godot_variant p_key,
+        public static partial void godotsharp_dictionary_add(ref godot_dictionary p_self, in godot_variant p_key,
             in godot_variant p_value);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_clear(ref godot_dictionary p_self);
+        public static partial void godotsharp_dictionary_clear(ref godot_dictionary p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_bool godotsharp_dictionary_contains_key(ref godot_dictionary p_self,
+        public static partial godot_bool godotsharp_dictionary_contains_key(ref godot_dictionary p_self,
             in godot_variant p_key);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_duplicate(ref godot_dictionary p_self, godot_bool p_deep,
+        public static partial void godotsharp_dictionary_duplicate(ref godot_dictionary p_self, godot_bool p_deep,
             out godot_dictionary r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_bool godotsharp_dictionary_remove_key(ref godot_dictionary p_self,
+        public static partial godot_bool godotsharp_dictionary_remove_key(ref godot_dictionary p_self,
             in godot_variant p_key);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
+        public static partial void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
 
         // StringExtensions
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_md5_buffer(in godot_string p_self,
+        public static partial void godotsharp_string_md5_buffer(in godot_string p_self,
             out godot_packed_byte_array r_md5_buffer);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_md5_text(in godot_string p_self, out godot_string r_md5_text);
+        public static partial void godotsharp_string_md5_text(in godot_string p_self, out godot_string r_md5_text);
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_string_rfind(in godot_string p_self, in godot_string p_what, int p_from);
+        public static partial int godotsharp_string_rfind(in godot_string p_self, in godot_string p_what, int p_from);
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_string_rfindn(in godot_string p_self, in godot_string p_what, int p_from);
+        public static partial int godotsharp_string_rfindn(in godot_string p_self, in godot_string p_what, int p_from);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_sha256_buffer(in godot_string p_self,
+        public static partial void godotsharp_string_sha256_buffer(in godot_string p_self,
             out godot_packed_byte_array r_sha256_buffer);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_sha256_text(in godot_string p_self,
+        public static partial void godotsharp_string_sha256_text(in godot_string p_self,
             out godot_string r_sha256_text);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_string_simplify_path(in godot_string p_self,
+        public static partial void godotsharp_string_simplify_path(in godot_string p_self,
             out godot_string r_simplified_path);
 
         // NodePath
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_get_as_property_path(in godot_node_path p_self,
+        public static partial void godotsharp_node_path_get_as_property_path(in godot_node_path p_self,
             ref godot_node_path r_dest);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_get_concatenated_names(in godot_node_path p_self,
+        public static partial void godotsharp_node_path_get_concatenated_names(in godot_node_path p_self,
             out godot_string r_names);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_get_concatenated_subnames(in godot_node_path p_self,
+        public static partial void godotsharp_node_path_get_concatenated_subnames(in godot_node_path p_self,
             out godot_string r_subnames);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_get_name(in godot_node_path p_self, int p_idx,
+        public static partial void godotsharp_node_path_get_name(in godot_node_path p_self, int p_idx,
             out godot_string r_name);
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_node_path_get_name_count(in godot_node_path p_self);
+        public static partial int godotsharp_node_path_get_name_count(in godot_node_path p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_node_path_get_subname(in godot_node_path p_self, int p_idx,
+        public static partial void godotsharp_node_path_get_subname(in godot_node_path p_self, int p_idx,
             out godot_string r_subname);
 
-        [DllImport(GodotDllName)]
-        public static extern int godotsharp_node_path_get_subname_count(in godot_node_path p_self);
+        public static partial int godotsharp_node_path_get_subname_count(in godot_node_path p_self);
 
-        [DllImport(GodotDllName)]
-        public static extern godot_bool godotsharp_node_path_is_absolute(in godot_node_path p_self);
+        public static partial godot_bool godotsharp_node_path_is_absolute(in godot_node_path p_self);
 
         // GD, etc
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_bytes2var(in godot_packed_byte_array p_bytes,
+        internal static partial void godotsharp_bytes2var(in godot_packed_byte_array p_bytes,
             godot_bool p_allow_objects,
             out godot_variant r_ret);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_convert(in godot_variant p_what, int p_type,
+        internal static partial void godotsharp_convert(in godot_variant p_what, int p_type,
             out godot_variant r_ret);
 
-        [DllImport(GodotDllName)]
-        internal static extern int godotsharp_hash(in godot_variant p_var);
+        internal static partial int godotsharp_hash(in godot_variant p_var);
 
-        [DllImport(GodotDllName)]
-        internal static extern IntPtr godotsharp_instance_from_id(ulong p_instance_id);
+        internal static partial IntPtr godotsharp_instance_from_id(ulong p_instance_id);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_print(in godot_string p_what);
+        internal static partial void godotsharp_print(in godot_string p_what);
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_print_rich(in godot_string p_what);
+        public static partial void godotsharp_print_rich(in godot_string p_what);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_printerr(in godot_string p_what);
+        internal static partial void godotsharp_printerr(in godot_string p_what);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_printraw(in godot_string p_what);
+        internal static partial void godotsharp_printraw(in godot_string p_what);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_prints(in godot_string p_what);
+        internal static partial void godotsharp_prints(in godot_string p_what);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_printt(in godot_string p_what);
+        internal static partial void godotsharp_printt(in godot_string p_what);
 
-        [DllImport(GodotDllName)]
-        internal static extern float godotsharp_randf();
+        internal static partial float godotsharp_randf();
 
-        [DllImport(GodotDllName)]
-        internal static extern uint godotsharp_randi();
+        internal static partial uint godotsharp_randi();
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_randomize();
+        internal static partial void godotsharp_randomize();
 
-        [DllImport(GodotDllName)]
-        internal static extern double godotsharp_randf_range(double from, double to);
+        internal static partial double godotsharp_randf_range(double from, double to);
 
-        [DllImport(GodotDllName)]
-        internal static extern double godotsharp_randfn(double mean, double deviation);
+        internal static partial double godotsharp_randfn(double mean, double deviation);
 
-        [DllImport(GodotDllName)]
-        internal static extern int godotsharp_randi_range(int from, int to);
+        internal static partial int godotsharp_randi_range(int from, int to);
 
-        [DllImport(GodotDllName)]
-        internal static extern uint godotsharp_rand_from_seed(ulong seed, out ulong newSeed);
+        internal static partial uint godotsharp_rand_from_seed(ulong seed, out ulong newSeed);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_seed(ulong seed);
+        internal static partial void godotsharp_seed(ulong seed);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_weakref(IntPtr p_obj, out godot_ref r_weak_ref);
+        internal static partial void godotsharp_weakref(IntPtr p_obj, out godot_ref r_weak_ref);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_str(in godot_array p_what, out godot_string r_ret);
+        internal static partial void godotsharp_str(in godot_array p_what, out godot_string r_ret);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_str2var(in godot_string p_str, out godot_variant r_ret);
+        internal static partial void godotsharp_str2var(in godot_string p_str, out godot_variant r_ret);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_var2bytes(in godot_variant p_what, godot_bool p_full_objects,
+        internal static partial void godotsharp_var2bytes(in godot_variant p_what, godot_bool p_full_objects,
             out godot_packed_byte_array r_bytes);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_var2str(in godot_variant p_var, out godot_string r_ret);
+        internal static partial void godotsharp_var2str(in godot_variant p_var, out godot_string r_ret);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_pusherror(in godot_string p_str);
+        internal static partial void godotsharp_pusherror(in godot_string p_str);
 
-        [DllImport(GodotDllName)]
-        internal static extern void godotsharp_pushwarning(in godot_string p_str);
+        internal static partial void godotsharp_pushwarning(in godot_string p_str);
 
         // Object
 
-        [DllImport(GodotDllName)]
-        public static extern void godotsharp_object_to_string(IntPtr ptr, out godot_string r_str);
+        public static partial void godotsharp_object_to_string(IntPtr ptr, out godot_string r_str);
     }
 }

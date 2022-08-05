@@ -56,29 +56,15 @@
 extern "C" {
 #endif
 
-#ifdef __cplusplus
-#define MAYBE_UNUSED [[maybe_unused]]
-#else
-#define MAYBE_UNUSED
-#endif
-
-#ifdef __GNUC__
-#define GD_PINVOKE_EXPORT MAYBE_UNUSED __attribute__((visibility("default")))
-#elif defined(_WIN32)
-#define GD_PINVOKE_EXPORT MAYBE_UNUSED __declspec(dllexport)
-#else
-#define GD_PINVOKE_EXPORT MAYBE_UNUSED
-#endif
-
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_ResMetadataDir(godot_string *r_dest) {
+void godot_icall_GodotSharpDirs_ResMetadataDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_res_metadata_dir()));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
+void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_mono_user_dir()));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
+void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
 #ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_build_logs_dir()));
 #else
@@ -86,7 +72,7 @@ GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_
 #endif
 }
 
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
+void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
 #ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
 #else
@@ -94,29 +80,29 @@ GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_strin
 #endif
 }
 
-GD_PINVOKE_EXPORT void godot_icall_EditorProgress_Create(const godot_string *p_task, const godot_string *p_label, int32_t p_amount, bool p_can_cancel) {
+void godot_icall_EditorProgress_Create(const godot_string *p_task, const godot_string *p_label, int32_t p_amount, bool p_can_cancel) {
 	String task = *reinterpret_cast<const String *>(p_task);
 	String label = *reinterpret_cast<const String *>(p_label);
 	EditorNode::progress_add_task(task, label, p_amount, (bool)p_can_cancel);
 }
 
-GD_PINVOKE_EXPORT void godot_icall_EditorProgress_Dispose(const godot_string *p_task) {
+void godot_icall_EditorProgress_Dispose(const godot_string *p_task) {
 	String task = *reinterpret_cast<const String *>(p_task);
 	EditorNode::progress_end_task(task);
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_string *p_state, int32_t p_step, bool p_force_refresh) {
+bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_string *p_state, int32_t p_step, bool p_force_refresh) {
 	String task = *reinterpret_cast<const String *>(p_task);
 	String state = *reinterpret_cast<const String *>(p_state);
 	return EditorNode::progress_task_step(task, state, p_step, (bool)p_force_refresh);
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
+void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
 	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
 	memnew_placement(r_dest, String(full_templates_dir));
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_Internal_IsMacOSAppBundleInstalled(const godot_string *p_bundle_id) {
+bool godot_icall_Internal_IsMacOSAppBundleInstalled(const godot_string *p_bundle_id) {
 #ifdef MACOS_ENABLED
 	String bundle_id = *reinterpret_cast<const String *>(p_bundle_id);
 	return (bool)macos_is_app_bundle_installed(bundle_id);
@@ -126,11 +112,11 @@ GD_PINVOKE_EXPORT bool godot_icall_Internal_IsMacOSAppBundleInstalled(const godo
 #endif
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_Internal_GodotIs32Bits() {
+bool godot_icall_Internal_GodotIs32Bits() {
 	return sizeof(void *) == 4;
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_Internal_GodotIsRealTDouble() {
+bool godot_icall_Internal_GodotIsRealTDouble() {
 #ifdef REAL_T_IS_DOUBLE
 	return (bool)true;
 #else
@@ -138,11 +124,11 @@ GD_PINVOKE_EXPORT bool godot_icall_Internal_GodotIsRealTDouble() {
 #endif
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_GodotMainIteration() {
+void godot_icall_Internal_GodotMainIteration() {
 	Main::iteration();
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
+bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 #ifdef GD_MONO_HOT_RELOAD
 	return (bool)CSharpLanguage::get_singleton()->is_assembly_reloading_needed();
 #else
@@ -150,81 +136,81 @@ GD_PINVOKE_EXPORT bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 #endif
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
+void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
 	mono_bind::GodotSharp::get_singleton()->call_deferred(SNAME("_reload_assemblies"), (bool)p_soft_reload);
 #endif
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_EditorDebuggerNodeReloadScripts() {
+void godot_icall_Internal_EditorDebuggerNodeReloadScripts() {
 	EditorDebuggerNode::get_singleton()->reload_scripts();
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line, int32_t p_col, bool p_grab_focus) {
+bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line, int32_t p_col, bool p_grab_focus) {
 	Ref<Resource> resource = p_resource;
 	return (bool)ScriptEditor::get_singleton()->edit(resource, p_line, p_col, (bool)p_grab_focus);
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_EditorNodeShowScriptScreen() {
+void godot_icall_Internal_EditorNodeShowScriptScreen() {
 	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_EditorRunPlay() {
+void godot_icall_Internal_EditorRunPlay() {
 	EditorNode::get_singleton()->run_play();
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_EditorRunStop() {
+void godot_icall_Internal_EditorRunStop() {
 	EditorNode::get_singleton()->run_stop();
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
+void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	if (ed) {
 		ed->reload_scripts();
 	}
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_CodeCompletionRequest(int32_t p_kind, const godot_string *p_script_file, godot_packed_array *r_ret) {
+void godot_icall_Internal_CodeCompletionRequest(int32_t p_kind, const godot_string *p_script_file, godot_packed_array *r_ret) {
 	String script_file = *reinterpret_cast<const String *>(p_script_file);
 	PackedStringArray suggestions = gdmono::get_code_completion((gdmono::CompletionKind)p_kind, script_file);
 	memnew_placement(r_ret, PackedStringArray(suggestions));
 }
 
-GD_PINVOKE_EXPORT float godot_icall_Globals_EditorScale() {
+float godot_icall_Globals_EditorScale() {
 	return EDSCALE;
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Globals_GlobalDef(const godot_string *p_setting, const godot_variant *p_default_value, bool p_restart_if_changed, godot_variant *r_result) {
+void godot_icall_Globals_GlobalDef(const godot_string *p_setting, const godot_variant *p_default_value, bool p_restart_if_changed, godot_variant *r_result) {
 	String setting = *reinterpret_cast<const String *>(p_setting);
 	Variant default_value = *reinterpret_cast<const Variant *>(p_default_value);
 	Variant result = _GLOBAL_DEF(setting, default_value, (bool)p_restart_if_changed);
 	memnew_placement(r_result, Variant(result));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Globals_EditorDef(const godot_string *p_setting, const godot_variant *p_default_value, bool p_restart_if_changed, godot_variant *r_result) {
+void godot_icall_Globals_EditorDef(const godot_string *p_setting, const godot_variant *p_default_value, bool p_restart_if_changed, godot_variant *r_result) {
 	String setting = *reinterpret_cast<const String *>(p_setting);
 	Variant default_value = *reinterpret_cast<const Variant *>(p_default_value);
 	Variant result = _EDITOR_DEF(setting, default_value, (bool)p_restart_if_changed);
 	memnew_placement(r_result, Variant(result));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Globals_EditorShortcut(const godot_string *p_setting, godot_variant *r_result) {
+void godot_icall_Globals_EditorShortcut(const godot_string *p_setting, godot_variant *r_result) {
 	String setting = *reinterpret_cast<const String *>(p_setting);
 	Ref<Shortcut> result = ED_GET_SHORTCUT(setting);
 	memnew_placement(r_result, Variant(result));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Globals_TTR(const godot_string *p_text, godot_string *r_dest) {
+void godot_icall_Globals_TTR(const godot_string *p_text, godot_string *r_dest) {
 	String text = *reinterpret_cast<const String *>(p_text);
 	memnew_placement(r_dest, String(TTR(text)));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Utils_OS_GetPlatformName(godot_string *r_dest) {
+void godot_icall_Utils_OS_GetPlatformName(godot_string *r_dest) {
 	String os_name = OS::get_singleton()->get_name();
 	memnew_placement(r_dest, String(os_name));
 }
 
-GD_PINVOKE_EXPORT bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const godot_string *p_file_path) {
+bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const godot_string *p_file_path) {
 #ifdef UNIX_ENABLED
 	String file_path = *reinterpret_cast<const String *>(p_file_path);
 	return access(file_path.utf8().get_data(), X_OK) == 0;
@@ -237,7 +223,9 @@ GD_PINVOKE_EXPORT bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const go
 }
 #endif
 
-void *godotsharp_editor_pinvoke_funcs[28] = {
+// The order in this array must match the declaration order of
+// the methods in 'GodotTools/Internals/Internal.cs'.
+static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_GodotSharpDirs_ResMetadataDir,
 	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
 	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
@@ -267,3 +255,8 @@ void *godotsharp_editor_pinvoke_funcs[28] = {
 	(void *)godot_icall_Utils_OS_GetPlatformName,
 	(void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess,
 };
+
+const void **godotsharp::get_editor_interop_funcs(int32_t &r_size) {
+	r_size = sizeof(unmanaged_callbacks);
+	return unmanaged_callbacks;
+}

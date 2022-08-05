@@ -547,8 +547,9 @@ namespace GodotTools
         public static GodotSharpEditor Instance { get; private set; }
 
         [UsedImplicitly]
-        private static IntPtr InternalCreateInstance()
+        private static IntPtr InternalCreateInstance(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
+            Internal.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
             return new GodotSharpEditor().NativeInstance;
         }
     }
