@@ -216,6 +216,13 @@
 			</description>
 		</operator>
 		<operator name="operator *">
+			<return type="Plane" />
+			<argument index="0" name="right" type="Plane" />
+			<description>
+				Transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="Transform3D" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>

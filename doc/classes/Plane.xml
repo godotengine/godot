@@ -179,6 +179,13 @@
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
+		<operator name="operator *">
+			<return type="Plane" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+				Inversely transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+			</description>
+		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<argument index="0" name="right" type="Plane" />
