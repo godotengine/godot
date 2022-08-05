@@ -4,7 +4,7 @@
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
 		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
 		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
@@ -216,6 +216,14 @@
 			<description>
 				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise.
 				[b]Note:[/b] Don't erase elements while iterating over the dictionary. You can iterate over the [method keys] array instead.
+			</description>
+		</method>
+		<method name="find_key" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns the first key whose associated value is equal to [param value], or [code]null[/code] if no such value is found.
+				[b]Node:[/b] [code]null[/code] is also a valid key. I you have it in your [Dictionary], the [method find_key] method can give misleading results.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">

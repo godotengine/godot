@@ -500,6 +500,24 @@ TEST_CASE("[Dictionary] Recursive self comparison") {
 	d2.clear();
 }
 
+TEST_CASE("[Dictionary] Order and find") {
+	Dictionary d;
+	d[4] = "four";
+	d[8] = "eight";
+	d[12] = "twelve";
+	d["4"] = "four";
+
+	Array keys;
+	keys.append(4);
+	keys.append(8);
+	keys.append(12);
+	keys.append("4");
+
+	CHECK_EQ(d.keys(), keys);
+	CHECK_EQ(d.find_key("four"), Variant(4));
+	CHECK_EQ(d.find_key("does not exist"), Variant());
+}
+
 } // namespace TestDictionary
 
 #endif // TEST_DICTIONARY_H
