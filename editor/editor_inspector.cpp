@@ -1448,8 +1448,7 @@ void EditorInspector::update_tree() {
 	String group_base;
 	VBoxContainer *category_vbox = nullptr;
 
-	List<PropertyInfo>
-			plist;
+	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
 
 	HashMap<String, VBoxContainer *> item_path;

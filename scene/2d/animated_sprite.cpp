@@ -147,7 +147,7 @@ void SpriteFrames::clear(const StringName &p_anim) {
 
 void SpriteFrames::clear_all() {
 	animations.clear();
-	add_animation("default");
+	add_animation("default"); // Also emits changed.
 }
 
 void SpriteFrames::add_animation(const StringName &p_anim) {
@@ -155,13 +155,16 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 
 	animations[p_anim] = Anim();
 	animations[p_anim].normal_name = String(p_anim) + NORMAL_SUFFIX;
+	emit_changed();
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
 	return animations.has(p_anim);
 }
 void SpriteFrames::remove_animation(const StringName &p_anim) {
-	animations.erase(p_anim);
+	if (animations.erase(p_anim)) {
+		emit_changed();
+	}
 }
 
 void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &p_next) {
@@ -172,17 +175,7 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	animations.erase(p_prev);
 	animations[p_next] = anim;
 	animations[p_next].normal_name = String(p_next) + NORMAL_SUFFIX;
-}
-
-Vector<String> SpriteFrames::_get_animation_list() const {
-	Vector<String> ret;
-	List<StringName> al;
-	get_animation_list(&al);
-	for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
-		ret.push_back(E->get());
-	}
-
-	return ret;
+	emit_changed();
 }
 
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
@@ -578,8 +571,12 @@ bool AnimatedSprite::is_flipped_v() const {
 
 void AnimatedSprite::_res_changed() {
 	set_frame(frame);
-	_change_notify("frame");
-	_change_notify("animation");
+
+	// Calling _change_notify("frame") and _change_notify("animation") instead wouldn't
+	// make EditorInspector trigger calls to _validate_property(property) which would
+	// lead to not updating valid values for "frame" and "animation" properties.
+	_change_notify();
+
 	update();
 }
 
