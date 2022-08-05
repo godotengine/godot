@@ -1158,6 +1158,10 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	//actions[VS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
 	actions[VS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
 	actions[VS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+	actions[VS::SHADER_SPATIAL].renames["NODE_POSITION_WORLD"] = "world_transform[3].xyz";
+	actions[VS::SHADER_SPATIAL].renames["CAMERA_POSITION_WORLD"] = "camera_matrix[3].xyz";
+	actions[VS::SHADER_SPATIAL].renames["CAMERA_DIRECTION_WORLD"] = "camera_inverse_matrix[3].xyz";
+	actions[VS::SHADER_SPATIAL].renames["NODE_POSITION_VIEW"] = "(world_transform * camera_inverse_matrix)[3].xyz";
 
 	//for light
 	actions[VS::SHADER_SPATIAL].renames["VIEW"] = "view";
