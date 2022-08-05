@@ -6596,6 +6596,9 @@ void RasterizerStorageGLES3::update_particles() {
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 							tex = resources.black_tex;
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_TRANSPARENT: {
+							tex = resources.transparent_tex;
+						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
 							tex = resources.aniso_tex;
 						} break;
@@ -8202,32 +8205,45 @@ void RasterizerStorageGLES3::initialize() {
 	shaders.copy.init();
 
 	{
-		//default textures
+		// Generate default textures.
 
+		// Opaque white color.
 		glGenTextures(1, &resources.white_tex);
 		unsigned char whitetexdata[8 * 8 * 3];
 		for (int i = 0; i < 8 * 8 * 3; i++) {
 			whitetexdata[i] = 255;
 		}
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.white_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+		// Opaque black color.
 		glGenTextures(1, &resources.black_tex);
 		unsigned char blacktexdata[8 * 8 * 3];
 		for (int i = 0; i < 8 * 8 * 3; i++) {
 			blacktexdata[i] = 0;
 		}
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.black_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, blacktexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+		// Transparent black color.
+		glGenTextures(1, &resources.transparent_tex);
+		unsigned char transparenttexdata[8 * 8 * 4];
+		for (int i = 0; i < 8 * 8 * 4; i++) {
+			transparenttexdata[i] = 0;
+		}
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, resources.transparent_tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, transparenttexdata);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// Opaque "flat" normal map color.
 		glGenTextures(1, &resources.normal_tex);
 		unsigned char normaltexdata[8 * 8 * 3];
 		for (int i = 0; i < 8 * 8 * 3; i += 3) {
@@ -8235,13 +8251,13 @@ void RasterizerStorageGLES3::initialize() {
 			normaltexdata[i + 1] = 128;
 			normaltexdata[i + 2] = 255;
 		}
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.normal_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, normaltexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+		// Opaque "flat" flowmap color.
 		glGenTextures(1, &resources.aniso_tex);
 		unsigned char anisotexdata[8 * 8 * 3];
 		for (int i = 0; i < 8 * 8 * 3; i += 3) {
@@ -8249,7 +8265,6 @@ void RasterizerStorageGLES3::initialize() {
 			anisotexdata[i + 1] = 128;
 			anisotexdata[i + 2] = 0;
 		}
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.aniso_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, anisotexdata);
@@ -8264,15 +8279,15 @@ void RasterizerStorageGLES3::initialize() {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 8, 8, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, depthtexdata);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+		// Opaque white color for 3D texture.
 		glGenTextures(1, &resources.white_tex_3d);
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_3D, resources.white_tex_3d);
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, 2, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
-
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
 
+		// Opaque white color for texture array.
 		glGenTextures(1, &resources.white_tex_array);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, resources.white_tex_array);
@@ -8411,6 +8426,7 @@ void RasterizerStorageGLES3::initialize() {
 void RasterizerStorageGLES3::finalize() {
 	glDeleteTextures(1, &resources.white_tex);
 	glDeleteTextures(1, &resources.black_tex);
+	glDeleteTextures(1, &resources.transparent_tex);
 	glDeleteTextures(1, &resources.normal_tex);
 	glDeleteTextures(1, &resources.depth_tex);
 }
