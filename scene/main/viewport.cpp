@@ -2144,6 +2144,18 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			over = _gui_find_control(mpos);
 		}
 
+		if (over != gui.mouse_over) {
+			_drop_mouse_over();
+
+			_gui_cancel_tooltip();
+
+			if (over) {
+				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
+			}
+		}
+
+		gui.mouse_over = over;
+
 		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
 			Control *top = gui.modal_stack.back()->get();
 
@@ -2179,18 +2191,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 		}
-
-		if (over != gui.mouse_over) {
-			_drop_mouse_over();
-
-			_gui_cancel_tooltip();
-
-			if (over) {
-				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
-			}
-		}
-
-		gui.mouse_over = over;
 
 		Control *drag_preview = _gui_get_drag_preview();
 		if (drag_preview) {
