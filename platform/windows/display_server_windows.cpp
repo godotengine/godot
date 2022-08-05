@@ -144,8 +144,8 @@ bool DisplayServerWindows::tts_is_paused() const {
 	return tts->is_paused();
 }
 
-Array DisplayServerWindows::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 

@@ -141,7 +141,7 @@ public:
 		}
 	}
 	void add_property_hint(const PropertyInfo &p_hint);
-	Array get_changed_settings() const;
+	PackedStringArray get_changed_settings() const;
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 	void mark_setting_changed(const String &p_setting);
 

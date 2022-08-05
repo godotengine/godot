@@ -18,7 +18,7 @@
 			</description>
 		</method>
 		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="candidates" type="Dictionary[]" />
 			<description>
 				Override this method to define what items in [param candidates] should be displayed.
@@ -159,13 +159,13 @@
 			</description>
 		</method>
 		<method name="get_bookmarked_lines" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Gets all bookmarked lines.
 			</description>
 		</method>
 		<method name="get_breakpointed_lines" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Gets all breakpointed lines.
 			</description>
@@ -226,7 +226,7 @@
 			</description>
 		</method>
 		<method name="get_executing_lines" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Gets all executing lines.
 			</description>

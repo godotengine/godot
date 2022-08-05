@@ -351,8 +351,8 @@ int RegEx::get_group_count() const {
 	return count;
 }
 
-Array RegEx::get_names() const {
-	Array result;
+PackedStringArray RegEx::get_names() const {
+	PackedStringArray result;
 
 	ERR_FAIL_COND_V(!is_valid(), result);
 

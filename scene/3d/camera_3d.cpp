@@ -485,7 +485,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera3D::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera3D::get_doppler_tracking);
-	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::get_frustum);
+	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::_get_frustum);
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
 	ClassDB::bind_method(D_METHOD("get_pyramid_shape_rid"), &Camera3D::get_pyramid_shape_rid);
@@ -613,6 +613,11 @@ Vector<Plane> Camera3D::get_frustum() const {
 	}
 
 	return cm.get_projection_planes(get_camera_transform());
+}
+
+TypedArray<Plane> Camera3D::_get_frustum() const {
+	Variant ret = get_frustum();
+	return ret;
 }
 
 bool Camera3D::is_position_in_frustum(const Vector3 &p_position) const {

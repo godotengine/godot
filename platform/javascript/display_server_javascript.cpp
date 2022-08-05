@@ -296,7 +296,7 @@ void DisplayServerJavaScript::update_voices_callback(int p_size, const char **p_
 	}
 }
 
-Array DisplayServerJavaScript::tts_get_voices() const {
+TypedArray<Dictionary> DisplayServerJavaScript::tts_get_voices() const {
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }

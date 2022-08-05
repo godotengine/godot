@@ -66,12 +66,12 @@ String EditorSyntaxHighlighter::_get_name() const {
 	return "Unnamed";
 }
 
-Array EditorSyntaxHighlighter::_get_supported_languages() const {
-	Array ret;
+PackedStringArray EditorSyntaxHighlighter::_get_supported_languages() const {
+	PackedStringArray ret;
 	if (GDVIRTUAL_CALL(_get_supported_languages, ret)) {
 		return ret;
 	}
-	return Array();
+	return PackedStringArray();
 }
 
 Ref<EditorSyntaxHighlighter> EditorSyntaxHighlighter::_create() const {
@@ -1732,7 +1732,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 			continue;
 		}
 
-		Array bpoints = se->get_breakpoints();
+		PackedInt32Array bpoints = se->get_breakpoints();
 		for (int j = 0; j < bpoints.size(); j++) {
 			p_breakpoints->push_back(base + ":" + itos((int)bpoints[j] + 1));
 		}
@@ -2380,8 +2380,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			se->add_syntax_highlighter(highlighter);
 
 			if (script != nullptr && !highlighter_set) {
-				Array languages = highlighter->_get_supported_languages();
-				if (languages.find(script->get_language()->get_name()) > -1) {
+				PackedStringArray languages = highlighter->_get_supported_languages();
+				if (languages.has(script->get_language()->get_name())) {
 					se->set_syntax_highlighter(highlighter);
 					highlighter_set = true;
 				}

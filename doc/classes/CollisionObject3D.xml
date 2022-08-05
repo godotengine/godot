@@ -49,7 +49,7 @@
 			</description>
 		</method>
 		<method name="get_shape_owners">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Returns an [Array] of [code]owner_id[/code] identifiers. You can use these ids in other methods that take [code]owner_id[/code] as an argument.
 			</description>

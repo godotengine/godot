@@ -45,6 +45,8 @@
 #include "core/templates/safe_refcount.h"
 
 class MainLoop;
+template <typename T>
+class TypedArray;
 
 namespace core_bind {
 
@@ -602,15 +604,15 @@ public:
 
 	bool has_signal(StringName p_class, StringName p_signal) const;
 	Dictionary get_signal(StringName p_class, StringName p_signal) const;
-	Array get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	Array get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_property_list(StringName p_class, bool p_no_inheritance = false) const;
 	Variant get_property(Object *p_object, const StringName &p_property) const;
 	Error set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
 	bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
 
-	Array get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_method_list(StringName p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -661,7 +663,7 @@ public:
 
 	Dictionary get_version_info() const;
 	Dictionary get_author_info() const;
-	Array get_copyright_info() const;
+	TypedArray<Dictionary> get_copyright_info() const;
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;

@@ -1656,7 +1656,7 @@ bool DisplayServerMacOS::tts_is_paused() const {
 	return [tts isPaused];
 }
 
-Array DisplayServerMacOS::tts_get_voices() const {
+TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
 	ERR_FAIL_COND_V(!tts, Array());
 	return [tts getVoices];
 }

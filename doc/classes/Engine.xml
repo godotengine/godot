@@ -34,7 +34,7 @@
 			</description>
 		</method>
 		<method name="get_copyright_info" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an Array of copyright information Dictionaries.
 				[code]name[/code]    - String, component name

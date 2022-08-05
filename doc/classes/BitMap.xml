@@ -58,7 +58,7 @@
 			</description>
 		</method>
 		<method name="opaque_to_polygons" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="rect" type="Rect2" />
 			<param index="1" name="epsilon" type="float" default="2.0" />
 			<description>

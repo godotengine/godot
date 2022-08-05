@@ -196,7 +196,7 @@
 			</description>
 		</method>
 		<method name="_structured_text_parser" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="args" type="Array" />
 			<param index="1" name="text" type="String" />
 			<description>

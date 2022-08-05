@@ -2946,13 +2946,13 @@ void Control::end_bulk_theme_override() {
 
 // Internationalization.
 
-Array Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+TypedArray<Vector2i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
 	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
-		Array ret;
+		TypedArray<Vector2i> ret;
 		if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret)) {
 			return ret;
 		} else {
-			return Array();
+			return TypedArray<Vector2i>();
 		}
 	} else {
 		return TS->parse_structured_text(p_parser_type, p_args, p_text);

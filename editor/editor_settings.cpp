@@ -963,8 +963,8 @@ void EditorSettings::save() {
 	}
 }
 
-Array EditorSettings::get_changed_settings() const {
-	Array arr;
+PackedStringArray EditorSettings::get_changed_settings() const {
+	PackedStringArray arr;
 	for (const String &setting : changed_settings) {
 		arr.push_back(setting);
 	}

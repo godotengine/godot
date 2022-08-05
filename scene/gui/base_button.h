@@ -151,7 +151,7 @@ protected:
 public:
 	BaseButton *get_pressed_button();
 	void get_buttons(List<BaseButton *> *r_buttons);
-	Array _get_buttons();
+	TypedArray<BaseButton> _get_buttons();
 	ButtonGroup();
 };
 

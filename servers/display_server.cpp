@@ -256,14 +256,14 @@ void DisplayServer::tts_resume() {
 	WARN_PRINT("TTS is not supported by this display server.");
 }
 
-Array DisplayServer::tts_get_voices() const {
+TypedArray<Dictionary> DisplayServer::tts_get_voices() const {
 	WARN_PRINT("TTS is not supported by this display server.");
-	return Array();
+	return TypedArray<Dictionary>();
 }
 
 PackedStringArray DisplayServer::tts_get_voices_for_language(const String &p_language) const {
 	PackedStringArray ret;
-	Array voices = tts_get_voices();
+	TypedArray<Dictionary> voices = tts_get_voices();
 	for (int i = 0; i < voices.size(); i++) {
 		const Dictionary &voice = voices[i];
 		if (voice.has("id") && voice.has("language") && voice["language"].operator String().begins_with(p_language)) {

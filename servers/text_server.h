@@ -37,6 +37,9 @@
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant.h"
 
+template <typename T>
+class TypedArray;
+
 struct Glyph;
 struct CaretInfo;
 
@@ -269,7 +272,7 @@ public:
 	virtual void font_set_oversampling(const RID &p_font_rid, double p_oversampling) = 0;
 	virtual double font_get_oversampling(const RID &p_font_rid) const = 0;
 
-	virtual Array font_get_size_cache_list(const RID &p_font_rid) const = 0;
+	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const = 0;
 	virtual void font_clear_size_cache(const RID &p_font_rid) = 0;
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) = 0;
 
@@ -298,7 +301,7 @@ public:
 	virtual void font_set_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const PackedInt32Array &p_offset) = 0;
 	virtual PackedInt32Array font_get_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) const = 0;
 
-	virtual Array font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const = 0;
+	virtual PackedInt32Array font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const = 0;
 	virtual void font_clear_glyphs(const RID &p_font_rid, const Vector2i &p_size) = 0;
 	virtual void font_remove_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) = 0;
 
@@ -321,7 +324,7 @@ public:
 
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const = 0;
 
-	virtual Array font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const = 0;
+	virtual TypedArray<Vector2i> font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const = 0;
 	virtual void font_clear_kerning_map(const RID &p_font_rid, int64_t p_size) = 0;
 	virtual void font_remove_kerning(const RID &p_font_rid, int64_t p_size, const Vector2i &p_glyph_pair) = 0;
 
@@ -476,7 +479,7 @@ public:
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
-	Array parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	TypedArray<Vector2i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	TextServer();
 	~TextServer();

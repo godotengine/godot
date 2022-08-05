@@ -209,8 +209,8 @@ bool AStar3D::has_point(int64_t p_id) const {
 	return points.has(p_id);
 }
 
-Array AStar3D::get_point_ids() {
-	Array point_list;
+PackedInt64Array AStar3D::get_point_ids() {
+	PackedInt64Array point_list;
 
 	for (OAHashMap<int64_t, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
 		point_list.push_back(*(it.key));
@@ -605,7 +605,7 @@ Vector<int64_t> AStar2D::get_point_connections(int64_t p_id) {
 	return astar.get_point_connections(p_id);
 }
 
-Array AStar2D::get_point_ids() {
+PackedInt64Array AStar2D::get_point_ids() {
 	return astar.get_point_ids();
 }
 

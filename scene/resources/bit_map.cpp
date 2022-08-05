@@ -31,6 +31,7 @@
 #include "bit_map.h"
 
 #include "core/io/image_loader.h"
+#include "core/variant/typed_array.h"
 
 void BitMap::create(const Size2 &p_size) {
 	ERR_FAIL_COND(p_size.width < 1);
@@ -576,12 +577,12 @@ void BitMap::shrink_mask(int p_pixels, const Rect2 &p_rect) {
 	grow_mask(-p_pixels, p_rect);
 }
 
-Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const {
+TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const {
 	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
 
 	// Convert result to bindable types
 
-	Array result_array;
+	TypedArray<PackedVector2Array> result_array;
 	result_array.resize(result.size());
 	for (int i = 0; i < result.size(); i++) {
 		const Vector<Vector2> &polygon = result[i];

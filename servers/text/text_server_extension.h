@@ -35,6 +35,7 @@
 #include "core/object/script_language.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
+#include "core/variant/typed_array.h"
 #include "servers/text_server.h"
 
 class TextServerExtension : public TextServer {
@@ -172,10 +173,10 @@ public:
 	GDVIRTUAL2(font_set_oversampling, RID, double);
 	GDVIRTUAL1RC(double, font_get_oversampling, RID);
 
-	virtual Array font_get_size_cache_list(const RID &p_font_rid) const override;
+	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override;
 	virtual void font_clear_size_cache(const RID &p_font_rid) override;
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) override;
-	GDVIRTUAL1RC(Array, font_get_size_cache_list, RID);
+	GDVIRTUAL1RC(TypedArray<Vector2i>, font_get_size_cache_list, RID);
 	GDVIRTUAL1(font_clear_size_cache, RID);
 	GDVIRTUAL2(font_remove_size_cache, RID, const Vector2i &);
 
@@ -221,10 +222,10 @@ public:
 	GDVIRTUAL4(font_set_texture_offsets, RID, const Vector2i &, int64_t, const PackedInt32Array &);
 	GDVIRTUAL3RC(PackedInt32Array, font_get_texture_offsets, RID, const Vector2i &, int64_t);
 
-	virtual Array font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const override;
+	virtual PackedInt32Array font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const override;
 	virtual void font_clear_glyphs(const RID &p_font_rid, const Vector2i &p_size) override;
 	virtual void font_remove_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) override;
-	GDVIRTUAL2RC(Array, font_get_glyph_list, RID, const Vector2i &);
+	GDVIRTUAL2RC(PackedInt32Array, font_get_glyph_list, RID, const Vector2i &);
 	GDVIRTUAL2(font_clear_glyphs, RID, const Vector2i &);
 	GDVIRTUAL3(font_remove_glyph, RID, const Vector2i &, int64_t);
 
@@ -262,10 +263,10 @@ public:
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const override;
 	GDVIRTUAL3RC(Dictionary, font_get_glyph_contours, RID, int64_t, int64_t);
 
-	virtual Array font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const override;
+	virtual TypedArray<Vector2i> font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const override;
 	virtual void font_clear_kerning_map(const RID &p_font_rid, int64_t p_size) override;
 	virtual void font_remove_kerning(const RID &p_font_rid, int64_t p_size, const Vector2i &p_glyph_pair) override;
-	GDVIRTUAL2RC(Array, font_get_kerning_list, RID, int64_t);
+	GDVIRTUAL2RC(TypedArray<Vector2i>, font_get_kerning_list, RID, int64_t);
 	GDVIRTUAL2(font_clear_kerning_map, RID, int64_t);
 	GDVIRTUAL3(font_remove_kerning, RID, int64_t, const Vector2i &);
 

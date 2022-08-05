@@ -37,7 +37,7 @@
 			</description>
 		</method>
 		<method name="get_frustum" qualifiers="const">
-			<return type="Array" />
+			<return type="Plane[]" />
 			<description>
 				Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
 			</description>

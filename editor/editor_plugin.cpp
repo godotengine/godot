@@ -48,7 +48,7 @@
 #include "scene/gui/popup_menu.h"
 #include "servers/rendering_server.h"
 
-Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
+TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
@@ -56,7 +56,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 	}
 
 	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, nullptr, p_preview_size);
-	Array ret;
+	TypedArray<Texture2D> ret;
 	for (int i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
 	}
@@ -216,8 +216,8 @@ Node *EditorInterface::get_edited_scene_root() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
-Array EditorInterface::get_open_scenes() const {
-	Array ret;
+PackedStringArray EditorInterface::get_open_scenes() const {
+	PackedStringArray ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	int scns_amount = scenes.size();

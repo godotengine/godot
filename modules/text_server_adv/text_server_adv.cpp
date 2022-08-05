@@ -2170,12 +2170,12 @@ double TextServerAdvanced::font_get_oversampling(const RID &p_font_rid) const {
 	return fd->oversampling;
 }
 
-Array TextServerAdvanced::font_get_size_cache_list(const RID &p_font_rid) const {
+TypedArray<Vector2i> TextServerAdvanced::font_get_size_cache_list(const RID &p_font_rid) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, TypedArray<Vector2i>());
 
 	MutexLock lock(fd->mutex);
-	Array ret;
+	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
 		ret.push_back(E.key);
 	}
@@ -2454,15 +2454,15 @@ PackedInt32Array TextServerAdvanced::font_get_texture_offsets(const RID &p_font_
 	return tex.offsets;
 }
 
-Array TextServerAdvanced::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
+PackedInt32Array TextServerAdvanced::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, PackedInt32Array());
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), PackedInt32Array());
 
-	Array ret;
+	PackedInt32Array ret;
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
 		ret.push_back(E.key);
@@ -2811,16 +2811,16 @@ Dictionary TextServerAdvanced::font_get_glyph_contours(const RID &p_font_rid, in
 #endif
 }
 
-Array TextServerAdvanced::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
+TypedArray<Vector2i> TextServerAdvanced::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, TypedArray<Vector2i>());
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size(fd, p_size);
 
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), TypedArray<Vector2i>());
 
-	Array ret;
+	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
 		ret.push_back(E.key);
 	}

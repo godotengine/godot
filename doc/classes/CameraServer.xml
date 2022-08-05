@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="feeds">
-			<return type="Array" />
+			<return type="CameraFeed[]" />
 			<description>
 				Returns an array of [CameraFeed]s.
 			</description>
