@@ -48,6 +48,7 @@
 #include "os_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
+#include "tts_android.h"
 
 #include <android/input.h>
 #include <unistd.h>
@@ -136,6 +137,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
 	NetSocketAndroid::setup(p_net_utils);
+	TTS_Android::setup(godot_java->get_member_object("tts", "Lorg/godotengine/godot/tts/GodotTTS;", env));
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
 
@@ -236,6 +238,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_GO_BACK_REQUEST);
 	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *env, jclass clazz, jint event, jint id, jint pos) {
+	TTS_Android::_java_utterance_callback(event, id, pos);
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {

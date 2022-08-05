@@ -80,6 +80,9 @@ private:
 	bool idb_is_syncing;
 	bool pwa_is_waiting;
 
+	Map<int, CharString> utterance_ids;
+	Array voices;
+
 	static void fullscreen_change_callback(int p_fullscreen);
 	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
@@ -100,6 +103,8 @@ private:
 	static void fs_sync_callback();
 	static void update_clipboard_callback(const char *p_text);
 	static void update_pwa_state_callback();
+	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
+	static void update_voices_callback(int p_size, const char **p_voice);
 
 protected:
 	void resume_audio();
@@ -123,6 +128,15 @@ public:
 
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
+
+	virtual bool tts_is_speaking() const;
+	virtual bool tts_is_paused() const;
+	virtual Array tts_get_voices() const;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_pause();
+	virtual void tts_resume();
+	virtual void tts_stop();
 
 	virtual bool has_virtual_keyboard() const;
 	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);

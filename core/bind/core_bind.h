@@ -152,10 +152,30 @@ public:
 		OPENGL_CONTEXT, // HGLRC, X11::GLXContext, NSOpenGLContext*, EGLContext* ...
 	};
 
+	enum TTSUtteranceEvent {
+		TTS_UTTERANCE_STARTED,
+		TTS_UTTERANCE_ENDED,
+		TTS_UTTERANCE_CANCELED,
+		TTS_UTTERANCE_BOUNDARY,
+		TTS_UTTERANCE_MAX,
+	};
+
 	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
 	void global_menu_add_separator(const String &p_menu);
 	void global_menu_remove_item(const String &p_menu, int p_idx);
 	void global_menu_clear(const String &p_menu);
+
+	bool tts_is_speaking() const;
+	bool tts_is_paused() const;
+	Array tts_get_voices() const;
+	PoolStringArray tts_get_voices_for_language(const String &p_language) const;
+
+	void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	void tts_pause();
+	void tts_resume();
+	void tts_stop();
+
+	void tts_set_utterance_callback(TTSUtteranceEvent p_event, Object *p_object, String p_callback);
 
 	Point2 get_mouse_position() const;
 	void set_window_title(const String &p_title);
@@ -429,6 +449,7 @@ VARIANT_ENUM_CAST(_OS::VirtualKeyboardType);
 VARIANT_ENUM_CAST(_OS::SystemDir);
 VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 VARIANT_ENUM_CAST(_OS::HandleType);
+VARIANT_ENUM_CAST(_OS::TTSUtteranceEvent);
 
 class _Geometry : public Object {
 	GDCLASS(_Geometry, Object);

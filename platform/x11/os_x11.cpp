@@ -107,6 +107,45 @@ static String get_atom_name(Display *p_disp, Atom p_atom) {
 	return ret;
 }
 
+#ifdef SPEECHD_ENABLED
+
+bool OS_X11::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_speaking();
+}
+
+bool OS_X11::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_paused();
+}
+
+Array OS_X11::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return tts->get_voices();
+}
+
+void OS_X11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void OS_X11::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	tts->pause();
+}
+
+void OS_X11::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	tts->resume();
+}
+
+void OS_X11::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	tts->stop();
+}
+
+#endif
+
 void OS_X11::initialize_core() {
 	crash_handler.initialize();
 
@@ -378,6 +417,11 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	context_gl->set_use_vsync(current_videomode.use_vsync);
 
+#endif
+
+#ifdef SPEECHD_ENABLED
+	// Init TTS
+	tts = memnew(TTS_Linux);
 #endif
 
 	visual_server = memnew(VisualServerRaster);
@@ -847,6 +891,10 @@ void OS_X11::finalize() {
 	*/
 #ifdef ALSAMIDI_ENABLED
 	driver_alsamidi.close();
+#endif
+
+#ifdef SPEECHD_ENABLED
+	memdelete(tts);
 #endif
 
 #ifdef JOYDEV_ENABLED

@@ -10,6 +10,7 @@ files = [
     "os_osx.mm",
     "godot_main_osx.mm",
     "dir_access_osx.mm",
+    "tts_osx.mm",
     "joypad_osx.cpp",
     "power_osx.cpp",
 ]

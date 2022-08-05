@@ -190,6 +190,42 @@ void _OS::global_menu_clear(const String &p_menu) {
 	OS::get_singleton()->global_menu_clear(p_menu);
 }
 
+bool _OS::tts_is_speaking() const {
+	return OS::get_singleton()->tts_is_speaking();
+}
+
+bool _OS::tts_is_paused() const {
+	return OS::get_singleton()->tts_is_paused();
+}
+
+Array _OS::tts_get_voices() const {
+	return OS::get_singleton()->tts_get_voices();
+}
+
+PoolStringArray _OS::tts_get_voices_for_language(const String &p_language) const {
+	return OS::get_singleton()->tts_get_voices_for_language(p_language);
+}
+
+void _OS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	OS::get_singleton()->tts_speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void _OS::tts_pause() {
+	OS::get_singleton()->tts_pause();
+}
+
+void _OS::tts_resume() {
+	OS::get_singleton()->tts_resume();
+}
+
+void _OS::tts_stop() {
+	OS::get_singleton()->tts_stop();
+}
+
+void _OS::tts_set_utterance_callback(TTSUtteranceEvent p_event, Object *p_object, String p_callback) {
+	OS::get_singleton()->tts_set_utterance_callback((OS::TTSUtteranceEvent)p_event, p_object, p_callback);
+}
+
 Point2 _OS::get_mouse_position() const {
 	return OS::get_singleton()->get_mouse_position();
 }
@@ -1260,6 +1296,18 @@ void _OS::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
+	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &_OS::tts_is_speaking);
+	ClassDB::bind_method(D_METHOD("tts_is_paused"), &_OS::tts_is_paused);
+	ClassDB::bind_method(D_METHOD("tts_get_voices"), &_OS::tts_get_voices);
+	ClassDB::bind_method(D_METHOD("tts_get_voices_for_language", "language"), &_OS::tts_get_voices_for_language);
+
+	ClassDB::bind_method(D_METHOD("tts_speak", "text", "voice", "volume", "pitch", "rate", "utterance_id", "interrupt"), &_OS::tts_speak, DEFVAL(50), DEFVAL(1.f), DEFVAL(1.f), DEFVAL(0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("tts_pause"), &_OS::tts_pause);
+	ClassDB::bind_method(D_METHOD("tts_resume"), &_OS::tts_resume);
+	ClassDB::bind_method(D_METHOD("tts_stop"), &_OS::tts_stop);
+
+	ClassDB::bind_method(D_METHOD("tts_set_utterance_callback", "event", "object", "callback"), &_OS::tts_set_utterance_callback);
+
 	ClassDB::bind_method(D_METHOD("global_menu_add_item", "menu", "label", "id", "meta"), &_OS::global_menu_add_item);
 	ClassDB::bind_method(D_METHOD("global_menu_add_separator", "menu"), &_OS::global_menu_add_separator);
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu", "idx"), &_OS::global_menu_remove_item);
@@ -1578,6 +1626,11 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(POWERSTATE_NO_BATTERY);
 	BIND_ENUM_CONSTANT(POWERSTATE_CHARGING);
 	BIND_ENUM_CONSTANT(POWERSTATE_CHARGED);
+
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_STARTED);
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_ENDED);
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_CANCELED);
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
 }
 
 _OS::_OS() {

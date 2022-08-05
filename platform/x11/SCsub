@@ -18,6 +18,9 @@ common_x11 = [
 if "udev" in env and env["udev"]:
     common_x11.append("libudev-so_wrap.c")
 
+if "speechd" in env and env["speechd"]:
+    common_x11.append(["speechd-so_wrap.c", "tts_linux.cpp"])
+
 prog = env.add_program("#bin/godot", ["godot_x11.cpp"] + common_x11)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
