@@ -1892,6 +1892,10 @@ float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
+bool DisplayServerMacOS::screen_is_kept_on() const {
+	return (screen_keep_on_assertion);
+}
+
 void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
 	if (screen_keep_on_assertion) {
 		IOPMAssertionRelease(screen_keep_on_assertion);
