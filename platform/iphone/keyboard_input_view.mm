@@ -83,7 +83,7 @@
 	return YES;
 }
 
-- (BOOL)becomeFirstResponderWithString:(NSString *)existingString multiline:(BOOL)flag cursorStart:(NSInteger)start cursorEnd:(NSInteger)end {
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString cursorStart:(NSInteger)start cursorEnd:(NSInteger)end {
 	self.text = existingString;
 	self.previousText = existingString;
 

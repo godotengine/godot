@@ -1880,7 +1880,7 @@ void TextEdit::_notification(int p_what) {
 					cursor_end = cursor_start + post_text.length();
 				}
 
-				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect(), true, -1, cursor_start, cursor_end);
+				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect(), OS::KEYBOARD_TYPE_MULTILINE, -1, cursor_start, cursor_end);
 			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
