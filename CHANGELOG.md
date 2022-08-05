@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [3.5] - TBD
+## [3.5] - 2022-08-05
 
-See the [release announcement]() for details.
+See the [release announcement](https://godotengine.org/article/godot-3-5-cant-stop-wont-stop) for details.
 
 ### Added
 
