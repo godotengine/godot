@@ -1354,9 +1354,16 @@ void SpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 	}
 
 	flags[p_flag] = p_enabled;
-	if ((p_flag == FLAG_USE_ALPHA_SCISSOR) || (p_flag == FLAG_UNSHADED) || (p_flag == FLAG_USE_SHADOW_TO_OPACITY)) {
+
+	if (
+			p_flag == FLAG_USE_ALPHA_SCISSOR ||
+			p_flag == FLAG_UNSHADED ||
+			p_flag == FLAG_USE_SHADOW_TO_OPACITY ||
+			p_flag == FLAG_UV1_USE_TRIPLANAR ||
+			p_flag == FLAG_UV2_USE_TRIPLANAR) {
 		_change_notify();
 	}
+
 	_queue_shader_change();
 }
 
@@ -1446,6 +1453,14 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	}
 
 	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
+		property.usage = 0;
+	}
+
+	if (property.name == "uv1_triplanar_sharpness" && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+		property.usage = 0;
+	}
+
+	if (property.name == "uv2_triplanar_sharpness" && !flags[FLAG_UV2_USE_TRIPLANAR]) {
 		property.usage = 0;
 	}
 
