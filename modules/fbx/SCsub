@@ -11,7 +11,7 @@ env_fbx.Prepend(CPPPATH=["#modules/fbx/"])
 if env["builtin_zlib"]:
     env_fbx.Prepend(CPPPATH=["#thirdparty/zlib/"])
 
-# Godot's own source files
+# Godot source files
 env_fbx.add_source_files(env.modules_sources, "tools/*.cpp")
 env_fbx.add_source_files(env.modules_sources, "data/*.cpp")
 env_fbx.add_source_files(env.modules_sources, "fbx_parser/*.cpp")
