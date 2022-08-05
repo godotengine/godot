@@ -189,6 +189,7 @@ Viewport::GUI::GUI() {
 	mouse_focus_mask = 0;
 	key_focus = nullptr;
 	mouse_over = nullptr;
+	unfocused_mouse_over = nullptr;
 
 	tooltip_control = nullptr;
 	tooltip_popup = nullptr;
@@ -1918,6 +1919,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				gui.mouse_focus = _gui_find_control(pos);
 				gui.last_mouse_focus = gui.mouse_focus;
+				gui.unfocused_mouse_over = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
 					gui.mouse_focus_mask = 0;
@@ -2138,10 +2140,18 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		// These sections of code are reused in the mb.is_valid() case further up
 		// for the purpose of notifying controls about potential changes in focus
 		// when the mousebutton is released.
+		Control *_over = nullptr;
+		if (force_mouse_events) {
+			_over = _gui_find_control(mpos);
+		}
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
 		} else {
-			over = _gui_find_control(mpos);
+			if (force_mouse_events) {
+				over = _over;
+			} else {
+				over = _gui_find_control(mpos);
+			}
 		}
 
 		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
@@ -2191,6 +2201,16 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		gui.mouse_over = over;
+
+		if (force_mouse_events && gui.mouse_focus && _over != gui.unfocused_mouse_over) {
+			if (gui.unfocused_mouse_over) {
+				_gui_call_notification(gui.unfocused_mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+			}
+			if (_over) {
+				_gui_call_notification(_over, Control::NOTIFICATION_MOUSE_ENTER);
+			}
+			gui.unfocused_mouse_over = _over;
+		}
 
 		Control *drag_preview = _gui_get_drag_preview();
 		if (drag_preview) {
@@ -2995,6 +3015,14 @@ bool Viewport::is_input_disabled() const {
 	return disable_input;
 }
 
+void Viewport::set_force_mouse_events(bool p_disable) {
+	force_mouse_events = p_disable;
+}
+
+bool Viewport::is_mouse_events_forced() const {
+	return force_mouse_events;
+}
+
 void Viewport::set_disable_3d(bool p_disable) {
 	disable_3d = p_disable;
 	VS::get_singleton()->viewport_set_disable_3d(viewport, p_disable);
@@ -3313,6 +3341,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_force_mouse_events", "disable"), &Viewport::set_force_mouse_events);
+	ClassDB::bind_method(D_METHOD("is_mouse_events_forced"), &Viewport::is_mouse_events_forced);
+
 	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
 	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
@@ -3376,6 +3407,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_force_mouse_events"), "set_force_mouse_events", "is_mouse_events_forced");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size", PROPERTY_HINT_RANGE, "0,16384,256"), "set_shadow_atlas_size", "get_shadow_atlas_size");
@@ -3497,6 +3529,7 @@ Viewport::Viewport() {
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
 	disable_input = false;
+	force_mouse_events = false;
 	disable_3d = false;
 	keep_3d_linear = false;
 

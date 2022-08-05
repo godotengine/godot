@@ -226,6 +226,9 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
+		<member name="gui_force_mouse_events" type="bool" setter="set_force_mouse_events" getter="is_mouse_events_forced" default="false">
+			If [code]true[/code], the viewport will emit mouse_entered and mouse_exited signals even when dragging a [Control].
+		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>

@@ -301,6 +301,7 @@ private:
 		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
+		Control *unfocused_mouse_over;
 		Control *tooltip_control;
 		Control *tooltip_popup;
 		Label *tooltip_label;
@@ -328,6 +329,7 @@ private:
 	} gui;
 
 	bool disable_input;
+	bool force_mouse_events;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -535,6 +537,9 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_force_mouse_events(bool p_disable);
+	bool is_mouse_events_forced() const;
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;
