@@ -305,6 +305,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="framebuffer_is_valid" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="framebuffer" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="free_rid">
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />

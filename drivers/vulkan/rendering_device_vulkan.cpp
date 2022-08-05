@@ -3971,7 +3971,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	passes.push_back(pass);
 	return framebuffer_format_create_multipass(p_format, passes, p_view_count);
 }
-RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, Vector<FramebufferPass> &p_passes, uint32_t p_view_count) {
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	FramebufferFormatKey key;
@@ -4110,7 +4110,7 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 	return framebuffer_create_multipass(p_texture_attachments, passes, p_format_check, p_view_count);
 }
 
-RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
+RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, const Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<AttachmentFormat> attachments;
@@ -4179,6 +4179,22 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_get_form
 	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
 
 	return framebuffer->format_id;
+}
+
+bool RenderingDeviceVulkan::framebuffer_is_valid(RID p_framebuffer) const {
+	_THREAD_SAFE_METHOD_
+
+	return framebuffer_owner.owns(p_framebuffer);
+}
+
+void RenderingDeviceVulkan::framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata) {
+	_THREAD_SAFE_METHOD_
+
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
+	ERR_FAIL_COND(!framebuffer);
+
+	framebuffer->invalidated_callback = p_callback;
+	framebuffer->invalidated_callback_userdata = p_userdata;
 }
 
 /*****************/
@@ -6218,7 +6234,7 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 	return uniform_set_owner.owns(p_uniform_set);
 }
 
-void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) {
+void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) {
 	UniformSet *us = uniform_set_owner.get_or_null(p_uniform_set);
 	ERR_FAIL_COND(!us);
 	us->invalidated_callback = p_callback;
@@ -8685,6 +8701,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (framebuffer_owner.owns(p_id)) {
 		Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_id);
 		frames[frame].framebuffers_to_dispose_of.push_back(*framebuffer);
+
+		if (framebuffer->invalidated_callback != nullptr) {
+			framebuffer->invalidated_callback(framebuffer->invalidated_callback_userdata);
+		}
+
 		framebuffer_owner.free(p_id);
 	} else if (sampler_owner.owns(p_id)) {
 		VkSampler *sampler = sampler_owner.get_or_null(p_id);
