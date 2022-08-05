@@ -23,7 +23,7 @@
 			State of the [code]Ctrl[/code] modifier.
 		</member>
 		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey" default="false">
-			State of the [code]Meta[/code] modifier. On Windows, this represents the Windows key. On macOS, this represents the command key, and is equivelent to [member command]. 
+			State of the [code]Meta[/code] modifier. On Windows, this represents the Windows key. On macOS, this represents the command key, and is equivelent to [member command].
 			For better cross-system compatibility, use [member command] instead.
 		</member>
 		<member name="shift" type="bool" setter="set_shift" getter="get_shift" default="false">
