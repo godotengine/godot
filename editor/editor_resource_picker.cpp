@@ -184,6 +184,21 @@ void EditorResourcePicker::_update_menu_items() {
 		edit_menu->add_icon_item(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), TTR("Edit"), OBJ_MENU_EDIT);
 		edit_menu->add_icon_item(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), TTR("Clear"), OBJ_MENU_CLEAR);
 		edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+
+		// Check whether the resource has subresources.
+		List<PropertyInfo> property_list;
+		edited_resource->get_property_list(&property_list);
+		bool has_subresources = false;
+		for (PropertyInfo &p : property_list) {
+			if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script")) {
+				has_subresources = true;
+				break;
+			}
+		}
+		if (has_subresources) {
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+		}
+
 		edit_menu->add_icon_item(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")), TTR("Save"), OBJ_MENU_SAVE);
 
 		if (edited_resource->get_path().is_resource_file()) {
@@ -297,27 +312,21 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				return;
 			}
 
-			List<PropertyInfo> property_list;
-			edited_resource->get_property_list(&property_list);
-			List<Pair<String, Variant>> propvalues;
-			for (const PropertyInfo &pi : property_list) {
-				Pair<String, Variant> p;
-				if (pi.usage & PROPERTY_USAGE_STORAGE) {
-					p.first = pi.name;
-					p.second = edited_resource->get(pi.name);
-				}
-
-				propvalues.push_back(p);
-			}
-
-			String orig_type = edited_resource->get_class();
-			Object *inst = ClassDB::instantiate(orig_type);
-			Ref<Resource> unique_resource = Ref<Resource>(Object::cast_to<Resource>(inst));
+			Ref<Resource> unique_resource = edited_resource->duplicate();
 			ERR_FAIL_COND(unique_resource.is_null());
 
-			for (const Pair<String, Variant> &p : propvalues) {
-				unique_resource->set(p.first, p.second);
+			edited_resource = unique_resource;
+			emit_signal(SNAME("resource_changed"), edited_resource);
+			_update_resource();
+		} break;
+
+		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
+			if (edited_resource.is_null()) {
+				return;
 			}
+
+			Ref<Resource> unique_resource = edited_resource->duplicate(true);
+			ERR_FAIL_COND(unique_resource.is_null());
 
 			edited_resource = unique_resource;
 			emit_signal(SNAME("resource_changed"), edited_resource);
