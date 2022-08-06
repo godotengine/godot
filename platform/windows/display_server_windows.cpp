@@ -3653,7 +3653,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	tts = memnew(TTS_Windows);
 
 	// Enforce default keep screen on value.
-	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");

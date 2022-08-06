@@ -1198,6 +1198,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/window_height_override", 0);
 	custom_prop_info["display/window/size/window_height_override"] = PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"); // 8K resolution
 
+	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
+	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
+
 	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 1.0f);
