@@ -55,6 +55,9 @@ private:
 	Vector<String> check_for_rename_csharp_functions(Vector<String> &file_content);
 	void process_csharp_line(String &line);
 
+	void rename_csharp_attributes(String &file_content);
+	Vector<String> check_for_rename_csharp_attributes(Vector<String> &file_content);
+
 	void rename_gdscript_keywords(String &file_content);
 	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &file_content);
 
