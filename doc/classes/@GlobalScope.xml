@@ -134,15 +134,32 @@
 			</description>
 		</method>
 		<method name="ceil">
-			<return type="float" />
-			<argument index="0" name="x" type="float" />
+			<return type="Variant" />
+			<argument index="0" name="x" type="Variant" />
 			<description>
-				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
+				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
 				[codeblock]
 				var i = ceil(1.45) # i is 2.0
 				i = ceil(1.001)    # i is 2.0
 				[/codeblock]
 				See also [method floor], [method round], and [method snapped].
+				[b]Note:[/b] For better type safety, you can use [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil] or [method Vector4.ceil] instead.
+			</description>
+		</method>
+		<method name="ceilf">
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<description>
+				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
+				A type-safe version of [method ceil], specialzied in floats.
+			</description>
+		</method>
+		<method name="ceili">
+			<return type="int" />
+			<argument index="0" name="x" type="float" />
+			<description>
+				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
+				A type-safe version of [method ceil] that returns integer.
 			</description>
 		</method>
 		<method name="clamp">
@@ -300,10 +317,10 @@
 			</description>
 		</method>
 		<method name="floor">
-			<return type="float" />
-			<argument index="0" name="x" type="float" />
+			<return type="Variant" />
+			<argument index="0" name="x" type="Variant" />
 			<description>
-				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
+				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
 				[codeblock]
 				# a is 2.0
 				var a = floor(2.99)
@@ -311,7 +328,23 @@
 				a = floor(-2.99)
 				[/codeblock]
 				See also [method ceil], [method round], and [method snapped].
-				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(x)[/code] directly.
+				[b]Note:[/b] For better type safety, you can use [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor] or [method Vector4.floor] instead.
+			</description>
+		</method>
+		<method name="floorf">
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<description>
+				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
+				A type-safe version of [method floor], specialzied in floats.
+			</description>
+		</method>
+		<method name="floori">
+			<return type="int" />
+			<argument index="0" name="x" type="float" />
+			<description>
+				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
+				Equivalent of doing [code]int(x)[/code].
 			</description>
 		</method>
 		<method name="fmod">
@@ -843,14 +876,33 @@
 			</description>
 		</method>
 		<method name="round">
+			<return type="Variant" />
+			<argument index="0" name="x" type="Variant" />
+			<description>
+				Rounds [code]x[/code] to the nearest whole number, with halfway cases rounded away from zero. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				[codeblock]
+				round(2.4) # Returns 2
+				round(2.5) # Returns 3
+				round(2.6) # Returns 3
+				[/codeblock]
+				See also [method floor], [method ceil], and [method snapped].
+				[b]Note:[/b] For better type safety, you can use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round] or [method Vector4.round] instead.
+			</description>
+		</method>
+		<method name="roundf">
 			<return type="float" />
 			<argument index="0" name="x" type="float" />
 			<description>
 				Rounds [code]x[/code] to the nearest whole number, with halfway cases rounded away from zero.
-				[codeblock]
-				round(2.6) # Returns 3
-				[/codeblock]
-				See also [method floor], [method ceil], and [method snapped].
+				A type-safe version of [method round], specialzied in floats.
+			</description>
+		</method>
+		<method name="roundi">
+			<return type="int" />
+			<argument index="0" name="x" type="float" />
+			<description>
+				Rounds [code]x[/code] to the nearest whole number, with halfway cases rounded away from zero.
+				A type-safe version of [method round] that returns integer.
 			</description>
 		</method>
 		<method name="seed">
