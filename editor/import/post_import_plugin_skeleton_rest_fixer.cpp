@@ -41,14 +41,13 @@ void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImpo
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/apply_node_transforms"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/normalize_position_tracks"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/overwrite_axis"), true));
-
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/fix_silhouette/enable"), false));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "retarget/rest_fixer/fix_silhouette/threshold"), 15));
-
 		// TODO: PostImportPlugin need to be implemented such as validate_option(PropertyInfo &property, const Dictionary &p_options).
 		// get_internal_option_visibility() is not sufficient because it can only retrieve options implemented in the core and can only read option values.
 		// r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::ARRAY, "retarget/rest_fixer/filter", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::STRING_NAME, PROPERTY_HINT_ENUM, "Hips,Spine,Chest")), Array()));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::ARRAY, "retarget/rest_fixer/fix_silhouette/filter", PROPERTY_HINT_ARRAY_TYPE, "StringName"), Array()));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "retarget/rest_fixer/fix_silhouette/threshold"), 15));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "retarget/rest_fixer/fix_silhouette/base_height_adjustment", PROPERTY_HINT_RANGE, "-1,1,0.01"), 0.0));
 	}
 }
 
@@ -190,53 +189,6 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			}
 
 			is_rest_changed = true;
-		}
-
-		// Set motion scale to Skeleton if normalize position tracks.
-		if (bool(p_options["retarget/rest_fixer/normalize_position_tracks"])) {
-			int src_bone_idx = src_skeleton->find_bone(profile->get_scale_base_bone());
-			if (src_bone_idx >= 0) {
-				real_t motion_scale = abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
-				if (motion_scale > 0) {
-					src_skeleton->set_motion_scale(motion_scale);
-				}
-			}
-
-			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
-			while (nodes.size()) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
-					Ref<Animation> anim = ap->get_animation(name);
-					int track_len = anim->get_track_count();
-					for (int i = 0; i < track_len; i++) {
-						if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
-							continue;
-						}
-
-						if (anim->track_is_compressed(i)) {
-							continue; // Shouldn't occur in internal_process().
-						}
-
-						String track_path = String(anim->track_get_path(i).get_concatenated_names());
-						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-						if (node) {
-							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-							if (track_skeleton) {
-								if (track_skeleton && track_skeleton == src_skeleton) {
-									real_t mlt = 1 / src_skeleton->get_motion_scale();
-									int key_len = anim->track_get_key_count(i);
-									for (int j = 0; j < key_len; j++) {
-										Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
-										anim->track_set_key_value(i, j, pos * mlt);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
 		}
 
 		// Complement Rotation track for compatibility between different rests.
@@ -406,12 +358,103 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				}
 			}
 
+			// Adjust scale base bone height.
+			float base_adjustment = float(p_options["retarget/rest_fixer/fix_silhouette/base_height_adjustment"]);
+			if (!Math::is_zero_approx(base_adjustment)) {
+				StringName scale_base_bone_name = profile->get_scale_base_bone();
+				int src_bone_idx = src_skeleton->find_bone(scale_base_bone_name);
+				Transform3D src_rest = src_skeleton->get_bone_rest(src_bone_idx);
+				src_skeleton->set_bone_rest(src_bone_idx, Transform3D(src_rest.basis, Vector3(src_rest.origin.x, src_rest.origin.y + base_adjustment, src_rest.origin.z)));
+
+				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+				while (nodes.size()) {
+					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+					List<StringName> anims;
+					ap->get_animation_list(&anims);
+					for (const StringName &name : anims) {
+						Ref<Animation> anim = ap->get_animation(name);
+						int track_len = anim->get_track_count();
+						for (int i = 0; i < track_len; i++) {
+							if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
+								continue;
+							}
+
+							if (anim->track_is_compressed(i)) {
+								continue; // Shouldn't occur in internal_process().
+							}
+
+							String track_path = String(anim->track_get_path(i).get_concatenated_names());
+							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+							if (node) {
+								Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+								if (track_skeleton && track_skeleton == src_skeleton) {
+									StringName bn = anim->track_get_path(i).get_concatenated_subnames();
+									if (bn == scale_base_bone_name) {
+										int key_len = anim->track_get_key_count(i);
+										for (int j = 0; j < key_len; j++) {
+											Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+											pos.y += base_adjustment;
+											anim->track_set_key_value(i, j, pos);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
 			// For skin modification in overwrite rest.
 			for (int i = 0; i < src_skeleton->get_bone_count(); i++) {
 				silhouette_diff_w[i] = old_skeleton_global_rest[i] * src_skeleton->get_bone_global_rest(i).inverse();
 			}
 
 			is_rest_changed = true;
+		}
+
+		// Set motion scale to Skeleton if normalize position tracks.
+		if (bool(p_options["retarget/rest_fixer/normalize_position_tracks"])) {
+			int src_bone_idx = src_skeleton->find_bone(profile->get_scale_base_bone());
+			if (src_bone_idx >= 0) {
+				real_t motion_scale = abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
+				if (motion_scale > 0) {
+					src_skeleton->set_motion_scale(motion_scale);
+				}
+			}
+
+			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+			while (nodes.size()) {
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+				List<StringName> anims;
+				ap->get_animation_list(&anims);
+				for (const StringName &name : anims) {
+					Ref<Animation> anim = ap->get_animation(name);
+					int track_len = anim->get_track_count();
+					for (int i = 0; i < track_len; i++) {
+						if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
+							continue;
+						}
+
+						if (anim->track_is_compressed(i)) {
+							continue; // Shouldn't occur in internal_process().
+						}
+
+						String track_path = String(anim->track_get_path(i).get_concatenated_names());
+						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+						if (node) {
+							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+							if (track_skeleton && track_skeleton == src_skeleton) {
+								real_t mlt = 1 / src_skeleton->get_motion_scale();
+								int key_len = anim->track_get_key_count(i);
+								for (int j = 0; j < key_len; j++) {
+									Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+									anim->track_set_key_value(i, j, pos * mlt);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// Overwrite axis.
