@@ -2045,6 +2045,8 @@ bool ProjectConverter3To4::test_conversion(const RegExContainer &reg_container) 
 	valid = valid & test_conversion_single_additional("\n\ntool", "\n\n@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n\nremote func", "\n\n@rpc(any_peer) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n\nremotesync func", "\n\n@rpc(any_peer, call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nsync func", "\n\n@rpc(any_peer, call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nslave func", "\n\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n\npuppet func", "\n\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n\npuppetsync func", "\n\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n\nmaster func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
@@ -3237,6 +3239,22 @@ void ProjectConverter3To4::rename_gdscript_keywords(String &file_content) {
 		file_content = reg_second.sub(file_content, "@rpc(any_peer, call_local) func", true);
 	}
 	{
+		RegEx reg_first = RegEx("([\n]+)sync func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc(any_peer, call_local) func", true);
+		RegEx reg_second = RegEx("^sync func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc(any_peer, call_local) func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)slave func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc func", true);
+		RegEx reg_second = RegEx("^slave func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc func", true);
+	}
+	{
 		RegEx reg_first = RegEx("([\n]+)puppet func");
 		CRASH_COND(!reg_first.is_valid());
 		file_content = reg_first.sub(file_content, "$1@rpc func", true);
@@ -3325,6 +3343,24 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<S
 		}
 		if (old != line) {
 			found_things.append(line_formatter(current_line, "remotesync func", "@rpc(any_peer, call_local)) func", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("^sync func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc(any_peer, call_local)) func", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "sync func", "@rpc(any_peer, call_local)) func", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("^slave func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc func", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "slave func", "@rpc func", line));
 		}
 		old = line;
 		{
