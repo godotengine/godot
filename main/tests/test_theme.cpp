@@ -49,16 +49,24 @@ public:
 	struct DataEntry {
 		Theme::DataType type;
 		Variant value;
-	} const valid_data[Theme::DATA_TYPE_MAX] = {
+	} valid_data[Theme::DATA_TYPE_MAX] = {
 		{ Theme::DATA_TYPE_COLOR, Color() },
 		{ Theme::DATA_TYPE_CONSTANT, 42 },
-		{ Theme::DATA_TYPE_FONT, Ref<Font>(memnew(BitmapFont)) },
-		{ Theme::DATA_TYPE_ICON, Ref<Texture>(memnew(ImageTexture)) },
-		{ Theme::DATA_TYPE_STYLEBOX, Ref<StyleBox>(memnew(StyleBoxFlat)) },
+		{ Theme::DATA_TYPE_FONT, Variant() },
+		{ Theme::DATA_TYPE_ICON, Variant() },
+		{ Theme::DATA_TYPE_STYLEBOX, Variant() },
 	};
 
 	const StringName valid_item_name = "valid_item_name";
 	const StringName valid_type_name = "ValidTypeName";
+
+	// Part of `valid_data` initialization is moved here so that it compiles in Visual Studio 2017.
+	// See issue #63975.
+	Fixture() {
+		valid_data[Theme::DATA_TYPE_FONT].value = Ref<Font>(memnew(BitmapFont));
+		valid_data[Theme::DATA_TYPE_ICON].value = Ref<Texture>(memnew(ImageTexture));
+		valid_data[Theme::DATA_TYPE_STYLEBOX].value = Ref<StyleBox>(memnew(StyleBoxFlat));
+	}
 };
 
 bool test_good_theme_type_names() {
