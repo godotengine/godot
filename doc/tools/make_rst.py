@@ -135,6 +135,7 @@ class State:
                     method_desc = desc_element.text
 
                 method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                method_def.definition_name = "constructor"
                 if method_name not in class_def.constructors:
                     class_def.constructors[method_name] = []
 
@@ -191,6 +192,7 @@ class State:
                     method_desc = desc_element.text
 
                 method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                method_def.definition_name = "operator"
                 if method_name not in class_def.operators:
                     class_def.operators[method_name] = []
 
@@ -362,6 +364,8 @@ class PropertyDef:
         default_value: Optional[str],
         overrides: Optional[str],
     ) -> None:
+        self.definition_name = "property"
+
         self.name = name
         self.type_name = type_name
         self.setter = setter
@@ -373,6 +377,8 @@ class PropertyDef:
 
 class ParameterDef:
     def __init__(self, name: str, type_name: TypeName, default_value: Optional[str]) -> None:
+        self.definition_name = "parameter"
+
         self.name = name
         self.type_name = type_name
         self.default_value = default_value
@@ -380,6 +386,8 @@ class ParameterDef:
 
 class SignalDef:
     def __init__(self, name: str, parameters: List[ParameterDef], description: Optional[str]) -> None:
+        self.definition_name = "signal"
+
         self.name = name
         self.parameters = parameters
         self.description = description
@@ -393,6 +401,8 @@ class AnnotationDef:
         description: Optional[str],
         qualifiers: Optional[str],
     ) -> None:
+        self.definition_name = "annotation"
+
         self.name = name
         self.parameters = parameters
         self.description = description
@@ -408,6 +418,8 @@ class MethodDef:
         description: Optional[str],
         qualifiers: Optional[str],
     ) -> None:
+        self.definition_name = "method"
+
         self.name = name
         self.return_type = return_type
         self.parameters = parameters
@@ -417,6 +429,8 @@ class MethodDef:
 
 class ConstantDef:
     def __init__(self, name: str, value: str, text: Optional[str], bitfield: bool) -> None:
+        self.definition_name = "constant"
+
         self.name = name
         self.value = value
         self.text = text
@@ -425,6 +439,8 @@ class ConstantDef:
 
 class EnumDef:
     def __init__(self, name: str, bitfield: bool) -> None:
+        self.definition_name = "enum"
+
         self.name = name
         self.values: OrderedDict[str, ConstantDef] = OrderedDict()
         self.is_bitfield = bitfield
@@ -434,6 +450,8 @@ class ThemeItemDef:
     def __init__(
         self, name: str, type_name: TypeName, data_name: str, text: Optional[str], default_value: Optional[str]
     ) -> None:
+        self.definition_name = "theme item"
+
         self.name = name
         self.type_name = type_name
         self.data_name = data_name
@@ -443,6 +461,8 @@ class ThemeItemDef:
 
 class ClassDef:
     def __init__(self, name: str) -> None:
+        self.definition_name = "class"
+
         self.name = name
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
@@ -685,12 +705,12 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
     # Brief description
     if class_def.brief_description is not None:
-        f.write(rstize_text(class_def.brief_description.strip(), state) + "\n\n")
+        f.write(rstize_text(class_def.brief_description.strip(), class_def, state) + "\n\n")
 
     # Class description
     if class_def.description is not None and class_def.description.strip() != "":
         f.write(make_heading("Description", "-"))
-        f.write(rstize_text(class_def.description.strip(), state) + "\n\n")
+        f.write(rstize_text(class_def.description.strip(), class_def, state) + "\n\n")
 
     # Online tutorials
     if len(class_def.tutorials) > 0:
@@ -764,7 +784,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write("- {}\n\n".format(signature))
 
             if signal.description is not None and signal.description.strip() != "":
-                f.write(rstize_text(signal.description.strip(), state) + "\n\n")
+                f.write(rstize_text(signal.description.strip(), signal, state) + "\n\n")
 
             index += 1
 
@@ -794,7 +814,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
                     # If value.text contains a bullet point list, each entry needs additional indentation
-                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), state)))
+                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), value, state)))
 
                 f.write("\n\n")
 
@@ -811,7 +831,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         for constant in class_def.constants.values():
             f.write("- **{}** = **{}**".format(constant.name, constant.value))
             if constant.text is not None and constant.text.strip() != "":
-                f.write(" --- " + rstize_text(constant.text.strip(), state))
+                f.write(" --- " + rstize_text(constant.text.strip(), constant, state))
 
             f.write("\n\n")
 
@@ -832,7 +852,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write("- {}\n\n".format(signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -864,7 +884,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 format_table(f, info)
 
             if property_def.text is not None and property_def.text.strip() != "":
-                f.write(rstize_text(property_def.text.strip(), state) + "\n\n")
+                f.write(rstize_text(property_def.text.strip(), property_def, state) + "\n\n")
 
             index += 1
 
@@ -885,7 +905,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -905,7 +925,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -929,7 +949,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -954,7 +974,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 format_table(f, info)
 
             if theme_item_def.text is not None and theme_item_def.text.strip() != "":
-                f.write(rstize_text(theme_item_def.text.strip(), state) + "\n\n")
+                f.write(rstize_text(theme_item_def.text.strip(), theme_item_def, state) + "\n\n")
 
             index += 1
 
@@ -1032,7 +1052,11 @@ def format_codeblock(code_type: str, post_text: str, indent_level: int, state: S
     return ("\n[" + code_type + "]" + code_text + post_text, len("\n[" + code_type + "]" + code_text))
 
 
-def rstize_text(text: str, state: State) -> str:
+def rstize_text(
+    text: str,
+    context: Union[ClassDef, SignalDef, ConstantDef, AnnotationDef, PropertyDef, MethodDef, ThemeItemDef, None],
+    state: State,
+) -> str:
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
     while True:
@@ -1099,6 +1123,7 @@ def rstize_text(text: str, state: State) -> str:
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(" ")
+
             if cmd == "/codeblock" or cmd == "/gdscript" or cmd == "/csharp":
                 tag_text = ""
                 tag_depth -= 1
@@ -1144,11 +1169,13 @@ def rstize_text(text: str, state: State) -> str:
                                 '{}.xml: Unresolved constructor "{}".'.format(state.current_class, param), state
                             )
                         ref_type = "_constructor"
-                    if cmd.startswith("method"):
+
+                    elif cmd.startswith("method"):
                         if method_param not in class_def.methods:
                             print_error('{}.xml: Unresolved method "{}".'.format(state.current_class, param), state)
                         ref_type = "_method"
-                    if cmd.startswith("operator"):
+
+                    elif cmd.startswith("operator"):
                         if method_param not in class_def.operators:
                             print_error('{}.xml: Unresolved operator "{}".'.format(state.current_class, param), state)
                         ref_type = "_operator"
@@ -1213,6 +1240,56 @@ def rstize_text(text: str, state: State) -> str:
                 tag_text = ":ref:`{}<class_{}{}_{}>`".format(repl_text, class_param, ref_type, method_param)
                 escape_pre = True
                 escape_post = True
+            elif cmd.startswith("param"):
+                param_name: str = ""
+                if space_pos >= 0:
+                    param_name = tag_text[space_pos + 1 :].strip()
+
+                if param_name == "":
+                    context_name: str = "unknown context"
+                    if context is not None:
+                        context_name = '{} "{}" description'.format(context.definition_name, context.name)
+
+                    print_error(
+                        "{}.xml: Empty argument reference in {}.".format(state.current_class, context_name),
+                        state,
+                    )
+                else:
+                    valid_context = (
+                        isinstance(context, MethodDef)
+                        or isinstance(context, SignalDef)
+                        or isinstance(context, AnnotationDef)
+                    )
+                    if not valid_context:
+                        context_name: str = "unknown context"
+                        if context is not None:
+                            context_name = '{} "{}" description'.format(context.definition_name, context.name)
+
+                        print_error(
+                            '{}.xml: Argument reference "{}" used outside of method, signal, or annotation context in {}.'.format(
+                                state.current_class, param_name, context_name
+                            ),
+                            state,
+                        )
+                    else:
+                        context_params: List[ParameterDef] = context.parameters
+                        found = False
+                        for param_def in context_params:
+                            if param_def.name == param_name:
+                                found = True
+                                break
+                        if not found:
+                            print_error(
+                                '{}.xml: Unresolved argument reference "{}" in {} "{}" description.'.format(
+                                    state.current_class, param_name, context.definition_name, context.name
+                                ),
+                                state,
+                            )
+
+                if param_name == "":
+                    tag_text = ""
+                else:
+                    tag_text = "``{}``".format(param_name)
             elif cmd.find("image=") == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find("url=") == 0:
