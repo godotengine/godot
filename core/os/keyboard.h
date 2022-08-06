@@ -65,6 +65,11 @@ enum class Key {
 	SHIFT = SPECIAL | 0x15,
 	CTRL = SPECIAL | 0x16,
 	META = SPECIAL | 0x17,
+#if defined(MACOS_ENABLED)
+	CMD_OR_CTRL = META,
+#else
+	CMD_OR_CTRL = CTRL,
+#endif
 	ALT = SPECIAL | 0x18,
 	CAPSLOCK = SPECIAL | 0x19,
 	NUMLOCK = SPECIAL | 0x1A,
