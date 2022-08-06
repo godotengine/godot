@@ -235,7 +235,44 @@ struct VariantUtilityFunctions {
 		return Math::snapped(value, step);
 	}
 
-	static inline double lerp(double from, double to, double weight) {
+	static inline Variant lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+		if (from.get_type() != to.get_type()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			return Variant();
+		}
+
+		switch (from.get_type()) {
+			case Variant::FLOAT: {
+				return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&from).lerp(VariantInternalAccessor<Vector2>::get(&to), weight);
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&from).lerp(VariantInternalAccessor<Vector3>::get(&to), weight);
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&from).lerp(VariantInternalAccessor<Vector4>::get(&to), weight);
+			} break;
+			case Variant::QUATERNION: {
+				return VariantInternalAccessor<Quaternion>::get(&from).slerp(VariantInternalAccessor<Quaternion>::get(&to), weight);
+			} break;
+			case Variant::BASIS: {
+				return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
+			} break;
+			case Variant::COLOR: {
+				return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return Variant();
+			}
+		}
+	}
+
+	static inline double lerpf(double from, double to, double weight) {
 		return Math::lerp(from, to, weight);
 	}
 
@@ -1262,7 +1299,6 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(absi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR(sign, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-
 	FUNCBINDR(signf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(signi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1280,7 +1316,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDVR3(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(lerpf, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(cubic_interpolate, sarray("from", "to", "pre", "post", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(bezier_interpolate, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
