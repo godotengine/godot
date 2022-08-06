@@ -53,70 +53,70 @@
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="Array" />
+			<param index="0" name="from" type="Array" />
 			<description>
 				Constructs an [Array] as a copy of the given [Array].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedByteArray" />
+			<param index="0" name="from" type="PackedByteArray" />
 			<description>
 				Constructs an array from a [PackedByteArray].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedColorArray" />
+			<param index="0" name="from" type="PackedColorArray" />
 			<description>
 				Constructs an array from a [PackedColorArray].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedFloat32Array" />
+			<param index="0" name="from" type="PackedFloat32Array" />
 			<description>
 				Constructs an array from a [PackedFloat32Array].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedFloat64Array" />
+			<param index="0" name="from" type="PackedFloat64Array" />
 			<description>
 				Constructs an array from a [PackedFloat64Array].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedInt32Array" />
+			<param index="0" name="from" type="PackedInt32Array" />
 			<description>
 				Constructs an array from a [PackedInt32Array].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedInt64Array" />
+			<param index="0" name="from" type="PackedInt64Array" />
 			<description>
 				Constructs an array from a [PackedInt64Array].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedStringArray" />
+			<param index="0" name="from" type="PackedStringArray" />
 			<description>
 				Constructs an array from a [PackedStringArray].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedVector2Array" />
+			<param index="0" name="from" type="PackedVector2Array" />
 			<description>
 				Constructs an array from a [PackedVector2Array].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
-			<argument index="0" name="from" type="PackedVector3Array" />
+			<param index="0" name="from" type="PackedVector3Array" />
 			<description>
 				Constructs an array from a [PackedVector3Array].
 			</description>
@@ -125,7 +125,7 @@
 	<methods>
 		<method name="all" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="method" type="Callable" />
+			<param index="0" name="method" type="Callable" />
 			<description>
 				Calls the provided [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]all[/i] elements in the array. If the [Callable] returns [code]false[/code] for one array element or more, this method returns [code]false[/code].
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
@@ -148,7 +148,7 @@
 		</method>
 		<method name="any" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="method" type="Callable" />
+			<param index="0" name="method" type="Callable" />
 			<description>
 				Calls the provided [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]one or more[/i] elements in the array. If the [Callable] returns [code]false[/code] for all elements in the array, this method returns [code]false[/code].
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
@@ -171,14 +171,14 @@
 		</method>
 		<method name="append">
 			<return type="void" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
 			<return type="void" />
-			<argument index="0" name="array" type="Array" />
+			<param index="0" name="array" type="Array" />
 			<description>
 				Appends another array at the end of this array.
 				[codeblock]
@@ -198,8 +198,8 @@
 		</method>
 		<method name="bsearch">
 			<return type="int" />
-			<argument index="0" name="value" type="Variant" />
-			<argument index="1" name="before" type="bool" default="true" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
@@ -207,9 +207,9 @@
 		</method>
 		<method name="bsearch_custom">
 			<return type="int" />
-			<argument index="0" name="value" type="Variant" />
-			<argument index="1" name="func" type="Callable" />
-			<argument index="2" name="before" type="bool" default="true" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="func" type="Callable" />
+			<param index="2" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
 				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
@@ -223,14 +223,14 @@
 		</method>
 		<method name="count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="deep" type="bool" default="false" />
+			<param index="0" name="deep" type="bool" default="false" />
 			<description>
 				Returns a copy of the array.
 				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
@@ -238,7 +238,7 @@
 		</method>
 		<method name="erase">
 			<return type="void" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
@@ -247,7 +247,7 @@
 		</method>
 		<method name="fill">
 			<return type="void" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements:
 				[codeblocks]
@@ -266,7 +266,7 @@
 		</method>
 		<method name="filter" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="method" type="Callable" />
+			<param index="0" name="method" type="Callable" />
 			<description>
 				Calls the provided [Callable] on each element in the array and returns a new array with the elements for which the method returned [code]true[/code].
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
@@ -283,15 +283,15 @@
 		</method>
 		<method name="find" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="Variant" />
-			<argument index="1" name="from" type="int" default="0" />
+			<param index="0" name="what" type="Variant" />
+			<param index="1" name="from" type="int" default="0" />
 			<description>
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="find_last" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Searches the array in reverse order for a value and returns its index or [code]-1[/code] if not found.
 			</description>
@@ -305,7 +305,7 @@
 		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Returns [code]true[/code] if the array contains the given value.
 				[codeblocks]
@@ -352,8 +352,8 @@
 		</method>
 		<method name="insert">
 			<return type="int" />
-			<argument index="0" name="position" type="int" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="position" type="int" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
@@ -368,7 +368,7 @@
 		</method>
 		<method name="map" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="method" type="Callable" />
+			<param index="0" name="method" type="Callable" />
 			<description>
 				Calls the provided [Callable] for each element in the array and returns a new array filled with values returned by the method.
 				The callable's method should take one [Variant] parameter (the current array element) and can return any [Variant].
@@ -397,7 +397,7 @@
 		</method>
 		<method name="pop_at">
 			<return type="Variant" />
-			<argument index="0" name="position" type="int" />
+			<param index="0" name="position" type="int" />
 			<description>
 				Removes and returns the element of the array at index [code]position[/code]. If negative, [code]position[/code] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
 				[b]Note:[/b] On large arrays, this method can be slower than [method pop_back] as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower [method pop_at] will be.
@@ -418,14 +418,14 @@
 		</method>
 		<method name="push_back">
 			<return type="void" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Appends an element at the end of the array. See also [method push_front].
 			</description>
 		</method>
 		<method name="push_front">
 			<return type="void" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Adds an element at the beginning of the array. See also [method push_back].
 				[b]Note:[/b] On large arrays, this method is much slower than [method push_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method push_front] will be.
@@ -433,8 +433,8 @@
 		</method>
 		<method name="reduce" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="method" type="Callable" />
-			<argument index="1" name="accum" type="Variant" default="null" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="accum" type="Variant" default="null" />
 			<description>
 				Calls the provided [Callable] for each element in array and accumulates the result in [code]accum[/code].
 				The callable's method takes two arguments: the current value of [code]accum[/code] and the current array element. If [code]accum[/code] is [code]null[/code] (default value), the iteration will start from the second element, with the first one used as initial value of [code]accum[/code].
@@ -451,7 +451,7 @@
 		</method>
 		<method name="remove_at">
 			<return type="void" />
-			<argument index="0" name="position" type="int" />
+			<param index="0" name="position" type="int" />
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
@@ -460,7 +460,7 @@
 		</method>
 		<method name="resize">
 			<return type="int" />
-			<argument index="0" name="size" type="int" />
+			<param index="0" name="size" type="int" />
 			<description>
 				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
 			</description>
@@ -473,8 +473,8 @@
 		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="Variant" />
-			<argument index="1" name="from" type="int" default="-1" />
+			<param index="0" name="what" type="Variant" />
+			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
@@ -493,10 +493,10 @@
 		</method>
 		<method name="slice" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="begin" type="int" />
-			<argument index="1" name="end" type="int" default="2147483647" />
-			<argument index="2" name="step" type="int" default="1" />
-			<argument index="3" name="deep" type="bool" default="false" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<param index="2" name="step" type="int" default="1" />
+			<param index="3" name="deep" type="bool" default="false" />
 			<description>
 				Returns the slice of the [Array], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [Array].
 				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
@@ -530,7 +530,7 @@
 		</method>
 		<method name="sort_custom">
 			<return type="void" />
-			<argument index="0" name="func" type="Callable" />
+			<param index="0" name="func" type="Callable" />
 			<description>
 				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
 				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
@@ -560,56 +560,56 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Compares the left operand [Array] against the [code]right[/code] [Array]. Returns [code]true[/code] if the sizes or contents of the arrays are [i]not[/i] equal, [code]false[/code] otherwise.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="Array" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Concatenates two [Array]s together, with the [code]right[/code] [Array] being added to the end of the [Array] specified in the left operand. For example, [code][1, 2] + [3, 4][/code] results in [code][1, 2, 3, 4][/code].
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is less, or [code]false[/code] if the element is greater. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]false[/code] if the left operand [Array] has less elements, otherwise it returns [code]true[/code].
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is less, or [code]false[/code] if the element is greater. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the left operand [Array] has less or the same number of elements, otherwise it returns [code]false[/code].
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Compares the left operand [Array] against the [code]right[/code] [Array]. Returns [code]true[/code] if the sizes and contents of the arrays are equal, [code]false[/code] otherwise.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is greater, or [code]false[/code] if the element is less. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the [code]right[/code] [Array] has more elements, otherwise it returns [code]false[/code].
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<param index="0" name="right" type="Array" />
 			<description>
 				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is greater, or [code]false[/code] if the element is less. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the [code]right[/code] [Array] has more or the same number of elements, otherwise it returns [code]false[/code].
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Returns a reference to the element of type [Variant] at the specified location. Arrays start at index 0. [code]index[/code] can be a zero or positive value to start from the beginning, or a negative value to start from the end. Out-of-bounds array access causes a run-time error, which will result in an error being printed and the project execution pausing if run from the editor.
 			</description>

@@ -74,7 +74,7 @@
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Called each physics frame with the time since the last physics frame as argument ([code]delta[/code], in seconds). Equivalent to [method Node._physics_process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
@@ -82,7 +82,7 @@
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Called each process (idle) frame with the time since the last process frame as argument (in seconds). Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
@@ -91,8 +91,8 @@
 	</methods>
 	<signals>
 		<signal name="on_request_permissions_result">
-			<argument index="0" name="permission" type="String" />
-			<argument index="1" name="granted" type="bool" />
+			<param index="0" name="permission" type="String" />
+			<param index="1" name="granted" type="bool" />
 			<description>
 				Emitted when a user responds to a permission request.
 			</description>

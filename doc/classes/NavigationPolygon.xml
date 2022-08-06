@@ -48,22 +48,22 @@
 	<methods>
 		<method name="add_outline">
 			<return type="void" />
-			<argument index="0" name="outline" type="PackedVector2Array" />
+			<param index="0" name="outline" type="PackedVector2Array" />
 			<description>
 				Appends a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
 			</description>
 		</method>
 		<method name="add_outline_at_index">
 			<return type="void" />
-			<argument index="0" name="outline" type="PackedVector2Array" />
-			<argument index="1" name="index" type="int" />
+			<param index="0" name="outline" type="PackedVector2Array" />
+			<param index="1" name="index" type="int" />
 			<description>
 				Adds a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed position. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
 			</description>
 		</method>
 		<method name="add_polygon">
 			<return type="void" />
-			<argument index="0" name="polygon" type="PackedInt32Array" />
+			<param index="0" name="polygon" type="PackedInt32Array" />
 			<description>
 				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
 			</description>
@@ -88,7 +88,7 @@
 		</method>
 		<method name="get_outline" qualifiers="const">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns a [PackedVector2Array] containing the vertices of an outline that was created in the editor or by script.
 			</description>
@@ -101,7 +101,7 @@
 		</method>
 		<method name="get_polygon">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns a [PackedInt32Array] containing the indices of the vertices of a created polygon.
 			</description>
@@ -126,22 +126,22 @@
 		</method>
 		<method name="remove_outline">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Removes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
 			</description>
 		</method>
 		<method name="set_outline">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="outline" type="PackedVector2Array" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="outline" type="PackedVector2Array" />
 			<description>
 				Changes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
 			</description>
 		</method>
 		<method name="set_vertices">
 			<return type="void" />
-			<argument index="0" name="vertices" type="PackedVector2Array" />
+			<param index="0" name="vertices" type="PackedVector2Array" />
 			<description>
 				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
 			</description>

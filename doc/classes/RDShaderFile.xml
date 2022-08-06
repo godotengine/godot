@@ -9,7 +9,7 @@
 	<methods>
 		<method name="get_spirv" qualifiers="const">
 			<return type="RDShaderSPIRV" />
-			<argument index="0" name="version" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="0" name="version" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 			</description>
 		</method>
@@ -20,8 +20,8 @@
 		</method>
 		<method name="set_bytecode">
 			<return type="void" />
-			<argument index="0" name="bytecode" type="RDShaderSPIRV" />
-			<argument index="1" name="version" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="0" name="bytecode" type="RDShaderSPIRV" />
+			<param index="1" name="version" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 			</description>
 		</method>

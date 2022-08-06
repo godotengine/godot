@@ -15,15 +15,15 @@
 	<methods>
 		<method name="get_alternative_tile_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<argument index="1" name="index" type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="index" type="int" />
 			<description>
 				Returns the alternative ID for the tile with coordinates ID [code]atlas_coords[/code] at index [code]index[/code].
 			</description>
 		</method>
 		<method name="get_alternative_tiles_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
 				Returns the number of alternatives tiles for the coordinates ID [code]atlas_coords[/code].
 				For [TileSetAtlasSource], this always return at least 1, as the base tile with ID 0 is always part of the alternatives list.
@@ -32,7 +32,7 @@
 		</method>
 		<method name="get_tile_id" qualifiers="const">
 			<return type="Vector2i" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Returns the tile coordinates ID of the tile with index [code]index[/code].
 			</description>
@@ -45,15 +45,15 @@
 		</method>
 		<method name="has_alternative_tile" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<argument index="1" name="alternative_tile" type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="alternative_tile" type="int" />
 			<description>
 				Returns if the base tile at coordinates [code]atlas_coords[/code] has an alternative with ID [code]alternative_tile[/code].
 			</description>
 		</method>
 		<method name="has_tile" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
 				Returns if this atlas has a tile with coordinates ID [code]atlas_coordinates[/code].
 			</description>

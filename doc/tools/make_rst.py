@@ -127,7 +127,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = self.parse_arguments(constructor, "constructor")
+                params = self.parse_params(constructor, "constructor")
 
                 desc_element = constructor.find("description")
                 method_desc = None
@@ -156,7 +156,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = self.parse_arguments(method, "method")
+                params = self.parse_params(method, "method")
 
                 desc_element = method.find("description")
                 method_desc = None
@@ -184,7 +184,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = self.parse_arguments(operator, "operator")
+                params = self.parse_params(operator, "operator")
 
                 desc_element = operator.find("description")
                 method_desc = None
@@ -233,7 +233,7 @@ class State:
                 annotation_name = annotation.attrib["name"]
                 qualifiers = annotation.get("qualifiers")
 
-                params = self.parse_arguments(annotation, "annotation")
+                params = self.parse_params(annotation, "annotation")
 
                 desc_element = annotation.find("description")
                 annotation_desc = None
@@ -257,7 +257,7 @@ class State:
                     print_error('{}.xml: Duplicate signal "{}".'.format(class_name, signal_name), self)
                     continue
 
-                params = self.parse_arguments(signal, "signal")
+                params = self.parse_params(signal, "signal")
 
                 desc_element = signal.find("description")
                 signal_desc = None
@@ -307,8 +307,8 @@ class State:
 
         self.current_class = ""
 
-    def parse_arguments(self, root: ET.Element, context: str) -> List["ParameterDef"]:
-        param_elements = root.findall("argument")
+    def parse_params(self, root: ET.Element, context: str) -> List["ParameterDef"]:
+        param_elements = root.findall("param")
         params: Any = [None] * len(param_elements)
 
         for param_index, param_element in enumerate(param_elements):

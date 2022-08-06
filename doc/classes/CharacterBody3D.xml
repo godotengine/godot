@@ -18,7 +18,7 @@
 	<methods>
 		<method name="get_floor_angle" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Returns the floor's collision angle at the last collision point according to [code]up_direction[/code], which is [code]Vector3.UP[/code] by default. This value is always positive and only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
@@ -61,7 +61,7 @@
 		</method>
 		<method name="get_slide_collision">
 			<return type="KinematicCollision3D" />
-			<argument index="0" name="slide_idx" type="int" />
+			<param index="0" name="slide_idx" type="int" />
 			<description>
 				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
 			</description>

@@ -11,8 +11,8 @@
 	<methods>
 		<method name="add_filter">
 			<return type="void" />
-			<argument index="0" name="filter" type="String" />
-			<argument index="1" name="description" type="String" default="&quot;&quot;" />
+			<param index="0" name="filter" type="String" />
+			<param index="1" name="description" type="String" default="&quot;&quot;" />
 			<description>
 				Adds a comma-delimited file name [code]filter[/code] option to the [FileDialog] with an optional [code]description[/code], which restricts what files can be picked.
 				A [code]filter[/code] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
@@ -86,19 +86,19 @@
 	</members>
 	<signals>
 		<signal name="dir_selected">
-			<argument index="0" name="dir" type="String" />
+			<param index="0" name="dir" type="String" />
 			<description>
 				Emitted when the user selects a directory.
 			</description>
 		</signal>
 		<signal name="file_selected">
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Emitted when the user selects a file by double-clicking it or pressing the [b]OK[/b] button.
 			</description>
 		</signal>
 		<signal name="files_selected">
-			<argument index="0" name="paths" type="PackedStringArray" />
+			<param index="0" name="paths" type="PackedStringArray" />
 			<description>
 				Emitted when the user selects multiple files.
 			</description>

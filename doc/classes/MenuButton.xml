@@ -20,7 +20,7 @@
 		</method>
 		<method name="set_disable_shortcuts">
 			<return type="void" />
-			<argument index="0" name="disabled" type="bool" />
+			<param index="0" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
 			</description>

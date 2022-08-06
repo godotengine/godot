@@ -9,14 +9,14 @@
 	<methods>
 		<method name="get_stage_source" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
 			<description>
 			</description>
 		</method>
 		<method name="set_stage_source">
 			<return type="void" />
-			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
-			<argument index="1" name="source" type="String" />
+			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<param index="1" name="source" type="String" />
 			<description>
 			</description>
 		</method>

@@ -19,15 +19,15 @@
 		</method>
 		<method name="_get_packet" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="r_buffer" type="const uint8_t **" />
-			<argument index="1" name="r_buffer_size" type="int32_t*" />
+			<param index="0" name="r_buffer" type="const uint8_t **" />
+			<param index="1" name="r_buffer_size" type="int32_t*" />
 			<description>
 			</description>
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_buffer" type="const uint8_t*" />
-			<argument index="1" name="p_buffer_size" type="int" />
+			<param index="0" name="p_buffer" type="const uint8_t*" />
+			<param index="1" name="p_buffer_size" type="int" />
 			<description>
 			</description>
 		</method>

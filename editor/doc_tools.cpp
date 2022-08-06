@@ -1019,7 +1019,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 						} else if (name == "returns_error") {
 							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
 							method.errors_returned.push_back(parser->get_attribute_value("number").to_int());
-						} else if (name == "argument") {
+						} else if (name == "param") {
 							DocData::ArgumentDoc argument;
 							ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
 							argument.name = parser->get_attribute_value("name");
@@ -1350,9 +1350,9 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				}
 
 				if (!a.default_value.is_empty()) {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
+					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
 				} else {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
+					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
 				}
 			}
 

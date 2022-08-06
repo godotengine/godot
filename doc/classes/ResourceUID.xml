@@ -13,8 +13,8 @@
 	<methods>
 		<method name="add_id">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="path" type="String" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="path" type="String" />
 			<description>
 				Adds a new UID value which is mapped to the given resource path.
 				Fails with an error if the UID already exists, so be sure to check [method has_id] beforehand, or use [method set_id] instead.
@@ -29,7 +29,7 @@
 		</method>
 		<method name="get_id_path" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns the path that the given UID value refers to.
 				Fails with an error if the UID does not exist, so be sure to check [method has_id] beforehand.
@@ -37,21 +37,21 @@
 		</method>
 		<method name="has_id" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns whether the given UID value is known to the cache.
 			</description>
 		</method>
 		<method name="id_to_text" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Converts the given UID to a [code]uid://[/code] string value.
 			</description>
 		</method>
 		<method name="remove_id">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Removes a loaded UID value from the cache.
 				Fails with an error if the UID does not exist, so be sure to check [method has_id] beforehand.
@@ -59,8 +59,8 @@
 		</method>
 		<method name="set_id">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="path" type="String" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="path" type="String" />
 			<description>
 				Updates the resource path of an existing UID.
 				Fails with an error if the UID does not exist, so be sure to check [method has_id] beforehand, or use [method add_id] instead.
@@ -68,7 +68,7 @@
 		</method>
 		<method name="text_to_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="text_id" type="String" />
+			<param index="0" name="text_id" type="String" />
 			<description>
 				Extracts the UID value from the given [code]uid://[/code] string.
 			</description>

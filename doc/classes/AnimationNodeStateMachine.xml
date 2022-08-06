@@ -23,18 +23,18 @@
 	<methods>
 		<method name="add_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="node" type="AnimationNode" />
-			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="node" type="AnimationNode" />
+			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds a new node to the graph. The [code]position[/code] is used for display in the editor.
 			</description>
 		</method>
 		<method name="add_transition">
 			<return type="void" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="to" type="StringName" />
-			<argument index="2" name="transition" type="AnimationNodeStateMachineTransition" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="to" type="StringName" />
+			<param index="2" name="transition" type="AnimationNodeStateMachineTransition" />
 			<description>
 				Adds a transition between the given nodes.
 			</description>
@@ -47,28 +47,28 @@
 		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="AnimationNode" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the animation node with the given name.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="node" type="AnimationNode" />
+			<param index="0" name="node" type="AnimationNode" />
 			<description>
 				Returns the given animation node's name.
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the given node's coordinates. Used for display in the editor.
 			</description>
 		</method>
 		<method name="get_transition" qualifiers="const">
 			<return type="AnimationNodeStateMachineTransition" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the given transition.
 			</description>
@@ -81,81 +81,81 @@
 		</method>
 		<method name="get_transition_from" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the given transition's start node.
 			</description>
 		</method>
 		<method name="get_transition_to" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the given transition's end node.
 			</description>
 		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the graph contains the given node.
 			</description>
 		</method>
 		<method name="has_transition" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="to" type="StringName" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="to" type="StringName" />
 			<description>
 				Returns [code]true[/code] if there is a transition between the given nodes.
 			</description>
 		</method>
 		<method name="remove_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Deletes the given node from the graph.
 			</description>
 		</method>
 		<method name="remove_transition">
 			<return type="void" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="to" type="StringName" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="to" type="StringName" />
 			<description>
 				Deletes the transition between the two specified nodes.
 			</description>
 		</method>
 		<method name="remove_transition_by_index">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Deletes the given transition by index.
 			</description>
 		</method>
 		<method name="rename_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="new_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
 			<description>
 				Renames the given node.
 			</description>
 		</method>
 		<method name="replace_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="node" type="AnimationNode" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="node" type="AnimationNode" />
 			<description>
 			</description>
 		</method>
 		<method name="set_graph_offset">
 			<return type="void" />
-			<argument index="0" name="offset" type="Vector2" />
+			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Sets the draw offset of the graph. Used for display in the editor.
 			</description>
 		</method>
 		<method name="set_node_position">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="position" type="Vector2" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="position" type="Vector2" />
 			<description>
 				Sets the node's coordinates. Used for display in the editor.
 			</description>

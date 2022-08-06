@@ -100,16 +100,16 @@
 		</method>
 		<method name="_object_configuration_add" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="configuration" type="Variant" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="configuration" type="Variant" />
 			<description>
 				Callback for [method MultiplayerAPI.object_configuration_add].
 			</description>
 		</method>
 		<method name="_object_configuration_remove" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="configuration" type="Variant" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="configuration" type="Variant" />
 			<description>
 				Callback for [method MultiplayerAPI.object_configuration_remove].
 			</description>
@@ -122,17 +122,17 @@
 		</method>
 		<method name="_rpc" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="peer" type="int" />
-			<argument index="1" name="object" type="Object" />
-			<argument index="2" name="method" type="StringName" />
-			<argument index="3" name="args" type="Array" />
+			<param index="0" name="peer" type="int" />
+			<param index="1" name="object" type="Object" />
+			<param index="2" name="method" type="StringName" />
+			<param index="3" name="args" type="Array" />
 			<description>
 				Callback for [method MultiplayerAPI.rpc].
 			</description>
 		</method>
 		<method name="_set_multiplayer_peer" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="multiplayer_peer" type="MultiplayerPeer" />
+			<param index="0" name="multiplayer_peer" type="MultiplayerPeer" />
 			<description>
 				Called when the [member MultiplayerAPI.multiplayer_peer] is set.
 			</description>

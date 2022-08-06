@@ -12,7 +12,7 @@
 	<methods>
 		<method name="add_action">
 			<return type="void" />
-			<argument index="0" name="action" type="OpenXRAction" />
+			<param index="0" name="action" type="OpenXRAction" />
 			<description>
 				Add an action to this action set.
 			</description>
@@ -25,7 +25,7 @@
 		</method>
 		<method name="remove_action">
 			<return type="void" />
-			<argument index="0" name="action" type="OpenXRAction" />
+			<param index="0" name="action" type="OpenXRAction" />
 			<description>
 				Remove an action from this action set.
 			</description>

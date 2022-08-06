@@ -44,15 +44,15 @@
 		</constructor>
 		<constructor name="Callable">
 			<return type="Callable" />
-			<argument index="0" name="from" type="Callable" />
+			<param index="0" name="from" type="Callable" />
 			<description>
 				Constructs a [Callable] as a copy of the given [Callable].
 			</description>
 		</constructor>
 		<constructor name="Callable">
 			<return type="Callable" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="method" type="StringName" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="method" type="StringName" />
 			<description>
 				Creates a new [Callable] for the method called [code]method[/code] in the specified [code]object[/code].
 			</description>
@@ -134,14 +134,14 @@
 		</method>
 		<method name="rpc_id" qualifiers="vararg const">
 			<return type="void" />
-			<argument index="0" name="peer_id" type="int" />
+			<param index="0" name="peer_id" type="int" />
 			<description>
 				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
 			</description>
 		</method>
 		<method name="unbind" qualifiers="const">
 			<return type="Callable" />
-			<argument index="0" name="argcount" type="int" />
+			<param index="0" name="argcount" type="int" />
 			<description>
 				Returns a copy of this [Callable] with the arguments unbound. Calling the returned [Callable] will call the method without the extra arguments that are supplied in the [Callable] on which you are calling this method.
 			</description>
@@ -150,14 +150,14 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Callable" />
+			<param index="0" name="right" type="Callable" />
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke different targets.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Callable" />
+			<param index="0" name="right" type="Callable" />
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
 			</description>

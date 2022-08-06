@@ -9,7 +9,7 @@
 	<methods>
 		<method name="get_bone_attachment">
 			<return type="BoneAttachment3D" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -35,13 +35,13 @@
 		</method>
 		<method name="set_godot_bone_node">
 			<return type="void" />
-			<argument index="0" name="godot_bone_node" type="Dictionary" />
+			<param index="0" name="godot_bone_node" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_unique_names">
 			<return type="void" />
-			<argument index="0" name="unique_names" type="Array" />
+			<param index="0" name="unique_names" type="Array" />
 			<description>
 			</description>
 		</method>

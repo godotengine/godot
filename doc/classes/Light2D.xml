@@ -18,7 +18,7 @@
 		</method>
 		<method name="set_height">
 			<return type="void" />
-			<argument index="0" name="height" type="float" />
+			<param index="0" name="height" type="float" />
 			<description>
 			</description>
 		</method>

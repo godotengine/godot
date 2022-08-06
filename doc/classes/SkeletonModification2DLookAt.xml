@@ -41,14 +41,14 @@
 		</method>
 		<method name="set_additional_rotation">
 			<return type="void" />
-			<argument index="0" name="rotation" type="float" />
+			<param index="0" name="rotation" type="float" />
 			<description>
 				Sets the amount of additional rotation that is to be applied after executing the modification. This allows for offsetting the results by the inputted rotation amount.
 			</description>
 		</method>
 		<method name="set_constraint_angle_invert">
 			<return type="void" />
-			<argument index="0" name="invert" type="bool" />
+			<param index="0" name="invert" type="bool" />
 			<description>
 				When [code]true[/code], the modification will use an inverted joint constraint.
 				An inverted joint constraint only constraints the [Bone2D] to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
@@ -56,21 +56,21 @@
 		</method>
 		<method name="set_constraint_angle_max">
 			<return type="void" />
-			<argument index="0" name="angle_max" type="float" />
+			<param index="0" name="angle_max" type="float" />
 			<description>
 				Sets the constraint's maximum allowed angle.
 			</description>
 		</method>
 		<method name="set_constraint_angle_min">
 			<return type="void" />
-			<argument index="0" name="angle_min" type="float" />
+			<param index="0" name="angle_min" type="float" />
 			<description>
 				Sets the constraint's minimum allowed angle.
 			</description>
 		</method>
 		<method name="set_enable_constraint">
 			<return type="void" />
-			<argument index="0" name="enable_constraint" type="bool" />
+			<param index="0" name="enable_constraint" type="bool" />
 			<description>
 				Sets whether this modification will use constraints or not. When [code]true[/code], constraints will be applied when solving the LookAt modification.
 			</description>

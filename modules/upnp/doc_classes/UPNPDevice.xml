@@ -11,19 +11,19 @@
 	<methods>
 		<method name="add_port_mapping" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="port" type="int" />
-			<argument index="1" name="port_internal" type="int" default="0" />
-			<argument index="2" name="desc" type="String" default="&quot;&quot;" />
-			<argument index="3" name="proto" type="String" default="&quot;UDP&quot;" />
-			<argument index="4" name="duration" type="int" default="0" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="port_internal" type="int" default="0" />
+			<param index="2" name="desc" type="String" default="&quot;&quot;" />
+			<param index="3" name="proto" type="String" default="&quot;UDP&quot;" />
+			<param index="4" name="duration" type="int" default="0" />
 			<description>
 				Adds a port mapping to forward the given external port on this [UPNPDevice] for the given protocol to the local machine. See [method UPNP.add_port_mapping].
 			</description>
 		</method>
 		<method name="delete_port_mapping" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="port" type="int" />
-			<argument index="1" name="proto" type="String" default="&quot;UDP&quot;" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="proto" type="String" default="&quot;UDP&quot;" />
 			<description>
 				Deletes the port mapping identified by the given port and protocol combination on this device. See [method UPNP.delete_port_mapping].
 			</description>
