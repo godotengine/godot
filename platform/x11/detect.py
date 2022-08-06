@@ -400,8 +400,10 @@ def configure(env):
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])
 
-    if platform.system().find("BSD") >= 0:
-        env["execinfo"] = True
+    if not env["execinfo"] and platform.libc_ver()[0] != "glibc":
+        # The default crash handler depends on glibc, so if the host uses
+        # a different libc (BSD libc, musl), fall back to libexecinfo.
+        print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
 
     if env["execinfo"]:
         env.Append(LIBS=["execinfo"])
