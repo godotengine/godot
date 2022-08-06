@@ -2665,7 +2665,6 @@ void EditorInspector::update_tree() {
 
 	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
-	_update_script_class_properties(*object, plist);
 
 	HashMap<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
 	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
@@ -2750,6 +2749,7 @@ void EditorInspector::update_tree() {
 			category_vbox = nullptr; //reset
 
 			String type = p.name;
+			String label = p.name;
 			type_name = p.name;
 
 			// Set the category icon.
@@ -2757,11 +2757,16 @@ void EditorInspector::update_tree() {
 				// If we have a category inside a script, search for the first script with a valid icon.
 				Ref<Script> script = ResourceLoader::load(p.hint_string, "Script");
 				StringName base_type;
+				StringName name;
 				if (script.is_valid()) {
 					base_type = script->get_instance_base_type();
+					name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+					if (name != StringName() && label != name) {
+						label = name;
+					}
 				}
 				while (script.is_valid()) {
-					StringName name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+					name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
 					String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
 					if (name != StringName() && icon_path.length()) {
 						category->icon = ResourceLoader::load(icon_path, "Texture");
@@ -2780,7 +2785,7 @@ void EditorInspector::update_tree() {
 			}
 
 			// Set the category label.
-			category->label = type;
+			category->label = label;
 
 			if (use_doc_hints) {
 				// Sets the category tooltip to show documentation.
@@ -3924,93 +3929,6 @@ String EditorInspector::get_object_class() const {
 
 void EditorInspector::_feature_profile_changed() {
 	update_tree();
-}
-
-void EditorInspector::_update_script_class_properties(const Object &p_object, List<PropertyInfo> &r_list) const {
-	Ref<Script> script = p_object.get_script();
-	if (script.is_null()) {
-		return;
-	}
-
-	List<Ref<Script>> classes;
-
-	// NodeC -> NodeB -> NodeA
-	while (script.is_valid()) {
-		classes.push_front(script);
-		script = script->get_base_script();
-	}
-
-	if (classes.is_empty()) {
-		return;
-	}
-
-	// Script Variables -> to insert: NodeC..B..A -> bottom (insert_here)
-	List<PropertyInfo>::Element *script_variables = nullptr;
-	List<PropertyInfo>::Element *bottom = nullptr;
-	List<PropertyInfo>::Element *insert_here = nullptr;
-	for (List<PropertyInfo>::Element *E = r_list.front(); E; E = E->next()) {
-		PropertyInfo &pi = E->get();
-		if (pi.name != "Script Variables") {
-			continue;
-		}
-		script_variables = E;
-		bottom = r_list.insert_after(script_variables, PropertyInfo());
-		insert_here = bottom;
-		break;
-	}
-
-	HashSet<StringName> added;
-	for (const Ref<Script> &s : classes) {
-		String path = s->get_path();
-		String name = EditorNode::get_editor_data().script_class_get_name(path);
-		if (name.is_empty()) {
-			if (s->is_built_in()) {
-				if (s->get_name().is_empty()) {
-					name = TTR("Built-in script");
-				} else {
-					name = vformat("%s (%s)", s->get_name(), TTR("Built-in"));
-				}
-			} else {
-				name = path.get_file();
-			}
-		}
-
-		List<PropertyInfo> props;
-		s->get_script_property_list(&props);
-
-		// Script Variables -> NodeA -> bottom (insert_here)
-		List<PropertyInfo>::Element *category = r_list.insert_before(insert_here, PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY));
-
-		// Script Variables -> NodeA -> A props... -> bottom (insert_here)
-		for (List<PropertyInfo>::Element *P = props.front(); P; P = P->next()) {
-			PropertyInfo &pi = P->get();
-			if (added.has(pi.name)) {
-				continue;
-			}
-			added.insert(pi.name);
-
-			r_list.insert_before(insert_here, pi);
-
-			List<PropertyInfo>::Element *prop_below = bottom->next();
-			while (prop_below) {
-				if (prop_below->get() == pi) {
-					List<PropertyInfo>::Element *to_delete = prop_below;
-					prop_below = prop_below->next();
-					r_list.erase(to_delete);
-				} else {
-					prop_below = prop_below->next();
-				}
-			}
-		}
-
-		// Script Variables -> NodeA (insert_here) -> A props... -> bottom
-		insert_here = category;
-	}
-
-	if (script_variables) {
-		r_list.erase(script_variables);
-		r_list.erase(bottom);
-	}
 }
 
 void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {

@@ -1801,9 +1801,7 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
-	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
-		props.push_front(E.value);
-	}
+	script->get_script_property_list(&props);
 
 	// Call _get_property_list
 
@@ -2335,16 +2333,16 @@ void CSharpScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 
 #ifdef TOOLS_ENABLED
 void CSharpScript::_update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames) {
-	if (base_cache.is_valid()) {
-		base_cache->_update_exports_values(values, propnames);
-	}
-
 	for (const KeyValue<StringName, Variant> &E : exported_members_defval_cache) {
 		values[E.key] = E.value;
 	}
 
 	for (const PropertyInfo &prop_info : exported_members_cache) {
 		propnames.push_back(prop_info);
+	}
+
+	if (base_cache.is_valid()) {
+		base_cache->_update_exports_values(values, propnames);
 	}
 }
 
@@ -2357,6 +2355,7 @@ void CSharpScript::_update_member_info_no_exports() {
 		member_info.clear();
 
 		GDMonoClass *top = script_class;
+		List<PropertyInfo> props;
 
 		while (top && top != native) {
 			PropertyInfo prop_info;
@@ -2371,7 +2370,7 @@ void CSharpScript::_update_member_info_no_exports() {
 					StringName member_name = field->get_name();
 
 					member_info[member_name] = prop_info;
-					exported_members_cache.push_front(prop_info);
+					props.push_front(prop_info);
 					exported_members_defval_cache[member_name] = Variant();
 				}
 			}
@@ -2385,10 +2384,17 @@ void CSharpScript::_update_member_info_no_exports() {
 					StringName member_name = property->get_name();
 
 					member_info[member_name] = prop_info;
-					exported_members_cache.push_front(prop_info);
+					props.push_front(prop_info);
 					exported_members_defval_cache[member_name] = Variant();
 				}
 			}
+
+			exported_members_cache.push_back(PropertyInfo(Variant::NIL, top->get_name(), PROPERTY_HINT_NONE, get_path(), PROPERTY_USAGE_CATEGORY));
+			for (const PropertyInfo &E : props) {
+				exported_members_cache.push_back(E);
+			}
+
+			props.clear();
 
 			top = top->get_parent_class();
 		}
@@ -2464,6 +2470,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 #endif
 
 		GDMonoClass *top = script_class;
+		List<PropertyInfo> props;
 
 		while (top && top != native) {
 			PropertyInfo prop_info;
@@ -2482,7 +2489,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 					if (exported) {
 #ifdef TOOLS_ENABLED
 						if (is_editor) {
-							exported_members_cache.push_front(prop_info);
+							props.push_front(prop_info);
 
 							if (tmp_object) {
 								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
@@ -2510,7 +2517,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 					if (exported) {
 #ifdef TOOLS_ENABLED
 						if (is_editor) {
-							exported_members_cache.push_front(prop_info);
+							props.push_front(prop_info);
 							if (tmp_object) {
 								MonoException *exc = nullptr;
 								MonoObject *ret = property->get_value(tmp_object, &exc);
@@ -2530,6 +2537,16 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 					}
 				}
 			}
+
+#ifdef TOOLS_ENABLED
+			exported_members_cache.push_back(PropertyInfo(Variant::NIL, top->get_name(), PROPERTY_HINT_NONE, get_path(), PROPERTY_USAGE_CATEGORY));
+
+			for (const PropertyInfo &E : props) {
+				exported_members_cache.push_back(E);
+			}
+
+			props.clear();
+#endif // TOOLS_ENABLED
 
 			top = top->get_parent_class();
 		}
@@ -3491,9 +3508,15 @@ Ref<Script> CSharpScript::get_base_script() const {
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 	List<PropertyInfo> props;
 
+#ifdef TOOLS_ENABLED
+	for (const PropertyInfo &E : exported_members_cache) {
+		props.push_back(E);
+	}
+#else
 	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
 		props.push_front(E.value);
 	}
+#endif // TOOLS_ENABLED
 
 	for (const PropertyInfo &prop : props) {
 		r_list->push_back(prop);

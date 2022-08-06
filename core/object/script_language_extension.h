@@ -663,6 +663,14 @@ public:
 		if (native_info->get_property_list_func) {
 			uint32_t pcount;
 			const GDNativePropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
+
+#ifdef TOOLS_ENABLED
+			Ref<Script> script = get_script();
+			if (script->is_valid() && pcount > 0) {
+				p_list->push_back(script->get_class_category());
+			}
+#endif // TOOLS_ENABLED
+
 			for (uint32_t i = 0; i < pcount; i++) {
 				p_list->push_back(PropertyInfo(pinfo[i]));
 			}

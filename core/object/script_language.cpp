@@ -101,6 +101,31 @@ Dictionary Script::_get_script_constant_map() {
 	return ret;
 }
 
+#ifdef TOOLS_ENABLED
+
+PropertyInfo Script::get_class_category() const {
+	String path = get_path();
+	String name;
+
+	if (is_built_in()) {
+		if (get_name().is_empty()) {
+			name = TTR("Built-in script");
+		} else {
+			name = vformat("%s (%s)", get_name(), TTR("Built-in"));
+		}
+	} else {
+		if (get_name().is_empty()) {
+			name = path.get_file();
+		} else {
+			name = get_name();
+		}
+	}
+
+	return PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
+}
+
+#endif // TOOLS_ENABLED
+
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);

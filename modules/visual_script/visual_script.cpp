@@ -1206,6 +1206,10 @@ bool VisualScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+#ifdef TOOLS_ENABLED
+	p_properties->push_back(script->get_class_category());
+#endif // TOOLS_ENABLED
+
 	for (const KeyValue<StringName, VisualScript::Variable> &E : script->variables) {
 		if (!E.value._export) {
 			continue;
