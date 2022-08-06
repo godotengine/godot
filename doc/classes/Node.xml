@@ -164,7 +164,10 @@
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="persistent" type="bool" default="false" />
 			<description>
-				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
+				Adds this node to the given [code]group[/code]. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups.
+				Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]).
+				Prints an error if this node is already in the group.
+				See notes in the description, and the group methods in [SceneTree].
 				The [code]persistent[/code] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
 			</description>
@@ -601,7 +604,9 @@
 			<return type="void" />
 			<argument index="0" name="group" type="StringName" />
 			<description>
-				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
+				Removes this node from the given [code]group[/code].
+				Prints an error if this node is not in the group.
+				See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="replace_by">

@@ -1745,11 +1745,8 @@ bool Node::is_in_group(const StringName &p_identifier) const {
 }
 
 void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
-	ERR_FAIL_COND(!p_identifier.operator String().length());
-
-	if (data.grouped.has(p_identifier)) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(p_identifier.operator String().is_empty(), "Group identifier is empty.");
+	ERR_FAIL_COND_MSG(data.grouped.has(p_identifier), "Node is already in group '" + p_identifier + "'.");
 
 	GroupData gd;
 
@@ -1765,7 +1762,8 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
-	ERR_FAIL_COND(!data.grouped.has(p_identifier));
+	ERR_FAIL_COND_MSG(p_identifier.operator String().is_empty(), "Group identifier is empty.");
+	ERR_FAIL_COND_MSG(!data.grouped.has(p_identifier), "Node is not in group '" + p_identifier + "'.");
 
 	HashMap<StringName, GroupData>::Iterator E = data.grouped.find(p_identifier);
 
