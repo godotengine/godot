@@ -369,6 +369,7 @@ def configure(env):
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             env.ParseConfig("pkg-config libpulse --cflags")  # Only cflags, we dlopen the library.
         else:
+            env["pulseaudio"] = False
             print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
 
     if env["speechd"]:
@@ -376,6 +377,7 @@ def configure(env):
             env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
             env.ParseConfig("pkg-config speech-dispatcher --cflags")  # Only cflags, we dlopen the library.
         else:
+            env["speechd"] = False
             print("Warning: Speech Dispatcher development libraries not found. Disabling Text-to-Speech support.")
 
     if platform.system() == "Linux":
@@ -385,6 +387,7 @@ def configure(env):
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
                 env.ParseConfig("pkg-config libudev --cflags")  # Only cflags, we dlopen the library.
             else:
+                env["udev"] = False
                 print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
         env["udev"] = False  # Linux specific
