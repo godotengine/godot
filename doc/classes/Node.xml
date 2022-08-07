@@ -204,7 +204,7 @@
 				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
 				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
 				Returns [code]null[/code] if no matching [Node] is found.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), [method get_unique_node], or caching the node references into variable.
 				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
 			</description>
 		</method>
@@ -393,6 +393,32 @@
 			<return type="SceneTree" />
 			<description>
 				Returns the [SceneTree] that contains this node.
+			</description>
+		</method>
+		<method name="get_unique_node" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the unique node whose [member name] matches the specified [code]name[/code], within the current [member owner]. If the unique node does not exist, [code]null[/code] is returned. Attempts to access methods on this return value will result in an "Attempt to call &lt;method&gt; on a null instance." error. See [member unique_name_in_owner].
+				This method is the equivalent of [method get_node], when using the unique name accessor [code]%[/code] to fetch a single node.
+				[b]Example:[/b] Assume Hero has been set with an unique name in the following scene:
+				[codeblock]
+				/Town
+				/Town/Tree
+				/Town/House
+				/Town/House/Hero
+				[/codeblock]
+				The following methods will safely return Hero, so long as its owner is the scene root:
+				[codeblocks]
+				[gdscript]
+				get_node("%Hero")
+				get_unique_node("Hero")
+				[/gdscript]
+				[csharp]
+				getNode("%Hero");
+				getUniqueNode("Hero");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_viewport" qualifiers="const">
