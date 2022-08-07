@@ -82,7 +82,7 @@ private:
 	float attenuation = 1.0;
 
 	float panning_strength = 1.0f;
-	float cached_global_panning_strength = 1.0f;
+	float cached_global_panning_strength = 0.5f;
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
