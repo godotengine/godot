@@ -1134,7 +1134,7 @@ void main() {
 
 #ifdef USE_SOFT_SHADOWS
 			//version with soft shadows, more expensive
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;
@@ -1286,7 +1286,7 @@ void main() {
 #else
 			// Soft shadow disabled version
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;

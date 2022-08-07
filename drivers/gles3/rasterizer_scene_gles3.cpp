@@ -1650,7 +1650,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 
 		light_data.specular_amount = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
 
-		light_data.shadow_enabled = false;
+		light_data.shadow_opacity = 0.0;
 	}
 
 	// TODO, to avoid stalls, should rotate between 3 buffers based on frame index.

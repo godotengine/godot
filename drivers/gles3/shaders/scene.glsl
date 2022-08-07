@@ -495,7 +495,7 @@ struct LightData { //this structure needs to be as packed as possible
 	mediump float cone_attenuation;
 	mediump float cone_angle;
 	mediump float specular_amount;
-	bool shadow_enabled;
+	mediump float shadow_opacity;
 };
 #ifndef DISABLE_LIGHT_OMNI
 layout(std140) uniform OmniLightData { // ubo:5

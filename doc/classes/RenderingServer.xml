@@ -3777,6 +3777,7 @@
 			The light's energy.
 		</constant>
 		<constant name="LIGHT_PARAM_INDIRECT_ENERGY" value="1" enum="LightParam">
+			The light's indirect energy multiplier (final indirect energy is [constant LIGHT_PARAM_ENERGY] * [constant LIGHT_PARAM_INDIRECT_ENERGY]).
 		</constant>
 		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
 			The light's influence on specularity.
@@ -3820,14 +3821,17 @@
 		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="15" enum="LightParam">
 			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_OPACITY" value="16" enum="LightParam">
+			The light's shadow opacity. Values lower than [code]1.0[/code] make the light appear through shadows. This can be used to fake global illumination at a low performance cost.
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="17" enum="LightParam">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE" value="17" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE" value="18" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="18" enum="LightParam">
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="19" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="19" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="20" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">

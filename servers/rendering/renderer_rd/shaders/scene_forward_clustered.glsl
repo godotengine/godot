@@ -1417,7 +1417,7 @@ void fragment_shader(in SceneData scene_data) {
 
 			float shadow = 1.0;
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 				vec3 light_dir = directional_lights.data[i].direction;
 				vec3 base_normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp))));
@@ -1626,7 +1626,7 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_TRANSMITTANCE_USED
 			float transmittance_z = transmittance_depth;
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
@@ -1681,6 +1681,8 @@ void fragment_shader(in SceneData scene_data) {
 			} else {
 				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
 			}
+
+			shadow = shadow * directional_lights.data[i].shadow_opacity + 1.0 - directional_lights.data[i].shadow_opacity;
 #endif
 
 			blur_shadow(shadow);
