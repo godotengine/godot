@@ -2891,13 +2891,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
 			} else if (return_info.type == Variant::ARRAY && return_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
-// TODO: Enable once generic Array is re-implemented
-#if 0
 				imethod.return_type.cname = Variant::get_type_name(return_info.type) + "_@generic";
 				imethod.return_type.generic_type_parameters.push_back(TypeReference(return_info.hint_string));
-#else
-				imethod.return_type.cname = Variant::get_type_name(return_info.type);
-#endif
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -2928,13 +2923,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
 				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
-// TODO: Enable once generic Array is re-implemented
-#if 0
 					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
 					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
-#else
-					iarg.type.cname = Variant::get_type_name(arginfo.type);
-#endif
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {
@@ -3041,13 +3031,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
 				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
-// TODO: Enable once generic Array is re-implemented
-#if 0
 					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
 					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
-#else
-					iarg.type.cname = Variant::get_type_name(arginfo.type);
-#endif
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {

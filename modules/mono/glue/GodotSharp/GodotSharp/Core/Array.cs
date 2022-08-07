@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
@@ -424,13 +425,6 @@ namespace Godot.Collections
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal object GetAtAsType(int index, Type type)
-        {
-            GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-            return Marshaling.ConvertVariantToManagedObjectOfType(borrowElem, type);
-        }
-
         // IEnumerable
 
         /// <summary>
@@ -478,5 +472,358 @@ namespace Godot.Collections
         {
             elem = NativeValue.DangerousSelfRef.Elements[index];
         }
+    }
+
+    /// <summary>
+    /// Typed wrapper around Godot's Array class, an array of Variant
+    /// typed elements allocated in the engine in C++. Useful when
+    /// interfacing with the engine. Otherwise prefer .NET collections
+    /// such as arrays or <see cref="List{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the array.</typeparam>
+    [SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
+    [SuppressMessage("Naming", "CA1710", MessageId = "Identifiers should have correct suffix")]
+    public sealed class Array<T> :
+        IList<T>,
+        IReadOnlyList<T>,
+        ICollection<T>,
+        IEnumerable<T>
+    {
+        // ReSharper disable StaticMemberInGenericType
+        // Warning is about unique static fields being created for each generic type combination:
+        // https://www.jetbrains.com/help/resharper/StaticMemberInGenericType.html
+        // In our case this is exactly what we want.
+
+        private static unsafe delegate* managed<in T, godot_variant> _convertToVariantCallback;
+        private static unsafe delegate* managed<in godot_variant, T> _convertToManagedCallback;
+
+        // ReSharper restore StaticMemberInGenericType
+
+        static unsafe Array()
+        {
+            _convertToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<T>();
+            _convertToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<T>();
+        }
+
+        private static unsafe void ValidateVariantConversionCallbacks()
+        {
+            if (_convertToVariantCallback == null || _convertToManagedCallback == null)
+            {
+                throw new InvalidOperationException(
+                    $"The array element type is not supported for conversion to Variant: '{typeof(T).FullName}'");
+            }
+        }
+
+        private readonly Array _underlyingArray;
+
+        internal ref godot_array.movable NativeValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref _underlyingArray.NativeValue;
+        }
+
+        /// <summary>
+        /// Constructs a new empty <see cref="Array{T}"/>.
+        /// </summary>
+        public Array()
+        {
+            ValidateVariantConversionCallbacks();
+
+            _underlyingArray = new Array();
+        }
+
+        /// <summary>
+        /// Constructs a new <see cref="Array{T}"/> from the given collection's elements.
+        /// </summary>
+        /// <param name="collection">The collection of elements to construct from.</param>
+        /// <returns>A new Godot Array.</returns>
+        public Array(IEnumerable<T> collection)
+        {
+            ValidateVariantConversionCallbacks();
+
+            if (collection == null)
+                throw new ArgumentNullException(nameof(collection));
+
+            _underlyingArray = new Array();
+
+            foreach (T element in collection)
+                Add(element);
+        }
+
+        /// <summary>
+        /// Constructs a new <see cref="Array{T}"/> from the given items.
+        /// </summary>
+        /// <param name="array">The items to put in the new array.</param>
+        /// <returns>A new Godot Array.</returns>
+        public Array(T[] array) : this()
+        {
+            ValidateVariantConversionCallbacks();
+
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
+            _underlyingArray = new Array();
+
+            foreach (T element in array)
+                Add(element);
+        }
+
+        /// <summary>
+        /// Constructs a typed <see cref="Array{T}"/> from an untyped <see cref="Array"/>.
+        /// </summary>
+        /// <param name="array">The untyped array to construct from.</param>
+        public Array(Array array)
+        {
+            ValidateVariantConversionCallbacks();
+
+            _underlyingArray = array;
+        }
+
+        // Explicit name to make it very clear
+        internal static Array<T> CreateTakingOwnershipOfDisposableValue(godot_array nativeValueToOwn)
+            => new Array<T>(Array.CreateTakingOwnershipOfDisposableValue(nativeValueToOwn));
+
+        /// <summary>
+        /// Converts this typed <see cref="Array{T}"/> to an untyped <see cref="Array"/>.
+        /// </summary>
+        /// <param name="from">The typed array to convert.</param>
+        public static explicit operator Array(Array<T> from)
+        {
+            return from?._underlyingArray;
+        }
+
+        /// <summary>
+        /// Duplicates this <see cref="Array{T}"/>.
+        /// </summary>
+        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
+        /// <returns>A new Godot Array.</returns>
+        public Array<T> Duplicate(bool deep = false)
+        {
+            return new Array<T>(_underlyingArray.Duplicate(deep));
+        }
+
+        /// <summary>
+        /// Resizes this <see cref="Array{T}"/> to the given size.
+        /// </summary>
+        /// <param name="newSize">The new size of the array.</param>
+        /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
+        public Error Resize(int newSize)
+        {
+            return _underlyingArray.Resize(newSize);
+        }
+
+        /// <summary>
+        /// Shuffles the contents of this <see cref="Array{T}"/> into a random order.
+        /// </summary>
+        public void Shuffle()
+        {
+            _underlyingArray.Shuffle();
+        }
+
+        /// <summary>
+        /// Concatenates these two <see cref="Array{T}"/>s.
+        /// </summary>
+        /// <param name="left">The first array.</param>
+        /// <param name="right">The second array.</param>
+        /// <returns>A new Godot Array with the contents of both arrays.</returns>
+        public static Array<T> operator +(Array<T> left, Array<T> right)
+        {
+            if (left == null)
+            {
+                if (right == null)
+                    return new Array<T>();
+
+                return right.Duplicate(deep: false);
+            }
+
+            if (right == null)
+                return left.Duplicate(deep: false);
+
+            return new Array<T>(left._underlyingArray + right._underlyingArray);
+        }
+
+        // IList<T>
+
+        /// <summary>
+        /// Returns the value at the given <paramref name="index"/>.
+        /// </summary>
+        /// <value>The value at the given <paramref name="index"/>.</value>
+        public unsafe T this[int index]
+        {
+            get
+            {
+                _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
+                return _convertToManagedCallback(borrowElem);
+            }
+            set
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                var self = (godot_array)_underlyingArray.NativeValue;
+                godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
+                godot_variant* itemPtr = &ptrw[index];
+                (*itemPtr).Dispose();
+                *itemPtr = _convertToVariantCallback(value);
+            }
+        }
+
+        /// <summary>
+        /// Searches this <see cref="Array{T}"/> for an item
+        /// and returns its index or -1 if not found.
+        /// </summary>
+        /// <param name="item">The item to search for.</param>
+        /// <returns>The index of the item, or -1 if not found.</returns>
+        public unsafe int IndexOf(T item)
+        {
+            using var variantValue = _convertToVariantCallback(item);
+            var self = (godot_array)_underlyingArray.NativeValue;
+            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
+        }
+
+        /// <summary>
+        /// Inserts a new item at a given position in the <see cref="Array{T}"/>.
+        /// The position must be a valid position of an existing item,
+        /// or the position at the end of the array.
+        /// Existing items will be moved to the right.
+        /// </summary>
+        /// <param name="index">The index to insert at.</param>
+        /// <param name="item">The item to insert.</param>
+        public unsafe void Insert(int index, T item)
+        {
+            if (index < 0 || index > Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+            using var variantValue = _convertToVariantCallback(item);
+            var self = (godot_array)_underlyingArray.NativeValue;
+            NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
+        }
+
+        /// <summary>
+        /// Removes an element from this <see cref="Array{T}"/> by index.
+        /// </summary>
+        /// <param name="index">The index of the element to remove.</param>
+        public void RemoveAt(int index)
+        {
+            _underlyingArray.RemoveAt(index);
+        }
+
+        // ICollection<T>
+
+        /// <summary>
+        /// Returns the number of elements in this <see cref="Array{T}"/>.
+        /// This is also known as the size or length of the array.
+        /// </summary>
+        /// <returns>The number of elements.</returns>
+        public int Count => _underlyingArray.Count;
+
+        bool ICollection<T>.IsReadOnly => false;
+
+        /// <summary>
+        /// Adds an item to the end of this <see cref="Array{T}"/>.
+        /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
+        /// </summary>
+        /// <param name="item">The item to add.</param>
+        /// <returns>The new size after adding the item.</returns>
+        public unsafe void Add(T item)
+        {
+            using var variantValue = _convertToVariantCallback(item);
+            var self = (godot_array)_underlyingArray.NativeValue;
+            _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
+        }
+
+        /// <summary>
+        /// Erases all items from this <see cref="Array{T}"/>.
+        /// </summary>
+        public void Clear()
+        {
+            _underlyingArray.Clear();
+        }
+
+        /// <summary>
+        /// Checks if this <see cref="Array{T}"/> contains the given item.
+        /// </summary>
+        /// <param name="item">The item to look for.</param>
+        /// <returns>Whether or not this array contains the given item.</returns>
+        public bool Contains(T item) => IndexOf(item) != -1;
+
+        /// <summary>
+        /// Copies the elements of this <see cref="Array{T}"/> to the given
+        /// C# array, starting at the given index.
+        /// </summary>
+        /// <param name="array">The C# array to copy to.</param>
+        /// <param name="arrayIndex">The index to start at.</param>
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
+
+            if (arrayIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
+                    "Number was less than the array's lower bound in the first dimension.");
+            }
+
+            int count = Count;
+
+            if (array.Length < (arrayIndex + count))
+            {
+                throw new ArgumentException(
+                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                array[arrayIndex] = this[i];
+                arrayIndex++;
+            }
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of the specified value
+        /// from this <see cref="Array{T}"/>.
+        /// </summary>
+        /// <param name="item">The value to remove.</param>
+        /// <returns>A <see langword="bool"/> indicating success or failure.</returns>
+        public bool Remove(T item)
+        {
+            int index = IndexOf(item);
+            if (index >= 0)
+            {
+                RemoveAt(index);
+                return true;
+            }
+
+            return false;
+        }
+
+        // IEnumerable<T>
+
+        /// <summary>
+        /// Gets an enumerator for this <see cref="Array{T}"/>.
+        /// </summary>
+        /// <returns>An enumerator.</returns>
+        public IEnumerator<T> GetEnumerator()
+        {
+            int count = _underlyingArray.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                yield return this[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>
+        /// Converts this <see cref="Array{T}"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this array.</returns>
+        public override string ToString() => _underlyingArray.ToString();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Variant(Array<T> from) => Variant.CreateFrom(from);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator Array<T>(Variant from) => from.AsGodotArray<T>();
     }
 }

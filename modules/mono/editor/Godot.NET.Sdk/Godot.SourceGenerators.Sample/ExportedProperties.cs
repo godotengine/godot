@@ -99,5 +99,11 @@ namespace Godot.SourceGenerators.Sample
 
         [Export] private Godot.Collections.Array property_GodotArray { get; set; } =
             new() { "foo", 10, Vector2.Up, Colors.Chocolate };
+
+        [Export] private Godot.Collections.Dictionary<string, bool> property_GodotGenericDictionary { get; set; } =
+            new() { { "foo", true }, { "bar", false } };
+
+        [Export] private Godot.Collections.Array<int> property_GodotGenericArray { get; set; } =
+            new() { 0, 1, 2, 3, 4, 5, 6 };
     }
 }

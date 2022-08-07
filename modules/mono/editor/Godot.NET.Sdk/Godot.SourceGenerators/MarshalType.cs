@@ -67,5 +67,7 @@ namespace Godot.SourceGenerators
         RID,
         GodotDictionary,
         GodotArray,
+        GodotGenericDictionary,
+        GodotGenericArray,
     }
 }

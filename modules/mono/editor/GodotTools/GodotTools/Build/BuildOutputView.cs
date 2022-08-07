@@ -58,7 +58,7 @@ namespace GodotTools.Build
         }
 
         // TODO Use List once we have proper serialization.
-        private Godot.Collections.Array _issues = new();
+        private Godot.Collections.Array<BuildIssue> _issues = new();
         private ItemList _issuesList;
         private PopupMenu _issuesListContextMenu;
         private TextEdit _buildLog;
@@ -128,7 +128,7 @@ namespace GodotTools.Build
             if (issueIndex < 0 || issueIndex >= _issues.Count)
                 throw new IndexOutOfRangeException("Issue index out of range");
 
-            var issue = (BuildIssue)_issues[issueIndex];
+            BuildIssue issue = _issues[issueIndex];
 
             if (string.IsNullOrEmpty(issue.ProjectFile) && string.IsNullOrEmpty(issue.File))
                 return;
@@ -162,7 +162,7 @@ namespace GodotTools.Build
             {
                 for (int i = 0; i < _issues.Count; i++)
                 {
-                    var issue = (BuildIssue)_issues[i];
+                    BuildIssue issue = _issues[i];
 
                     if (!(issue.Warning ? WarningsVisible : ErrorsVisible))
                         continue;

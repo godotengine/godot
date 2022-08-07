@@ -284,6 +284,14 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToSystemArrayOfGodotObject<T>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Collections.Dictionary<TKey, TValue> AsGodotDictionary<TKey, TValue>() =>
+        VariantUtils.ConvertToDictionaryObject<TKey, TValue>((godot_variant)NativeVar);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Collections.Array<T> AsGodotArray<T>() =>
+        VariantUtils.ConvertToArrayObject<T>((godot_variant)NativeVar);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StringName[] AsSystemArrayOfStringName() =>
         VariantUtils.ConvertToSystemArrayOfStringName((godot_variant)NativeVar);
 
@@ -593,6 +601,14 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Godot.Object[] from) => from;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Variant CreateFrom<TKey, TValue>(Collections.Dictionary<TKey, TValue> from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromDictionary(from));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Variant CreateFrom<T>(Collections.Array<T> from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromArray(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Span<StringName> from) => from;

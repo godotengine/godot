@@ -78,6 +78,8 @@ namespace Godot.SourceGenerators
                 MarshalType.RID => VariantType.Rid,
                 MarshalType.GodotDictionary => VariantType.Dictionary,
                 MarshalType.GodotArray => VariantType.Array,
+                MarshalType.GodotGenericDictionary => VariantType.Dictionary,
+                MarshalType.GodotGenericArray => VariantType.Array,
                 _ => null
             };
 
@@ -214,13 +216,17 @@ namespace Godot.SourceGenerators
                                         _ => null
                                     };
                                 case "Collections"
-                                    when !(type is INamedTypeSymbol { IsGenericType: true }) &&
-                                         type.ContainingNamespace.FullQualifiedName() ==
-                                         "Godot.Collections":
+                                    when type.ContainingNamespace.FullQualifiedName() == "Godot.Collections":
                                     return type switch
                                     {
-                                        { Name: "Dictionary" } => MarshalType.GodotDictionary,
-                                        { Name: "Array" } => MarshalType.GodotArray,
+                                        { Name: "Dictionary" } =>
+                                            type is INamedTypeSymbol { IsGenericType: false } ?
+                                                MarshalType.GodotDictionary :
+                                                MarshalType.GodotGenericDictionary,
+                                        { Name: "Array" } =>
+                                            type is INamedTypeSymbol { IsGenericType: false } ?
+                                                MarshalType.GodotArray :
+                                                MarshalType.GodotGenericArray,
                                         _ => null
                                     };
                             }
@@ -282,6 +288,10 @@ namespace Godot.SourceGenerators
         private static StringBuilder Append(this StringBuilder source, string a, string b,
             string c, string d, string e, string f, string g)
             => source.Append(a).Append(b).Append(c).Append(d).Append(e).Append(f).Append(g);
+
+        private static StringBuilder Append(this StringBuilder source, string a, string b,
+            string c, string d, string e, string f, string g, string h)
+            => source.Append(a).Append(b).Append(c).Append(d).Append(e).Append(f).Append(g).Append(h);
 
         private const string VariantUtils = "global::Godot.NativeInterop.VariantUtils";
 
@@ -397,6 +407,13 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".ConvertToDictionaryObject(", inputExpr, ")"),
                 MarshalType.GodotArray =>
                     source.Append(VariantUtils, ".ConvertToArrayObject(", inputExpr, ")"),
+                MarshalType.GodotGenericDictionary =>
+                    source.Append(VariantUtils, ".ConvertToDictionaryObject<",
+                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ", ",
+                        ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedName(), ">(", inputExpr, ")"),
+                MarshalType.GodotGenericArray =>
+                    source.Append(VariantUtils, ".ConvertToArrayObject<",
+                        ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ">(", inputExpr, ")"),
                 _ => throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
                     "Received unexpected marshal type")
             };
@@ -511,6 +528,10 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
                 MarshalType.GodotArray =>
                     source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
+                MarshalType.GodotGenericDictionary =>
+                    source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
+                MarshalType.GodotGenericArray =>
+                    source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
                 _ => throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
                     "Received unexpected marshal type")
             };
@@ -576,6 +597,11 @@ namespace Godot.SourceGenerators
                 MarshalType.RID => source.Append(inputExpr, ".AsRID()"),
                 MarshalType.GodotDictionary => source.Append(inputExpr, ".AsGodotDictionary()"),
                 MarshalType.GodotArray => source.Append(inputExpr, ".AsGodotArray()"),
+                MarshalType.GodotGenericDictionary => source.Append(inputExpr, ".AsGodotDictionary<",
+                    ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ", ",
+                    ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedName(), ">()"),
+                MarshalType.GodotGenericArray => source.Append(inputExpr, ".AsGodotArray<",
+                    ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedName(), ">()"),
                 _ => throw new ArgumentOutOfRangeException(nameof(marshalType), marshalType,
                     "Received unexpected marshal type")
             };
@@ -636,6 +662,8 @@ namespace Godot.SourceGenerators
                 case MarshalType.RID:
                 case MarshalType.GodotDictionary:
                 case MarshalType.GodotArray:
+                case MarshalType.GodotGenericDictionary:
+                case MarshalType.GodotGenericArray:
                     return source.Append("Variant.CreateFrom(", inputExpr, ")");
                 case MarshalType.Enum:
                     return source.Append("Variant.CreateFrom((long)", inputExpr, ")");
