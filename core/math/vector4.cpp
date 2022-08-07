@@ -33,6 +33,40 @@
 #include "core/math/basis.h"
 #include "core/string/print_string.h"
 
+void Vector4::set_axis(const int p_axis, const real_t p_value) {
+	ERR_FAIL_INDEX(p_axis, 4);
+	components[p_axis] = p_value;
+}
+
+real_t Vector4::get_axis(const int p_axis) const {
+	ERR_FAIL_INDEX_V(p_axis, 4, 0);
+	return operator[](p_axis);
+}
+
+Vector4::Axis Vector4::min_axis_index() const {
+	uint32_t min_index = 0;
+	real_t min_value = x;
+	for (uint32_t i = 1; i < 4; i++) {
+		if (operator[](i) <= min_value) {
+			min_index = i;
+			min_value = operator[](i);
+		}
+	}
+	return Vector4::Axis(min_index);
+}
+
+Vector4::Axis Vector4::max_axis_index() const {
+	uint32_t max_index = 0;
+	real_t max_value = x;
+	for (uint32_t i = 1; i < 4; i++) {
+		if (operator[](i) > max_value) {
+			max_index = i;
+			max_value = operator[](i);
+		}
+	}
+	return Vector4::Axis(max_index);
+}
+
 bool Vector4::is_equal_approx(const Vector4 &p_vec4) const {
 	return Math::is_equal_approx(x, p_vec4.x) && Math::is_equal_approx(y, p_vec4.y) && Math::is_equal_approx(z, p_vec4.z) && Math::is_equal_approx(w, p_vec4.w);
 }
@@ -51,6 +85,16 @@ Vector4 Vector4::normalized() const {
 
 bool Vector4::is_normalized() const {
 	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); // Use less epsilon.
+}
+
+real_t Vector4::distance_to(const Vector4 &p_to) const {
+	return (p_to - *this).length();
+}
+
+Vector4 Vector4::direction_to(const Vector4 &p_to) const {
+	Vector4 ret(p_to.x - x, p_to.y - y, p_to.z - z, p_to.w - w);
+	ret.normalize();
+	return ret;
 }
 
 Vector4 Vector4::abs() const {
@@ -81,32 +125,38 @@ Vector4 Vector4::lerp(const Vector4 &p_to, const real_t p_weight) const {
 			w + (p_weight * (p_to.w - w)));
 }
 
+Vector4 Vector4::cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const real_t p_weight) const {
+	Vector4 res = *this;
+	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
+	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
+	res.w = Math::cubic_interpolate(res.w, p_b.w, p_pre_a.w, p_post_b.w, p_weight);
+	return res;
+}
+
+Vector4 Vector4::posmod(const real_t p_mod) const {
+	return Vector4(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod), Math::fposmod(w, p_mod));
+}
+
+Vector4 Vector4::posmodv(const Vector4 &p_modv) const {
+	return Vector4(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y), Math::fposmod(z, p_modv.z), Math::fposmod(w, p_modv.w));
+}
+
+void Vector4::snap(const Vector4 &p_step) {
+	x = Math::snapped(x, p_step.x);
+	y = Math::snapped(y, p_step.y);
+	z = Math::snapped(z, p_step.z);
+	w = Math::snapped(w, p_step.w);
+}
+
+Vector4 Vector4::snapped(const Vector4 &p_step) const {
+	Vector4 v = *this;
+	v.snap(p_step);
+	return v;
+}
+
 Vector4 Vector4::inverse() const {
 	return Vector4(1.0f / x, 1.0f / y, 1.0f / z, 1.0f / w);
-}
-
-Vector4::Axis Vector4::min_axis_index() const {
-	uint32_t min_index = 0;
-	real_t min_value = x;
-	for (uint32_t i = 1; i < 4; i++) {
-		if (operator[](i) <= min_value) {
-			min_index = i;
-			min_value = operator[](i);
-		}
-	}
-	return Vector4::Axis(min_index);
-}
-
-Vector4::Axis Vector4::max_axis_index() const {
-	uint32_t max_index = 0;
-	real_t max_value = x;
-	for (uint32_t i = 1; i < 4; i++) {
-		if (operator[](i) > max_value) {
-			max_index = i;
-			max_value = operator[](i);
-		}
-	}
-	return Vector4::Axis(max_index);
 }
 
 Vector4 Vector4::clamp(const Vector4 &p_min, const Vector4 &p_max) const {

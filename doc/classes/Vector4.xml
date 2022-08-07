@@ -63,6 +63,30 @@
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="cubic_interpolate" qualifiers="const">
+			<return type="Vector4" />
+			<argument index="0" name="b" type="Vector4" />
+			<argument index="1" name="pre_a" type="Vector4" />
+			<argument index="2" name="post_b" type="Vector4" />
+			<argument index="3" name="weight" type="float" />
+			<description>
+				Performs a cubic interpolation between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="direction_to" qualifiers="const">
+			<return type="Vector4" />
+			<argument index="0" name="to" type="Vector4" />
+			<description>
+				Returns the normalized vector pointing from this vector to [code]to[/code]. This is equivalent to using [code](b - a).normalized()[/code].
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="to" type="Vector4" />
+			<description>
+				Returns the distance between this vector and [code]to[/code].
+			</description>
+		</method>
 		<method name="dot" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="with" type="Vector4" />
@@ -133,6 +157,20 @@
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
+		<method name="posmod" qualifiers="const">
+			<return type="Vector4" />
+			<argument index="0" name="mod" type="float" />
+			<description>
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]mod[/code].
+			</description>
+		</method>
+		<method name="posmodv" qualifiers="const">
+			<return type="Vector4" />
+			<argument index="0" name="modv" type="Vector4" />
+			<description>
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]modv[/code]'s components.
+			</description>
+		</method>
 		<method name="round" qualifiers="const">
 			<return type="Vector4" />
 			<description>
@@ -143,6 +181,13 @@
 			<return type="Vector4" />
 			<description>
 				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="snapped" qualifiers="const">
+			<return type="Vector4" />
+			<argument index="0" name="step" type="Vector4" />
+			<description>
+				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
