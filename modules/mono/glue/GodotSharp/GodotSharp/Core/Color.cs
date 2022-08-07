@@ -916,7 +916,7 @@ namespace Godot
         /// <c>new Color(1 - c.r, 1 - c.g, 1 - c.b, 1 - c.a)</c>.
         /// </summary>
         /// <param name="color">The color to invert.</param>
-        /// <returns>The inverted color</returns>
+        /// <returns>The inverted color.</returns>
         public static Color operator -(Color color)
         {
             return Colors.White - color;
