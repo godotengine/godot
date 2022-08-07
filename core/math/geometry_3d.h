@@ -37,29 +37,24 @@
 
 class Geometry3D {
 public:
-	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
-// Do the function 'd' as defined by pb. I think it's a dot product of some sort.
-#define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
+	static void get_closest_points_between_segments(const Vector3 &a1, const Vector3 &a2, const Vector3 &b1, const Vector3 &b2, Vector3 &c1, Vector3 &c2) {
+// Calculates the dot product of  NM  and  PO  vectors. 
+#define dot_4(M, N, O, P) ((M.x - N.x) * (O.x - P.x)  +  (M.y - N.y) * (O.y - P.y)  +  (M.z - N.z) * (O.z - P.z))
 
 		// Calculate the parametric position on the 2 curves, mua and mub.
-		real_t mua = (d_of(p1, q1, q2, q1) * d_of(q2, q1, p2, p1) - d_of(p1, q1, p2, p1) * d_of(q2, q1, q2, q1)) / (d_of(p2, p1, p2, p1) * d_of(q2, q1, q2, q1) - d_of(q2, q1, p2, p1) * d_of(q2, q1, p2, p1));
-		real_t mub = (d_of(p1, q1, q2, q1) + mua * d_of(q2, q1, p2, p1)) / d_of(q2, q1, q2, q1);
+		real_t mua = (dot_4(a1, b1, b2, b1) * dot_4(b2, b1, a2, a1) - dot_4(a1, b1, a2, a1) * dot_4(b2, b1, b2, b1)) /
+					 (dot_4(a2, a1, a2, a1) * dot_4(b2, b1, b2, b1) - dot_4(b2, b1, a2, a1) * dot_4(b2, b1, a2, a1));
+		real_t mub = (dot_4(a1, b1, b2, b1) + mua * dot_4(b2, b1, a2, a1)) / dot_4(b2, b1, b2, b1);
 
-		// Clip the value between [0..1] constraining the solution to lie on the original curves.
-		if (mua < 0) {
-			mua = 0;
-		}
-		if (mub < 0) {
-			mub = 0;
-		}
-		if (mua > 1) {
-			mua = 1;
-		}
-		if (mub > 1) {
-			mub = 1;
-		}
-		c1 = p1.lerp(p2, mua);
-		c2 = q1.lerp(q2, mub);
+		// Clip the value between [0; 1] constraining the solution to lie on the original curves.
+		if (mua < 0) mua = 0;
+		if (mua > 1) mua = 1;
+
+		if (mub < 0) mub = 0;
+		if (mub > 1) mub = 1;
+		
+		c1 = a1.lerp(a2, mua);
+		c2 = b1.lerp(b2, mub);
 	}
 
 	static real_t get_closest_distance_between_segments(const Vector3 &p_from_a, const Vector3 &p_to_a, const Vector3 &p_from_b, const Vector3 &p_to_b) {
