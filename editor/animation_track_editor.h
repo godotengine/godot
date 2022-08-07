@@ -447,9 +447,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	////////////// edit menu stuff
 
 	ConfirmationDialog *optimize_dialog = nullptr;
-	SpinBox *optimize_linear_error = nullptr;
+	SpinBox *optimize_velocity_error = nullptr;
 	SpinBox *optimize_angular_error = nullptr;
-	SpinBox *optimize_max_angle = nullptr;
+	SpinBox *optimize_precision_error = nullptr;
 
 	ConfirmationDialog *cleanup_dialog = nullptr;
 	CheckBox *cleanup_keys = nullptr;

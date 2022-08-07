@@ -5982,7 +5982,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 		case EDIT_OPTIMIZE_ANIMATION_CONFIRM: {
-			animation->optimize(optimize_linear_error->get_value(), optimize_angular_error->get_value(), optimize_max_angle->get_value());
+			animation->optimize(optimize_velocity_error->get_value(), optimize_angular_error->get_value(), optimize_precision_error->get_value());
 			_update_tracks();
 			undo_redo->clear_history();
 
@@ -6457,25 +6457,24 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	VBoxContainer *optimize_vb = memnew(VBoxContainer);
 	optimize_dialog->add_child(optimize_vb);
 
-	optimize_linear_error = memnew(SpinBox);
-	optimize_linear_error->set_max(1.0);
-	optimize_linear_error->set_min(0.001);
-	optimize_linear_error->set_step(0.001);
-	optimize_linear_error->set_value(0.05);
-	optimize_vb->add_margin_child(TTR("Max. Linear Error:"), optimize_linear_error);
+	optimize_velocity_error = memnew(SpinBox);
+	optimize_velocity_error->set_max(1.0);
+	optimize_velocity_error->set_min(0.001);
+	optimize_velocity_error->set_step(0.001);
+	optimize_velocity_error->set_value(0.01);
+	optimize_vb->add_margin_child(TTR("Max. Velocity Error:"), optimize_velocity_error);
 	optimize_angular_error = memnew(SpinBox);
 	optimize_angular_error->set_max(1.0);
 	optimize_angular_error->set_min(0.001);
 	optimize_angular_error->set_step(0.001);
 	optimize_angular_error->set_value(0.01);
-
 	optimize_vb->add_margin_child(TTR("Max. Angular Error:"), optimize_angular_error);
-	optimize_max_angle = memnew(SpinBox);
-	optimize_vb->add_margin_child(TTR("Max Optimizable Angle:"), optimize_max_angle);
-	optimize_max_angle->set_max(360.0);
-	optimize_max_angle->set_min(0.0);
-	optimize_max_angle->set_step(0.1);
-	optimize_max_angle->set_value(22);
+	optimize_precision_error = memnew(SpinBox);
+	optimize_precision_error->set_max(6);
+	optimize_precision_error->set_min(1);
+	optimize_precision_error->set_step(1);
+	optimize_precision_error->set_value(3);
+	optimize_vb->add_margin_child(TTR("Max. Precision Error:"), optimize_precision_error);
 
 	optimize_dialog->set_ok_button_text(TTR("Optimize"));
 	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_OPTIMIZE_ANIMATION_CONFIRM));

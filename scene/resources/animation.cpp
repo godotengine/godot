@@ -3868,316 +3868,208 @@ void Animation::clear() {
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
-bool Animation::_position_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_err, real_t p_allowed_angular_error, const Vector3 &p_norm) {
-	const Vector3 &v0 = t0.value;
-	const Vector3 &v1 = t1.value;
-	const Vector3 &v2 = t2.value;
-
-	if (v0.is_equal_approx(v2)) {
-		//0 and 2 are close, let's see if 1 is close
-		if (!v0.is_equal_approx(v1)) {
-			//not close, not optimizable
-			return false;
-		}
-
-	} else {
-		Vector3 pd = (v2 - v0);
-		real_t d0 = pd.dot(v0);
-		real_t d1 = pd.dot(v1);
-		real_t d2 = pd.dot(v2);
-		if (d1 < d0 || d1 > d2) {
-			return false;
-		}
-
-		Vector3 s[2] = { v0, v2 };
-		real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
-
-		if (d > pd.length() * p_allowed_linear_err) {
-			return false; //beyond allowed error for collinearity
-		}
-
-		if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_allowed_angular_error) {
-			return false;
+bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error) {
+	// Remove overlapping keys.
+	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
+		return true;
+	}
+	if ((t0.value - t1.value).length() < p_allowed_precision_error && (t1.value - t2.value).length() < p_allowed_precision_error) {
+		return true;
+	}
+	// Calc velocities.
+	Vector3 vc0 = (t1.value - t0.value) / (t1.time - t0.time);
+	Vector3 vc1 = (t2.value - t1.value) / (t2.time - t1.time);
+	real_t v0 = vc0.length();
+	real_t v1 = vc1.length();
+	// Avoid zero div but check equality.
+	if (abs(v0 - v1) < p_allowed_precision_error) {
+		return true;
+	} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
+		return false;
+	}
+	// Check axis.
+	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
+		real_t ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		if (ratio >= 1.0 - p_allowed_velocity_err) {
+			return true;
 		}
 	}
-
-	return true;
+	return false;
 }
 
-bool Animation::_rotation_track_optimize_key(const TKey<Quaternion> &t0, const TKey<Quaternion> &t1, const TKey<Quaternion> &t2, real_t p_allowed_angular_error, float p_max_optimizable_angle) {
-	const Quaternion &q0 = t0.value;
-	const Quaternion &q1 = t1.value;
-	const Quaternion &q2 = t2.value;
-
-	//localize both to rotation from q0
-
-	if (q0.is_equal_approx(q2)) {
-		if (!q0.is_equal_approx(q1)) {
+bool Animation::_quaternion_track_optimize_key(const TKey<Quaternion> t0, const TKey<Quaternion> t1, const TKey<Quaternion> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error) {
+	// Remove overlapping keys.
+	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
+		return true;
+	}
+	if ((t0.value - t1.value).length() < p_allowed_precision_error && (t1.value - t2.value).length() < p_allowed_precision_error) {
+		return true;
+	}
+	// Check axis.
+	Quaternion q0 = t0.value * t1.value * t0.value.inverse();
+	Quaternion q1 = t1.value * t2.value * t1.value.inverse();
+	if (q0.get_axis().dot(q1.get_axis()) >= 1.0 - p_allowed_angular_error * 2.0) {
+		// Calc velocities.
+		real_t v0 = Math::acos(t0.value.dot(t1.value)) / (t1.time - t0.time);
+		real_t v1 = Math::acos(t1.value.dot(t2.value)) / (t2.time - t1.time);
+		// Avoid zero div but check equality.
+		if (abs(v0 - v1) < p_allowed_precision_error) {
+			return true;
+		} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
 			return false;
 		}
-
-	} else {
-		Quaternion r02 = (q0.inverse() * q2).normalized();
-		Quaternion r01 = (q0.inverse() * q1).normalized();
-
-		Vector3 v02, v01;
-		real_t a02, a01;
-
-		r02.get_axis_angle(v02, a02);
-		r01.get_axis_angle(v01, a01);
-
-		if (Math::abs(a02) > p_max_optimizable_angle) {
-			return false;
-		}
-
-		if (v01.dot(v02) < 0) {
-			//make sure both rotations go the same way to compare
-			v02 = -v02;
-			a02 = -a02;
-		}
-
-		real_t err_01 = Math::acos(v01.normalized().dot(v02.normalized())) / Math_PI;
-		if (err_01 > p_allowed_angular_error) {
-			//not rotating in the same axis
-			return false;
-		}
-
-		if (a01 * a02 < 0) {
-			//not rotating in the same direction
-			return false;
-		}
-
-		real_t tr = a01 / a02;
-		if (tr < 0 || tr > 1) {
-			return false; //rotating too much or too less
+		real_t ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		if (ratio >= 1.0 - p_allowed_velocity_err) {
+			return true;
 		}
 	}
-
-	return true;
+	return false;
 }
 
-bool Animation::_scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_error) {
-	const Vector3 &v0 = t0.value;
-	const Vector3 &v1 = t1.value;
-	const Vector3 &v2 = t2.value;
-
-	if (v0.is_equal_approx(v2)) {
-		//0 and 2 are close, let's see if 1 is close
-		if (!v0.is_equal_approx(v1)) {
-			//not close, not optimizable
-			return false;
-		}
-
-	} else {
-		Vector3 pd = (v2 - v0);
-		real_t d0 = pd.dot(v0);
-		real_t d1 = pd.dot(v1);
-		real_t d2 = pd.dot(v2);
-		if (d1 < d0 || d1 > d2) {
-			return false; //beyond segment range
-		}
-
-		Vector3 s[2] = { v0, v2 };
-		real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
-
-		if (d > pd.length() * p_allowed_linear_error) {
-			return false; //beyond allowed error for colinearity
+bool Animation::_float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error) {
+	// Remove overlapping keys.
+	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
+		return true;
+	}
+	if (abs(t0.value - t1.value) < p_allowed_precision_error && abs(t1.value - t2.value) < p_allowed_precision_error) {
+		return true;
+	}
+	// Calc velocities.
+	real_t v0 = (t1.value - t0.value) / (t1.time - t0.time);
+	real_t v1 = (t2.value - t1.value) / (t2.time - t1.time);
+	// Avoid zero div but check equality.
+	if (abs(v0 - v1) < p_allowed_precision_error) {
+		return true;
+	} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
+		return false;
+	}
+	if (!signbit(v0 * v1)) {
+		real_t ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		if (ratio >= 1.0 - p_allowed_velocity_err) {
+			return true;
 		}
 	}
-
-	return true;
+	return false;
 }
 
-bool Animation::_blend_shape_track_optimize_key(const TKey<float> &t0, const TKey<float> &t1, const TKey<float> &t2, real_t p_allowed_unit_error) {
-	float v0 = t0.value;
-	float v1 = t1.value;
-	float v2 = t2.value;
-
-	if (Math::is_equal_approx(v1, v2, (float)p_allowed_unit_error)) {
-		//0 and 2 are close, let's see if 1 is close
-		if (!Math::is_equal_approx(v0, v1, (float)p_allowed_unit_error)) {
-			//not close, not optimizable
-			return false;
-		}
-	} else {
-		/*
-		TODO eventually discuss a way to optimize these better.
-		float pd = (v2 - v0);
-		real_t d0 = pd.dot(v0);
-		real_t d1 = pd.dot(v1);
-		real_t d2 = pd.dot(v2);
-		if (d1 < d0 || d1 > d2) {
-			return false; //beyond segment range
-		}
-
-		float s[2] = { v0, v2 };
-		real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
-
-		if (d > pd.length() * p_allowed_linear_error) {
-			return false; //beyond allowed error for colinearity
-		}
-*/
-	}
-
-	return true;
-}
-
-void Animation::_position_track_optimize(int p_idx, real_t p_allowed_linear_err, real_t p_allowed_angular_err) {
+void Animation::_position_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_POSITION_3D);
 	PositionTrack *tt = static_cast<PositionTrack *>(tracks[p_idx]);
-	bool prev_erased = false;
-	TKey<Vector3> first_erased;
 
-	Vector3 norm;
+	int i = 0;
+	while (i < tt->positions.size() - 2) {
+		TKey<Vector3> t0 = tt->positions[i];
+		TKey<Vector3> t1 = tt->positions[i + 1];
+		TKey<Vector3> t2 = tt->positions[i + 2];
 
-	for (int i = 1; i < tt->positions.size() - 1; i++) {
-		TKey<Vector3> &t0 = tt->positions.write[i - 1];
-		TKey<Vector3> &t1 = tt->positions.write[i];
-		TKey<Vector3> &t2 = tt->positions.write[i + 1];
-
-		bool erase = _position_track_optimize_key(t0, t1, t2, p_allowed_linear_err, p_allowed_angular_err, norm);
-		if (erase && !prev_erased) {
-			norm = (t2.value - t1.value).normalized();
-		}
-
-		if (prev_erased && !_position_track_optimize_key(t0, first_erased, t2, p_allowed_linear_err, p_allowed_angular_err, norm)) {
-			//avoid error to go beyond first erased key
-			erase = false;
-		}
-
+		bool erase = _vector3_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 		if (erase) {
-			if (!prev_erased) {
-				first_erased = t1;
-				prev_erased = true;
-			}
-
-			tt->positions.remove_at(i);
-			i--;
-
+			tt->positions.remove_at(i + 1);
 		} else {
-			prev_erased = false;
-			norm = Vector3();
+			i++;
+		}
+	}
+
+	if (tt->positions.size() == 2) {
+		if ((tt->positions[0].value - tt->positions[1].value).length() < p_allowed_precision_error) {
+			tt->positions.remove_at(1);
 		}
 	}
 }
 
-void Animation::_rotation_track_optimize(int p_idx, real_t p_allowed_angular_err, real_t p_max_optimizable_angle) {
+void Animation::_rotation_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_ROTATION_3D);
 	RotationTrack *tt = static_cast<RotationTrack *>(tracks[p_idx]);
-	bool prev_erased = false;
-	TKey<Quaternion> first_erased;
 
-	for (int i = 1; i < tt->rotations.size() - 1; i++) {
-		TKey<Quaternion> &t0 = tt->rotations.write[i - 1];
-		TKey<Quaternion> &t1 = tt->rotations.write[i];
-		TKey<Quaternion> &t2 = tt->rotations.write[i + 1];
+	int i = 0;
+	while (i < tt->rotations.size() - 2) {
+		TKey<Quaternion> t0 = tt->rotations[i];
+		TKey<Quaternion> t1 = tt->rotations[i + 1];
+		TKey<Quaternion> t2 = tt->rotations[i + 2];
 
-		bool erase = _rotation_track_optimize_key(t0, t1, t2, p_allowed_angular_err, p_max_optimizable_angle);
-
-		if (prev_erased && !_rotation_track_optimize_key(t0, first_erased, t2, p_allowed_angular_err, p_max_optimizable_angle)) {
-			//avoid error to go beyond first erased key
-			erase = false;
-		}
-
+		bool erase = _quaternion_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 		if (erase) {
-			if (!prev_erased) {
-				first_erased = t1;
-				prev_erased = true;
-			}
-
-			tt->rotations.remove_at(i);
-			i--;
-
+			tt->rotations.remove_at(i + 1);
 		} else {
-			prev_erased = false;
+			i++;
+		}
+	}
+
+	if (tt->rotations.size() == 2) {
+		if ((tt->rotations[0].value - tt->rotations[1].value).length() < p_allowed_precision_error) {
+			tt->rotations.remove_at(1);
 		}
 	}
 }
 
-void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_linear_err) {
+void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_SCALE_3D);
 	ScaleTrack *tt = static_cast<ScaleTrack *>(tracks[p_idx]);
-	bool prev_erased = false;
-	TKey<Vector3> first_erased;
 
-	for (int i = 1; i < tt->scales.size() - 1; i++) {
-		TKey<Vector3> &t0 = tt->scales.write[i - 1];
-		TKey<Vector3> &t1 = tt->scales.write[i];
-		TKey<Vector3> &t2 = tt->scales.write[i + 1];
+	int i = 0;
+	while (i < tt->scales.size() - 2) {
+		TKey<Vector3> t0 = tt->scales[i];
+		TKey<Vector3> t1 = tt->scales[i + 1];
+		TKey<Vector3> t2 = tt->scales[i + 2];
 
-		bool erase = _scale_track_optimize_key(t0, t1, t2, p_allowed_linear_err);
-
-		if (prev_erased && !_scale_track_optimize_key(t0, first_erased, t2, p_allowed_linear_err)) {
-			//avoid error to go beyond first erased key
-			erase = false;
-		}
-
+		bool erase = _vector3_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 		if (erase) {
-			if (!prev_erased) {
-				first_erased = t1;
-				prev_erased = true;
-			}
-
-			tt->scales.remove_at(i);
-			i--;
-
+			tt->scales.remove_at(i + 1);
 		} else {
-			prev_erased = false;
+			i++;
+		}
+	}
+
+	if (tt->scales.size() == 2) {
+		if ((tt->scales[0].value - tt->scales[1].value).length() < p_allowed_precision_error) {
+			tt->scales.remove_at(1);
 		}
 	}
 }
 
-void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_linear_err) {
+void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_BLEND_SHAPE);
 	BlendShapeTrack *tt = static_cast<BlendShapeTrack *>(tracks[p_idx]);
-	bool prev_erased = false;
-	TKey<float> first_erased;
-	first_erased.value = 0.0;
 
-	for (int i = 1; i < tt->blend_shapes.size() - 1; i++) {
-		TKey<float> &t0 = tt->blend_shapes.write[i - 1];
-		TKey<float> &t1 = tt->blend_shapes.write[i];
-		TKey<float> &t2 = tt->blend_shapes.write[i + 1];
+	int i = 0;
+	while (i < tt->blend_shapes.size() - 2) {
+		TKey<float> t0 = tt->blend_shapes[i];
+		TKey<float> t1 = tt->blend_shapes[i + 1];
+		TKey<float> t2 = tt->blend_shapes[i + 2];
 
-		bool erase = _blend_shape_track_optimize_key(t0, t1, t2, p_allowed_linear_err);
-
-		if (prev_erased && !_blend_shape_track_optimize_key(t0, first_erased, t2, p_allowed_linear_err)) {
-			//avoid error to go beyond first erased key
-			erase = false;
-		}
-
+		bool erase = _float_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_precision_error);
 		if (erase) {
-			if (!prev_erased) {
-				first_erased = t1;
-				prev_erased = true;
-			}
-
-			tt->blend_shapes.remove_at(i);
-			i--;
-
+			tt->blend_shapes.remove_at(i + 1);
 		} else {
-			prev_erased = false;
+			i++;
+		}
+	}
+
+	if (tt->blend_shapes.size() == 2) {
+		if (abs(tt->blend_shapes[0].value - tt->blend_shapes[1].value) < p_allowed_precision_error) {
+			tt->blend_shapes.remove_at(1);
 		}
 	}
 }
 
-void Animation::optimize(real_t p_allowed_linear_err, real_t p_allowed_angular_err, real_t p_max_optimizable_angle) {
+void Animation::optimize(real_t p_allowed_velocity_err, real_t p_allowed_angular_err, int p_precision) {
+	real_t precision = Math::pow(0.1, p_precision);
 	for (int i = 0; i < tracks.size(); i++) {
 		if (track_is_compressed(i)) {
 			continue; //not possible to optimize compressed track
 		}
 		if (tracks[i]->type == TYPE_POSITION_3D) {
-			_position_track_optimize(i, p_allowed_linear_err, p_allowed_angular_err);
+			_position_track_optimize(i, p_allowed_velocity_err, p_allowed_angular_err, precision);
 		} else if (tracks[i]->type == TYPE_ROTATION_3D) {
-			_rotation_track_optimize(i, p_allowed_angular_err, p_max_optimizable_angle);
+			_rotation_track_optimize(i, p_allowed_velocity_err, p_allowed_angular_err, precision);
 		} else if (tracks[i]->type == TYPE_SCALE_3D) {
-			_scale_track_optimize(i, p_allowed_linear_err);
+			_scale_track_optimize(i, p_allowed_velocity_err, p_allowed_angular_err, precision);
 		} else if (tracks[i]->type == TYPE_BLEND_SHAPE) {
-			_blend_shape_track_optimize(i, p_allowed_linear_err);
+			_blend_shape_track_optimize(i, p_allowed_velocity_err, precision);
 		}
 	}
 }
