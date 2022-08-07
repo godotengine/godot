@@ -66,6 +66,9 @@ namespace GodotTools.Ides.Rider
             if (string.IsNullOrEmpty(path))
                 return false;
 
+            if (path.IndexOfAny(System.IO.Path.GetInvalidPathChars()) != -1)
+                return false;
+
             var fileInfo = new FileInfo(path);
             string filename = fileInfo.Name.ToLowerInvariant();
             return filename.StartsWith("rider", StringComparison.Ordinal);
