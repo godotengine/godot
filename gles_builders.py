@@ -19,7 +19,6 @@ class LegacyGLHeaderStruct:
         self.enums = {}
         self.texunits = []
         self.texunit_names = []
-        self.shadow_texunits = []
         self.ubos = []
         self.ubo_names = []
 
@@ -107,8 +106,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
                 if not x in header_data.texunit_names:
                     header_data.texunits += [(x, texunit)]
-                    if line.find("sampler2DShadow") != -1:
-                        header_data.shadow_texunits += [texunit]
                     header_data.texunit_names += [x]
 
         elif line.find("uniform") != -1 and line.lower().find("ubo:") != -1:
@@ -486,15 +483,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     else:
         fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
 
-    if not gles2:
-        if header_data.shadow_texunits:
-            fd.write("\t\tstatic int _shadow_texunits[]={")
-            for x in header_data.shadow_texunits:
-                fd.write(str(x) + ',')
-            fd.write("};\n\n")
-        else:
-            fd.write("\t\tstatic int *_shadow_texunits=NULL;\n")
-
     if not gles2 and header_data.ubos:
         fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
         for x in header_data.ubos:
@@ -549,8 +537,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
                 + str(len(header_data.attributes))
                 + ", _texunit_pairs,"
                 + str(len(header_data.texunits))
-                + ", _shadow_texunits,"
-                + str(len(header_data.shadow_texunits))
                 + ",_ubo_pairs,"
                 + str(len(header_data.ubos))
                 + ",_feedbacks,"
@@ -580,8 +566,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
                 + str(len(header_data.uniforms))
                 + ",_texunit_pairs,"
                 + str(len(header_data.texunits))
-                + ",_shadow_texunits,"
-                + str(len(header_data.shadow_texunits))
                 + ",_enums,"
                 + str(len(header_data.enums))
                 + ",_enum_values,"

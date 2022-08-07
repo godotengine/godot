@@ -8369,7 +8369,7 @@ void RasterizerStorageGLES3::initialize() {
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, !ggx_hq);
 	shaders.particles.init();
 	if (config.async_compilation_enabled) {
-		shaders.particles.init_async_compilation(resources.depth_tex);
+		shaders.particles.init_async_compilation();
 	}
 
 #ifdef GLES_OVER_GL
