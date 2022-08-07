@@ -9,6 +9,16 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="correct_posture" qualifiers="static">
+			<return type="Transform3D" />
+			<param index="0" name="transform" type="Transform3D" />
+			<param index="1" name="rotation_mode" type="int" enum="PathFollow3D.RotationMode" />
+			<description>
+				Correct the [code]transform[/code]. [code]rotation_mode[/code] implicitly specifies how posture (forward, up and sideway direction) is caculated.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="cubic_interp" type="bool" setter="set_cubic_interpolation" getter="get_cubic_interpolation" default="true">
 			If [code]true[/code], the position between two cached points is interpolated cubically, and linearly otherwise.
@@ -29,6 +39,9 @@
 		</member>
 		<member name="rotation_mode" type="int" setter="set_rotation_mode" getter="get_rotation_mode" enum="PathFollow3D.RotationMode" default="3">
 			Allows or forbids rotation on one or more axes, depending on the [enum RotationMode] constants being used.
+		</member>
+		<member name="tilt_enabled" type="bool" setter="set_tilt_enabled" getter="is_tilt_enabled" default="true">
+			If [code]true[/code], the tilt property of [Curve3D] takes effect.
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The node's offset perpendicular to the curve.

@@ -72,14 +72,16 @@ public:
 		ROTATION_ORIENTED
 	};
 
+	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
+
 private:
 	Path3D *path = nullptr;
-	real_t prev_offset = 0.0; // Offset during the last _update_transform.
 	real_t progress = 0.0;
 	real_t h_offset = 0.0;
 	real_t v_offset = 0.0;
 	bool cubic = true;
 	bool loop = true;
+	bool tilt_enabled = true;
 	RotationMode rotation_mode = ROTATION_XYZ;
 
 	void _update_transform(bool p_update_xyz_rot = true);
@@ -105,6 +107,9 @@ public:
 
 	void set_loop(bool p_loop);
 	bool has_loop() const;
+
+	void set_tilt_enabled(bool p_enable);
+	bool is_tilt_enabled() const;
 
 	void set_rotation_mode(RotationMode p_rotation_mode);
 	RotationMode get_rotation_mode() const;

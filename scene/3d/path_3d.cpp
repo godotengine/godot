@@ -182,124 +182,30 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	if (bl == 0.0) {
 		return;
 	}
-	real_t bi = c->get_bake_interval();
-	real_t o_next = progress + bi;
-	real_t o_prev = progress - bi;
 
-	if (loop) {
-		o_next = Math::fposmod(o_next, bl);
-		o_prev = Math::fposmod(o_prev, bl);
-	} else if (rotation_mode == ROTATION_ORIENTED) {
-		if (o_next >= bl) {
-			o_next = bl;
-		}
-		if (o_prev <= 0) {
-			o_prev = 0;
-		}
-	}
+	Transform3D t;
 
-	Vector3 pos = c->sample_baked(progress, cubic);
-	Transform3D t = get_transform();
-	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
-	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
-
-	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->sample_baked(o_next, cubic) - pos;
-
-		// Try with the previous position
-		if (forward.length_squared() < CMP_EPSILON2) {
-			forward = pos - c->sample_baked(o_prev, cubic);
-		}
-
-		if (forward.length_squared() < CMP_EPSILON2) {
-			forward = Vector3(0, 0, 1);
-		} else {
-			forward.normalize();
-		}
-
-		Vector3 up = c->sample_baked_up_vector(progress, true);
-
-		if (o_next < progress) {
-			Vector3 up1 = c->sample_baked_up_vector(o_next, true);
-			Vector3 axis = up.cross(up1);
-
-			if (axis.length_squared() < CMP_EPSILON2) {
-				axis = forward;
-			} else {
-				axis.normalize();
-			}
-
-			up.rotate(axis, up.angle_to(up1) * 0.5f);
-		}
-
-		Vector3 scale = t.basis.get_scale();
-		Vector3 sideways = up.cross(forward).normalized();
-		up = forward.cross(sideways).normalized();
-
-		t.basis.set_columns(sideways, up, forward);
-		t.basis.scale_local(scale);
-
-		t.origin = pos + sideways * h_offset + up * v_offset;
-	} else if (rotation_mode != ROTATION_NONE) {
-		// perform parallel transport
-		//
-		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
-		// for a discussion about why not Frenet frame.
-
+	if (rotation_mode == ROTATION_NONE) {
+		Vector3 pos = c->sample_baked(progress, cubic);
 		t.origin = pos;
-		if (p_update_xyz_rot && prev_offset != progress) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
-			real_t sample_distance = bi * 0.01;
-			Vector3 t_prev_pos_a = c->sample_baked(prev_offset - sample_distance, cubic);
-			Vector3 t_prev_pos_b = c->sample_baked(prev_offset + sample_distance, cubic);
-			Vector3 t_cur_pos_a = c->sample_baked(progress - sample_distance, cubic);
-			Vector3 t_cur_pos_b = c->sample_baked(progress + sample_distance, cubic);
-			Vector3 t_prev = (t_prev_pos_a - t_prev_pos_b).normalized();
-			Vector3 t_cur = (t_cur_pos_a - t_cur_pos_b).normalized();
-
-			Vector3 axis = t_prev.cross(t_cur);
-			real_t dot = t_prev.dot(t_cur);
-			real_t angle = Math::acos(CLAMP(dot, -1, 1));
-
-			if (likely(!Math::is_zero_approx(angle))) {
-				if (rotation_mode == ROTATION_Y) {
-					// assuming we're referring to global Y-axis. is this correct?
-					axis.x = 0;
-					axis.z = 0;
-				} else if (rotation_mode == ROTATION_XY) {
-					axis.z = 0;
-				} else if (rotation_mode == ROTATION_XYZ) {
-					// all components are allowed
-				}
-
-				if (likely(!Math::is_zero_approx(axis.length()))) {
-					t.rotate_basis(axis.normalized(), angle);
-				}
-			}
-
-			// do the additional tilting
-			real_t tilt_angle = c->sample_baked_tilt(progress);
-			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
-
-			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
-				if (rotation_mode == ROTATION_Y) {
-					tilt_axis.x = 0;
-					tilt_axis.z = 0;
-				} else if (rotation_mode == ROTATION_XY) {
-					tilt_axis.z = 0;
-				} else if (rotation_mode == ROTATION_XYZ) {
-					// all components are allowed
-				}
-
-				if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
-					t.rotate_basis(tilt_axis.normalized(), tilt_angle);
-				}
-			}
-		}
-
-		t.translate_local(Vector3(h_offset, v_offset, 0));
 	} else {
-		t.origin = pos + Vector3(h_offset, v_offset, 0);
+		t = c->sample_baked_with_rotation(progress, cubic, false);
+		Vector3 forward = t.basis.get_column(2); // Retain tangent for applying tilt
+		t = PathFollow3D::correct_posture(t, rotation_mode);
+
+		// Apply tilt *after* correct_posture
+		if (tilt_enabled) {
+			const real_t tilt = c->sample_baked_tilt(progress);
+
+			const Basis twist(forward, tilt);
+			t.basis = twist * t.basis;
+		}
 	}
+
+	Vector3 scale = get_transform().basis.get_scale();
+
+	t.translate_local(Vector3(h_offset, v_offset, 0));
+	t.basis.scale_local(scale);
 
 	set_transform(t);
 }
@@ -358,6 +264,38 @@ PackedStringArray PathFollow3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+Transform3D PathFollow3D::correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode) {
+	Transform3D t = p_transform;
+
+	// Modify frame according to rotation mode.
+	if (p_rotation_mode == PathFollow3D::ROTATION_NONE) {
+		// Clear rotation.
+		t.basis = Basis();
+	} else if (p_rotation_mode == PathFollow3D::ROTATION_ORIENTED) {
+		// Y-axis always straight up.
+		Vector3 up(0.0, 1.0, 0.0);
+		Vector3 forward = t.basis.get_column(2);
+
+		t.basis = Basis::looking_at(-forward, up);
+	} else {
+		// Lock some euler axes.
+		Vector3 euler = t.basis.get_euler_normalized(EulerOrder::YXZ);
+		if (p_rotation_mode == PathFollow3D::ROTATION_Y) {
+			// Only Y-axis allowed.
+			euler[0] = 0;
+			euler[2] = 0;
+		} else if (p_rotation_mode == PathFollow3D::ROTATION_XY) {
+			// XY allowed.
+			euler[2] = 0;
+		}
+
+		Basis locked = Basis::from_euler(euler, EulerOrder::YXZ);
+		t.basis = locked;
+	}
+
+	return t;
+}
+
 void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow3D::set_progress);
 	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow3D::get_progress);
@@ -380,6 +318,11 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
+	ClassDB::bind_method(D_METHOD("set_tilt_enabled", "enabled"), &PathFollow3D::set_tilt_enabled);
+	ClassDB::bind_method(D_METHOD("is_tilt_enabled"), &PathFollow3D::is_tilt_enabled);
+
+	ClassDB::bind_static_method("PathFollow3D", D_METHOD("correct_posture", "transform", "rotation_mode"), &PathFollow3D::correct_posture);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:m"), "set_progress", "get_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
@@ -387,6 +330,7 @@ void PathFollow3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tilt_enabled"), "set_tilt_enabled", "is_tilt_enabled");
 
 	BIND_ENUM_CONSTANT(ROTATION_NONE);
 	BIND_ENUM_CONSTANT(ROTATION_Y);
@@ -397,7 +341,6 @@ void PathFollow3D::_bind_methods() {
 
 void PathFollow3D::set_progress(real_t p_progress) {
 	ERR_FAIL_COND(!isfinite(p_progress));
-	prev_offset = progress;
 	progress = p_progress;
 
 	if (path) {
@@ -409,8 +352,6 @@ void PathFollow3D::set_progress(real_t p_progress) {
 				if (!Math::is_zero_approx(p_progress) && Math::is_zero_approx(progress)) {
 					progress = path_length;
 				}
-			} else {
-				progress = CLAMP(progress, 0, path_length);
 			}
 		}
 
@@ -475,4 +416,12 @@ void PathFollow3D::set_loop(bool p_loop) {
 
 bool PathFollow3D::has_loop() const {
 	return loop;
+}
+
+void PathFollow3D::set_tilt_enabled(bool p_enable) {
+	tilt_enabled = p_enable;
+}
+
+bool PathFollow3D::is_tilt_enabled() const {
+	return tilt_enabled;
 }

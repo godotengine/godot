@@ -238,11 +238,6 @@ class Curve3D : public Resource {
 
 	Vector<Point> points;
 
-	struct BakedPoint {
-		real_t ofs = 0.0;
-		Vector3 point;
-	};
-
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector3Array baked_point_cache;
 	mutable Vector<real_t> baked_tilt_cache;
@@ -253,6 +248,15 @@ class Curve3D : public Resource {
 	void mark_dirty();
 
 	void _bake() const;
+
+	struct Interval {
+		int idx;
+		real_t frac;
+	};
+	Interval _find_interval(real_t p_offset) const;
+	Vector3 _sample_baked(Interval p_interval, bool p_cubic) const;
+	real_t _sample_baked_tilt(Interval p_interval) const;
+	Basis _sample_posture(Interval p_interval, bool p_apply_tilt = false) const;
 
 	real_t bake_interval = 0.2;
 	bool up_vector_enabled = true;
@@ -296,9 +300,10 @@ public:
 
 	real_t get_baked_length() const;
 	Vector3 sample_baked(real_t p_offset, bool p_cubic = false) const;
+	Transform3D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false, bool p_apply_tilt = false) const;
 	real_t sample_baked_tilt(real_t p_offset) const;
 	Vector3 sample_baked_up_vector(real_t p_offset, bool p_apply_tilt = false) const;
-	PackedVector3Array get_baked_points() const; //useful for going through
+	PackedVector3Array get_baked_points() const; // Useful for going through.
 	Vector<real_t> get_baked_tilts() const; //useful for going through
 	PackedVector3Array get_baked_up_vectors() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
