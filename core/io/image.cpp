@@ -965,6 +965,7 @@ bool Image::is_size_po2() const {
 
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
+	ERR_FAIL_INDEX((int)p_interpolation, (int)INTERPOLATE_MAX);
 
 	int w = next_power_of_2(width);
 	int h = next_power_of_2(height);
@@ -992,6 +993,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
+	ERR_FAIL_INDEX((int)p_interpolation, (int)INTERPOLATE_MAX);
 
 	if (p_width == width && p_height == height) {
 		return;
@@ -1272,6 +1274,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 				}
 			}
 		} break;
+		default:
+			break;
 	}
 
 	if (interpolate_mipmaps) {
@@ -1339,17 +1343,18 @@ void Image::crop(int p_width, int p_height) {
 	crop_from_point(0, 0, p_width, p_height);
 }
 
-void Image::rotate_90(ClockDirection p_direction) {
+void Image::rotate_90(ClockDirection p_direction, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
 	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
 	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
+	ERR_FAIL_INDEX((int)p_interpolation, (int)INTERPOLATE_MAX);
 
 	int saved_width = height;
 	int saved_height = width;
 
 	if (width != height) {
 		int n = MAX(width, height);
-		resize(n, n, INTERPOLATE_NEAREST);
+		resize(n, n, p_interpolation);
 	}
 
 	bool used_mipmaps = has_mipmaps();
@@ -1403,7 +1408,7 @@ void Image::rotate_90(ClockDirection p_direction) {
 	}
 
 	if (saved_width != saved_height) {
-		resize(saved_width, saved_height, INTERPOLATE_NEAREST);
+		resize(saved_width, saved_height, p_interpolation);
 	} else if (used_mipmaps) {
 		generate_mipmaps();
 	}
@@ -3319,7 +3324,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
 
-	ClassDB::bind_method(D_METHOD("rotate_90", "direction"), &Image::rotate_90);
+	ClassDB::bind_method(D_METHOD("rotate_90", "direction", "interpolation"), &Image::rotate_90, DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("rotate_180"), &Image::rotate_180);
 
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
@@ -3406,6 +3411,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATE_CUBIC);
 	BIND_ENUM_CONSTANT(INTERPOLATE_TRILINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATE_LANCZOS);
+	BIND_ENUM_CONSTANT(INTERPOLATE_MAX);
 
 	BIND_ENUM_CONSTANT(ALPHA_NONE);
 	BIND_ENUM_CONSTANT(ALPHA_BIT);

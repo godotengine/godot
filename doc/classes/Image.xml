@@ -387,8 +387,9 @@
 		<method name="rotate_90">
 			<return type="void" />
 			<argument index="0" name="direction" type="int" enum="ClockDirection" />
+			<argument index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Rotates the image in the specified [code]direction[/code] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
+				Rotates the image in the specified [code]direction[/code] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized using the specified [code]interpolation[/code].
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">
@@ -667,6 +668,9 @@
 		</constant>
 		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
 			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscalng images.
+		</constant>
+		<constant name="INTERPOLATE_MAX" value="5" enum="Interpolation">
+			Represents the size of the [enum Interpolation] enum.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 			Image does not have alpha.
