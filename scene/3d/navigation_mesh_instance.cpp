@@ -94,7 +94,7 @@ real_t NavigationMeshInstance::get_enter_cost() const {
 void NavigationMeshInstance::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
 	travel_cost = MAX(p_travel_cost, 0.0);
-	NavigationServer::get_singleton()->region_set_enter_cost(region, travel_cost);
+	NavigationServer::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
 real_t NavigationMeshInstance::get_travel_cost() const {
