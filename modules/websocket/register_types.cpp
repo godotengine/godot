@@ -33,11 +33,13 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 
+#include "websocket_client.h"
+#include "websocket_server.h"
+
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
 #include "emws_client.h"
 #include "emws_peer.h"
-#include "emws_server.h"
 #else
 #include "wsl_client.h"
 #include "wsl_server.h"
@@ -60,7 +62,6 @@ void initialize_websocket_module(ModuleInitializationLevel p_level) {
 #ifdef JAVASCRIPT_ENABLED
 		EMWSPeer::make_default();
 		EMWSClient::make_default();
-		EMWSServer::make_default();
 #else
 		WSLPeer::make_default();
 		WSLClient::make_default();
