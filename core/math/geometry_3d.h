@@ -52,7 +52,7 @@ public:
 
 		if (mub < 0) mub = 0;
 		if (mub > 1) mub = 1;
-		
+
 		r_c1 = p_a1.lerp(p_a2, mua);
 		r_c2 = p_b1.lerp(p_b2, mub);
 	}
