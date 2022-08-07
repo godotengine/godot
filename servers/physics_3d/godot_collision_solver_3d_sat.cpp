@@ -1810,8 +1810,8 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	separator.generate_contacts();
 }
 
-static Vector3 _compute_support(const GodotShape3D* obj1, const GodotShape3D* obj2, const Transform3D& transform, const Vector3& direction) {
-	return obj1->get_support(direction) - transform.xform(obj2->get_support(transform.basis.xform_inv(-direction)));
+static Vector3 _compute_support(const GodotShape3D* obj1, const GodotShape3D* obj2, const Transform3D& transform, const Vector3& direction, real_t total_margin) {
+	return obj1->get_support(direction) - transform.xform(obj2->get_support(transform.basis.xform_inv(-direction))) + total_margin*direction;
 }
 
 template <bool withMargin>
@@ -1867,11 +1867,12 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 		return;
 	}
 	Transform3D transform = p_transform_a.inverse()*p_transform_b;
+	real_t total_margin = (withMargin ? p_margin_a+p_margin_b : 0);
 
 	// Compute a point that is known to be inside the Minkowski difference, and
 	// a ray directed from that point to the origin.
 
-	Vector3 v0 = _compute_support(obj1, obj2, transform, Vector3(1, 0, 0)) + _compute_support(obj1, obj2, transform, Vector3(-1, 0, 0));
+	Vector3 v0 = _compute_support(obj1, obj2, transform, Vector3(1, 0, 0), total_margin) + _compute_support(obj1, obj2, transform, Vector3(-1, 0, 0), total_margin);
 	if (v0 == Vector3(0, 0, 0)) {
 		// This is a pathological case: the two objects are directly on top of
 		// each other with their centers at exactly the same place. Just
@@ -1884,7 +1885,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 	// Select three points that define the initial portal.
 
 	Vector3 dir1 = -v0.normalized();
-	Vector3 v1 = _compute_support(obj1, obj2, transform, dir1);
+	Vector3 v1 = _compute_support(obj1, obj2, transform, dir1, total_margin);
 	if (v1.dot(dir1) <= 0.0) {
 		return;
 	}
@@ -1893,7 +1894,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 		return;
 	}
 	Vector3 dir2 = v1.cross(v0).normalized();
-	Vector3 v2 = _compute_support(obj1, obj2, transform, dir2);
+	Vector3 v2 = _compute_support(obj1, obj2, transform, dir2, total_margin);
 	if (v2.dot(dir2) <= 0.0) {
 		return;
 	}
@@ -1907,7 +1908,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 		v2 = swap2;
 		dir3 = -dir3;
 	}
-	Vector3 v3 = _compute_support(obj1, obj2, transform, dir3);
+	Vector3 v3 = _compute_support(obj1, obj2, transform, dir3, total_margin);
 	if (v3.dot(dir3) <= 0.0) {
 		return;
 	}
@@ -1923,7 +1924,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 		else
 			break;
 		dir3 = (v1-v0).cross(v2-v0).normalized();
-		v3 = _compute_support(obj1, obj2, transform, dir3);
+		v3 = _compute_support(obj1, obj2, transform, dir3, total_margin);
 	}
 
 	// We have a portal that the origin ray passes through. Now we need to
@@ -1948,7 +1949,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 			}
 			extra_iterations++;
 		}
-		Vector3 v4 = _compute_support(obj1, obj2, transform, portal_dir);
+		Vector3 v4 = _compute_support(obj1, obj2, transform, portal_dir, total_margin);
 		real_t dist4 = portal_dir.dot(v4);
 		if (dist4 <= 0.0) {
 			return;
