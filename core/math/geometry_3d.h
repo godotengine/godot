@@ -37,14 +37,14 @@
 
 class Geometry3D {
 public:
-	static void get_closest_points_between_segments(const Vector3 &a1, const Vector3 &a2, const Vector3 &b1, const Vector3 &b2, Vector3 &c1, Vector3 &c2) {
+	static void get_closest_points_between_segments(const Vector3 &p_a1, const Vector3 &p_a2, const Vector3 &p_b1, const Vector3 &p_b2, Vector3 &r_c1, Vector3 &r_c2) {
 // Calculates the dot product of  NM  and  PO  vectors. 
 #define dot_4(M, N, O, P) ((M.x - N.x) * (O.x - P.x)  +  (M.y - N.y) * (O.y - P.y)  +  (M.z - N.z) * (O.z - P.z))
 
 		// Calculate the parametric position on the 2 curves, mua and mub.
-		real_t mua = (dot_4(a1, b1, b2, b1) * dot_4(b2, b1, a2, a1) - dot_4(a1, b1, a2, a1) * dot_4(b2, b1, b2, b1)) /
-					 (dot_4(a2, a1, a2, a1) * dot_4(b2, b1, b2, b1) - dot_4(b2, b1, a2, a1) * dot_4(b2, b1, a2, a1));
-		real_t mub = (dot_4(a1, b1, b2, b1) + mua * dot_4(b2, b1, a2, a1)) / dot_4(b2, b1, b2, b1);
+		real_t mua = (dot_4(p_a1, p_b1, p_b2, p_b1) * dot_4(p_b2, p_b1, p_a2, p_a1) - dot_4(p_a1, p_b1, p_a2, p_a1) * dot_4(p_b2, p_b1, p_b2, p_b1)) /
+					 (dot_4(p_a2, p_a1, p_a2, p_a1) * dot_4(p_b2, p_b1, p_b2, p_b1) - dot_4(p_b2, p_b1, p_a2, p_a1) * dot_4(p_b2, p_b1, p_a2, p_a1));
+		real_t mub = (dot_4(p_a1, p_b1, p_b2, p_b1) + mua * dot_4(p_b2, p_b1, p_a2, p_a1)) / dot_4(p_b2, p_b1, p_b2, p_b1);
 
 		// Clip the value between [0; 1] constraining the solution to lie on the original curves.
 		if (mua < 0) mua = 0;
@@ -53,8 +53,8 @@ public:
 		if (mub < 0) mub = 0;
 		if (mub > 1) mub = 1;
 		
-		c1 = a1.lerp(a2, mua);
-		c2 = b1.lerp(b2, mub);
+		r_c1 = p_a1.lerp(p_a2, mua);
+		r_c2 = p_b1.lerp(p_b2, mub);
 	}
 
 	static real_t get_closest_distance_between_segments(const Vector3 &p_from_a, const Vector3 &p_to_a, const Vector3 &p_from_b, const Vector3 &p_to_b) {
