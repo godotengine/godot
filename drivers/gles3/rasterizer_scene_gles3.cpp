@@ -4114,6 +4114,13 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 		state.ubo_data.shadow_atlas_pixel_size[0] = 1.0 / shadow_atlas->size;
 		state.ubo_data.shadow_atlas_pixel_size[1] = 1.0 / shadow_atlas->size;
+	} else {
+		if (storage->config.async_compilation_enabled) {
+			// Avoid GL UB message id 131222 caused by shadow samplers not properly set up in the ubershader
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+			glBindTexture(GL_TEXTURE_2D, storage->resources.depth_tex);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		}
 	}
 
 	if (reflection_atlas && reflection_atlas->size) {
@@ -4869,6 +4876,13 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = zfar;
 	state.ubo_data.opaque_prepass_threshold = 0.1;
 
+	if (storage->config.async_compilation_enabled) {
+		// Avoid GL UB message id 131222 caused by shadow samplers not properly set up in the ubershader
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+		glBindTexture(GL_TEXTURE_2D, storage->resources.depth_tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	}
+
 	_setup_environment(nullptr, light_projection, light_transform);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH, true);
@@ -5300,7 +5314,7 @@ void RasterizerSceneGLES3::initialize() {
 	glFrontFace(GL_CW);
 
 	if (storage->config.async_compilation_enabled) {
-		state.scene_shader.init_async_compilation(storage->resources.depth_tex);
+		state.scene_shader.init_async_compilation();
 	}
 }
 
