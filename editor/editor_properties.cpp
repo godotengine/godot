@@ -507,13 +507,55 @@ void EditorPropertyPath::_path_focus_exited() {
 	_path_selected(path->get_text());
 }
 
+void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	const Dictionary drag_data = p_data;
+	if (!drag_data.has("type")) {
+		return;
+	}
+	if (String(drag_data["type"]) != "files") {
+		return;
+	}
+	const Vector<String> filesPaths = drag_data["files"];
+	if (filesPaths.size() == 0) {
+		return;
+	}
+
+	emit_changed(get_edited_property(), filesPaths[0]);
+	update_property();
+}
+
+bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	const Dictionary drag_data = p_data;
+	if (!drag_data.has("type")) {
+		return false;
+	}
+	if (String(drag_data["type"]) != "files") {
+		return false;
+	}
+	const Vector<String> filesPaths = drag_data["files"];
+	if (filesPaths.size() == 0) {
+		return false;
+	}
+
+	for (const String &extension : extensions) {
+		if (filesPaths[0].ends_with(extension.substr(1, extension.size() - 1))) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void EditorPropertyPath::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorPropertyPath::_can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorPropertyPath::_drop_data_fw);
 }
 
 EditorPropertyPath::EditorPropertyPath() {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	add_child(path_hb);
 	path = memnew(LineEdit);
+	path->set_drag_forwarding(this);
 	path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(path);
 	path->connect("text_submitted", callable_mp(this, &EditorPropertyPath::_path_selected));

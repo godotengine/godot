@@ -142,6 +142,8 @@ class EditorPropertyPath : public EditorProperty {
 	void _path_selected(const String &p_path);
 	void _path_pressed();
 	void _path_focus_exited();
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
