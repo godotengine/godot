@@ -2376,9 +2376,9 @@ FRAGMENT_SHADER_CODE
 	float max_ambient = max(ambient_light.r, max(ambient_light.g, ambient_light.b));
 	float max_diffuse = max(diffuse_light.r, max(diffuse_light.g, diffuse_light.b));
 	float total_ambient = max_ambient + max_diffuse;
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-runtime
 	total_ambient += max_emission;
-#endif
+#endif //ubershader-runtime
 	float ambient_scale = (total_ambient > 0.0) ? (max_ambient + ambient_occlusion_affect_light * max_diffuse) / total_ambient : 0.0;
 
 #if defined(ENABLE_AO)
@@ -2387,9 +2387,9 @@ FRAGMENT_SHADER_CODE
 	diffuse_buffer = vec4(diffuse_light + ambient_light, ambient_scale);
 	specular_buffer = vec4(specular_light, metallic);
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-runtime
 	diffuse_buffer.rgb += emission;
-#endif
+#endif //ubershader-runtime
 #endif //SHADELESS //ubershader-runtime
 
 	normal_mr_buffer = vec4(normalize(normal) * 0.5 + 0.5, roughness);
@@ -2404,9 +2404,9 @@ FRAGMENT_SHADER_CODE
 	frag_color = vec4(albedo, alpha);
 #else //ubershader-runtime
 	frag_color = vec4(ambient_light + diffuse_light + specular_light, alpha);
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-runtime
 	frag_color.rgb += emission;
-#endif
+#endif //ubershader-runtime
 #endif //SHADELESS //ubershader-runtime
 
 #endif //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
