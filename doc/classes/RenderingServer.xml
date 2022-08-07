@@ -1406,7 +1406,7 @@
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_uniform_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="instance" type="RID" />
 			<description>
 			</description>
@@ -1581,7 +1581,7 @@
 			</description>
 		</method>
 		<method name="instances_cull_aabb" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<param index="0" name="aabb" type="AABB" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
@@ -1590,7 +1590,7 @@
 			</description>
 		</method>
 		<method name="instances_cull_convex" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<param index="0" name="convex" type="Array" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
@@ -1599,7 +1599,7 @@
 			</description>
 		</method>
 		<method name="instances_cull_ray" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
 			<param index="2" name="scenario" type="RID" />

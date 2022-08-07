@@ -339,7 +339,7 @@ public:
 	TreeItem *get_child(int p_idx);
 	int get_visible_child_count();
 	int get_child_count();
-	Array get_children();
+	TypedArray<TreeItem> get_children();
 	int get_index();
 
 #ifdef DEV_ENABLED

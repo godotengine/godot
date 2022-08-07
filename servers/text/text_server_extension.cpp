@@ -1534,12 +1534,12 @@ String TextServerExtension::string_to_lower(const String &p_string, const String
 	return p_string;
 }
 
-Array TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(parse_structured_text, p_parser_type, p_args, p_text, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_string, const String &p_language) const {

@@ -34,6 +34,9 @@
 #include "../gltf_defines.h"
 #include "core/io/resource.h"
 
+template <typename T>
+class TypedArray;
+
 class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
 	friend class GLTFDocument;
@@ -82,8 +85,8 @@ public:
 	Vector<GLTFNodeIndex> get_joints_original();
 	void set_joints_original(Vector<GLTFNodeIndex> p_joints_original);
 
-	Array get_inverse_binds();
-	void set_inverse_binds(Array p_inverse_binds);
+	TypedArray<Transform3D> get_inverse_binds();
+	void set_inverse_binds(TypedArray<Transform3D> p_inverse_binds);
 
 	Vector<GLTFNodeIndex> get_joints();
 	void set_joints(Vector<GLTFNodeIndex> p_joints);

@@ -126,7 +126,7 @@
 			</description>
 		</method>
 		<method name="get_children">
-			<return type="Array" />
+			<return type="TreeItem[]" />
 			<description>
 				Returns an array of references to the item's children.
 			</description>

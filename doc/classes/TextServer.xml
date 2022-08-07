@@ -1162,7 +1162,7 @@
 			</description>
 		</method>
 		<method name="shaped_text_get_ellipsis_glyphs" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns array of the glyphs in the ellipsis.
@@ -1183,7 +1183,7 @@
 			</description>
 		</method>
 		<method name="shaped_text_get_glyphs" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns an array of glyphs in the visual order.
@@ -1463,7 +1463,7 @@
 			</description>
 		</method>
 		<method name="shaped_text_sort_logical">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns text glyphs in the logical order.

@@ -145,7 +145,7 @@ public:
 
 	String get_locale_name(const String &p_locale) const;
 
-	Array get_loaded_locales() const;
+	PackedStringArray get_loaded_locales() const;
 
 	void add_translation(const Ref<Translation> &p_translation);
 	void remove_translation(const Ref<Translation> &p_translation);

@@ -157,7 +157,7 @@ public:
 	int get_interface_count() const;
 	Ref<XRInterface> get_interface(int p_index) const;
 	Ref<XRInterface> find_interface(const String &p_name) const;
-	Array get_interfaces() const;
+	TypedArray<Dictionary> get_interfaces() const;
 
 	/*
 		note, more then one interface can technically be active, especially on mobile, but only one interface is used for

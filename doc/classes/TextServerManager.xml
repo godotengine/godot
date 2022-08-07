@@ -38,7 +38,7 @@
 			</description>
 		</method>
 		<method name="get_interfaces" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns a list of available interfaces the index and name of each interface.
 			</description>
