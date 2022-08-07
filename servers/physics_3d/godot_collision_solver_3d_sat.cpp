@@ -1810,12 +1810,12 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	separator.generate_contacts();
 }
 
-static Vector3 _compute_support(const GodotShape3D* obj1, const GodotShape3D* obj2, const Transform3D& transform, const Vector3& direction, real_t total_margin) {
-	return obj1->get_support(direction) - transform.xform(obj2->get_support(transform.basis.xform_inv(-direction))) + total_margin*direction;
+static Vector3 _compute_support(const GodotShape3D *obj1, const GodotShape3D *obj2, const Transform3D &transform, const Vector3 &direction, real_t total_margin) {
+	return obj1->get_support(direction) - transform.xform(obj2->get_support(transform.basis.xform_inv(-direction))) + total_margin * direction;
 }
 
 template <bool withMargin>
-static void _add_contact(const Vector3 axis, SeparatorAxisTest<withMargin>& separator) {
+static void _add_contact(const Vector3 axis, SeparatorAxisTest<withMargin> &separator) {
 	separator.best_axis = axis;
 	separator.generate_contacts();
 }
@@ -1824,7 +1824,7 @@ static void _add_contact(const Vector3 axis, SeparatorAxisTest<withMargin>& sepa
  * The following routine implements Minkowski Portal Refinement as described in
  *
  * G. Snethen, Xenocollide: Complex collision made simple, Game Programming Gems 7, 2008
- * 
+ *
  * It is adapted from an implementation in Simbody (https://github.com/simbody/simbody),
  * which is released under the following license.
  */
@@ -1866,8 +1866,8 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 	if (!separator.test_previous_axis()) {
 		return;
 	}
-	Transform3D transform = p_transform_a.inverse()*p_transform_b;
-	real_t total_margin = (withMargin ? p_margin_a+p_margin_b : 0);
+	Transform3D transform = p_transform_a.inverse() * p_transform_b;
+	real_t total_margin = (withMargin ? p_margin_a + p_margin_b : 0);
 
 	// Compute a point that is known to be inside the Minkowski difference, and
 	// a ray directed from that point to the origin.
@@ -1898,7 +1898,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 	if (v2.dot(dir2) <= 0.0) {
 		return;
 	}
-	Vector3 dir3 = (v1-v0).cross(v2-v0).normalized();
+	Vector3 dir3 = (v1 - v0).cross(v2 - v0).normalized();
 	if (dir3.dot(v0) > 0) {
 		Vector3 swap1 = dir1;
 		Vector3 swap2 = v1;
@@ -1916,14 +1916,12 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 		if (v0.dot(v1.cross(v3)) < -1e-14) {
 			dir2 = dir3;
 			v2 = v3;
-		}
-		else if (v0.dot(v3.cross(v2)) < -1e-14) {
+		} else if (v0.dot(v3.cross(v2)) < -1e-14) {
 			dir1 = dir3;
 			v1 = v3;
-		}
-		else
+		} else
 			break;
-		dir3 = (v1-v0).cross(v2-v0).normalized();
+		dir3 = (v1 - v0).cross(v2 - v0).normalized();
 		v3 = _compute_support(obj1, obj2, transform, dir3, total_margin);
 	}
 
@@ -1932,7 +1930,7 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 
 	int extra_iterations = 0;
 	while (true) {
-		Vector3 portal_dir = (v2-v1).cross(v3-v1).normalized();
+		Vector3 portal_dir = (v2 - v1).cross(v3 - v1).normalized();
 		if (portal_dir.dot(v0) > 0) {
 			portal_dir = -portal_dir;
 		}
@@ -1959,18 +1957,15 @@ static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_tr
 			if (v2.dot(cross) > 0.0) {
 				dir1 = portal_dir;
 				v1 = v4;
-			}
-			else {
+			} else {
 				dir3 = portal_dir;
 				v3 = v4;
 			}
-		}
-		else {
+		} else {
 			if (v3.dot(cross) > 0.0) {
 				dir2 = portal_dir;
 				v2 = v4;
-			}
-			else {
+			} else {
 				dir1 = portal_dir;
 				v1 = v4;
 			}
