@@ -41,6 +41,7 @@
 #include "editor/gdscript_editor_language.h"
 #include "editor/gdscript_highlighter.h"
 #include "editor/gdscript_translation_parser_plugin.h"
+#include "editor/gdscript_validator.h"
 #include "editor/script/script_editor_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
@@ -152,6 +153,10 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		gdscript_cache = memnew(GDScriptCache);
 
 		GDScriptUtilityFunctions::register_functions();
+
+#ifdef TOOLS_ENABLED
+		GDREGISTER_CLASS(GDScriptValidator);
+#endif // TOOLS_ENABLED
 	}
 
 #ifdef TOOLS_ENABLED
