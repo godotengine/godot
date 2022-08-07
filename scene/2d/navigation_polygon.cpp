@@ -412,7 +412,7 @@ real_t NavigationPolygonInstance::get_enter_cost() const {
 void NavigationPolygonInstance::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
 	travel_cost = MAX(p_travel_cost, 0.0);
-	Navigation2DServer::get_singleton()->region_set_enter_cost(region, travel_cost);
+	Navigation2DServer::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
 real_t NavigationPolygonInstance::get_travel_cost() const {
