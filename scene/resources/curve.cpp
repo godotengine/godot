@@ -1589,6 +1589,96 @@ Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 	}
 }
 
+Transform3D Curve3D::interpolate_backed_with_rotation(real_t p_offset, bool p_cubic, bool p_loop, Curve3D::RotationMode p_rotation_mode) const {
+	real_t bl = get_baked_length();
+	ERR_FAIL_COND_V_MSG(bl == 0.0, Transform3D(), "length of Curve3D is 0.");
+
+	Vector3 pos = interpolate_baked(p_offset, p_cubic);
+
+	if (p_rotation_mode == ROTATION_NONE) {
+		Transform3D t;
+		t.origin = pos;
+		return t;
+	}
+
+	real_t bi = get_bake_interval();
+	real_t o_next = p_offset + bi;
+	real_t o_prev = p_offset - bi;
+
+	// Keep in sync with Curve2D. The two ends must meet for an looping curve.
+	if (p_loop && (o_next >= bl || o_prev <= 0.0)) {
+		// If our lookahead will loop, we need to check if the path is closed.
+		int point_count = get_point_count();
+		if (point_count > 0) {
+			Vector3 start_point = get_point_position(0);
+			Vector3 end_point = get_point_position(point_count - 1);
+			if (start_point == end_point) {
+				// Since the path is closed we want to 'smooth off'
+				// the corner at the start/end.
+				// So we wrap the lookahead back round.
+				o_next = Math::fposmod(o_next, bl);
+				o_prev = Math::fposmod(o_prev, bl);
+			}
+		}
+	} else if (p_rotation_mode == ROTATION_ORIENTED) {
+		if (o_next >= bl) {
+			o_next = bl;
+		}
+		if (o_prev <= 0) {
+			o_prev = 0;
+		}
+	}
+
+	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
+	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
+
+	if (p_rotation_mode == ROTATION_ORIENTED) {
+		Vector3 forward = interpolate_baked(o_next, p_cubic) - pos;
+
+		// Try with the previous position
+		if (forward.length_squared() < CMP_EPSILON2) {
+			forward = pos - interpolate_baked(o_prev, p_cubic);
+		}
+
+		if (forward.length_squared() < CMP_EPSILON2) {
+			forward = Vector3(0, 0, 1);
+		} else {
+			forward.normalize();
+		}
+
+		Vector3 up = interpolate_baked_up_vector(p_offset, true);
+
+		if (o_next < p_offset) {
+			Vector3 up1 = interpolate_baked_up_vector(o_next, true);
+			Vector3 axis = up.cross(up1);
+
+			if (axis.length_squared() < CMP_EPSILON2) {
+				axis = forward;
+			} else {
+				axis.normalize();
+			}
+
+			up.rotate(axis, up.angle_to(up1) * 0.5f);
+		}
+
+		Vector3 sideways = up.cross(forward).normalized();
+		up = forward.cross(sideways).normalized();
+
+		Transform3D t;
+		t.basis.set_columns(sideways, up, forward);
+		t.origin = pos;
+		return t;
+	}
+
+	// TODO: current Parallel Transport Frame(PTF) code is left in PathFollower3D,
+	// as it needs to maintain state. Here on Curve3D, interpolation should be
+	// stateless.
+	// To implement stateless interpolation for other RoatationModels require
+	// moving the PTF code to the bake stage on the Curve3D, which requires
+	// a more substantial code refactor.
+	ERR_FAIL_V_MSG(Transform3D(), "RotationModel is not implemented yet");
+}
+
 real_t Curve3D::interpolate_baked_tilt(real_t p_offset) const {
 	if (baked_cache_dirty) {
 		_bake();
@@ -1993,6 +2083,7 @@ void Curve3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve3D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve3D::interpolate_baked, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("interpolate_backed_with_rotation", "offset", "cubic", "loop", "rotation_mode"), &Curve3D::interpolate_backed_with_rotation, DEFVAL(false), DEFVAL(true), DEFVAL(ROTATION_ORIENTED));
 	ClassDB::bind_method(D_METHOD("interpolate_baked_up_vector", "offset", "apply_tilt"), &Curve3D::interpolate_baked_up_vector, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
@@ -2010,6 +2101,12 @@ void Curve3D::_bind_methods() {
 
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
+
+	BIND_ENUM_CONSTANT(ROTATION_NONE);
+	//BIND_ENUM_CONSTANT(ROTATION_Y);
+	//BIND_ENUM_CONSTANT(ROTATION_XY);
+	//BIND_ENUM_CONSTANT(ROTATION_XYZ);
+	BIND_ENUM_CONSTANT(ROTATION_ORIENTED);
 }
 
 Curve3D::Curve3D() {}

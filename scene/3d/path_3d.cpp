@@ -182,70 +182,24 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	if (bl == 0.0) {
 		return;
 	}
-	real_t bi = c->get_bake_interval();
-	real_t o_next = offset + bi;
-	real_t o_prev = offset - bi;
 
-	if (loop) {
-		o_next = Math::fposmod(o_next, bl);
-		o_prev = Math::fposmod(o_prev, bl);
-	} else if (rotation_mode == ROTATION_ORIENTED) {
-		if (o_next >= bl) {
-			o_next = bl;
-		}
-		if (o_prev <= 0) {
-			o_prev = 0;
-		}
-	}
+	if (rotation_mode == ROTATION_ORIENTED || rotation_mode == ROTATION_NONE) {
+		Transform3D t = c->interpolate_backed_with_rotation(offset, cubic, loop, (Curve3D::RotationMode)rotation_mode);
+		Vector3 scale = get_transform().basis.get_scale();
 
-	Vector3 pos = c->interpolate_baked(offset, cubic);
-	Transform3D t = get_transform();
-	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
-	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
-
-	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
-
-		// Try with the previous position
-		if (forward.length_squared() < CMP_EPSILON2) {
-			forward = pos - c->interpolate_baked(o_prev, cubic);
-		}
-
-		if (forward.length_squared() < CMP_EPSILON2) {
-			forward = Vector3(0, 0, 1);
-		} else {
-			forward.normalize();
-		}
-
-		Vector3 up = c->interpolate_baked_up_vector(offset, true);
-
-		if (o_next < offset) {
-			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
-			Vector3 axis = up.cross(up1);
-
-			if (axis.length_squared() < CMP_EPSILON2) {
-				axis = forward;
-			} else {
-				axis.normalize();
-			}
-
-			up.rotate(axis, up.angle_to(up1) * 0.5f);
-		}
-
-		Vector3 scale = t.basis.get_scale();
-		Vector3 sideways = up.cross(forward).normalized();
-		up = forward.cross(sideways).normalized();
-
-		t.basis.set_columns(sideways, up, forward);
+		t.translate_local(Vector3(h_offset, v_offset, 0));
 		t.basis.scale_local(scale);
 
-		t.origin = pos + sideways * h_offset + up * v_offset;
-	} else if (rotation_mode != ROTATION_NONE) {
+		set_transform(t);
+	} else {
 		// perform parallel transport
 		//
 		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
 		// for a discussion about why not Frenet frame.
 
+		Transform3D t = get_transform();
+		real_t bi = c->get_bake_interval();
+		Vector3 pos = c->interpolate_baked(offset, cubic);
 		t.origin = pos;
 		if (p_update_xyz_rot && prev_offset != offset) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
 			real_t sample_distance = bi * 0.01;
@@ -297,11 +251,9 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		}
 
 		t.translate_local(Vector3(h_offset, v_offset, 0));
-	} else {
-		t.origin = pos + Vector3(h_offset, v_offset, 0);
-	}
 
-	set_transform(t);
+		set_transform(t);
+	}
 }
 
 void PathFollow3D::_notification(int p_what) {

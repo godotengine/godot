@@ -271,6 +271,14 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum RotationMode {
+		ROTATION_NONE,
+		ROTATION_Y,
+		ROTATION_XY,
+		ROTATION_XYZ,
+		ROTATION_ORIENTED
+	};
+
 	int get_point_count() const;
 	void set_point_count(int p_count);
 	void add_point(const Vector3 &p_position, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
@@ -295,6 +303,7 @@ public:
 
 	real_t get_baked_length() const;
 	Vector3 interpolate_baked(real_t p_offset, bool p_cubic = false) const;
+	Transform3D interpolate_backed_with_rotation(real_t p_offset, bool p_cubic = false, bool p_loop = true, Curve3D::RotationMode p_rotation_mode = ROTATION_ORIENTED) const;
 	real_t interpolate_baked_tilt(real_t p_offset) const;
 	Vector3 interpolate_baked_up_vector(real_t p_offset, bool p_apply_tilt = false) const;
 	PackedVector3Array get_baked_points() const; //useful for going through
@@ -307,5 +316,7 @@ public:
 
 	Curve3D();
 };
+
+VARIANT_ENUM_CAST(Curve3D::RotationMode);
 
 #endif // CURVE_H
