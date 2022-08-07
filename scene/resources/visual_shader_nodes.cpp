@@ -1901,13 +1901,7 @@ String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader
 			code += "atan(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
 		case OP_REFLECT:
-			if (op_type == OP_TYPE_VECTOR_2D) { // Not supported.
-				code += "vec2(0.0);\n";
-			} else if (op_type == OP_TYPE_VECTOR_4D) { // Not supported.
-				code += "vec4(0.0);\n";
-			} else {
-				code += "reflect(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
-			}
+			code += "reflect(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
 		case OP_STEP:
 			code += "step(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
@@ -1967,7 +1961,7 @@ String VisualShaderNodeVectorOp::get_warning(Shader::Mode p_mode, VisualShader::
 	bool invalid_type = false;
 
 	if (op_type == OP_TYPE_VECTOR_2D || op_type == OP_TYPE_VECTOR_4D) {
-		if (op == OP_CROSS || op == OP_REFLECT) {
+		if (op == OP_CROSS) {
 			invalid_type = true;
 		}
 	}
@@ -4006,14 +4000,6 @@ int VisualShaderNodeVectorRefract::get_input_port_count() const {
 	return 3;
 }
 
-VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_input_port_type(int p_port) const {
-	if (p_port == 2) {
-		return PORT_TYPE_SCALAR;
-	}
-
-	return PORT_TYPE_VECTOR_3D;
-}
-
 String VisualShaderNodeVectorRefract::get_input_port_name(int p_port) const {
 	switch (p_port) {
 		case 0:
@@ -4030,16 +4016,37 @@ int VisualShaderNodeVectorRefract::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR_3D;
-}
-
 String VisualShaderNodeVectorRefract::get_output_port_name(int p_port) const {
 	return "";
 }
 
 String VisualShaderNodeVectorRefract::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "	" + p_output_vars[0] + " = refract(" + p_input_vars[0] + ", " + p_input_vars[1] + ", " + p_input_vars[2] + ");\n";
+}
+
+void VisualShaderNodeVectorRefract::set_op_type(OpType p_op_type) {
+	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	if (op_type == p_op_type) {
+		return;
+	}
+	switch (p_op_type) {
+		case OP_TYPE_VECTOR_2D: {
+			set_input_port_default_value(0, Vector2(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector2(), get_input_port_default_value(1));
+		} break;
+		case OP_TYPE_VECTOR_3D: {
+			set_input_port_default_value(0, Vector3(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector3(), get_input_port_default_value(1));
+		} break;
+		case OP_TYPE_VECTOR_4D: {
+			set_input_port_default_value(0, Quaternion(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Quaternion(), get_input_port_default_value(1));
+		} break;
+		default:
+			break;
+	}
+	op_type = p_op_type;
+	emit_changed();
 }
 
 VisualShaderNodeVectorRefract::VisualShaderNodeVectorRefract() {

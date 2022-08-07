@@ -2463,11 +2463,15 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 
 	// reflect
 
+	{ "reflect", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "I", "N" }, TAG_GLOBAL, false },
 	{ "reflect", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "I", "N" }, TAG_GLOBAL, false },
+	{ "reflect", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "I", "N" }, TAG_GLOBAL, false },
 
 	// refract
 
+	{ "refract", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "I", "N", "eta" }, TAG_GLOBAL, false },
 	{ "refract", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "I", "N", "eta" }, TAG_GLOBAL, false },
+	{ "refract", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "I", "N", "eta" }, TAG_GLOBAL, false },
 
 	// faceforward
 
