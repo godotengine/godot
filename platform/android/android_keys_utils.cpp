@@ -30,12 +30,49 @@
 
 #include "android_keys_utils.h"
 
-unsigned int android_get_keysym(unsigned int p_code) {
-	for (int i = 0; _ak_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-		if (_ak_to_keycode[i].keycode == p_code) {
-			return _ak_to_keycode[i].keysym;
+unsigned int godot_code_from_android_code(unsigned int p_code) {
+	for (int i = 0; android_godot_code_pairs[i].android_code != AKEYCODE_MAX; i++) {
+		if (android_godot_code_pairs[i].android_code == p_code) {
+			return android_godot_code_pairs[i].godot_code;
 		}
 	}
-
 	return KEY_UNKNOWN;
+}
+
+unsigned int godot_code_from_unicode(unsigned int p_code) {
+	unsigned int code = p_code;
+	if (code > 0xFF) {
+		return KEY_UNKNOWN;
+	}
+	// Known control codes.
+	if (code == '\b') { // 0x08
+		return KEY_BACKSPACE;
+	}
+	if (code == '\t') { // 0x09
+		return KEY_TAB;
+	}
+	if (code == '\n') { // 0x0A
+		return KEY_ENTER;
+	}
+	if (code == 0x1B) {
+		return KEY_ESCAPE;
+	}
+	if (code == 0x7F) {
+		return KEY_DELETE;
+	}
+	// Unknown control codes.
+	if (code <= 0x1F || (code >= 0x80 && code <= 0x9F)) {
+		return KEY_UNKNOWN;
+	}
+	// Convert to uppercase.
+	if (code >= 'a' && code <= 'z') { // 0x61 - 0x7A
+		code -= ('a' - 'A');
+	}
+	if (code >= u'à' && code <= u'ö') { // 0xE0 - 0xF6
+		code -= (u'à' - u'À'); // 0xE0 - 0xC0
+	}
+	if (code >= u'ø' && code <= u'þ') { // 0xF8 - 0xFF
+		code -= (u'ø' - u'Ø'); // 0xF8 - 0xD8
+	}
+	return code;
 }
