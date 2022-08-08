@@ -23,14 +23,14 @@
 			<return type="XRPose" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the current [XRPose] state object for the bound [code]pose[/code].
+				Returns the current [XRPose] state object for the bound [param name] pose.
 			</description>
 		</method>
 		<method name="has_pose" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the bound [code]tracker[/code] is available and is currently tracking the bound [code]pose[/code].
+				Returns [code]true[/code] if the tracker is available and is currently tracking the bound [param name] pose.
 			</description>
 		</method>
 		<method name="invalidate_pose">

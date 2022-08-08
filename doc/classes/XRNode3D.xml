@@ -36,7 +36,7 @@
 			<param index="4" name="delay_sec" type="float" />
 			<description>
 				Triggers a haptic pulse on a device associated with this interface.
-				[code]action_name[/code] is the name of the action for this pulse.
+				[param action_name] is the name of the action for this pulse.
 			</description>
 		</method>
 	</methods>

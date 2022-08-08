@@ -60,7 +60,7 @@
 			<param index="0" name="min" type="Vector4" />
 			<param index="1" name="max" type="Vector4" />
 			<description>
-				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
@@ -70,28 +70,28 @@
 			<param index="2" name="post_b" type="Vector4" />
 			<param index="3" name="weight" type="float" />
 			<description>
-				Performs a cubic interpolation between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="to" type="Vector4" />
 			<description>
-				Returns the normalized vector pointing from this vector to [code]to[/code]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="to" type="Vector4" />
 			<description>
-				Returns the distance between this vector and [code]to[/code].
+				Returns the distance between this vector and [param to].
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector4" />
 			<description>
-				Returns the dot product of this vector and [code]with[/code].
+				Returns the dot product of this vector and [param with].
 			</description>
 		</method>
 		<method name="floor" qualifiers="const">
@@ -110,7 +110,7 @@
 			<return type="bool" />
 			<param index="0" name="with" type="Vector4" />
 			<description>
-				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this vector and [param with] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized" qualifiers="const">
@@ -136,7 +136,7 @@
 			<param index="0" name="to" type="Vector4" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]to[/code] by amount [code]weight[/code]. [code]weight[/code] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
+				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -161,14 +161,14 @@
 			<return type="Vector4" />
 			<param index="0" name="mod" type="float" />
 			<description>
-				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]mod[/code].
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
 			</description>
 		</method>
 		<method name="posmodv" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="modv" type="Vector4" />
 			<description>
-				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]modv[/code]'s components.
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
 			</description>
 		</method>
 		<method name="round" qualifiers="const">
@@ -187,7 +187,7 @@
 			<return type="Vector4" />
 			<param index="0" name="step" type="Vector4" />
 			<description>
-				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
+				Returns this vector with each component snapped to the nearest multiple of [param step]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
@@ -322,14 +322,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
-				Compares two [Vector4] vectors by first checking if the X value of the left vector is less than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
-				Compares two [Vector4] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -344,21 +344,21 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
-				Compares two [Vector4] vectors by first checking if the X value of the left vector is greater than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Vector4" />
 			<description>
-				Access vector components using their index. [code]v[0][/code] is equivalent to [code]v.x[/code], [code]v[1][/code] is equivalent to [code]v.y[/code], and [code]v[2][/code] is equivalent to [code]v.z[/code].
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Access vector components using their index. [code]v[0][/code] is equivalent to [code]v.x[/code], [code]v[1][/code] is equivalent to [code]v.y[/code], [code]v[2][/code] is equivalent to [code]v.z[/code], and [code]v[3][/code] is equivalent to [code]v.w[/code].
+				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], [code]v[1][/code] is equivalent to [code]v.y[/code], [code]v[2][/code] is equivalent to [code]v.z[/code], and [code]v[3][/code] is equivalent to [code]v.w[/code].
 			</description>
 		</operator>
 		<operator name="operator unary+">
