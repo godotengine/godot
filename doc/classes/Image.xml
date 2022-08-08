@@ -250,7 +250,7 @@
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="Vector2" />
+			<return type="Vector2i" />
 			<description>
 				Returns the image's size (width and height).
 			</description>
