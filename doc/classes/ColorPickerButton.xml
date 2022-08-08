@@ -39,7 +39,7 @@
 	</members>
 	<signals>
 		<signal name="color_changed">
-			<argument index="0" name="color" type="Color" />
+			<param index="0" name="color" type="Color" />
 			<description>
 				Emitted when the color changes.
 			</description>

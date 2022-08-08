@@ -32,7 +32,7 @@
 	<methods>
 		<method name="add_property_info">
 			<return type="void" />
-			<argument index="0" name="info" type="Dictionary" />
+			<param index="0" name="info" type="Dictionary" />
 			<description>
 				Adds a custom property info to a property. The dictionary must contain:
 				- [code]name[/code]: [String] (the name of the property)
@@ -72,14 +72,14 @@
 		</method>
 		<method name="check_changed_settings_in_group" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="setting_prefix" type="String" />
+			<param index="0" name="setting_prefix" type="String" />
 			<description>
 				Checks if any settings with the prefix [code]setting_prefix[/code] exist in the set of changed settings. See also [method get_changed_settings].
 			</description>
 		</method>
 		<method name="erase">
 			<return type="void" />
-			<argument index="0" name="property" type="String" />
+			<param index="0" name="property" type="String" />
 			<description>
 				Erases the setting whose name is specified by [code]property[/code].
 			</description>
@@ -98,9 +98,9 @@
 		</method>
 		<method name="get_project_metadata" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="section" type="String" />
-			<argument index="1" name="key" type="String" />
-			<argument index="2" name="default" type="Variant" default="null" />
+			<param index="0" name="section" type="String" />
+			<param index="1" name="key" type="String" />
+			<param index="2" name="default" type="Variant" default="null" />
 			<description>
 				Returns project-specific metadata for the [code]section[/code] and [code]key[/code] specified. If the metadata doesn't exist, [code]default[/code] will be returned instead. See also [method set_project_metadata].
 			</description>
@@ -113,83 +113,83 @@
 		</method>
 		<method name="get_setting" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Returns the value of the setting specified by [code]name[/code]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the setting specified by [code]name[/code] exists, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="mark_setting_changed">
 			<return type="void" />
-			<argument index="0" name="setting" type="String" />
+			<param index="0" name="setting" type="String" />
 			<description>
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
 			</description>
 		</method>
 		<method name="property_can_revert">
 			<return type="bool" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the setting specified by [code]name[/code] can have its value reverted to the default value, [code]false[/code] otherwise. When this method returns [code]true[/code], a Revert button will display next to the setting in the Editor Settings.
 			</description>
 		</method>
 		<method name="property_get_revert">
 			<return type="Variant" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Returns the default value of the setting specified by [code]name[/code]. This is the value that would be applied when clicking the Revert button in the Editor Settings.
 			</description>
 		</method>
 		<method name="set_builtin_action_override">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="actions_list" type="Array" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="actions_list" type="Array" />
 			<description>
 				Overrides the built-in editor action [code]name[/code] with the input actions defined in [code]actions_list[/code].
 			</description>
 		</method>
 		<method name="set_favorites">
 			<return type="void" />
-			<argument index="0" name="dirs" type="PackedStringArray" />
+			<param index="0" name="dirs" type="PackedStringArray" />
 			<description>
 				Sets the list of favorite files and directories for this project.
 			</description>
 		</method>
 		<method name="set_initial_value">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
-			<argument index="2" name="update_current" type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="update_current" type="bool" />
 			<description>
 				Sets the initial value of the setting specified by [code]name[/code] to [code]value[/code]. This is used to provide a value for the Revert button in the Editor Settings. If [code]update_current[/code] is true, the current value of the setting will be set to [code]value[/code] as well.
 			</description>
 		</method>
 		<method name="set_project_metadata">
 			<return type="void" />
-			<argument index="0" name="section" type="String" />
-			<argument index="1" name="key" type="String" />
-			<argument index="2" name="data" type="Variant" />
+			<param index="0" name="section" type="String" />
+			<param index="1" name="key" type="String" />
+			<param index="2" name="data" type="Variant" />
 			<description>
 				Sets project-specific metadata with the [code]section[/code], [code]key[/code] and [code]data[/code] specified. This metadata is stored outside the project folder and therefore won't be checked into version control. See also [method get_project_metadata].
 			</description>
 		</method>
 		<method name="set_recent_dirs">
 			<return type="void" />
-			<argument index="0" name="dirs" type="PackedStringArray" />
+			<param index="0" name="dirs" type="PackedStringArray" />
 			<description>
 				Sets the list of recently visited folders in the file dialog for this project.
 			</description>
 		</method>
 		<method name="set_setting">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Sets the [code]value[/code] of the setting specified by [code]name[/code]. This is equivalent to using [method Object.set] on the EditorSettings instance.
 			</description>

@@ -11,7 +11,7 @@
 	<methods>
 		<method name="generate">
 			<return type="void" />
-			<argument index="0" name="from" type="Translation" />
+			<param index="0" name="from" type="Translation" />
 			<description>
 				Generates and sets an optimized translation from the given [Translation] resource.
 			</description>

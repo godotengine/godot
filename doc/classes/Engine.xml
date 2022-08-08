@@ -110,7 +110,7 @@
 		</method>
 		<method name="get_script_language" qualifiers="const">
 			<return type="ScriptLanguage" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -121,7 +121,7 @@
 		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
 			</description>
@@ -173,7 +173,7 @@
 		</method>
 		<method name="has_singleton" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
 			</description>
@@ -200,20 +200,20 @@
 		</method>
 		<method name="register_script_language">
 			<return type="void" />
-			<argument index="0" name="language" type="ScriptLanguage" />
+			<param index="0" name="language" type="ScriptLanguage" />
 			<description>
 			</description>
 		</method>
 		<method name="register_singleton">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="instance" type="Object" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="instance" type="Object" />
 			<description>
 			</description>
 		</method>
 		<method name="unregister_singleton">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>

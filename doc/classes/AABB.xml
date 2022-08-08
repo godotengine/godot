@@ -23,15 +23,15 @@
 		</constructor>
 		<constructor name="AABB">
 			<return type="AABB" />
-			<argument index="0" name="from" type="AABB" />
+			<param index="0" name="from" type="AABB" />
 			<description>
 				Constructs an [AABB] as a copy of the given [AABB].
 			</description>
 		</constructor>
 		<constructor name="AABB">
 			<return type="AABB" />
-			<argument index="0" name="position" type="Vector3" />
-			<argument index="1" name="size" type="Vector3" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="size" type="Vector3" />
 			<description>
 				Constructs an [AABB] from a position and size.
 			</description>
@@ -46,14 +46,14 @@
 		</method>
 		<method name="encloses" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="with" type="AABB" />
+			<param index="0" name="with" type="AABB" />
 			<description>
 				Returns [code]true[/code] if this [AABB] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand" qualifiers="const">
 			<return type="AABB" />
-			<argument index="0" name="to_point" type="Vector3" />
+			<param index="0" name="to_point" type="Vector3" />
 			<description>
 				Returns a copy of this [AABB] expanded to include a given point.
 				[b]Example:[/b]
@@ -81,7 +81,7 @@
 		</method>
 		<method name="get_endpoint" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Gets the position of the 8 endpoints of the [AABB] in space.
 			</description>
@@ -124,7 +124,7 @@
 		</method>
 		<method name="get_support" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="dir" type="Vector3" />
+			<param index="0" name="dir" type="Vector3" />
 			<description>
 				Returns the support point in a given direction. This is useful for collision detection algorithms.
 			</description>
@@ -137,7 +137,7 @@
 		</method>
 		<method name="grow" qualifiers="const">
 			<return type="AABB" />
-			<argument index="0" name="by" type="float" />
+			<param index="0" name="by" type="float" />
 			<description>
 				Returns a copy of the [AABB] grown a given amount of units towards all the sides.
 			</description>
@@ -156,7 +156,7 @@
 		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="point" type="Vector3" />
+			<param index="0" name="point" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
 				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
@@ -164,50 +164,50 @@
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="AABB" />
-			<argument index="0" name="with" type="AABB" />
+			<param index="0" name="with" type="AABB" />
 			<description>
 				Returns the intersection between two [AABB]. An empty AABB (size [code](0, 0, 0)[/code]) is returned on failure.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="with" type="AABB" />
+			<param index="0" name="with" type="AABB" />
 			<description>
 				Returns [code]true[/code] if the [AABB] overlaps with another.
 			</description>
 		</method>
 		<method name="intersects_plane" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="plane" type="Plane" />
+			<param index="0" name="plane" type="Plane" />
 			<description>
 				Returns [code]true[/code] if the [AABB] is on both sides of a plane.
 			</description>
 		</method>
 		<method name="intersects_ray" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="from" type="Vector3" />
-			<argument index="1" name="dir" type="Vector3" />
+			<param index="0" name="from" type="Vector3" />
+			<param index="1" name="dir" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="from" type="Vector3" />
-			<argument index="1" name="to" type="Vector3" />
+			<param index="0" name="from" type="Vector3" />
+			<param index="1" name="to" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the [AABB] intersects the line segment between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="aabb" type="AABB" />
+			<param index="0" name="aabb" type="AABB" />
 			<description>
 				Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
 			<return type="AABB" />
-			<argument index="0" name="with" type="AABB" />
+			<param index="0" name="with" type="AABB" />
 			<description>
 				Returns a larger [AABB] that contains both this [AABB] and [code]with[/code].
 			</description>
@@ -228,7 +228,7 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="AABB" />
+			<param index="0" name="right" type="AABB" />
 			<description>
 				Returns [code]true[/code] if the vectors are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -236,14 +236,14 @@
 		</operator>
 		<operator name="operator *">
 			<return type="AABB" />
-			<argument index="0" name="right" type="Transform3D" />
+			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Inversely transforms (multiplies) the [AABB] by the given [Transform3D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="AABB" />
+			<param index="0" name="right" type="AABB" />
 			<description>
 				Returns [code]true[/code] if the AABBs are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.

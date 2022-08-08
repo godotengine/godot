@@ -11,15 +11,15 @@
 	<methods>
 		<method name="get_patch_margin" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="margin" type="int" enum="Side" />
+			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the size of the margin on the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_patch_margin">
 			<return type="void" />
-			<argument index="0" name="margin" type="int" enum="Side" />
-			<argument index="1" name="value" type="int" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="value" type="int" />
 			<description>
 				Sets the size of the margin on the specified [enum Side] to [code]value[/code] pixels.
 			</description>

@@ -15,10 +15,10 @@
 	<methods>
 		<method name="create_from_image">
 			<return type="void" />
-			<argument index="0" name="image" type="Image" />
-			<argument index="1" name="compression_mode" type="int" enum="PortableCompressedTexture2D.CompressionMode" />
-			<argument index="2" name="normal_map" type="bool" default="false" />
-			<argument index="3" name="lossy_quality" type="float" default="0.8" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="compression_mode" type="int" enum="PortableCompressedTexture2D.CompressionMode" />
+			<param index="2" name="normal_map" type="bool" default="false" />
+			<param index="3" name="lossy_quality" type="float" default="0.8" />
 			<description>
 				Initializes the compressed texture from a base image. The compression mode must be provided.
 				If this image will be used as a normal map, the "normal map" flag is recommended, to ensure optimum quality.
@@ -45,7 +45,7 @@
 		</method>
 		<method name="set_keep_all_compressed_buffers" qualifiers="static">
 			<return type="void" />
-			<argument index="0" name="keep" type="bool" />
+			<param index="0" name="keep" type="bool" />
 			<description>
 				Overrides the flag globally for all textures of this type. This is used primarily by the editor.
 			</description>

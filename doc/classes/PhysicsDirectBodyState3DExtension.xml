@@ -9,58 +9,58 @@
 	<methods>
 		<method name="_add_constant_central_force" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_add_constant_force" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_add_constant_torque" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="torque" type="Vector3" />
+			<param index="0" name="torque" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_apply_central_force" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_apply_central_impulse" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
+			<param index="0" name="impulse" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_apply_force" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_apply_impulse" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" />
+			<param index="0" name="impulse" type="Vector3" />
+			<param index="1" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_apply_torque" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="torque" type="Vector3" />
+			<param index="0" name="torque" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_apply_torque_impulse" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
+			<param index="0" name="impulse" type="Vector3" />
 			<description>
 			</description>
 		</method>
@@ -91,37 +91,37 @@
 		</method>
 		<method name="_get_contact_collider" qualifiers="virtual const">
 			<return type="RID" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_collider_id" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_collider_object" qualifiers="virtual const">
 			<return type="Object" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_collider_position" qualifiers="virtual const">
 			<return type="Vector3" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_collider_shape" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_collider_velocity_at_position" qualifiers="virtual const">
 			<return type="Vector3" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -132,25 +132,25 @@
 		</method>
 		<method name="_get_contact_impulse" qualifiers="virtual const">
 			<return type="float" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_local_normal" qualifiers="virtual const">
 			<return type="Vector3" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_local_position" qualifiers="virtual const">
 			<return type="Vector3" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_contact_local_shape" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="contact_idx" type="int" />
+			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -206,7 +206,7 @@
 		</method>
 		<method name="_get_velocity_at_local_position" qualifiers="virtual const">
 			<return type="Vector3" />
-			<argument index="0" name="local_position" type="Vector3" />
+			<param index="0" name="local_position" type="Vector3" />
 			<description>
 			</description>
 		</method>
@@ -222,37 +222,37 @@
 		</method>
 		<method name="_set_angular_velocity" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="velocity" type="Vector3" />
+			<param index="0" name="velocity" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_constant_force" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_constant_torque" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="torque" type="Vector3" />
+			<param index="0" name="torque" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_linear_velocity" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="velocity" type="Vector3" />
+			<param index="0" name="velocity" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_sleep_state" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_transform" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="transform" type="Transform3D" />
+			<param index="0" name="transform" type="Transform3D" />
 			<description>
 			</description>
 		</method>

@@ -14,22 +14,22 @@
 	<methods>
 		<method name="get_frame_delay" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="frame" type="int" />
+			<param index="0" name="frame" type="int" />
 			<description>
 				Returns the given frame's delay value.
 			</description>
 		</method>
 		<method name="get_frame_texture" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="frame" type="int" />
+			<param index="0" name="frame" type="int" />
 			<description>
 				Returns the given frame's [Texture2D].
 			</description>
 		</method>
 		<method name="set_frame_delay">
 			<return type="void" />
-			<argument index="0" name="frame" type="int" />
-			<argument index="1" name="delay" type="float" />
+			<param index="0" name="frame" type="int" />
+			<param index="1" name="delay" type="float" />
 			<description>
 				Sets an additional delay (in seconds) between this frame and the next one, that will be added to the time interval defined by [member fps]. By default, frames have no delay defined. If a delay value is defined, the final time interval between this frame and the next will be [code]1.0 / fps + delay[/code].
 				For example, for an animation with 3 frames, 2 FPS and a frame delay on the second frame of 1.2, the resulting playback will be:
@@ -43,8 +43,8 @@
 		</method>
 		<method name="set_frame_texture">
 			<return type="void" />
-			<argument index="0" name="frame" type="int" />
-			<argument index="1" name="texture" type="Texture2D" />
+			<param index="0" name="frame" type="int" />
+			<param index="1" name="texture" type="Texture2D" />
 			<description>
 				Assigns a [Texture2D] to the given frame. Frame IDs start at 0, so the first frame has ID 0, and the last frame of the animation has ID [member frames] - 1.
 				You can define any number of textures up to [constant MAX_FRAMES], but keep in mind that only frames from 0 to [member frames] - 1 will be part of the animation.

@@ -29,20 +29,20 @@
 		</method>
 		<method name="set_additional_rotation">
 			<return type="void" />
-			<argument index="0" name="additional_rotation" type="Vector3" />
+			<param index="0" name="additional_rotation" type="Vector3" />
 			<description>
 				Sets the amount of extra rotation to be applied after the LookAt modification executes. This allows you to adjust the finished result.
 			</description>
 		</method>
 		<method name="set_lock_rotation_plane">
 			<return type="void" />
-			<argument index="0" name="plane" type="int" />
+			<param index="0" name="plane" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_lock_rotation_to_plane">
 			<return type="void" />
-			<argument index="0" name="lock_to_plane" type="bool" />
+			<param index="0" name="lock_to_plane" type="bool" />
 			<description>
 				When [code]true[/code], the LookAt modification will limit its rotation to a single plane in 3D space. The plane used can be configured using the [code]set_lock_rotation_plane[/code] function.
 			</description>

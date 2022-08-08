@@ -20,7 +20,7 @@
 		</method>
 		<method name="set_faces">
 			<return type="void" />
-			<argument index="0" name="faces" type="PackedVector3Array" />
+			<param index="0" name="faces" type="PackedVector3Array" />
 			<description>
 				Sets the faces (an array of triangles).
 			</description>

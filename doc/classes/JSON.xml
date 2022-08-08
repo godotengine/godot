@@ -50,7 +50,7 @@
 		</method>
 		<method name="parse">
 			<return type="int" enum="Error" />
-			<argument index="0" name="json_string" type="String" />
+			<param index="0" name="json_string" type="String" />
 			<description>
 				Attempts to parse the [code]json_string[/code] provided.
 				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [method get_data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
@@ -58,10 +58,10 @@
 		</method>
 		<method name="stringify">
 			<return type="String" />
-			<argument index="0" name="data" type="Variant" />
-			<argument index="1" name="indent" type="String" default="&quot;&quot;" />
-			<argument index="2" name="sort_keys" type="bool" default="true" />
-			<argument index="3" name="full_precision" type="bool" default="false" />
+			<param index="0" name="data" type="Variant" />
+			<param index="1" name="indent" type="String" default="&quot;&quot;" />
+			<param index="2" name="sort_keys" type="bool" default="true" />
+			<param index="3" name="full_precision" type="bool" default="false" />
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.

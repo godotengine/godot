@@ -20,18 +20,18 @@
 		</method>
 		<method name="emit_particle">
 			<return type="void" />
-			<argument index="0" name="xform" type="Transform3D" />
-			<argument index="1" name="velocity" type="Vector3" />
-			<argument index="2" name="color" type="Color" />
-			<argument index="3" name="custom" type="Color" />
-			<argument index="4" name="flags" type="int" />
+			<param index="0" name="xform" type="Transform3D" />
+			<param index="1" name="velocity" type="Vector3" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="custom" type="Color" />
+			<param index="4" name="flags" type="int" />
 			<description>
 				Emits a single particle. Whether [code]xform[/code], [code]velocity[/code], [code]color[/code] and [code]custom[/code] are applied depends on the value of [code]flags[/code]. See [enum EmitFlags].
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
 			<return type="Mesh" />
-			<argument index="0" name="pass" type="int" />
+			<param index="0" name="pass" type="int" />
 			<description>
 				Returns the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
@@ -44,8 +44,8 @@
 		</method>
 		<method name="set_draw_pass_mesh">
 			<return type="void" />
-			<argument index="0" name="pass" type="int" />
-			<argument index="1" name="mesh" type="Mesh" />
+			<param index="0" name="pass" type="int" />
+			<param index="1" name="mesh" type="Mesh" />
 			<description>
 				Sets the [Mesh] that is drawn at index [code]pass[/code].
 			</description>

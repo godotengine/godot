@@ -1803,6 +1803,21 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->pop();
 			pos = brk_end + 1;
 
+		} else if (tag.begins_with("param ")) {
+			const int tag_end = tag.find(" ");
+			const String param_name = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+
+			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			p_rt->push_font(doc_code_font);
+			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_color(code_color);
+			p_rt->add_text(param_name);
+			p_rt->pop();
+			p_rt->pop();
+			p_rt->pop();
+
+			pos = brk_end + 1;
+
 		} else if (doc->class_list.has(tag)) {
 			// Class reference tag such as [Node2D] or [SceneTree].
 			// Use monospace font with translucent colored background color to make clickable references
