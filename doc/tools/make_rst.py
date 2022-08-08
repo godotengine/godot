@@ -72,6 +72,7 @@ class State:
 
     def parse_class(self, class_root: ET.Element, filepath: str) -> None:
         class_name = class_root.attrib["name"]
+        self.current_class = class_name
 
         class_def = ClassDef(class_name)
         self.classes[class_name] = class_def
@@ -126,7 +127,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = parse_arguments(constructor)
+                params = self.parse_arguments(constructor, "constructor")
 
                 desc_element = constructor.find("description")
                 method_desc = None
@@ -154,7 +155,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = parse_arguments(method)
+                params = self.parse_arguments(method, "method")
 
                 desc_element = method.find("description")
                 method_desc = None
@@ -182,7 +183,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = parse_arguments(operator)
+                params = self.parse_arguments(operator, "operator")
 
                 desc_element = operator.find("description")
                 method_desc = None
@@ -230,7 +231,7 @@ class State:
                 annotation_name = annotation.attrib["name"]
                 qualifiers = annotation.get("qualifiers")
 
-                params = parse_arguments(annotation)
+                params = self.parse_arguments(annotation, "annotation")
 
                 desc_element = annotation.find("description")
                 annotation_desc = None
@@ -254,7 +255,7 @@ class State:
                     print_error('{}.xml: Duplicate signal "{}".'.format(class_name, signal_name), self)
                     continue
 
-                params = parse_arguments(signal)
+                params = self.parse_arguments(signal, "signal")
 
                 desc_element = signal.find("description")
                 signal_desc = None
@@ -301,6 +302,32 @@ class State:
 
                 if link.text is not None:
                     class_def.tutorials.append((link.text.strip(), link.get("title", "")))
+
+        self.current_class = ""
+
+    def parse_arguments(self, root: ET.Element, context: str) -> List["ParameterDef"]:
+        param_elements = root.findall("argument")
+        params: Any = [None] * len(param_elements)
+
+        for param_index, param_element in enumerate(param_elements):
+            param_name = param_element.attrib["name"]
+            index = int(param_element.attrib["index"])
+            type_name = TypeName.from_element(param_element)
+            default = param_element.get("default")
+
+            if param_name.strip() == "" or param_name.startswith("_unnamed_arg"):
+                print_error(
+                    '{}.xml: Empty argument name in {} "{}" at position {}.'.format(
+                        self.current_class, context, root.attrib["name"], param_index
+                    ),
+                    self,
+                )
+
+            params[index] = ParameterDef(param_name, type_name, default)
+
+        cast: List[ParameterDef] = params
+
+        return cast
 
     def sort_classes(self) -> None:
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
@@ -438,22 +465,6 @@ class ClassDef:
 def print_error(error: str, state: State) -> None:
     print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
     state.num_errors += 1
-
-
-def parse_arguments(root: ET.Element) -> List[ParameterDef]:
-    param_elements = root.findall("argument")
-    params: Any = [None] * len(param_elements)
-    for param_element in param_elements:
-        param_name = param_element.attrib["name"]
-        index = int(param_element.attrib["index"])
-        type_name = TypeName.from_element(param_element)
-        default = param_element.get("default")
-
-        params[index] = ParameterDef(param_name, type_name, default)
-
-    cast: List[ParameterDef] = params
-
-    return cast
 
 
 def main() -> None:
