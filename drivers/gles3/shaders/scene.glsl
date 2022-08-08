@@ -1649,7 +1649,7 @@ uniform mediump vec4[12] lightmap_captures;
 
 #ifdef USE_GI_PROBES //ubershader-skip
 
-#if !defined(IS_UBERSHADER)
+#if !defined(UBERSHADER_COMPAT)
 uniform mediump sampler3D gi_probe1; //texunit:-10
 #else
 uniform mediump sampler3D gi_probe1_uber; //texunit:-12
@@ -1663,7 +1663,7 @@ uniform highp float gi_probe_bias1;
 uniform highp float gi_probe_normal_bias1;
 uniform bool gi_probe_blend_ambient1;
 
-#if !defined(IS_UBERSHADER)
+#if !defined(UBERSHADER_COMPAT)
 uniform mediump sampler3D gi_probe2; //texunit:-11
 #else
 uniform mediump sampler3D gi_probe2_uber; //texunit:-13

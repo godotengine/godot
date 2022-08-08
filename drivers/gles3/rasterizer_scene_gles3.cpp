@@ -1855,7 +1855,10 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		// Normally, lightmapping uses the same texturing units than the GI probes; however, in the case of the ubershader
 		// that's not a good idea because some hardware/drivers (Android/Intel) may fail to render if a single texturing unit
 		// is used through multiple kinds of samplers in the same shader.
-		if (state.scene_shader.is_version_ubershader()) {
+		// Moreover, since we don't know at this point if we are going to consume these textures from the ubershader or
+		// a conditioned one, the fact that async compilation is enabled is enough for us to switch to the alternative
+		// arrangement of texturing units.
+		if (storage->config.async_compilation_enabled) {
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 12);
 		} else {
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
@@ -1871,7 +1874,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		if (gi_probe_count > 1) {
 			GIProbeInstance *gipi2 = gi_probe_instance_owner.getptr(ridp[1]);
 
-			if (state.scene_shader.is_version_ubershader()) {
+			if (storage->config.async_compilation_enabled) {
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 13);
 			} else {
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 11);
