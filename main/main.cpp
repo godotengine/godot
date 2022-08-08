@@ -63,6 +63,7 @@
 #include "scene/main/window.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/theme/theme_db.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
@@ -129,6 +130,7 @@ static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
+static ThemeDB *theme_db = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -271,6 +273,16 @@ void finalize_navigation_server() {
 
 	memdelete(navigation_server_2d);
 	navigation_server_2d = nullptr;
+}
+
+void initialize_theme_db() {
+	theme_db = memnew(ThemeDB);
+	theme_db->initialize_theme();
+}
+
+void finalize_theme_db() {
+	memdelete(theme_db);
+	theme_db = nullptr;
 }
 
 //#define DEBUG_INIT
@@ -475,7 +487,8 @@ Error Main::test_setup() {
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
-	initialize_theme();
+	initialize_theme_db();
+	register_scene_singletons();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
 
@@ -525,6 +538,8 @@ void Main::test_cleanup() {
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	finalize_theme_db();
 
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -2126,7 +2141,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
-	initialize_theme();
+	initialize_theme_db();
+	register_scene_singletons();
 
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
@@ -3119,6 +3135,8 @@ void Main::cleanup(bool p_force) {
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	finalize_theme_db();
 
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);

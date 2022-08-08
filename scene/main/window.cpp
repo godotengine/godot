@@ -35,6 +35,7 @@
 #include "core/string/translation.h"
 #include "scene/gui/control.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 
 void Window::set_title(const String &p_title) {
 	title = p_title;
@@ -1330,13 +1331,13 @@ StringName Window::get_theme_type_variation() const {
 
 void Window::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
-		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(theme_type_variation) != StringName()) {
-			Theme::get_project_default()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid() && ThemeDB::get_singleton()->get_project_theme()->get_type_variation_base(theme_type_variation) != StringName()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
 		} else {
-			Theme::get_default()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
+			ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
 		}
 	} else {
-		Theme::get_default()->get_type_dependencies(p_theme_type, StringName(), p_list);
+		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(p_theme_type, StringName(), p_list);
 	}
 }
 
@@ -1522,9 +1523,9 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 		// Only the default theme and the project theme are used for the list of options.
 		// This is an imposed limitation to simplify the logic needed to leverage those options.
-		Theme::get_default()->get_type_variation_list(get_class_name(), &names);
-		if (Theme::get_project_default().is_valid()) {
-			Theme::get_project_default()->get_type_variation_list(get_class_name(), &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
 		}
 		names.sort_custom<StringName::AlphCompare>();
 

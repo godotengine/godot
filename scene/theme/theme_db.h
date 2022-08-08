@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  default_theme.h                                                      */
+/*  theme_db.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DEFAULT_THEME_H
-#define DEFAULT_THEME_H
+#ifndef THEME_DB_H
+#define THEME_DB_H
 
-#include "scene/resources/theme.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 
-const int default_font_size = 16;
+class Font;
+class StyleBox;
+class Texture2D;
+class Theme;
 
-void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &bold_font, const Ref<Font> &bold_italics_font, const Ref<Font> &italics_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale);
-void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel = TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::Hinting p_font_hinting = TextServer::HINTING_LIGHT, TextServer::FontAntialiasing p_font_antialiased = TextServer::FONT_ANTIALIASING_GRAY, bool p_font_msdf = false, bool p_font_generate_mipmaps = false);
+class ThemeDB : public Object {
+	GDCLASS(ThemeDB, Object);
 
-#endif // DEFAULT_THEME_H
+	static ThemeDB *singleton;
+
+	// Universal Theme resources used when no other theme has the item.
+	Ref<Theme> default_theme;
+	Ref<Theme> project_theme;
+
+	// Universal default values, final fallback for every theme.
+	float fallback_base_scale;
+	Ref<Font> fallback_font;
+	int fallback_font_size;
+	Ref<Texture2D> fallback_icon;
+	Ref<StyleBox> fallback_stylebox;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void initialize_theme();
+	void initialize_theme_noproject();
+
+	// Universal Theme resources
+
+	void set_default_theme(const Ref<Theme> &p_default);
+	Ref<Theme> get_default_theme();
+
+	void set_project_theme(const Ref<Theme> &p_project_default);
+	Ref<Theme> get_project_theme();
+
+	// Universal default values.
+
+	void set_fallback_base_scale(float p_base_scale);
+	float get_fallback_base_scale();
+
+	void set_fallback_font(const Ref<Font> &p_font);
+	Ref<Font> get_fallback_font();
+
+	void set_fallback_font_size(int p_font_size);
+	int get_fallback_font_size();
+
+	void set_fallback_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_fallback_icon();
+
+	void set_fallback_stylebox(const Ref<StyleBox> &p_stylebox);
+	Ref<StyleBox> get_fallback_stylebox();
+
+	static ThemeDB *get_singleton();
+	ThemeDB();
+	~ThemeDB();
+};
+
+#endif // THEME_DB_H

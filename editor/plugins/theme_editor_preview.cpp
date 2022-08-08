@@ -40,6 +40,7 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/theme/theme_db.h"
 
 constexpr double REFRESH_TIMER = 1.5;
 
@@ -240,7 +241,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	MarginContainer *preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
-	preview_root->set_theme(Theme::get_default());
+	preview_root->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	preview_root->set_clip_contents(true);
 	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);

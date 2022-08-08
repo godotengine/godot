@@ -43,6 +43,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
 #include "servers/text_server.h"
 
@@ -193,15 +194,15 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		List<StringName> sn;
 		String pf = p_function;
 		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color") {
-			Theme::get_default()->get_color_list(get_class(), &sn);
+			ThemeDB::get_singleton()->get_default_theme()->get_color_list(get_class(), &sn);
 		} else if (pf == "add_theme_style_override" || pf == "has_theme_style" || pf == "has_theme_style_override" || pf == "get_theme_style") {
-			Theme::get_default()->get_stylebox_list(get_class(), &sn);
+			ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(get_class(), &sn);
 		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font") {
-			Theme::get_default()->get_font_list(get_class(), &sn);
+			ThemeDB::get_singleton()->get_default_theme()->get_font_list(get_class(), &sn);
 		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size") {
-			Theme::get_default()->get_font_size_list(get_class(), &sn);
+			ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(get_class(), &sn);
 		} else if (pf == "add_theme_constant_override" || pf == "has_theme_constant" || pf == "has_theme_constant_override" || pf == "get_theme_constant") {
-			Theme::get_default()->get_constant_list(get_class(), &sn);
+			ThemeDB::get_singleton()->get_default_theme()->get_constant_list(get_class(), &sn);
 		}
 
 		sn.sort_custom<StringName::AlphCompare>();
@@ -344,7 +345,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
-	Ref<Theme> theme = Theme::get_default();
+	Ref<Theme> theme = ThemeDB::get_singleton()->get_default_theme();
 
 	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
@@ -429,9 +430,9 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 
 		// Only the default theme and the project theme are used for the list of options.
 		// This is an imposed limitation to simplify the logic needed to leverage those options.
-		Theme::get_default()->get_type_variation_list(get_class_name(), &names);
-		if (Theme::get_project_default().is_valid()) {
-			Theme::get_project_default()->get_type_variation_list(get_class_name(), &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
 		}
 		names.sort_custom<StringName::AlphCompare>();
 
@@ -2419,22 +2420,22 @@ T Control::get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner
 	}
 
 	// Secondly, check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
 		for (const StringName &E : p_theme_types) {
-			if (Theme::get_project_default()->has_theme_item(p_data_type, p_name, E)) {
-				return Theme::get_project_default()->get_theme_item(p_data_type, p_name, E);
+			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(p_data_type, p_name, E)) {
+				return ThemeDB::get_singleton()->get_project_theme()->get_theme_item(p_data_type, p_name, E);
 			}
 		}
 	}
 
 	// Lastly, fall back on the items defined in the default Theme, if they exist.
 	for (const StringName &E : p_theme_types) {
-		if (Theme::get_default()->has_theme_item(p_data_type, p_name, E)) {
-			return Theme::get_default()->get_theme_item(p_data_type, p_name, E);
+		if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(p_data_type, p_name, E)) {
+			return ThemeDB::get_singleton()->get_default_theme()->get_theme_item(p_data_type, p_name, E);
 		}
 	}
 	// If they don't exist, use any type to return the default/empty value.
-	return Theme::get_default()->get_theme_item(p_data_type, p_name, p_theme_types[0]);
+	return ThemeDB::get_singleton()->get_default_theme()->get_theme_item(p_data_type, p_name, p_theme_types[0]);
 }
 
 bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
@@ -2475,9 +2476,9 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_ow
 	}
 
 	// Secondly, check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
 		for (const StringName &E : p_theme_types) {
-			if (Theme::get_project_default()->has_theme_item(p_data_type, p_name, E)) {
+			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(p_data_type, p_name, E)) {
 				return true;
 			}
 		}
@@ -2485,7 +2486,7 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_ow
 
 	// Lastly, fall back on the items defined in the default Theme, if they exist.
 	for (const StringName &E : p_theme_types) {
-		if (Theme::get_default()->has_theme_item(p_data_type, p_name, E)) {
+		if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(p_data_type, p_name, E)) {
 			return true;
 		}
 	}
@@ -2494,13 +2495,13 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_ow
 
 void Control::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(data.theme_type_variation) != StringName()) {
-			Theme::get_project_default()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid() && ThemeDB::get_singleton()->get_project_theme()->get_type_variation_base(data.theme_type_variation) != StringName()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
 		} else {
-			Theme::get_default()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
+			ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
 		}
 	} else {
-		Theme::get_default()->get_type_dependencies(p_theme_type, StringName(), p_list);
+		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(p_theme_type, StringName(), p_list);
 	}
 }
 
@@ -2851,17 +2852,17 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 	}
 
 	// Secondly, check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_base_scale()) {
-			return Theme::get_project_default()->get_default_base_scale();
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+		if (ThemeDB::get_singleton()->get_project_theme()->has_default_base_scale()) {
+			return ThemeDB::get_singleton()->get_project_theme()->get_default_base_scale();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	if (Theme::get_default()->has_default_base_scale()) {
-		return Theme::get_default()->get_default_base_scale();
+	if (ThemeDB::get_singleton()->get_default_theme()->has_default_base_scale()) {
+		return ThemeDB::get_singleton()->get_default_theme()->get_default_base_scale();
 	}
-	return Theme::get_fallback_base_scale();
+	return ThemeDB::get_singleton()->get_fallback_base_scale();
 }
 
 float Control::get_theme_default_base_scale() const {
@@ -2902,17 +2903,17 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 	}
 
 	// Secondly, check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_font()) {
-			return Theme::get_project_default()->get_default_font();
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+		if (ThemeDB::get_singleton()->get_project_theme()->has_default_font()) {
+			return ThemeDB::get_singleton()->get_project_theme()->get_default_font();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	if (Theme::get_default()->has_default_font()) {
-		return Theme::get_default()->get_default_font();
+	if (ThemeDB::get_singleton()->get_default_theme()->has_default_font()) {
+		return ThemeDB::get_singleton()->get_default_theme()->get_default_font();
 	}
-	return Theme::get_fallback_font();
+	return ThemeDB::get_singleton()->get_fallback_font();
 }
 
 Ref<Font> Control::get_theme_default_font() const {
@@ -2953,17 +2954,17 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 	}
 
 	// Secondly, check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_font_size()) {
-			return Theme::get_project_default()->get_default_font_size();
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+		if (ThemeDB::get_singleton()->get_project_theme()->has_default_font_size()) {
+			return ThemeDB::get_singleton()->get_project_theme()->get_default_font_size();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	if (Theme::get_default()->has_default_font_size()) {
-		return Theme::get_default()->get_default_font_size();
+	if (ThemeDB::get_singleton()->get_default_theme()->has_default_font_size()) {
+		return ThemeDB::get_singleton()->get_default_theme()->get_default_font_size();
 	}
-	return Theme::get_fallback_font_size();
+	return ThemeDB::get_singleton()->get_fallback_font_size();
 }
 
 int Control::get_theme_default_font_size() const {

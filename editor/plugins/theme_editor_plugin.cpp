@@ -38,6 +38,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/color_picker.h"
+#include "scene/theme/theme_db.h"
 
 void ThemeItemImportTree::_update_items_tree() {
 	import_items_tree->clear();
@@ -1202,7 +1203,7 @@ void ThemeItemEditorDialog::_dialog_about_to_show() {
 	_update_edit_types();
 
 	import_default_theme_items->set_edited_theme(edited_theme);
-	import_default_theme_items->set_base_theme(Theme::get_default());
+	import_default_theme_items->set_base_theme(ThemeDB::get_singleton()->get_default_theme());
 	import_default_theme_items->reset_item_tree();
 
 	import_editor_theme_items->set_edited_theme(edited_theme);
@@ -1214,7 +1215,7 @@ void ThemeItemEditorDialog::_dialog_about_to_show() {
 }
 
 void ThemeItemEditorDialog::_update_edit_types() {
-	Ref<Theme> base_theme = Theme::get_default();
+	Ref<Theme> base_theme = ThemeDB::get_singleton()->get_default_theme();
 
 	List<StringName> theme_types;
 	edited_theme->get_type_list(&theme_types);
@@ -1630,7 +1631,7 @@ void ThemeItemEditorDialog::_remove_class_items() {
 		Theme::DataType data_type = (Theme::DataType)dt;
 
 		names.clear();
-		Theme::get_default()->get_theme_item_list(data_type, edited_item_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_theme_item_list(data_type, edited_item_type, &names);
 		for (const StringName &E : names) {
 			if (new_snapshot->has_theme_item_nocheck(data_type, E, edited_item_type)) {
 				new_snapshot->clear_theme_item(data_type, E, edited_item_type);
@@ -1668,7 +1669,7 @@ void ThemeItemEditorDialog::_remove_custom_items() {
 		names.clear();
 		new_snapshot->get_theme_item_list(data_type, edited_item_type, &names);
 		for (const StringName &E : names) {
-			if (!Theme::get_default()->has_theme_item_nocheck(data_type, E, edited_item_type)) {
+			if (!ThemeDB::get_singleton()->get_default_theme()->has_theme_item_nocheck(data_type, E, edited_item_type)) {
 				new_snapshot->clear_theme_item(data_type, E, edited_item_type);
 
 				if (dt == Theme::DATA_TYPE_STYLEBOX && theme_type_editor->is_stylebox_pinned(edited_theme->get_stylebox(E, edited_item_type))) {
@@ -2129,7 +2130,7 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	add_type_options->clear();
 
 	List<StringName> names;
-	Theme::get_default()->get_type_list(&names);
+	ThemeDB::get_singleton()->get_default_theme()->get_type_list(&names);
 	if (include_own_types) {
 		edited_theme->get_type_list(&names);
 	}
@@ -2370,7 +2371,7 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, v
 			default_type = edited_theme->get_type_variation_base(p_type_name);
 		}
 
-		(Theme::get_default().operator->()->*get_list_func)(default_type, &names);
+		(ThemeDB::get_singleton()->get_default_theme().operator->()->*get_list_func)(default_type, &names);
 		names.sort_custom<StringName::AlphCompare>();
 		for (const StringName &E : names) {
 			items[E] = false;
@@ -2496,7 +2497,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect("color_changed", callable_mp(this, &ThemeTypeEditor::_color_item_changed).bind(E.key));
 				item_editor->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(item_editor->get_picker()));
 			} else {
-				item_editor->set_pick_color(Theme::get_default()->get_color(E.key, edited_type));
+				item_editor->set_pick_color(ThemeDB::get_singleton()->get_default_theme()->get_color(E.key, edited_type));
 				item_editor->set_disabled(true);
 			}
 
@@ -2529,7 +2530,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
 				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
 			} else {
-				item_editor->set_value(Theme::get_default()->get_constant(E.key, edited_type));
+				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
 				item_editor->set_editable(false);
 			}
 
@@ -2563,8 +2564,8 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed).bind(E.key));
 			} else {
-				if (Theme::get_default()->has_font(E.key, edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_font(E.key, edited_type));
+				if (ThemeDB::get_singleton()->get_default_theme()->has_font(E.key, edited_type)) {
+					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_font(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
@@ -2600,7 +2601,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->set_value(edited_theme->get_font_size(E.key, edited_type));
 				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
 			} else {
-				item_editor->set_value(Theme::get_default()->get_font_size(E.key, edited_type));
+				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_font_size(E.key, edited_type));
 				item_editor->set_editable(false);
 			}
 
@@ -2634,8 +2635,8 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed).bind(E.key));
 			} else {
-				if (Theme::get_default()->has_icon(E.key, edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_icon(E.key, edited_type));
+				if (ThemeDB::get_singleton()->get_default_theme()->has_icon(E.key, edited_type)) {
+					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_icon(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
@@ -2714,8 +2715,8 @@ void ThemeTypeEditor::_update_type_items() {
 				item_control->add_child(pin_leader_button);
 				pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed).bind(item_editor, E.key));
 			} else {
-				if (Theme::get_default()->has_stylebox(E.key, edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_stylebox(E.key, edited_type));
+				if (ThemeDB::get_singleton()->get_default_theme()->has_stylebox(E.key, edited_type)) {
+					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_stylebox(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
@@ -2770,55 +2771,55 @@ void ThemeTypeEditor::_add_default_type_items() {
 
 	{
 		names.clear();
-		Theme::get_default()->get_icon_list(default_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_icon_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_icon(E, edited_type)) {
-				new_snapshot->set_icon(E, edited_type, Theme::get_default()->get_icon(E, edited_type));
+				new_snapshot->set_icon(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_icon(E, edited_type));
 			}
 		}
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_stylebox_list(default_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_stylebox(E, edited_type)) {
-				new_snapshot->set_stylebox(E, edited_type, Theme::get_default()->get_stylebox(E, edited_type));
+				new_snapshot->set_stylebox(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_stylebox(E, edited_type));
 			}
 		}
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_font_list(default_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_font_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_font(E, edited_type)) {
-				new_snapshot->set_font(E, edited_type, Theme::get_default()->get_font(E, edited_type));
+				new_snapshot->set_font(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_font(E, edited_type));
 			}
 		}
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_font_size_list(default_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_font_size(E, edited_type)) {
-				new_snapshot->set_font_size(E, edited_type, Theme::get_default()->get_font_size(E, edited_type));
+				new_snapshot->set_font_size(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_font_size(E, edited_type));
 			}
 		}
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_color_list(default_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_color_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_color(E, edited_type)) {
-				new_snapshot->set_color(E, edited_type, Theme::get_default()->get_color(E, edited_type));
+				new_snapshot->set_color(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_color(E, edited_type));
 			}
 		}
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_constant_list(default_type, &names);
+		ThemeDB::get_singleton()->get_default_theme()->get_constant_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_constant(E, edited_type)) {
-				new_snapshot->set_constant(E, edited_type, Theme::get_default()->get_constant(E, edited_type));
+				new_snapshot->set_constant(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_constant(E, edited_type));
 			}
 		}
 	}
@@ -2895,11 +2896,11 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR: {
-			ur->add_do_method(*edited_theme, "set_color", p_item_name, edited_type, Theme::get_default()->get_color(p_item_name, edited_type));
+			ur->add_do_method(*edited_theme, "set_color", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_color(p_item_name, edited_type));
 			ur->add_undo_method(*edited_theme, "clear_color", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_CONSTANT: {
-			ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, Theme::get_default()->get_constant(p_item_name, edited_type));
+			ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_constant(p_item_name, edited_type));
 			ur->add_undo_method(*edited_theme, "clear_constant", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT: {
@@ -2907,7 +2908,7 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 			ur->add_undo_method(*edited_theme, "clear_font", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "set_font_size", p_item_name, edited_type, Theme::get_default()->get_font_size(p_item_name, edited_type));
+			ur->add_do_method(*edited_theme, "set_font_size", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_font_size(p_item_name, edited_type));
 			ur->add_undo_method(*edited_theme, "clear_font_size", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_ICON: {
