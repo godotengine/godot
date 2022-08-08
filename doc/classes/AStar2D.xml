@@ -172,6 +172,14 @@
 				If you change the 2nd point's weight to 3, then the result will be [code][1, 4, 3][/code] instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.
 			</description>
 		</method>
+		<method name="get_path_score">
+			<return type="float" />
+			<argument index="0" name="from_id" type="int" />
+			<argument index="1" name="to_id" type="int" />
+			<description>
+				Returns the calculated distance score of the path found by AStar2D between the given points. If no path is found, returns -1.
+			</description>
+		</method>
 		<method name="get_point_capacity" qualifiers="const">
 			<return type="int" />
 			<description>
