@@ -512,6 +512,29 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	return path;
 }
 
+real_t AStar3D::get_path_score(int64_t p_from_id, int64_t p_to_id) {
+	Point *a;
+	bool from_exists = points.lookup(p_from_id, a);
+	ERR_FAIL_COND_V_MSG(!from_exists, -1, vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
+
+	Point *b;
+	bool to_exists = points.lookup(p_to_id, b);
+	ERR_FAIL_COND_V_MSG(!to_exists, -1, vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
+
+	if (a == b) {
+		return 0;
+	}
+
+	Point *begin_point = a;
+	Point *end_point = b;
+
+	bool found_route = _solve(begin_point, end_point);
+	if (!found_route) {
+		return -1;
+	}
+	return end_point->g_score;
+}
+
 void AStar3D::set_point_disabled(int64_t p_id, bool p_disabled) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
@@ -557,6 +580,7 @@ void AStar3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar3D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar3D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_path_score", "from_id", "to_id"), &AStar3D::get_path_score);
 
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
@@ -785,6 +809,29 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	return path;
 }
 
+real_t AStar2D::get_path_score(int64_t p_from_id, int64_t p_to_id) {
+	AStar3D::Point *a;
+	bool from_exists = points.lookup(p_from_id, a);
+	ERR_FAIL_COND_V_MSG(!from_exists, -1, vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
+
+	AStar3D::Point *b;
+	bool to_exists = points.lookup(p_to_id, b);
+	ERR_FAIL_COND_V_MSG(!to_exists, -1, vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
+
+	if (a == b) {
+		return 0;
+	}
+
+	AStar3D::Point *begin_point = a;
+	AStar3D::Point *end_point = b;
+
+	bool found_route = _solve(begin_point, end_point);
+	if (!found_route) {
+		return -1;
+	}
+	return end_point->g_score;
+}
+
 bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 	astar.pass++;
 
@@ -876,6 +923,7 @@ void AStar2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar2D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar2D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_path_score", "from_id", "to_id"), &AStar2D::get_path_score);
 
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
