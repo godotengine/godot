@@ -13,13 +13,13 @@
 	<methods>
 		<method name="allocate">
 			<return type="void" />
-			<argument index="0" name="to_cell_xform" type="Transform3D" />
-			<argument index="1" name="aabb" type="AABB" />
-			<argument index="2" name="octree_size" type="Vector3" />
-			<argument index="3" name="octree_cells" type="PackedByteArray" />
-			<argument index="4" name="data_cells" type="PackedByteArray" />
-			<argument index="5" name="distance_field" type="PackedByteArray" />
-			<argument index="6" name="level_counts" type="PackedInt32Array" />
+			<param index="0" name="to_cell_xform" type="Transform3D" />
+			<param index="1" name="aabb" type="AABB" />
+			<param index="2" name="octree_size" type="Vector3" />
+			<param index="3" name="octree_cells" type="PackedByteArray" />
+			<param index="4" name="data_cells" type="PackedByteArray" />
+			<param index="5" name="distance_field" type="PackedByteArray" />
+			<param index="6" name="level_counts" type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>

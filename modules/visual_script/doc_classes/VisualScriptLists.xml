@@ -11,64 +11,64 @@
 	<methods>
 		<method name="add_input_data_port">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="Variant.Type" />
-			<argument index="1" name="name" type="String" />
-			<argument index="2" name="index" type="int" />
+			<param index="0" name="type" type="int" enum="Variant.Type" />
+			<param index="1" name="name" type="String" />
+			<param index="2" name="index" type="int" />
 			<description>
 				Adds an input port to the Visual Script node.
 			</description>
 		</method>
 		<method name="add_output_data_port">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="Variant.Type" />
-			<argument index="1" name="name" type="String" />
-			<argument index="2" name="index" type="int" />
+			<param index="0" name="type" type="int" enum="Variant.Type" />
+			<param index="1" name="name" type="String" />
+			<param index="2" name="index" type="int" />
 			<description>
 				Adds an output port to the Visual Script node.
 			</description>
 		</method>
 		<method name="remove_input_data_port">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Removes an input port from the Visual Script node.
 			</description>
 		</method>
 		<method name="remove_output_data_port">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Removes an output port from the Visual Script node.
 			</description>
 		</method>
 		<method name="set_input_data_port_name">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="name" type="String" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="name" type="String" />
 			<description>
 				Sets the name of an input port.
 			</description>
 		</method>
 		<method name="set_input_data_port_type">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="type" type="int" enum="Variant.Type" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
 				Sets the type of an input port.
 			</description>
 		</method>
 		<method name="set_output_data_port_name">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="name" type="String" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="name" type="String" />
 			<description>
 				Sets the name of an output port.
 			</description>
 		</method>
 		<method name="set_output_data_port_type">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="type" type="int" enum="Variant.Type" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
 				Sets the type of an output port.
 			</description>

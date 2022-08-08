@@ -11,22 +11,22 @@
 	<methods>
 		<method name="base64_to_raw">
 			<return type="PackedByteArray" />
-			<argument index="0" name="base64_str" type="String" />
+			<param index="0" name="base64_str" type="String" />
 			<description>
 				Returns a decoded [PackedByteArray] corresponding to the Base64-encoded string [code]base64_str[/code].
 			</description>
 		</method>
 		<method name="base64_to_utf8">
 			<return type="String" />
-			<argument index="0" name="base64_str" type="String" />
+			<param index="0" name="base64_str" type="String" />
 			<description>
 				Returns a decoded string corresponding to the Base64-encoded string [code]base64_str[/code].
 			</description>
 		</method>
 		<method name="base64_to_variant">
 			<return type="Variant" />
-			<argument index="0" name="base64_str" type="String" />
-			<argument index="1" name="allow_objects" type="bool" default="false" />
+			<param index="0" name="base64_str" type="String" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
 				Returns a decoded [Variant] corresponding to the Base64-encoded string [code]base64_str[/code]. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
@@ -34,22 +34,22 @@
 		</method>
 		<method name="raw_to_base64">
 			<return type="String" />
-			<argument index="0" name="array" type="PackedByteArray" />
+			<param index="0" name="array" type="PackedByteArray" />
 			<description>
 				Returns a Base64-encoded string of a given [PackedByteArray].
 			</description>
 		</method>
 		<method name="utf8_to_base64">
 			<return type="String" />
-			<argument index="0" name="utf8_str" type="String" />
+			<param index="0" name="utf8_str" type="String" />
 			<description>
 				Returns a Base64-encoded string of the UTF-8 string [code]utf8_str[/code].
 			</description>
 		</method>
 		<method name="variant_to_base64">
 			<return type="String" />
-			<argument index="0" name="variant" type="Variant" />
-			<argument index="1" name="full_objects" type="bool" default="false" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Returns a Base64-encoded string of the [Variant] [code]variant[/code]. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 			</description>

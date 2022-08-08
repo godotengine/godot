@@ -40,8 +40,8 @@
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual const">
 			<return type="float" />
-			<argument index="0" name="from_id" type="int" />
-			<argument index="1" name="to_id" type="int" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="to_id" type="int" />
 			<description>
 				Called when computing the cost between two connected points.
 				Note that this function is hidden in the default [code]AStar3D[/code] class.
@@ -49,8 +49,8 @@
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual const">
 			<return type="float" />
-			<argument index="0" name="from_id" type="int" />
-			<argument index="1" name="to_id" type="int" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="to_id" type="int" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
 				Note that this function is hidden in the default [code]AStar3D[/code] class.
@@ -58,9 +58,9 @@
 		</method>
 		<method name="add_point">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="position" type="Vector3" />
-			<argument index="2" name="weight_scale" type="float" default="1.0" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="position" type="Vector3" />
+			<param index="2" name="weight_scale" type="float" default="1.0" />
 			<description>
 				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 0.0 or greater.
 				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
@@ -79,9 +79,9 @@
 		</method>
 		<method name="are_points_connected" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="to_id" type="int" />
-			<argument index="2" name="bidirectional" type="bool" default="true" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="to_id" type="int" />
+			<param index="2" name="bidirectional" type="bool" default="true" />
 			<description>
 				Returns whether the two given points are directly connected by a segment. If [code]bidirectional[/code] is [code]false[/code], returns whether movement from [code]id[/code] to [code]to_id[/code] is possible through this segment.
 			</description>
@@ -94,9 +94,9 @@
 		</method>
 		<method name="connect_points">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="to_id" type="int" />
-			<argument index="2" name="bidirectional" type="bool" default="true" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="to_id" type="int" />
+			<param index="2" name="bidirectional" type="bool" default="true" />
 			<description>
 				Creates a segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is allowed, not the reverse direction.
 				[codeblocks]
@@ -117,9 +117,9 @@
 		</method>
 		<method name="disconnect_points">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="to_id" type="int" />
-			<argument index="2" name="bidirectional" type="bool" default="true" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="to_id" type="int" />
+			<param index="2" name="bidirectional" type="bool" default="true" />
 			<description>
 				Deletes the segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is prevented, and a unidirectional segment possibly remains.
 			</description>
@@ -132,8 +132,8 @@
 		</method>
 		<method name="get_closest_point" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="to_position" type="Vector3" />
-			<argument index="1" name="include_disabled" type="bool" default="false" />
+			<param index="0" name="to_position" type="Vector3" />
+			<param index="1" name="include_disabled" type="bool" default="false" />
 			<description>
 				Returns the ID of the closest point to [code]to_position[/code], optionally taking disabled points into account. Returns [code]-1[/code] if there are no points in the points pool.
 				[b]Note:[/b] If several points are the closest to [code]to_position[/code], the one with the smallest ID will be returned, ensuring a deterministic result.
@@ -141,7 +141,7 @@
 		</method>
 		<method name="get_closest_position_in_segment" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="to_position" type="Vector3" />
+			<param index="0" name="to_position" type="Vector3" />
 			<description>
 				Returns the closest position to [code]to_position[/code] that resides inside a segment between two connected points.
 				[codeblocks]
@@ -165,8 +165,8 @@
 		</method>
 		<method name="get_id_path">
 			<return type="PackedInt64Array" />
-			<argument index="0" name="from_id" type="int" />
-			<argument index="1" name="to_id" type="int" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="to_id" type="int" />
 			<description>
 				Returns an array with the IDs of the points that form the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
 				[codeblocks]
@@ -208,7 +208,7 @@
 		</method>
 		<method name="get_point_connections">
 			<return type="PackedInt64Array" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns an array with the IDs of the points that form the connection with the given point.
 				[codeblocks]
@@ -252,8 +252,8 @@
 		</method>
 		<method name="get_point_path">
 			<return type="PackedVector3Array" />
-			<argument index="0" name="from_id" type="int" />
-			<argument index="1" name="to_id" type="int" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="to_id" type="int" />
 			<description>
 				Returns an array with the points that are in the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
@@ -261,66 +261,66 @@
 		</method>
 		<method name="get_point_position" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns the position of the point associated with the given [code]id[/code].
 			</description>
 		</method>
 		<method name="get_point_weight_scale" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns the weight scale of the point associated with the given [code]id[/code].
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns whether a point associated with the given [code]id[/code] exists.
 			</description>
 		</method>
 		<method name="is_point_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns whether a point is disabled or not for pathfinding. By default, all points are enabled.
 			</description>
 		</method>
 		<method name="remove_point">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Removes the point associated with the given [code]id[/code] from the points pool.
 			</description>
 		</method>
 		<method name="reserve_space">
 			<return type="void" />
-			<argument index="0" name="num_nodes" type="int" />
+			<param index="0" name="num_nodes" type="int" />
 			<description>
 				Reserves space internally for [code]num_nodes[/code] points, useful if you're adding a known large number of points at once, for a grid for instance. New capacity must be greater or equals to old capacity.
 			</description>
 		</method>
 		<method name="set_point_disabled">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="disabled" type="bool" default="true" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="disabled" type="bool" default="true" />
 			<description>
 				Disables or enables the specified point for pathfinding. Useful for making a temporary obstacle.
 			</description>
 		</method>
 		<method name="set_point_position">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="position" type="Vector3" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="position" type="Vector3" />
 			<description>
 				Sets the [code]position[/code] for the point with the given [code]id[/code].
 			</description>
 		</method>
 		<method name="set_point_weight_scale">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="weight_scale" type="float" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="weight_scale" type="float" />
 			<description>
 				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code]. The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
 			</description>

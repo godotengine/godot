@@ -25,7 +25,7 @@
 		</method>
 		<method name="_get_blend_shape_name" qualifiers="virtual const">
 			<return type="StringName" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -36,70 +36,70 @@
 		</method>
 		<method name="_set_blend_shape_name" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="name" type="StringName" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_array_index_len" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_array_len" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_arrays" qualifiers="virtual const">
 			<return type="Array" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual const">
 			<return type="Array" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_format" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_lods" qualifiers="virtual const">
 			<return type="Dictionary" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_material" qualifiers="virtual const">
 			<return type="Material" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_get_primitive_type" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_surface_set_material" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="material" type="Material" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="material" type="Material" />
 			<description>
 			</description>
 		</method>
 		<method name="create_convex_shape" qualifiers="const">
 			<return type="Shape3D" />
-			<argument index="0" name="clean" type="bool" default="true" />
-			<argument index="1" name="simplify" type="bool" default="false" />
+			<param index="0" name="clean" type="bool" default="true" />
+			<param index="1" name="simplify" type="bool" default="false" />
 			<description>
 				Calculate a [ConvexPolygonShape3D] from the mesh.
 				If [code]clean[/code] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
@@ -108,7 +108,7 @@
 		</method>
 		<method name="create_outline" qualifiers="const">
 			<return type="Mesh" />
-			<argument index="0" name="margin" type="float" />
+			<param index="0" name="margin" type="float" />
 			<description>
 				Calculate an outline mesh at a defined offset (margin) from the original mesh.
 				[b]Note:[/b] This method typically returns the vertices in reverse order (e.g. clockwise to counterclockwise).
@@ -147,29 +147,29 @@
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="surf_idx" type="int" />
+			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_blend_shape_arrays" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="surf_idx" type="int" />
+			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the blend shape arrays for the requested surface.
 			</description>
 		</method>
 		<method name="surface_get_material" qualifiers="const">
 			<return type="Material" />
-			<argument index="0" name="surf_idx" type="int" />
+			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns a [Material] in a given surface. Surface is rendered using this material.
 			</description>
 		</method>
 		<method name="surface_set_material">
 			<return type="void" />
-			<argument index="0" name="surf_idx" type="int" />
-			<argument index="1" name="material" type="Material" />
+			<param index="0" name="surf_idx" type="int" />
+			<param index="1" name="material" type="Material" />
 			<description>
 				Sets a [Material] for a given surface. Surface will be rendered using this material.
 			</description>

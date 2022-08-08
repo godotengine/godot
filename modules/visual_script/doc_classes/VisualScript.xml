@@ -14,142 +14,142 @@
 	<methods>
 		<method name="add_custom_signal">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Add a custom signal with the specified name to the VisualScript.
 			</description>
 		</method>
 		<method name="add_function">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="func_node_id" type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="func_node_id" type="int" />
 			<description>
 				Add a function with the specified name to the VisualScript, and assign the root [VisualScriptFunction] node's id as [code]func_node_id[/code].
 			</description>
 		</method>
 		<method name="add_node">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="node" type="VisualScriptNode" />
-			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="node" type="VisualScriptNode" />
+			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Add a node to the VisualScript.
 			</description>
 		</method>
 		<method name="add_variable">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="default_value" type="Variant" default="null" />
-			<argument index="2" name="export" type="bool" default="false" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="default_value" type="Variant" default="null" />
+			<param index="2" name="export" type="bool" default="false" />
 			<description>
 				Add a variable to the VisualScript, optionally giving it a default value or marking it as exported.
 			</description>
 		</method>
 		<method name="custom_signal_add_argument">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="type" type="int" enum="Variant.Type" />
-			<argument index="2" name="argname" type="String" />
-			<argument index="3" name="index" type="int" default="-1" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="type" type="int" enum="Variant.Type" />
+			<param index="2" name="argname" type="String" />
+			<param index="3" name="index" type="int" default="-1" />
 			<description>
 				Add an argument to a custom signal added with [method add_custom_signal].
 			</description>
 		</method>
 		<method name="custom_signal_get_argument_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Get the count of a custom signal's arguments.
 			</description>
 		</method>
 		<method name="custom_signal_get_argument_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="argidx" type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="argidx" type="int" />
 			<description>
 				Get the name of a custom signal's argument.
 			</description>
 		</method>
 		<method name="custom_signal_get_argument_type" qualifiers="const">
 			<return type="int" enum="Variant.Type" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="argidx" type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="argidx" type="int" />
 			<description>
 				Get the type of a custom signal's argument.
 			</description>
 		</method>
 		<method name="custom_signal_remove_argument">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="argidx" type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="argidx" type="int" />
 			<description>
 				Remove a specific custom signal's argument.
 			</description>
 		</method>
 		<method name="custom_signal_set_argument_name">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="argidx" type="int" />
-			<argument index="2" name="argname" type="String" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="argidx" type="int" />
+			<param index="2" name="argname" type="String" />
 			<description>
 				Rename a custom signal's argument.
 			</description>
 		</method>
 		<method name="custom_signal_set_argument_type">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="argidx" type="int" />
-			<argument index="2" name="type" type="int" enum="Variant.Type" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="argidx" type="int" />
+			<param index="2" name="type" type="int" enum="Variant.Type" />
 			<description>
 				Change the type of a custom signal's argument.
 			</description>
 		</method>
 		<method name="custom_signal_swap_argument">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="argidx" type="int" />
-			<argument index="2" name="withidx" type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="argidx" type="int" />
+			<param index="2" name="withidx" type="int" />
 			<description>
 				Swap two of the arguments of a custom signal.
 			</description>
 		</method>
 		<method name="data_connect">
 			<return type="void" />
-			<argument index="0" name="from_node" type="int" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to_node" type="int" />
-			<argument index="3" name="to_port" type="int" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
 			<description>
 				Connect two data ports. The value of [code]from_node[/code]'s [code]from_port[/code] would be fed into [code]to_node[/code]'s [code]to_port[/code].
 			</description>
 		</method>
 		<method name="data_disconnect">
 			<return type="void" />
-			<argument index="0" name="from_node" type="int" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to_node" type="int" />
-			<argument index="3" name="to_port" type="int" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
 			<description>
 				Disconnect two data ports previously connected with [method data_connect].
 			</description>
 		</method>
 		<method name="get_function_node_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the id of a function's entry point node.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="VisualScriptNode" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns a node given its id.
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns a node's position in pixels.
 			</description>
@@ -162,129 +162,129 @@
 		</method>
 		<method name="get_variable_default_value" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the default (initial) value of a variable.
 			</description>
 		</method>
 		<method name="get_variable_export" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns whether a variable is exported.
 			</description>
 		</method>
 		<method name="get_variable_info" qualifiers="const">
 			<return type="Dictionary" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the information for a given variable as a dictionary. The information includes its name, type, hint and usage.
 			</description>
 		</method>
 		<method name="has_custom_signal" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns whether a signal exists with the specified name.
 			</description>
 		</method>
 		<method name="has_data_connection" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="from_node" type="int" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to_node" type="int" />
-			<argument index="3" name="to_port" type="int" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
 			<description>
 				Returns whether the specified data ports are connected.
 			</description>
 		</method>
 		<method name="has_function" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns whether a function exists with the specified name.
 			</description>
 		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns whether a node exists with the given id.
 			</description>
 		</method>
 		<method name="has_sequence_connection" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="from_node" type="int" />
-			<argument index="1" name="from_output" type="int" />
-			<argument index="2" name="to_node" type="int" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_output" type="int" />
+			<param index="2" name="to_node" type="int" />
 			<description>
 				Returns whether the specified sequence ports are connected.
 			</description>
 		</method>
 		<method name="has_variable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns whether a variable exists with the specified name.
 			</description>
 		</method>
 		<method name="remove_custom_signal">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Remove a custom signal with the given name.
 			</description>
 		</method>
 		<method name="remove_function">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Remove a specific function and its nodes from the script.
 			</description>
 		</method>
 		<method name="remove_node">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Remove the node with the specified id.
 			</description>
 		</method>
 		<method name="remove_variable">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Remove a variable with the given name.
 			</description>
 		</method>
 		<method name="rename_custom_signal">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="new_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
 			<description>
 				Change the name of a custom signal.
 			</description>
 		</method>
 		<method name="rename_function">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="new_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
 			<description>
 				Change the name of a function.
 			</description>
 		</method>
 		<method name="rename_variable">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="new_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
 			<description>
 				Change the name of a variable.
 			</description>
 		</method>
 		<method name="sequence_connect">
 			<return type="void" />
-			<argument index="0" name="from_node" type="int" />
-			<argument index="1" name="from_output" type="int" />
-			<argument index="2" name="to_node" type="int" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_output" type="int" />
+			<param index="2" name="to_node" type="int" />
 			<description>
 				Connect two sequence ports. The execution will flow from of [code]from_node[/code]'s [code]from_output[/code] into [code]to_node[/code].
 				Unlike [method data_connect], there isn't a [code]to_port[/code], since the target node can have only one sequence port.
@@ -292,55 +292,55 @@
 		</method>
 		<method name="sequence_disconnect">
 			<return type="void" />
-			<argument index="0" name="from_node" type="int" />
-			<argument index="1" name="from_output" type="int" />
-			<argument index="2" name="to_node" type="int" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_output" type="int" />
+			<param index="2" name="to_node" type="int" />
 			<description>
 				Disconnect two sequence ports previously connected with [method sequence_connect].
 			</description>
 		</method>
 		<method name="set_instance_base_type">
 			<return type="void" />
-			<argument index="0" name="type" type="StringName" />
+			<param index="0" name="type" type="StringName" />
 			<description>
 				Set the base type of the script.
 			</description>
 		</method>
 		<method name="set_node_position">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="position" type="Vector2" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="position" type="Vector2" />
 			<description>
 				Set the node position in the VisualScript graph.
 			</description>
 		</method>
 		<method name="set_scroll">
 			<return type="void" />
-			<argument index="0" name="offset" type="Vector2" />
+			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Set the screen center to the given position.
 			</description>
 		</method>
 		<method name="set_variable_default_value">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Change the default (initial) value of a variable.
 			</description>
 		</method>
 		<method name="set_variable_export">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Change whether a variable is exported.
 			</description>
 		</method>
 		<method name="set_variable_info">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="value" type="Dictionary" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Dictionary" />
 			<description>
 				Set a variable's info, using the same format as [method get_variable_info].
 			</description>
@@ -348,7 +348,7 @@
 	</methods>
 	<signals>
 		<signal name="node_ports_changed">
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when the ports of a node are changed.
 			</description>

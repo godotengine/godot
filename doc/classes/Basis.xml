@@ -27,31 +27,31 @@
 		</constructor>
 		<constructor name="Basis">
 			<return type="Basis" />
-			<argument index="0" name="from" type="Basis" />
+			<param index="0" name="from" type="Basis" />
 			<description>
 				Constructs a [Basis] as a copy of the given [Basis].
 			</description>
 		</constructor>
 		<constructor name="Basis">
 			<return type="Basis" />
-			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="angle" type="float" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
 			<description>
 				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</constructor>
 		<constructor name="Basis">
 			<return type="Basis" />
-			<argument index="0" name="from" type="Quaternion" />
+			<param index="0" name="from" type="Quaternion" />
 			<description>
 				Constructs a pure rotation basis matrix from the given quaternion.
 			</description>
 		</constructor>
 		<constructor name="Basis">
 			<return type="Basis" />
-			<argument index="0" name="x_axis" type="Vector3" />
-			<argument index="1" name="y_axis" type="Vector3" />
-			<argument index="2" name="z_axis" type="Vector3" />
+			<param index="0" name="x_axis" type="Vector3" />
+			<param index="1" name="y_axis" type="Vector3" />
+			<param index="2" name="z_axis" type="Vector3" />
 			<description>
 				Constructs a basis matrix from 3 axis vectors (matrix columns).
 			</description>
@@ -67,21 +67,21 @@
 		</method>
 		<method name="from_euler" qualifiers="static">
 			<return type="Basis" />
-			<argument index="0" name="euler" type="Vector3" />
-			<argument index="1" name="order" type="int" default="2" />
+			<param index="0" name="euler" type="Vector3" />
+			<param index="1" name="order" type="int" default="2" />
 			<description>
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
 			<return type="Basis" />
-			<argument index="0" name="scale" type="Vector3" />
+			<param index="0" name="scale" type="Vector3" />
 			<description>
 				Constructs a pure scale basis matrix with no rotation or shearing. The scale values are set as the diagonal of the matrix, and the other parts of the matrix are zero.
 			</description>
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="order" type="int" default="2" />
+			<param index="0" name="order" type="int" default="2" />
 			<description>
 				Returns the basis's rotation in the form of Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last). The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 				Consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion] quaternion instead of Euler angles.
@@ -113,15 +113,15 @@
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="b" type="Basis" />
+			<param index="0" name="b" type="Basis" />
 			<description>
 				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="static">
 			<return type="Basis" />
-			<argument index="0" name="target" type="Vector3" />
-			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="0" name="target" type="Vector3" />
+			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Creates a Basis with a rotation such that the forward axis (-Z) points towards the [code]target[/code] position.
 				The up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the forward axis. The resulting Basis is orthonormalized. The [code]target[/code] and [code]up[/code] vectors cannot be zero, and cannot be parallel to each other.
@@ -135,44 +135,44 @@
 		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Basis" />
-			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="angle" type="float" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
 			<description>
 				Introduce an additional rotation around the given axis by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Basis" />
-			<argument index="0" name="scale" type="Vector3" />
+			<param index="0" name="scale" type="Vector3" />
 			<description>
 				Introduce an additional scaling specified by the given 3D scaling factor.
 			</description>
 		</method>
 		<method name="slerp" qualifiers="const">
 			<return type="Basis" />
-			<argument index="0" name="to" type="Basis" />
-			<argument index="1" name="weight" type="float" />
+			<param index="0" name="to" type="Basis" />
+			<param index="1" name="weight" type="float" />
 			<description>
 				Assuming that the matrix is a proper rotation matrix, slerp performs a spherical-linear interpolation with another rotation matrix.
 			</description>
 		</method>
 		<method name="tdotx" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="with" type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
 			<description>
 				Transposed dot product with the X axis of the matrix.
 			</description>
 		</method>
 		<method name="tdoty" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="with" type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
 			<description>
 				Transposed dot product with the Y axis of the matrix.
 			</description>
 		</method>
 		<method name="tdotz" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="with" type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
 			<description>
 				Transposed dot product with the Z axis of the matrix.
 			</description>
@@ -225,7 +225,7 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Basis" />
+			<param index="0" name="right" type="Basis" />
 			<description>
 				Returns [code]true[/code] if the [Basis] matrices are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -233,35 +233,35 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Basis" />
-			<argument index="0" name="right" type="Basis" />
+			<param index="0" name="right" type="Basis" />
 			<description>
 				Composes these two basis matrices by multiplying them together. This has the effect of transforming the second basis (the child) by the first basis (the parent).
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
 			<description>
 				Transforms (multiplies) the [Vector3] by the given [Basis] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Basis" />
-			<argument index="0" name="right" type="float" />
+			<param index="0" name="right" type="float" />
 			<description>
 				This operator multiplies all components of the [Basis], which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Basis" />
-			<argument index="0" name="right" type="int" />
+			<param index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Basis], which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Basis" />
+			<param index="0" name="right" type="Basis" />
 			<description>
 				Returns [code]true[/code] if the [Basis] matrices are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -269,7 +269,7 @@
 		</operator>
 		<operator name="operator []">
 			<return type="Vector3" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Access basis components using their index. [code]b[0][/code] is equivalent to [code]b.x[/code], [code]b[1][/code] is equivalent to [code]b.y[/code], and [code]b[2][/code] is equivalent to [code]b.z[/code].
 			</description>

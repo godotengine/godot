@@ -25,24 +25,24 @@
 		</method>
 		<method name="agent_get_map" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="agent" type="RID" />
+			<param index="0" name="agent" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [code]agent[/code] is currently assigned to.
 			</description>
 		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="agent" type="RID" />
+			<param index="0" name="agent" type="RID" />
 			<description>
 				Returns true if the map got changed the previous frame.
 			</description>
 		</method>
 		<method name="agent_set_callback" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="receiver" type="Object" />
-			<argument index="2" name="method" type="StringName" />
-			<argument index="3" name="userdata" type="Variant" default="null" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="receiver" type="Object" />
+			<param index="2" name="method" type="StringName" />
+			<param index="3" name="userdata" type="Variant" default="null" />
 			<description>
 				Callback called at the end of the RVO process. If a callback is created manually and the agent is placed on a navigation map it will calculate avoidance for the agent and dispatch the calculated [code]safe_velocity[/code] to the [code]receiver[/code] object with a signal to the chosen [code]method[/code] name.
 				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with a [code]null[/code] object as the [code]receiver[/code].
@@ -50,79 +50,79 @@
 		</method>
 		<method name="agent_set_map" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="map" type="RID" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="map" type="RID" />
 			<description>
 				Puts the agent in the map.
 			</description>
 		</method>
 		<method name="agent_set_max_neighbors" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="count" type="int" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="count" type="int" />
 			<description>
 				Sets the maximum number of other agents the agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
 			</description>
 		</method>
 		<method name="agent_set_max_speed" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="max_speed" type="float" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="max_speed" type="float" />
 			<description>
 				Sets the maximum speed of the agent. Must be positive.
 			</description>
 		</method>
 		<method name="agent_set_neighbor_dist" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="dist" type="float" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="dist" type="float" />
 			<description>
 				Sets the maximum distance to other agents this agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
 			</description>
 		</method>
 		<method name="agent_set_position" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="position" type="Vector2" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="position" type="Vector2" />
 			<description>
 				Sets the position of the agent in world space.
 			</description>
 		</method>
 		<method name="agent_set_radius" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="radius" type="float" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="radius" type="float" />
 			<description>
 				Sets the radius of the agent.
 			</description>
 		</method>
 		<method name="agent_set_target_velocity" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="target_velocity" type="Vector2" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="target_velocity" type="Vector2" />
 			<description>
 				Sets the new target velocity.
 			</description>
 		</method>
 		<method name="agent_set_time_horizon" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="time" type="float" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="time" type="float" />
 			<description>
 				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom this agent has in choosing its velocities. Must be positive.
 			</description>
 		</method>
 		<method name="agent_set_velocity" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="agent" type="RID" />
-			<argument index="1" name="velocity" type="Vector2" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="velocity" type="Vector2" />
 			<description>
 				Sets the current velocity of the agent.
 			</description>
 		</method>
 		<method name="free_rid" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="rid" type="RID" />
+			<param index="0" name="rid" type="RID" />
 			<description>
 				Destroys the given RID.
 			</description>
@@ -141,7 +141,7 @@
 		</method>
 		<method name="map_force_update">
 			<return type="void" />
-			<argument index="0" name="map" type="RID" />
+			<param index="0" name="map" type="RID" />
 			<description>
 				This function immediately forces synchronization of the specified navigation [code]map[/code] [RID]. By default navigation maps are only synchronized at the end of each physics frame. This function can be used to immediately (re)calculate all the navigation meshes and region connections of the navigation map. This makes it possible to query a navigation path for a changed map immediately and in the same frame (multiple times if needed).
 				Due to technical restrictions the current NavigationServer command queue will be flushed. This means all already queued update commands for this physics frame will be executed, even those intended for other maps, regions and agents not part of the specified map. The expensive computation of the navigation meshes and region connections of a map will only be done for the specified map. Other maps will receive the normal synchronization at the end of the physics frame. Should the specified map receive changes after the forced update it will update again as well when the other maps receive their update.
@@ -151,86 +151,86 @@
 		</method>
 		<method name="map_get_agents" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="map" type="RID" />
+			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [code]map[/code].
 			</description>
 		</method>
 		<method name="map_get_cell_size" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="map" type="RID" />
+			<param index="0" name="map" type="RID" />
 			<description>
 				Returns the map cell size.
 			</description>
 		</method>
 		<method name="map_get_closest_point" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="to_point" type="Vector2" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="to_point" type="Vector2" />
 			<description>
 				Returns the point closest to the provided [code]to_point[/code] on the navigation mesh surface.
 			</description>
 		</method>
 		<method name="map_get_closest_point_owner" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="to_point" type="Vector2" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="to_point" type="Vector2" />
 			<description>
 				Returns the owner region RID for the point returned by [method map_get_closest_point].
 			</description>
 		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="map" type="RID" />
+			<param index="0" name="map" type="RID" />
 			<description>
 				Returns the edge connection margin of the map. The edge connection margin is a distance used to connect two regions.
 			</description>
 		</method>
 		<method name="map_get_path" qualifiers="const">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="origin" type="Vector2" />
-			<argument index="2" name="destination" type="Vector2" />
-			<argument index="3" name="optimize" type="bool" />
-			<argument index="4" name="navigation_layers" type="int" default="1" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="origin" type="Vector2" />
+			<param index="2" name="destination" type="Vector2" />
+			<param index="3" name="optimize" type="bool" />
+			<param index="4" name="navigation_layers" type="int" default="1" />
 			<description>
 				Returns the navigation path to reach the destination from the origin. [code]navigation_layers[/code] is a bitmask of all region navigation layers that are allowed to be in the path.
 			</description>
 		</method>
 		<method name="map_get_regions" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="map" type="RID" />
+			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [code]map[/code].
 			</description>
 		</method>
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="nap" type="RID" />
+			<param index="0" name="nap" type="RID" />
 			<description>
 				Returns true if the map is active.
 			</description>
 		</method>
 		<method name="map_set_active" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="active" type="bool" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="active" type="bool" />
 			<description>
 				Sets the map active.
 			</description>
 		</method>
 		<method name="map_set_cell_size" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="cell_size" type="float" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="cell_size" type="float" />
 			<description>
 				Set the map cell size used to weld the navigation mesh polygons.
 			</description>
 		</method>
 		<method name="map_set_edge_connection_margin" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="map" type="RID" />
-			<argument index="1" name="margin" type="float" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="margin" type="float" />
 			<description>
 				Set the map edge connection margin used to weld the compatible region edges.
 			</description>
@@ -243,59 +243,59 @@
 		</method>
 		<method name="region_get_connection_pathway_end" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="connection" type="int" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="connection" type="int" />
 			<description>
 				Returns the ending point of a connection door. [code]connection[/code] is an index between 0 and the return value of [method region_get_connections_count].
 			</description>
 		</method>
 		<method name="region_get_connection_pathway_start" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="connection" type="int" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="connection" type="int" />
 			<description>
 				Returns the starting point of a connection door. [code]connection[/code] is an index between 0 and the return value of [method region_get_connections_count].
 			</description>
 		</method>
 		<method name="region_get_connections_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="region" type="RID" />
+			<param index="0" name="region" type="RID" />
 			<description>
 				Returns how many connections this [code]region[/code] has with other regions in the map.
 			</description>
 		</method>
 		<method name="region_get_enter_cost" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="region" type="RID" />
+			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the [code]enter_cost[/code] of this [code]region[/code].
 			</description>
 		</method>
 		<method name="region_get_map" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="region" type="RID" />
+			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [code]region[/code] is currently assigned to.
 			</description>
 		</method>
 		<method name="region_get_navigation_layers" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="region" type="RID" />
+			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the region's navigation layers.
 			</description>
 		</method>
 		<method name="region_get_travel_cost" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="region" type="RID" />
+			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the [code]travel_cost[/code] of this [code]region[/code].
 			</description>
 		</method>
 		<method name="region_owns_point" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="point" type="Vector2" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="point" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the provided [code]point[/code] in world space is currently owned by the provided navigation [code]region[/code]. Owned in this context means that one of the region's navigation mesh polygon faces has a possible position at the closest distance to this point compared to all other navigation meshes from other navigation regions that are also registered on the navigation map of the provided region.
 				If multiple navigation meshes have positions at equal distance the navigation region whose polygons are processed first wins the ownership. Polygons are processed in the same order that navigation regions were registered on the NavigationServer.
@@ -304,48 +304,48 @@
 		</method>
 		<method name="region_set_enter_cost" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="enter_cost" type="float" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enter_cost" type="float" />
 			<description>
 				Sets the [code]enter_cost[/code] for this [code]region[/code].
 			</description>
 		</method>
 		<method name="region_set_map" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="map" type="RID" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="map" type="RID" />
 			<description>
 				Sets the map for the region.
 			</description>
 		</method>
 		<method name="region_set_navigation_layers" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="navigation_layers" type="int" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
 			<description>
 				Set the region's navigation layers. This allows selecting regions from a path request (when using [method NavigationServer2D.map_get_path]).
 			</description>
 		</method>
 		<method name="region_set_navpoly" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="nav_poly" type="NavigationPolygon" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="nav_poly" type="NavigationPolygon" />
 			<description>
 				Sets the navigation mesh for the region.
 			</description>
 		</method>
 		<method name="region_set_transform" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="transform" type="Transform2D" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the global transformation for the region.
 			</description>
 		</method>
 		<method name="region_set_travel_cost" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="travel_cost" type="float" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [code]travel_cost[/code] for this [code]region[/code].
 			</description>
@@ -353,7 +353,7 @@
 	</methods>
 	<signals>
 		<signal name="map_changed">
-			<argument index="0" name="map" type="RID" />
+			<param index="0" name="map" type="RID" />
 			<description>
 				Emitted when a navigation map is updated, when a region moves or is modified.
 			</description>

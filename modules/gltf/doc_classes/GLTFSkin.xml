@@ -24,19 +24,19 @@
 		</method>
 		<method name="set_inverse_binds">
 			<return type="void" />
-			<argument index="0" name="inverse_binds" type="Array" />
+			<param index="0" name="inverse_binds" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_joint_i_to_bone_i">
 			<return type="void" />
-			<argument index="0" name="joint_i_to_bone_i" type="Dictionary" />
+			<param index="0" name="joint_i_to_bone_i" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_joint_i_to_name">
 			<return type="void" />
-			<argument index="0" name="joint_i_to_name" type="Dictionary" />
+			<param index="0" name="joint_i_to_name" type="Dictionary" />
 			<description>
 			</description>
 		</method>

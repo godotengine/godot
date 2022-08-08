@@ -13,23 +13,23 @@
 	<methods>
 		<method name="create_callback">
 			<return type="JavaScriptObject" />
-			<argument index="0" name="callable" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
 				Creates a reference to a [Callable] that can be used as a callback by JavaScript. The reference must be kept until the callback happens, or it won't be called at all. See [JavaScriptObject] for usage.
 			</description>
 		</method>
 		<method name="create_object" qualifiers="vararg">
 			<return type="Variant" />
-			<argument index="0" name="object" type="String" />
+			<param index="0" name="object" type="String" />
 			<description>
 				Creates a new JavaScript object using the [code]new[/code] constructor. The [code]object[/code] must a valid property of the JavaScript [code]window[/code]. See [JavaScriptObject] for usage.
 			</description>
 		</method>
 		<method name="download_buffer">
 			<return type="void" />
-			<argument index="0" name="buffer" type="PackedByteArray" />
-			<argument index="1" name="name" type="String" />
-			<argument index="2" name="mime" type="String" default="&quot;application/octet-stream&quot;" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<param index="1" name="name" type="String" />
+			<param index="2" name="mime" type="String" default="&quot;application/octet-stream&quot;" />
 			<description>
 				Prompts the user to download a file containing the specified [code]buffer[/code]. The file will have the given [code]name[/code] and [code]mime[/code] type.
 				[b]Note:[/b] The browser may override the [url=https://en.wikipedia.org/wiki/Media_type]MIME type[/url] provided based on the file [code]name[/code]'s extension.
@@ -39,8 +39,8 @@
 		</method>
 		<method name="eval">
 			<return type="Variant" />
-			<argument index="0" name="code" type="String" />
-			<argument index="1" name="use_global_execution_context" type="bool" default="false" />
+			<param index="0" name="code" type="String" />
+			<param index="1" name="use_global_execution_context" type="bool" default="false" />
 			<description>
 				Execute the string [code]code[/code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code]eval()[/code].
 				If [code]use_global_execution_context[/code] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.
@@ -48,7 +48,7 @@
 		</method>
 		<method name="get_interface">
 			<return type="JavaScriptObject" />
-			<argument index="0" name="interface" type="String" />
+			<param index="0" name="interface" type="String" />
 			<description>
 				Returns an interface to a JavaScript object that can be used by scripts. The [code]interface[/code] must be a valid property of the JavaScript [code]window[/code]. The callback must accept a single [Array] argument, which will contain the JavaScript [code]arguments[/code]. See [JavaScriptObject] for usage.
 			</description>

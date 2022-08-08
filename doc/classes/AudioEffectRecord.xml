@@ -27,7 +27,7 @@
 		</method>
 		<method name="set_recording_active">
 			<return type="void" />
-			<argument index="0" name="record" type="bool" />
+			<param index="0" name="record" type="bool" />
 			<description>
 				If [code]true[/code], the sound will be recorded. Note that restarting the recording will remove the previously recorded sample.
 			</description>

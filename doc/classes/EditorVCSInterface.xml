@@ -11,14 +11,14 @@
 	<methods>
 		<method name="commit">
 			<return type="void" />
-			<argument index="0" name="msg" type="String" />
+			<param index="0" name="msg" type="String" />
 			<description>
 				Creates a version commit if the addon is initialized, else returns without doing anything. Uses the files which have been staged previously, with the commit message set to a value as provided as in the argument.
 			</description>
 		</method>
 		<method name="get_file_diff">
 			<return type="Array" />
-			<argument index="0" name="file_path" type="String" />
+			<param index="0" name="file_path" type="String" />
 			<description>
 				Returns an [Array] of [Dictionary] objects containing the diff output from the VCS in use, if a VCS addon is initialized, else returns an empty [Array] object. The diff contents also consist of some contextual lines which provide context to the observed line change in the file.
 				Each [Dictionary] object has the line diff contents under the keys:
@@ -56,7 +56,7 @@
 		</method>
 		<method name="initialize">
 			<return type="bool" />
-			<argument index="0" name="project_root_path" type="String" />
+			<param index="0" name="project_root_path" type="String" />
 			<description>
 				Initializes the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
 			</description>
@@ -81,14 +81,14 @@
 		</method>
 		<method name="stage_file">
 			<return type="void" />
-			<argument index="0" name="file_path" type="String" />
+			<param index="0" name="file_path" type="String" />
 			<description>
 				Stages the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 		<method name="unstage_file">
 			<return type="void" />
-			<argument index="0" name="file_path" type="String" />
+			<param index="0" name="file_path" type="String" />
 			<description>
 				Unstages the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>

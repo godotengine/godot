@@ -15,15 +15,15 @@
 	<methods>
 		<method name="bake">
 			<return type="void" />
-			<argument index="0" name="nav_mesh" type="NavigationMesh" />
-			<argument index="1" name="root_node" type="Node" />
+			<param index="0" name="nav_mesh" type="NavigationMesh" />
+			<param index="1" name="root_node" type="Node" />
 			<description>
 				Bakes navigation data to the provided [code]nav_mesh[/code] by parsing child nodes under the provided [code]root_node[/code] or a specific group of nodes for potential source geometry. The parse behavior can be controlled with the [member NavigationMesh.geometry_parsed_geometry_type] and [member NavigationMesh.geometry_source_geometry_mode] properties on the [NavigationMesh] resource.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
-			<argument index="0" name="nav_mesh" type="NavigationMesh" />
+			<param index="0" name="nav_mesh" type="NavigationMesh" />
 			<description>
 				Removes all polygons and vertices from the provided [code]nav_mesh[/code] resource.
 			</description>

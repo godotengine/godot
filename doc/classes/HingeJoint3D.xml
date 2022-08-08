@@ -11,30 +11,30 @@
 	<methods>
 		<method name="get_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="flag" type="int" enum="HingeJoint3D.Flag" />
+			<param index="0" name="flag" type="int" enum="HingeJoint3D.Flag" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="param" type="int" enum="HingeJoint3D.Param" />
+			<param index="0" name="param" type="int" enum="HingeJoint3D.Param" />
 			<description>
 				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="set_flag">
 			<return type="void" />
-			<argument index="0" name="flag" type="int" enum="HingeJoint3D.Flag" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="flag" type="int" enum="HingeJoint3D.Flag" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified flag.
 			</description>
 		</method>
 		<method name="set_param">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="HingeJoint3D.Param" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="param" type="int" enum="HingeJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
 				Sets the value of the specified parameter.
 			</description>

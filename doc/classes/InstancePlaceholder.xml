@@ -12,8 +12,8 @@
 	<methods>
 		<method name="create_instance">
 			<return type="Node" />
-			<argument index="0" name="replace" type="bool" default="false" />
-			<argument index="1" name="custom_scene" type="PackedScene" default="null" />
+			<param index="0" name="replace" type="bool" default="false" />
+			<param index="1" name="custom_scene" type="PackedScene" default="null" />
 			<description>
 				Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
@@ -26,7 +26,7 @@
 		</method>
 		<method name="get_stored_values">
 			<return type="Dictionary" />
-			<argument index="0" name="with_order" type="bool" default="false" />
+			<param index="0" name="with_order" type="bool" default="false" />
 			<description>
 			</description>
 		</method>

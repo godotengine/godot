@@ -94,16 +94,16 @@
 		</method>
 		<method name="start">
 			<return type="int" enum="Error" />
-			<argument index="0" name="mode" type="int" enum="AESContext.Mode" />
-			<argument index="1" name="key" type="PackedByteArray" />
-			<argument index="2" name="iv" type="PackedByteArray" default="PackedByteArray()" />
+			<param index="0" name="mode" type="int" enum="AESContext.Mode" />
+			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="iv" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Start the AES context in the given [code]mode[/code]. A [code]key[/code] of either 16 or 32 bytes must always be provided, while an [code]iv[/code] (initialization vector) of exactly 16 bytes, is only needed when [code]mode[/code] is either [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
 			</description>
 		</method>
 		<method name="update">
 			<return type="PackedByteArray" />
-			<argument index="0" name="src" type="PackedByteArray" />
+			<param index="0" name="src" type="PackedByteArray" />
 			<description>
 				Run the desired operation for this AES context. Will return a [PackedByteArray] containing the result of encrypting (or decrypting) the given [code]src[/code]. See [method start] for mode of operation.
 				[b]Note:[/b] The size of [code]src[/code] must be a multiple of 16. Apply some padding if needed.

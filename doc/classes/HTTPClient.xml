@@ -28,10 +28,10 @@
 		</method>
 		<method name="connect_to_host">
 			<return type="int" enum="Error" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="port" type="int" default="-1" />
-			<argument index="2" name="use_ssl" type="bool" default="false" />
-			<argument index="3" name="verify_host" type="bool" default="true" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" default="-1" />
+			<param index="2" name="use_ssl" type="bool" default="false" />
+			<param index="3" name="verify_host" type="bool" default="true" />
 			<description>
 				Connects to a host. This needs to be done before any requests are sent.
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
@@ -97,7 +97,7 @@
 		</method>
 		<method name="query_string_from_dict">
 			<return type="String" />
-			<argument index="0" name="fields" type="Dictionary" />
+			<param index="0" name="fields" type="Dictionary" />
 			<description>
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblocks]
@@ -135,10 +135,10 @@
 		</method>
 		<method name="request">
 			<return type="int" enum="Error" />
-			<argument index="0" name="method" type="int" enum="HTTPClient.Method" />
-			<argument index="1" name="url" type="String" />
-			<argument index="2" name="headers" type="PackedStringArray" />
-			<argument index="3" name="body" type="String" default="&quot;&quot;" />
+			<param index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<param index="1" name="url" type="String" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="String" default="&quot;&quot;" />
 			<description>
 				Sends a request to the connected host.
 				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
@@ -163,10 +163,10 @@
 		</method>
 		<method name="request_raw">
 			<return type="int" enum="Error" />
-			<argument index="0" name="method" type="int" enum="HTTPClient.Method" />
-			<argument index="1" name="url" type="String" />
-			<argument index="2" name="headers" type="PackedStringArray" />
-			<argument index="3" name="body" type="PackedByteArray" />
+			<param index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<param index="1" name="url" type="String" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="PackedByteArray" />
 			<description>
 				Sends a raw request to the connected host.
 				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
@@ -176,8 +176,8 @@
 		</method>
 		<method name="set_http_proxy">
 			<return type="void" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="port" type="int" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
 			<description>
 				Sets the proxy server for HTTP requests.
 				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
@@ -185,8 +185,8 @@
 		</method>
 		<method name="set_https_proxy">
 			<return type="void" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="port" type="int" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
 			<description>
 				Sets the proxy server for HTTPS requests.
 				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.

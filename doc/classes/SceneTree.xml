@@ -15,8 +15,8 @@
 	<methods>
 		<method name="call_group" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="group" type="StringName" />
-			<argument index="1" name="method" type="StringName" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
 				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method call_group] was called, use [method call_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
@@ -24,9 +24,9 @@
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="flags" type="int" />
-			<argument index="1" name="group" type="StringName" />
-			<argument index="2" name="method" type="StringName" />
+			<param index="0" name="flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
 				[codeblock]
@@ -38,7 +38,7 @@
 		</method>
 		<method name="change_scene">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Changes the running scene to the one at the given [code]path[/code], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [code]path[/code] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
@@ -47,7 +47,7 @@
 		</method>
 		<method name="change_scene_to">
 			<return type="int" enum="Error" />
-			<argument index="0" name="packed_scene" type="PackedScene" />
+			<param index="0" name="packed_scene" type="PackedScene" />
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene].
 				Returns [constant OK] on success or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
@@ -56,8 +56,8 @@
 		</method>
 		<method name="create_timer">
 			<return type="SceneTreeTimer" />
-			<argument index="0" name="time_sec" type="float" />
-			<argument index="1" name="process_always" type="bool" default="true" />
+			<param index="0" name="time_sec" type="float" />
+			<param index="1" name="process_always" type="bool" default="true" />
 			<description>
 				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree]. If [code]process_always[/code] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
 				Commonly used to create a one-shot delay timer as in the following example:
@@ -88,7 +88,7 @@
 		</method>
 		<method name="get_first_node_in_group">
 			<return type="Node" />
-			<argument index="0" name="group" type="StringName" />
+			<param index="0" name="group" type="StringName" />
 			<description>
 				Returns the first node in the specified group, or [code]null[/code] if the group is empty or does not exist.
 			</description>
@@ -101,7 +101,7 @@
 		</method>
 		<method name="get_multiplayer" qualifiers="const">
 			<return type="MultiplayerAPI" />
-			<argument index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<param index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Return the [MultiplayerAPI] configured for the given path, or the default one if [code]for_path[/code] is empty.
 			</description>
@@ -114,7 +114,7 @@
 		</method>
 		<method name="get_nodes_in_group">
 			<return type="Array" />
-			<argument index="0" name="group" type="StringName" />
+			<param index="0" name="group" type="StringName" />
 			<description>
 				Returns a list of all nodes assigned to the given group.
 			</description>
@@ -127,15 +127,15 @@
 		</method>
 		<method name="has_group" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given group exists.
 			</description>
 		</method>
 		<method name="notify_group">
 			<return type="void" />
-			<argument index="0" name="group" type="StringName" />
-			<argument index="1" name="notification" type="int" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code].
 				[b]Note:[/b] [method notify_group] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification lots of members. To wait for one frame, use [method notify_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
@@ -143,9 +143,9 @@
 		</method>
 		<method name="notify_group_flags">
 			<return type="void" />
-			<argument index="0" name="call_flags" type="int" />
-			<argument index="1" name="group" type="StringName" />
-			<argument index="2" name="notification" type="int" />
+			<param index="0" name="call_flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
 				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method notify_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, notifications will be sent with a one-frame delay in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
@@ -153,14 +153,14 @@
 		</method>
 		<method name="queue_delete">
 			<return type="void" />
-			<argument index="0" name="obj" type="Object" />
+			<param index="0" name="obj" type="Object" />
 			<description>
 				Queues the given object for deletion, delaying the call to [method Object.free] to after the current frame.
 			</description>
 		</method>
 		<method name="quit">
 			<return type="void" />
-			<argument index="0" name="exit_code" type="int" default="0" />
+			<param index="0" name="exit_code" type="int" default="0" />
 			<description>
 				Quits the application at the end of the current iteration. Argument [code]exit_code[/code] can optionally be given (defaulting to 0) to customize the exit status code.
 				By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error.
@@ -177,9 +177,9 @@
 		</method>
 		<method name="set_group">
 			<return type="void" />
-			<argument index="0" name="group" type="StringName" />
-			<argument index="1" name="property" type="String" />
-			<argument index="2" name="value" type="Variant" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="property" type="String" />
+			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group.
 				[b]Note:[/b] [method set_group] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members. To wait for one frame, use [method set_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
@@ -187,10 +187,10 @@
 		</method>
 		<method name="set_group_flags">
 			<return type="void" />
-			<argument index="0" name="call_flags" type="int" />
-			<argument index="1" name="group" type="StringName" />
-			<argument index="2" name="property" type="String" />
-			<argument index="3" name="value" type="Variant" />
+			<param index="0" name="call_flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="property" type="String" />
+			<param index="3" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method set_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, properties will be set with a one-frame delay in a way similar to [method Object.call_deferred].
@@ -198,8 +198,8 @@
 		</method>
 		<method name="set_multiplayer">
 			<return type="void" />
-			<argument index="0" name="multiplayer" type="MultiplayerAPI" />
-			<argument index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<param index="0" name="multiplayer" type="MultiplayerAPI" />
+			<param index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Sets a custom [MultiplayerAPI] with the given [code]root_path[/code] (controlling also the relative subpaths), or override the default one if [code]root_path[/code] is empty.
 			</description>
@@ -244,25 +244,25 @@
 	</members>
 	<signals>
 		<signal name="node_added">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted whenever a node is added to the [SceneTree].
 			</description>
 		</signal>
 		<signal name="node_configuration_warning_changed">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a node's configuration changed. Only emitted in [code]tool[/code] mode.
 			</description>
 		</signal>
 		<signal name="node_removed">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted whenever a node is removed from the [SceneTree].
 			</description>
 		</signal>
 		<signal name="node_renamed">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted whenever a node is renamed.
 			</description>

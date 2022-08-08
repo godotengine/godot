@@ -13,14 +13,14 @@
 	<methods>
 		<method name="apply_scale">
 			<return type="void" />
-			<argument index="0" name="ratio" type="Vector2" />
+			<param index="0" name="ratio" type="Vector2" />
 			<description>
 				Multiplies the current scale by the [code]ratio[/code] vector.
 			</description>
 		</method>
 		<method name="get_angle_to" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="point" type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
 				Returns the angle between the node and the [code]point[/code] in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
@@ -28,65 +28,65 @@
 		</method>
 		<method name="get_relative_transform_to_parent" qualifiers="const">
 			<return type="Transform2D" />
-			<argument index="0" name="parent" type="Node" />
+			<param index="0" name="parent" type="Node" />
 			<description>
 				Returns the [Transform2D] relative to this node's parent.
 			</description>
 		</method>
 		<method name="global_translate">
 			<return type="void" />
-			<argument index="0" name="offset" type="Vector2" />
+			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Adds the [code]offset[/code] vector to the node's global position.
 			</description>
 		</method>
 		<method name="look_at">
 			<return type="void" />
-			<argument index="0" name="point" type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
 				Rotates the node so it points towards the [code]point[/code], which is expected to use global coordinates.
 			</description>
 		</method>
 		<method name="move_local_x">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
-			<argument index="1" name="scaled" type="bool" default="false" />
+			<param index="0" name="delta" type="float" />
+			<param index="1" name="scaled" type="bool" default="false" />
 			<description>
 				Applies a local translation on the node's X axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
 		<method name="move_local_y">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
-			<argument index="1" name="scaled" type="bool" default="false" />
+			<param index="0" name="delta" type="float" />
+			<param index="1" name="scaled" type="bool" default="false" />
 			<description>
 				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
 		<method name="rotate">
 			<return type="void" />
-			<argument index="0" name="radians" type="float" />
+			<param index="0" name="radians" type="float" />
 			<description>
 				Applies a rotation to the node, in radians, starting from its current rotation.
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="local_point" type="Vector2" />
+			<param index="0" name="local_point" type="Vector2" />
 			<description>
 				Transforms the provided local position into a position in global coordinate space. The input is expected to be local relative to the [Node2D] it is called on. e.g. Applying this method to the positions of child nodes will correctly transform their positions into the global coordinate space, but applying it to a node's own position will give an incorrect result, as it will incorporate the node's own transformation into its global position.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="global_point" type="Vector2" />
+			<param index="0" name="global_point" type="Vector2" />
 			<description>
 				Transforms the provided global position into a position in local coordinate space. The output will be local relative to the [Node2D] it is called on. e.g. It is appropriate for determining the positions of child nodes, but it is not appropriate for determining its own position relative to its parent.
 			</description>
 		</method>
 		<method name="translate">
 			<return type="void" />
-			<argument index="0" name="offset" type="Vector2" />
+			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Translates the node by the given [code]offset[/code] in local coordinates.
 			</description>

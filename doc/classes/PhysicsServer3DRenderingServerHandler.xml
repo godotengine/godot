@@ -9,21 +9,21 @@
 	<methods>
 		<method name="_set_aabb" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="aabb" type="AABB" />
+			<param index="0" name="aabb" type="AABB" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_normal" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="vertex_id" type="int" />
-			<argument index="1" name="normals" type="const void*" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="normals" type="const void*" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_vertex" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="vertex_id" type="int" />
-			<argument index="1" name="vertices" type="const void*" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="vertices" type="const void*" />
 			<description>
 			</description>
 		</method>

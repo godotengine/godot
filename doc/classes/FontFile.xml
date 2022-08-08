@@ -39,8 +39,8 @@
 		</method>
 		<method name="clear_glyphs">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all rendered glyphs information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
@@ -48,23 +48,23 @@
 		</method>
 		<method name="clear_kerning_map">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 				Removes all kerning overrides.
 			</description>
 		</method>
 		<method name="clear_size_cache">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Removes all font sizes from the cache entry
 			</description>
 		</method>
 		<method name="clear_textures">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all textures from font cache entry.
 				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
@@ -72,8 +72,8 @@
 		</method>
 		<method name="get_cache_ascent" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
@@ -86,51 +86,51 @@
 		</method>
 		<method name="get_cache_descent" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cache_scale" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cache_underline_position" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_cache_underline_thickness" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_embolden" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
 		<method name="get_face_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Recturns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="glyph" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph advance (offset of the next glyph).
 				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
@@ -138,77 +138,77 @@
 		</method>
 		<method name="get_glyph_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="size" type="int" />
-			<argument index="1" name="char" type="int" />
-			<argument index="2" name="variation_selector" type="int" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="char" type="int" />
+			<param index="2" name="variation_selector" type="int" />
 			<description>
 				Returns the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
 			</description>
 		</method>
 		<method name="get_glyph_list" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Returns list of rendered glyphs in the cache entry.
 			</description>
 		</method>
 		<method name="get_glyph_offset" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph offset from the baseline.
 			</description>
 		</method>
 		<method name="get_glyph_size" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph size.
 			</description>
 		</method>
 		<method name="get_glyph_texture_idx" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns index of the cache texture containing the glyph.
 			</description>
 		</method>
 		<method name="get_glyph_uv_rect" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns rectangle in the cache texture containing the glyph.
 			</description>
 		</method>
 		<method name="get_kerning" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="glyph_pair" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
 			<description>
 				Returns kerning for the pair of glyphs.
 			</description>
 		</method>
 		<method name="get_kerning_list" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
 			<description>
 				Returns list of the kerning overrides.
 			</description>
 		</method>
 		<method name="get_language_support_override" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="language" type="String" />
+			<param index="0" name="language" type="String" />
 			<description>
 				Returns [code]true[/code] if support override is enabled for the [code]language[/code].
 			</description>
@@ -221,7 +221,7 @@
 		</method>
 		<method name="get_script_support_override" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="script" type="String" />
+			<param index="0" name="script" type="String" />
 			<description>
 				Returns [code]true[/code] if support override is enabled for the [code]script[/code].
 			</description>
@@ -234,54 +234,54 @@
 		</method>
 		<method name="get_size_cache_list" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Returns number of textures used by font cache entry.
 			</description>
 		</method>
 		<method name="get_texture_image" qualifiers="const">
 			<return type="Image" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="texture_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
 			<description>
 				Returns a copy of the font cache texture image.
 			</description>
 		</method>
 		<method name="get_texture_offsets" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="texture_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
 			<description>
 				Returns a copy of the array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
 			</description>
 		</method>
 		<method name="get_variation_coordinates" qualifiers="const">
 			<return type="Dictionary" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns variation coordinates for the specified font cache entry. See [method Font.get_supported_variation_list] for more info.
 			</description>
 		</method>
 		<method name="load_bitmap_font">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Loads an AngelCode BMFont (.fnt, .font) bitmap font from file [code]path[/code].
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
@@ -289,7 +289,7 @@
 		</method>
 		<method name="load_dynamic_font">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
@@ -297,16 +297,16 @@
 		</method>
 		<method name="remove_cache">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
 			<description>
 				Removes specified font cache entry.
 			</description>
 		</method>
 		<method name="remove_glyph">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
 			<description>
 				Removes specified rendered glyph information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
@@ -314,40 +314,40 @@
 		</method>
 		<method name="remove_kerning">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="glyph_pair" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
 			<description>
 				Removes kerning override for the pair of glyphs.
 			</description>
 		</method>
 		<method name="remove_language_support_override">
 			<return type="void" />
-			<argument index="0" name="language" type="String" />
+			<param index="0" name="language" type="String" />
 			<description>
 				Remove language support override.
 			</description>
 		</method>
 		<method name="remove_script_support_override">
 			<return type="void" />
-			<argument index="0" name="script" type="String" />
+			<param index="0" name="script" type="String" />
 			<description>
 				Removes script support override.
 			</description>
 		</method>
 		<method name="remove_size_cache">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes specified font size from the cache entry.
 			</description>
 		</method>
 		<method name="remove_texture">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="texture_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
 			<description>
 				Removes specified texture from the cache entry.
 				[b]Note:[/b] This function will not remove glyphs associated with the texture. Remove them manually using [method remove_glyph].
@@ -355,85 +355,85 @@
 		</method>
 		<method name="render_glyph">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="index" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="index" type="int" />
 			<description>
 				Renders specified glyph to the font cache texture.
 			</description>
 		</method>
 		<method name="render_range">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="start" type="int" />
-			<argument index="3" name="end" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="start" type="int" />
+			<param index="3" name="end" type="int" />
 			<description>
 				Renders the range of characters to the font cache texture.
 			</description>
 		</method>
 		<method name="set_cache_ascent">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="ascent" type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="ascent" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_cache_descent">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="descent" type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="descent" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_cache_scale">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="scale" type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="scale" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_cache_underline_position">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="underline_position" type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_position" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_cache_underline_thickness">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="underline_thickness" type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_thickness" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_embolden">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="strength" type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="strength" type="float" />
 			<description>
 				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
 		<method name="set_face_index">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="face_index" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="face_index" type="int" />
 			<description>
 				Sets an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="set_glyph_advance">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="glyph" type="int" />
-			<argument index="3" name="advance" type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="advance" type="Vector2" />
 			<description>
 				Sets glyph advance (offset of the next glyph).
 				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
@@ -441,102 +441,102 @@
 		</method>
 		<method name="set_glyph_offset">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
-			<argument index="3" name="offset" type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="offset" type="Vector2" />
 			<description>
 				Sets glyph offset from the baseline.
 			</description>
 		</method>
 		<method name="set_glyph_size">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
-			<argument index="3" name="gl_size" type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="gl_size" type="Vector2" />
 			<description>
 				Sets glyph size.
 			</description>
 		</method>
 		<method name="set_glyph_texture_idx">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
-			<argument index="3" name="texture_idx" type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="texture_idx" type="int" />
 			<description>
 				Sets index of the cache texture containing the glyph.
 			</description>
 		</method>
 		<method name="set_glyph_uv_rect">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="glyph" type="int" />
-			<argument index="3" name="uv_rect" type="Rect2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="uv_rect" type="Rect2" />
 			<description>
 				Sets rectangle in the cache texture containing the glyph.
 			</description>
 		</method>
 		<method name="set_kerning">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="glyph_pair" type="Vector2i" />
-			<argument index="3" name="kerning" type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<param index="3" name="kerning" type="Vector2" />
 			<description>
 				Sets kerning for the pair of glyphs.
 			</description>
 		</method>
 		<method name="set_language_support_override">
 			<return type="void" />
-			<argument index="0" name="language" type="String" />
-			<argument index="1" name="supported" type="bool" />
+			<param index="0" name="language" type="String" />
+			<param index="1" name="supported" type="bool" />
 			<description>
 				Adds override for [method Font.is_language_supported].
 			</description>
 		</method>
 		<method name="set_script_support_override">
 			<return type="void" />
-			<argument index="0" name="script" type="String" />
-			<argument index="1" name="supported" type="bool" />
+			<param index="0" name="script" type="String" />
+			<param index="1" name="supported" type="bool" />
 			<description>
 				Adds override for [method Font.is_script_supported].
 			</description>
 		</method>
 		<method name="set_texture_image">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="texture_index" type="int" />
-			<argument index="3" name="image" type="Image" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="image" type="Image" />
 			<description>
 				Sets font cache texture image.
 			</description>
 		</method>
 		<method name="set_texture_offsets">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="Vector2i" />
-			<argument index="2" name="texture_index" type="int" />
-			<argument index="3" name="offset" type="PackedInt32Array" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="offset" type="PackedInt32Array" />
 			<description>
 				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty (for the fonts without dynamic glyph generation support).
 			</description>
 		</method>
 		<method name="set_transform">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="transform" type="Transform2D" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
 			</description>
 		</method>
 		<method name="set_variation_coordinates">
 			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="variation_coordinates" type="Dictionary" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="variation_coordinates" type="Dictionary" />
 			<description>
 				Sets variation coordinates for the specified font cache entry. See [method Font.get_supported_variation_list] for more info.
 			</description>

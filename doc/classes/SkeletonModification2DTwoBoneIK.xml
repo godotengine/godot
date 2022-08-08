@@ -36,28 +36,28 @@
 		</method>
 		<method name="set_joint_one_bone2d_node">
 			<return type="void" />
-			<argument index="0" name="bone2d_node" type="NodePath" />
+			<param index="0" name="bone2d_node" type="NodePath" />
 			<description>
 				Sets the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_one_bone_idx">
 			<return type="void" />
-			<argument index="0" name="bone_idx" type="int" />
+			<param index="0" name="bone_idx" type="int" />
 			<description>
 				Sets the index of the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_two_bone2d_node">
 			<return type="void" />
-			<argument index="0" name="bone2d_node" type="NodePath" />
+			<param index="0" name="bone2d_node" type="NodePath" />
 			<description>
 				Sets the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_joint_two_bone_idx">
 			<return type="void" />
-			<argument index="0" name="bone_idx" type="int" />
+			<param index="0" name="bone_idx" type="int" />
 			<description>
 				Sets the index of the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
