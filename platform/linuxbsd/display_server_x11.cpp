@@ -4991,7 +4991,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #ifdef DBUS_ENABLED
 	screensaver = memnew(FreeDesktopScreenSaver);
-	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 #endif
 
 	r_error = OK;
