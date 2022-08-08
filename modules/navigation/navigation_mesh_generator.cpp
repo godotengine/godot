@@ -43,6 +43,7 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
+#include "scene/resources/height_map_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape.h"
@@ -278,6 +279,50 @@ void NavigationMeshGenerator::_parse_geometry(const Transform &p_navmesh_xform, 
 							_add_faces(faces, transform, p_vertices, p_indices);
 						}
 					}
+
+					HeightMapShape *heightmap_shape = Object::cast_to<HeightMapShape>(*s);
+					if (heightmap_shape) {
+						int heightmap_depth = heightmap_shape->get_map_depth();
+						int heightmap_width = heightmap_shape->get_map_width();
+
+						if (heightmap_depth >= 2 && heightmap_width >= 2) {
+							const PoolRealArray &map_data = heightmap_shape->get_map_data();
+
+							Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
+							Vector2 start = heightmap_gridsize * -0.5;
+
+							PoolVector3Array vertex_array;
+							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
+							int map_data_current_index = 0;
+
+							for (int d = 0; d < heightmap_depth - 1; d++) {
+								for (int w = 0; w < heightmap_width - 1; w++) {
+									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
+										float top_left_height = map_data[map_data_current_index];
+										float top_right_height = map_data[map_data_current_index + 1];
+										float bottom_left_height = map_data[map_data_current_index + heightmap_depth];
+										float bottom_right_height = map_data[map_data_current_index + 1 + heightmap_depth];
+
+										Vector3 top_left = Vector3(start.x + w, top_left_height, start.y + d);
+										Vector3 top_right = Vector3(start.x + w + 1.0, top_right_height, start.y + d);
+										Vector3 bottom_left = Vector3(start.x + w, bottom_left_height, start.y + d + 1.0);
+										Vector3 bottom_right = Vector3(start.x + w + 1.0, bottom_right_height, start.y + d + 1.0);
+
+										vertex_array.push_back(top_right);
+										vertex_array.push_back(bottom_left);
+										vertex_array.push_back(top_left);
+										vertex_array.push_back(top_right);
+										vertex_array.push_back(bottom_right);
+										vertex_array.push_back(bottom_left);
+									}
+									map_data_current_index += 1;
+								}
+							}
+							if (vertex_array.size() > 0) {
+								_add_faces(vertex_array, transform, p_vertices, p_indices);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -364,6 +409,50 @@ void NavigationMeshGenerator::_parse_geometry(const Transform &p_navmesh_xform, 
 					case PhysicsServer::SHAPE_CONCAVE_POLYGON: {
 						PoolVector3Array faces = data;
 						_add_faces(faces, shapes[i], p_vertices, p_indices);
+					} break;
+					case PhysicsServer::SHAPE_HEIGHTMAP: {
+						Dictionary dict = data;
+						///< dict( int:"width", int:"depth",float:"cell_size", float_array:"heights"
+						int heightmap_depth = dict["depth"];
+						int heightmap_width = dict["width"];
+
+						if (heightmap_depth >= 2 && heightmap_width >= 2) {
+							const PoolRealArray &map_data = dict["heights"];
+
+							Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
+							Vector2 start = heightmap_gridsize * -0.5;
+
+							PoolVector3Array vertex_array;
+							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
+							int map_data_current_index = 0;
+
+							for (int d = 0; d < heightmap_depth - 1; d++) {
+								for (int w = 0; w < heightmap_width - 1; w++) {
+									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
+										float top_left_height = map_data[map_data_current_index];
+										float top_right_height = map_data[map_data_current_index + 1];
+										float bottom_left_height = map_data[map_data_current_index + heightmap_depth];
+										float bottom_right_height = map_data[map_data_current_index + 1 + heightmap_depth];
+
+										Vector3 top_left = Vector3(start.x + w, top_left_height, start.y + d);
+										Vector3 top_right = Vector3(start.x + w + 1.0, top_right_height, start.y + d);
+										Vector3 bottom_left = Vector3(start.x + w, bottom_left_height, start.y + d + 1.0);
+										Vector3 bottom_right = Vector3(start.x + w + 1.0, bottom_right_height, start.y + d + 1.0);
+
+										vertex_array.push_back(top_right);
+										vertex_array.push_back(bottom_left);
+										vertex_array.push_back(top_left);
+										vertex_array.push_back(top_right);
+										vertex_array.push_back(bottom_right);
+										vertex_array.push_back(bottom_left);
+									}
+									map_data_current_index += 1;
+								}
+							}
+							if (vertex_array.size() > 0) {
+								_add_faces(vertex_array, shapes[i], p_vertices, p_indices);
+							}
+						}
 					} break;
 					default: {
 						WARN_PRINT("Unsupported collision shape type.");
