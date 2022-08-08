@@ -9,6 +9,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_architecture_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the CPU architecture the Godot binary was built for. Possible return values are [code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]armv7[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm64[/code] and [code]wasm32[/code].
+				To detect whether the current CPU architecture is 64-bit, you can use the fact that all 64-bit architecture names have [code]64[/code] in their name:
+				[codeblock]
+				if "64" in Engine.get_architecture_name():
+				    print("Running on 64-bit CPU.")
+				else:
+				    print("Running on 32-bit CPU.")
+				[/codeblock]
+				[b]Note:[/b] [method get_architecture_name] does [i]not[/i] return the name of the host CPU architecture. For example, if running an x86_32 Godot binary on a x86_64 system, the returned value will be [code]x86_32[/code].
+			</description>
+		</method>
 		<method name="get_author_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
