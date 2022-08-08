@@ -3238,12 +3238,12 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
 			if (!valid) {
 				push_error(vformat(R"(Cannot get member "%s" from "%s".)", p_subscript->attribute->name, p_subscript->base->reduced_value), p_subscript->index);
+				result_type.kind = GDScriptParser::DataType::VARIANT;
 			} else {
 				p_subscript->is_constant = true;
 				p_subscript->reduced_value = value;
 				result_type = type_from_variant(value, p_subscript);
 			}
-			result_type.kind = GDScriptParser::DataType::VARIANT;
 		} else {
 			GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 
