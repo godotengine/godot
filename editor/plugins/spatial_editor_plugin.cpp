@@ -1172,26 +1172,18 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		float zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
 			case BUTTON_WHEEL_UP: {
-				if (b->get_alt()) {
-					scale_fov(-0.05);
+				if (is_freelook_active()) {
+					scale_freelook_speed(zoom_factor);
 				} else {
-					if (is_freelook_active()) {
-						scale_freelook_speed(zoom_factor);
-					} else {
-						scale_cursor_distance(1.0 / zoom_factor);
-					}
+					scale_cursor_distance(1.0 / zoom_factor);
 				}
 			} break;
 
 			case BUTTON_WHEEL_DOWN: {
-				if (b->get_alt()) {
-					scale_fov(0.05);
+				if (is_freelook_active()) {
+					scale_freelook_speed(1.0 / zoom_factor);
 				} else {
-					if (is_freelook_active()) {
-						scale_freelook_speed(1.0 / zoom_factor);
-					} else {
-						scale_cursor_distance(zoom_factor);
-					}
+					scale_cursor_distance(zoom_factor);
 				}
 			} break;
 
