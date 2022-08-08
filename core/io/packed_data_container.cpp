@@ -353,7 +353,7 @@ Variant PackedDataContainer::_iter_get(const Variant &p_iter) {
 }
 
 void PackedDataContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_set_data"), &PackedDataContainer::_set_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &PackedDataContainer::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &PackedDataContainer::_get_data);
 	ClassDB::bind_method(D_METHOD("_iter_init"), &PackedDataContainer::_iter_init);
 	ClassDB::bind_method(D_METHOD("_iter_get"), &PackedDataContainer::_iter_get);
