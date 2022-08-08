@@ -246,6 +246,8 @@ protected:
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
+	GDVIRTUAL1RC(bool, _can_add_to_scene, Node *)
+
 public:
 	enum {
 		// you can make your own, but don't use the same numbers as other notifications in other nodes
@@ -374,6 +376,8 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
+
+	bool can_add_to_scene(Node *p_to_parent) const;
 
 #ifdef TOOLS_ENABLED
 	void set_property_pinned(const String &p_property, bool p_pinned);

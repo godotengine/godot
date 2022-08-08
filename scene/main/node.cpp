@@ -2013,6 +2013,12 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+bool Node::can_add_to_scene(Node *p_to_parent) const {
+	bool can_add = true;
+	GDVIRTUAL_CALL(_can_add_to_scene, p_to_parent, can_add);
+	return can_add;
+}
+
 #ifdef TOOLS_ENABLED
 void Node::set_property_pinned(const String &p_property, bool p_pinned) {
 	bool current_pinned = false;
@@ -3002,6 +3008,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
+	GDVIRTUAL_BIND(_can_add_to_scene, "to_parent");
 }
 
 String Node::_get_name_num_separator() {

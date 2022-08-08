@@ -22,6 +22,22 @@
 		<link title="All Demos">https://github.com/godotengine/godot-demo-projects/</link>
 	</tutorials>
 	<methods>
+		<method name="_can_add_to_scene" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="to_parent" type="Node" />
+			<description>
+				Called right before the node is going to be added to a scene, passing its would-be parent as an argument. If the method returns [code]false[/code], the node will not be added to the parent and become an orphan node. This is useful for preventing initialization logic until a specific moment.
+				[b]Important:[/b] Make sure to store the node reference, otherwise the node will leak. The [code]to_parent[/code] argument can be used for that.
+				[codeblock]
+				func _can_add_to_scene(to_parent):
+				    if to_parent is Chest:
+				        to_parent.items.append(self)
+				        return false
+
+				    return true
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_enter_tree" qualifiers="virtual">
 			<return type="void" />
 			<description>

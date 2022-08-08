@@ -338,9 +338,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
-						parent->_add_child_nocheck(node, snames[n.name]);
-						if (n.index >= 0 && n.index < parent->get_child_count() - 1) {
-							parent->move_child(node, n.index);
+						if (node->can_add_to_scene(parent)) {
+							parent->_add_child_nocheck(node, snames[n.name]);
+							if (n.index >= 0 && n.index < parent->get_child_count() - 1) {
+								parent->move_child(node, n.index);
+							}
 						}
 					} else {
 						//it may be possible that an instantiated scene has changed
