@@ -972,7 +972,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		XUngrabPointer(x11_display, CurrentTime);
 	}
 
@@ -987,7 +987,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
 		flush_mouse_motion();
 
@@ -2573,7 +2573,7 @@ void OS_X11::process_xevents() {
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
-	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
+	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN;
 
 	xi.pressure = 0;
 	xi.tilt = Vector2();
@@ -2808,7 +2808,7 @@ void OS_X11::process_xevents() {
 					// Show and update the cursor if confined and the window regained focus.
 					if (mouse_mode == MOUSE_MODE_CONFINED) {
 						XUndefineCursor(x11_display, x11_window);
-					} else if (mouse_mode == MOUSE_MODE_CAPTURED) { // or re-hide it in captured mode
+					} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // or re-hide it in captured mode
 						XDefineCursor(x11_display, x11_window, null_cursor);
 					}
 
