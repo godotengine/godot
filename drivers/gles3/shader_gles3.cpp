@@ -582,6 +582,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version(bool &r_async_forbidden) 
 		strings_common.push_back("\n");
 	}
 
+	if (is_async_compilation_supported() && get_ubershader_flags_uniform() != -1) {
+		// Indicate that this shader may be used both as ubershader and conditioned during the session
+		strings_common.push_back("#define UBERSHADER_COMPAT\n");
+	}
+
 	LocalVector<CharString> flag_macros;
 	bool build_ubershader = get_ubershader_flags_uniform() != -1 && (effective_version.version & VersionKey::UBERSHADER_FLAG);
 	if (build_ubershader) {
