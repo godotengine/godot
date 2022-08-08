@@ -494,7 +494,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 					// Generate the polygon color, slightly randomly modified from the settings one.
 					Color random_variation_color;
-					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.1, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 					random_variation_color.a = color.a;
 					Vector<Color> colors;
 					colors.push_back(random_variation_color);
