@@ -95,12 +95,12 @@ void IP_Unix::_resolve_hostname(List<IP_Address> &r_addresses, const String &p_h
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), nullptr, &hints, &result);
 	if (s != 0) {
-		ERR_PRINT("getaddrinfo failed! Cannot resolve hostname.");
+		print_verbose("getaddrinfo failed! Cannot resolve hostname.");
 		return;
 	};
 
 	if (result == nullptr || result->ai_addr == nullptr) {
-		ERR_PRINT("Invalid response from getaddrinfo");
+		print_verbose("Invalid response from getaddrinfo");
 		if (result) {
 			freeaddrinfo(result);
 		}
