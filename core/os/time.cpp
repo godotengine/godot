@@ -392,7 +392,7 @@ Dictionary Time::get_time_zone_from_system() const {
 }
 
 double Time::get_unix_time_from_system() const {
-	return OS::get_singleton()->get_unix_time();
+	return OS::get_singleton()->get_subsecond_unix_time();
 }
 
 uint64_t Time::get_ticks_msec() const {

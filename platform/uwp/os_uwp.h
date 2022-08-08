@@ -193,6 +193,7 @@ public:
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
+	virtual double get_subsecond_unix_time() const;
 
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String &p_cwd);

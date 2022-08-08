@@ -86,6 +86,9 @@ uint64_t OS::get_system_time_secs() const {
 uint64_t OS::get_system_time_msecs() const {
 	return 0;
 }
+double OS::get_subsecond_unix_time() const {
+	return 0.0;
+}
 void OS::debug_break(){
 
 	// something

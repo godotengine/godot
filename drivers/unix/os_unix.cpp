@@ -172,6 +172,12 @@ uint64_t OS_Unix::get_system_time_msecs() const {
 	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
 }
 
+double OS_Unix::get_subsecond_unix_time() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, nullptr);
+	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
+}
+
 OS::Date OS_Unix::get_date(bool utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
