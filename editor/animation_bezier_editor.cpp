@@ -943,7 +943,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	// NOTE: definetly here
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		for (const KeyValue<int, Rect2> &E : subtracks) {
 			if (E.value.has_point(mb->get_position())) {
@@ -1059,7 +1058,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
-		// end
 
 		for (int i = 0; i < edit_points.size(); i++) {
 			//first check point
