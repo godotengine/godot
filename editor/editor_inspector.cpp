@@ -1613,12 +1613,11 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 			_clear_array();
 			break;
 		case OPTION_RESIZE_ARRAY:
-			new_size = count;
-			new_size_line_edit->set_text(Variant(new_size));
+			new_size_spin_box->set_value(count);
 			resize_dialog->get_ok_button()->set_disabled(true);
-			resize_dialog->popup_centered();
-			new_size_line_edit->grab_focus();
-			new_size_line_edit->select_all();
+			resize_dialog->popup_centered(Size2i(250, 0) * EDSCALE);
+			new_size_spin_box->get_line_edit()->grab_focus();
+			new_size_spin_box->get_line_edit()->select_all();
 			break;
 		default:
 			break;
@@ -2013,36 +2012,21 @@ int EditorInspectorArray::_drop_position() const {
 	return -1;
 }
 
-void EditorInspectorArray::_new_size_line_edit_text_changed(String p_text) {
-	bool valid = false;
-	if (p_text.is_valid_int()) {
-		int val = p_text.to_int();
-		if (val > 0 && val != count) {
-			valid = true;
-		}
-	}
-	resize_dialog->get_ok_button()->set_disabled(!valid);
-}
-
-void EditorInspectorArray::_new_size_line_edit_text_submitted(String p_text) {
-	bool valid = false;
-	if (p_text.is_valid_int()) {
-		int val = p_text.to_int();
-		if (val > 0 && val != count) {
-			new_size = val;
-			valid = true;
-		}
-	}
-	if (valid) {
-		resize_dialog->hide();
-		_resize_array(new_size);
-	} else {
-		new_size_line_edit->set_text(Variant(new_size));
-	}
-}
-
 void EditorInspectorArray::_resize_dialog_confirmed() {
-	_new_size_line_edit_text_submitted(new_size_line_edit->get_text());
+	if (int(new_size_spin_box->get_value()) == count) {
+		return;
+	}
+
+	resize_dialog->hide();
+	_resize_array(int(new_size_spin_box->get_value()));
+}
+
+void EditorInspectorArray::_new_size_spin_box_value_changed(float p_value) {
+	resize_dialog->get_ok_button()->set_disabled(int(p_value) == count);
+}
+
+void EditorInspectorArray::_new_size_spin_box_text_submitted(String p_text) {
+	_resize_dialog_confirmed();
 }
 
 void EditorInspectorArray::_setup() {
@@ -2342,10 +2326,11 @@ EditorInspectorArray::EditorInspectorArray() {
 	VBoxContainer *resize_dialog_vbox = memnew(VBoxContainer);
 	resize_dialog->add_child(resize_dialog_vbox);
 
-	new_size_line_edit = memnew(LineEdit);
-	new_size_line_edit->connect("text_changed", callable_mp(this, &EditorInspectorArray::_new_size_line_edit_text_changed));
-	new_size_line_edit->connect("text_submitted", callable_mp(this, &EditorInspectorArray::_new_size_line_edit_text_submitted));
-	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_line_edit);
+	new_size_spin_box = memnew(SpinBox);
+	new_size_spin_box->set_max(16384);
+	new_size_spin_box->connect("value_changed", callable_mp(this, &EditorInspectorArray::_new_size_spin_box_value_changed));
+	new_size_spin_box->get_line_edit()->connect("text_submitted", callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_submitted));
+	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_spin_box);
 
 	vbox->connect("visibility_changed", callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
 }
