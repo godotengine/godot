@@ -516,6 +516,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_region_filter_clip", "set_region_filter_clip_enabled" }, // Sprite2D
 	{ "set_rotate", "set_rotates" }, // PathFollow2D
 	{ "set_scancode", "set_keycode" }, // InputEventKey
+	{ "set_shader_param", "set_shader_uniform" }, // InputEventWithModifiers
 	{ "set_shift", "set_shift_pressed" }, // InputEventWithModifiers
 	{ "set_size_override", "set_size_2d_override" }, // SubViewport broke ImageTexture
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, // SubViewport
@@ -1618,6 +1619,7 @@ public:
 	RegEx reg_image_lock = RegEx("([a-zA-Z0-9_\\.]+)\\.lock\\(\\)");
 	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
 	RegEx reg_os_fullscreen = RegEx("OS.window_fullscreen[= ]+([^#^\n]+)");
+	RegEx reg_instantiate = RegEx("\\.instance\\(([^\\)]*)\\)");
 };
 
 // Function responsible for converting project
@@ -1690,7 +1692,6 @@ int ProjectConverter3To4::convert() {
 				rename_common(builtin_types_renames, file_content);
 
 				custom_rename(file_content, "\\.shader", ".gdshader");
-				custom_rename(file_content, "instance", "instantiate");
 			} else if (file_name.ends_with(".tscn")) {
 				rename_classes(file_content); // Using only specialized function
 
@@ -1835,7 +1836,6 @@ int ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(shaders_renames, file_content));
 				changed_elements.append_array(check_for_rename_common(builtin_types_renames, file_content));
 
-				changed_elements.append_array(check_for_custom_rename(file_content, "instance", "instantiate"));
 				changed_elements.append_array(check_for_custom_rename(file_content, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with(".tscn")) {
 				changed_elements.append_array(check_for_rename_classes(file_content));
@@ -2182,6 +2182,15 @@ bool ProjectConverter3To4::test_conversion(const RegExContainer &reg_container) 
 {
 	String base = "mortadela(";
 	String expected = "";
+	String got = get_object_of_execution(base);
+	if (got != expected) {
+		ERR_PRINT("Failed to get proper data from get_object_of_execution `" + base + "` should return `" + expected + "`(" + itos(expected.size()) + "), got instead `" + got + "`(" + itos(got.size()) + ")");
+	}
+	valid = valid & (got == expected);
+}
+{
+	String base = "var node = $world/ukraine/lviv.";
+	String expected = "$world/ukraine/lviv.";
 	String got = get_object_of_execution(base);
 	if (got != expected) {
 		ERR_PRINT("Failed to get proper data from get_object_of_execution `" + base + "` should return `" + expected + "`(" + itos(expected.size()) + "), got instead `" + got + "`(" + itos(got.size()) + ")");
@@ -2539,22 +2548,43 @@ String ProjectConverter3To4::get_starting_space(const String &line) const {
 // so it is `var roman = kieliszek.` and this function return `kieliszek.`
 String ProjectConverter3To4::get_object_of_execution(const String &line) const {
 	int end = line.size() - 1; // Last one is \0
+	int variable_start = end - 1;
 	int start = end - 1;
+
+	bool is_possibly_nodepath = false;
+	bool is_valid_nodepath = false;
 
 	while (start >= 0) {
 		char32_t character = line[start];
-		if ((character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') || character == '.' || character == '_') {
+		bool is_variable_char = (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') || character == '.' || character == '_';
+		bool is_nodepath_start = character == '$';
+		bool is_nodepath_sep = character == '/';
+		if (is_variable_char || is_nodepath_start || is_nodepath_sep) {
 			if (start == 0) {
 				break;
+			} else if (is_nodepath_sep) {
+				// Freeze variable_start, try to fetch more chars since this might be node path literal
+				is_possibly_nodepath = true;
+			} else if (is_nodepath_start) {
+				// Found $, this is a node path literal
+				is_valid_nodepath = true;
+				break;
+			}
+			if (!is_possibly_nodepath) {
+				variable_start--;
 			}
 			start--;
 			continue;
 		} else {
-			start++; // Found invalid character, needs to be ignored
+			// Abandon all hope, this is neither a variable nor a node path literal
+			variable_start++; // Found invalid character, needs to be ignored
 			break;
 		}
 	}
-	return line.substr(start, (end - start));
+	if (is_valid_nodepath) {
+		variable_start = start;
+	}
+	return line.substr(variable_start, (end - variable_start));
 }
 
 void ProjectConverter3To4::rename_enums(String &file_content) {
@@ -2774,6 +2804,9 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	} else {
 		line = reg_container.reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
 	}
+
+	// Instantiate
+	line = reg_container.reg_instantiate.sub(line, ".instantiate($1)", true);
 
 	// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
 	if (line.find("move_and_slide(") != -1) {
