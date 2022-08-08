@@ -1501,8 +1501,10 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, similarity, sarray("text"), varray());
 
 	bind_method(String, format, sarray("values", "placeholder"), varray("{_}"));
-	bind_methodv(String, replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
-	bind_method(String, replacen, sarray("what", "forwhat"), varray());
+	bind_methodv(String, replace, static_cast<String (String::*)(const String &, const String &, int) const>(&String::replace), sarray("old", "new", "count"), varray(-1));
+	bind_methodv(String, replacen, static_cast<String (String::*)(const String &, const String &, int) const>(&String::replacen), sarray("old", "new", "count"), varray(-1));
+	bind_methodv(String, rreplace, static_cast<String (String::*)(const String &, const String &, int) const>(&String::rreplace), sarray("old", "new", "count"), varray(-1));
+	bind_methodv(String, rreplacen, static_cast<String (String::*)(const String &, const String &, int) const>(&String::rreplacen), sarray("old", "new", "count"), varray(-1));
 	bind_method(String, repeat, sarray("count"), varray());
 	bind_method(String, insert, sarray("position", "what"), varray());
 	bind_method(String, capitalize, sarray(), varray());
