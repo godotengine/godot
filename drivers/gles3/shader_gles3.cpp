@@ -177,45 +177,29 @@ bool ShaderGLES3::is_custom_code_ready_for_render(uint32_t p_code_id) {
 	return true;
 }
 
-bool ShaderGLES3::_bind_ubershader() {
+bool ShaderGLES3::_bind_ubershader(bool p_for_warmup) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(!is_async_compilation_supported(), false);
 	ERR_FAIL_COND_V(get_ubershader_flags_uniform() == -1, false);
 #endif
 	new_conditional_version.version |= VersionKey::UBERSHADER_FLAG;
 	bool bound = _bind(true);
+	new_conditional_version.version &= ~VersionKey::UBERSHADER_FLAG;
+	if (p_for_warmup) {
+		// Avoid GL UB message id 131222 caused by shadow samplers not properly set up yet
+		unbind();
+		return bound;
+	}
 	int conditionals_uniform = _get_uniform(get_ubershader_flags_uniform());
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(conditionals_uniform == -1, false);
 #endif
-	new_conditional_version.version &= ~VersionKey::UBERSHADER_FLAG;
 #ifdef DEV_ENABLED
 	// So far we don't need bit 31 for conditionals. That allows us to use signed integers,
 	// which are more compatible across GL driver vendors.
 	CRASH_COND(new_conditional_version.version >= 0x80000000);
 #endif
 	glUniform1i(conditionals_uniform, new_conditional_version.version);
-
-	// This is done to avoid running into the GL UB message id 131222. Long explanation:
-	// If an ubershader has shadow samplers, they are generally not used if the current material has shadowing disabled,
-	// but that also implies the rasterizer won't do any preparation to the relevant shadow samplers (which won't really exist,
-	// so that's the correct way in a conditioned shader).
-	// However, in the case of the ubershader those shadow samplers are unconditionally declared, although potentially unused and
-	// thus "uninitialized". Sampling in that situation (compare disabled, no depth texture bound) is undefined behavior for GL.
-	// And that's a problem for us because, even if dynamic branching will serve to avoid using the unprepared sampler when shadowing
-	// is not enabled, the GPU may still run the other branch. And it's not just that the results from the sampling are undefined
-	// (that wouldn't be a problem and we could just ignore the warning); the problem is that sampling in that state is fully UB.
-	for (int i = 0; i < shadow_texunit_count; i++) {
-		int unit = shadow_texunits[i];
-		if (unit >= 0) {
-			glActiveTexture(GL_TEXTURE0 + unit);
-		} else {
-			glActiveTexture(GL_TEXTURE0 + max_image_units + unit);
-		}
-		glBindTexture(GL_TEXTURE_2D, depth_tex);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	}
-
 	return bound;
 }
 
@@ -596,6 +580,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version(bool &r_async_forbidden) 
 	for (int i = 0; i < custom_defines.size(); i++) {
 		strings_common.push_back(custom_defines[i].get_data());
 		strings_common.push_back("\n");
+	}
+
+	if (is_async_compilation_supported() && get_ubershader_flags_uniform() != -1) {
+		// Indicate that this shader may be used both as ubershader and conditioned during the session
+		strings_common.push_back("#define UBERSHADER_COMPAT\n");
 	}
 
 	LocalVector<CharString> flag_macros;
@@ -1128,7 +1117,7 @@ GLint ShaderGLES3::get_uniform_location(const String &p_name) const {
 	return glGetUniformLocation(version->ids.main, p_name.ascii().get_data());
 }
 
-void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_count, const char **p_uniform_names, int p_uniform_count, const AttributePair *p_attribute_pairs, int p_attribute_count, const TexUnitPair *p_texunit_pairs, int p_texunit_pair_count, const int *p_shadow_texunits, int p_shadow_texunit_count, const UBOPair *p_ubo_pairs, int p_ubo_pair_count, const Feedback *p_feedback, int p_feedback_count, const char *p_vertex_code, const char *p_fragment_code, int p_vertex_code_start, int p_fragment_code_start) {
+void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_count, const char **p_uniform_names, int p_uniform_count, const AttributePair *p_attribute_pairs, int p_attribute_count, const TexUnitPair *p_texunit_pairs, int p_texunit_pair_count, const UBOPair *p_ubo_pairs, int p_ubo_pair_count, const Feedback *p_feedback, int p_feedback_count, const char *p_vertex_code, const char *p_fragment_code, int p_vertex_code_start, int p_fragment_code_start) {
 	ERR_FAIL_COND(version);
 	conditional_version.key = 0;
 	new_conditional_version.key = 0;
@@ -1140,8 +1129,6 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 	fragment_code = p_fragment_code;
 	texunit_pairs = p_texunit_pairs;
 	texunit_pair_count = p_texunit_pair_count;
-	shadow_texunits = p_shadow_texunits;
-	shadow_texunit_count = p_shadow_texunit_count;
 	vertex_code_start = p_vertex_code_start;
 	fragment_code_start = p_fragment_code_start;
 	attribute_pairs = p_attribute_pairs;
@@ -1232,12 +1219,11 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
 }
 
-void ShaderGLES3::init_async_compilation(GLuint p_depth_tex) {
-	depth_tex = p_depth_tex;
+void ShaderGLES3::init_async_compilation() {
 	if (is_async_compilation_supported() && get_ubershader_flags_uniform() != -1) {
 		// Warm up the ubershader for the case of no custom code
 		new_conditional_version.code_version = 0;
-		_bind_ubershader();
+		_bind_ubershader(true);
 	}
 }
 
@@ -1297,7 +1283,7 @@ void ShaderGLES3::set_custom_shader_code(uint32_t p_code_id, const String &p_ver
 	if (p_async_mode == ASYNC_MODE_VISIBLE && is_async_compilation_supported() && get_ubershader_flags_uniform() != -1) {
 		// Warm up the ubershader for this custom code
 		new_conditional_version.code_version = p_code_id;
-		_bind_ubershader();
+		_bind_ubershader(true);
 	}
 }
 
