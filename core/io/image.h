@@ -371,7 +371,16 @@ public:
 	void normal_map_to_xy();
 	Ref<Image> rgbe_to_srgb();
 	Ref<Image> get_image_from_mipmap(int p_mipamp) const;
-	void bump_map_to_normal_map(float bump_scale = 1.0);
+
+	enum BumpMapToNormalMapAlgorithm {
+		BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE, // Cross product of the partial derivatives - fast, but potentially noisy
+		BUMP_TO_NORMAL_ALGORITHM_SOBEL // Sobel Filter - about 3x slower, but cleaner result
+	};
+	enum BumpMapToNormalMapWrap {
+		BUMP_TO_NORMAL_WRAP_REPEAT, // Assumes that the pixel row outside of the available bump map image, which is required for calculating normals, has the same height as the closest available row. Should only be used for tiling textures.
+		BUMP_TO_NORMAL_WRAP_CLAMP // Assumes that the incline stays constant in the pixel row outside of the available bump map image. This prevents flat (upright) normal vectors at the edge of the normal map.
+	};
+	void bump_map_to_normal_map(float bump_scale = 1.0, BumpMapToNormalMapAlgorithm algorithm = BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE, BumpMapToNormalMapWrap wrap_mode = BUMP_TO_NORMAL_WRAP_REPEAT);
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest);
 	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest);
@@ -429,6 +438,8 @@ VARIANT_ENUM_CAST(Image::Format)
 VARIANT_ENUM_CAST(Image::Interpolation)
 VARIANT_ENUM_CAST(Image::CompressMode)
 VARIANT_ENUM_CAST(Image::CompressSource)
+VARIANT_ENUM_CAST(Image::BumpMapToNormalMapAlgorithm)
+VARIANT_ENUM_CAST(Image::BumpMapToNormalMapWrap)
 VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 VARIANT_ENUM_CAST(Image::RoughnessChannel)

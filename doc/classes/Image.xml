@@ -61,6 +61,8 @@
 		<method name="bump_map_to_normal_map">
 			<return type="void" />
 			<argument index="0" name="bump_scale" type="float" default="1.0" />
+			<argument index="1" name="algorithm" type="int" enum="Image.BumpMapToNormalMapAlgorithm" default="0" />
+			<argument index="2" name="wrap_mode" type="int" enum="Image.BumpMapToNormalMapWrap" default="0" />
 			<description>
 				Converts a bump map to a normal map. A bump map provides a height offset per-pixel, while a normal map provides a normal direction per pixel.
 			</description>
@@ -709,6 +711,18 @@
 		</constant>
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
+		</constant>
+		<constant name="BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE" value="0" enum="BumpMapToNormalMapAlgorithm">
+			Calculate normals in [method bump_map_to_normal_map] using the [url=https://en.wikipedia.org/wiki/Partial_derivative]partial derivatives[/url] of the heights. Faster, but potentially noisy.
+		</constant>
+		<constant name="BUMP_TO_NORMAL_ALGORITHM_SOBEL" value="1" enum="BumpMapToNormalMapAlgorithm">
+			Calculate normals in [method bump_map_to_normal_map] using a [url=https://en.wikipedia.org/wiki/Sobel_operator]Sobel operator[/url]. Slower, but smoother since it looks at more adjacent pixels than [constant BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE].
+		</constant>
+		<constant name="BUMP_TO_NORMAL_WRAP_REPEAT" value="0" enum="BumpMapToNormalMapWrap">
+			Repeat wrapping in [method bump_map_to_normal_map]. Should be used with tileable textures to get seamlessly tiling normal maps.
+		</constant>
+		<constant name="BUMP_TO_NORMAL_WRAP_CLAMP" value="1" enum="BumpMapToNormalMapWrap">
+			Clamp wrapping in [method bump_map_to_normal_map]. Should always be used with non-tileable textures to prevent wrong normals at the border.
 		</constant>
 	</constants>
 </class>

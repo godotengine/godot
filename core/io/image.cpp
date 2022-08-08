@@ -3327,7 +3327,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
 	ClassDB::bind_method(D_METHOD("normal_map_to_xy"), &Image::normal_map_to_xy);
 	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
-	ClassDB::bind_method(D_METHOD("bump_map_to_normal_map", "bump_scale"), &Image::bump_map_to_normal_map, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("bump_map_to_normal_map", "bump_scale", "algorithm", "wrap_mode"), &Image::bump_map_to_normal_map, DEFVAL(1.0), DEFVAL(BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE), DEFVAL(BUMP_TO_NORMAL_WRAP_REPEAT));
 
 	ClassDB::bind_method(D_METHOD("compute_image_metrics", "compared_image", "use_luma"), &Image::compute_image_metrics);
 
@@ -3426,6 +3426,12 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_GENERIC);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_SRGB);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_NORMAL);
+
+	BIND_ENUM_CONSTANT(BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE);
+	BIND_ENUM_CONSTANT(BUMP_TO_NORMAL_ALGORITHM_SOBEL);
+
+	BIND_ENUM_CONSTANT(BUMP_TO_NORMAL_WRAP_REPEAT);
+	BIND_ENUM_CONSTANT(BUMP_TO_NORMAL_WRAP_CLAMP);
 }
 
 void Image::set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels)) {
@@ -3501,7 +3507,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipamp) const {
 	return image;
 }
 
-void Image::bump_map_to_normal_map(float bump_scale) {
+void Image::bump_map_to_normal_map(float bump_scale, BumpMapToNormalMapAlgorithm algorithm, BumpMapToNormalMapWrap wrap_mode) {
 	ERR_FAIL_COND(!_can_modify(format));
 	convert(Image::FORMAT_RF);
 
@@ -3517,30 +3523,97 @@ void Image::bump_map_to_normal_map(float bump_scale) {
 		unsigned char *write_ptr = wp;
 		float *read_ptr = (float *)rp;
 
-		for (int ty = 0; ty < height; ty++) {
-			int py = ty + 1;
-			if (py >= height) {
-				py -= height;
+		int x = 0, x_right = 0, x_left = 0;
+		int y = 0, y_up = 0, y_down = 0;
+
+		for (int it_y = 0; it_y < height; it_y++) {
+			y = it_y;
+
+			if (wrap_mode == BUMP_TO_NORMAL_WRAP_REPEAT) {
+				y_up = y + 1;
+				y_down = y - 1;
+
+				if (y_up >= height) {
+					y_up -= height;
+				}
+
+				if (y_down < 0) {
+					y_down += height;
+				}
+			} else if (wrap_mode == BUMP_TO_NORMAL_WRAP_CLAMP) {
+				if (algorithm == BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE) {
+					// For partial derivative, we only need to correct for up and right.
+					y = CLAMP(y, 0, height - 2);
+				} else if (algorithm == BUMP_TO_NORMAL_ALGORITHM_SOBEL) {
+					// Sobel filter also needs the pixels down and left, so we need to limit the area even further.
+					y = CLAMP(y, 1, height - 2);
+				}
+
+				y_up = y + 1;
+				y_down = y - 1;
 			}
 
-			for (int tx = 0; tx < width; tx++) {
-				int px = tx + 1;
-				if (px >= width) {
-					px -= width;
-				}
-				float here = read_ptr[ty * width + tx];
-				float to_right = read_ptr[ty * width + px];
-				float above = read_ptr[py * width + tx];
-				Vector3 up = Vector3(0, 1, (here - above) * bump_scale);
-				Vector3 across = Vector3(1, 0, (to_right - here) * bump_scale);
+			for (int it_x = 0; it_x < width; it_x++) {
+				x = it_x;
 
-				Vector3 normal = across.cross(up);
+				if (wrap_mode == BUMP_TO_NORMAL_WRAP_REPEAT) {
+					x_right = x + 1;
+					x_left = x - 1;
+
+					if (x_right >= width) {
+						x_right -= width;
+					}
+
+					if (x_left < 0) {
+						x_left -= width;
+					}
+				} else if (wrap_mode == BUMP_TO_NORMAL_WRAP_CLAMP) {
+					if (algorithm == BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE) {
+						// For partial derivative, we only need to correct for up and right.
+						x = CLAMP(x, 0, width - 2);
+					} else if (algorithm == BUMP_TO_NORMAL_ALGORITHM_SOBEL) {
+						// Sobel filter also needs the pixels down and left, so we need to limit the area even further.
+						x = CLAMP(x, 1, width - 2);
+					}
+
+					x_right = x + 1;
+					x_left = x - 1;
+				}
+
+				Vector3 normal;
+
+				if (algorithm == BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE) {
+					float here = read_ptr[y * width + x];
+					float to_right = read_ptr[y * width + x_right];
+					float above = read_ptr[y_up * width + x];
+
+					Vector3 up = Vector3(0, 1, (here - above) * bump_scale);
+					Vector3 across = Vector3(1, 0, (to_right - here) * bump_scale);
+
+					normal = across.cross(up);
+				} else if (algorithm == BUMP_TO_NORMAL_ALGORITHM_SOBEL) {
+					float bottom_left = read_ptr[y_up * width + x_right];
+					float bottom_center = read_ptr[y_up * width + x];
+					float bottom_right = read_ptr[y_up * width + x_left];
+
+					float center_left = read_ptr[y * width + x_right];
+					float center_right = read_ptr[y * width + x_left];
+
+					float top_left = read_ptr[y_down * width + x_right];
+					float top_center = read_ptr[y_down * width + x];
+					float top_right = read_ptr[y_down * width + x_left];
+
+					normal.x = ((top_right + 2.0 * center_right + bottom_right) - (top_left + 2.0 * center_left + bottom_left));
+					normal.y = ((bottom_left + 2.0 * bottom_center + bottom_right) - (top_left + 2.0 * top_center + top_right));
+					normal.z = 8.0 / bump_scale; // Multiply by 8.0 to compensate for the additional variables, matching the scale with BUMP_TO_NORMAL_ALGORITHM_PARTIAL_DERIVATIVE
+				}
+
 				normal.normalize();
 
-				write_ptr[((ty * width + tx) << 2) + 0] = (127.5 + normal.x * 127.5);
-				write_ptr[((ty * width + tx) << 2) + 1] = (127.5 + normal.y * 127.5);
-				write_ptr[((ty * width + tx) << 2) + 2] = (127.5 + normal.z * 127.5);
-				write_ptr[((ty * width + tx) << 2) + 3] = 255;
+				write_ptr[((it_y * width + it_x) << 2) + 0] = (127.5 + normal.x * 127.5);
+				write_ptr[((it_y * width + it_x) << 2) + 1] = (127.5 + normal.y * 127.5);
+				write_ptr[((it_y * width + it_x) << 2) + 2] = (127.5 + normal.z * 127.5);
+				write_ptr[((it_y * width + it_x) << 2) + 3] = 255;
 			}
 		}
 	}
