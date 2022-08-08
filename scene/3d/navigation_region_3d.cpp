@@ -119,7 +119,7 @@ real_t NavigationRegion3D::get_enter_cost() const {
 void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
 	travel_cost = MAX(p_travel_cost, 0.0);
-	NavigationServer3D::get_singleton()->region_set_enter_cost(region, travel_cost);
+	NavigationServer3D::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
 real_t NavigationRegion3D::get_travel_cost() const {
