@@ -1386,25 +1386,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
 			case MouseButton::WHEEL_UP: {
-				if (b->is_alt_pressed()) {
-					scale_fov(-0.05);
+				if (is_freelook_active()) {
+					scale_freelook_speed(zoom_factor);
 				} else {
-					if (is_freelook_active()) {
-						scale_freelook_speed(zoom_factor);
-					} else {
-						scale_cursor_distance(1.0 / zoom_factor);
-					}
+					scale_cursor_distance(1.0 / zoom_factor);
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				if (b->is_alt_pressed()) {
-					scale_fov(0.05);
+				if (is_freelook_active()) {
+					scale_freelook_speed(1.0 / zoom_factor);
 				} else {
-					if (is_freelook_active()) {
-						scale_freelook_speed(1.0 / zoom_factor);
-					} else {
-						scale_cursor_distance(zoom_factor);
-					}
+					scale_cursor_distance(zoom_factor);
 				}
 			} break;
 			case MouseButton::RIGHT: {
