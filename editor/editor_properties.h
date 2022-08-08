@@ -342,13 +342,14 @@ private:
 	String basename;
 	LayerType layer_type;
 	PopupMenu *layers = nullptr;
-	Button *button = nullptr;
+	TextureButton *button = nullptr;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
 	void _refresh_names();
 
 protected:
+	void _notification(int p_what);
 	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 

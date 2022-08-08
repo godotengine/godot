@@ -1147,6 +1147,17 @@ void EditorPropertyLayersGrid::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("rename_confirmed", PropertyInfo(Variant::INT, "layer_id"), PropertyInfo(Variant::STRING, "new_name")));
 }
 
+void EditorPropertyLayers::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			button->set_normal_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button->set_pressed_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button->set_disabled_texture(get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
+		} break;
+	}
+}
+
 void EditorPropertyLayers::_set_read_only(bool p_read_only) {
 	button->set_disabled(p_read_only);
 	grid->set_read_only(p_read_only);
@@ -1283,9 +1294,9 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	grid->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(grid);
 
-	button = memnew(Button);
+	button = memnew(TextureButton);
+	button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	button->set_toggle_mode(true);
-	button->set_text("...");
 	button->connect("pressed", callable_mp(this, &EditorPropertyLayers::_button_pressed));
 	hb->add_child(button);
 
