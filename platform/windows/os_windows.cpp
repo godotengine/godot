@@ -2092,6 +2092,149 @@ void OS_Windows::unset_environment(const String &p_var) const {
 	SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr); // Null to delete.
 }
 
+void OS_Windows::print_stack_trace(int p_skip_called, int p_skip_callers) {
+#ifdef DEBUG_ENABLED
+#ifndef DEV_ENABLED
+	printerr("Warning: Godot is not compiled in DEV mode, so stack trace printing may be unreliable. Compile Godot with `dev_build=yes` for more complete stack traces.\n");
+#endif // DEV_ENABLED
+	p_skip_called += 1; // Skip the first one on the stack trace (this method, print_stack_trace)
+	p_skip_callers += 4; // Skip the final 4 callers (main method / program entry point).
+#if defined(_M_X64) || defined(_M_IX86) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_ARM)
+	constexpr int MAX_FRAMES = 256;
+	constexpr size_t MAX_SYMBOL_NAME_LEN = 1024;
+	// The StackWalk method in Windows supports x86 and Arm architectures (technically, Itanium too).
+#if defined(_M_X64)
+	constexpr DWORD image_type = IMAGE_FILE_MACHINE_AMD64; // x86_64
+#elif defined(_M_IX86)
+	constexpr DWORD image_type = IMAGE_FILE_MACHINE_I386; // x86_32
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) // arm64
+	constexpr DWORD image_type = IMAGE_FILE_MACHINE_ARM64;
+#elif defined(_M_ARM) // arm32
+	constexpr DWORD image_type = IMAGE_FILE_MACHINE_ARMNT;
+#endif
+	HANDLE process = GetCurrentProcess();
+	HANDLE thread = GetCurrentThread();
+	if (SymInitialize(process, NULL, TRUE) == FALSE) {
+		return;
+	}
+	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_EXACT_SYMBOLS);
+
+	CONTEXT context = {};
+	context.ContextFlags = CONTEXT_FULL;
+	RtlCaptureContext(&context);
+
+	STACKFRAME64 frame = {};
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrStack.Mode = AddrModeFlat;
+	frame.AddrFrame.Mode = AddrModeFlat;
+#if defined(_M_X64) // x86_64
+	frame.AddrPC.Offset = context.Rip;
+	frame.AddrStack.Offset = context.Rsp;
+	frame.AddrFrame.Offset = context.Rbp;
+#elif defined(_M_IX86) // x86_32
+	frame.AddrPC.Offset = context.Eip;
+	frame.AddrStack.Offset = context.Esp;
+	frame.AddrFrame.Offset = context.Ebp;
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) // arm64
+	frame.AddrPC.Offset = context.Pc;
+	frame.AddrStack.Offset = context.Sp;
+	frame.AddrFrame.Offset = context.Fp;
+#elif defined(_M_ARM) // arm32
+	frame.AddrPC.Offset = context.Pc;
+	frame.AddrStack.Offset = context.Sp;
+	frame.AddrFrame.Offset = context.R11;
+#endif
+	void *base_address = GetModuleHandle(NULL);
+	// Helper struct, only needed in this method.
+	struct StackFrame {
+		uint64_t program_counter = 0;
+		uint64_t base_address = 0;
+		String symbol_name;
+		String module_name;
+		String file_name;
+		unsigned int line = 0;
+	};
+	Vector<StackFrame> frames;
+	while (frames.size() < MAX_FRAMES && StackWalk64(image_type, process, thread, &frame, &context, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL)) {
+		StackFrame stack_frame = {};
+		stack_frame.program_counter = frame.AddrPC.Offset;
+		if (stack_frame.program_counter == 0) {
+			continue;
+		}
+
+		char symbol_buffer[sizeof(IMAGEHLP_SYMBOL64) + MAX_SYMBOL_NAME_LEN] = {};
+		PIMAGEHLP_SYMBOL64 symbol_info = reinterpret_cast<PIMAGEHLP_SYMBOL64>(symbol_buffer);
+		symbol_info->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
+		symbol_info->MaxNameLength = MAX_SYMBOL_NAME_LEN - 1;
+		DWORD64 offset_from_symbol = 0;
+		if (SymGetSymFromAddr64(process, stack_frame.program_counter, &offset_from_symbol, symbol_info)) {
+			char undecorated_name[MAX_SYMBOL_NAME_LEN] = {};
+			if (UnDecorateSymbolName(symbol_info->Name, undecorated_name, MAX_SYMBOL_NAME_LEN, UNDNAME_COMPLETE) != 0) {
+				stack_frame.symbol_name = undecorated_name;
+			} else {
+				stack_frame.symbol_name = symbol_info->Name;
+			}
+		} else {
+			stack_frame.symbol_name = "<couldn't map PC to fn name>";
+		}
+
+		IMAGEHLP_MODULE64 module_info = {};
+		module_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+		stack_frame.base_address = reinterpret_cast<uint64_t>(base_address);
+		stack_frame.module_name = "main";
+		if (SymGetModuleInfo64(process, stack_frame.program_counter, &module_info)) {
+			stack_frame.base_address = module_info.BaseOfImage;
+			if (stack_frame.base_address != reinterpret_cast<uint64_t>(base_address)) {
+				if (module_info.ImageName[0] != 0) {
+					stack_frame.module_name = String(module_info.ImageName).to_lower().get_file();
+				} else if (module_info.ModuleName[0] != 0) {
+					stack_frame.module_name = String(module_info.ModuleName).to_lower();
+				} else {
+					stack_frame.module_name = "<unknown module>";
+				}
+			}
+		}
+
+		IMAGEHLP_LINE64 line = {};
+		line.SizeOfStruct = sizeof(line);
+		DWORD line_offset_from_symbol = 0;
+		if (SymGetLineFromAddr64(process, stack_frame.program_counter, &line_offset_from_symbol, &line)) {
+			stack_frame.file_name = line.FileName;
+			stack_frame.line = line.LineNumber;
+		}
+
+		frames.push_back(stack_frame);
+	}
+	SymCleanup(process);
+	// Format and print out the desired stack trace frames.
+	for (int i = p_skip_called; i < frames.size() - p_skip_callers; i++) {
+		const StackFrame &stack_frame = frames[i];
+		const String frame_index_padded = String::num_int64(i - (p_skip_called - 1)).lpad(2);
+		String line;
+		// Start with the basic information, depending on the level of verbosity.
+		if (is_print_verbose_enabled()) {
+			line = vformat("[%s] %x (%s+%x)\t%s", frame_index_padded, stack_frame.program_counter, stack_frame.module_name, stack_frame.program_counter - stack_frame.base_address, stack_frame.symbol_name);
+		} else {
+			line = vformat("[%s] %s\t%s", frame_index_padded, stack_frame.module_name, stack_frame.symbol_name);
+		}
+		// Add on the file information if available.
+		if (stack_frame.file_name.is_empty()) {
+			line += " (unknown file)\n";
+		} else if (is_print_verbose_enabled()) {
+			line += vformat(" (%s:%d)\n", stack_frame.file_name, stack_frame.line);
+		} else {
+			line += vformat(" (%s:%d)\n", stack_frame.file_name.get_file(), stack_frame.line);
+		}
+		print(line.utf8().get_data());
+	}
+#else
+	printerr("Stack trace printing is not supported on this architecture on Windows.\n");
+#endif // Architecture checks.
+#else
+	printerr("Stack trace printing is not supported in release builds on Windows.\n");
+#endif // DEBUG_ENABLED
+}
+
 String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
 	if (get_stdin_type() == STD_HANDLE_INVALID) {
 		return String();
