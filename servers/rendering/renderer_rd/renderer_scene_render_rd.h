@@ -424,12 +424,12 @@ private:
 		bool dof_blur_far_enabled = false;
 		float dof_blur_far_distance = 10;
 		float dof_blur_far_transition = 5;
+		float dof_blur_far_amount = 0.1;
 
 		bool dof_blur_near_enabled = false;
 		float dof_blur_near_distance = 2;
 		float dof_blur_near_transition = 1;
-
-		float dof_blur_amount = 0.1;
+		float dof_blur_near_amount = 0.1;
 
 		bool override_exposure_enabled = false;
 		float override_exposure = 1;
@@ -839,13 +839,13 @@ public:
 	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) override;
 	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) override;
 
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) override;
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, float p_far_amount, bool p_near_enable, float p_near_distance, float p_near_transition, float p_near_amount) override;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
 
 	bool camera_effects_uses_dof(RID p_camera_effects) {
 		CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 
-		return camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0;
+		return camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && (camfx->dof_blur_near_amount > 0.0 || camfx->dof_blur_far_amount > 0.0);
 	}
 
 	/* LIGHT INSTANCE API */

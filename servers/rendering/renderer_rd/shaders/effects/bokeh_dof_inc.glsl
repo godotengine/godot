@@ -4,23 +4,24 @@ layout(push_constant, std430) uniform Params {
 	float z_near;
 
 	bool orthogonal;
-	float blur_size;
 	float blur_scale;
 	int blur_steps;
-
 	bool blur_near_active;
+
 	float blur_near_begin;
 	float blur_near_end;
+	float blur_near_size;
 	bool blur_far_active;
 
 	float blur_far_begin;
 	float blur_far_end;
+	float blur_far_size;
 	bool second_pass;
-	bool half_size;
 
+	bool half_size;
 	bool use_jitter;
 	float jitter_seed;
-	uint pad[2];
+	uint pad;
 }
 params;
 

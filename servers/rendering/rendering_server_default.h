@@ -716,7 +716,7 @@ public:
 	FUNC2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)
 	FUNC1(camera_effects_set_dof_blur_bokeh_shape, DOFBokehShape)
 
-	FUNC8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
+	FUNC9(camera_effects_set_dof_blur, RID, bool, float, float, float, bool, float, float, float)
 	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	FUNC1(positional_soft_shadow_filter_set_quality, ShadowQuality);

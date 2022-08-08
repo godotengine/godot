@@ -1075,7 +1075,7 @@ void RasterizerSceneGLES3::camera_effects_set_dof_blur_quality(RS::DOFBlurQualit
 void RasterizerSceneGLES3::camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) {
 }
 
-void RasterizerSceneGLES3::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
+void RasterizerSceneGLES3::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, float p_far_amount, bool p_near_enable, float p_near_distance, float p_near_transition, float p_near_amount) {
 }
 
 void RasterizerSceneGLES3::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {

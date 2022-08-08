@@ -2437,7 +2437,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_effects_set_dof_blur_quality", "quality", "use_jitter"), &RenderingServer::camera_effects_set_dof_blur_quality);
 	ClassDB::bind_method(D_METHOD("camera_effects_set_dof_blur_bokeh_shape", "shape"), &RenderingServer::camera_effects_set_dof_blur_bokeh_shape);
 
-	ClassDB::bind_method(D_METHOD("camera_effects_set_dof_blur", "camera_effects", "far_enable", "far_distance", "far_transition", "near_enable", "near_distance", "near_transition", "amount"), &RenderingServer::camera_effects_set_dof_blur);
+	ClassDB::bind_method(D_METHOD("camera_effects_set_dof_blur", "camera_effects", "far_enable", "far_distance", "far_transition", "far_amount", "near_enable", "near_distance", "near_transition", "near_amount"), &RenderingServer::camera_effects_set_dof_blur);
 	ClassDB::bind_method(D_METHOD("camera_effects_set_custom_exposure", "camera_effects", "enable", "exposure"), &RenderingServer::camera_effects_set_custom_exposure);
 
 	BIND_ENUM_CONSTANT(DOF_BOKEH_BOX);

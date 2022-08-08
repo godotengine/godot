@@ -84,7 +84,7 @@ BokehDOF::~BokehDOF() {
 	}
 }
 
-void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
+void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, float p_far_bokeh_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_near_bokeh_size, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute version of bokeh depth of field with the mobile renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
@@ -97,17 +97,18 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, 
 	bokeh.push_constant.blur_far_active = p_dof_far;
 	bokeh.push_constant.blur_far_begin = p_dof_far_begin;
 	bokeh.push_constant.blur_far_end = p_dof_far_begin + p_dof_far_size;
+	bokeh.push_constant.blur_far_size = p_far_bokeh_size;
 
 	bokeh.push_constant.blur_near_active = p_dof_near;
 	bokeh.push_constant.blur_near_begin = p_dof_near_begin;
 	bokeh.push_constant.blur_near_end = MAX(0, p_dof_near_begin - p_dof_near_size);
+	bokeh.push_constant.blur_near_size = p_near_bokeh_size;
 	bokeh.push_constant.use_jitter = p_use_jitter;
 	bokeh.push_constant.jitter_seed = Math::randf() * 1000.0;
 
 	bokeh.push_constant.z_near = p_cam_znear;
 	bokeh.push_constant.z_far = p_cam_zfar;
 	bokeh.push_constant.orthogonal = p_cam_orthogonal;
-	bokeh.push_constant.blur_size = p_bokeh_size;
 
 	bokeh.push_constant.second_pass = false;
 	bokeh.push_constant.half_size = false;
@@ -171,7 +172,8 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, 
 			bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
 			bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
 			bokeh.push_constant.half_size = true;
-			bokeh.push_constant.blur_size *= 0.5;
+			bokeh.push_constant.blur_far_size *= 0.5;
+			bokeh.push_constant.blur_near_size *= 0.5;
 
 		} else {
 			//medium and high quality use full size
@@ -273,7 +275,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, 
 	RD::get_singleton()->compute_list_end();
 }
 
-void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
+void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, float p_dof_blur_far_amount, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_near_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
 	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't blur-based depth of field with the clustered renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
@@ -292,7 +294,6 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, f
 
 	bokeh.push_constant.second_pass = false;
 	bokeh.push_constant.half_size = false;
-	bokeh.push_constant.blur_size = p_dof_blur_amount;
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -308,6 +309,9 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, f
 	RD::Uniform u_weight_texture3(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_buffers.weight_texture[3] }));
 
 	if (p_dof_far || p_dof_near) {
+		bokeh.push_constant.blur_far_size = p_dof_blur_far_amount;
+		bokeh.push_constant.blur_near_size = p_dof_blur_near_amount;
+
 		if (p_dof_far) {
 			bokeh.push_constant.blur_far_active = true;
 			bokeh.push_constant.blur_far_begin = p_dof_far_begin;
@@ -349,7 +353,8 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, f
 				bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
 				bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
 				bokeh.push_constant.half_size = true;
-				bokeh.push_constant.blur_size *= 0.5;
+				bokeh.push_constant.blur_far_size *= 0.5;
+				bokeh.push_constant.blur_near_size *= 0.5;
 			}
 
 			static const int quality_samples[4] = { 6, 12, 12, 24 };
@@ -428,7 +433,8 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, f
 				bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
 				bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
 				bokeh.push_constant.half_size = true;
-				// bokeh.push_constant.blur_size *= 0.5;
+				// bokeh.push_constant.blur_far_size *= 0.5;
+				// bokeh.push_constant.blur_near_size *= 0.5;
 			}
 
 			static const float quality_scale[4] = { 8.0, 4.0, 1.0, 0.5 };

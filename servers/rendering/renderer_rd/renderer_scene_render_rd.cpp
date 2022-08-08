@@ -1099,19 +1099,19 @@ void RendererSceneRenderRD::camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokeh
 	dof_blur_bokeh_shape = p_shape;
 }
 
-void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
+void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, float p_far_amount, bool p_near_enable, float p_near_distance, float p_near_transition, float p_near_amount) {
 	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
 
 	camfx->dof_blur_far_enabled = p_far_enable;
 	camfx->dof_blur_far_distance = p_far_distance;
 	camfx->dof_blur_far_transition = p_far_transition;
+	camfx->dof_blur_far_amount = p_far_amount;
 
 	camfx->dof_blur_near_enabled = p_near_enable;
 	camfx->dof_blur_near_distance = p_near_distance;
 	camfx->dof_blur_near_transition = p_near_transition;
-
-	camfx->dof_blur_amount = p_amount;
+	camfx->dof_blur_near_amount = p_near_amount;
 }
 
 void RendererSceneRenderRD::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
@@ -1866,7 +1866,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 	bool can_use_storage = _render_buffers_can_be_storage();
 
-	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
+	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && (camfx->dof_blur_near_amount > 0.0 || camfx->dof_blur_far_amount > 0.0)) {
 		RENDER_TIMESTAMP("Depth of Field");
 		RD::get_singleton()->draw_command_begin_label("DOF");
 		if (rb->blur[0].texture.is_null()) {
@@ -1881,7 +1881,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		buffers.half_texture[0] = rb->blur[1].layers[0].mipmaps[0].texture;
 		buffers.half_texture[1] = rb->blur[0].layers[0].mipmaps[1].texture;
 
-		float bokeh_size = camfx->dof_blur_amount * 64.0;
+		const float far_bokeh_size = camfx->dof_blur_far_amount * 64.0;
+		const float near_bokeh_size = camfx->dof_blur_near_amount * 64.0;
 		if (can_use_storage) {
 			for (uint32_t i = 0; i < rb->view_count; i++) {
 				buffers.base_texture = rb->views[i].view_texture;
@@ -1890,7 +1891,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustrum
 				float z_near = p_render_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->view_projection[i].get_z_far();
-				bokeh_dof->bokeh_dof_compute(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, z_near, z_far, p_render_data->cam_orthogonal);
+				bokeh_dof->bokeh_dof_compute(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, far_bokeh_size, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, near_bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, z_near, z_far, p_render_data->cam_orthogonal);
 			};
 		} else {
 			// Set framebuffers.
@@ -1913,7 +1914,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustrum
 				float z_near = p_render_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->view_projection[i].get_z_far();
-				bokeh_dof->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, z_near, z_far, p_render_data->cam_orthogonal);
+				bokeh_dof->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, far_bokeh_size, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, near_bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, z_near, z_far, p_render_data->cam_orthogonal);
 			}
 		}
 		RD::get_singleton()->draw_command_end_label();

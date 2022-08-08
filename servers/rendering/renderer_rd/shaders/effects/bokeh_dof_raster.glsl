@@ -63,11 +63,11 @@ float get_depth_at_pos(vec2 uv) {
 
 float get_blur_size(float depth) {
 	if (params.blur_near_active && depth < params.blur_near_begin) {
-		return -(1.0 - smoothstep(params.blur_near_end, params.blur_near_begin, depth)) * params.blur_size - DEPTH_GAP; //near blur is negative
+		return -(1.0 - smoothstep(params.blur_near_end, params.blur_near_begin, depth)) * params.blur_near_size - DEPTH_GAP; //near blur is negative
 	}
 
 	if (params.blur_far_active && depth > params.blur_far_begin) {
-		return smoothstep(params.blur_far_begin, params.blur_far_end, depth) * params.blur_size + DEPTH_GAP;
+		return smoothstep(params.blur_far_begin, params.blur_far_end, depth) * params.blur_far_size + DEPTH_GAP;
 	}
 
 	return 0.0;
@@ -85,7 +85,7 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 	vec4 accum = color;
 	float total = 1.0;
 
-	float blur_scale = params.blur_size / float(params.blur_steps);
+	float blur_scale = max(params.blur_near_size, params.blur_far_size) / float(params.blur_steps);
 
 	if (params.use_jitter) {
 		uv += dir * (hash12n(uv + params.jitter_seed) - 0.5);
@@ -201,7 +201,7 @@ void main() {
 	float accum = 1.0;
 
 	float radius = params.blur_scale;
-	for (float ang = 0.0; radius < params.blur_size; ang += GOLDEN_ANGLE) {
+	for (float ang = 0.0; radius < max(params.blur_near_size, params.blur_far_size); ang += GOLDEN_ANGLE) {
 		vec2 uv_adj = uv + vec2(cos(ang), sin(ang)) * pixel_size * radius;
 
 		vec4 sample_color = texture(source_color, uv_adj);

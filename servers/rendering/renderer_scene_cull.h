@@ -1258,7 +1258,7 @@ public:
 	PASS2(camera_effects_set_dof_blur_quality, RS::DOFBlurQuality, bool)
 	PASS1(camera_effects_set_dof_blur_bokeh_shape, RS::DOFBokehShape)
 
-	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
+	PASS9(camera_effects_set_dof_blur, RID, bool, float, float, float, bool, float, float, float)
 	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
