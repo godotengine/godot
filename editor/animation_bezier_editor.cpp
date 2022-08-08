@@ -632,6 +632,7 @@ Ref<Animation> AnimationBezierTrackEdit::get_animation() const {
 	return animation;
 }
 
+
 void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track) {
 	animation = p_animation;
 	selected_track = p_track;
@@ -805,7 +806,8 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 	ERR_FAIL_COND(idx < 0);
 
 	selection.insert(IntPair(p_track, idx));
-	emit_signal(SNAME("select_key"), p_track, idx, true);
+	
+	emit_signal(SNAME("select_key"), idx, true, p_track);
 	update();
 }
 
@@ -941,6 +943,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	// NOTE: definetly here
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		for (const KeyValue<int, Rect2> &E : subtracks) {
 			if (E.value.has_point(mb->get_position())) {
@@ -1056,6 +1059,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
+		// end
 
 		for (int i = 0; i < edit_points.size(); i++) {
 			//first check point
