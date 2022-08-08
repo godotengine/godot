@@ -669,7 +669,7 @@ void BitMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &BitMap::get_size);
 	ClassDB::bind_method(D_METHOD("resize", "new_size"), &BitMap::resize);
 
-	ClassDB::bind_method(D_METHOD("_set_data"), &BitMap::_set_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &BitMap::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &BitMap::_get_data);
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);

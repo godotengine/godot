@@ -1125,7 +1125,7 @@
 			<return type="Variant" />
 			<argument index="0" name="obj" type="Variant" />
 			<description>
-				Returns a weak reference to an object, or [code]null[/code] is the argument is invalid.
+				Returns a weak reference to an object, or [code]null[/code] if the argument is invalid.
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
