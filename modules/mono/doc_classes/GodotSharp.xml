@@ -38,7 +38,7 @@
 		</method>
 		<method name="is_domain_finalizing_for_unload">
 			<return type="bool" />
-			<argument index="0" name="domain_id" type="int" />
+			<param index="0" name="domain_id" type="int" />
 			<description>
 				Returns [code]true[/code] if the domain is being finalized, [code]false[/code] otherwise.
 			</description>

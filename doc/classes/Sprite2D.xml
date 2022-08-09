@@ -41,7 +41,7 @@
 		</method>
 		<method name="is_pixel_opaque" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="pos" type="Vector2" />
+			<param index="0" name="pos" type="Vector2" />
 			<description>
 				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case.
 				[b]Note:[/b] It also returns [code]false[/code], if the sprite's texture is [code]null[/code] or if the given position is invalid.

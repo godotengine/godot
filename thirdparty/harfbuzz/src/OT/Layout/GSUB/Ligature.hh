@@ -5,18 +5,20 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
+template <typename Types>
 struct Ligature
 {
   protected:
-  HBGlyphID16   ligGlyph;               /* GlyphID of ligature to substitute */
-  HeadlessArrayOf<HBGlyphID16>
-                component;              /* Array of component GlyphIDs--start
+  typename Types::HBGlyphID
+		ligGlyph;               /* GlyphID of ligature to substitute */
+  HeadlessArrayOf<typename Types::HBGlyphID>
+		component;              /* Array of component GlyphIDs--start
                                          * with the second  component--ordered
                                          * in writing direction */
   public:
-  DEFINE_SIZE_ARRAY (4, component);
+  DEFINE_SIZE_ARRAY (Types::size + 2, component);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -62,7 +64,24 @@ struct Ligature
      * as a "ligated" substitution. */
     if (unlikely (count == 1))
     {
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->sync_so_far ();
+	c->buffer->message (c->font,
+			    "replacing glyph at %d (ligature substitution)",
+			    c->buffer->idx);
+      }
+
       c->replace_glyph (ligGlyph);
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "replaced glyph at %d (ligature substitution)",
+			    c->buffer->idx - 1);
+      }
+
       return_trace (true);
     }
 
@@ -83,12 +102,45 @@ struct Ligature
       return_trace (false);
     }
 
+    unsigned pos = 0;
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      unsigned delta = c->buffer->sync_so_far ();
+
+      pos = c->buffer->idx;
+
+      char buf[HB_MAX_CONTEXT_LENGTH * 16] = {0};
+      char *p = buf;
+
+      match_end += delta;
+      for (unsigned i = 0; i < count; i++)
+      {
+	match_positions[i] += delta;
+	if (i)
+	  *p++ = ',';
+	sprintf (p, "%u", match_positions[i]);
+	p += strlen(p);
+      }
+
+      c->buffer->message (c->font,
+			  "ligating glyphs at %s",
+			  buf);
+    }
+
     ligate_input (c,
                   count,
                   match_positions,
                   match_end,
                   ligGlyph,
                   total_component_count);
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->sync_so_far ();
+      c->buffer->message (c->font,
+			  "ligated glyph at %d",
+			  pos);
+    }
 
     return_trace (true);
   }

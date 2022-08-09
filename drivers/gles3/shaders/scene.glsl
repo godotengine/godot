@@ -104,8 +104,8 @@ layout(location = 14) in highp vec4 instance_xform2;
 layout(location = 15) in highp uvec4 instance_color_custom_data; // Color packed into xy, Custom data into zw.
 #endif
 
-layout(std140) uniform GlobalVariableData { //ubo:1
-	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+layout(std140) uniform GlobalShaderUniformData { //ubo:1
+	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
 layout(std140) uniform SceneData { // ubo:2
@@ -399,8 +399,8 @@ uniform samplerCube radiance_map; // texunit:-2
 
 #endif
 
-layout(std140) uniform GlobalVariableData { //ubo:1
-	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+layout(std140) uniform GlobalShaderUniformData { //ubo:1
+	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
 	/* Material Uniforms */
@@ -495,7 +495,7 @@ struct LightData { //this structure needs to be as packed as possible
 	mediump float cone_attenuation;
 	mediump float cone_angle;
 	mediump float specular_amount;
-	bool shadow_enabled;
+	mediump float shadow_opacity;
 };
 #ifndef DISABLE_LIGHT_OMNI
 layout(std140) uniform OmniLightData { // ubo:5
@@ -686,7 +686,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
 		float cLdotH5 = SchlickFresnel(cLdotH);
-		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
+		// Calculate Fresnel using cheap approximate specular occlusion term from Filament:
+		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
+		float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
+		vec3 F = f0 + (f90 - f0) * cLdotH5;
 
 		vec3 specular_brdf_NL = cNdotL * D * F * G;
 
@@ -751,7 +754,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	if (omni_lights[idx].size > 0.0) {
 		float t = omni_lights[idx].size / max(0.001, light_length);
-		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
+		size_A = max(0.0, 1.0 - 1.0 / sqrt(1.0 + t * t));
 	}
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, omni_attenuation, f0, roughness, metallic, omni_lights[idx].specular_amount, albedo, alpha,
@@ -800,7 +803,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	if (spot_lights[idx].size > 0.0) {
 		float t = spot_lights[idx].size / max(0.001, light_length);
-		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
+		size_A = max(0.0, 1.0 - 1.0 / sqrt(1.0 + t * t));
 	}
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, spot_attenuation, f0, roughness, metallic, spot_lights[idx].specular_amount, albedo, alpha,
@@ -1049,6 +1052,7 @@ void main() {
 #else
 		vec3 ref_vec = reflect(-view, normal);
 #endif
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 		specular_light = textureLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).rgb;
@@ -1107,7 +1111,7 @@ void main() {
 
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-		specular_light *= env.x * f0 + env.y;
+		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, 0.0, 1.0);
 #endif
 	}
 

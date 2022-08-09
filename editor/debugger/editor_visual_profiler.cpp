@@ -796,7 +796,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	frame_delay->set_wait_time(0.1);
 	frame_delay->set_one_shot(true);
 	add_child(frame_delay);
-	frame_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_frame), make_binds(false));
+	frame_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_frame).bind(false));
 
 	plot_delay = memnew(Timer);
 	plot_delay->set_wait_time(0.1);

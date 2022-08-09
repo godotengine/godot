@@ -98,4 +98,4 @@ public:
 	~OpenXRInteractionProfile();
 };
 
-#endif // !OPENXR_INTERACTION_PROFILE_H
+#endif // OPENXR_INTERACTION_PROFILE_H

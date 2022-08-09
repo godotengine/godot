@@ -43,13 +43,14 @@
 
 class DirAccessMacOS : public DirAccessUnix {
 protected:
-	virtual String fix_unicode_name(const char *p_name) const;
+	virtual String fix_unicode_name(const char *p_name) const override;
 
-	virtual int get_drive_count();
-	virtual String get_drive(int p_drive);
+	virtual int get_drive_count() override;
+	virtual String get_drive(int p_drive) override;
 
-	virtual bool is_hidden(const String &p_name);
+	virtual bool is_hidden(const String &p_name) override;
 };
 
-#endif //UNIX ENABLED
-#endif
+#endif // UNIX ENABLED || LIBC_FILEIO_ENABLED
+
+#endif // DIR_ACCESS_MACOS_H

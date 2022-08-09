@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VOXEL_GIEDITORPLUGIN_H
-#define VOXEL_GIEDITORPLUGIN_H
+#ifndef VOXEL_GI_EDITOR_PLUGIN_H
+#define VOXEL_GI_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
@@ -71,4 +71,4 @@ public:
 	~VoxelGIEditorPlugin();
 };
 
-#endif // VOXEL_GIEDITORPLUGIN_H
+#endif // VOXEL_GI_EDITOR_PLUGIN_H

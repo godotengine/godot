@@ -28,22 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_LIBVORBIS_H
-#define AUDIO_STREAM_LIBVORBIS_H
+#ifndef AUDIO_STREAM_OGG_VORBIS_H
+#define AUDIO_STREAM_OGG_VORBIS_H
 
 #include "core/variant/variant.h"
 #include "modules/ogg/ogg_packet_sequence.h"
 #include "servers/audio/audio_stream.h"
 #include "thirdparty/libvorbis/vorbis/codec.h"
 
-class AudioStreamOGGVorbis;
+class AudioStreamOggVorbis;
 
-class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
-	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
+class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
+	GDCLASS(AudioStreamPlaybackOggVorbis, AudioStreamPlaybackResampled);
 
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
+
+	enum {
+		FADE_SIZE = 256
+	};
+	AudioFrame loop_fade[FADE_SIZE];
+	int loop_fade_remaining = FADE_SIZE;
 
 	vorbis_info info;
 	vorbis_comment comment;
@@ -60,12 +66,13 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	bool have_samples_left = false;
 	bool have_packets_left = false;
 
-	friend class AudioStreamOGGVorbis;
+	friend class AudioStreamOggVorbis;
 
-	Ref<OGGPacketSequence> vorbis_data;
-	Ref<OGGPacketSequencePlayback> vorbis_data_playback;
-	Ref<AudioStreamOGGVorbis> vorbis_stream;
+	Ref<OggPacketSequence> vorbis_data;
+	Ref<OggPacketSequencePlayback> vorbis_data_playback;
+	Ref<AudioStreamOggVorbis> vorbis_stream;
 
+	int _mix_frames(AudioFrame *p_buffer, int p_frames);
 	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
 
 	// Allocates vorbis data structures. Returns true upon success, false on failure.
@@ -85,16 +92,18 @@ public:
 	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
 
-	AudioStreamPlaybackOGGVorbis() {}
-	~AudioStreamPlaybackOGGVorbis();
+	virtual void tag_used_streams() override;
+
+	AudioStreamPlaybackOggVorbis() {}
+	~AudioStreamPlaybackOggVorbis();
 };
 
-class AudioStreamOGGVorbis : public AudioStream {
-	GDCLASS(AudioStreamOGGVorbis, AudioStream);
+class AudioStreamOggVorbis : public AudioStream {
+	GDCLASS(AudioStreamOggVorbis, AudioStream);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 	RES_BASE_EXTENSION("oggvorbisstr");
 
-	friend class AudioStreamPlaybackOGGVorbis;
+	friend class AudioStreamPlaybackOggVorbis;
 
 	int channels = 1;
 	float length = 0.0;
@@ -105,30 +114,43 @@ class AudioStreamOGGVorbis : public AudioStream {
 	// Also causes allocation and deallocation.
 	void maybe_update_info();
 
-	Ref<OGGPacketSequence> packet_sequence;
+	Ref<OggPacketSequence> packet_sequence;
+
+	double bpm = 0;
+	int beat_count = 0;
+	int bar_beats = 4;
 
 protected:
 	static void _bind_methods();
 
 public:
 	void set_loop(bool p_enable);
-	bool has_loop() const;
+	virtual bool has_loop() const override;
 
 	void set_loop_offset(float p_seconds);
 	float get_loop_offset() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	void set_bpm(double p_bpm);
+	virtual double get_bpm() const override;
+
+	void set_beat_count(int p_beat_count);
+	virtual int get_beat_count() const override;
+
+	void set_bar_beats(int p_bar_beats);
+	virtual int get_bar_beats() const override;
+
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
-	void set_packet_sequence(Ref<OGGPacketSequence> p_packet_sequence);
-	Ref<OGGPacketSequence> get_packet_sequence() const;
+	void set_packet_sequence(Ref<OggPacketSequence> p_packet_sequence);
+	Ref<OggPacketSequence> get_packet_sequence() const;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
 
-	AudioStreamOGGVorbis();
-	virtual ~AudioStreamOGGVorbis();
+	AudioStreamOggVorbis();
+	virtual ~AudioStreamOggVorbis();
 };
 
-#endif // AUDIO_STREAM_LIBVORBIS_H
+#endif // AUDIO_STREAM_OGG_VORBIS_H

@@ -758,6 +758,13 @@ bool MeshStorage::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {
 	return mesh->blend_shape_count > 0 || (mesh->has_bone_weights && p_has_skeleton);
 }
 
+Dependency *MeshStorage::mesh_get_dependency(RID p_mesh) const {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND_V(!mesh, nullptr);
+
+	return &mesh->dependency;
+}
+
 /* MESH INSTANCE */
 
 RID MeshStorage::mesh_instance_create(RID p_base) {
@@ -1471,6 +1478,13 @@ RID MeshStorage::multimesh_get_mesh(RID p_multimesh) const {
 	ERR_FAIL_COND_V(!multimesh, RID());
 
 	return multimesh->mesh;
+}
+
+Dependency *MeshStorage::multimesh_get_dependency(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, nullptr);
+
+	return &multimesh->dependency;
 }
 
 Transform3D MeshStorage::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {

@@ -33,4 +33,4 @@
 
 void register_windows_exporter();
 
-#endif
+#endif // WINDOWS_EXPORT_H

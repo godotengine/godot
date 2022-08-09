@@ -51,7 +51,7 @@
  * Checks the equality of two #hb_segment_properties_t's.
  *
  * Return value:
- * %true if all properties of @a equal those of @b, %false otherwise.
+ * `true` if all properties of @a equal those of @b, `false` otherwise.
  *
  * Since: 0.9.7
  **/
@@ -387,9 +387,11 @@ hb_buffer_t::clear_positions ()
   hb_memset (pos, 0, sizeof (pos[0]) * len);
 }
 
-void
+bool
 hb_buffer_t::sync ()
 {
+  bool ret = false;
+
   assert (have_output);
 
   assert (idx <= len);
@@ -403,12 +405,39 @@ hb_buffer_t::sync ()
     info = out_info;
   }
   len = out_len;
+  ret = true;
 
 reset:
   have_output = false;
   out_len = 0;
   out_info = info;
   idx = 0;
+
+  return ret;
+}
+
+int
+hb_buffer_t::sync_so_far ()
+{
+  bool had_output = have_output;
+  unsigned out_i = out_len;
+  unsigned i = idx;
+  unsigned old_idx = idx;
+
+  if (sync ())
+    idx = out_i;
+  else
+    idx = i;
+
+  if (had_output)
+  {
+    have_output = true;
+    out_len = idx;
+  }
+
+  assert (idx <= len);
+
+  return idx - old_idx;
 }
 
 bool
@@ -643,9 +672,9 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
  * Return value: (transfer full):
  * A newly allocated #hb_buffer_t with a reference count of 1. The initial
  * reference count should be released with hb_buffer_destroy() when you are done
- * using the #hb_buffer_t. This function never returns %NULL. If memory cannot
+ * using the #hb_buffer_t. This function never returns `NULL`. If memory cannot
  * be allocated, a special #hb_buffer_t object will be returned on which
- * hb_buffer_allocation_successful() returns %false.
+ * hb_buffer_allocation_successful() returns `false`.
  *
  * Since: 0.9.2
  **/
@@ -775,7 +804,7 @@ hb_buffer_destroy (hb_buffer_t *buffer)
  *
  * Attaches a user-data key/data pair to the specified buffer. 
  *
- * Return value: %true if success, %false otherwise
+ * Return value: `true` if success, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -802,7 +831,7 @@ hb_buffer_set_user_data (hb_buffer_t        *buffer,
  * Since: 0.9.2
  **/
 void *
-hb_buffer_get_user_data (hb_buffer_t        *buffer,
+hb_buffer_get_user_data (const hb_buffer_t  *buffer,
 			 hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (buffer, key);
@@ -1278,7 +1307,7 @@ hb_buffer_clear_contents (hb_buffer_t *buffer)
  * Pre allocates memory for @buffer to fit at least @size number of items.
  *
  * Return value:
- * %true if @buffer memory allocation succeeded, %false otherwise
+ * `true` if @buffer memory allocation succeeded, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -1295,7 +1324,7 @@ hb_buffer_pre_allocate (hb_buffer_t *buffer, unsigned int size)
  * Check if allocating memory for the buffer succeeded.
  *
  * Return value:
- * %true if @buffer memory allocation succeeded, %false otherwise.
+ * `true` if @buffer memory allocation succeeded, `false` otherwise.
  *
  * Since: 0.9.2
  **/
@@ -1340,7 +1369,7 @@ hb_buffer_add (hb_buffer_t    *buffer,
  * end.
  *
  * Return value:
- * %true if @buffer memory allocation succeeded, %false otherwise.
+ * `true` if @buffer memory allocation succeeded, `false` otherwise.
  *
  * Since: 0.9.2
  **/
@@ -1426,7 +1455,7 @@ hb_buffer_get_glyph_infos (hb_buffer_t  *buffer,
  * If buffer did not have positions before, the positions will be
  * initialized to zeros, unless this function is called from
  * within a buffer message callback (see hb_buffer_set_message_func()),
- * in which case %NULL is returned.
+ * in which case `NULL` is returned.
  *
  * Return value: (transfer none) (array length=length):
  * The @buffer glyph position array.
@@ -1461,7 +1490,7 @@ hb_buffer_get_glyph_positions (hb_buffer_t  *buffer,
  * and cleared of position data when hb_buffer_clear_contents() is called.
  *
  * Return value:
- * %true if the @buffer has position array, %false otherwise.
+ * `true` if the @buffer has position array, `false` otherwise.
  *
  * Since: 2.7.3
  **/
@@ -1645,10 +1674,10 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
  * @buffer: An #hb_buffer_t
  * @text: (array length=text_length) (element-type uint8_t): An array of UTF-8
  *               characters to append.
- * @text_length: The length of the @text, or -1 if it is %NULL terminated.
+ * @text_length: The length of the @text, or -1 if it is `NULL` terminated.
  * @item_offset: The offset of the first character to add to the @buffer.
  * @item_length: The number of characters to add to the @buffer, or -1 for the
- *               end of @text (assuming it is %NULL terminated).
+ *               end of @text (assuming it is `NULL` terminated).
  *
  * See hb_buffer_add_codepoints().
  *
@@ -1671,10 +1700,10 @@ hb_buffer_add_utf8 (hb_buffer_t  *buffer,
  * hb_buffer_add_utf16:
  * @buffer: An #hb_buffer_t
  * @text: (array length=text_length): An array of UTF-16 characters to append
- * @text_length: The length of the @text, or -1 if it is %NULL terminated
+ * @text_length: The length of the @text, or -1 if it is `NULL` terminated
  * @item_offset: The offset of the first character to add to the @buffer
  * @item_length: The number of characters to add to the @buffer, or -1 for the
- *               end of @text (assuming it is %NULL terminated)
+ *               end of @text (assuming it is `NULL` terminated)
  *
  * See hb_buffer_add_codepoints().
  *
@@ -1697,10 +1726,10 @@ hb_buffer_add_utf16 (hb_buffer_t    *buffer,
  * hb_buffer_add_utf32:
  * @buffer: An #hb_buffer_t
  * @text: (array length=text_length): An array of UTF-32 characters to append
- * @text_length: The length of the @text, or -1 if it is %NULL terminated
+ * @text_length: The length of the @text, or -1 if it is `NULL` terminated
  * @item_offset: The offset of the first character to add to the @buffer
  * @item_length: The number of characters to add to the @buffer, or -1 for the
- *               end of @text (assuming it is %NULL terminated)
+ *               end of @text (assuming it is `NULL` terminated)
  *
  * See hb_buffer_add_codepoints().
  *
@@ -1724,10 +1753,10 @@ hb_buffer_add_utf32 (hb_buffer_t    *buffer,
  * @buffer: An #hb_buffer_t
  * @text: (array length=text_length) (element-type uint8_t): an array of UTF-8
  *               characters to append
- * @text_length: the length of the @text, or -1 if it is %NULL terminated
+ * @text_length: the length of the @text, or -1 if it is `NULL` terminated
  * @item_offset: the offset of the first character to add to the @buffer
  * @item_length: the number of characters to add to the @buffer, or -1 for the
- *               end of @text (assuming it is %NULL terminated)
+ *               end of @text (assuming it is `NULL` terminated)
  *
  * Similar to hb_buffer_add_codepoints(), but allows only access to first 256
  * Unicode code points that can fit in 8-bit strings.
@@ -1750,10 +1779,10 @@ hb_buffer_add_latin1 (hb_buffer_t   *buffer,
  * hb_buffer_add_codepoints:
  * @buffer: a #hb_buffer_t to append characters to.
  * @text: (array length=text_length): an array of Unicode code points to append.
- * @text_length: the length of the @text, or -1 if it is %NULL terminated.
+ * @text_length: the length of the @text, or -1 if it is `NULL` terminated.
  * @item_offset: the offset of the first code point to add to the @buffer.
  * @item_length: the number of code points to add to the @buffer, or -1 for the
- *               end of @text (assuming it is %NULL terminated).
+ *               end of @text (assuming it is `NULL` terminated).
  *
  * Appends characters from @text array to @buffer. The @item_offset is the
  * position of the first character from @text that will be appended, and
@@ -2090,8 +2119,16 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
 bool
 hb_buffer_t::message_impl (hb_font_t *font, const char *fmt, va_list ap)
 {
+  assert (!have_output || (out_info == info && out_len == idx));
+
+  message_depth++;
+
   char buf[100];
   vsnprintf (buf, sizeof (buf), fmt, ap);
-  return (bool) this->message_func (this, font, buf, this->message_data);
+  bool ret = (bool) this->message_func (this, font, buf, this->message_data);
+
+  message_depth--;
+
+  return ret;
 }
 #endif

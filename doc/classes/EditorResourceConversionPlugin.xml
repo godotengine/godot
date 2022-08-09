@@ -9,7 +9,7 @@
 	<methods>
 		<method name="_convert" qualifiers="virtual const">
 			<return type="Resource" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>
@@ -20,7 +20,7 @@
 		</method>
 		<method name="_handles" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>

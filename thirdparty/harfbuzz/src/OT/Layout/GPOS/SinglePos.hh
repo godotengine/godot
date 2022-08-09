@@ -45,10 +45,7 @@ struct SinglePos
     ValueFormat new_format = src->get_value_format ();
 
     if (glyph_val_iter_pairs)
-    {
       format = get_format (glyph_val_iter_pairs);
-      new_format = src->get_value_format ().get_effective_format (+ glyph_val_iter_pairs | hb_map (hb_second));
-    }
 
     u.format = format;
     switch (u.format) {

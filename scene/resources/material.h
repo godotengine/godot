@@ -84,6 +84,17 @@ class ShaderMaterial : public Material {
 
 	HashMap<StringName, Variant> param_cache;
 
+	struct UniformProp {
+		String str;
+		PropertyInfo info;
+	};
+
+	struct UniformPropComparator {
+		bool operator()(const UniformProp &p_a, const UniformProp &p_b) const {
+			return p_a.str.naturalnocasecmp_to(p_b.str) < 0;
+		}
+	};
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -104,8 +115,8 @@ public:
 	void set_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader() const;
 
-	void set_shader_param(const StringName &p_param, const Variant &p_value);
-	Variant get_shader_param(const StringName &p_param) const;
+	void set_shader_uniform(const StringName &p_param, const Variant &p_value);
+	Variant get_shader_uniform(const StringName &p_param) const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 
@@ -809,4 +820,4 @@ public:
 
 //////////////////////
 
-#endif
+#endif // MATERIAL_H

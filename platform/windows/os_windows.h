@@ -62,6 +62,26 @@
 #define WINDOWS_DEBUG_OUTPUT_ENABLED
 #endif
 
+template <class T>
+class ComAutoreleaseRef {
+public:
+	T *reference = nullptr;
+
+	_FORCE_INLINE_ T *operator->() { return reference; }
+	_FORCE_INLINE_ const T *operator->() const { return reference; }
+	_FORCE_INLINE_ T *operator*() { return reference; }
+	_FORCE_INLINE_ const T *operator*() const { return reference; }
+	_FORCE_INLINE_ bool is_valid() const { return reference != nullptr; }
+	_FORCE_INLINE_ bool is_null() const { return reference == nullptr; }
+	ComAutoreleaseRef() {}
+	~ComAutoreleaseRef() {
+		if (reference != nullptr) {
+			reference->Release();
+			reference = nullptr;
+		}
+	}
+};
+
 class JoypadWindows;
 class OS_Windows : public OS {
 #ifdef STDOUT_FILE
@@ -147,6 +167,9 @@ public:
 	virtual String get_environment(const String &p_var) const override;
 	virtual bool set_environment(const String &p_var, const String &p_value) const override;
 
+	virtual Vector<String> get_system_fonts() const override;
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+
 	virtual String get_executable_path() const override;
 
 	virtual String get_locale() const override;
@@ -185,4 +208,4 @@ public:
 	~OS_Windows();
 };
 
-#endif
+#endif // OS_WINDOWS_H

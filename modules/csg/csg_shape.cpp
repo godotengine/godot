@@ -1858,7 +1858,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 
 			Transform3D facing = Transform3D().looking_at(direction, current_up);
-			current_xform = base_xform.translated(current_point) * facing;
+			current_xform = base_xform.translated_local(current_point) * facing;
 		}
 
 		// Create the mesh.
@@ -1897,7 +1897,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			switch (mode) {
 				case MODE_DEPTH: {
-					current_xform.translate(Vector3(0, 0, -depth));
+					current_xform.translate_local(Vector3(0, 0, -depth));
 				} break;
 				case MODE_SPIN: {
 					current_xform.rotate(Vector3(0, 1, 0), spin_step);
@@ -1945,7 +1945,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					}
 
 					Transform3D facing = Transform3D().looking_at(direction, current_up);
-					current_xform = base_xform.translated(current_point) * facing;
+					current_xform = base_xform.translated_local(current_point) * facing;
 				} break;
 			}
 

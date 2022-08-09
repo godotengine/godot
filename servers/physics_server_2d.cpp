@@ -147,6 +147,16 @@ PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() {}
 
 ///////////////////////////////////////////////////////
 
+Ref<PhysicsRayQueryParameters2D> PhysicsRayQueryParameters2D::create(Vector2 p_from, Vector2 p_to, uint32_t p_mask, const Vector<RID> &p_exclude) {
+	Ref<PhysicsRayQueryParameters2D> params;
+	params.instantiate();
+	params->set_from(p_from);
+	params->set_to(p_to);
+	params->set_collision_mask(p_mask);
+	params->set_exclude(p_exclude);
+	return params;
+}
+
 void PhysicsRayQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -165,6 +175,8 @@ Vector<RID> PhysicsRayQueryParameters2D::get_exclude() const {
 }
 
 void PhysicsRayQueryParameters2D::_bind_methods() {
+	ClassDB::bind_static_method("PhysicsRayQueryParameters2D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters2D::create, DEFVAL(UINT32_MAX), DEFVAL(Vector<RID>()));
+
 	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsRayQueryParameters2D::set_from);
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsRayQueryParameters2D::get_from);
 

@@ -30,8 +30,8 @@
 
 #include "core/string/ustring.h"
 
-#ifndef MACOS_UTILS_H
-#define MACOS_UTILS_H
+#ifndef MONO_MACOS_UTILS_H
+#define MONO_MACOS_UTILS_H
 
 #ifdef MACOS_ENABLED
 
@@ -39,4 +39,4 @@ bool macos_is_app_bundle_installed(const String &p_bundle_id);
 
 #endif
 
-#endif // MACOS_UTILS_H
+#endif // MONO_MACOS_UTILS_H

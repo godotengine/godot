@@ -71,4 +71,4 @@ public:
 
 VARIANT_ENUM_CAST(NativeExtensionManager::LoadStatus)
 
-#endif // NATIVEEXTENSIONMANAGER_H
+#endif // NATIVE_EXTENSION_MANAGER_H

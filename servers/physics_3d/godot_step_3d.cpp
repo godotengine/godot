@@ -343,7 +343,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	/* SETUP CONSTRAINTS / PROCESS COLLISIONS */
 
 	uint32_t total_contraint_count = all_constraints.size();
-	work_pool.do_work(total_contraint_count, this, &GodotStep3D::_setup_contraint, nullptr);
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep3D::_setup_contraint, nullptr, total_contraint_count, -1, true, SNAME("Physics3DConstraintSetup"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
@@ -362,7 +363,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	// Warning: _solve_island modifies the constraint islands for optimization purpose,
 	// their content is not reliable after these calls and shouldn't be used anymore.
-	work_pool.do_work(island_count, this, &GodotStep3D::_solve_island, nullptr);
+	group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep3D::_solve_island, nullptr, island_count, -1, true, SNAME("Physics3DConstraintSolveIslands"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
@@ -409,10 +411,7 @@ GodotStep3D::GodotStep3D() {
 	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
 	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);
-
-	work_pool.init();
 }
 
 GodotStep3D::~GodotStep3D() {
-	work_pool.finish();
 }

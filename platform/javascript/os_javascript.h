@@ -90,6 +90,8 @@ public:
 	// Implemented in javascript_main.cpp loop callback instead.
 	void add_frame_delay(bool p_can_draw) override {}
 
+	void vibrate_handheld(int p_duration_ms) override;
+
 	String get_cache_path() const override;
 	String get_config_path() const override;
 	String get_data_path() const override;
@@ -107,4 +109,4 @@ public:
 	OS_JavaScript();
 };
 
-#endif
+#endif // OS_JAVASCRIPT_H

@@ -31,6 +31,7 @@
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
 
+#include "core/core_globals.h"
 #include "core/input/input_map.h"
 #include "core/object/message_queue.h"
 #include "core/variant/variant.h"
@@ -53,12 +54,12 @@
 
 // Temporarily disable error prints to test failure paths.
 // This allows to avoid polluting the test summary with error messages.
-// The `_print_error_enabled` boolean is defined in `core/print_string.cpp` and
+// The `print_error_enabled` boolean is defined in `core/core_globals.cpp` and
 // works at global scope. It's used by various loggers in `should_log()` method,
 // which are used by error macros which call into `OS::print_error`, effectively
 // disabling any error messages to be printed from the engine side (not tests).
-#define ERR_PRINT_OFF _print_error_enabled = false;
-#define ERR_PRINT_ON _print_error_enabled = true;
+#define ERR_PRINT_OFF CoreGlobals::print_error_enabled = false;
+#define ERR_PRINT_ON CoreGlobals::print_error_enabled = true;
 
 // Stringify all `Variant` compatible types for doctest output by default.
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/stringification.md
@@ -199,8 +200,8 @@ int register_test_command(String p_command, TestFunc p_function);
 // We toggle _print_error_enabled to prevent display server not supported warnings.
 #define SEND_GUI_MOUSE_MOTION_EVENT(m_object, m_local_pos, m_mask, m_modifers) \
 	{                                                                          \
-		bool errors_enabled = _print_error_enabled;                            \
-		_print_error_enabled = false;                                          \
+		bool errors_enabled = CoreGlobals::print_error_enabled;                \
+		CoreGlobals::print_error_enabled = false;                              \
 		Ref<InputEventMouseMotion> event;                                      \
 		event.instantiate();                                                   \
 		event->set_position(m_local_pos);                                      \
@@ -209,7 +210,7 @@ int register_test_command(String p_command, TestFunc p_function);
 		_UPDATE_EVENT_MODIFERS(event, m_modifers);                             \
 		m_object->get_viewport()->push_input(event);                           \
 		MessageQueue::get_singleton()->flush();                                \
-		_print_error_enabled = errors_enabled;                                 \
+		CoreGlobals::print_error_enabled = errors_enabled;                     \
 	}
 
 // Utility class / macros for testing signals
@@ -271,22 +272,20 @@ public:
 	static SignalWatcher *get_singleton() { return singleton; }
 
 	void watch_signal(Object *p_object, const String &p_signal) {
-		Vector<Variant> args;
-		args.push_back(p_signal);
 		MethodInfo method_info;
 		ClassDB::get_signal(p_object->get_class(), p_signal, &method_info);
 		switch (method_info.arguments.size()) {
 			case 0: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero).bind(p_signal));
 			} break;
 			case 1: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_one), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_one).bind(p_signal));
 			} break;
 			case 2: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_two), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_two).bind(p_signal));
 			} break;
 			case 3: {
-				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_three), args);
+				p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_three).bind(p_signal));
 			} break;
 			default: {
 				MESSAGE("Signal ", p_signal, " arg count not supported.");

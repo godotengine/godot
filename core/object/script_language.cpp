@@ -101,6 +101,31 @@ Dictionary Script::_get_script_constant_map() {
 	return ret;
 }
 
+#ifdef TOOLS_ENABLED
+
+PropertyInfo Script::get_class_category() const {
+	String path = get_path();
+	String name;
+
+	if (is_built_in()) {
+		if (get_name().is_empty()) {
+			name = TTR("Built-in script");
+		} else {
+			name = vformat("%s (%s)", get_name(), TTR("Built-in"));
+		}
+	} else {
+		if (get_name().is_empty()) {
+			name = path.get_file();
+		} else {
+			name = get_name();
+		}
+	}
+
+	return PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
+}
+
+#endif // TOOLS_ENABLED
+
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
@@ -344,11 +369,14 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 	p_core_type_words->push_back("Vector3");
 	p_core_type_words->push_back("Vector3i");
 	p_core_type_words->push_back("Transform2D");
+	p_core_type_words->push_back("Vector4");
+	p_core_type_words->push_back("Vector4i");
 	p_core_type_words->push_back("Plane");
 	p_core_type_words->push_back("Quaternion");
 	p_core_type_words->push_back("AABB");
 	p_core_type_words->push_back("Basis");
 	p_core_type_words->push_back("Transform3D");
+	p_core_type_words->push_back("Projection");
 	p_core_type_words->push_back("Color");
 	p_core_type_words->push_back("StringName");
 	p_core_type_words->push_back("NodePath");

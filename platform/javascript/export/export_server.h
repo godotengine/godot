@@ -35,7 +35,6 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
-#include "editor/editor_export.h"
 #include "editor/editor_paths.h"
 
 class EditorHTTPServer : public RefCounted {
@@ -248,4 +247,4 @@ public:
 	}
 };
 
-#endif
+#endif // JAVASCRIPT_EXPORT_SERVER_H

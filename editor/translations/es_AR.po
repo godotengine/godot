@@ -20,13 +20,14 @@
 # M3CG <cgmario1999@gmail.com>, 2021, 2022.
 # Manuel González <mgoopazo@gmail.com>, 2021.
 # emnrx <emanuelermancia@gmail.com>, 2022.
+# Mau_Restor <restor@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-21 15:56+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
+"Last-Translator: Mau_Restor <restor@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -268,9 +269,8 @@ msgid "Network Peer"
 msgstr "Profiler de Red"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Nombre del nodo raíz"
+msgstr "Nodo raíz"
 
 #: core/io/networked_multiplayer_peer.cpp
 msgid "Refuse New Connections"
@@ -302,7 +302,7 @@ msgstr ""
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Array de datos"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
@@ -331,9 +331,8 @@ msgstr ""
 "No hay suficientes bytes para decodificar bytes, o el formato es inválido."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Entrada inválida %i (no se transmitió) en la expresión"
+msgstr "Entrada inválida %d (no se transmitió) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -362,7 +361,7 @@ msgstr "En la llamada a '%s':"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Semilla"
 
 #: core/math/random_number_generator.cpp
 #, fuzzy
@@ -371,16 +370,15 @@ msgstr "Estado"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Cola de mesajes"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Tamaño máximo (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Modo Mover"
+msgstr "Modo Mouse"
 
 #: core/os/input.cpp
 #, fuzzy
@@ -409,9 +407,8 @@ msgid "Meta"
 msgstr "Meta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Command"
-msgstr "Comunidad"
+msgstr "Comando"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -440,7 +437,7 @@ msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
-msgstr ""
+msgstr "Echo"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
 msgid "Button Mask"
@@ -464,7 +461,7 @@ msgstr "Dobleclick"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr ""
+msgstr "Inclinación"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -477,9 +474,8 @@ msgid "Pen Inverted"
 msgstr "Invertir"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Ajuste Relativo"
+msgstr "Relativo"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
@@ -537,7 +533,7 @@ msgstr "Velocidad"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
-msgstr ""
+msgstr "Instrumento"
 
 #: core/os/input_event.cpp
 msgid "Controller Number"
@@ -545,7 +541,7 @@ msgstr "Número de Controlador"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
-msgstr ""
+msgstr "Valor del controlador"
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
@@ -617,9 +613,8 @@ msgstr "Nombre de Directorio de Usuario Personalizado"
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "Mostrar Todo"
+msgstr "Mostrar"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
@@ -638,17 +633,15 @@ msgstr "Altura"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Siempre encima"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Izquierda Ancha"
+msgstr "probar ancho"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Prueba"
+msgstr "probar altura"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -686,14 +679,12 @@ msgid "Script Templates Search Path"
 msgstr "Ruta de Búsqueda de Plantillas de Scripts"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Sistema de Control de Versiones"
+msgstr "Al iniciar el Sistema de Control de Versiones"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Control de Versiones"
+msgstr "Nombre del sistema de control de versiones"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -702,17 +693,15 @@ msgstr "Entrada"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "Aceptar Interfaz del usuario"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Seleccionar"
+msgstr "Seleccionar Interfaz de Usuario"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "Cancelar"
+msgstr "Cancelar la interfaz de usuario"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -754,12 +743,11 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "Inicio de la interfaz de usuario"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI End"
-msgstr "Al Final"
+msgstr "Al Final de la interfaz de usuario"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -817,7 +805,7 @@ msgstr "Filtros"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Intensidad de la nitidez"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -867,7 +855,7 @@ msgstr "Nivel de Compresión"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "medida del registro de la ventana"
 
 #: core/project_settings.cpp
 msgid "Zlib"
@@ -890,9 +878,8 @@ msgid "TCP"
 msgstr "TCP"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "Conexiones al método:"
+msgstr "Tiempo de espera en segundos de la conexion"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -917,9 +904,8 @@ msgid "Resource"
 msgstr "Recursos"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "Cerrar Escena"
+msgstr "Local a la escena"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -1200,9 +1186,8 @@ msgid "Type"
 msgstr "Tipo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In Handle"
-msgstr "Setear Handle"
+msgstr "En manejo"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1353,9 +1338,8 @@ msgid "Time (s):"
 msgstr "Tiempo (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Posición del Panel"
+msgstr "Posición:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -2168,14 +2152,15 @@ msgstr "Favoritos:"
 msgid "Recent:"
 msgstr "Recientes:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Buscar:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Coincidencias:"
@@ -2235,8 +2220,8 @@ msgstr "Buscar Reemplazo de Recurso:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2815,7 +2800,7 @@ msgstr ""
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed with errors."
+msgid "Completed with warnings."
 msgstr "Copiar Ruta del Nodo"
 
 #: editor/editor_export.cpp
@@ -5643,6 +5628,10 @@ msgstr ""
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Selección de GridMap"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11930,6 +11919,11 @@ msgstr "Animaciones:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Nueva Animación"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Filtrar métodos"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -20748,15 +20742,15 @@ msgstr "No se pudo encontrar la keystore, no se puedo exportar."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Archivo ejecutable no válido."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20780,15 +20774,15 @@ msgstr "Nombre inválido."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Archivo ejecutable no válido."
 
 #: platform/windows/export/export.cpp
 #, fuzzy

@@ -44,4 +44,4 @@ private:
 	static OpenXRAndroidExtension *singleton;
 };
 
-#endif // !OPENXR_ANDROID_EXTENSION_H
+#endif // OPENXR_ANDROID_EXTENSION_H

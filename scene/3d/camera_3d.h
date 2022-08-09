@@ -40,7 +40,7 @@ class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
 
 public:
-	enum Projection {
+	enum ProjectionType {
 		PROJECTION_PERSPECTIVE,
 		PROJECTION_ORTHOGONAL,
 		PROJECTION_FRUSTUM
@@ -62,7 +62,7 @@ private:
 	bool current = false;
 	Viewport *viewport = nullptr;
 
-	Projection mode = PROJECTION_PERSPECTIVE;
+	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
 	real_t fov = 0.0;
 	real_t size = 1.0;
@@ -112,7 +112,7 @@ public:
 	void set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
 	void set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, real_t p_z_far);
-	void set_projection(Camera3D::Projection p_mode);
+	void set_projection(Camera3D::ProjectionType p_mode);
 
 	void make_current();
 	void clear_current(bool p_enable_next = true);
@@ -127,7 +127,7 @@ public:
 	real_t get_near() const;
 	Vector2 get_frustum_offset() const;
 
-	Projection get_projection() const;
+	ProjectionType get_projection() const;
 
 	void set_fov(real_t p_fov);
 	void set_size(real_t p_size);
@@ -181,8 +181,8 @@ public:
 	~Camera3D();
 };
 
-VARIANT_ENUM_CAST(Camera3D::Projection);
+VARIANT_ENUM_CAST(Camera3D::ProjectionType);
 VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
 
-#endif
+#endif // CAMERA_3D_H

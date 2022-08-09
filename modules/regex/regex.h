@@ -37,6 +37,7 @@
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
 
 class RegExMatch : public RefCounted {
 	GDCLASS(RegExMatch, RefCounted);
@@ -81,11 +82,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<RegEx> create_from_string(const String &p_pattern);
+
 	void clear();
 	Error compile(const String &p_pattern);
 
 	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
-	Array search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	TypedArray<RegExMatch> search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_offset = 0, int p_end = -1) const;
 
 	bool is_valid() const;

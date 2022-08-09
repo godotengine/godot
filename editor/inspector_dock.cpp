@@ -33,6 +33,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
@@ -63,6 +64,9 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case COLLAPSE_ALL: {
 			_menu_collapseall();
+		} break;
+		case EXPAND_REVERTABLE: {
+			_menu_expand_revertable();
 		} break;
 
 		case RESOURCE_SAVE: {
@@ -400,6 +404,10 @@ void InspectorDock::_menu_expandall() {
 	inspector->expand_all_folding();
 }
 
+void InspectorDock::_menu_expand_revertable() {
+	inspector->expand_revertable();
+}
+
 void InspectorDock::_warning_pressed() {
 	warning_dialog->popup_centered();
 }
@@ -452,6 +460,9 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_menu_expandall", &InspectorDock::_menu_expandall);
 
 	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
+
+	ClassDB::bind_method("store_script_properties", &InspectorDock::store_script_properties);
+	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
 
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
@@ -515,6 +526,8 @@ void InspectorDock::update(Object *p_object) {
 	p->clear();
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/expand_all", TTR("Expand All")), EXPAND_ALL);
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All")), COLLAPSE_ALL);
+	// Calling it 'revertable' internally, because that's what the implementation is based on, but labeling it as 'non-default' because that's more user friendly, even if not 100% accurate.
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTR("Expand Non-Default")), EXPAND_REVERTABLE);
 
 	p->add_separator(TTR("Property Name Style"));
 	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
@@ -563,6 +576,31 @@ void InspectorDock::go_back() {
 
 EditorPropertyNameProcessor::Style InspectorDock::get_property_name_style() const {
 	return property_name_style;
+}
+
+void InspectorDock::store_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+	si->get_property_state(stored_properties);
+}
+
+void InspectorDock::apply_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+
+	for (const Pair<StringName, Variant> &E : stored_properties) {
+		Variant current;
+		if (si->get(E.first, current) && current.get_type() == E.second.get_type()) {
+			si->set(E.first, E.second);
+		}
+	}
+	stored_properties.clear();
 }
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
@@ -645,7 +683,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->set_tooltip(TTR("Open documentation for this object."));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
-	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option), varray(OBJECT_REQUEST_HELP));
+	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
 	new_resource_dialog = memnew(CreateDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(new_resource_dialog);

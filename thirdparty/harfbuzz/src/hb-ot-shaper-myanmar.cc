@@ -320,12 +320,12 @@ const hb_ot_shaper_t _hb_ot_shaper_myanmar =
   nullptr, /* data_destroy */
   nullptr, /* preprocess_text */
   nullptr, /* postprocess_glyphs */
-  HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
   nullptr, /* decompose */
   nullptr, /* compose */
   setup_masks_myanmar,
-  HB_TAG_NONE, /* gpos_tag */
   nullptr, /* reorder_marks */
+  HB_TAG_NONE, /* gpos_tag */
+  HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
   false, /* fallback_position */
 };
@@ -342,12 +342,12 @@ const hb_ot_shaper_t _hb_ot_shaper_myanmar_zawgyi =
   nullptr, /* data_destroy */
   nullptr, /* preprocess_text */
   nullptr, /* postprocess_glyphs */
-  HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
   nullptr, /* decompose */
   nullptr, /* compose */
   nullptr, /* setup_masks */
-  HB_TAG_NONE, /* gpos_tag */
   nullptr, /* reorder_marks */
+  HB_TAG_NONE, /* gpos_tag */
+  HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
   false, /* fallback_position */
 };

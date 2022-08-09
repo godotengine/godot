@@ -33,42 +33,42 @@
 	<methods>
 		<method name="add_track">
 			<return type="int" />
-			<argument index="0" name="type" type="int" enum="Animation.TrackType" />
-			<argument index="1" name="at_position" type="int" default="-1" />
+			<param index="0" name="type" type="int" enum="Animation.TrackType" />
+			<param index="1" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a track to the Animation.
 			</description>
 		</method>
 		<method name="animation_track_get_key_animation" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the animation name at the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="animation" type="StringName" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="animation" type="StringName" />
 			<description>
 				Inserts a key with value [code]animation[/code] at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_set_key_animation">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="animation" type="StringName" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="animation" type="StringName" />
 			<description>
 				Sets the key identified by [code]key_idx[/code] to value [code]animation[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the end offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 				End offset is the number of seconds cut off at the ending of the audio stream.
@@ -76,8 +76,8 @@
 		</method>
 		<method name="audio_track_get_key_start_offset" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the start offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 				Start offset is the number of seconds cut off at the beginning of the audio stream.
@@ -85,19 +85,19 @@
 		</method>
 		<method name="audio_track_get_key_stream" qualifiers="const">
 			<return type="Resource" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the audio stream of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="stream" type="Resource" />
-			<argument index="3" name="start_offset" type="float" default="0" />
-			<argument index="4" name="end_offset" type="float" default="0" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="stream" type="Resource" />
+			<param index="3" name="start_offset" type="float" default="0" />
+			<param index="4" name="end_offset" type="float" default="0" />
 			<description>
 				Inserts an Audio Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of an Audio Track.
 				[code]stream[/code] is the [AudioStream] resource to play. [code]start_offset[/code] is the number of seconds cut off at the beginning of the audio stream, while [code]end_offset[/code] is at the ending.
@@ -105,71 +105,71 @@
 		</method>
 		<method name="audio_track_set_key_end_offset">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="offset" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
 			<description>
 				Sets the end offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_start_offset">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="offset" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
 			<description>
 				Sets the start offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_stream">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="stream" type="Resource" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="stream" type="Resource" />
 			<description>
 				Sets the stream of the key identified by [code]key_idx[/code] to value [code]stream[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_handle_mode" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the handle mode of the key identified by [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the in handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_out_handle" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the out handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_value" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the value of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="value" type="float" />
-			<argument index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)" />
-			<argument index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)" />
-			<argument index="5" name="handle_mode" type="int" enum="Animation.HandleMode" default="1" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="value" type="float" />
+			<param index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)" />
+			<param index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)" />
+			<param index="5" name="handle_mode" type="int" enum="Animation.HandleMode" default="1" />
 			<description>
 				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.
 				[code]in_handle[/code] is the left-side weight of the added Bezier curve point, [code]out_handle[/code] is the right-side one, while [code]value[/code] is the actual value at this point.
@@ -177,56 +177,56 @@
 		</method>
 		<method name="bezier_track_interpolate" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
 			<description>
 				Returns the interpolated value at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_handle_mode">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="key_handle_mode" type="int" enum="Animation.HandleMode" />
-			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="key_handle_mode" type="int" enum="Animation.HandleMode" />
+			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Changes the handle mode of the keyframe at the given [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_in_handle">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="in_handle" type="Vector2" />
-			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="in_handle" type="Vector2" />
+			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Sets the in handle of the key identified by [code]key_idx[/code] to value [code]in_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_out_handle">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="out_handle" type="Vector2" />
-			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="out_handle" type="Vector2" />
+			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Sets the out handle of the key identified by [code]key_idx[/code] to value [code]out_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_value">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="value" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="value" type="float" />
 			<description>
 				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="blend_shape_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="amount" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="amount" type="float" />
 			<description>
 			</description>
 		</method>
@@ -238,24 +238,24 @@
 		</method>
 		<method name="compress">
 			<return type="void" />
-			<argument index="0" name="page_size" type="int" default="8192" />
-			<argument index="1" name="fps" type="int" default="120" />
-			<argument index="2" name="split_tolerance" type="float" default="4.0" />
+			<param index="0" name="page_size" type="int" default="8192" />
+			<param index="1" name="fps" type="int" default="120" />
+			<param index="2" name="split_tolerance" type="float" default="4.0" />
 			<description>
 			</description>
 		</method>
 		<method name="copy_track">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="to_animation" type="Animation" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="to_animation" type="Animation" />
 			<description>
 				Adds a new track that is a copy of the given track from [code]to_animation[/code].
 			</description>
 		</method>
 		<method name="find_track" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="path" type="NodePath" />
-			<argument index="1" name="type" type="int" enum="Animation.TrackType" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="type" type="int" enum="Animation.TrackType" />
 			<description>
 				Returns the index of the specified track. If the track is not found, return -1.
 			</description>
@@ -268,259 +268,259 @@
 		</method>
 		<method name="method_track_get_key_indices" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
-			<argument index="2" name="delta" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="delta" type="float" />
 			<description>
 				Returns all the key indices of a method track, given a position and delta time.
 			</description>
 		</method>
 		<method name="method_track_get_name" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the method name of a method track.
 			</description>
 		</method>
 		<method name="method_track_get_params" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the arguments values to be called on a method track for a given key in a given track.
 			</description>
 		</method>
 		<method name="position_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="position" type="Vector3" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="remove_track">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Removes a track by specifying the track index.
 			</description>
 		</method>
 		<method name="rotation_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="rotation" type="Quaternion" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="rotation" type="Quaternion" />
 			<description>
 			</description>
 		</method>
 		<method name="scale_track_insert_key">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="scale" type="Vector3" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="scale" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="exact" type="bool" default="false" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="exact" type="bool" default="false" />
 			<description>
 				Finds the key index by time in a given track. Optionally, only find it if the exact time is given.
 			</description>
 		</method>
 		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the track at [code]idx[/code] wraps the interpolation loop. New tracks wrap the interpolation loop by default.
 			</description>
 		</method>
 		<method name="track_get_interpolation_type" qualifiers="const">
 			<return type="int" enum="Animation.InterpolationType" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Returns the interpolation type of a given track.
 			</description>
 		</method>
 		<method name="track_get_key_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Returns the amount of keys in a given track.
 			</description>
 		</method>
 		<method name="track_get_key_time" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the time at which the key is located.
 			</description>
 		</method>
 		<method name="track_get_key_transition" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
 			</description>
 		</method>
 		<method name="track_get_key_value" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Returns the value of a given key in a given track.
 			</description>
 		</method>
 		<method name="track_get_path" qualifiers="const">
 			<return type="NodePath" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Gets the path of a track. For more information on the path format, see [method track_set_path].
 			</description>
 		</method>
 		<method name="track_get_type" qualifiers="const">
 			<return type="int" enum="Animation.TrackType" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Gets the type of a track.
 			</description>
 		</method>
 		<method name="track_insert_key">
-			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="key" type="Variant" />
-			<argument index="3" name="transition" type="float" default="1" />
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="key" type="Variant" />
+			<param index="3" name="transition" type="float" default="1" />
 			<description>
-				Insert a generic key in a given track.
+				Inserts a generic key in a given track. Returns the key index.
 			</description>
 		</method>
 		<method name="track_is_compressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="track_is_enabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the track at index [code]idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="track_is_imported" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the given track is imported. Else, return [code]false[/code].
 			</description>
 		</method>
 		<method name="track_move_down">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Moves a track down.
 			</description>
 		</method>
 		<method name="track_move_to">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="to_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="to_idx" type="int" />
 			<description>
 				Changes the index position of track [code]idx[/code] to the one defined in [code]to_idx[/code].
 			</description>
 		</method>
 		<method name="track_move_up">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Moves a track up.
 			</description>
 		</method>
 		<method name="track_remove_key">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
 			<description>
 				Removes a key by index in a given track.
 			</description>
 		</method>
 		<method name="track_remove_key_at_time">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
 			<description>
 				Removes a key at [code]time[/code] in a given track.
 			</description>
 		</method>
 		<method name="track_set_enabled">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				Enables/disables the given track. Tracks are enabled by default.
 			</description>
 		</method>
 		<method name="track_set_imported">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="imported" type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="imported" type="bool" />
 			<description>
 				Sets the given track as imported or not.
 			</description>
 		</method>
 		<method name="track_set_interpolation_loop_wrap">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="interpolation" type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="interpolation" type="bool" />
 			<description>
 				If [code]true[/code], the track at [code]idx[/code] wraps the interpolation loop.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="interpolation" type="int" enum="Animation.InterpolationType" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="interpolation" type="int" enum="Animation.InterpolationType" />
 			<description>
 				Sets the interpolation type of a given track.
 			</description>
 		</method>
 		<method name="track_set_key_time">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="time" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="time" type="float" />
 			<description>
 				Sets the time of an existing key.
 			</description>
 		</method>
 		<method name="track_set_key_transition">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key_idx" type="int" />
-			<argument index="2" name="transition" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="transition" type="float" />
 			<description>
 				Sets the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
 			</description>
 		</method>
 		<method name="track_set_key_value">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="key" type="int" />
-			<argument index="2" name="value" type="Variant" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key" type="int" />
+			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets the value of an existing key.
 			</description>
 		</method>
 		<method name="track_set_path">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="path" type="NodePath" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="path" type="NodePath" />
 			<description>
 				Sets the path of a track. Paths must be valid scene-tree paths to a node and must be specified starting from the parent node of the node that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by [code]":"[/code].
 				For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
@@ -528,40 +528,40 @@
 		</method>
 		<method name="track_swap">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="with_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="with_idx" type="int" />
 			<description>
 				Swaps the track [code]idx[/code]'s index position with the track [code]with_idx[/code].
 			</description>
 		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
-			<argument index="2" name="delta" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="delta" type="float" />
 			<description>
 				Returns all the key indices of a value track, given a position and delta time.
 			</description>
 		</method>
 		<method name="value_track_get_update_mode" qualifiers="const">
 			<return type="int" enum="Animation.UpdateMode" />
-			<argument index="0" name="track_idx" type="int" />
+			<param index="0" name="track_idx" type="int" />
 			<description>
 				Returns the update mode of a value track.
 			</description>
 		</method>
 		<method name="value_track_interpolate" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
 			<description>
 				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
 			</description>
 		</method>
 		<method name="value_track_set_update_mode">
 			<return type="void" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="mode" type="int" enum="Animation.UpdateMode" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Animation.UpdateMode" />
 			<description>
 				Sets the update mode (see [enum UpdateMode]) of a value track.
 			</description>

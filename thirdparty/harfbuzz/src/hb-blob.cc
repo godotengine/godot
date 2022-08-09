@@ -99,7 +99,7 @@ hb_blob_create (const char        *data,
  * is zero. This is in contrast to hb_blob_create(), which returns the singleton
  * empty blob (as returned by hb_blob_get_empty()) if @length is zero.
  *
- * Return value: New blob, or %NULL if failed.  Destroy with hb_blob_destroy().
+ * Return value: New blob, or `NULL` if failed.  Destroy with hb_blob_destroy().
  *
  * Since: 2.8.2
  **/
@@ -263,8 +263,6 @@ hb_blob_destroy (hb_blob_t *blob)
 {
   if (!hb_object_destroy (blob)) return;
 
-  blob->fini_shallow ();
-
   hb_free (blob);
 }
 
@@ -278,7 +276,7 @@ hb_blob_destroy (hb_blob_t *blob)
  *
  * Attaches a user-data key/data pair to the specified blob.
  *
- * Return value: %true if success, %false otherwise
+ * Return value: `true` if success, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -305,7 +303,7 @@ hb_blob_set_user_data (hb_blob_t          *blob,
  * Since: 0.9.2
  **/
 void *
-hb_blob_get_user_data (hb_blob_t          *blob,
+hb_blob_get_user_data (const hb_blob_t    *blob,
 		       hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (blob, key);
@@ -335,7 +333,7 @@ hb_blob_make_immutable (hb_blob_t *blob)
  *
  * Tests whether a blob is immutable.
  *
- * Return value: %true if @blob is immutable, %false otherwise
+ * Return value: `true` if @blob is immutable, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -394,7 +392,7 @@ hb_blob_get_data (hb_blob_t *blob, unsigned int *length)
  * fails.
  *
  * Returns: (transfer none) (array length=length): Writable blob data,
- * or %NULL if failed.
+ * or `NULL` if failed.
  *
  * Since: 0.9.2
  **/
@@ -620,7 +618,7 @@ hb_blob_create_from_file (const char *file_name)
  * specified binary font file.
  *
  * Returns: An #hb_blob_t pointer with the content of the file,
- * or %NULL if failed.
+ * or `NULL` if failed.
  *
  * Since: 2.8.2
  **/

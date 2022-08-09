@@ -131,7 +131,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".translation";
 
-		ResourceSaver::save(save_path, xlt);
+		ResourceSaver::save(xlt, save_path);
 		if (r_gen_files) {
 			r_gen_files->push_back(save_path);
 		}

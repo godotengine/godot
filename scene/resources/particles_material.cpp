@@ -98,6 +98,17 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->emission_ring_radius = "emission_ring_radius";
 	shader_names->emission_ring_inner_radius = "emission_ring_inner_radius";
 
+	shader_names->turbulence_enabled = "turbulence_enabled";
+	shader_names->turbulence_noise_strength = "turbulence_noise_strength";
+	shader_names->turbulence_noise_scale = "turbulence_noise_scale";
+	shader_names->turbulence_noise_speed = "turbulence_noise_speed";
+	shader_names->turbulence_noise_speed_random = "turbulence_noise_speed_random";
+	shader_names->turbulence_influence_over_life = "turbulence_influence_over_life";
+	shader_names->turbulence_influence_min = "turbulence_influence_min";
+	shader_names->turbulence_influence_max = "turbulence_influence_max";
+	shader_names->turbulence_initial_displacement_min = "turbulence_initial_displacement_min";
+	shader_names->turbulence_initial_displacement_max = "turbulence_initial_displacement_max";
+
 	shader_names->gravity = "gravity";
 
 	shader_names->lifetime_randomness = "lifetime_randomness";
@@ -141,7 +152,6 @@ void ParticlesMaterial::_update_shader() {
 		shader_map[mk].users++;
 		return;
 	}
-
 	//must create a shader!
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
@@ -280,6 +290,77 @@ void ParticlesMaterial::_update_shader() {
 	if (collision_enabled) {
 		code += "uniform float collision_friction;\n";
 		code += "uniform float collision_bounce;\n";
+	}
+
+	if (turbulence_enabled) {
+		code += "uniform float turbulence_noise_strength;\n";
+		code += "uniform float turbulence_noise_scale;\n";
+		code += "uniform float turbulence_influence_min;\n";
+		code += "uniform float turbulence_influence_max;\n";
+		code += "uniform float turbulence_initial_displacement_min;\n";
+		code += "uniform float turbulence_initial_displacement_max;\n";
+		code += "uniform float turbulence_noise_speed_random;\n";
+		code += "uniform vec3 turbulence_noise_speed = vec3(1.0, 1.0, 1.0);\n";
+		if (tex_parameters[PARAM_TURB_INFLUENCE_OVER_LIFE].is_valid()) {
+			code += "uniform sampler2D turbulence_influence_over_life;\n";
+		}
+		if (turbulence_color_ramp.is_valid()) {
+			code += "uniform sampler2D turbulence_color_ramp;\n";
+		}
+		code += "\n";
+
+		//functions for 3D noise / turbulence
+		code += "\n\n";
+		code += "// 3D Noise with friendly permission by Inigo Quilez\n";
+		code += "vec3 hash_noise( vec3 p ) {\n";
+		code += "	p *= mat3(vec3(127.1, 311.7, -53.7), vec3(269.5, 183.3, 77.1), vec3(-301.7, 27.3, 215.3));\n";
+		code += "	return 2.0 * fract(fract(p)*4375.55) -1.;\n";
+		code += "}\n";
+		code += "\n";
+		code += "float noise( vec3 p) {\n";
+		code += "	vec3 i = floor(p);;\n";
+		code += "	vec3 f = fract(p);\n ";
+		code += "	vec3 u = f * f * (3.0 - 2.0 * f);\n";
+		code += "\n";
+		code += "	return 2.0*mix( mix( mix( dot( hash_noise( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), dot( hash_noise( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),\n";
+		code += "			mix( dot( hash_noise( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), dot( hash_noise( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),\n";
+		code += "		mix( mix( dot( hash_noise( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), dot( hash_noise( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),\n";
+		code += "			mix( dot( hash_noise( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), dot( hash_noise( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z);\n";
+		code += "}\n\n";
+		code += "// Curl 3D and noise_3d function with friendly permission by Isaac Cohen\n";
+		code += "vec3 noise_3d(vec3 p) {\n";
+		code += "	float s = noise(p);\n";
+		code += "	float s1 = noise(vec3(p.y - 19.1, p.z + 33.4, p.x + 47.2));\n";
+		code += "   float s2 = noise(vec3(p.z + 74.2, p.x - 124.5, p.y + 99.4));\n";
+		code += "	vec3 c = vec3(s, s1, s2);\n";
+		code += "	return c;\n";
+		code += "}\n\n";
+		code += "vec3 curl_3d(vec3 p, float c) {\n";
+		code += "	float epsilon = 0.001 + c;\n";
+		code += "	vec3 dx = vec3(epsilon, 0.0, 0.0);\n";
+		code += "	vec3 dy = vec3(0.0, epsilon, 0.0);\n";
+		code += "	vec3 dz = vec3(0.0, 0.0, epsilon);\n";
+		code += "	vec3 x0 = noise_3d(p - dx).xyz;\n";
+		code += "	vec3 x1 = noise_3d(p + dx).xyz;\n";
+		code += "	vec3 y0 = noise_3d(p - dy).xyz;\n";
+		code += "	vec3 y1 = noise_3d(p + dy).xyz;\n";
+		code += "	vec3 z0 = noise_3d(p - dz).xyz;\n";
+		code += "	vec3 z1 = noise_3d(p + dz).xyz;\n";
+		code += "	float x = y1.z - y0.z - z1.y + z0.y;\n";
+		code += "	float y = z1.x - z0.x - x1.z + x0.z;\n";
+		code += "	float z = x1.y - x0.y - y1.x + y0.x;\n";
+		code += "	float divisor = 1.0 / (2.0 * epsilon);\n";
+		code += "	return vec3(normalize(vec3(x, y, z) * divisor));\n";
+		code += "}\n";
+		code += "vec3 get_noise_direction(vec3 pos, vec3 emission_pos, vec3 time_noise) {\n";
+		code += "	float adj_contrast = max((turbulence_noise_strength - 1.0), 0.0) * 70.0;\n";
+		code += "	vec3 noise_time = (vec3(TIME) * turbulence_noise_speed) + time_noise;\n";
+		code += "	vec3 noise_pos = (pos * turbulence_noise_scale) - emission_pos;\n";
+		code += "	vec3 diff = pos - emission_pos;\n";
+		code += "	vec3 noise_direction = curl_3d(noise_pos + noise_time - diff, adj_contrast);\n";
+		code += "	noise_direction = mix(0.9 * noise_direction, noise_direction, turbulence_noise_strength - 9.0);\n";
+		code += "	return noise_direction;\n";
+		code += "}\n";
 	}
 
 	//need a random function
@@ -463,8 +544,18 @@ void ParticlesMaterial::_update_shader() {
 			break;
 		}
 	}
-
 	code += "	if (RESTART_VELOCITY) VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
+	// Apply noise/turbulence: initial displacement.
+	if (turbulence_enabled) {
+		if (get_turbulence_noise_speed_random() >= 0.0) {
+			code += "	vec3 time_noise = noise_3d( vec3(TIME) * turbulence_noise_speed_random ) * -turbulence_noise_speed;\n";
+		} else {
+			code += "	const vec3 time_noise = vec3(0.0);\n";
+		}
+		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz, EMISSION_TRANSFORM[3].xyz, time_noise);\n";
+		code += "	float turb_init_displacement = mix(turbulence_initial_displacement_min, turbulence_initial_displacement_max, rand_from_seed(alt_seed));";
+		code += "	TRANSFORM[3].xyz += noise_direction * turb_init_displacement;\n";
+	}
 	code += "	TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "	VELOCITY.z = 0.0;\n";
@@ -483,7 +574,6 @@ void ParticlesMaterial::_update_shader() {
 	if (color_initial_ramp.is_valid()) {
 		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
 	}
-
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
@@ -570,7 +660,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	vec3 diff = pos - org;\n";
 	code += "	force += length(diff) > 0.0 ? normalize(diff) * tex_radial_accel * mix(radial_accel_min, radial_accel_max, rand_from_seed(alt_seed)) : vec3(0.0);\n";
 	code += "	// apply tangential acceleration;\n";
-	code += "	float tangent_accel_val = tex_tangent_accel * mix(tangent_accel_min, tangent_accel_max, rand_from_seed(alt_seed))\n;";
+	code += "	float tangent_accel_val = tex_tangent_accel * mix(tangent_accel_min, tangent_accel_max, rand_from_seed(alt_seed));\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "	force += length(diff.yx) > 0.0 ? vec3(normalize(diff.yx * vec2(-1.0, 1.0)), 0.0) * tangent_accel_val : vec3(0.0);\n";
 
@@ -584,6 +674,41 @@ void ParticlesMaterial::_update_shader() {
 
 	code += "	// apply attractor forces\n";
 	code += "	VELOCITY += force * DELTA;\n";
+
+	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
+		code += "	VELOCITY = normalize(VELOCITY) * tex_linear_velocity;\n";
+	}
+
+	// Apply noise/turbulence.
+	if (turbulence_enabled) {
+		code += "	// apply turbulence\n";
+		if (tex_parameters[PARAM_TURB_INFLUENCE_OVER_LIFE].is_valid()) {
+			code += "	float turbulence_influence = textureLod(turbulence_influence_over_life, vec2(tv, 0.0), 0.0).r;\n";
+		} else {
+			code += "	const float turbulence_influence = 1.0;\n";
+		}
+		code += "	\n";
+		if (get_turbulence_noise_speed_random() >= 0.0) {
+			code += "	vec3 time_noise = noise_3d( vec3(TIME) * turbulence_noise_speed_random ) * -turbulence_noise_speed;\n";
+		} else {
+			code += "	const vec3 time_noise = vec3(0.0);\n";
+		}
+		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz, EMISSION_TRANSFORM[3].xyz, time_noise);\n";
+		// If collision happened, turbulence is no longer applied.
+		String extra_tab = "";
+		if (collision_enabled) {
+			code += "	if (!COLLIDED) {\n";
+			extra_tab = "	";
+		}
+		code += extra_tab + "	\n";
+		code += extra_tab + "	float vel_mag = length(VELOCITY);\n";
+		code += extra_tab + "	float vel_infl = clamp(mix(turbulence_influence_min, turbulence_influence_max, rand_from_seed(alt_seed)) * turbulence_influence, 0.0, 1.0);\n";
+		code += extra_tab + "	VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+		if (collision_enabled) {
+			code += "	}";
+		}
+	}
+	code += "	\n";
 	code += "	// orbit velocity\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "	float orbit_amount = tex_orbit_velocity * mix(orbit_velocity_min, orbit_velocity_max, rand_from_seed(alt_seed));\n";
@@ -595,9 +720,6 @@ void ParticlesMaterial::_update_shader() {
 		code += "	}\n";
 	}
 
-	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-		code += "	VELOCITY = normalize(VELOCITY) * tex_linear_velocity;\n";
-	}
 	code += "	float dmp = mix(damping_min, damping_max, rand_from_seed(alt_seed));\n";
 	code += "	if (dmp * tex_damping > 0.0) {\n";
 	code += "		float v = length(VELOCITY);\n";
@@ -701,24 +823,34 @@ void ParticlesMaterial::_update_shader() {
 			code += "	TRANSFORM[3] = origin;\n";
 		}
 	}
-	//scale by scale
+
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		code += "	TRANSFORM[3].z = 0.0;\n";
+	}
+
+	if (collision_enabled) {
+		code += "	if (COLLIDED) {\n";
+		code += "		if (length(VELOCITY) > 3.0) {\n";
+		code += "			TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
+		code += "			VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
+		code += "			VELOCITY = mix(VELOCITY,vec3(0.0),clamp(collision_friction, 0.0, 1.0));\n";
+		code += "		} else {\n";
+		code += "			VELOCITY = vec3(0.0);\n";
+		// If turbulence is enabled, set the noise direction to up so the turbulence color is "neutral"
+		if (turbulence_enabled) {
+			code += "			noise_direction = vec3(1.0, 0.0, 0.0);\n";
+		}
+		code += "		}\n";
+		code += "	}\n";
+	}
+
+	// scale by scale
 	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
 	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
-
 	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
 	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
 	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
-	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		code += "	VELOCITY.z = 0.0;\n";
-		code += "	TRANSFORM[3].z = 0.0;\n";
-	}
-	if (collision_enabled) {
-		code += "	if (COLLIDED) {\n";
-		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
-		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
-		code += "	}\n";
-	}
+
 	if (sub_emitter_mode != SUB_EMITTER_DISABLED) {
 		code += "	int emit_count = 0;\n";
 		switch (sub_emitter_mode) {
@@ -856,6 +988,15 @@ void ParticlesMaterial::set_param_min(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_min, p_value);
 		} break;
+		case PARAM_TURB_VEL_INFLUENCE: {
+			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_influence_min, p_value);
+		} break;
+		case PARAM_TURB_INIT_DISPLACEMENT: {
+			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_initial_displacement_min, p_value);
+		} break;
+		case PARAM_TURB_INFLUENCE_OVER_LIFE: {
+			// Can't happen, but silences warning
+		} break;
 		case PARAM_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -911,6 +1052,15 @@ void ParticlesMaterial::set_param_max(Parameter p_param, float p_value) {
 		} break;
 		case PARAM_ANIM_OFFSET: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_max, p_value);
+		} break;
+		case PARAM_TURB_VEL_INFLUENCE: {
+			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_influence_max, p_value);
+		} break;
+		case PARAM_TURB_INIT_DISPLACEMENT: {
+			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_initial_displacement_max, p_value);
+		} break;
+		case PARAM_TURB_INFLUENCE_OVER_LIFE: {
+			// Can't happen, but silences warning
 		} break;
 		case PARAM_MAX:
 			break; // Can't happen, but silences warning
@@ -985,6 +1135,16 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D
 		} break;
 		case PARAM_ANIM_OFFSET: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_texture, tex_rid);
+		} break;
+		case PARAM_TURB_INFLUENCE_OVER_LIFE: {
+			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_influence_over_life, tex_rid);
+			_adjust_curve_range(p_texture, 0, 1);
+		} break;
+		case PARAM_TURB_VEL_INFLUENCE: {
+			// Can't happen, but silences warning
+		} break;
+		case PARAM_TURB_INIT_DISPLACEMENT: {
+			// Can't happen, but silences warning
 		} break;
 		case PARAM_MAX:
 			break; // Can't happen, but silences warning
@@ -1151,6 +1311,54 @@ real_t ParticlesMaterial::get_emission_ring_inner_radius() const {
 	return emission_ring_inner_radius;
 }
 
+void ParticlesMaterial::set_turbulence_enabled(const bool p_turbulence_enabled) {
+	turbulence_enabled = p_turbulence_enabled;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_enabled, turbulence_enabled);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+bool ParticlesMaterial::get_turbulence_enabled() const {
+	return turbulence_enabled;
+}
+
+void ParticlesMaterial::set_turbulence_noise_strength(float p_turbulence_noise_strength) {
+	turbulence_noise_strength = p_turbulence_noise_strength;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_strength, p_turbulence_noise_strength);
+}
+
+float ParticlesMaterial::get_turbulence_noise_strength() const {
+	return turbulence_noise_strength;
+}
+
+void ParticlesMaterial::set_turbulence_noise_scale(float p_turbulence_noise_scale) {
+	turbulence_noise_scale = p_turbulence_noise_scale;
+	float shader_turbulence_noise_scale = (pow(p_turbulence_noise_scale, 0.25) * 5.6234 / 10.0) * 4.0 - 3.0;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_scale, shader_turbulence_noise_scale);
+}
+
+float ParticlesMaterial::get_turbulence_noise_scale() const {
+	return turbulence_noise_scale;
+}
+
+void ParticlesMaterial::set_turbulence_noise_speed_random(float p_turbulence_noise_speed_random) {
+	turbulence_noise_speed_random = p_turbulence_noise_speed_random;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_speed_random, p_turbulence_noise_speed_random);
+}
+
+float ParticlesMaterial::get_turbulence_noise_speed_random() const {
+	return turbulence_noise_speed_random;
+}
+
+void ParticlesMaterial::set_turbulence_noise_speed(const Vector3 &p_turbulence_noise_speed) {
+	turbulence_noise_speed = p_turbulence_noise_speed;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_speed, turbulence_noise_speed);
+}
+
+Vector3 ParticlesMaterial::get_turbulence_noise_speed() const {
+	return turbulence_noise_speed;
+}
+
 void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
 	gravity = p_gravity;
 	Vector3 gset = gravity;
@@ -1213,6 +1421,20 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 
 	if (property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (!turbulence_enabled) {
+		if (property.name == "turbulence_noise_strength" ||
+				property.name == "turbulence_noise_scale" ||
+				property.name == "turbulence_noise_speed" ||
+				property.name == "turbulence_noise_speed_random" ||
+				property.name == "turbulence_influence_over_life" ||
+				property.name == "turbulence_influence_min" ||
+				property.name == "turbulence_influence_max" ||
+				property.name == "turbulence_initial_displacement_min" ||
+				property.name == "turbulence_initial_displacement_max") {
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 }
 
@@ -1365,6 +1587,21 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "inner_radius"), &ParticlesMaterial::set_emission_ring_inner_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticlesMaterial::get_emission_ring_inner_radius);
 
+	ClassDB::bind_method(D_METHOD("get_turbulence_enabled"), &ParticlesMaterial::get_turbulence_enabled);
+	ClassDB::bind_method(D_METHOD("set_turbulence_enabled", "turbulence_enabled"), &ParticlesMaterial::set_turbulence_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_strength"), &ParticlesMaterial::get_turbulence_noise_strength);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_strength", "turbulence_noise_strength"), &ParticlesMaterial::set_turbulence_noise_strength);
+
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_scale"), &ParticlesMaterial::get_turbulence_noise_scale);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_scale", "turbulence_noise_scale"), &ParticlesMaterial::set_turbulence_noise_scale);
+
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_speed_random"), &ParticlesMaterial::get_turbulence_noise_speed_random);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_speed_random", "turbulence_noise_speed_random"), &ParticlesMaterial::set_turbulence_noise_speed_random);
+
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_speed"), &ParticlesMaterial::get_turbulence_noise_speed);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_speed", "turbulence_noise_speed"), &ParticlesMaterial::set_turbulence_noise_speed);
+
 	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
 
@@ -1413,7 +1650,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_height"), "set_emission_ring_height", "get_emission_ring_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_radius"), "set_emission_ring_radius", "get_emission_ring_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_inner_radius"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
-	ADD_GROUP("ParticleFlags", "particle_flag_");
+	ADD_GROUP("Particle Flags", "particle_flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_align_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
@@ -1467,6 +1704,19 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_min", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_min", "get_param_min", PARAM_HUE_VARIATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_max", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_max", "get_param_max", PARAM_HUE_VARIATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "hue_variation_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_HUE_VARIATION);
+
+	ADD_GROUP("Turbulence", "turbulence_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled"), "set_turbulence_enabled", "get_turbulence_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_speed_random", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_turbulence_noise_speed_random", "get_turbulence_noise_speed_random");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_min", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_min", "get_param_min", PARAM_TURB_VEL_INFLUENCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_max", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_max", "get_param_max", PARAM_TURB_VEL_INFLUENCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_initial_displacement_min", PROPERTY_HINT_RANGE, "-100,100,0.1"), "set_param_min", "get_param_min", PARAM_TURB_INIT_DISPLACEMENT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_initial_displacement_max", PROPERTY_HINT_RANGE, "-100,100,0.1"), "set_param_max", "get_param_max", PARAM_TURB_INIT_DISPLACEMENT);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "turbulence_influence_over_life", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_TURB_INFLUENCE_OVER_LIFE);
+
 	ADD_GROUP("Animation", "anim_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_min", PROPERTY_HINT_RANGE, "0,16,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_max", PROPERTY_HINT_RANGE, "0,16,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_ANIM_SPEED);
@@ -1517,6 +1767,10 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 
+	BIND_ENUM_CONSTANT(PARAM_TURB_VEL_INFLUENCE);
+	BIND_ENUM_CONSTANT(PARAM_TURB_INIT_DISPLACEMENT);
+	BIND_ENUM_CONSTANT(PARAM_TURB_INFLUENCE_OVER_LIFE);
+
 	BIND_ENUM_CONSTANT(SUB_EMITTER_DISABLED);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_CONSTANT);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_END);
@@ -1560,6 +1814,17 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_ring_height(1);
 	set_emission_ring_radius(1);
 	set_emission_ring_inner_radius(0);
+
+	set_turbulence_enabled(false);
+	set_turbulence_noise_speed(Vector3(0.5, 0.5, 0.5));
+	set_turbulence_noise_strength(1);
+	set_turbulence_noise_scale(9);
+	set_turbulence_noise_speed_random(0);
+	set_param_min(PARAM_TURB_VEL_INFLUENCE, 0.1);
+	set_param_max(PARAM_TURB_VEL_INFLUENCE, 0.1);
+	set_param_min(PARAM_TURB_INIT_DISPLACEMENT, 0.0);
+	set_param_max(PARAM_TURB_INIT_DISPLACEMENT, 0.0);
+
 	set_gravity(Vector3(0, -9.8, 0));
 	set_lifetime_randomness(0);
 

@@ -18,7 +18,7 @@
 	<methods>
 		<method name="get_floor_angle" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Returns the floor's collision angle at the last collision point according to [code]up_direction[/code], which is [code]Vector3.UP[/code] by default. This value is always positive and only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
@@ -61,7 +61,7 @@
 		</method>
 		<method name="get_slide_collision">
 			<return type="KinematicCollision3D" />
-			<argument index="0" name="slide_idx" type="int" />
+			<param index="0" name="slide_idx" type="int" />
 			<description>
 				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
 			</description>
@@ -159,10 +159,10 @@
 			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behavior.
 		</member>
 		<member name="moving_platform_floor_layers" type="int" setter="set_moving_platform_floor_layers" getter="get_moving_platform_floor_layers" default="4294967295">
-			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all floor bodies are detected and propagate their velocity.
+			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody3D]. By default, all floor bodies are detected and propagate their velocity.
 		</member>
 		<member name="moving_platform_wall_layers" type="int" setter="set_moving_platform_wall_layers" getter="get_moving_platform_wall_layers" default="0">
-			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all wall bodies are ignored.
+			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody3D]. By default, all wall bodies are ignored.
 		</member>
 		<member name="slide_on_ceiling" type="bool" setter="set_slide_on_ceiling_enabled" getter="is_slide_on_ceiling_enabled" default="true">
 			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.

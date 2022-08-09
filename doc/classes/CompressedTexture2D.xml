@@ -11,7 +11,7 @@
 	<methods>
 		<method name="load">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Loads the texture from the given path.
 			</description>

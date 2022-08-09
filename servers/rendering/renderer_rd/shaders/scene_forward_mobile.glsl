@@ -889,8 +889,10 @@ void main() {
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
 		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
 		vec3 ref_vec = reflect(-view, normal);
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 #endif
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
@@ -940,6 +942,7 @@ void main() {
 		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
 		float NoV = max(dot(n, view), 0.0001);
 		vec3 ref_vec = reflect(-view, n);
+		ref_vec = mix(ref_vec, n, clearcoat_roughness * clearcoat_roughness);
 		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
 		float Fc = clearcoat * (0.04 + 0.96 * SchlickFresnel(NoV));
 		float attenuation = 1.0 - Fc;
@@ -1036,6 +1039,19 @@ void main() {
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 
 		uint reflection_indices = draw_call.reflection_probes.x;
+
+#ifdef LIGHT_ANISOTROPY_USED
+		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
+		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
+		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
+		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+#else
+		vec3 bent_normal = normal;
+#endif
+		vec3 ref_vec = normalize(reflect(-view, bent_normal));
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
+
 		for (uint i = 0; i < 8; i++) {
 			uint reflection_index = reflection_indices & 0xFF;
 			if (i == 4) {
@@ -1047,16 +1063,8 @@ void main() {
 			if (reflection_index == 0xFF) {
 				break;
 			}
-#ifdef LIGHT_ANISOTROPY_USED
-			// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
-			vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
-			vec3 anisotropic_tangent = cross(anisotropic_direction, view);
-			vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-			vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
-#else
-			vec3 bent_normal = normal;
-#endif
-			reflection_process(reflection_index, view, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+
+			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 		}
 
 		if (reflection_accum.a > 0.0) {
@@ -1134,7 +1142,7 @@ void main() {
 
 #ifdef USE_SOFT_SHADOWS
 			//version with soft shadows, more expensive
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;
@@ -1286,7 +1294,7 @@ void main() {
 #else
 			// Soft shadow disabled version
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;

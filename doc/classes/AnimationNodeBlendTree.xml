@@ -13,70 +13,70 @@
 	<methods>
 		<method name="add_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="node" type="AnimationNode" />
-			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="node" type="AnimationNode" />
+			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds an [AnimationNode] at the given [code]position[/code]. The [code]name[/code] is used to identify the created sub-node later.
 			</description>
 		</method>
 		<method name="connect_node">
 			<return type="void" />
-			<argument index="0" name="input_node" type="StringName" />
-			<argument index="1" name="input_index" type="int" />
-			<argument index="2" name="output_node" type="StringName" />
+			<param index="0" name="input_node" type="StringName" />
+			<param index="1" name="input_index" type="int" />
+			<param index="2" name="output_node" type="StringName" />
 			<description>
 				Connects the output of an [AnimationNode] as input for another [AnimationNode], at the input port specified by [code]input_index[/code].
 			</description>
 		</method>
 		<method name="disconnect_node">
 			<return type="void" />
-			<argument index="0" name="input_node" type="StringName" />
-			<argument index="1" name="input_index" type="int" />
+			<param index="0" name="input_node" type="StringName" />
+			<param index="1" name="input_index" type="int" />
 			<description>
 				Disconnects the node connected to the specified input.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="AnimationNode" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the sub-node with the specified [code]name[/code].
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the position of the sub-node with the specified [code]name[/code].
 			</description>
 		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a sub-node with specified [code]name[/code] exists.
 			</description>
 		</method>
 		<method name="remove_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes a sub-node.
 			</description>
 		</method>
 		<method name="rename_node">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="new_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
 			<description>
 				Changes the name of a sub-node.
 			</description>
 		</method>
 		<method name="set_node_position">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="position" type="Vector2" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="position" type="Vector2" />
 			<description>
 				Modifies the position of a sub-node.
 			</description>

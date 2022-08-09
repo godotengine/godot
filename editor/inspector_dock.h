@@ -61,6 +61,7 @@ class InspectorDock : public VBoxContainer {
 
 		COLLAPSE_ALL,
 		EXPAND_ALL,
+		EXPAND_REVERTABLE,
 
 		// Matches `EditorPropertyNameProcessor::Style`.
 		PROPERTY_NAME_STYLE_RAW,
@@ -100,6 +101,7 @@ class InspectorDock : public VBoxContainer {
 	Tree *unique_resources_list_tree = nullptr;
 
 	EditorPropertyNameProcessor::Style property_name_style;
+	List<Pair<StringName, Variant>> stored_properties;
 
 	void _prepare_menu();
 	void _menu_option(int p_option);
@@ -123,6 +125,7 @@ class InspectorDock : public VBoxContainer {
 	void _edit_back();
 	void _menu_collapseall();
 	void _menu_expandall();
+	void _menu_expand_revertable();
 	void _select_history(int p_idx);
 	void _prepare_history();
 
@@ -149,8 +152,11 @@ public:
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 
+	void store_script_properties(Object *p_object);
+	void apply_script_properties(Object *p_object);
+
 	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();
 };
 
-#endif
+#endif // INSPECTOR_DOCK_H

@@ -13,7 +13,7 @@
 	<methods>
 		<method name="can_push_buffer" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="amount" type="int" />
+			<param index="0" name="amount" type="int" />
 			<description>
 				Returns [code]true[/code] if a buffer of the size [code]amount[/code] can be pushed to the audio sample data buffer without overflowing it, [code]false[/code] otherwise.
 			</description>
@@ -37,14 +37,14 @@
 		</method>
 		<method name="push_buffer">
 			<return type="bool" />
-			<argument index="0" name="frames" type="PackedVector2Array" />
+			<param index="0" name="frames" type="PackedVector2Array" />
 			<description>
 				Pushes several audio data frames to the buffer. This is usually more efficient than [method push_frame] in C# and compiled languages via GDExtension, but [method push_buffer] may be [i]less[/i] efficient in GDScript.
 			</description>
 		</method>
 		<method name="push_frame">
 			<return type="bool" />
-			<argument index="0" name="frame" type="Vector2" />
+			<param index="0" name="frame" type="Vector2" />
 			<description>
 				Pushes a single audio data frame to the buffer. This is usually less efficient than [method push_buffer] in C# and compiled languages via GDExtension, but [method push_frame] may be [i]more[/i] efficient in GDScript.
 			</description>

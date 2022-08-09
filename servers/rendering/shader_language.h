@@ -38,6 +38,7 @@
 #include "core/templates/rb_map.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
+#include "scene/resources/shader_include.h"
 
 #ifdef DEBUG_ENABLED
 #include "shader_warnings.h"
@@ -153,6 +154,7 @@ public:
 		TK_SEMICOLON,
 		TK_PERIOD,
 		TK_UNIFORM,
+		TK_UNIFORM_GROUP,
 		TK_INSTANCE,
 		TK_GLOBAL,
 		TK_VARYING,
@@ -162,6 +164,7 @@ public:
 		TK_RENDER_MODE,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
 		TK_HINT_DEFAULT_BLACK_TEXTURE,
+		TK_HINT_DEFAULT_TRANSPARENT_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
 		TK_HINT_ROUGHNESS_NORMAL_TEXTURE,
 		TK_HINT_ROUGHNESS_R,
@@ -662,6 +665,7 @@ public:
 				HINT_ROUGHNESS_GRAY,
 				HINT_DEFAULT_BLACK,
 				HINT_DEFAULT_WHITE,
+				HINT_DEFAULT_TRANSPARENT,
 				HINT_ANISOTROPY,
 				HINT_MAX
 			};
@@ -686,6 +690,8 @@ public:
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
 			int instance_index = 0;
+			String group;
+			String subgroup;
 
 			Uniform() {
 				hint_range[0] = 0.0f;
@@ -865,7 +871,12 @@ public:
 	};
 	static bool has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
-	typedef DataType (*GlobalVariableGetTypeFunc)(const StringName &p_name);
+	typedef DataType (*GlobalShaderUniformGetTypeFunc)(const StringName &p_name);
+
+	struct FilePosition {
+		String file;
+		int line = 0;
+	};
 
 private:
 	struct KeyWord {
@@ -878,11 +889,13 @@ private:
 
 	static const KeyWord keyword_list[];
 
-	GlobalVariableGetTypeFunc global_var_get_type_func = nullptr;
+	GlobalShaderUniformGetTypeFunc global_shader_uniform_get_type_func = nullptr;
 
 	bool error_set = false;
 	String error_str;
 	int error_line = 0;
+
+	Vector<FilePosition> include_positions;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {
@@ -928,6 +941,10 @@ private:
 	StringName current_function;
 	bool last_const = false;
 	StringName last_name;
+	bool is_shader_inc = false;
+
+	String current_uniform_group_name;
+	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
 
@@ -951,6 +968,7 @@ private:
 		error_line = tk_line;
 		error_set = true;
 		error_str = p_str;
+		include_positions.write[include_positions.size() - 1].line = tk_line;
 	}
 
 	void _set_expected_error(const String &p_what) {
@@ -1097,13 +1115,15 @@ public:
 		Vector<ModeInfo> render_modes;
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
 		HashSet<String> shader_types;
-		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
+		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
+		bool is_include = false;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
 	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
+	Vector<FilePosition> get_include_positions();
 	int get_error_line();
 
 	ShaderNode *get_shader();

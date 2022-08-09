@@ -26,8 +26,14 @@ if env["x11"]:
 if env["speechd"]:
     common_linuxbsd.append(["speechd-so_wrap.c", "tts_linux.cpp"])
 
+if env["fontconfig"]:
+    common_linuxbsd.append("fontconfig-so_wrap.c")
+
 if env["udev"]:
     common_linuxbsd.append("libudev-so_wrap.c")
+
+if env["dbus"]:
+    common_linuxbsd.append("dbus-so_wrap.c")
 
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
 

@@ -78,6 +78,29 @@ TEST_CASE("[FileAccess] CSV read") {
 	CHECK(row5[1] == "tab separated");
 	CHECK(row5[2] == "lines, good?");
 }
+
+TEST_CASE("[FileAccess] Get as UTF-8 String") {
+	Ref<FileAccess> f_lf = FileAccess::open(TestUtils::get_data_path("line_endings_lf.test.txt"), FileAccess::READ);
+	String s_lf = f_lf->get_as_utf8_string();
+	f_lf->seek(0);
+	String s_lf_nocr = f_lf->get_as_utf8_string(true);
+	CHECK(s_lf == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
+	CHECK(s_lf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
+
+	Ref<FileAccess> f_crlf = FileAccess::open(TestUtils::get_data_path("line_endings_crlf.test.txt"), FileAccess::READ);
+	String s_crlf = f_crlf->get_as_utf8_string();
+	f_crlf->seek(0);
+	String s_crlf_nocr = f_crlf->get_as_utf8_string(true);
+	CHECK(s_crlf == "Hello darkness\r\nMy old friend\r\nI've come to talk\r\nWith you again\r\n");
+	CHECK(s_crlf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
+
+	Ref<FileAccess> f_cr = FileAccess::open(TestUtils::get_data_path("line_endings_cr.test.txt"), FileAccess::READ);
+	String s_cr = f_cr->get_as_utf8_string();
+	f_cr->seek(0);
+	String s_cr_nocr = f_cr->get_as_utf8_string(true);
+	CHECK(s_cr == "Hello darkness\rMy old friend\rI've come to talk\rWith you again\r");
+	CHECK(s_cr_nocr == "Hello darknessMy old friendI've come to talkWith you again");
+}
 } // namespace TestFileAccess
 
 #endif // TEST_FILE_ACCESS_H

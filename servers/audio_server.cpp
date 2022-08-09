@@ -39,7 +39,7 @@
 #include "core/os/os.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
-#include "scene/resources/audio_stream_sample.h"
+#include "scene/resources/audio_stream_wav.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 
@@ -349,6 +349,10 @@ void AudioServer::_mix_step() {
 
 		// Mix the audio stream
 		unsigned int mixed_frames = playback->stream_playback->mix(&buf[LOOKAHEAD_BUFFER_SIZE], playback->pitch_scale.get(), buffer_size);
+
+		if (tag_used_audio_streams && playback->stream_playback->is_playing()) {
+			playback->stream_playback->tag_used_streams();
+		}
 
 		if (mixed_frames != buffer_size) {
 			// We know we have at least the size of our lookahead buffer for fade-out purposes.
@@ -1312,6 +1316,10 @@ uint64_t AudioServer::get_mix_count() const {
 	return mix_count;
 }
 
+uint64_t AudioServer::get_mixed_frames() const {
+	return mix_frames;
+}
+
 void AudioServer::notify_listener_changed() {
 	for (CallbackItem *ci : listener_changed_callback_list) {
 		ci->callback(ci->userdata);
@@ -1653,6 +1661,10 @@ void AudioServer::capture_set_device(const String &p_name) {
 	AudioDriver::get_singleton()->capture_set_device(p_name);
 }
 
+void AudioServer::set_enable_tagging_used_audio_streams(bool p_enable) {
+	tag_used_audio_streams = p_enable;
+}
+
 void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_count", "amount"), &AudioServer::set_bus_count);
 	ClassDB::bind_method(D_METHOD("get_bus_count"), &AudioServer::get_bus_count);
@@ -1718,6 +1730,8 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
+
+	ClassDB::bind_method(D_METHOD("set_enable_tagging_used_audio_streams", "enable"), &AudioServer::set_enable_tagging_used_audio_streams);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");

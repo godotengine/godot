@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COPY_RD_H
-#define COPY_RD_H
+#ifndef COPY_EFFECTS_RD_H
+#define COPY_EFFECTS_RD_H
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
@@ -42,6 +42,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/cubemap_filter_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/cubemap_roughness.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/cubemap_roughness_raster.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
@@ -274,6 +275,33 @@ private:
 		PipelineCacheRD raster_pipeline;
 	} roughness;
 
+	// Merge specular
+
+	enum SpecularMergeMode {
+		SPECULAR_MERGE_ADD,
+		SPECULAR_MERGE_SSR,
+		SPECULAR_MERGE_ADDITIVE_ADD,
+		SPECULAR_MERGE_ADDITIVE_SSR,
+
+		SPECULAR_MERGE_ADD_MULTIVIEW,
+		SPECULAR_MERGE_SSR_MULTIVIEW,
+		SPECULAR_MERGE_ADDITIVE_ADD_MULTIVIEW,
+		SPECULAR_MERGE_ADDITIVE_SSR_MULTIVIEW,
+
+		SPECULAR_MERGE_MAX
+	};
+
+	/* Specular merge must be done using raster, rather than compute
+	 * because it must continue the existing color buffer
+	 */
+
+	struct SpecularMerge {
+		SpecularMergeShaderRD shader;
+		RID shader_version;
+		PipelineCacheRD pipelines[SPECULAR_MERGE_MAX];
+
+	} specular_merge;
+
 	static CopyEffects *singleton;
 
 public:
@@ -309,8 +337,10 @@ public:
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
+
+	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection, uint32_t p_view_count);
 };
 
 } // namespace RendererRD
 
-#endif // !COPY_RD_H
+#endif // COPY_EFFECTS_RD_H

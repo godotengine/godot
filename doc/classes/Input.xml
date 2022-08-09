@@ -14,8 +14,8 @@
 	<methods>
 		<method name="action_press">
 			<return type="void" />
-			<argument index="0" name="action" type="StringName" />
-			<argument index="1" name="strength" type="float" default="1.0" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="strength" type="float" default="1.0" />
 			<description>
 				This will simulate pressing the specified action.
 				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
@@ -24,15 +24,15 @@
 		</method>
 		<method name="action_release">
 			<return type="void" />
-			<argument index="0" name="action" type="StringName" />
+			<param index="0" name="action" type="StringName" />
 			<description>
 				If the specified action is already pressed, this will release it.
 			</description>
 		</method>
 		<method name="add_joy_mapping">
 			<return type="void" />
-			<argument index="0" name="mapping" type="String" />
-			<argument index="1" name="update_existing" type="bool" default="false" />
+			<param index="0" name="mapping" type="String" />
+			<param index="1" name="update_existing" type="bool" default="false" />
 			<description>
 				Adds a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
 			</description>
@@ -54,8 +54,8 @@
 		</method>
 		<method name="get_action_raw_strength" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="action" type="StringName" />
-			<argument index="1" name="exact_match" type="bool" default="false" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns a value between 0 and 1 representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
 				If [code]exact_match[/code] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -63,8 +63,8 @@
 		</method>
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="action" type="StringName" />
-			<argument index="1" name="exact_match" type="bool" default="false" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
 				If [code]exact_match[/code] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -72,8 +72,8 @@
 		</method>
 		<method name="get_axis" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="negative_action" type="StringName" />
-			<argument index="1" name="positive_action" type="StringName" />
+			<param index="0" name="negative_action" type="StringName" />
+			<param index="1" name="positive_action" type="StringName" />
 			<description>
 				Get axis input by specifying two actions, one negative and one positive.
 				This is a shorthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
@@ -107,36 +107,36 @@
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="device" type="int" />
-			<argument index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
 			<description>
 				Returns the current value of the joypad axis at given index (see [enum JoyAxis]).
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="device" type="int" />
+			<param index="0" name="device" type="int" />
 			<description>
 				Returns a SDL2-compatible device GUID on platforms that use gamepad remapping. Returns [code]"Default Gamepad"[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_joy_name">
 			<return type="String" />
-			<argument index="0" name="device" type="int" />
+			<param index="0" name="device" type="int" />
 			<description>
 				Returns the name of the joypad at the specified device index.
 			</description>
 		</method>
 		<method name="get_joy_vibration_duration">
 			<return type="float" />
-			<argument index="0" name="device" type="int" />
+			<param index="0" name="device" type="int" />
 			<description>
 				Returns the duration of the current vibration effect in seconds.
 			</description>
 		</method>
 		<method name="get_joy_vibration_strength">
 			<return type="Vector2" />
-			<argument index="0" name="device" type="int" />
+			<param index="0" name="device" type="int" />
 			<description>
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
@@ -162,11 +162,11 @@
 		</method>
 		<method name="get_vector" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="negative_x" type="StringName" />
-			<argument index="1" name="positive_x" type="StringName" />
-			<argument index="2" name="negative_y" type="StringName" />
-			<argument index="3" name="positive_y" type="StringName" />
-			<argument index="4" name="deadzone" type="float" default="-1.0" />
+			<param index="0" name="negative_x" type="StringName" />
+			<param index="1" name="positive_x" type="StringName" />
+			<param index="2" name="negative_y" type="StringName" />
+			<param index="3" name="positive_y" type="StringName" />
+			<param index="4" name="deadzone" type="float" default="-1.0" />
 			<description>
 				Gets an input vector by specifying four actions for the positive and negative X and Y axes.
 				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1 and has a circular deadzone, which is useful for using vector input as movement.
@@ -175,8 +175,8 @@
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="action" type="StringName" />
-			<argument index="1" name="exact_match" type="bool" default="false" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
@@ -186,8 +186,8 @@
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="action" type="StringName" />
-			<argument index="1" name="exact_match" type="bool" default="false" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
 				If [code]exact_match[/code] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -195,8 +195,8 @@
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="action" type="StringName" />
-			<argument index="1" name="exact_match" type="bool" default="false" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
 				If [code]exact_match[/code] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -211,22 +211,22 @@
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="device" type="int" />
-			<argument index="1" name="button" type="int" enum="JoyButton" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="button" type="int" enum="JoyButton" />
 			<description>
 				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
 			</description>
 		</method>
 		<method name="is_joy_known">
 			<return type="bool" />
-			<argument index="0" name="device" type="int" />
+			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="keycode" type="int" enum="Key" />
+			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Returns [code]true[/code] if you are pressing the key in the current keyboard layout. You can pass a [enum Key] constant.
 				[method is_key_pressed] is only recommended over [method is_physical_key_pressed] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_pressed].
@@ -235,14 +235,14 @@
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="button" type="int" enum="MouseButton" />
+			<param index="0" name="button" type="int" enum="MouseButton" />
 			<description>
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum MouseButton].
 			</description>
 		</method>
 		<method name="is_physical_key_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="keycode" type="int" enum="Key" />
+			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Returns [code]true[/code] if you are pressing the key in the physical location on the 101/102-key US QWERTY keyboard. You can pass a [enum Key] constant.
 				[method is_physical_key_pressed] is recommended over [method is_key_pressed] for in-game actions, as it will make [kbd]W[/kbd]/[kbd]A[/kbd]/[kbd]S[/kbd]/[kbd]D[/kbd] layouts work regardless of the user's keyboard layout. [method is_physical_key_pressed] will also ensure that the top row number keys work on any keyboard layout. If in doubt, use [method is_physical_key_pressed].
@@ -251,7 +251,7 @@
 		</method>
 		<method name="parse_input_event">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
 				Example:
@@ -273,14 +273,14 @@
 		</method>
 		<method name="remove_joy_mapping">
 			<return type="void" />
-			<argument index="0" name="guid" type="String" />
+			<param index="0" name="guid" type="String" />
 			<description>
 				Removes all mappings from the internal database that match the given GUID.
 			</description>
 		</method>
 		<method name="set_accelerometer">
 			<return type="void" />
-			<argument index="0" name="value" type="Vector3" />
+			<param index="0" name="value" type="Vector3" />
 			<description>
 				Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
@@ -288,9 +288,9 @@
 		</method>
 		<method name="set_custom_mouse_cursor">
 			<return type="void" />
-			<argument index="0" name="image" type="Resource" />
-			<argument index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
-			<argument index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="image" type="Resource" />
+			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
+			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
 				[code]image[/code]'s size must be lower than 256×256.
@@ -301,7 +301,7 @@
 		</method>
 		<method name="set_default_cursor_shape">
 			<return type="void" />
-			<argument index="0" name="shape" type="int" enum="Input.CursorShape" default="0" />
+			<param index="0" name="shape" type="int" enum="Input.CursorShape" default="0" />
 			<description>
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
@@ -310,7 +310,7 @@
 		</method>
 		<method name="set_gravity">
 			<return type="void" />
-			<argument index="0" name="value" type="Vector3" />
+			<param index="0" name="value" type="Vector3" />
 			<description>
 				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
@@ -318,7 +318,7 @@
 		</method>
 		<method name="set_gyroscope">
 			<return type="void" />
-			<argument index="0" name="value" type="Vector3" />
+			<param index="0" name="value" type="Vector3" />
 			<description>
 				Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
@@ -326,7 +326,7 @@
 		</method>
 		<method name="set_magnetometer">
 			<return type="void" />
-			<argument index="0" name="value" type="Vector3" />
+			<param index="0" name="value" type="Vector3" />
 			<description>
 				Sets the value of the magnetic field of the magnetometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
@@ -334,10 +334,10 @@
 		</method>
 		<method name="start_joy_vibration">
 			<return type="void" />
-			<argument index="0" name="device" type="int" />
-			<argument index="1" name="weak_magnitude" type="float" />
-			<argument index="2" name="strong_magnitude" type="float" />
-			<argument index="3" name="duration" type="float" default="0" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="weak_magnitude" type="float" />
+			<param index="2" name="strong_magnitude" type="float" />
+			<param index="3" name="duration" type="float" default="0" />
 			<description>
 				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [code]weak_magnitude[/code] is the strength of the weak motor (between 0 and 1) and [code]strong_magnitude[/code] is the strength of the strong motor (between 0 and 1). [code]duration[/code] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
@@ -345,23 +345,25 @@
 		</method>
 		<method name="stop_joy_vibration">
 			<return type="void" />
-			<argument index="0" name="device" type="int" />
+			<param index="0" name="device" type="int" />
 			<description>
 				Stops the vibration of the joypad.
 			</description>
 		</method>
 		<method name="vibrate_handheld">
 			<return type="void" />
-			<argument index="0" name="duration_ms" type="int" default="500" />
+			<param index="0" name="duration_ms" type="int" default="500" />
 			<description>
-				Vibrate Android and iOS devices.
+				Vibrate handheld devices.
+				[b]Note:[/b] This method is implemented on Android, iOS, and HTML5.
 				[b]Note:[/b] For Android, it requires enabling the [code]VIBRATE[/code] permission in the export preset.
 				[b]Note:[/b] For iOS, specifying the duration is supported in iOS 13 and later.
+				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support this method.
 			</description>
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
 				Sets the mouse position to the specified vector, provided in pixels and relative to an origin at the upper left corner of the currently focused Window Manager game window.
 				Mouse position is clipped to the limits of the screen resolution, or to the limits of the game window if [enum MouseMode] is set to [code]MOUSE_MODE_CONFINED[/code] or [code]MOUSE_MODE_CONFINED_HIDDEN[/code].
@@ -380,8 +382,8 @@
 	</members>
 	<signals>
 		<signal name="joy_connection_changed">
-			<argument index="0" name="device" type="int" />
-			<argument index="1" name="connected" type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="connected" type="bool" />
 			<description>
 				Emitted when a joypad device has been connected or disconnected.
 			</description>

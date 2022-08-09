@@ -183,7 +183,7 @@ class LightmapperRD : public Lightmapper {
 		}
 	};
 
-	void _plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size);
+	void _plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size);
 
 	struct RasterPushConstant {
 		float atlas_size[2] = {};
@@ -256,4 +256,4 @@ public:
 	LightmapperRD();
 };
 
-#endif // LIGHTMAPPER_H
+#endif // LIGHTMAPPER_RD_H

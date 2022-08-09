@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTTEXTURE_H
-#define RESOURCEIMPORTTEXTURE_H
+#ifndef RESOURCE_IMPORTER_TEXTURE_H
+#define RESOURCE_IMPORTER_TEXTURE_H
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
@@ -109,4 +109,4 @@ public:
 	~ResourceImporterTexture();
 };
 
-#endif // RESOURCEIMPORTTEXTURE_H
+#endif // RESOURCE_IMPORTER_TEXTURE_H

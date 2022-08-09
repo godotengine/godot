@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_OBSTACLE_H
-#define NAVIGATION_OBSTACLE_H
+#ifndef NAVIGATION_OBSTACLE_3D_H
+#define NAVIGATION_OBSTACLE_3D_H
 
 #include "scene/3d/node_3d.h"
 
@@ -73,4 +73,4 @@ private:
 	real_t estimate_agent_radius() const;
 };
 
-#endif
+#endif // NAVIGATION_OBSTACLE_3D_H

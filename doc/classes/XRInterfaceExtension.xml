@@ -59,10 +59,10 @@
 		</method>
 		<method name="_get_projection_for_view" qualifiers="virtual">
 			<return type="PackedFloat64Array" />
-			<argument index="0" name="view" type="int" />
-			<argument index="1" name="aspect" type="float" />
-			<argument index="2" name="z_near" type="float" />
-			<argument index="3" name="z_far" type="float" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
 			<description>
 				Returns the projection matrix for the given view as a [PackedFloat64Array].
 			</description>
@@ -75,7 +75,7 @@
 		</method>
 		<method name="_get_suggested_pose_names" qualifiers="virtual const">
 			<return type="PackedStringArray" />
-			<argument index="0" name="tracker_name" type="StringName" />
+			<param index="0" name="tracker_name" type="StringName" />
 			<description>
 				Returns a [PackedStringArray] with pose names configured by this interface. Note that user configuration can override this list.
 			</description>
@@ -94,8 +94,8 @@
 		</method>
 		<method name="_get_transform_for_view" qualifiers="virtual">
 			<return type="Transform3D" />
-			<argument index="0" name="view" type="int" />
-			<argument index="1" name="cam_transform" type="Transform3D" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="cam_transform" type="Transform3D" />
 			<description>
 				Returns a [Transform3D] for a given view.
 			</description>
@@ -125,22 +125,22 @@
 		</method>
 		<method name="_notification" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="what" type="int" />
+			<param index="0" name="what" type="int" />
 			<description>
 				Informs the interface of an applicable system notification.
 			</description>
 		</method>
 		<method name="_post_draw_viewport" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="render_target" type="RID" />
-			<argument index="1" name="screen_rect" type="Rect2" />
+			<param index="0" name="render_target" type="RID" />
+			<param index="1" name="screen_rect" type="Rect2" />
 			<description>
 				Called after the XR [Viewport] draw logic has completed.
 			</description>
 		</method>
 		<method name="_pre_draw_viewport" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="render_target" type="RID" />
+			<param index="0" name="render_target" type="RID" />
 			<description>
 				Called if this is our primary [XRInterfaceExtension] before we start processing a [Viewport] for every active XR [Viewport], returns [code]true[/code] if that viewport should be rendered. An XR interface may return [code]false[/code] if the user has taken off their headset and we can pause rendering.
 			</description>
@@ -159,33 +159,33 @@
 		</method>
 		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
 				Enables anchor detection on this interface if supported.
 			</description>
 		</method>
 		<method name="_set_play_area_mode" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="mode" type="int" />
+			<param index="0" name="mode" type="int" />
 			<description>
 				Set the play area mode for this interface.
 			</description>
 		</method>
 		<method name="_supports_play_area_mode" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Returns [code]true[/code] if this interface supports this play area mode.
 			</description>
 		</method>
 		<method name="_trigger_haptic_pulse" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="action_name" type="String" />
-			<argument index="1" name="tracker_name" type="StringName" />
-			<argument index="2" name="frequency" type="float" />
-			<argument index="3" name="amplitude" type="float" />
-			<argument index="4" name="duration_sec" type="float" />
-			<argument index="5" name="delay_sec" type="float" />
+			<param index="0" name="action_name" type="String" />
+			<param index="1" name="tracker_name" type="StringName" />
+			<param index="2" name="frequency" type="float" />
+			<param index="3" name="amplitude" type="float" />
+			<param index="4" name="duration_sec" type="float" />
+			<param index="5" name="delay_sec" type="float" />
 			<description>
 				Triggers a haptic pulse to be emitted on the specified tracker.
 			</description>
@@ -198,24 +198,24 @@
 		</method>
 		<method name="add_blit">
 			<return type="void" />
-			<argument index="0" name="render_target" type="RID" />
-			<argument index="1" name="src_rect" type="Rect2" />
-			<argument index="2" name="dst_rect" type="Rect2i" />
-			<argument index="3" name="use_layer" type="bool" />
-			<argument index="4" name="layer" type="int" />
-			<argument index="5" name="apply_lens_distortion" type="bool" />
-			<argument index="6" name="eye_center" type="Vector2" />
-			<argument index="7" name="k1" type="float" />
-			<argument index="8" name="k2" type="float" />
-			<argument index="9" name="upscale" type="float" />
-			<argument index="10" name="aspect_ratio" type="float" />
+			<param index="0" name="render_target" type="RID" />
+			<param index="1" name="src_rect" type="Rect2" />
+			<param index="2" name="dst_rect" type="Rect2i" />
+			<param index="3" name="use_layer" type="bool" />
+			<param index="4" name="layer" type="int" />
+			<param index="5" name="apply_lens_distortion" type="bool" />
+			<param index="6" name="eye_center" type="Vector2" />
+			<param index="7" name="k1" type="float" />
+			<param index="8" name="k2" type="float" />
+			<param index="9" name="upscale" type="float" />
+			<param index="10" name="aspect_ratio" type="float" />
 			<description>
 				Blits our render results to screen optionally applying lens distortion. This can only be called while processing [code]_commit_views[/code].
 			</description>
 		</method>
 		<method name="get_render_target_texture">
 			<return type="RID" />
-			<argument index="0" name="render_target" type="RID" />
+			<param index="0" name="render_target" type="RID" />
 			<description>
 				Returns a valid [RID] for a texture to which we should render the current frame if supported by the interface.
 			</description>

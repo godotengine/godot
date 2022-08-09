@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTRECORD_H
-#define AUDIOEFFECTRECORD_H
+#ifndef AUDIO_EFFECT_RECORD_H
+#define AUDIO_EFFECT_RECORD_H
 
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "scene/resources/audio_stream_sample.h"
+#include "scene/resources/audio_stream_wav.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"
 
@@ -85,7 +85,7 @@ class AudioEffectRecord : public AudioEffect {
 	bool recording_active;
 	Ref<AudioEffectRecordInstance> current_instance;
 
-	AudioStreamSample::Format format;
+	AudioStreamWAV::Format format;
 
 	void ensure_thread_stopped();
 
@@ -96,11 +96,11 @@ public:
 	Ref<AudioEffectInstance> instantiate() override;
 	void set_recording_active(bool p_record);
 	bool is_recording_active() const;
-	void set_format(AudioStreamSample::Format p_format);
-	AudioStreamSample::Format get_format() const;
-	Ref<AudioStreamSample> get_recording() const;
+	void set_format(AudioStreamWAV::Format p_format);
+	AudioStreamWAV::Format get_format() const;
+	Ref<AudioStreamWAV> get_recording() const;
 
 	AudioEffectRecord();
 };
 
-#endif // AUDIOEFFECTRECORD_H
+#endif // AUDIO_EFFECT_RECORD_H

@@ -297,8 +297,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(percent_sign, "language");
 
 	GDVIRTUAL_BIND(strip_diacritics, "string");
+	GDVIRTUAL_BIND(is_valid_identifier, "string");
 
 	GDVIRTUAL_BIND(string_get_word_breaks, "string", "language");
+
+	GDVIRTUAL_BIND(is_confusable, "string", "dict");
+	GDVIRTUAL_BIND(spoof_check, "string");
 
 	GDVIRTUAL_BIND(string_to_upper, "string", "language");
 	GDVIRTUAL_BIND(string_to_lower, "string", "language");
@@ -1498,6 +1502,14 @@ String TextServerExtension::percent_sign(const String &p_language) const {
 	return "%";
 }
 
+bool TextServerExtension::is_valid_identifier(const String &p_string) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(is_valid_identifier, p_string, ret)) {
+		return ret;
+	}
+	return TextServer::is_valid_identifier(p_string);
+}
+
 String TextServerExtension::strip_diacritics(const String &p_string) const {
 	String ret;
 	if (GDVIRTUAL_CALL(strip_diacritics, p_string, ret)) {
@@ -1536,6 +1548,22 @@ PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_str
 		return ret;
 	}
 	return PackedInt32Array();
+}
+
+int TextServerExtension::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	int ret;
+	if (GDVIRTUAL_CALL(is_confusable, p_string, p_dict, ret)) {
+		return ret;
+	}
+	return TextServer::is_confusable(p_string, p_dict);
+}
+
+bool TextServerExtension::spoof_check(const String &p_string) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(spoof_check, p_string, ret)) {
+		return ret;
+	}
+	return TextServer::spoof_check(p_string);
 }
 
 TextServerExtension::TextServerExtension() {

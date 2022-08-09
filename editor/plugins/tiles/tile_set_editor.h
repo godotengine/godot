@@ -108,4 +108,4 @@ public:
 	~TileSetEditor();
 };
 
-#endif // TILE_SET_EDITOR_PLUGIN_H
+#endif // TILE_SET_EDITOR_H

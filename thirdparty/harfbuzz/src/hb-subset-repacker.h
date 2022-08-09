@@ -31,13 +31,13 @@
 HB_BEGIN_DECLS
 
 #ifdef HB_EXPERIMENTAL_API
-/**
+/*
  * struct hb_link_t
  * width:    offsetSize in bytes
  * position: position of the offset field in bytes
  * from beginning of subtable
  * objidx:   index of subtable
- **/
+ */
 struct hb_link_t
 {
   unsigned width;
@@ -47,7 +47,7 @@ struct hb_link_t
 
 typedef struct hb_link_t hb_link_t;
 
-/**
+/*
  * struct hb_object_t
  * head:    start of object data
  * tail:    end of object data
@@ -56,7 +56,7 @@ typedef struct hb_link_t hb_link_t;
  * num_virtual_links: num of objects that must be packed
  * after current object in the final serialized order
  * virtual_links:     array of virtual link info
- **/
+ */
 struct hb_object_t
 {
   char *head;
@@ -70,7 +70,8 @@ struct hb_object_t
 typedef struct hb_object_t hb_object_t;
 
 HB_EXTERN hb_blob_t*
-hb_subset_repack_or_fail (hb_object_t* hb_objects,
+hb_subset_repack_or_fail (hb_tag_t table_tag,
+                          hb_object_t* hb_objects,
                           unsigned num_hb_objs);
 
 #endif

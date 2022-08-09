@@ -20,15 +20,15 @@
 	<methods>
 		<method name="get_glow_level" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the intensity of the glow level [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_glow_level">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="intensity" type="float" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="intensity" type="float" />
 			<description>
 				Sets the intensity of the glow level [code]idx[/code]. A value above [code]0.0[/code] enables the level. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>
@@ -97,7 +97,7 @@
 			Blend factor between the fog's color and the color of the background [Sky]. Must have [member background_mode] set to [constant BG_SKY].
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
 		</member>
-		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.001">
+		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.01">
 			The exponential fog density to use. Higher values result in a more dense fog.
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
@@ -109,7 +109,7 @@
 		<member name="fog_height_density" type="float" setter="set_fog_height_density" getter="get_fog_height_density" default="0.0">
 			The density used to increase fog as height decreases. To make fog increase as height increases, use a negative value.
 		</member>
-		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color(0.5, 0.6, 0.7, 1)">
+		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color(0.518, 0.553, 0.608, 1)">
 			The fog's color.
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
@@ -320,8 +320,9 @@
 		<member name="volumetric_fog_enabled" type="bool" setter="set_volumetric_fog_enabled" getter="is_volumetric_fog_enabled" default="false">
 			Enables the volumetric fog effect. Volumetric fog uses a screen-aligned froxel buffer to calculate accurate volumetric scattering in the short to medium range. Volumetric fog interacts with [FogVolume]s and lights to calculate localized and global fog. Volumetric fog uses a PBR single-scattering model based on extinction, scattering, and emission which it exposes to users as density, albedo, and emission.
 		</member>
-		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="0.0">
-			Scales the strength of Global Illumination used in the volumetric fog. A value of [code]0[/code] means that Global Illumination will not impact the volumetric fog.
+		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="1.0">
+			Scales the strength of Global Illumination used in the volumetric fog. A value of [code]0.0[/code] means that Global Illumination will not impact the volumetric fog.
+			[b]Note:[/b] Only [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) are taken into account when using [member volumetric_fog_gi_inject]. Global illumination from [LightmapGI], [ReflectionProbe] and SSIL (see [member ssil_enabled]) will be ignored by volumetric fog.
 		</member>
 		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
 			The distance over which the volumetric fog is computed. Increase to compute fog over a greater range, decrease to add more detail when a long range is not needed. For best quality fog, keep this as low as possible.

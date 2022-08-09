@@ -64,9 +64,6 @@ void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
 	if (!visible) {
 		return;
 	}
-	if (p_parent_visible_in_tree && first_draw) { // Avoid propagating it twice.
-		first_draw = false;
-	}
 
 	_handle_visibility_change(p_parent_visible_in_tree);
 }
@@ -133,10 +130,6 @@ void CanvasItem::_update_callback() {
 	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
 	if (is_visible_in_tree()) {
-		if (first_draw) {
-			notification(NOTIFICATION_VISIBILITY_CHANGED);
-			first_draw = false;
-		}
 		drawing = true;
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
@@ -268,7 +261,6 @@ void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
-			first_draw = true;
 
 			Node *parent = get_parent();
 			if (parent) {
@@ -307,6 +299,10 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
+			if (is_visible_in_tree()) {
+				notification(NOTIFICATION_VISIBILITY_CHANGED); // Considered invisible until entered.
+			}
 			_enter_canvas();
 
 			_update_texture_filter_changed(false);

@@ -21,13 +21,13 @@
 		</method>
 		<method name="set_constructor">
 			<return type="void" />
-			<argument index="0" name="constructor" type="Dictionary" />
+			<param index="0" name="constructor" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_constructor_type">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="Variant.Type" />
+			<param index="0" name="type" type="int" enum="Variant.Type" />
 			<description>
 			</description>
 		</method>

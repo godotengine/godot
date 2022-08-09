@@ -441,15 +441,15 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 		channel = SYSCH_MAX + transfer_channel - 1;
 	} else {
 		switch (get_transfer_mode()) {
-			case Multiplayer::TRANSFER_MODE_UNRELIABLE: {
+			case TRANSFER_MODE_UNRELIABLE: {
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 				channel = SYSCH_UNRELIABLE;
 			} break;
-			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED: {
+			case TRANSFER_MODE_UNRELIABLE_ORDERED: {
 				packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 				channel = SYSCH_UNRELIABLE;
 			} break;
-			case Multiplayer::TRANSFER_MODE_RELIABLE: {
+			case TRANSFER_MODE_RELIABLE: {
 				packet_flags = ENET_PACKET_FLAG_RELIABLE;
 				channel = SYSCH_RELIABLE;
 			} break;

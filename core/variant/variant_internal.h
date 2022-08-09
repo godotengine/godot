@@ -36,6 +36,8 @@
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
 class VariantInternal {
+	friend class Variant;
+
 public:
 	// Set type.
 	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) {
@@ -138,6 +140,10 @@ public:
 	_FORCE_INLINE_ static const Vector3 *get_vector3(const Variant *v) { return reinterpret_cast<const Vector3 *>(v->_data._mem); }
 	_FORCE_INLINE_ static Vector3i *get_vector3i(Variant *v) { return reinterpret_cast<Vector3i *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Vector3i *get_vector3i(const Variant *v) { return reinterpret_cast<const Vector3i *>(v->_data._mem); }
+	_FORCE_INLINE_ static Vector4 *get_vector4(Variant *v) { return reinterpret_cast<Vector4 *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Vector4 *get_vector4(const Variant *v) { return reinterpret_cast<const Vector4 *>(v->_data._mem); }
+	_FORCE_INLINE_ static Vector4i *get_vector4i(Variant *v) { return reinterpret_cast<Vector4i *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Vector4i *get_vector4i(const Variant *v) { return reinterpret_cast<const Vector4i *>(v->_data._mem); }
 	_FORCE_INLINE_ static Transform2D *get_transform2d(Variant *v) { return v->_data._transform2d; }
 	_FORCE_INLINE_ static const Transform2D *get_transform2d(const Variant *v) { return v->_data._transform2d; }
 	_FORCE_INLINE_ static Plane *get_plane(Variant *v) { return reinterpret_cast<Plane *>(v->_data._mem); }
@@ -150,6 +156,8 @@ public:
 	_FORCE_INLINE_ static const Basis *get_basis(const Variant *v) { return v->_data._basis; }
 	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform3d; }
 	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *v) { return v->_data._transform3d; }
+	_FORCE_INLINE_ static Projection *get_projection(Variant *v) { return v->_data._projection; }
+	_FORCE_INLINE_ static const Projection *get_projection(const Variant *v) { return v->_data._projection; }
 
 	// Misc types.
 	_FORCE_INLINE_ static Color *get_color(Variant *v) { return reinterpret_cast<Color *>(v->_data._mem); }
@@ -209,20 +217,29 @@ public:
 	}
 
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = memnew(Transform2D);
+		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
+		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = memnew(AABB);
+		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
+		memnew_placement(v->_data._aabb, AABB);
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = memnew(Basis);
+		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
+		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform3d = memnew(Transform3D);
+		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
+		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
+	}
+	_FORCE_INLINE_ static void init_projection(Variant *v) {
+		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		memnew_placement(v->_data._projection, Projection);
+		v->type = Variant::PROJECTION;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
@@ -331,12 +348,18 @@ public:
 				return get_vector3(v);
 			case Variant::VECTOR3I:
 				return get_vector3i(v);
+			case Variant::VECTOR4:
+				return get_vector4(v);
+			case Variant::VECTOR4I:
+				return get_vector4i(v);
 			case Variant::RECT2:
 				return get_rect2(v);
 			case Variant::RECT2I:
 				return get_rect2i(v);
 			case Variant::TRANSFORM3D:
 				return get_transform(v);
+			case Variant::PROJECTION:
+				return get_projection(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
 			case Variant::QUATERNION:
@@ -409,12 +432,18 @@ public:
 				return get_vector3(v);
 			case Variant::VECTOR3I:
 				return get_vector3i(v);
+			case Variant::VECTOR4:
+				return get_vector4(v);
+			case Variant::VECTOR4I:
+				return get_vector4i(v);
 			case Variant::RECT2:
 				return get_rect2(v);
 			case Variant::RECT2I:
 				return get_rect2i(v);
 			case Variant::TRANSFORM3D:
 				return get_transform(v);
+			case Variant::PROJECTION:
+				return get_projection(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
 			case Variant::QUATERNION:
@@ -599,6 +628,17 @@ struct VariantGetInternalPtr<Vector3i> {
 };
 
 template <>
+struct VariantGetInternalPtr<Vector4> {
+	static Vector4 *get_ptr(Variant *v) { return VariantInternal::get_vector4(v); }
+	static const Vector4 *get_ptr(const Variant *v) { return VariantInternal::get_vector4(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Vector4i> {
+	static Vector4i *get_ptr(Variant *v) { return VariantInternal::get_vector4i(v); }
+	static const Vector4i *get_ptr(const Variant *v) { return VariantInternal::get_vector4i(v); }
+};
+template <>
 struct VariantGetInternalPtr<Transform2D> {
 	static Transform2D *get_ptr(Variant *v) { return VariantInternal::get_transform2d(v); }
 	static const Transform2D *get_ptr(const Variant *v) { return VariantInternal::get_transform2d(v); }
@@ -608,6 +648,12 @@ template <>
 struct VariantGetInternalPtr<Transform3D> {
 	static Transform3D *get_ptr(Variant *v) { return VariantInternal::get_transform(v); }
 	static const Transform3D *get_ptr(const Variant *v) { return VariantInternal::get_transform(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Projection> {
+	static Projection *get_ptr(Variant *v) { return VariantInternal::get_projection(v); }
+	static const Projection *get_ptr(const Variant *v) { return VariantInternal::get_projection(v); }
 };
 
 template <>
@@ -772,6 +818,10 @@ VARIANT_ACCESSOR_NUMBER(Vector2::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector2i::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector3::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector3i::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector4::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector4i::Axis)
+
+VARIANT_ACCESSOR_NUMBER(Projection::Planes)
 
 template <>
 struct VariantInternalAccessor<Basis::EulerOrder> {
@@ -840,6 +890,17 @@ struct VariantInternalAccessor<Vector3i> {
 };
 
 template <>
+struct VariantInternalAccessor<Vector4> {
+	static _FORCE_INLINE_ const Vector4 &get(const Variant *v) { return *VariantInternal::get_vector4(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Vector4 &p_value) { *VariantInternal::get_vector4(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Vector4i> {
+	static _FORCE_INLINE_ const Vector4i &get(const Variant *v) { return *VariantInternal::get_vector4i(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Vector4i &p_value) { *VariantInternal::get_vector4i(v) = p_value; }
+};
+template <>
 struct VariantInternalAccessor<Transform2D> {
 	static _FORCE_INLINE_ const Transform2D &get(const Variant *v) { return *VariantInternal::get_transform2d(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Transform2D &p_value) { *VariantInternal::get_transform2d(v) = p_value; }
@@ -849,6 +910,12 @@ template <>
 struct VariantInternalAccessor<Transform3D> {
 	static _FORCE_INLINE_ const Transform3D &get(const Variant *v) { return *VariantInternal::get_transform(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Transform3D &p_value) { *VariantInternal::get_transform(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Projection> {
+	static _FORCE_INLINE_ const Projection &get(const Variant *v) { return *VariantInternal::get_projection(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Projection &p_value) { *VariantInternal::get_projection(v) = p_value; }
 };
 
 template <>
@@ -1041,6 +1108,8 @@ INITIALIZER_INT(Vector2::Axis)
 INITIALIZER_INT(Vector2i::Axis)
 INITIALIZER_INT(Vector3::Axis)
 INITIALIZER_INT(Vector3i::Axis)
+INITIALIZER_INT(Vector4::Axis)
+INITIALIZER_INT(Vector4i::Axis)
 
 template <>
 struct VariantInitializer<double> {
@@ -1086,7 +1155,15 @@ template <>
 struct VariantInitializer<Vector3i> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector3i>(v); }
 };
+template <>
+struct VariantInitializer<Vector4> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4>(v); }
+};
 
+template <>
+struct VariantInitializer<Vector4i> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4i>(v); }
+};
 template <>
 struct VariantInitializer<Transform2D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform2d(v); }
@@ -1115,6 +1192,10 @@ struct VariantInitializer<Basis> {
 template <>
 struct VariantInitializer<Transform3D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform(v); }
+};
+template <>
+struct VariantInitializer<Projection> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_projection(v); }
 };
 
 template <>
@@ -1267,6 +1348,16 @@ struct VariantZeroAssigner<Vector3i> {
 };
 
 template <>
+struct VariantZeroAssigner<Vector4> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector4(v) = Vector4(); }
+};
+
+template <>
+struct VariantZeroAssigner<Vector4i> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector4i(v) = Vector4i(); }
+};
+
+template <>
 struct VariantZeroAssigner<Transform2D> {
 	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform2d(v) = Transform2D(); }
 };
@@ -1294,6 +1385,11 @@ struct VariantZeroAssigner<Basis> {
 template <>
 struct VariantZeroAssigner<Transform3D> {
 	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform3D(); }
+};
+
+template <>
+struct VariantZeroAssigner<Projection> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_projection(v) = Projection(); }
 };
 
 template <>

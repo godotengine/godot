@@ -278,7 +278,7 @@ void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id
 				Variant args[1];
 				args[0] = p_id;
 				const Variant *argp[] = { &args[0] };
-				utterance_callback[p_event].call_deferred(argp, 1); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
+				utterance_callback[p_event].call_deferredp(argp, 1); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
 			}
 		} break;
 		case DisplayServer::TTS_UTTERANCE_BOUNDARY: {
@@ -287,7 +287,7 @@ void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id
 				args[0] = p_pos;
 				args[1] = p_id;
 				const Variant *argp[] = { &args[0], &args[1] };
-				utterance_callback[p_event].call_deferred(argp, 2); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
+				utterance_callback[p_event].call_deferredp(argp, 2); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
 			}
 		} break;
 		default:
@@ -400,7 +400,7 @@ String DisplayServer::ime_get_text() const {
 	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
 }
 
-void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	WARN_PRINT("Virtual keyboard not supported by this display server.");
 }
 
@@ -494,11 +494,11 @@ int64_t DisplayServer::window_get_native_handle(HandleType p_handle_type, Window
 }
 
 void DisplayServer::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	WARN_PRINT("Changing the V-Sync mode is not supported by this display server.");
 }
 
 DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window) const {
-	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	WARN_PRINT("Changing the V-Sync mode is not supported by this display server.");
 	return VSyncMode::VSYNC_ENABLED;
 }
 
@@ -660,7 +660,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
-	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "type", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2()), DEFVAL(KEYBOARD_TYPE_DEFAULT), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
@@ -731,6 +731,15 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR_LANDSCAPE);
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR);
+
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_MULTILINE);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER_DECIMAL);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PHONE);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_EMAIL_ADDRESS);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PASSWORD);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_URL);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);

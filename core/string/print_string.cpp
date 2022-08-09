@@ -30,13 +30,12 @@
 
 #include "print_string.h"
 
+#include "core/core_globals.h"
 #include "core/os/os.h"
 
 #include <stdio.h>
 
 static PrintHandlerList *print_handler_list = nullptr;
-bool _print_line_enabled = true;
-bool _print_error_enabled = true;
 
 void add_print_handler(PrintHandlerList *p_handler) {
 	_global_lock();
@@ -70,7 +69,7 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 }
 
 void __print_line(String p_string) {
-	if (!_print_line_enabled) {
+	if (!CoreGlobals::print_line_enabled) {
 		return;
 	}
 
@@ -87,7 +86,7 @@ void __print_line(String p_string) {
 }
 
 void __print_line_rich(String p_string) {
-	if (!_print_line_enabled) {
+	if (!CoreGlobals::print_line_enabled) {
 		return;
 	}
 
@@ -178,7 +177,7 @@ void __print_line_rich(String p_string) {
 }
 
 void print_error(String p_string) {
-	if (!_print_error_enabled) {
+	if (!CoreGlobals::print_error_enabled) {
 		return;
 	}
 

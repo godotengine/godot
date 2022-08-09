@@ -17,7 +17,7 @@
 		</method>
 		<method name="_toggled" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="button_pressed" type="bool" />
+			<param index="0" name="button_pressed" type="bool" />
 			<description>
 				Called when the button is toggled (only if [member toggle_mode] is active).
 			</description>
@@ -36,7 +36,7 @@
 		</method>
 		<method name="set_pressed_no_signal">
 			<return type="void" />
-			<argument index="0" name="pressed" type="bool" />
+			<param index="0" name="pressed" type="bool" />
 			<description>
 				Changes the [member button_pressed] state of the button, without emitting [signal toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
 				[b]Note:[/b] This method doesn't unpress other buttons in [member button_group].
@@ -96,7 +96,7 @@
 			</description>
 		</signal>
 		<signal name="toggled">
-			<argument index="0" name="button_pressed" type="bool" />
+			<param index="0" name="button_pressed" type="bool" />
 			<description>
 				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [code]button_pressed[/code] argument.
 			</description>

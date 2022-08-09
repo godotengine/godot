@@ -299,7 +299,7 @@ void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 
 	Ref<PackedScene> ps = memnew(PackedScene);
 	ps->pack(node);
-	ResourceSaver::save(p_path, ps);
+	ResourceSaver::save(ps, p_path);
 }
 
 void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {

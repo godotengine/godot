@@ -89,7 +89,7 @@ compose_hebrew (const hb_ot_shape_normalize_context_t *c,
 	      found = true;
 	  }
 	  break;
-      case 0x05B7u: /* patah */
+      case 0x05B7u: /* PATAH */
 	  if (a == 0x05F2u) { /* YIDDISH YOD YOD */
 	      *ab = 0xFB1Fu;
 	      found = true;
@@ -162,6 +162,32 @@ compose_hebrew (const hb_ot_shape_normalize_context_t *c,
   return found;
 }
 
+static void
+reorder_marks_hebrew (const hb_ot_shape_plan_t *plan HB_UNUSED,
+		      hb_buffer_t              *buffer,
+		      unsigned int              start,
+		      unsigned int              end)
+{
+  hb_glyph_info_t *info = buffer->info;
+
+  for (unsigned i = start + 2; i < end; i++)
+  {
+    unsigned c0 = info_cc (info[i - 2]);
+    unsigned c1 = info_cc (info[i - 1]);
+    unsigned c2 = info_cc (info[i - 0]);
+
+    if ((c0 == HB_MODIFIED_COMBINING_CLASS_CCC17 || c0 == HB_MODIFIED_COMBINING_CLASS_CCC18) /* patach or qamats */ &&
+	(c1 == HB_MODIFIED_COMBINING_CLASS_CCC10 || c1 == HB_MODIFIED_COMBINING_CLASS_CCC14) /* sheva or hiriq */ &&
+	(c2 == HB_MODIFIED_COMBINING_CLASS_CCC22 || c2 == HB_UNICODE_COMBINING_CLASS_BELOW) /* meteg or below */)
+    {
+      buffer->merge_clusters (i - 1, i + 1);
+      hb_swap (info[i - 1], info[i]);
+      break;
+    }
+  }
+
+
+}
 
 const hb_ot_shaper_t _hb_ot_shaper_hebrew =
 {
@@ -171,12 +197,12 @@ const hb_ot_shaper_t _hb_ot_shaper_hebrew =
   nullptr, /* data_destroy */
   nullptr, /* preprocess_text */
   nullptr, /* postprocess_glyphs */
-  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
   nullptr, /* decompose */
   compose_hebrew,
   nullptr, /* setup_masks */
+  reorder_marks_hebrew,
   HB_TAG ('h','e','b','r'), /* gpos_tag. https://github.com/harfbuzz/harfbuzz/issues/347#issuecomment-267838368 */
-  nullptr, /* reorder_marks */
+  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
   true, /* fallback_position */
 };

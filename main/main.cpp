@@ -31,6 +31,7 @@
 #include "main.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
@@ -181,7 +182,6 @@ static bool debug_navigation = false;
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
-static String write_movie_path;
 static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
@@ -286,6 +286,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
+	OS::get_singleton()->print("  --                                           Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                                 Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager                        Start the project manager, even if a project is auto-detected.\n");
@@ -344,6 +345,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
+	OS::get_singleton()->print("  --xr-mode <mode>                             Select XR mode (default/off/on).\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Debug options:\n");
@@ -429,6 +431,7 @@ Error Main::test_setup() {
 
 	/** INITIALIZE SERVERS **/
 	register_server_types();
+	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
@@ -623,6 +626,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> user_args;
+	bool adding_user_args = false;
 	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
 	// Add command line arguments.
@@ -695,9 +700,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
+
 		List<String>::Element *N = I->next();
 
-		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
+		if (adding_user_args) {
+			user_args.push_back(I->get());
+		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
@@ -1162,7 +1170,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--write-movie") {
 			if (I->next()) {
-				write_movie_path = I->next()->get();
+				Engine::get_singleton()->set_write_movie_path(I->next()->get());
 				N = I->next()->next();
 				if (fixed_fps == -1) {
 					fixed_fps = 60;
@@ -1182,6 +1190,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--xr-mode") {
+			if (I->next()) {
+				String xr_mode = I->next()->get().to_lower();
+				N = I->next()->next();
+				if (xr_mode == "default") {
+					XRServer::set_xr_mode(XRServer::XRMODE_DEFAULT);
+				} else if (xr_mode == "off") {
+					XRServer::set_xr_mode(XRServer::XRMODE_OFF);
+				} else if (xr_mode == "on") {
+					XRServer::set_xr_mode(XRServer::XRMODE_ON);
+				} else {
+					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
+					goto error;
+				}
+			} else {
+				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
+				goto error;
+			}
+		} else if (I->get() == "--") {
+			adding_user_args = true;
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1349,16 +1377,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		quiet_stdout = true;
 	}
 	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
-		_print_error_enabled = false;
+		CoreGlobals::print_error_enabled = false;
 	};
 
 	if (quiet_stdout) {
-		_print_line_enabled = false;
+		CoreGlobals::print_line_enabled = false;
 	}
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
-	OS::get_singleton()->set_cmdline(execpath, main_args);
+	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
@@ -1436,7 +1464,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
@@ -1453,7 +1481,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_layered = false;
 	}
 
-	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
@@ -1512,7 +1539,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		audio_driver_idx = 0;
 	}
 
-	if (write_movie_path != String()) {
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
 		// Always use dummy driver for audio driver (which is last), also in no threaded mode.
 		audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
 		AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
@@ -1609,7 +1636,7 @@ error:
 	display_driver = "";
 	audio_driver = "";
 	tablet_driver = "";
-	write_movie_path = "";
+	Engine::get_singleton()->set_write_movie_path(String());
 	project_path = "";
 
 	args.clear();
@@ -1651,6 +1678,7 @@ error:
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 
 	if (message_queue) {
 		memdelete(message_queue);
@@ -1784,11 +1812,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		rendering_server->set_print_gpu_profile(true);
 	}
 
-	if (write_movie_path != String()) {
-		movie_writer = MovieWriter::find_writer_for_file(write_movie_path);
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
+		movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
 		if (movie_writer == nullptr) {
-			ERR_PRINT("Can't find movie writer for file type, aborting: " + write_movie_path);
-			write_movie_path = String();
+			ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
+			Engine::get_singleton()->set_write_movie_path(String());
 		}
 	}
 
@@ -1966,7 +1994,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Enum text drivers */
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		if (i > 0) {
@@ -2079,7 +2107,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// able to load resources, load the global shader variables.
 		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
-		rendering_server->global_variables_load_settings(!editor);
+		rendering_server->global_shader_uniforms_load_settings(!editor);
 	}
 
 	_start_success = true;
@@ -2411,6 +2439,8 @@ bool Main::start() {
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+			NavigationServer3D::get_singleton()->set_active(true);
+			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
 		}
 #endif
 
@@ -2576,7 +2606,7 @@ bool Main::start() {
 					PropertyInfo(Variant::FLOAT,
 							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
-							"1.0,8.0,0.1"));
+							"0.5,8.0,0.01"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
@@ -2724,7 +2754,7 @@ bool Main::start() {
 	OS::get_singleton()->set_main_loop(main_loop);
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, write_movie_path);
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
@@ -2980,6 +3010,7 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->delete_main_loop();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
 
@@ -2992,7 +3023,7 @@ void Main::cleanup(bool p_force) {
 	RenderingServer::get_singleton()->sync();
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_variables_clear();
+	rendering_server->global_shader_uniforms_clear();
 
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer

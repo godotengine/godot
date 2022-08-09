@@ -531,9 +531,9 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated basis matrix.</returns>
-        public Basis Rotated(Vector3 axis, real_t phi)
+        public Basis Rotated(Vector3 axis, real_t angle)
         {
-            return new Basis(axis, phi) * this;
+            return new Basis(axis, angle) * this;
         }
 
         /// <summary>
@@ -774,15 +774,15 @@ namespace Godot
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
-        public Basis(Vector3 axis, real_t phi)
+        public Basis(Vector3 axis, real_t angle)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
-            real_t cosine = Mathf.Cos(phi);
+            real_t cosine = Mathf.Cos(angle);
             Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
             Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
             Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
 
-            real_t sine = Mathf.Sin(phi);
+            real_t sine = Mathf.Sin(angle);
             real_t t = 1.0f - cosine;
 
             real_t xyzt = axis.x * axis.y * t;
@@ -825,6 +825,22 @@ namespace Godot
             Row0 = new Vector3(xx, yx, zx);
             Row1 = new Vector3(xy, yy, zy);
             Row2 = new Vector3(xz, yz, zz);
+        }
+
+        /// <summary>
+        /// Constructs a pure scale basis matrix with no rotation or shearing.
+        /// The scale values are set as the main diagonal of the matrix,
+        /// and all of the other parts of the matrix are zero.
+        /// </summary>
+        /// <param name="scale">The scale Vector3.</param>
+        /// <returns>A pure scale Basis matrix.</returns>
+        public static Basis FromScale(Vector3 scale)
+        {
+            return new Basis(
+                scale.x, 0, 0,
+                0, scale.y, 0,
+                0, 0, scale.z
+            );
         }
 
         /// <summary>

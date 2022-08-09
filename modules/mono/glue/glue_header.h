@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef GLUE_HEADER_H
+#define GLUE_HEADER_H
+
 #ifdef MONO_GLUE_ENABLED
 
 #include "../mono_gd/gd_mono_marshal.h"
@@ -84,3 +87,5 @@ void godot_register_glue_header_icalls() {
 #include "arguments_vector.h"
 
 #endif // MONO_GLUE_ENABLED
+
+#endif // GLUE_HEADER_H

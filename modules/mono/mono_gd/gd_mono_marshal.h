@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDMONOMARSHAL_H
-#define GDMONOMARSHAL_H
+#ifndef GD_MONO_MARSHAL_H
+#define GD_MONO_MARSHAL_H
 
 #include "core/variant/variant.h"
 
@@ -256,6 +256,18 @@ enum {
 			offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
 			offsetof(Vector3, z) == (sizeof(real_t) * 2)),
 
+	MATCHES_Vector4 = (MATCHES_real_t && (sizeof(Vector4) == (sizeof(real_t) * 4)) &&
+			offsetof(Vector4, x) == (sizeof(real_t) * 0) &&
+			offsetof(Vector4, y) == (sizeof(real_t) * 1) &&
+			offsetof(Vector4, z) == (sizeof(real_t) * 2) &&
+			offsetof(Vector4, w) == (sizeof(real_t) * 3)),
+
+	MATCHES_Vector4i = (MATCHES_int && (sizeof(Vector4i) == (sizeof(int32_t) * 4)) &&
+			offsetof(Vector4i, x) == (sizeof(int32_t) * 0) &&
+			offsetof(Vector4i, y) == (sizeof(int32_t) * 1) &&
+			offsetof(Vector4i, z) == (sizeof(int32_t) * 2) &&
+			offsetof(Vector4i, w) == (sizeof(int32_t) * 3)),
+
 	MATCHES_Vector3i = (MATCHES_int && (sizeof(Vector3i) == (sizeof(int32_t) * 3)) &&
 			offsetof(Vector3i, x) == (sizeof(int32_t) * 0) &&
 			offsetof(Vector3i, y) == (sizeof(int32_t) * 1) &&
@@ -272,6 +284,8 @@ enum {
 	MATCHES_Transform3D = (MATCHES_Basis && MATCHES_Vector3 && (sizeof(Transform3D) == (sizeof(Basis) + sizeof(Vector3))) &&
 			offsetof(Transform3D, basis) == 0 &&
 			offsetof(Transform3D, origin) == sizeof(Basis)),
+
+	MATCHES_Projection = (MATCHES_Vector4 && (sizeof(Projection) == (sizeof(Vector4) * 4))),
 
 	MATCHES_AABB = (MATCHES_Vector3 && (sizeof(AABB) == (sizeof(Vector3) * 2)) &&
 			offsetof(AABB, position) == (sizeof(Vector3) * 0) &&
@@ -291,9 +305,9 @@ enum {
 // In the future we may force this if we want to ref return these structs
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
-static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
-				MATCHES_Basis && MATCHES_Quaternion && MATCHES_Transform3D && MATCHES_AABB && MATCHES_Color &&
-				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
+static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 && MATCHES_Vector4 &&
+				MATCHES_Basis && MATCHES_Quaternion && MATCHES_Transform3D && MATCHES_Projection && MATCHES_AABB && MATCHES_Color &&
+				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i && MATCHES_Vector4i);
 /* clang-format on */
 #endif
 } // namespace InteropLayout
@@ -401,6 +415,32 @@ struct M_Vector3i {
 	}
 };
 
+struct M_Vector4 {
+	real_t x, y, z, w;
+
+	static _FORCE_INLINE_ Vector4 convert_to(const M_Vector4 &p_from) {
+		return Vector4(p_from.x, p_from.y, p_from.z, p_from.w);
+	}
+
+	static _FORCE_INLINE_ M_Vector4 convert_from(const Vector4 &p_from) {
+		M_Vector4 ret = { p_from.x, p_from.y, p_from.z, p_from.w };
+		return ret;
+	}
+};
+
+struct M_Vector4i {
+	int32_t x, y, z, w;
+
+	static _FORCE_INLINE_ Vector4i convert_to(const M_Vector4i &p_from) {
+		return Vector4i(p_from.x, p_from.y, p_from.z, p_from.w);
+	}
+
+	static _FORCE_INLINE_ M_Vector4i convert_from(const Vector4i &p_from) {
+		M_Vector4i ret = { p_from.x, p_from.y, p_from.z, p_from.w };
+		return ret;
+	}
+};
+
 struct M_Basis {
 	M_Vector3 elements[3];
 
@@ -443,6 +483,22 @@ struct M_Transform3D {
 
 	static _FORCE_INLINE_ M_Transform3D convert_from(const Transform3D &p_from) {
 		M_Transform3D ret = { M_Basis::convert_from(p_from.basis), M_Vector3::convert_from(p_from.origin) };
+		return ret;
+	}
+};
+
+struct M_Projection {
+	M_Vector4 vec1;
+	M_Vector4 vec2;
+	M_Vector4 vec3;
+	M_Vector4 vec4;
+
+	static _FORCE_INLINE_ Projection convert_to(const M_Projection &p_from) {
+		return Projection(M_Vector4::convert_to(p_from.vec1), M_Vector4::convert_to(p_from.vec2), M_Vector4::convert_to(p_from.vec3), M_Vector4::convert_to(p_from.vec4));
+	}
+
+	static _FORCE_INLINE_ M_Projection convert_from(const Projection &p_from) {
+		M_Projection ret = { M_Vector4::convert_from(p_from.matrix[0]), M_Vector4::convert_from(p_from.matrix[1]), M_Vector4::convert_from(p_from.matrix[2]), M_Vector4::convert_from(p_from.matrix[3]) };
 		return ret;
 	}
 };
@@ -533,8 +589,11 @@ DECL_TYPE_MARSHAL_TEMPLATES(Transform2D)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3i)
 DECL_TYPE_MARSHAL_TEMPLATES(Basis)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector4)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector4i)
 DECL_TYPE_MARSHAL_TEMPLATES(Quaternion)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform3D)
+DECL_TYPE_MARSHAL_TEMPLATES(Projection)
 DECL_TYPE_MARSHAL_TEMPLATES(AABB)
 DECL_TYPE_MARSHAL_TEMPLATES(Color)
 DECL_TYPE_MARSHAL_TEMPLATES(Plane)
@@ -543,4 +602,4 @@ DECL_TYPE_MARSHAL_TEMPLATES(Plane)
 #define MARSHALLED_OUT(m_type, m_from) (GDMonoMarshal::marshalled_out_##m_type(m_from))
 } // namespace GDMonoMarshal
 
-#endif // GDMONOMARSHAL_H
+#endif // GD_MONO_MARSHAL_H

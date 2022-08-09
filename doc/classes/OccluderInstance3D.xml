@@ -15,15 +15,15 @@
 	<methods>
 		<method name="get_bake_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member bake_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_bake_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member bake_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -31,7 +31,7 @@
 	</methods>
 	<members>
 		<member name="bake_mask" type="int" setter="set_bake_mask" getter="get_bake_mask" default="4294967295">
-			The visual layers to account for when baking for occluders. Only [MeshInstance3D]s whose [member VisualInstance3D.layers] match with this [member bake_mask] will be included in the generated occluder mesh. By default, all objects are taken into account for the occluder baking.
+			The visual layers to account for when baking for occluders. Only [MeshInstance3D]s whose [member VisualInstance3D.layers] match with this [member bake_mask] will be included in the generated occluder mesh. By default, all objects with [i]opaque[/i] materials are taken into account for the occluder baking.
 			To improve performance and avoid artifacts, it is recommended to exclude dynamic objects, small objects and fixtures from the baking process by moving them to a separate visual layer and excluding this layer in [member bake_mask].
 		</member>
 		<member name="bake_simplification_distance" type="float" setter="set_bake_simplification_distance" getter="get_bake_simplification_distance" default="0.1">

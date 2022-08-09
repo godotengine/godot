@@ -14,12 +14,14 @@ struct GlyphHeader
   bool has_data () const { return numberOfContours; }
 
   template <typename accelerator_t>
-  bool get_extents (hb_font_t *font, const accelerator_t &glyf_accelerator,
-		    hb_codepoint_t gid, hb_glyph_extents_t *extents) const
+  bool get_extents_without_var_scaled (hb_font_t *font, const accelerator_t &glyf_accelerator,
+				       hb_codepoint_t gid, hb_glyph_extents_t *extents) const
   {
     /* Undocumented rasterizer behavior: shift glyph to the left by (lsb - xMin), i.e., xMin = lsb */
     /* extents->x_bearing = hb_min (glyph_header.xMin, glyph_header.xMax); */
-    extents->x_bearing = font->em_scale_x (glyf_accelerator.hmtx->get_side_bearing (gid));
+    int lsb = hb_min (xMin, xMax);
+    (void) glyf_accelerator.hmtx->get_leading_bearing_without_var_unscaled (gid, &lsb);
+    extents->x_bearing = font->em_scale_x (lsb);
     extents->y_bearing = font->em_scale_y (hb_max (yMin, yMax));
     extents->width     = font->em_scale_x (hb_max (xMin, xMax) - hb_min (xMin, xMax));
     extents->height    = font->em_scale_y (hb_min (yMin, yMax) - hb_max (yMin, yMax));

@@ -11,7 +11,7 @@
 	<methods>
 		<method name="get_default_input_value" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="port_idx" type="int" />
+			<param index="0" name="port_idx" type="int" />
 			<description>
 				Returns the default value of a given port. The default value is used when nothing is connected to the port.
 			</description>
@@ -30,8 +30,8 @@
 		</method>
 		<method name="set_default_input_value">
 			<return type="void" />
-			<argument index="0" name="port_idx" type="int" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="port_idx" type="int" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Change the default value of a given port.
 			</description>

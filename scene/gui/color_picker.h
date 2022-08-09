@@ -156,6 +156,9 @@ private:
 	float v = 0.0;
 	Color last_color;
 
+	void _copy_color_to_hsv();
+	void _copy_hsv_to_color();
+
 	PickerShapeType _get_actual_shape() const;
 	void create_slider(GridContainer *gc, int idx);
 	void _reset_theme();
@@ -276,4 +279,5 @@ public:
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);
 VARIANT_ENUM_CAST(ColorPicker::ColorModeType);
+
 #endif // COLOR_PICKER_H

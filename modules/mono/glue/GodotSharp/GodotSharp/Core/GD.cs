@@ -239,11 +239,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
-        /// When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
+        /// Converts one or more arguments of any type to string in the best way possible
+        /// and prints them to the console.
+        /// The following BBCode tags are supported: b, i, u, s, indent, code, url, center,
+        /// right, color, bgcolor, fgcolor.
+        /// Color tags only support named colors such as <c>red</c>, not hexadecimal color codes.
+        /// Unsupported tags will be left as-is in standard output.
+        /// When printing to standard output, the supported subset of BBCode is converted to
+        /// ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes
+        /// is currently only supported on Linux and macOS. Support for ANSI escape codes may vary
+        /// across terminal emulators, especially for italic and strikethrough.
         ///
         /// Note: Consider using <see cref="PushError(string)"/> and <see cref="PushWarning(string)"/>
-        /// to print error and warning messages instead of <see cref="Print(object[])"/> or <see cref="PrintRich(object[])"/>.
+        /// to print error and warning messages instead of <see cref="Print(object[])"/> or
+        /// <see cref="PrintRich(object[])"/>.
         /// This distinguishes them from print messages used for debugging purposes,
         /// while also displaying a stack trace when an error or warning is printed.
         /// </summary>
@@ -253,7 +262,6 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        /// </summary>
         public static void PrintRich(params object[] what)
         {
             godot_icall_GD_print_rich(GetPrintParams(what));

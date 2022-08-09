@@ -42,6 +42,7 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
 	mutable Vector<Vector3> debug_lines;
 	Size2i lightmap_size_hint;
 
@@ -161,7 +162,9 @@ public:
 	virtual AABB get_aabb() const;
 
 	Vector<Face3> get_faces() const;
+	Vector<Face3> get_surface_faces(int p_surface) const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
+	Ref<TriangleMesh> generate_surface_triangle_mesh(int p_surface) const;
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
@@ -362,4 +365,4 @@ public:
 	~PlaceholderMesh();
 };
 
-#endif
+#endif // MESH_H

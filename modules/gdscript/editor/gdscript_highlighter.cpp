@@ -623,11 +623,11 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		annotation_color = Color(1.0, 0.7, 0.45);
 		string_name_color = Color(1.0, 0.66, 0.72);
 	} else {
-		function_definition_color = Color(0.0, 0.65, 0.73);
-		node_path_color = Color(0.62, 0.67, 0.39);
-		node_ref_color = Color(0.32, 0.55, 0.29);
-		annotation_color = Color(0.8, 0.5, 0.25);
-		string_name_color = Color(0.9, 0.56, 0.62);
+		function_definition_color = Color(0, 0.6, 0.6);
+		node_path_color = Color(0.18, 0.55, 0);
+		node_ref_color = Color(0.0, 0.5, 0);
+		annotation_color = Color(0.8, 0.37, 0);
+		string_name_color = Color(0.8, 0.46, 0.52);
 	}
 
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);

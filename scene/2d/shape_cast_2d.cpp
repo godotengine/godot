@@ -217,7 +217,7 @@ void ShapeCast2D::_notification(int p_what) {
 			if (shape.is_null()) {
 				break;
 			}
-			Color draw_col = get_tree()->get_debug_collisions_color();
+			Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
 			if (!enabled) {
 				float g = draw_col.get_v();
 				draw_col.r = g;
@@ -235,18 +235,25 @@ void ShapeCast2D::_notification(int p_what) {
 
 			// Draw an arrow indicating where the ShapeCast is pointing to.
 			if (target_position != Vector2()) {
+				const real_t max_arrow_size = 6;
+				const real_t line_width = 1.4;
+				bool no_line = target_position.length() < line_width;
+				real_t arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
+
+				if (no_line) {
+					arrow_size = target_position.length();
+				} else {
+					draw_line(Vector2(), target_position - target_position.normalized() * arrow_size, draw_col, line_width);
+				}
+
 				Transform2D xf;
 				xf.rotate(target_position.angle());
-				xf.translate(Vector2(target_position.length(), 0));
-
-				draw_line(Vector2(), target_position, draw_col, 2);
-
-				float tsize = 8;
+				xf.translate_local(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
 				Vector<Vector2> pts = {
-					xf.xform(Vector2(tsize, 0)),
-					xf.xform(Vector2(0, Math_SQRT12 * tsize)),
-					xf.xform(Vector2(0, -Math_SQRT12 * tsize))
+					xf.xform(Vector2(arrow_size, 0)),
+					xf.xform(Vector2(0, 0.5 * arrow_size)),
+					xf.xform(Vector2(0, -0.5 * arrow_size))
 				};
 
 				Vector<Color> cols = { draw_col, draw_col, draw_col };
@@ -291,6 +298,8 @@ void ShapeCast2D::_update_shapecast_state() {
 	collision_safe_fraction = 0.0;
 	collision_unsafe_fraction = 0.0;
 
+	bool prev_collision_state = collided;
+
 	if (target_position != Vector2()) {
 		dss->cast_motion(params, collision_safe_fraction, collision_unsafe_fraction);
 		if (collision_unsafe_fraction < 1.0) {
@@ -314,6 +323,10 @@ void ShapeCast2D::_update_shapecast_state() {
 		}
 	}
 	collided = !result.is_empty();
+
+	if (prev_collision_state != collided) {
+		update();
+	}
 }
 
 void ShapeCast2D::force_shapecast_update() {

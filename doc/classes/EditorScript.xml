@@ -42,7 +42,7 @@
 		</method>
 		<method name="add_root_node">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Adds [code]node[/code] as a child of the root node in the editor context.
 				[b]Warning:[/b] The implementation of this method is currently disabled.

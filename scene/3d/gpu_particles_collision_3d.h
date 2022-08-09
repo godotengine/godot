@@ -110,6 +110,7 @@ public:
 private:
 	Vector3 extents = Vector3(1, 1, 1);
 	Resolution resolution = RESOLUTION_64;
+	uint32_t bake_mask = 0xFFFFFFFF;
 	Ref<Texture3D> texture;
 	float thickness = 1.0;
 
@@ -161,6 +162,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual TypedArray<String> get_configuration_warnings() const override;
+
 	void set_thickness(float p_thickness);
 	float get_thickness() const;
 
@@ -169,6 +172,12 @@ public:
 
 	void set_resolution(Resolution p_resolution);
 	Resolution get_resolution() const;
+
+	void set_bake_mask(uint32_t p_mask);
+	uint32_t get_bake_mask() const;
+
+	void set_bake_mask_value(int p_layer_number, bool p_enable);
+	bool get_bake_mask_value(int p_layer_number) const;
 
 	void set_texture(const Ref<Texture3D> &p_texture);
 	Ref<Texture3D> get_texture() const;

@@ -127,7 +127,7 @@ private:
 		Node *process_owner = nullptr;
 
 		int multiplayer_authority = 1; // Server by default.
-		Vector<Multiplayer::RPCConfig> rpc_methods;
+		Variant rpc_config;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
@@ -183,8 +183,8 @@ private:
 	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	Array _get_groups() const;
 
-	void _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	void _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
 	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
@@ -491,30 +491,16 @@ public:
 	int get_multiplayer_authority() const;
 	bool is_multiplayer_authority() const;
 
-	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local = false, Multiplayer::TransferMode p_transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0); // config a local method for RPC
-	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;
+	void rpc_config(const StringName &p_method, const Variant &p_config); // config a local method for RPC
+	const Variant get_node_rpc_config() const;
 
 	template <typename... VarArgs>
-	void rpc(const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		rpcp(0, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-	}
+	Error rpc(const StringName &p_method, VarArgs... p_args);
 
 	template <typename... VarArgs>
-	void rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-	}
+	Error rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args);
 
-	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	Error rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 
@@ -526,4 +512,22 @@ VARIANT_ENUM_CAST(Node::DuplicateFlags);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 
-#endif
+// Template definitions must be in the header so they are always fully initialized before their usage.
+// See this StackOverflow question for more information: https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
+
+template <typename... VarArgs>
+Error Node::rpc(const StringName &p_method, VarArgs... p_args) {
+	return rpc_id(0, p_method, p_args...);
+}
+
+template <typename... VarArgs>
+Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
+	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+	const Variant *argptrs[sizeof...(p_args) + 1];
+	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+		argptrs[i] = &args[i];
+	}
+	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+}
+
+#endif // NODE_H

@@ -14,7 +14,7 @@
 	<methods>
 		<method name="has_capture">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a message capture with given name is present otherwise [code]false[/code].
 			</description>
@@ -39,8 +39,8 @@
 		</method>
 		<method name="register_message_capture">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="callable" type="Callable" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
 			<description>
 				Registers a message capture with given [code]name[/code]. If [code]name[/code] is "my_message" then messages starting with "my_message:" will be called with the given callable.
 				Callable must accept a message string and a data array as argument. If the message and data are valid then callable must return [code]true[/code] otherwise [code]false[/code].
@@ -48,15 +48,15 @@
 		</method>
 		<method name="send_message">
 			<return type="void" />
-			<argument index="0" name="message" type="String" />
-			<argument index="1" name="data" type="Array" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="data" type="Array" />
 			<description>
 				Sends a message with given [code]message[/code] and [code]data[/code] array.
 			</description>
 		</method>
 		<method name="unregister_message_capture">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Unregisters the message capture with given name.
 			</description>
@@ -64,7 +64,7 @@
 	</methods>
 	<signals>
 		<signal name="breaked">
-			<argument index="0" name="can_debug" type="bool" />
+			<param index="0" name="can_debug" type="bool" />
 			<description>
 				Emitted when the game enters a break state.
 			</description>

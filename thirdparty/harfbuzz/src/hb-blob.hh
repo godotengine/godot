@@ -38,7 +38,7 @@
 
 struct hb_blob_t
 {
-  void fini_shallow () { destroy_user_data (); }
+  ~hb_blob_t () { destroy_user_data (); }
 
   void destroy_user_data ()
   {
@@ -61,12 +61,12 @@ struct hb_blob_t
   public:
   hb_object_header_t header;
 
-  const char *data;
-  unsigned int length;
-  hb_memory_mode_t mode;
+  const char *data = nullptr;
+  unsigned int length = 0;
+  hb_memory_mode_t mode = (hb_memory_mode_t) 0;
 
-  void *user_data;
-  hb_destroy_func_t destroy;
+  void *user_data = nullptr;
+  hb_destroy_func_t destroy = nullptr;
 };
 
 

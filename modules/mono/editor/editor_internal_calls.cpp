@@ -39,7 +39,9 @@
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "main/main.h"
 
@@ -188,8 +190,8 @@ MonoString *godot_icall_Internal_UpdateApiAssembliesFromPrebuilt(MonoString *p_c
 	return GDMonoMarshal::mono_string_from_godot(error_str);
 }
 
-MonoString *godot_icall_Internal_FullTemplatesDir() {
-	String full_templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
+MonoString *godot_icall_Internal_FullExportTemplatesDir() {
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
 	return GDMonoMarshal::mono_string_from_godot(full_templates_dir);
 }
 
@@ -364,7 +366,7 @@ void register_editor_internal_calls() {
 
 	// Internals
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_UpdateApiAssembliesFromPrebuilt", godot_icall_Internal_UpdateApiAssembliesFromPrebuilt);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_FullTemplatesDir", godot_icall_Internal_FullTemplatesDir);
+	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_FullExportTemplatesDir", godot_icall_Internal_FullExportTemplatesDir);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_SimplifyGodotPath", godot_icall_Internal_SimplifyGodotPath);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_IsMacOSAppBundleInstalled", godot_icall_Internal_IsMacOSAppBundleInstalled);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotIs32Bits", godot_icall_Internal_GodotIs32Bits);

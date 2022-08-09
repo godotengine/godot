@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_GRADLE_EXPORT_UTIL_H
-#define GODOT_GRADLE_EXPORT_UTIL_H
+#ifndef ANDROID_GRADLE_EXPORT_UTIL_H
+#define ANDROID_GRADLE_EXPORT_UTIL_H
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
+#include "editor/export/editor_export.h"
 
 const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="utf-8"?>
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->
@@ -106,4 +106,4 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission);
 
-#endif // GODOT_GRADLE_EXPORT_UTIL_H
+#endif // ANDROID_GRADLE_EXPORT_UTIL_H

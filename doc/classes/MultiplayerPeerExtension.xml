@@ -29,8 +29,8 @@
 		</method>
 		<method name="_get_packet" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="r_buffer" type="const uint8_t **" />
-			<argument index="1" name="r_buffer_size" type="int32_t*" />
+			<param index="0" name="r_buffer" type="const uint8_t **" />
+			<param index="1" name="r_buffer_size" type="int32_t*" />
 			<description>
 				Called when a packet needs to be received by the [MultiplayerAPI], with [code]p_buffer_size[/code] being the size of the binary [code]p_buffer[/code] in bytes.
 			</description>
@@ -39,6 +39,12 @@
 			<return type="int" />
 			<description>
 				Called when the ID of the [MultiplayerPeer] who sent the most recent packet is requested (see [method MultiplayerPeer.get_packet_peer]).
+			</description>
+		</method>
+		<method name="_get_packet_script" qualifiers="virtual">
+			<return type="PackedByteArray" />
+			<description>
+				Called when a packet needs to be received by the [MultiplayerAPI], if [method _get_packet] isn't implemented. Use this when extending this class via GDScript.
 			</description>
 		</method>
 		<method name="_get_transfer_channel" qualifiers="virtual const">
@@ -79,36 +85,43 @@
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_buffer" type="const uint8_t*" />
-			<argument index="1" name="p_buffer_size" type="int" />
+			<param index="0" name="p_buffer" type="const uint8_t*" />
+			<param index="1" name="p_buffer_size" type="int" />
 			<description>
 				Called when a packet needs to be sent by the [MultiplayerAPI], with [code]p_buffer_size[/code] being the size of the binary [code]p_buffer[/code] in bytes.
 			</description>
 		</method>
+		<method name="_put_packet_script" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="p_buffer" type="PackedByteArray" />
+			<description>
+				Called when a packet needs to be sent by the [MultiplayerAPI], if [method _put_packet] isn't implemented. Use this when extending this class via GDScript.
+			</description>
+		</method>
 		<method name="_set_refuse_new_connections" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="p_enable" type="bool" />
+			<param index="0" name="p_enable" type="bool" />
 			<description>
 				Called when the "refuse new connections" status is set on this [MultiplayerPeer] (see [member MultiplayerPeer.refuse_new_connections]).
 			</description>
 		</method>
 		<method name="_set_target_peer" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="p_peer" type="int" />
+			<param index="0" name="p_peer" type="int" />
 			<description>
 				Called when the target peer to use is set for this [MultiplayerPeer] (see [method MultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
 		<method name="_set_transfer_channel" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="p_channel" type="int" />
+			<param index="0" name="p_channel" type="int" />
 			<description>
 				Called when the channel to use is set for this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_channel]).
 			</description>
 		</method>
 		<method name="_set_transfer_mode" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="p_mode" type="int" />
+			<param index="0" name="p_mode" type="int" />
 			<description>
 				Called when the transfer mode is set on this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_mode]).
 			</description>

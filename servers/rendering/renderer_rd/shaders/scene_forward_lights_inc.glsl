@@ -199,7 +199,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
 		float cLdotH5 = SchlickFresnel(cLdotH);
-		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
+		// Calculate Fresnel using specular occlusion term from Filament:
+		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
+		float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), 0.0, 1.0);
+		vec3 F = f0 + (f90 - f0) * cLdotH5;
 
 		vec3 specular_brdf_NL = cNdotL * D * F * G;
 
@@ -392,7 +395,7 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 
 float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 #ifndef SHADOWS_DISABLED
-	if (omni_lights.data[idx].shadow_enabled) {
+	if (omni_lights.data[idx].shadow_opacity > 0.001) {
 		// there is a shadowmap
 		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
 		vec4 base_uv_rect = omni_lights.data[idx].atlas_rect;
@@ -495,6 +498,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 				}
 
 				shadow /= float(sc_penumbra_shadow_samples);
+				shadow = mix(1.0, shadow, omni_lights.data[idx].shadow_opacity);
 
 			} else {
 				//no blockers found, so no shadow
@@ -513,7 +517,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			vec2 pos = shadow_sample.xy / shadow_sample.z;
 			float depth = shadow_len - omni_lights.data[idx].shadow_bias;
 			depth *= omni_lights.data[idx].inv_radius;
-			shadow = sample_omni_pcf_shadow(shadow_atlas, omni_lights.data[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, flip_offset, depth);
+			shadow = mix(1.0, sample_omni_pcf_shadow(shadow_atlas, omni_lights.data[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, flip_offset, depth), omni_lights.data[idx].shadow_opacity);
 		}
 
 		return shadow;
@@ -671,7 +675,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 #ifndef SHADOWS_DISABLED
-	if (spot_lights.data[idx].shadow_enabled) {
+	if (spot_lights.data[idx].shadow_opacity > 0.001) {
 		vec3 light_rel_vec = spot_lights.data[idx].position - vertex;
 		float light_length = length(light_rel_vec);
 		vec3 spot_dir = spot_lights.data[idx].direction;
@@ -732,6 +736,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 				}
 
 				shadow /= float(sc_penumbra_shadow_samples);
+				shadow = mix(1.0, shadow, spot_lights.data[idx].shadow_opacity);
 
 			} else {
 				//no blockers found, so no shadow
@@ -740,7 +745,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		} else {
 			//hard shadow
 			vec3 shadow_uv = vec3(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z);
-			shadow = sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data_block.data.shadow_atlas_pixel_size, shadow_uv);
+			shadow = mix(1.0, sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data_block.data.shadow_atlas_pixel_size, shadow_uv), spot_lights.data[idx].shadow_opacity);
 		}
 
 		return shadow;
@@ -869,15 +874,13 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			diffuse_light, specular_light);
 }
 
-void reflection_process(uint ref_index, vec3 view, vec3 vertex, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
+void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
 	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
 
 	if (any(greaterThan(abs(local_pos), box_extents))) { //out of the reflection box
 		return;
 	}
-
-	vec3 ref_vec = normalize(reflect(-view, normal));
 
 	vec3 inner_pos = abs(local_pos / box_extents);
 	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));

@@ -28,20 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPT_EDITOR_H
-#define VISUALSCRIPT_EDITOR_H
+#ifndef VISUAL_SCRIPT_EDITOR_H
+#define VISUAL_SCRIPT_EDITOR_H
 
 #include "../visual_script.h"
 #include "editor/create_dialog.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/property_editor.h"
-#include "scene/gui/graph_edit.h"
 #include "visual_script_property_selector.h"
+
+class GraphEdit;
 
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 
 #ifdef TOOLS_ENABLED
+
+class VisualScriptEditedProperty : public RefCounted {
+	GDCLASS(VisualScriptEditedProperty, RefCounted);
+
+private:
+	Variant edited_property;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_edited_property(Variant p_variant);
+	Variant get_edited_property() const;
+
+	VisualScriptEditedProperty() {}
+};
 
 // TODO: Maybe this class should be refactored.
 // See https://github.com/godotengine/godot/issues/51913
@@ -115,7 +131,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 	AcceptDialog *edit_variable_dialog = nullptr;
 	EditorInspector *edit_variable_edit = nullptr;
 
-	CustomPropertyEditor *default_value_edit = nullptr;
+	PopupPanel *default_property_editor_popup = nullptr;
+	EditorProperty *default_property_editor = nullptr;
+	Ref<VisualScriptEditedProperty> edited_default_property_holder;
 
 	UndoRedo *undo_redo = nullptr;
 
@@ -276,7 +294,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	int data_disconnect_node = 0;
 	int data_disconnect_port = 0;
 
-	void _default_value_changed();
+	void _default_value_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _default_value_edited(Node *p_button, int p_id, int p_input_port);
 
 	void _menu_option(int p_what);
@@ -374,4 +392,4 @@ public:
 
 #endif
 
-#endif // VISUALSCRIPT_EDITOR_H
+#endif // VISUAL_SCRIPT_EDITOR_H

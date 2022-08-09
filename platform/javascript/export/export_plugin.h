@@ -36,8 +36,8 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
@@ -110,7 +110,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	static void _server_thread_poll(void *data);
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
@@ -130,7 +130,7 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
 
-	virtual void get_platform_features(List<String> *r_features) override {
+	virtual void get_platform_features(List<String> *r_features) const override {
 		r_features->push_back("web");
 		r_features->push_back(get_os_name().to_lower());
 	}
@@ -144,4 +144,4 @@ public:
 	~EditorExportPlatformJavaScript();
 };
 
-#endif
+#endif // JAVASCRIPT_EXPORT_PLUGIN_H

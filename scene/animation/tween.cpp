@@ -464,6 +464,17 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			APPLY_EQUATION(columns[2][1]);
 			return r;
 		}
+		case Variant::VECTOR4: {
+			Vector4 i = p_initial_val;
+			Vector4 d = p_delta_val;
+			Vector4 r;
+
+			APPLY_EQUATION(x);
+			APPLY_EQUATION(y);
+			APPLY_EQUATION(z);
+			APPLY_EQUATION(w);
+			return r;
+		}
 
 		case Variant::QUATERNION: {
 			Quaternion i = p_initial_val;
@@ -853,7 +864,7 @@ bool CallbackTweener::step(float &r_delta) {
 	if (elapsed_time >= delay) {
 		Variant result;
 		Callable::CallError ce;
-		callback.call(nullptr, 0, result, ce);
+		callback.callp(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce));
 		}
@@ -924,7 +935,7 @@ bool MethodTweener::step(float &r_delta) {
 
 	Variant result;
 	Callable::CallError ce;
-	callback.call(argptr, 1, result, ce);
+	callback.callp(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce));
 	}

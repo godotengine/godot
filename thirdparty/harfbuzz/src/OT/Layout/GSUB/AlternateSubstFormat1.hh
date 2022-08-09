@@ -6,20 +6,21 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
-struct AlternateSubstFormat1
+template <typename Types>
+struct AlternateSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  Offset16To<Coverage>
+  typename Types::template OffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16OfOffset16To<AlternateSet>
+  Array16Of<typename Types::template OffsetTo<AlternateSet<Types>>>
                 alternateSet;           /* Array of AlternateSet tables
                                          * ordered by Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (6, alternateSet);
+  DEFINE_SIZE_ARRAY (2 + 2 * Types::size, alternateSet);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -39,9 +40,8 @@ struct AlternateSubstFormat1
     | hb_filter (c->parent_active_glyphs (), hb_first)
     | hb_map (hb_second)
     | hb_map (hb_add (this))
-    | hb_apply ([c] (const AlternateSet &_) { _.closure (c); })
+    | hb_apply ([c] (const AlternateSet<Types> &_) { _.closure (c); })
     ;
-
   }
 
   void closure_lookups (hb_closure_lookups_context_t *c) const {}
@@ -52,7 +52,7 @@ struct AlternateSubstFormat1
     + hb_zip (this+coverage, alternateSet)
     | hb_map (hb_second)
     | hb_map (hb_add (this))
-    | hb_apply ([c] (const AlternateSet &_) { _.collect_glyphs (c); })
+    | hb_apply ([c] (const AlternateSet<Types> &_) { _.collect_glyphs (c); })
     ;
   }
 

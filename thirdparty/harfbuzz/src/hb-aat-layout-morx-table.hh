@@ -980,6 +980,15 @@ struct Chain
 	  setting = HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS;
 	  goto retry;
 	}
+#ifndef HB_NO_AAT
+	else if (type == HB_AAT_LAYOUT_FEATURE_TYPE_LANGUAGE_TAG_TYPE && setting &&
+		 /* TODO: Rudimentary language matching. */
+		 hb_language_matches (map->face->table.ltag->get_language (setting - 1), map->props.language))
+	{
+	  flags &= feature.disableFlags;
+	  flags |= feature.enableFlags;
+	}
+#endif
       }
     }
     return flags;

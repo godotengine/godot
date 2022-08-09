@@ -57,7 +57,7 @@
 	<methods>
 		<method name="_post_import" qualifiers="virtual">
 			<return type="Object" />
-			<argument index="0" name="scene" type="Node" />
+			<param index="0" name="scene" type="Node" />
 			<description>
 				Called after the scene was imported. This method must return the modified version of the scene.
 			</description>

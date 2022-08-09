@@ -72,7 +72,7 @@ class VideoStream : public Resource {
 
 public:
 	virtual void set_audio_track(int p_track) = 0;
-	virtual Ref<VideoStreamPlayback> instance_playback() = 0;
+	virtual Ref<VideoStreamPlayback> instantiate_playback() = 0;
 };
 
-#endif
+#endif // VIDEO_STREAM_H

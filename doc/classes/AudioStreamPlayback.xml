@@ -4,7 +4,7 @@
 		Meta class for playing back audio.
 	</brief_description>
 	<description>
-		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOGGVorbis] for usage.
+		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOggVorbis] for usage.
 	</description>
 	<tutorials>
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
@@ -27,25 +27,30 @@
 		</method>
 		<method name="_mix" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="buffer" type="AudioFrame*" />
-			<argument index="1" name="rate_scale" type="float" />
-			<argument index="2" name="frames" type="int" />
+			<param index="0" name="buffer" type="AudioFrame*" />
+			<param index="1" name="rate_scale" type="float" />
+			<param index="2" name="frames" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_seek" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="position" type="float" />
+			<param index="0" name="position" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="_start" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="from_pos" type="float" />
+			<param index="0" name="from_pos" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="_stop" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_tag_used_streams" qualifiers="virtual">
 			<return type="void" />
 			<description>
 			</description>

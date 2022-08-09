@@ -272,11 +272,11 @@ public:
 
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
-	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
-	MultiviewCapabilities get_multiview_capabilities() const { return multiview_capabilities; };
-	VRSCapabilities get_vrs_capabilities() const { return vrs_capabilities; };
-	ShaderCapabilities get_shader_capabilities() const { return shader_capabilities; };
-	StorageBufferCapabilities get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
+	const SubgroupCapabilities &get_subgroup_capabilities() const { return subgroup_capabilities; };
+	const MultiviewCapabilities &get_multiview_capabilities() const { return multiview_capabilities; };
+	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
+	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
+	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
@@ -330,4 +330,4 @@ public:
 	virtual ~VulkanContext();
 };
 
-#endif // VULKAN_DEVICE_H
+#endif // VULKAN_CONTEXT_H

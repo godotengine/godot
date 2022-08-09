@@ -29,7 +29,7 @@
 		</method>
 		<method name="_handles_file" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Called when the engine determines whether this [MovieWriter] is able to handle the file at [code]path[/code]. Must return [code]true[/code] if this [MovieWriter] is able to handle the given file path, [code]false[/code] otherwise. Typically, [method _handles_file] is overridden as follows to allow the user to record a file at any path with a given file extension:
 				[codeblock]
@@ -42,9 +42,9 @@
 		</method>
 		<method name="_write_begin" qualifiers="virtual">
 			<return type="int" enum="Error" />
-			<argument index="0" name="movie_size" type="Vector2i" />
-			<argument index="1" name="fps" type="int" />
-			<argument index="2" name="base_path" type="String" />
+			<param index="0" name="movie_size" type="Vector2i" />
+			<param index="1" name="fps" type="int" />
+			<param index="2" name="base_path" type="String" />
 			<description>
 				Called once before the engine starts writing video and audio data. [code]movie_size[/code] is the width and height of the video to save. [code]fps[/code] is the number of frames per second specified in the project settings or using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
 			</description>
@@ -58,15 +58,15 @@
 		</method>
 		<method name="_write_frame" qualifiers="virtual">
 			<return type="int" enum="Error" />
-			<argument index="0" name="frame_image" type="Image" />
-			<argument index="1" name="audio_frame_block" type="const void*" />
+			<param index="0" name="frame_image" type="Image" />
+			<param index="1" name="audio_frame_block" type="const void*" />
 			<description>
 				Called at the end of every rendered frame. The [code]frame_image[/code] and [code]audio_frame_block[/code] function arguments should be written to.
 			</description>
 		</method>
 		<method name="add_writer" qualifiers="static">
 			<return type="void" />
-			<argument index="0" name="writer" type="MovieWriter" />
+			<param index="0" name="writer" type="MovieWriter" />
 			<description>
 				Adds a writer to be usable by the engine. The supported file extensions can be set by overriding [method _handles_file].
 				[b]Note:[/b] [method add_writer] must be called early enough in the engine initialization to work, as movie writing is designed to start at the same time as the rest of the engine.

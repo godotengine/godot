@@ -186,25 +186,57 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform around the given <paramref name="axis"/> by <paramref name="angle"/> (in radians),
-        /// using matrix multiplication. The axis must be a normalized vector.
+        /// Rotates the transform around the given <paramref name="axis"/> by <paramref name="angle"/> (in radians).
+        /// The axis must be a normalized vector.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform3D Rotated(Vector3 axis, real_t phi)
+        public Transform3D Rotated(Vector3 axis, real_t angle)
         {
-            return new Transform3D(new Basis(axis, phi), new Vector3()) * this;
+            return new Transform3D(new Basis(axis, angle), new Vector3()) * this;
         }
 
         /// <summary>
-        /// Scales the transform by the given 3D scaling factor, using matrix multiplication.
+        /// Rotates the transform around the given <paramref name="axis"/> by <paramref name="angle"/> (in radians).
+        /// The axis must be a normalized vector.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="axis">The axis to rotate around. Must be normalized.</param>
+        /// <param name="angle">The angle to rotate, in radians.</param>
+        /// <returns>The rotated transformation matrix.</returns>
+        public Transform3D RotatedLocal(Vector3 axis, real_t angle)
+        {
+            Basis tmpBasis = new Basis(axis, angle);
+            return new Transform3D(basis * tmpBasis, origin);
+        }
+
+        /// <summary>
+        /// Scales the transform by the given 3D <paramref name="scale"/> factor.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
         public Transform3D Scaled(Vector3 scale)
         {
             return new Transform3D(basis.Scaled(scale), origin * scale);
+        }
+
+        /// <summary>
+        /// Scales the transform by the given 3D <paramref name="scale"/> factor.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled transformation matrix.</returns>
+        public Transform3D ScaledLocal(Vector3 scale)
+        {
+            Basis tmpBasis = Basis.FromScale(scale);
+            return new Transform3D(basis * tmpBasis, origin);
         }
 
         private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
@@ -231,21 +263,31 @@ namespace Godot
         }
 
         /// <summary>
-        /// Translates the transform by the given <paramref name="offset"/>,
-        /// relative to the transform's basis vectors.
-        ///
-        /// Unlike <see cref="Rotated"/> and <see cref="Scaled"/>,
-        /// this does not use matrix multiplication.
+        /// Translates the transform by the given <paramref name="offset"/>.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
         public Transform3D Translated(Vector3 offset)
         {
+            return new Transform3D(basis, origin + offset);
+        }
+
+        /// <summary>
+        /// Translates the transform by the given <paramref name="offset"/>.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="offset">The offset to translate by.</param>
+        /// <returns>The translated matrix.</returns>
+        public Transform3D TranslatedLocal(Vector3 offset)
+        {
             return new Transform3D(basis, new Vector3
             (
-                origin[0] += basis.Row0.Dot(offset),
-                origin[1] += basis.Row1.Dot(offset),
-                origin[2] += basis.Row2.Dot(offset)
+                origin[0] + basis.Row0.Dot(offset),
+                origin[1] + basis.Row1.Dot(offset),
+                origin[2] + basis.Row2.Dot(offset)
             ));
         }
 

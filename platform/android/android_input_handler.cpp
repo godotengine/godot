@@ -56,10 +56,10 @@ void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> e
 	ev->set_ctrl_pressed(control_mem);
 }
 
-void AndroidInputHandler::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
+void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycode, int p_unicode, bool p_pressed) {
 	static char32_t prev_wc = 0;
-	char32_t unicode = p_unicode_char;
-	if ((p_unicode_char & 0xfffffc00) == 0xd800) {
+	char32_t unicode = p_unicode;
+	if ((p_unicode & 0xfffffc00) == 0xd800) {
 		if (prev_wc != 0) {
 			ERR_PRINT("invalid utf16 surrogate input");
 		}
@@ -78,39 +78,38 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_scancode, int p
 
 	Ref<InputEventKey> ev;
 	ev.instantiate();
-	int val = unicode;
-	Key keycode = android_get_keysym(p_keycode);
-	Key phy_keycode = android_get_keysym(p_scancode);
 
-	if (keycode == Key::SHIFT) {
-		shift_mem = p_pressed;
+	Key physical_keycode = godot_code_from_android_code(p_physical_keycode);
+	Key keycode = physical_keycode;
+	if (p_keycode != 0) {
+		keycode = godot_code_from_unicode(p_keycode);
 	}
-	if (keycode == Key::ALT) {
-		alt_mem = p_pressed;
-	}
-	if (keycode == Key::CTRL) {
-		control_mem = p_pressed;
-	}
-	if (keycode == Key::META) {
-		meta_mem = p_pressed;
+
+	switch (physical_keycode) {
+		case Key::SHIFT: {
+			shift_mem = p_pressed;
+		} break;
+		case Key::ALT: {
+			alt_mem = p_pressed;
+		} break;
+		case Key::CTRL: {
+			control_mem = p_pressed;
+		} break;
+		case Key::META: {
+			meta_mem = p_pressed;
+		} break;
+		default:
+			break;
 	}
 
 	ev->set_keycode(keycode);
-	ev->set_physical_keycode(phy_keycode);
-	ev->set_unicode(val);
+	ev->set_physical_keycode(physical_keycode);
+	ev->set_unicode(unicode);
 	ev->set_pressed(p_pressed);
 
 	_set_key_modifier_state(ev);
 
-	if (val == '\n') {
-		ev->set_keycode(Key::ENTER);
-	} else if (val == 61448) {
-		ev->set_keycode(Key::BACKSPACE);
-		ev->set_unicode((char32_t)Key::BACKSPACE);
-	} else if (val == 61453) {
-		ev->set_keycode(Key::ENTER);
-		ev->set_unicode((char32_t)Key::ENTER);
-	} else if (p_keycode == 4) {
+	if (p_physical_keycode == AKEYCODE_BACK) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
 			dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST, true);
 		}

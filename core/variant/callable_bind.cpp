@@ -96,7 +96,7 @@ void CallableCustomBind::call(const Variant **p_arguments, int p_argcount, Varia
 		args[i + p_argcount] = (const Variant *)&binds[i];
 	}
 
-	callable.call(args, p_argcount + binds.size(), r_return_value, r_call_error);
+	callable.callp(args, p_argcount + binds.size(), r_return_value, r_call_error);
 }
 
 CallableCustomBind::CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds) {
@@ -171,7 +171,7 @@ void CallableCustomUnbind::call(const Variant **p_arguments, int p_argcount, Var
 		r_call_error.expected = argcount;
 		return;
 	}
-	callable.call(p_arguments, p_argcount - argcount, r_return_value, r_call_error);
+	callable.callp(p_arguments, p_argcount - argcount, r_return_value, r_call_error);
 }
 
 CallableCustomUnbind::CallableCustomUnbind(const Callable &p_callable, int p_argcount) {
@@ -180,29 +180,4 @@ CallableCustomUnbind::CallableCustomUnbind(const Callable &p_callable, int p_arg
 }
 
 CallableCustomUnbind::~CallableCustomUnbind() {
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1) {
-	const Variant *args[1] = { &p_arg1 };
-	return p_callable.bind(args, 1);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2) {
-	const Variant *args[2] = { &p_arg1, &p_arg2 };
-	return p_callable.bind(args, 2);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3) {
-	const Variant *args[3] = { &p_arg1, &p_arg2, &p_arg3 };
-	return p_callable.bind(args, 3);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4) {
-	const Variant *args[4] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4 };
-	return p_callable.bind(args, 4);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5) {
-	const Variant *args[5] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4, &p_arg5 };
-	return p_callable.bind(args, 5);
 }

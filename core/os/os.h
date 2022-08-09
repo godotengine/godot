@@ -46,6 +46,7 @@ class OS {
 	static uint64_t target_ticks;
 	String _execpath;
 	List<String> _cmdline;
+	List<String> _user_args;
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
@@ -106,7 +107,7 @@ protected:
 	virtual void finalize() = 0;
 	virtual void finalize_core() = 0;
 
-	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
+	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args);
 
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
@@ -142,6 +143,8 @@ public:
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
+	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const { return String(); };
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
@@ -160,6 +163,7 @@ public:
 
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
+	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 

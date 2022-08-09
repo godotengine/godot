@@ -784,4 +784,4 @@ private:
 VARIANT_ENUM_CAST(PhysicalBone3D::JointType);
 VARIANT_ENUM_CAST(PhysicalBone3D::DampMode);
 
-#endif // PHYSICS_BODY__H
+#endif // PHYSICS_BODY_3D_H

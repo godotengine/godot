@@ -5,12 +5,13 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
+template <typename Types>
 struct Sequence
 {
   protected:
-  Array16Of<HBGlyphID16>
+  Array16Of<typename Types::HBGlyphID>
                 substitute;             /* String of GlyphIDs to substitute */
   public:
   DEFINE_SIZE_ARRAY (2, substitute);
@@ -39,15 +40,56 @@ struct Sequence
      * as a "multiplied" substitution. */
     if (unlikely (count == 1))
     {
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->sync_so_far ();
+	c->buffer->message (c->font,
+			    "replacing glyph at %d (multiple substitution)",
+			    c->buffer->idx);
+      }
+
       c->replace_glyph (substitute.arrayZ[0]);
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "replaced glyph at %d (multiple subtitution)",
+			    c->buffer->idx - 1);
+      }
+
       return_trace (true);
     }
     /* Spec disallows this, but Uniscribe allows it.
      * https://github.com/harfbuzz/harfbuzz/issues/253 */
     else if (unlikely (count == 0))
     {
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->sync_so_far ();
+	c->buffer->message (c->font,
+			    "deleting glyph at %d (multiple substitution)",
+			    c->buffer->idx);
+      }
+
       c->buffer->delete_glyph ();
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->sync_so_far ();
+	c->buffer->message (c->font,
+			    "deleted glyph at %d (multiple substitution)",
+			    c->buffer->idx);
+      }
+
       return_trace (true);
+    }
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->sync_so_far ();
+      c->buffer->message (c->font,
+			  "multiplying glyph at %d",
+			  c->buffer->idx);
     }
 
     unsigned int klass = _hb_glyph_info_is_ligature (&c->buffer->cur()) ?
@@ -63,6 +105,26 @@ struct Sequence
       c->output_glyph_for_component (substitute.arrayZ[i], klass);
     }
     c->buffer->skip_glyph ();
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->sync_so_far ();
+
+      char buf[HB_MAX_CONTEXT_LENGTH * 16] = {0};
+      char *p = buf;
+
+      for (unsigned i = c->buffer->idx - count; i < c->buffer->idx; i++)
+      {
+	if (buf < p)
+	  *p++ = ',';
+	sprintf (p, "%u", i);
+	p += strlen(p);
+      }
+
+      c->buffer->message (c->font,
+			  "multiplied glyphs at %s",
+			  buf);
+    }
 
     return_trace (true);
   }

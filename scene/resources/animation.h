@@ -392,7 +392,7 @@ public:
 	void track_set_enabled(int p_track, bool p_enabled);
 	bool track_is_enabled(int p_track) const;
 
-	void track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
+	int track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
@@ -488,4 +488,4 @@ VARIANT_ENUM_CAST(Animation::UpdateMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
 
-#endif
+#endif // ANIMATION_H

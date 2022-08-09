@@ -15,16 +15,16 @@
 	<methods>
 		<method name="add_bus">
 			<return type="void" />
-			<argument index="0" name="at_position" type="int" default="-1" />
+			<param index="0" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a bus at [code]at_position[/code].
 			</description>
 		</method>
 		<method name="add_bus_effect">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect" type="AudioEffect" />
-			<argument index="2" name="at_position" type="int" default="-1" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect" type="AudioEffect" />
+			<param index="2" name="at_position" type="int" default="-1" />
 			<description>
 				Adds an [AudioEffect] effect to the bus [code]bus_idx[/code] at [code]at_position[/code].
 			</description>
@@ -43,75 +43,75 @@
 		</method>
 		<method name="get_bus_channels" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the amount of channels of the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect">
 			<return type="AudioEffect" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect_idx" type="int" />
 			<description>
 				Returns the [AudioEffect] at position [code]effect_idx[/code] in bus [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect_count">
 			<return type="int" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the number of effects on the bus at [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect_instance">
 			<return type="AudioEffectInstance" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect_idx" type="int" />
-			<argument index="2" name="channel" type="int" default="0" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect_idx" type="int" />
+			<param index="2" name="channel" type="int" default="0" />
 			<description>
 				Returns the [AudioEffectInstance] assigned to the given bus and effect indices (and optionally channel).
 			</description>
 		</method>
 		<method name="get_bus_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="bus_name" type="StringName" />
+			<param index="0" name="bus_name" type="StringName" />
 			<description>
 				Returns the index of the bus with the name [code]bus_name[/code].
 			</description>
 		</method>
 		<method name="get_bus_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the name of the bus with the index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_peak_volume_left_db" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="channel" type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="channel" type="int" />
 			<description>
 				Returns the peak volume of the left speaker at bus index [code]bus_idx[/code] and channel index [code]channel[/code].
 			</description>
 		</method>
 		<method name="get_bus_peak_volume_right_db" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="channel" type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="channel" type="int" />
 			<description>
 				Returns the peak volume of the right speaker at bus index [code]bus_idx[/code] and channel index [code]channel[/code].
 			</description>
 		</method>
 		<method name="get_bus_send" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the name of the bus that the bus at index [code]bus_idx[/code] sends to.
 			</description>
 		</method>
 		<method name="get_bus_volume_db" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
@@ -154,29 +154,29 @@
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="is_bus_effect_enabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect_idx" type="int" />
 			<description>
 				If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="is_bus_mute" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="is_bus_solo" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="bus_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
@@ -190,96 +190,102 @@
 		</method>
 		<method name="move_bus">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="to_index" type="int" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="to_index" type="int" />
 			<description>
 				Moves the bus from index [code]index[/code] to index [code]to_index[/code].
 			</description>
 		</method>
 		<method name="remove_bus">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Removes the bus at index [code]index[/code].
 			</description>
 		</method>
 		<method name="remove_bus_effect">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect_idx" type="int" />
 			<description>
 				Removes the effect at index [code]effect_idx[/code] from the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="set_bus_bypass_effects">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="set_bus_effect_enabled">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect_idx" type="int" />
-			<argument index="2" name="enabled" type="bool" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect_idx" type="int" />
+			<param index="2" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="set_bus_layout">
 			<return type="void" />
-			<argument index="0" name="bus_layout" type="AudioBusLayout" />
+			<param index="0" name="bus_layout" type="AudioBusLayout" />
 			<description>
 				Overwrites the currently used [AudioBusLayout].
 			</description>
 		</method>
 		<method name="set_bus_mute">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="set_bus_name">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="name" type="String" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="name" type="String" />
 			<description>
 				Sets the name of the bus at index [code]bus_idx[/code] to [code]name[/code].
 			</description>
 		</method>
 		<method name="set_bus_send">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="send" type="StringName" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="send" type="StringName" />
 			<description>
 				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/code].
 			</description>
 		</method>
 		<method name="set_bus_solo">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="set_bus_volume_db">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="volume_db" type="float" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="volume_db" type="float" />
 			<description>
 				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
 			</description>
 		</method>
+		<method name="set_enable_tagging_used_audio_streams">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="swap_bus_effects">
 			<return type="void" />
-			<argument index="0" name="bus_idx" type="int" />
-			<argument index="1" name="effect_idx" type="int" />
-			<argument index="2" name="by_effect_idx" type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="effect_idx" type="int" />
+			<param index="2" name="by_effect_idx" type="int" />
 			<description>
 				Swaps the position of two effects in bus [code]bus_idx[/code].
 			</description>

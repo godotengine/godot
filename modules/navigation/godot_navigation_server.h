@@ -69,7 +69,7 @@ class GodotNavigationServer : public NavigationServer3D {
 	/// Mutex used to make any operation threadsafe.
 	Mutex operations_mutex;
 
-	std::vector<SetCommand *> commands;
+	LocalVector<SetCommand *> commands;
 
 	mutable RID_Owner<NavMap> map_owner;
 	mutable RID_Owner<NavRegion> region_owner;

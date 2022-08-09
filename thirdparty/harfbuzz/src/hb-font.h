@@ -86,8 +86,8 @@ hb_font_funcs_set_user_data (hb_font_funcs_t    *ffuncs,
 
 
 HB_EXTERN void *
-hb_font_funcs_get_user_data (hb_font_funcs_t    *ffuncs,
-			     hb_user_data_key_t *key);
+hb_font_funcs_get_user_data (const hb_font_funcs_t *ffuncs,
+			     hb_user_data_key_t    *key);
 
 
 HB_EXTERN void
@@ -198,7 +198,7 @@ typedef hb_font_get_font_extents_func_t hb_font_get_font_v_extents_func_t;
  * This method should retrieve the nominal glyph ID for a specified Unicode code
  * point. Glyph IDs must be returned in a #hb_codepoint_t output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_nominal_glyph_func_t) (hb_font_t *font, void *font_data,
@@ -221,7 +221,7 @@ typedef hb_bool_t (*hb_font_get_nominal_glyph_func_t) (hb_font_t *font, void *fo
  * followed by a specified Variation Selector code point. Glyph IDs must be
  * returned in a #hb_codepoint_t output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_variation_glyph_func_t) (hb_font_t *font, void *font_data,
@@ -362,7 +362,7 @@ typedef hb_font_get_glyph_advances_func_t hb_font_get_glyph_v_advances_func_t;
  * origin for a glyph. Each coordinate must be returned in an #hb_position_t
  * output parameter.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  * 
  **/
 typedef hb_bool_t (*hb_font_get_glyph_origin_func_t) (hb_font_t *font, void *font_data,
@@ -434,7 +434,7 @@ typedef hb_font_get_glyph_kerning_func_t hb_font_get_glyph_h_kerning_func_t;
  * This method should retrieve the extents for a specified glyph. Extents must be 
  * returned in an #hb_glyph_extents output parameter.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  * 
  **/
 typedef hb_bool_t (*hb_font_get_glyph_extents_func_t) (hb_font_t *font, void *font_data,
@@ -458,7 +458,7 @@ typedef hb_bool_t (*hb_font_get_glyph_extents_func_t) (hb_font_t *font, void *fo
  * specified contour point in a glyph. Each coordinate must be returned as
  * an #hb_position_t output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_glyph_contour_point_func_t) (hb_font_t *font, void *font_data,
@@ -481,7 +481,7 @@ typedef hb_bool_t (*hb_font_get_glyph_contour_point_func_t) (hb_font_t *font, vo
  * This method should retrieve the glyph name that corresponds to a
  * glyph ID. The name should be returned in a string output parameter.
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_glyph_name_func_t) (hb_font_t *font, void *font_data,
@@ -503,7 +503,7 @@ typedef hb_bool_t (*hb_font_get_glyph_name_func_t) (hb_font_t *font, void *font_
  * This method should retrieve the glyph ID that corresponds to a glyph-name
  * string. 
  * 
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  **/
 typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *font_data,
@@ -993,7 +993,7 @@ hb_font_set_user_data (hb_font_t          *font,
 
 
 HB_EXTERN void *
-hb_font_get_user_data (hb_font_t          *font,
+hb_font_get_user_data (const hb_font_t    *font,
 		       hb_user_data_key_t *key);
 
 HB_EXTERN void

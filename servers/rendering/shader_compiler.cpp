@@ -370,7 +370,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 	}
 }
 
-static String _get_global_variable_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
+static String _get_global_shader_uniform_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
 	switch (p_type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			return "(" + p_buffer + "[" + p_index + "].x != 0.0)";
@@ -903,11 +903,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 							code = actions.base_uniform_string + _mkid(vnode->name); //texture, use as is
 							//global variable, this means the code points to an index to the global table
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(vnode->name);
@@ -1003,11 +1003,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 							code = actions.base_uniform_string + _mkid(anode->name); //texture, use as is
 							//global variable, this means the code points to an index to the global table
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(anode->name);
@@ -1309,8 +1309,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 }
 
 ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
-	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_type);
-	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
+	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_type);
+	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
 Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
@@ -1318,23 +1318,81 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
-	info.global_variable_type_func = _get_variable_type;
+	info.global_shader_uniform_type_func = _get_variable_type;
 
 	Error err = parser.compile(p_code, info);
 
 	if (err != OK) {
+		Vector<ShaderLanguage::FilePosition> include_positions = parser.get_include_positions();
+
+		String current;
+		HashMap<String, Vector<String>> includes;
+		includes[""] = Vector<String>();
+		Vector<String> include_stack;
 		Vector<String> shader = p_code.split("\n");
+
+		// Reconstruct the files.
 		for (int i = 0; i < shader.size(); i++) {
-			if (i + 1 == parser.get_error_line()) {
-				// Mark the error line to be visible without having to look at
-				// the trace at the end.
-				print_line(vformat("E%4d-> %s", i + 1, shader[i]));
+			String l = shader[i];
+			if (l.begins_with("@@>")) {
+				String inc_path = l.replace_first("@@>", "");
+
+				l = "#include \"" + inc_path + "\"";
+				includes[current].append("#include \"" + inc_path + "\""); // Restore the include directive
+				include_stack.push_back(current);
+				current = inc_path;
+				includes[inc_path] = Vector<String>();
+
+			} else if (l.begins_with("@@<")) {
+				if (include_stack.size()) {
+					current = include_stack[include_stack.size() - 1];
+					include_stack.resize(include_stack.size() - 1);
+				}
 			} else {
-				print_line(vformat("%5d | %s", i + 1, shader[i]));
+				includes[current].push_back(l);
 			}
 		}
 
-		_err_print_error(nullptr, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), false, ERR_HANDLER_SHADER);
+		// Print the files.
+		for (const KeyValue<String, Vector<String>> &E : includes) {
+			if (E.key.is_empty()) {
+				if (p_path == "") {
+					print_line("--Main Shader--");
+				} else {
+					print_line("--" + p_path + "--");
+				}
+			} else {
+				print_line("--" + E.key + "--");
+			}
+			int err_line = -1;
+			for (int i = 0; i < include_positions.size(); i++) {
+				if (include_positions[i].file == E.key) {
+					err_line = include_positions[i].line;
+				}
+			}
+			const Vector<String> &V = E.value;
+			for (int i = 0; i < V.size(); i++) {
+				if (i == err_line - 1) {
+					// Mark the error line to be visible without having to look at
+					// the trace at the end.
+					print_line(vformat("E%4d-> %s", i + 1, V[i]));
+				} else {
+					print_line(vformat("%5d | %s", i + 1, V[i]));
+				}
+			}
+		}
+
+		String file;
+		int line;
+		if (include_positions.size() > 1) {
+			file = include_positions[include_positions.size() - 1].file;
+			line = include_positions[include_positions.size() - 1].line;
+		} else {
+			file = p_path;
+			line = parser.get_error_line();
+		}
+
+		_err_print_error(nullptr, file.utf8().get_data(), line, parser.get_error_text().utf8().get_data(), false, ERR_HANDLER_SHADER);
 		return err;
 	}
 

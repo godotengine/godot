@@ -735,15 +735,15 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// --- Custom Data ---
 	ADD_TILE_DATA_EDITOR_GROUP("Custom Data");
 	for (int i = 0; i < tile_set->get_custom_data_layers_count(); i++) {
-		if (tile_set->get_custom_data_name(i).is_empty()) {
+		if (tile_set->get_custom_data_layer_name(i).is_empty()) {
 			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), vformat("custom_data_%d", i));
 		} else {
-			ADD_TILE_DATA_EDITOR(group, tile_set->get_custom_data_name(i), vformat("custom_data_%d", i));
+			ADD_TILE_DATA_EDITOR(group, tile_set->get_custom_data_layer_name(i), vformat("custom_data_%d", i));
 		}
 		if (!tile_data_editors.has(vformat("custom_data_%d", i))) {
 			TileDataDefaultEditor *tile_data_custom_data_editor = memnew(TileDataDefaultEditor());
 			tile_data_custom_data_editor->hide();
-			tile_data_custom_data_editor->setup_property_editor(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), tile_set->get_custom_data_name(i));
+			tile_data_custom_data_editor->setup_property_editor(tile_set->get_custom_data_layer_type(i), vformat("custom_data_%d", i), tile_set->get_custom_data_layer_name(i));
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::update));
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::update));
 			tile_data_editors[vformat("custom_data_%d", i)] = tile_data_custom_data_editor;
@@ -913,7 +913,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
-			button->connect("pressed", callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile), varray(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
+			button->connect("pressed", callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile).bind(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
 			button->set_rect(Rect2(Vector2(pos.x, pos.y + (y_increment - texture_region_base_size.y) / 2.0), Vector2(texture_region_base_size_min, texture_region_base_size_min)));
 			button->set_expand_icon(true);
 
@@ -1822,7 +1822,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 			Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
-			xform.translate(position);
+			xform.translate_local(position);
 
 			if (tools_button_group->get_pressed_button() == tool_select_button && selection.has({ coords, 0 })) {
 				continue;
@@ -1845,7 +1845,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 				Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(E.tile, 0);
 
 				Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;
@@ -1886,6 +1886,12 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		tile_atlas_control_unscaled->update();
 		alternative_tiles_control->update();
 		alternative_tiles_control_unscaled->update();
+
+		if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
+			if (Vector2(drag_start_mouse_pos).distance_to(tile_atlas_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
+				drag_type = DRAG_TYPE_NONE;
+			}
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1911,7 +1917,10 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
-				// Right click pressed
+				drag_type = DRAG_TYPE_MAY_POPUP_MENU;
+				drag_start_mouse_pos = alternative_tiles_control->get_local_mouse_position();
+			} else if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
+				// Right click released and wasn't dragged too far
 				Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
 
 				selection.clear();
@@ -1989,7 +1998,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				if (tools_button_group->get_pressed_button() == tool_select_button && selection.has({ coords, alternative_tile })) {
 					continue;
@@ -2013,7 +2022,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;

@@ -195,9 +195,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		if (r_texture.is_valid()) {
 			//wow it generated a preview... save cache
 			bool has_small_texture = r_small_texture.is_valid();
-			ResourceSaver::save(cache_base + ".png", r_texture);
+			ResourceSaver::save(r_texture, cache_base + ".png");
 			if (has_small_texture) {
-				ResourceSaver::save(cache_base + "_small.png", r_small_texture);
+				ResourceSaver::save(r_small_texture, cache_base + "_small.png");
 			}
 			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");

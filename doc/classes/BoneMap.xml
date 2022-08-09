@@ -12,7 +12,7 @@
 	<methods>
 		<method name="find_profile_bone_name" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="skeleton_bone_name" type="StringName" />
+			<param index="0" name="skeleton_bone_name" type="StringName" />
 			<description>
 				Returns a profile bone name having [code]skeleton_bone_name[/code]. If not found, an empty [StringName] will be returned.
 				In the retargeting process, the returned bone name is the bone name of the target skeleton.
@@ -20,7 +20,7 @@
 		</method>
 		<method name="get_skeleton_bone_name" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="profile_bone_name" type="StringName" />
+			<param index="0" name="profile_bone_name" type="StringName" />
 			<description>
 				Returns a skeleton bone name is mapped to [code]profile_bone_name[/code].
 				In the retargeting process, the returned bone name is the bone name of the source skeleton.
@@ -28,8 +28,8 @@
 		</method>
 		<method name="set_skeleton_bone_name">
 			<return type="void" />
-			<argument index="0" name="profile_bone_name" type="StringName" />
-			<argument index="1" name="skeleton_bone_name" type="StringName" />
+			<param index="0" name="profile_bone_name" type="StringName" />
+			<param index="1" name="skeleton_bone_name" type="StringName" />
 			<description>
 				Maps a skeleton bone name to [code]profile_bone_name[/code].
 				In the retargeting process, the setting bone name is the bone name of the source skeleton.

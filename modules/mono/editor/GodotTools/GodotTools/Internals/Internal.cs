@@ -12,8 +12,8 @@ namespace GodotTools.Internals
         public static string UpdateApiAssembliesFromPrebuilt(string config) =>
             internal_UpdateApiAssembliesFromPrebuilt(config);
 
-        public static string FullTemplatesDir =>
-            internal_FullTemplatesDir();
+        public static string FullExportTemplatesDir =>
+            internal_FullExportTemplatesDir();
 
         public static string SimplifyGodotPath(this string path) => internal_SimplifyGodotPath(path);
 
@@ -57,7 +57,7 @@ namespace GodotTools.Internals
         private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_FullTemplatesDir();
+        private static extern string internal_FullExportTemplatesDir();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_SimplifyGodotPath(this string path);

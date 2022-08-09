@@ -29,8 +29,8 @@
 	<methods>
 		<method name="set_spacing">
 			<return type="void" />
-			<argument index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
-			<argument index="1" name="value" type="int" />
+			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="1" name="value" type="int" />
 			<description>
 				Sets the spacing for [code]type[/code] (see [enum TextServer.SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>

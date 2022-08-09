@@ -36,6 +36,7 @@
 #include "core/templates/safe_refcount.h"
 
 #include <string.h>
+#include <type_traits>
 
 template <class T>
 class Vector;
@@ -158,6 +159,7 @@ public:
 		return _ptr[p_index];
 	}
 
+	template <bool p_ensure_zero = false>
 	Error resize(int p_size);
 
 	_FORCE_INLINE_ void remove_at(int p_index) {
@@ -204,7 +206,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 	// clean up
 
-	if (!__has_trivial_destructor(T)) {
+	if (!std::is_trivially_destructible<T>::value) {
 		uint32_t *count = _get_size();
 		T *data = (T *)(count + 1);
 
@@ -239,7 +241,7 @@ uint32_t CowData<T>::_copy_on_write() {
 		T *_data = (T *)(mem_new);
 
 		// initialize new elements
-		if (__has_trivial_copy(T)) {
+		if (std::is_trivially_copyable<T>::value) {
 			memcpy(mem_new, _ptr, current_size * sizeof(T));
 
 		} else {
@@ -257,6 +259,7 @@ uint32_t CowData<T>::_copy_on_write() {
 }
 
 template <class T>
+template <bool p_ensure_zero>
 Error CowData<T>::resize(int p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
@@ -302,16 +305,18 @@ Error CowData<T>::resize(int p_size) {
 
 		// construct the newly created elements
 
-		if (!__has_trivial_constructor(T)) {
+		if (!std::is_trivially_constructible<T>::value) {
 			for (int i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
+		} else if (p_ensure_zero) {
+			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
 		}
 
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-		if (!__has_trivial_destructor(T)) {
+		if (!std::is_trivially_destructible<T>::value) {
 			// deinitialize no longer needed elements
 			for (uint32_t i = p_size; i < *_get_size(); i++) {
 				T *t = &_ptr[i];

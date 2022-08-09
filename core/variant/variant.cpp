@@ -39,6 +39,10 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant_parser.h"
 
+PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
+PagedAllocator<Variant::Pools::BucketMedium, true> Variant::Pools::_bucket_medium;
+PagedAllocator<Variant::Pools::BucketLarge, true> Variant::Pools::_bucket_large;
+
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
 		case NIL: {
@@ -83,6 +87,12 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case VECTOR3I: {
 			return "Vector3i";
 		} break;
+		case VECTOR4: {
+			return "Vector4";
+		} break;
+		case VECTOR4I: {
+			return "Vector4i";
+		} break;
 		case PLANE: {
 			return "Plane";
 
@@ -100,6 +110,10 @@ String Variant::get_type_name(Variant::Type p_type) {
 		} break;
 		case TRANSFORM3D: {
 			return "Transform3D";
+
+		} break;
+		case PROJECTION: {
+			return "Projection";
 
 		} break;
 
@@ -298,6 +312,24 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			valid_types = valid;
 
 		} break;
+		case VECTOR4: {
+			static const Type valid[] = {
+				VECTOR4I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case VECTOR4I: {
+			static const Type valid[] = {
+				VECTOR4,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
 
 		case QUATERNION: {
 			static const Type valid[] = {
@@ -322,6 +354,16 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				TRANSFORM2D,
 				QUATERNION,
 				BASIS,
+				PROJECTION,
+				NIL
+			};
+
+			valid_types = valid;
+
+		} break;
+		case PROJECTION: {
+			static const Type valid[] = {
+				TRANSFORM3D,
 				NIL
 			};
 
@@ -604,6 +646,24 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			valid_types = valid;
 
 		} break;
+		case VECTOR4: {
+			static const Type valid[] = {
+				VECTOR4I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case VECTOR4I: {
+			static const Type valid[] = {
+				VECTOR4,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
 
 		case QUATERNION: {
 			static const Type valid[] = {
@@ -628,6 +688,16 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 				TRANSFORM2D,
 				QUATERNION,
 				BASIS,
+				PROJECTION,
+				NIL
+			};
+
+			valid_types = valid;
+
+		} break;
+		case PROJECTION: {
+			static const Type valid[] = {
+				TRANSFORM3D,
 				NIL
 			};
 
@@ -858,6 +928,14 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i();
 
 		} break;
+		case VECTOR4: {
+			return *reinterpret_cast<const Vector4 *>(_data._mem) == Vector4();
+
+		} break;
+		case VECTOR4I: {
+			return *reinterpret_cast<const Vector4i *>(_data._mem) == Vector4i();
+
+		} break;
 		case PLANE: {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane();
 
@@ -875,6 +953,10 @@ bool Variant::is_zero() const {
 		} break;
 		case TRANSFORM3D: {
 			return *_data._transform3d == Transform3D();
+
+		} break;
+		case PROJECTION: {
+			return *_data._projection == Projection();
 
 		} break;
 
@@ -998,6 +1080,14 @@ bool Variant::is_one() const {
 			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i(1, 1, 1);
 
 		} break;
+		case VECTOR4: {
+			return *reinterpret_cast<const Vector4 *>(_data._mem) == Vector4(1, 1, 1, 1);
+
+		} break;
+		case VECTOR4I: {
+			return *reinterpret_cast<const Vector4i *>(_data._mem) == Vector4i(1, 1, 1, 1);
+
+		} break;
 		case PLANE: {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane(1, 1, 1, 1);
 
@@ -1076,7 +1166,8 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Rect2i(*reinterpret_cast<const Rect2i *>(p_variant._data._mem)));
 		} break;
 		case TRANSFORM2D: {
-			_data._transform2d = memnew(Transform2D(*p_variant._data._transform2d));
+			_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
+			memnew_placement(_data._transform2d, Transform2D(*p_variant._data._transform2d));
 		} break;
 		case VECTOR3: {
 			memnew_placement(_data._mem, Vector3(*reinterpret_cast<const Vector3 *>(p_variant._data._mem)));
@@ -1084,23 +1175,33 @@ void Variant::reference(const Variant &p_variant) {
 		case VECTOR3I: {
 			memnew_placement(_data._mem, Vector3i(*reinterpret_cast<const Vector3i *>(p_variant._data._mem)));
 		} break;
+		case VECTOR4: {
+			memnew_placement(_data._mem, Vector4(*reinterpret_cast<const Vector4 *>(p_variant._data._mem)));
+		} break;
+		case VECTOR4I: {
+			memnew_placement(_data._mem, Vector4i(*reinterpret_cast<const Vector4i *>(p_variant._data._mem)));
+		} break;
 		case PLANE: {
 			memnew_placement(_data._mem, Plane(*reinterpret_cast<const Plane *>(p_variant._data._mem)));
 		} break;
-
 		case AABB: {
-			_data._aabb = memnew(::AABB(*p_variant._data._aabb));
+			_data._aabb = (::AABB *)Pools::_bucket_small.alloc();
+			memnew_placement(_data._aabb, ::AABB(*p_variant._data._aabb));
 		} break;
 		case QUATERNION: {
 			memnew_placement(_data._mem, Quaternion(*reinterpret_cast<const Quaternion *>(p_variant._data._mem)));
-
 		} break;
 		case BASIS: {
-			_data._basis = memnew(Basis(*p_variant._data._basis));
-
+			_data._basis = (Basis *)Pools::_bucket_medium.alloc();
+			memnew_placement(_data._basis, Basis(*p_variant._data._basis));
 		} break;
 		case TRANSFORM3D: {
-			_data._transform3d = memnew(Transform3D(*p_variant._data._transform3d));
+			_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
+			memnew_placement(_data._transform3d, Transform3D(*p_variant._data._transform3d));
+		} break;
+		case PROJECTION: {
+			_data._projection = (Projection *)Pools::_bucket_large.alloc();
+			memnew_placement(_data._projection, Projection(*p_variant._data._projection));
 		} break;
 
 		// misc types
@@ -1250,6 +1351,12 @@ void Variant::zero() {
 		case VECTOR3I:
 			*reinterpret_cast<Vector3i *>(this->_data._mem) = Vector3i();
 			break;
+		case VECTOR4:
+			*reinterpret_cast<Vector4 *>(this->_data._mem) = Vector4();
+			break;
+		case VECTOR4I:
+			*reinterpret_cast<Vector4i *>(this->_data._mem) = Vector4i();
+			break;
 		case PLANE:
 			*reinterpret_cast<Plane *>(this->_data._mem) = Plane();
 			break;
@@ -1280,18 +1387,40 @@ void Variant::_clear_internal() {
 		RECT2
 		*/
 		case TRANSFORM2D: {
-			memdelete(_data._transform2d);
+			if (_data._transform2d) {
+				_data._transform2d->~Transform2D();
+				Pools::_bucket_small.free((Pools::BucketSmall *)_data._transform2d);
+				_data._transform2d = nullptr;
+			}
 		} break;
 		case AABB: {
-			memdelete(_data._aabb);
+			if (_data._aabb) {
+				_data._aabb->~AABB();
+				Pools::_bucket_small.free((Pools::BucketSmall *)_data._aabb);
+				_data._aabb = nullptr;
+			}
 		} break;
 		case BASIS: {
-			memdelete(_data._basis);
+			if (_data._basis) {
+				_data._basis->~Basis();
+				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._basis);
+				_data._basis = nullptr;
+			}
 		} break;
 		case TRANSFORM3D: {
-			memdelete(_data._transform3d);
+			if (_data._transform3d) {
+				_data._transform3d->~Transform3D();
+				Pools::_bucket_medium.free((Pools::BucketMedium *)_data._transform3d);
+				_data._transform3d = nullptr;
+			}
 		} break;
-
+		case PROJECTION: {
+			if (_data._projection) {
+				_data._projection->~Projection();
+				Pools::_bucket_large.free((Pools::BucketLarge *)_data._projection);
+				_data._projection = nullptr;
+			}
+		} break;
 			// misc types
 		case STRING_NAME: {
 			reinterpret_cast<StringName *>(_data._mem)->~StringName();
@@ -1681,6 +1810,10 @@ String Variant::stringify(int recursion_count) const {
 			return operator Vector3();
 		case VECTOR3I:
 			return operator Vector3i();
+		case VECTOR4:
+			return operator Vector4();
+		case VECTOR4I:
+			return operator Vector4i();
 		case PLANE:
 			return operator Plane();
 		case AABB:
@@ -1691,6 +1824,8 @@ String Variant::stringify(int recursion_count) const {
 			return operator Basis();
 		case TRANSFORM3D:
 			return operator Transform3D();
+		case PROJECTION:
+			return operator Projection();
 		case STRING_NAME:
 			return operator StringName();
 		case NODE_PATH:
@@ -1812,6 +1947,10 @@ Variant::operator Vector2() const {
 		return Vector2(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y);
 	} else if (type == VECTOR3I) {
 		return Vector2(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y);
+	} else if (type == VECTOR4) {
+		return Vector2(reinterpret_cast<const Vector4 *>(_data._mem)->x, reinterpret_cast<const Vector4 *>(_data._mem)->y);
+	} else if (type == VECTOR4I) {
+		return Vector2(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y);
 	} else {
 		return Vector2();
 	}
@@ -1826,6 +1965,10 @@ Variant::operator Vector2i() const {
 		return Vector2(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y);
 	} else if (type == VECTOR3I) {
 		return Vector2(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y);
+	} else if (type == VECTOR4) {
+		return Vector2(reinterpret_cast<const Vector4 *>(_data._mem)->x, reinterpret_cast<const Vector4 *>(_data._mem)->y);
+	} else if (type == VECTOR4I) {
+		return Vector2(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y);
 	} else {
 		return Vector2i();
 	}
@@ -1860,6 +2003,10 @@ Variant::operator Vector3() const {
 		return Vector3(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
 	} else if (type == VECTOR2I) {
 		return Vector3(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
+	} else if (type == VECTOR4) {
+		return Vector3(reinterpret_cast<const Vector4 *>(_data._mem)->x, reinterpret_cast<const Vector4 *>(_data._mem)->y, reinterpret_cast<const Vector4 *>(_data._mem)->z);
+	} else if (type == VECTOR4I) {
+		return Vector3(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y, reinterpret_cast<const Vector4i *>(_data._mem)->z);
 	} else {
 		return Vector3();
 	}
@@ -1874,8 +2021,49 @@ Variant::operator Vector3i() const {
 		return Vector3i(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
 	} else if (type == VECTOR2I) {
 		return Vector3i(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
+	} else if (type == VECTOR4) {
+		return Vector3i(reinterpret_cast<const Vector4 *>(_data._mem)->x, reinterpret_cast<const Vector4 *>(_data._mem)->y, reinterpret_cast<const Vector4 *>(_data._mem)->z);
+	} else if (type == VECTOR4I) {
+		return Vector3i(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y, reinterpret_cast<const Vector4i *>(_data._mem)->z);
 	} else {
 		return Vector3i();
+	}
+}
+
+Variant::operator Vector4() const {
+	if (type == VECTOR4) {
+		return *reinterpret_cast<const Vector4 *>(_data._mem);
+	} else if (type == VECTOR4I) {
+		return *reinterpret_cast<const Vector4i *>(_data._mem);
+	} else if (type == VECTOR2) {
+		return Vector4(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0, 0.0);
+	} else if (type == VECTOR2I) {
+		return Vector4(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0, 0.0);
+	} else if (type == VECTOR3) {
+		return Vector4(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y, reinterpret_cast<const Vector3 *>(_data._mem)->z, 0.0);
+	} else if (type == VECTOR3I) {
+		return Vector4(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0.0);
+	} else {
+		return Vector4();
+	}
+}
+
+Variant::operator Vector4i() const {
+	if (type == VECTOR4I) {
+		return *reinterpret_cast<const Vector4i *>(_data._mem);
+	} else if (type == VECTOR4) {
+		const Vector4 &v4 = *reinterpret_cast<const Vector4 *>(_data._mem);
+		return Vector4i(v4.x, v4.y, v4.z, v4.w);
+	} else if (type == VECTOR2) {
+		return Vector4i(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0, 0.0);
+	} else if (type == VECTOR2I) {
+		return Vector4i(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0, 0.0);
+	} else if (type == VECTOR3) {
+		return Vector4i(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y, reinterpret_cast<const Vector3 *>(_data._mem)->z, 0.0);
+	} else if (type == VECTOR3I) {
+		return Vector4i(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0.0);
+	} else {
+		return Vector4i();
 	}
 }
 
@@ -1936,8 +2124,34 @@ Variant::operator Transform3D() const {
 		m.origin[0] = t.columns[2][0];
 		m.origin[1] = t.columns[2][1];
 		return m;
+	} else if (type == PROJECTION) {
+		return *_data._projection;
 	} else {
 		return Transform3D();
+	}
+}
+
+Variant::operator Projection() const {
+	if (type == TRANSFORM3D) {
+		return *_data._transform3d;
+	} else if (type == BASIS) {
+		return Transform3D(*_data._basis, Vector3());
+	} else if (type == QUATERNION) {
+		return Transform3D(Basis(*reinterpret_cast<const Quaternion *>(_data._mem)), Vector3());
+	} else if (type == TRANSFORM2D) {
+		const Transform2D &t = *_data._transform2d;
+		Transform3D m;
+		m.basis.rows[0][0] = t.columns[0][0];
+		m.basis.rows[1][0] = t.columns[0][1];
+		m.basis.rows[0][1] = t.columns[1][0];
+		m.basis.rows[1][1] = t.columns[1][1];
+		m.origin[0] = t.columns[2][0];
+		m.origin[1] = t.columns[2][1];
+		return m;
+	} else if (type == PROJECTION) {
+		return *_data._projection;
+	} else {
+		return Projection();
 	}
 }
 
@@ -2384,6 +2598,16 @@ Variant::Variant(const Vector3i &p_vector3i) {
 	memnew_placement(_data._mem, Vector3i(p_vector3i));
 }
 
+Variant::Variant(const Vector4 &p_vector4) {
+	type = VECTOR4;
+	memnew_placement(_data._mem, Vector4(p_vector4));
+}
+
+Variant::Variant(const Vector4i &p_vector4i) {
+	type = VECTOR4I;
+	memnew_placement(_data._mem, Vector4i(p_vector4i));
+}
+
 Variant::Variant(const Vector2 &p_vector2) {
 	type = VECTOR2;
 	memnew_placement(_data._mem, Vector2(p_vector2));
@@ -2411,12 +2635,14 @@ Variant::Variant(const Plane &p_plane) {
 
 Variant::Variant(const ::AABB &p_aabb) {
 	type = AABB;
-	_data._aabb = memnew(::AABB(p_aabb));
+	_data._aabb = (::AABB *)Pools::_bucket_small.alloc();
+	memnew_placement(_data._aabb, ::AABB(p_aabb));
 }
 
 Variant::Variant(const Basis &p_matrix) {
 	type = BASIS;
-	_data._basis = memnew(Basis(p_matrix));
+	_data._basis = (Basis *)Pools::_bucket_medium.alloc();
+	memnew_placement(_data._basis, Basis(p_matrix));
 }
 
 Variant::Variant(const Quaternion &p_quaternion) {
@@ -2426,12 +2652,20 @@ Variant::Variant(const Quaternion &p_quaternion) {
 
 Variant::Variant(const Transform3D &p_transform) {
 	type = TRANSFORM3D;
-	_data._transform3d = memnew(Transform3D(p_transform));
+	_data._transform3d = (Transform3D *)Pools::_bucket_medium.alloc();
+	memnew_placement(_data._transform3d, Transform3D(p_transform));
+}
+
+Variant::Variant(const Projection &pp_projection) {
+	type = PROJECTION;
+	_data._projection = (Projection *)Pools::_bucket_large.alloc();
+	memnew_placement(_data._projection, Projection(pp_projection));
 }
 
 Variant::Variant(const Transform2D &p_transform) {
 	type = TRANSFORM2D;
-	_data._transform2d = memnew(Transform2D(p_transform));
+	_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
+	memnew_placement(_data._transform2d, Transform2D(p_transform));
 }
 
 Variant::Variant(const Color &p_color) {
@@ -2656,6 +2890,12 @@ void Variant::operator=(const Variant &p_variant) {
 		case VECTOR3I: {
 			*reinterpret_cast<Vector3i *>(_data._mem) = *reinterpret_cast<const Vector3i *>(p_variant._data._mem);
 		} break;
+		case VECTOR4: {
+			*reinterpret_cast<Vector4 *>(_data._mem) = *reinterpret_cast<const Vector4 *>(p_variant._data._mem);
+		} break;
+		case VECTOR4I: {
+			*reinterpret_cast<Vector4i *>(_data._mem) = *reinterpret_cast<const Vector4i *>(p_variant._data._mem);
+		} break;
 		case PLANE: {
 			*reinterpret_cast<Plane *>(_data._mem) = *reinterpret_cast<const Plane *>(p_variant._data._mem);
 		} break;
@@ -2671,6 +2911,9 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case TRANSFORM3D: {
 			*_data._transform3d = *(p_variant._data._transform3d);
+		} break;
+		case PROJECTION: {
+			*_data._projection = *(p_variant._data._projection);
 		} break;
 
 		// misc types
@@ -2817,6 +3060,12 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 		case VECTOR3I: {
 			return HashMapHasherDefault::hash(*reinterpret_cast<const Vector3i *>(_data._mem));
 		} break;
+		case VECTOR4: {
+			return HashMapHasherDefault::hash(*reinterpret_cast<const Vector4 *>(_data._mem));
+		} break;
+		case VECTOR4I: {
+			return HashMapHasherDefault::hash(*reinterpret_cast<const Vector4i *>(_data._mem));
+		} break;
 		case PLANE: {
 			uint32_t h = HASH_MURMUR3_SEED;
 			const Plane &p = *reinterpret_cast<const Plane *>(_data._mem);
@@ -2867,6 +3116,27 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			h = hash_murmur3_one_real(t.origin.x, h);
 			h = hash_murmur3_one_real(t.origin.y, h);
 			h = hash_murmur3_one_real(t.origin.z, h);
+			return hash_fmix32(h);
+		} break;
+		case PROJECTION: {
+			uint32_t h = HASH_MURMUR3_SEED;
+			const Projection &t = *_data._projection;
+			h = hash_murmur3_one_real(t.matrix[0].x, h);
+			h = hash_murmur3_one_real(t.matrix[0].y, h);
+			h = hash_murmur3_one_real(t.matrix[0].z, h);
+			h = hash_murmur3_one_real(t.matrix[0].w, h);
+			h = hash_murmur3_one_real(t.matrix[1].x, h);
+			h = hash_murmur3_one_real(t.matrix[1].y, h);
+			h = hash_murmur3_one_real(t.matrix[1].z, h);
+			h = hash_murmur3_one_real(t.matrix[1].w, h);
+			h = hash_murmur3_one_real(t.matrix[2].x, h);
+			h = hash_murmur3_one_real(t.matrix[2].y, h);
+			h = hash_murmur3_one_real(t.matrix[2].z, h);
+			h = hash_murmur3_one_real(t.matrix[2].w, h);
+			h = hash_murmur3_one_real(t.matrix[3].x, h);
+			h = hash_murmur3_one_real(t.matrix[3].y, h);
+			h = hash_murmur3_one_real(t.matrix[3].z, h);
+			h = hash_murmur3_one_real(t.matrix[3].w, h);
 			return hash_fmix32(h);
 		} break;
 		// misc types
@@ -3062,6 +3332,11 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
 			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
 			(hash_compare_scalar((p_lhs).z, (p_rhs).z))
+#define hash_compare_vector4(p_lhs, p_rhs)                 \
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
+			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
+			(hash_compare_scalar((p_lhs).z, (p_rhs).z)) && \
+			(hash_compare_scalar((p_lhs).w, (p_rhs).w))
 
 #define hash_compare_quaternion(p_lhs, p_rhs)              \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
@@ -3165,6 +3440,18 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 
 			return *l == *r;
 		} break;
+		case VECTOR4: {
+			const Vector4 *l = reinterpret_cast<const Vector4 *>(_data._mem);
+			const Vector4 *r = reinterpret_cast<const Vector4 *>(p_variant._data._mem);
+
+			return hash_compare_vector4(*l, *r);
+		} break;
+		case VECTOR4I: {
+			const Vector4i *l = reinterpret_cast<const Vector4i *>(_data._mem);
+			const Vector4i *r = reinterpret_cast<const Vector4i *>(p_variant._data._mem);
+
+			return *l == *r;
+		} break;
 
 		case PLANE: {
 			const Plane *l = reinterpret_cast<const Plane *>(_data._mem);
@@ -3214,6 +3501,18 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			}
 
 			return hash_compare_vector3(l->origin, r->origin);
+		} break;
+		case PROJECTION: {
+			const Projection *l = _data._projection;
+			const Projection *r = p_variant._data._projection;
+
+			for (int i = 0; i < 4; i++) {
+				if (!(hash_compare_vector4(l->matrix[i], r->matrix[i]))) {
+					return false;
+				}
+			}
+
+			return true;
 		} break;
 
 		case COLOR: {

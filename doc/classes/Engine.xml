@@ -9,6 +9,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_architecture_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the CPU architecture the Godot binary was built for. Possible return values are [code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]armv7[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm64[/code] and [code]wasm32[/code].
+				To detect whether the current CPU architecture is 64-bit, you can use the fact that all 64-bit architecture names have [code]64[/code] in their name:
+				[codeblock]
+				if "64" in Engine.get_architecture_name():
+				    print("Running on 64-bit CPU.")
+				else:
+				    print("Running on 32-bit CPU.")
+				[/codeblock]
+				[b]Note:[/b] [method get_architecture_name] does [i]not[/i] return the name of the host CPU architecture. For example, if running an x86_32 Godot binary on a x86_64 system, the returned value will be [code]x86_32[/code].
+			</description>
+		</method>
 		<method name="get_author_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
@@ -96,7 +110,7 @@
 		</method>
 		<method name="get_script_language" qualifiers="const">
 			<return type="ScriptLanguage" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -107,7 +121,7 @@
 		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
 			</description>
@@ -151,9 +165,15 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="get_write_movie_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the path to the [MovieWriter]'s output file, or an empty string if the engine wasn't started in Movie Maker mode. This path can be absolute or relative depending on how the user specified it.
+			</description>
+		</method>
 		<method name="has_singleton" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
 			</description>
@@ -180,20 +200,20 @@
 		</method>
 		<method name="register_script_language">
 			<return type="void" />
-			<argument index="0" name="language" type="ScriptLanguage" />
+			<param index="0" name="language" type="ScriptLanguage" />
 			<description>
 			</description>
 		</method>
 		<method name="register_singleton">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="instance" type="Object" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="instance" type="Object" />
 			<description>
 			</description>
 		</method>
 		<method name="unregister_singleton">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>

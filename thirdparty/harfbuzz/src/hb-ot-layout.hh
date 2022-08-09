@@ -110,7 +110,7 @@ namespace OT {
   struct hb_ot_apply_context_t;
   struct hb_ot_layout_lookup_accelerator_t;
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
   struct SubstLookup;
 }
 }
@@ -118,7 +118,7 @@ namespace GSUB {
 
 HB_INTERNAL void
 hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
-				const OT::Layout::GSUB::SubstLookup &lookup,
+				const OT::Layout::GSUB_impl::SubstLookup &lookup,
 				const OT::hb_ot_layout_lookup_accelerator_t &accel);
 
 

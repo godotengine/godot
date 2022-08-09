@@ -13,7 +13,7 @@
 	<methods>
 		<method name="add_translation">
 			<return type="void" />
-			<argument index="0" name="translation" type="Translation" />
+			<param index="0" name="translation" type="Translation" />
 			<description>
 				Adds a [Translation] resource.
 			</description>
@@ -26,8 +26,8 @@
 		</method>
 		<method name="compare_locales" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="locale_a" type="String" />
-			<argument index="1" name="locale_b" type="String" />
+			<param index="0" name="locale_a" type="String" />
+			<param index="1" name="locale_b" type="String" />
 			<description>
 				Compares two locales and return similarity score between [code]0[/code](no match) and [code]10[/code](full match).
 			</description>
@@ -52,14 +52,14 @@
 		</method>
 		<method name="get_country_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="country" type="String" />
+			<param index="0" name="country" type="String" />
 			<description>
 				Returns readable country name for the [code]country[/code] code.
 			</description>
 		</method>
 		<method name="get_language_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="language" type="String" />
+			<param index="0" name="language" type="String" />
 			<description>
 				Returns readable language name for the [code]language[/code] code.
 			</description>
@@ -79,14 +79,14 @@
 		</method>
 		<method name="get_locale_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="locale" type="String" />
+			<param index="0" name="locale" type="String" />
 			<description>
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
 		<method name="get_script_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="script" type="String" />
+			<param index="0" name="script" type="String" />
 			<description>
 				Returns readable script name for the [code]script[/code] code.
 			</description>
@@ -100,7 +100,7 @@
 		</method>
 		<method name="get_translation_object">
 			<return type="Translation" />
-			<argument index="0" name="locale" type="String" />
+			<param index="0" name="locale" type="String" />
 			<description>
 				Returns the [Translation] instance based on the [code]locale[/code] passed in.
 				It will return [code]null[/code] if there is no [Translation] instance that matches the [code]locale[/code].
@@ -108,7 +108,7 @@
 		</method>
 		<method name="pseudolocalize" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="message" type="StringName" />
+			<param index="0" name="message" type="StringName" />
 			<description>
 				Returns the pseudolocalized string based on the [code]p_message[/code] passed in.
 			</description>
@@ -121,14 +121,14 @@
 		</method>
 		<method name="remove_translation">
 			<return type="void" />
-			<argument index="0" name="translation" type="Translation" />
+			<param index="0" name="translation" type="Translation" />
 			<description>
 				Removes the given translation from the server.
 			</description>
 		</method>
 		<method name="set_locale">
 			<return type="void" />
-			<argument index="0" name="locale" type="String" />
+			<param index="0" name="locale" type="String" />
 			<description>
 				Sets the locale of the project. The [code]locale[/code] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 				If translations have been loaded beforehand for the new locale, they will be applied.
@@ -136,25 +136,25 @@
 		</method>
 		<method name="standardize_locale" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="locale" type="String" />
+			<param index="0" name="locale" type="String" />
 			<description>
 				Returns [code]locale[/code] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="message" type="StringName" />
-			<argument index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key) and context.
 			</description>
 		</method>
 		<method name="translate_plural" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="message" type="StringName" />
-			<argument index="1" name="plural_message" type="StringName" />
-			<argument index="2" name="n" type="int" />
-			<argument index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key), plural_message and context.
 				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.

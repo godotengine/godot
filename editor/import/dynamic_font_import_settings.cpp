@@ -971,6 +971,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	base_path = p_path;
 
 	inspector_vars->edit(nullptr);
+	inspector_text->edit(nullptr);
 	inspector_general->edit(nullptr);
 
 	text_settings_data.instantiate();

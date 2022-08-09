@@ -39,12 +39,10 @@ struct SinglePosFormat1
   {
     if (!valueFormat.has_device ()) return;
 
-    auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (c->glyph_set)
-    ;
+    hb_set_t intersection;
+    (this+coverage).intersect_set (*c->glyph_set, intersection);
+    if (!intersection) return;
 
-    if (!it) return;
     valueFormat.collect_variation_indices (c, this, values.as_array (valueFormat.get_len ()));
   }
 
@@ -62,7 +60,21 @@ struct SinglePosFormat1
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "positioning glyph at %d",
+			  c->buffer->idx);
+    }
+
     valueFormat.apply_value (c, this, values, buffer->cur_pos());
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "positioned glyph at %d",
+			  c->buffer->idx);
+    }
 
     buffer->idx++;
     return_trace (true);
@@ -104,9 +116,11 @@ struct SinglePosFormat1
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
+    hb_set_t intersection;
+    (this+coverage).intersect_set (glyphset, intersection);
+
     auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (glyphset)
+    + hb_iter (intersection)
     | hb_map_retains_sorting (glyph_map)
     | hb_zip (hb_repeat (values.as_array (valueFormat.get_len ())))
     ;

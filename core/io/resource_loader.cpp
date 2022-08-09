@@ -794,6 +794,8 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		// To find the path of the remapped resource, we extract the locale name after
 		// the last ':' to match the project locale.
 
+		// An extra remap may still be necessary afterwards due to the text -> binary converter on export.
+
 		String locale = TranslationServer::get_singleton()->get_locale();
 		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, "Could not remap path '" + p_path + "' for translation as configured locale '" + locale + "' is invalid.");
 
@@ -819,16 +821,20 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		if (r_translation_remapped) {
 			*r_translation_remapped = true;
 		}
+
+		// Fallback to p_path if new_path does not exist.
+		if (!FileAccess::exists(new_path)) {
+			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
+			new_path = p_path;
+		}
 	}
 
 	if (path_remaps.has(new_path)) {
 		new_path = path_remaps[new_path];
-	}
-
-	if (new_path == p_path) { // Did not remap.
+	} else {
 		// Try file remap.
 		Error err;
-		Ref<FileAccess> f = FileAccess::open(p_path + ".remap", FileAccess::READ, &err);
+		Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
 		if (f.is_valid()) {
 			VariantParser::StreamFile stream;
 			stream.f = f;

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_MAP_EDITOR_H
-#define BONE_MAP_EDITOR_H
+#ifndef BONE_MAP_EDITOR_PLUGIN_H
+#define BONE_MAP_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -47,6 +47,7 @@ public:
 	enum BoneMapState {
 		BONE_MAP_STATE_UNSET,
 		BONE_MAP_STATE_SET,
+		BONE_MAP_STATE_MISSING,
 		BONE_MAP_STATE_ERROR
 	};
 
@@ -176,4 +177,4 @@ public:
 	BoneMapEditorPlugin();
 };
 
-#endif // BONE_MAP_EDITOR_H
+#endif // BONE_MAP_EDITOR_PLUGIN_H

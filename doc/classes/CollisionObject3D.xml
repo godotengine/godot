@@ -11,32 +11,33 @@
 	<methods>
 		<method name="_input_event" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="camera" type="Camera3D" />
-			<argument index="1" name="event" type="InputEvent" />
-			<argument index="2" name="position" type="Vector3" />
-			<argument index="3" name="normal" type="Vector3" />
-			<argument index="4" name="shape_idx" type="int" />
+			<param index="0" name="camera" type="Camera3D" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="position" type="Vector3" />
+			<param index="3" name="normal" type="Vector3" />
+			<param index="4" name="shape_idx" type="int" />
 			<description>
 				Receives unhandled [InputEvent]s. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
 		<method name="create_shape_owner">
 			<return type="int" />
-			<argument index="0" name="owner" type="Object" />
+			<param index="0" name="owner" type="Object" />
 			<description>
 				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
 			</description>
 		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -55,113 +56,113 @@
 		</method>
 		<method name="is_shape_owner_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				If [code]true[/code], the shape owner and its shapes are disabled.
 			</description>
 		</method>
 		<method name="remove_shape_owner">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Removes the given shape owner.
 			</description>
 		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="shape_index" type="int" />
+			<param index="0" name="shape_index" type="int" />
 			<description>
 				Returns the [code]owner_id[/code] of the given shape.
 			</description>
 		</method>
 		<method name="shape_owner_add_shape">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape" type="Shape3D" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape" type="Shape3D" />
 			<description>
 				Adds a [Shape3D] to the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_clear_shapes">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Removes all shapes from the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_owner" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the parent object of the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape" qualifiers="const">
 			<return type="Shape3D" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
 			<description>
 				Returns the [Shape3D] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the number of shapes the given shape owner contains.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
 			<description>
 				Returns the child index of the [Shape3D] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the shape owner's [Transform3D].
 			</description>
 		</method>
 		<method name="shape_owner_remove_shape">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
 			<description>
 				Removes a shape from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_disabled">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="disabled" type="bool" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], disables the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="transform" type="Transform3D" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
 			<description>
 				Sets the [Transform3D] of the given shape owner.
 			</description>
@@ -188,23 +189,25 @@
 	</members>
 	<signals>
 		<signal name="input_event">
-			<argument index="0" name="camera" type="Node" />
-			<argument index="1" name="event" type="InputEvent" />
-			<argument index="2" name="position" type="Vector3" />
-			<argument index="3" name="normal" type="Vector3" />
-			<argument index="4" name="shape_idx" type="int" />
+			<param index="0" name="camera" type="Node" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="position" type="Vector3" />
+			<param index="3" name="normal" type="Vector3" />
+			<param index="4" name="shape_idx" type="int" />
 			<description>
 				Emitted when the object receives an unhandled [InputEvent]. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes.
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes.
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 	</signals>

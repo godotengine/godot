@@ -74,7 +74,7 @@ hb_map_set_user_data (hb_map_t           *map,
 		      hb_bool_t           replace);
 
 HB_EXTERN void *
-hb_map_get_user_data (hb_map_t           *map,
+hb_map_get_user_data (const hb_map_t     *map,
 		      hb_user_data_key_t *key);
 
 

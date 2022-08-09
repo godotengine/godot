@@ -52,10 +52,10 @@ GDScriptCache *gdscript_cache = nullptr;
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
+#include "editor/export/editor_export.h"
 #include "editor/gdscript_highlighter.h"
 #include "editor/gdscript_translation_parser_plugin.h"
 

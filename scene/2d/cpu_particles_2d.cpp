@@ -1470,7 +1470,7 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_emitting(true);
 	set_amount(8);
-	set_use_local_coordinates(true);
+	set_use_local_coordinates(false);
 
 	set_param_min(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param_min(PARAM_ANGULAR_VELOCITY, 0);

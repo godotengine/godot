@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "text_server_adv.h"
+#include "core/object/worker_thread_pool.h"
 
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
@@ -345,6 +346,8 @@ bool TextServerAdvanced::has_feature(Feature p_feature) const {
 		case FEATURE_FONT_VARIABLE:
 		case FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION:
 		case FEATURE_USE_SUPPORT_DATA:
+		case FEATURE_UNICODE_IDENTIFIERS:
+		case FEATURE_UNICODE_SECURITY:
 			return true;
 		default: {
 		}
@@ -1039,10 +1042,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-		if (p_font_data->work_pool.get_thread_count() == 0) {
-			p_font_data->work_pool.init();
-		}
-		p_font_data->work_pool.do_work(h, this, &TextServerAdvanced::_generateMTSDF_threaded, &td);
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &TextServerAdvanced::_generateMTSDF_threaded, &td, h, -1, true, SNAME("FontServerRasterizeMSDF"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
@@ -1360,7 +1361,13 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
+#if HB_VERSION_ATLEAST(3, 3, 0)
 		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 3.3.0, synthetic slant offset correction disabled.
+#endif
+#endif
 
 		if (!p_font_data->face_init) {
 			// Get style flags and name.
@@ -1627,6 +1634,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 				for (unsigned int i = 0; i < count; i++) {
 					Dictionary ftr;
 
+#if HB_VERSION_ATLEAST(2, 1, 0)
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GSUB, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
 						PackedInt32Array lbl;
@@ -1636,6 +1644,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
+#endif
+#endif
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -1650,6 +1663,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 				for (unsigned int i = 0; i < count; i++) {
 					Dictionary ftr;
 
+#if HB_VERSION_ATLEAST(2, 1, 0)
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GPOS, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
 						PackedInt32Array lbl;
@@ -1659,6 +1673,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
+#endif
+#endif
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -4226,7 +4245,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if (p_trim_flags.has_flag(OVERRUN_TRIM) || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
 		sd->overrun_trim_data.ellipsis_pos = -1;
 		return;
@@ -4687,7 +4706,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 		for (int i = 0; i < sd_size; i++) {
 			if (sd_glyphs[i].count > 0) {
 				char32_t c = sd->text[sd_glyphs[i].start - sd->start];
-				if (c == 0x0640) {
+				if (c == 0x0640 && sd_glyphs[i].start == sd_glyphs[i].end - 1) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_ELONGATION;
 				}
 				if (sd->jstops.has(sd_glyphs[i].start)) {
@@ -4699,6 +4718,11 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 							if (sd_glyphs[i].font_rid != RID()) {
 								Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size);
 								if ((sd_glyphs[i].flags & GRAPHEME_IS_VALID) == GRAPHEME_IS_VALID) {
+#if HB_VERSION_ATLEAST(5, 1, 0)
+									if ((i > 0) && ((sd_glyphs[i - 1].flags & GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL) != GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL)) {
+										continue;
+									}
+#endif
 									gl.start = sd_glyphs[i].start;
 									gl.end = sd_glyphs[i].end;
 									gl.repeat = 0;
@@ -4889,11 +4913,16 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
 	hb_buffer_set_direction(p_sd->hb_buffer, p_direction);
+	int flags = (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0);
 	if (p_sd->preserve_control) {
-		hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES | (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0)));
+		flags |= HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES;
 	} else {
-		hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_DEFAULT | (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0)));
+		flags |= HB_BUFFER_FLAG_DEFAULT;
 	}
+#if HB_VERSION_ATLEAST(5, 1, 0)
+	flags |= HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL;
+#endif
+	hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)flags);
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
 	if (p_sd->spans[p_span].language.is_empty()) {
@@ -4957,9 +4986,15 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			gl.font_rid = p_fonts[p_fb_index];
 			gl.font_size = fs;
 
-			if (glyph_info[i].mask & HB_GLYPH_FLAG_DEFINED) {
+			if (glyph_info[i].mask & HB_GLYPH_FLAG_UNSAFE_TO_BREAK) {
 				gl.flags |= GRAPHEME_IS_CONNECTED;
 			}
+
+#if HB_VERSION_ATLEAST(5, 1, 0)
+			if (glyph_info[i].mask & HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL) {
+				gl.flags |= GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL;
+			}
+#endif
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
@@ -5622,6 +5657,68 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 	return "%";
 }
 
+int TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	UErrorCode status = U_ZERO_ERROR;
+	int match_index = -1;
+
+	Char16String utf16 = p_string.utf16();
+	Vector<UChar *> skeletons;
+	skeletons.resize(p_dict.size());
+
+	USpoofChecker *sc = uspoof_open(&status);
+	uspoof_setChecks(sc, USPOOF_CONFUSABLE, &status);
+	for (int i = 0; i < p_dict.size(); i++) {
+		Char16String word = p_dict[i].utf16();
+		int32_t len = uspoof_getSkeleton(sc, 0, word.get_data(), -1, NULL, 0, &status);
+		skeletons.write[i] = (UChar *)memalloc(++len * sizeof(UChar));
+		status = U_ZERO_ERROR;
+		uspoof_getSkeleton(sc, 0, word.get_data(), -1, skeletons.write[i], len, &status);
+	}
+
+	int32_t len = uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, NULL, 0, &status);
+	UChar *skel = (UChar *)memalloc(++len * sizeof(UChar));
+	status = U_ZERO_ERROR;
+	uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, skel, len, &status);
+	for (int i = 0; i < skeletons.size(); i++) {
+		if (u_strcmp(skel, skeletons[i]) == 0) {
+			match_index = i;
+			break;
+		}
+	}
+	memfree(skel);
+
+	for (int i = 0; i < skeletons.size(); i++) {
+		memfree(skeletons.write[i]);
+	}
+	uspoof_close(sc);
+
+	ERR_FAIL_COND_V_MSG(U_FAILURE(status), -1, u_errorName(status));
+
+	return match_index;
+}
+
+bool TextServerAdvanced::spoof_check(const String &p_string) const {
+	UErrorCode status = U_ZERO_ERROR;
+	Char16String utf16 = p_string.utf16();
+
+	USet *allowed = uset_openEmpty();
+	uset_addAll(allowed, uspoof_getRecommendedSet(&status));
+	uset_addAll(allowed, uspoof_getInclusionSet(&status));
+
+	USpoofChecker *sc = uspoof_open(&status);
+	uspoof_setAllowedChars(sc, allowed, &status);
+	uspoof_setRestrictionLevel(sc, USPOOF_MODERATELY_RESTRICTIVE);
+
+	int32_t bitmask = uspoof_check(sc, utf16.get_data(), -1, NULL, &status);
+
+	uspoof_close(sc);
+	uset_close(allowed);
+
+	ERR_FAIL_COND_V_MSG(U_FAILURE(status), false, u_errorName(status));
+
+	return (bitmask != 0);
+}
+
 String TextServerAdvanced::strip_diacritics(const String &p_string) const {
 	UErrorCode err = U_ZERO_ERROR;
 
@@ -5738,6 +5835,191 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 		}
 	}
 	return ret;
+}
+
+bool TextServerAdvanced::is_valid_identifier(const String &p_string) const {
+	enum UAX31SequenceStatus {
+		SEQ_NOT_STARTED,
+		SEQ_STARTED,
+		SEQ_STARTED_VIR,
+		SEQ_NEAR_END,
+	};
+
+	const char32_t *str = p_string.ptr();
+	int len = p_string.length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	UErrorCode err = U_ZERO_ERROR;
+	Char16String utf16 = p_string.utf16();
+	const UNormalizer2 *norm_c = unorm2_getNFCInstance(&err);
+	if (U_FAILURE(err)) {
+		return false; // Failed to load normalizer.
+	}
+	bool isnurom = unorm2_isNormalized(norm_c, utf16.ptr(), utf16.length(), &err);
+	if (U_FAILURE(err) || !isnurom) {
+		return false; // Do not conform to Normalization Form C.
+	}
+
+	UAX31SequenceStatus A1_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode A1_scr = USCRIPT_INHERITED;
+	UAX31SequenceStatus A2_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode A2_scr = USCRIPT_INHERITED;
+	UAX31SequenceStatus B_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode B_scr = USCRIPT_INHERITED;
+
+	for (int i = 0; i < len; i++) {
+		err = U_ZERO_ERROR;
+		UScriptCode scr = uscript_getScript(str[i], &err);
+		if (U_FAILURE(err)) {
+			return false; // Invalid script.
+		}
+		if (uscript_getUsage(scr) != USCRIPT_USAGE_RECOMMENDED) {
+			return false; // Not a recommended script.
+		}
+		uint8_t cat = u_charType(str[i]);
+		int32_t jt = u_getIntPropertyValue(str[i], UCHAR_JOINING_TYPE);
+
+		// UAX #31 section 2.3 subsections A1, A2 and B, check ZWNJ and ZWJ usage.
+		switch (A1_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((A1_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A1_scr)) {
+					return false; // Mixed script.
+				}
+				if (jt == U_JT_RIGHT_JOINING || jt == U_JT_DUAL_JOINING) {
+					A1_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else if (jt != U_JT_TRANSPARENT) {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((A1_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A1_scr)) {
+					A1_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (jt != U_JT_TRANSPARENT) {
+						if (str[i] == 0x200C /*ZWNJ*/) {
+							A1_sequence_status = SEQ_NEAR_END;
+							continue;
+						} else {
+							A1_sequence_status = SEQ_NOT_STARTED; // Reset.
+						}
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (A1_sequence_status == SEQ_NOT_STARTED) {
+			if (jt == U_JT_LEFT_JOINING || jt == U_JT_DUAL_JOINING) {
+				A1_sequence_status = SEQ_STARTED;
+				A1_scr = scr;
+			}
+		};
+
+		switch (A2_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					return false; // Mixed script.
+				}
+				if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED_VIR: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (str[i] == 0x200C /*ZWNJ*/) {
+						A2_sequence_status = SEQ_NEAR_END;
+						continue;
+					} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+						A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (u_getCombiningClass(str[i]) == 9 /*Virama Combining Class*/) {
+						A2_sequence_status = SEQ_STARTED_VIR;
+					} else if (cat != U_MODIFIER_LETTER) {
+						A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (A2_sequence_status == SEQ_NOT_STARTED) {
+			if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+				A2_sequence_status = SEQ_STARTED;
+				A2_scr = scr;
+			}
+		}
+
+		switch (B_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					return false; // Mixed script.
+				}
+				if (u_getIntPropertyValue(str[i], UCHAR_INDIC_SYLLABIC_CATEGORY) != U_INSC_VOWEL_DEPENDENT) {
+					B_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED_VIR: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					B_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (str[i] == 0x200D /*ZWJ*/) {
+						B_sequence_status = SEQ_NEAR_END;
+						continue;
+					} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+						B_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					B_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (u_getCombiningClass(str[i]) == 9 /*Virama Combining Class*/) {
+						B_sequence_status = SEQ_STARTED_VIR;
+					} else if (cat != U_MODIFIER_LETTER) {
+						B_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (B_sequence_status == SEQ_NOT_STARTED) {
+			if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+				B_sequence_status = SEQ_STARTED;
+				B_scr = scr;
+			}
+		}
+
+		if (u_hasBinaryProperty(str[i], UCHAR_PATTERN_SYNTAX) || u_hasBinaryProperty(str[i], UCHAR_PATTERN_WHITE_SPACE) || u_hasBinaryProperty(str[i], UCHAR_NONCHARACTER_CODE_POINT)) {
+			return false; // Not a XID_Start or XID_Continue character.
+		}
+		if (i == 0) {
+			if (!(cat == U_LOWERCASE_LETTER || cat == U_UPPERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_OTHER_LETTER || cat == U_MODIFIER_LETTER || cat == U_LETTER_NUMBER || str[0] == 0x2118 || str[0] == 0x212E || str[0] == 0x309B || str[0] == 0x309C || str[0] == 0x005F)) {
+				return false; // Not a XID_Start character.
+			}
+		} else {
+			if (!(cat == U_LOWERCASE_LETTER || cat == U_UPPERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_OTHER_LETTER || cat == U_MODIFIER_LETTER || cat == U_LETTER_NUMBER || cat == U_NON_SPACING_MARK || cat == U_COMBINING_SPACING_MARK || cat == U_DECIMAL_DIGIT_NUMBER || cat == U_CONNECTOR_PUNCTUATION || str[i] == 0x2118 || str[i] == 0x212E || str[i] == 0x309B || str[i] == 0x309C || str[i] == 0x1369 || str[i] == 0x1371 || str[i] == 0x00B7 || str[i] == 0x0387 || str[i] == 0x19DA || str[i] == 0x0E33 || str[i] == 0x0EB3 || str[i] == 0xFF9E || str[i] == 0xFF9F)) {
+				return false; // Not a XID_Continue character.
+			}
+		}
+	}
+	return true;
 }
 
 TextServerAdvanced::TextServerAdvanced() {

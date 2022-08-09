@@ -80,4 +80,4 @@ public:
 	OpenXRInteractionProfileEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile);
 };
 
-#endif // !OPENXR_INTERACTION_PROFILE_EDITOR_H
+#endif // OPENXR_INTERACTION_PROFILE_EDITOR_H

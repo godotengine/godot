@@ -64,4 +64,4 @@ public:
 	OpenXRSelectActionDialog(Ref<OpenXRActionMap> p_action_map);
 };
 
-#endif // !OPENXR_SELECT_ACTION_DIALOG_H
+#endif // OPENXR_SELECT_ACTION_DIALOG_H

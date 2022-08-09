@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VOXEL_LIGHT_BAKER_H
-#define VOXEL_LIGHT_BAKER_H
+#ifndef VOXELIZER_H
+#define VOXELIZER_H
 
 #include "scene/resources/multimesh.h"
 
@@ -129,4 +129,4 @@ public:
 	Voxelizer();
 };
 
-#endif // VOXEL_LIGHT_BAKER_H
+#endif // VOXELIZER_H

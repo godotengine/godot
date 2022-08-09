@@ -545,7 +545,7 @@ void GridMapEditor::_update_paste_indicator() {
 	Basis rot;
 	rot.set_orthogonal_index(paste_indicator.orientation);
 	xf.basis = rot * xf.basis;
-	xf.translate((-center * node->get_cell_size()) / scale);
+	xf.translate_local((-center * node->get_cell_size()) / scale);
 
 	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
@@ -553,7 +553,7 @@ void GridMapEditor::_update_paste_indicator() {
 		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
-		xf.translate(item.grid_offset * node->get_cell_size());
+		xf.translate_local(item.grid_offset * node->get_cell_size());
 
 		Basis item_rot;
 		item_rot.set_orthogonal_index(item.orientation);
@@ -1231,14 +1231,14 @@ GridMapEditor::GridMapEditor() {
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	hb->add_child(mode_thumbnail);
-	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
+	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
 	mode_list->set_flat(true);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	hb->add_child(mode_list);
-	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
+	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);

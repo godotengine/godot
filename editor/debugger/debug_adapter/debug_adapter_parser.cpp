@@ -34,6 +34,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_native.h"
+#include "editor/export/editor_export_platform.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 void DebugAdapterParser::_bind_methods() {

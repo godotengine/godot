@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+          - name: Editor w Mono (target=release_debug, tools=yes, tests=yes)
             cache-name: linux-editor-mono
             target: release_debug
             tools: true
@@ -88,7 +88,7 @@ jobs:
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
               libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
-              llvm libspeechd-dev speech-dispatcher
+              llvm libspeechd-dev speech-dispatcher fontconfig libfontconfig-dev
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -170,10 +170,16 @@ jobs:
           mv "regression-test-project-4.0" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
-      - name: Open and close editor
+      - name: Open and close editor (Vulkan)
         if: ${{ matrix.proj-test }}
         run: |
           VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      - name: Open and close editor (GLES3)
+        if: ${{ matrix.proj-test }}
+        run: |
+          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --rendering-driver opengl3 --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
       # Run test project
@@ -219,6 +225,7 @@ jobs:
         if: ${{ matrix.artifact }}
         run: |
           strip bin/godot.*
+          chmod +x bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact

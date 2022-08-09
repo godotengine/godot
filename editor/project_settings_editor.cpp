@@ -31,13 +31,17 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_export.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "servers/movie_writer/movie_writer.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
+
+void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
+	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
+}
 
 void ProjectSettingsEditor::popup_project_settings() {
 	// Restore valid window bounds or pop up at default size.
@@ -75,8 +79,13 @@ void ProjectSettingsEditor::_setting_edited(const String &p_name) {
 	queue_save();
 }
 
+void ProjectSettingsEditor::_update_advanced(bool p_is_advanced) {
+	custom_properties->set_visible(p_is_advanced);
+}
+
 void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", p_button_pressed);
+	_update_advanced(p_button_pressed);
 	general_settings_inspector->set_restrict_to_basic_settings(!p_button_pressed);
 }
 
@@ -585,35 +594,35 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	advanced->connect("toggled", callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 	search_bar->add_child(advanced);
 
-	HBoxContainer *header = memnew(HBoxContainer);
-	general_editor->add_child(header);
+	custom_properties = memnew(HBoxContainer);
+	general_editor->add_child(custom_properties);
 
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
-	header->add_child(property_box);
+	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	feature_box->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
-	header->add_child(feature_box);
+	custom_properties->add_child(feature_box);
 
 	type_box = memnew(OptionButton);
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	header->add_child(type_box);
+	custom_properties->add_child(type_box);
 
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
 	add_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_add_setting));
-	header->add_child(add_button);
+	custom_properties->add_child(add_button);
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	del_button->set_disabled(true);
 	del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
-	header->add_child(del_button);
+	custom_properties->add_child(del_button);
 
 	general_settings_inspector = memnew(SectionedInspector);
 	general_settings_inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
@@ -670,10 +679,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(autoload_settings);
 
-	shaders_global_variables_editor = memnew(ShaderGlobalsEditor);
-	shaders_global_variables_editor->set_name(TTR("Shader Globals"));
-	shaders_global_variables_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(shaders_global_variables_editor);
+	shaders_global_shader_uniforms_editor = memnew(ShaderGlobalsEditor);
+	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));
+	shaders_global_shader_uniforms_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+	tab_container->add_child(shaders_global_shader_uniforms_editor);
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
@@ -694,6 +703,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		advanced->set_pressed(true);
 	}
 
+	_update_advanced(use_advanced);
 	general_settings_inspector->set_restrict_to_basic_settings(!use_advanced);
 
 	import_defaults_editor = memnew(ImportDefaultsEditor);

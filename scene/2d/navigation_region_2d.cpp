@@ -35,6 +35,7 @@
 #include "core/os/mutex.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
 
 #include "thirdparty/misc/polypartition.h"
 
@@ -371,9 +372,11 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 		NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
+#ifdef DEBUG_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() || NavigationServer3D::get_singleton()->get_debug_enabled()) {
 		update();
 	}
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationRegion2D::is_enabled() const {
@@ -419,7 +422,7 @@ real_t NavigationRegion2D::get_enter_cost() const {
 void NavigationRegion2D::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
 	travel_cost = MAX(p_travel_cost, 0.0);
-	NavigationServer2D::get_singleton()->region_set_enter_cost(region, travel_cost);
+	NavigationServer2D::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
 real_t NavigationRegion2D::get_travel_cost() const {
@@ -462,7 +465,8 @@ void NavigationRegion2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
+#ifdef DEBUG_ENABLED
+			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || NavigationServer3D::get_singleton()->get_debug_enabled()) && navpoly.is_valid()) {
 				Vector<Vector2> verts = navpoly->get_vertices();
 				if (verts.size() < 3) {
 					return;
@@ -470,11 +474,11 @@ void NavigationRegion2D::_notification(int p_what) {
 
 				Color color;
 				if (enabled) {
-					color = get_tree()->get_debug_navigation_color();
+					color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
 				} else {
-					color = get_tree()->get_debug_navigation_disabled_color();
+					color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
 				}
-				Color doors_color = color.lightened(0.2);
+				Color doors_color = NavigationServer3D::get_singleton()->get_debug_navigation_edge_connection_color();
 
 				RandomPCG rand;
 
@@ -490,7 +494,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 					// Generate the polygon color, slightly randomly modified from the settings one.
 					Color random_variation_color;
-					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.1, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 					random_variation_color.a = color.a;
 					Vector<Color> colors;
 					colors.push_back(random_variation_color);
@@ -516,6 +520,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
 				}
 			}
+#endif // DEBUG_ENABLED
 		} break;
 	}
 }
@@ -552,10 +557,13 @@ void NavigationRegion2D::_navpoly_changed() {
 		NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
 	}
 }
+
 void NavigationRegion2D::_map_changed(RID p_map) {
-	if (enabled && get_world_2d()->get_navigation_map() == p_map) {
+#ifdef DEBUG_ENABLED
+	if (is_inside_tree() && get_world_2d()->get_navigation_map() == p_map) {
 		update();
 	}
+#endif // DEBUG_ENABLED
 }
 
 TypedArray<String> NavigationRegion2D::get_configuration_warnings() const {
@@ -605,8 +613,18 @@ NavigationRegion2D::NavigationRegion2D() {
 	region = NavigationServer2D::get_singleton()->region_create();
 	NavigationServer2D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer2D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
+
+#ifdef DEBUG_ENABLED
+	NavigationServer3D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+	NavigationServer3D::get_singleton_mut()->connect("navigation_debug_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+#endif // DEBUG_ENABLED
 }
 
 NavigationRegion2D::~NavigationRegion2D() {
 	NavigationServer2D::get_singleton()->free(region);
+
+#ifdef DEBUG_ENABLED
+	NavigationServer3D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+	NavigationServer3D::get_singleton_mut()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+#endif // DEBUG_ENABLED
 }

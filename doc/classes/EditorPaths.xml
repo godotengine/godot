@@ -48,6 +48,12 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_project_settings_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the project-specific editor settings path. Projects all have a unique subdirectory inside the settings path where project-specific editor settings are saved.
+			</description>
+		</method>
 		<method name="get_self_contained_file" qualifiers="const">
 			<return type="String" />
 			<description>

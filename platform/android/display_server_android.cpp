@@ -221,12 +221,12 @@ bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
 	return true;
 }
 
-void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL(godot_io_java);
 
 	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text, p_multiline, p_max_length, p_cursor_start, p_cursor_end);
+		godot_io_java->show_vk(p_existing_text, (int)p_type, p_max_length, p_cursor_start, p_cursor_end);
 	} else {
 		ERR_PRINT("Virtual keyboard not available");
 	}
@@ -276,9 +276,9 @@ void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Va
 		Variant ret;
 		Callable::CallError ce;
 		if (p_deferred) {
-			p_callable.call((const Variant **)&argp, 1, ret, ce);
+			p_callable.callp((const Variant **)&argp, 1, ret, ce);
 		} else {
-			p_callable.call_deferred((const Variant **)&argp, 1);
+			p_callable.call_deferredp((const Variant **)&argp, 1);
 		}
 	}
 }
@@ -482,7 +482,7 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	Variant ret;
 	Callable::CallError ce;
 
-	rect_changed_callback.call(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
+	rect_changed_callback.callp(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {

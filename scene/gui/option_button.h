@@ -39,11 +39,16 @@ class OptionButton : public Button {
 
 	PopupMenu *popup = nullptr;
 	int current = -1;
+	bool fit_to_longest_item = true;
+	Vector2 _cached_size;
+	bool cache_refresh_pending = false;
 
 	void _focused(int p_which);
 	void _selected(int p_which);
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
+	void _refresh_size_cache();
+	void _queue_refresh_cache();
 
 	virtual void pressed() override;
 
@@ -85,6 +90,8 @@ public:
 
 	void set_item_count(int p_count);
 	int get_item_count() const;
+	void set_fit_to_longest_item(bool p_fit);
+	bool is_fit_to_longest_item() const;
 
 	void add_separator(const String &p_text = "");
 
@@ -105,4 +112,4 @@ public:
 	~OptionButton();
 };
 
-#endif
+#endif // OPTION_BUTTON_H

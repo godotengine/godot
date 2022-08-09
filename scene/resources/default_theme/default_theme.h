@@ -39,4 +39,4 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel = TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::Hinting p_font_hinting = TextServer::HINTING_LIGHT, bool p_font_antialiased = true, bool p_font_msdf = false, bool p_font_generate_mipmaps = false);
 void clear_default_theme();
 
-#endif
+#endif // DEFAULT_THEME_H

@@ -1,0 +1,221 @@
+/*************************************************************************/
+/*  editor_export_platform.h                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
+#ifndef EDITOR_EXPORT_PLATFORM_H
+#define EDITOR_EXPORT_PLATFORM_H
+
+class EditorFileSystemDirectory;
+struct EditorProgress;
+
+#include "core/io/dir_access.h"
+#include "editor_export_preset.h"
+#include "editor_export_shared_object.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/main/node.h"
+
+class EditorExportPlatform : public RefCounted {
+	GDCLASS(EditorExportPlatform, RefCounted);
+
+public:
+	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
+
+	enum ExportMessageType {
+		EXPORT_MESSAGE_NONE,
+		EXPORT_MESSAGE_INFO,
+		EXPORT_MESSAGE_WARNING,
+		EXPORT_MESSAGE_ERROR,
+	};
+
+	struct ExportMessage {
+		ExportMessageType msg_type;
+		String category;
+		String text;
+	};
+
+private:
+	struct SavedData {
+		uint64_t ofs = 0;
+		uint64_t size = 0;
+		bool encrypted = false;
+		Vector<uint8_t> md5;
+		CharString path_utf8;
+
+		bool operator<(const SavedData &p_data) const {
+			return path_utf8 < p_data.path_utf8;
+		}
+	};
+
+	struct PackData {
+		Ref<FileAccess> f;
+		Vector<SavedData> file_ofs;
+		EditorProgress *ep = nullptr;
+		Vector<SharedObject> *so_files = nullptr;
+	};
+
+	struct ZipData {
+		void *zip = nullptr;
+		EditorProgress *ep = nullptr;
+	};
+
+	struct FeatureContainers {
+		HashSet<String> features;
+		Vector<String> features_pv;
+	};
+
+	Vector<ExportMessage> messages;
+
+	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
+	void _export_find_dependencies(const String &p_path, HashSet<String> &p_paths);
+
+	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
+	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+
+	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, HashSet<String> &r_list, bool exclude);
+	void _edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude);
+
+	static Error _add_shared_object(void *p_userdata, const SharedObject &p_so);
+
+protected:
+	struct ExportNotifier {
+		ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags);
+		~ExportNotifier();
+	};
+
+	FeatureContainers get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
+
+	bool exists_export_template(String template_file_name, String *err) const;
+	String find_export_template(String template_file_name, String *err = nullptr) const;
+	void gen_export_flags(Vector<String> &r_flags, int p_flags);
+
+public:
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
+
+	struct ExportOption {
+		PropertyInfo option;
+		Variant default_value;
+
+		ExportOption(const PropertyInfo &p_info, const Variant &p_default) :
+				option(p_info),
+				default_value(p_default) {
+		}
+		ExportOption() {}
+	};
+
+	virtual Ref<EditorExportPreset> create_preset();
+
+	virtual void clear_messages() { messages.clear(); }
+	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {
+		ExportMessage msg;
+		msg.category = p_category;
+		msg.text = p_message;
+		msg.msg_type = p_type;
+		messages.push_back(msg);
+		switch (p_type) {
+			case EXPORT_MESSAGE_INFO: {
+				print_line(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			case EXPORT_MESSAGE_WARNING: {
+				WARN_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			case EXPORT_MESSAGE_ERROR: {
+				ERR_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			default:
+				break;
+		}
+	}
+
+	virtual int get_message_count() const {
+		return messages.size();
+	}
+
+	virtual ExportMessage get_message(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, messages.size(), ExportMessage());
+		return messages[p_index];
+	}
+
+	virtual ExportMessageType get_worst_message_type() const {
+		ExportMessageType worst_type = EXPORT_MESSAGE_NONE;
+		for (int i = 0; i < messages.size(); i++) {
+			worst_type = MAX(worst_type, messages[i].msg_type);
+		}
+		return worst_type;
+	}
+
+	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
+
+	virtual void get_export_options(List<ExportOption> *r_options) = 0;
+	virtual bool should_update_export_options() { return false; }
+	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
+
+	virtual String get_os_name() const = 0;
+	virtual String get_name() const = 0;
+	virtual Ref<Texture2D> get_logo() const = 0;
+
+	Error export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
+
+	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
+	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
+
+	virtual bool poll_export() { return false; }
+	virtual int get_options_count() const { return 0; }
+	virtual String get_options_tooltip() const { return ""; }
+	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
+	virtual String get_option_label(int p_device) const { return ""; }
+	virtual String get_option_tooltip(int p_device) const { return ""; }
+
+	enum DebugFlags {
+		DEBUG_FLAG_DUMB_CLIENT = 1,
+		DEBUG_FLAG_REMOTE_DEBUG = 2,
+		DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST = 4,
+		DEBUG_FLAG_VIEW_COLLISONS = 8,
+		DEBUG_FLAG_VIEW_NAVIGATION = 16,
+	};
+
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
+	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
+
+	String test_etc2() const;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
+
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
+	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual void get_platform_features(List<String> *r_features) const = 0;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) = 0;
+	virtual String get_debug_protocol() const { return "tcp://"; }
+
+	EditorExportPlatform();
+};
+
+#endif // EDITOR_EXPORT_PLATFORM_H

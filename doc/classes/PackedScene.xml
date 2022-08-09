@@ -90,14 +90,14 @@
 		</method>
 		<method name="instantiate" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
+			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
 			<description>
 				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_INSTANCED] notification on the root node.
 			</description>
 		</method>
 		<method name="pack">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="Node" />
+			<param index="0" name="path" type="Node" />
 			<description>
 				Pack will ignore any sub-nodes not owned by given node. See [member Node.owner].
 			</description>

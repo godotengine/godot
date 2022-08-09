@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "node_3d_editor_plugin.h"
 
 Size2 GradientEditor::get_minimum_size() const {
@@ -85,6 +86,7 @@ void GradientEditor::reverse_gradient() {
 }
 
 GradientEditor::GradientEditor() {
+	GradientEdit::get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(GradientEdit::get_picker()));
 	editing = false;
 }
 

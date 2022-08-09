@@ -69,14 +69,14 @@
 		</method>
 		<method name="start">
 			<return type="int" enum="Error" />
-			<argument index="0" name="type" type="int" enum="HashingContext.HashType" />
+			<param index="0" name="type" type="int" enum="HashingContext.HashType" />
 			<description>
 				Starts a new hash computation of the given [code]type[/code] (e.g. [constant HASH_SHA256] to start computation of a SHA-256).
 			</description>
 		</method>
 		<method name="update">
 			<return type="int" enum="Error" />
-			<argument index="0" name="chunk" type="PackedByteArray" />
+			<param index="0" name="chunk" type="PackedByteArray" />
 			<description>
 				Updates the computation with the given [code]chunk[/code] of data.
 			</description>

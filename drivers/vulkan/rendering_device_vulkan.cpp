@@ -1834,6 +1834,11 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
 		}
+
+		// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
+		if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format.format != DATA_FORMAT_R8_UINT) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as VRS attachment.");
+		}
 	}
 
 	//some view validation
@@ -1999,6 +2004,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	}
 
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	if (p_data.size()) {
 		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
@@ -2128,6 +2136,9 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	_add_dependency(id, p_with_texture);
 
 	return id;
@@ -2247,6 +2258,9 @@ RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, Dat
 	}
 
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	return id;
 }
@@ -2372,6 +2386,9 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	_add_dependency(id, p_with_texture);
 
 	return id;
@@ -3354,6 +3371,11 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 		return false;
 	}
 
+	// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
+	if (p_usage & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && p_format != DATA_FORMAT_R8_UINT) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -3807,7 +3829,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		subpass.pNext = subpass_nextptr;
 		subpass.flags = 0;
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.viewMask = view_mask;
+		if (p_view_count == 1) {
+			// VUID-VkSubpassDescription2-multiview-06558: If the multiview feature is not enabled, viewMask must be 0.
+			subpass.viewMask = 0;
+		} else {
+			subpass.viewMask = view_mask;
+		}
 		subpass.inputAttachmentCount = input_references.size();
 		if (input_references.size()) {
 			subpass.pInputAttachments = input_references.ptr();
@@ -3895,8 +3922,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		render_pass_create_info.pDependencies = nullptr;
 	}
 
-	render_pass_create_info.correlatedViewMaskCount = 1;
-	render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+	if (p_view_count == 1) {
+		// VUID-VkRenderPassCreateInfo2-viewMask-03057: If the VkSubpassDescription2::viewMask member of all elements of pSubpasses is 0, correlatedViewMaskCount must be 0.
+		render_pass_create_info.correlatedViewMaskCount = 0;
+		render_pass_create_info.pCorrelatedViewMasks = nullptr;
+	} else {
+		render_pass_create_info.correlatedViewMaskCount = 1;
+		render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+	}
 
 	Vector<uint32_t> view_masks;
 	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
@@ -3950,7 +3983,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	passes.push_back(pass);
 	return framebuffer_format_create_multipass(p_format, passes, p_view_count);
 }
-RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, Vector<FramebufferPass> &p_passes, uint32_t p_view_count) {
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	FramebufferFormatKey key;
@@ -3997,6 +4030,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	subpass.pNext = nullptr;
 	subpass.flags = 0;
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.viewMask = 0;
 	subpass.inputAttachmentCount = 0; //unsupported for now
 	subpass.pInputAttachments = nullptr;
 	subpass.colorAttachmentCount = 0;
@@ -4060,7 +4094,11 @@ RID RenderingDeviceVulkan::framebuffer_create_empty(const Size2i &p_size, Textur
 	framebuffer.size = p_size;
 	framebuffer.view_count = 1;
 
-	return framebuffer_owner.make_rid(framebuffer);
+	RID id = framebuffer_owner.make_rid(framebuffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check, uint32_t p_view_count) {
@@ -4088,7 +4126,7 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 	return framebuffer_create_multipass(p_texture_attachments, passes, p_format_check, p_view_count);
 }
 
-RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
+RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, const Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<AttachmentFormat> attachments;
@@ -4140,6 +4178,9 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 	framebuffer.view_count = p_view_count;
 
 	RID id = framebuffer_owner.make_rid(framebuffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		if (p_texture_attachments[i].is_valid()) {
@@ -4157,6 +4198,22 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_get_form
 	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
 
 	return framebuffer->format_id;
+}
+
+bool RenderingDeviceVulkan::framebuffer_is_valid(RID p_framebuffer) const {
+	_THREAD_SAFE_METHOD_
+
+	return framebuffer_owner.owns(p_framebuffer);
+}
+
+void RenderingDeviceVulkan::framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata) {
+	_THREAD_SAFE_METHOD_
+
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
+	ERR_FAIL_COND(!framebuffer);
+
+	framebuffer->invalidated_callback = p_callback;
+	framebuffer->invalidated_callback_userdata = p_userdata;
 }
 
 /*****************/
@@ -4201,7 +4258,11 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 	VkResult res = vkCreateSampler(device, &sampler_create_info, nullptr, &sampler);
 	ERR_FAIL_COND_V_MSG(res, RID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
-	return sampler_owner.make_rid(sampler);
+	RID id = sampler_owner.make_rid(sampler);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 /**********************/
@@ -4230,7 +4291,11 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
 	}
 
-	return vertex_buffer_owner.make_rid(buffer);
+	RID id = vertex_buffer_owner.make_rid(buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 // Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
@@ -4391,7 +4456,11 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		_buffer_update(&index_buffer, 0, r, data_size);
 		_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
 	}
-	return index_buffer_owner.make_rid(index_buffer);
+	RID id = index_buffer_owner.make_rid(index_buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RID RenderingDeviceVulkan::index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) {
@@ -5488,7 +5557,11 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		ERR_FAIL_V_MSG(RID(), error_text);
 	}
 
-	return shader_owner.make_rid(shader);
+	RID id = shader_owner.make_rid(shader);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
@@ -5521,7 +5594,11 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 		_buffer_update(&buffer, 0, r, data_size);
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
 	}
-	return uniform_buffer_owner.make_rid(buffer);
+	RID id = uniform_buffer_owner.make_rid(buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, uint32_t p_usage) {
@@ -5592,7 +5669,11 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	}
 
 	//allocate the view
-	return texture_buffer_owner.make_rid(texture_buffer);
+	RID id = texture_buffer_owner.make_rid(texture_buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_allocate(const DescriptorPoolKey &p_key) {
@@ -6171,6 +6252,9 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	uniform_set.shader_id = p_shader;
 
 	RID id = uniform_set_owner.make_rid(uniform_set);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	//add dependencies
 	_add_dependency(id, p_shader);
 	for (uint32_t i = 0; i < uniform_count; i++) {
@@ -6196,7 +6280,7 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 	return uniform_set_owner.owns(p_uniform_set);
 }
 
-void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) {
+void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) {
 	UniformSet *us = uniform_set_owner.get_or_null(p_uniform_set);
 	ERR_FAIL_COND(!us);
 	us->invalidated_callback = p_callback;
@@ -6793,6 +6877,9 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 #endif
 	//create ID to associate with this pipeline
 	RID id = render_pipeline_owner.make_rid(pipeline);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
@@ -6882,6 +6969,9 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 
 	//create ID to associate with this pipeline
 	RID id = compute_pipeline_owner.make_rid(pipeline);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
@@ -8663,6 +8753,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (framebuffer_owner.owns(p_id)) {
 		Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_id);
 		frames[frame].framebuffers_to_dispose_of.push_back(*framebuffer);
+
+		if (framebuffer->invalidated_callback != nullptr) {
+			framebuffer->invalidated_callback(framebuffer->invalidated_callback_userdata);
+		}
+
 		framebuffer_owner.free(p_id);
 	} else if (sampler_owner.owns(p_id)) {
 		VkSampler *sampler = sampler_owner.get_or_null(p_id);

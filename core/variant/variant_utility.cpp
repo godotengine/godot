@@ -99,16 +99,103 @@ struct VariantUtilityFunctions {
 		return Math::posmod(b, r);
 	}
 
-	static inline double floor(double x) {
+	static inline Variant floor(Variant x, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+		switch (x.get_type()) {
+			case Variant::INT: {
+				return VariantInternalAccessor<int64_t>::get(&x);
+			} break;
+			case Variant::FLOAT: {
+				return Math::floor(VariantInternalAccessor<double>::get(&x));
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&x).floor();
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&x).floor();
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).floor();
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return Variant();
+			}
+		}
+	}
+
+	static inline double floorf(double x) {
 		return Math::floor(x);
 	}
 
-	static inline double ceil(double x) {
+	static inline int floori(double x) {
+		return int(x);
+	}
+
+	static inline Variant ceil(Variant x, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+		switch (x.get_type()) {
+			case Variant::INT: {
+				return VariantInternalAccessor<int64_t>::get(&x);
+			} break;
+			case Variant::FLOAT: {
+				return Math::ceil(VariantInternalAccessor<double>::get(&x));
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&x).ceil();
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&x).ceil();
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).ceil();
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return Variant();
+			}
+		}
+	}
+
+	static inline double ceilf(double x) {
 		return Math::ceil(x);
 	}
 
-	static inline double round(double x) {
+	static inline int ceili(double x) {
+		return int(Math::ceil(x));
+	}
+
+	static inline Variant round(Variant x, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+		switch (x.get_type()) {
+			case Variant::INT: {
+				return VariantInternalAccessor<int64_t>::get(&x);
+			} break;
+			case Variant::FLOAT: {
+				return Math::round(VariantInternalAccessor<double>::get(&x));
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&x).round();
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&x).round();
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).round();
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return Variant();
+			}
+		}
+	}
+
+	static inline double roundf(double x) {
 		return Math::round(x);
+	}
+
+	static inline int roundi(double x) {
+		return int(Math::round(x));
 	}
 
 	static inline Variant abs(const Variant &x, Callable::CallError &r_error) {
@@ -131,6 +218,12 @@ struct VariantUtilityFunctions {
 			} break;
 			case Variant::VECTOR3I: {
 				return VariantInternalAccessor<Vector3i>::get(&x).abs();
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).abs();
+			} break;
+			case Variant::VECTOR4I: {
+				return VariantInternalAccessor<Vector4i>::get(&x).abs();
 			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -167,6 +260,12 @@ struct VariantUtilityFunctions {
 			} break;
 			case Variant::VECTOR3I: {
 				return VariantInternalAccessor<Vector3i>::get(&x).sign();
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&x).sign();
+			} break;
+			case Variant::VECTOR4I: {
+				return VariantInternalAccessor<Vector4i>::get(&x).sign();
 			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -223,7 +322,44 @@ struct VariantUtilityFunctions {
 		return Math::snapped(value, step);
 	}
 
-	static inline double lerp(double from, double to, double weight) {
+	static inline Variant lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+		if (from.get_type() != to.get_type()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			return Variant();
+		}
+
+		switch (from.get_type()) {
+			case Variant::FLOAT: {
+				return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
+			} break;
+			case Variant::VECTOR2: {
+				return VariantInternalAccessor<Vector2>::get(&from).lerp(VariantInternalAccessor<Vector2>::get(&to), weight);
+			} break;
+			case Variant::VECTOR3: {
+				return VariantInternalAccessor<Vector3>::get(&from).lerp(VariantInternalAccessor<Vector3>::get(&to), weight);
+			} break;
+			case Variant::VECTOR4: {
+				return VariantInternalAccessor<Vector4>::get(&from).lerp(VariantInternalAccessor<Vector4>::get(&to), weight);
+			} break;
+			case Variant::QUATERNION: {
+				return VariantInternalAccessor<Quaternion>::get(&from).slerp(VariantInternalAccessor<Quaternion>::get(&to), weight);
+			} break;
+			case Variant::BASIS: {
+				return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
+			} break;
+			case Variant::COLOR: {
+				return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
+			} break;
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return Variant();
+			}
+		}
+	}
+
+	static inline double lerpf(double from, double to, double weight) {
 		return Math::lerp(from, to, weight);
 	}
 
@@ -1240,17 +1376,24 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(fmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fposmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(posmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(floor, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(ceil, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(round, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDVR(floor, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(floorf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(floori, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDVR(ceil, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(ceilf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(ceili, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDVR(round, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(roundf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(roundi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR(abs, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-
 	FUNCBINDR(absf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(absi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR(sign, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-
 	FUNCBINDR(signf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(signi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1268,7 +1411,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDVR3(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(lerpf, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(cubic_interpolate, sarray("from", "to", "pre", "post", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(bezier_interpolate, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1288,12 +1432,10 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVARARG(max, sarray(), Variant::UTILITY_FUNC_TYPE_MATH);
-
 	FUNCBINDR(maxi, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(maxf, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVARARG(min, sarray(), Variant::UTILITY_FUNC_TYPE_MATH);
-
 	FUNCBINDR(mini, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(minf, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 

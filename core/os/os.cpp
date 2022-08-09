@@ -159,7 +159,7 @@ int OS::get_process_id() const {
 }
 
 void OS::vibrate_handheld(int p_duration_ms) {
-	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
+	WARN_PRINT("vibrate_handheld() only works with Android, iOS and HTML5");
 }
 
 bool OS::is_stdout_verbose() const {
@@ -362,9 +362,10 @@ String OS::get_model_name() const {
 	return "GenericDevice";
 }
 
-void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
+void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args) {
 	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
+	_user_args = p_user_args;
 }
 
 String OS::get_unique_id() const {

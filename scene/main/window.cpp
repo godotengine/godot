@@ -242,8 +242,8 @@ void Window::_make_window() {
 	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, Rect2i(position, size));
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
-	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
-	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
+	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
+	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	String tr_title = atr(title);
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
@@ -596,20 +596,43 @@ void Window::_update_window_size() {
 	size.x = MAX(size_limit.x, size.x);
 	size.y = MAX(size_limit.y, size.y);
 
-	if (max_size.x > 0 && max_size.x > min_size.x && size.x > max_size.x) {
-		size.x = max_size.x;
-	}
+	bool reset_min_first = false;
 
-	if (max_size.y > 0 && max_size.y > min_size.y && size.y > max_size.y) {
-		size.y = max_size.y;
+	bool max_size_valid = false;
+	if ((max_size.x > 0 || max_size.y > 0) && (max_size.x >= min_size.x && max_size.y >= min_size.y)) {
+		max_size_valid = true;
+
+		if (size.x > max_size.x) {
+			size.x = max_size.x;
+		}
+		if (size_limit.x > max_size.x) {
+			size_limit.x = max_size.x;
+			reset_min_first = true;
+		}
+
+		if (size.y > max_size.y) {
+			size.y = max_size.y;
+		}
+		if (size_limit.y > max_size.y) {
+			size_limit.y = max_size.y;
+			reset_min_first = true;
+		}
 	}
 
 	if (embedder) {
+		size.x = MAX(size.x, 1);
+		size.y = MAX(size.y, 1);
+
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		if (reset_min_first && wrap_controls) {
+			// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
+			DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+		}
+
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
+		DisplayServer::get_singleton()->window_set_max_size(max_size_valid ? max_size : Size2i(), window_id);
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
-		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	}
 
 	//update the viewport
@@ -953,6 +976,8 @@ void Window::set_wrap_controls(bool p_enable) {
 	wrap_controls = p_enable;
 	if (wrap_controls) {
 		child_controls_changed();
+	} else {
+		_update_window_size();
 	}
 }
 
@@ -1516,7 +1541,7 @@ void Window::_validate_property(PropertyInfo &property) const {
 Transform2D Window::get_screen_transform() const {
 	Transform2D embedder_transform = Transform2D();
 	if (_get_embedder()) {
-		embedder_transform.translate(get_position());
+		embedder_transform.translate_local(get_position());
 		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
 	}
 	return embedder_transform * Viewport::get_screen_transform();

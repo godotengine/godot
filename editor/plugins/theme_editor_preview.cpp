@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"

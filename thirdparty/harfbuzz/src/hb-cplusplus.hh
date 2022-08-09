@@ -130,7 +130,7 @@ template <typename T,
 				       void *,
 				       hb_destroy_func_t,
 				       hb_bool_t),
-	  void * (*_get_user_data) (T *,
+	  void * (*_get_user_data) (const T *,
 				    hb_user_data_key_t *)>
 struct vtable_t
 {
@@ -164,10 +164,37 @@ HB_DEFINE_VTABLE (unicode_funcs);
 #undef HB_DEFINE_VTABLE
 
 
+#ifdef HB_SUBSET_H
+
+#define HB_DEFINE_VTABLE(name) \
+	template<> \
+	struct vtable<hb_##name##_t> \
+	     : vtable_t<hb_##name##_t, \
+			nullptr, \
+			&hb_##name##_reference, \
+			&hb_##name##_destroy, \
+			&hb_##name##_set_user_data, \
+			&hb_##name##_get_user_data> {}
+
+
+HB_DEFINE_VTABLE (subset_input);
+HB_DEFINE_VTABLE (subset_plan);
+
+#undef HB_DEFINE_VTABLE
+
+#endif
+
+
 } // namespace hb
 
+/* Workaround for GCC < 7, see:
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+ * https://stackoverflow.com/a/25594741 */
+namespace std {
+
+
 template<typename T>
-struct std::hash<hb::shared_ptr<T>>
+struct hash<hb::shared_ptr<T>>
 {
     std::size_t operator()(const hb::shared_ptr<T>& v) const noexcept
     {
@@ -177,7 +204,7 @@ struct std::hash<hb::shared_ptr<T>>
 };
 
 template<typename T>
-struct std::hash<hb::unique_ptr<T>>
+struct hash<hb::unique_ptr<T>>
 {
     std::size_t operator()(const hb::unique_ptr<T>& v) const noexcept
     {
@@ -186,6 +213,8 @@ struct std::hash<hb::unique_ptr<T>>
     }
 };
 
+
+} // namespace std
 
 #endif /* __cplusplus */
 

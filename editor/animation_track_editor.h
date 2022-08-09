@@ -33,11 +33,14 @@
 
 #include "editor/editor_data.h"
 #include "editor/editor_spin_slider.h"
-#include "editor/property_editor.h"
 #include "editor/property_selector.h"
 
+#include "scene/3d/node_3d.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
@@ -518,6 +521,7 @@ public:
 		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
+		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
 		EDIT_APPLY_RESET,
 		EDIT_OPTIMIZE_ANIMATION,
@@ -563,7 +567,7 @@ public:
 	void goto_prev_step(bool p_from_mouse_event);
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
-	void goto_next_step(bool p_from_mouse_event);
+	void goto_next_step(bool p_from_mouse_event, bool p_timeline_only = false);
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

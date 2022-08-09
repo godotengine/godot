@@ -30,6 +30,7 @@
 
 #include "export_plugin.h"
 
+#include "editor/editor_settings.h"
 #include "platform/uwp/logo.gen.h"
 
 String EditorExportPlatformUWP::get_name() const {
@@ -49,27 +50,17 @@ Ref<Texture2D> EditorExportPlatformUWP::get_logo() const {
 	return logo;
 }
 
-void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	r_features->push_back("s3tc");
 	r_features->push_back("etc");
-	switch ((int)p_preset->get("architecture/target")) {
-		case EditorExportPlatformUWP::ARM: {
-			r_features->push_back("arm");
-		} break;
-		case EditorExportPlatformUWP::X86: {
-			r_features->push_back("32");
-		} break;
-		case EditorExportPlatformUWP::X64: {
-			r_features->push_back("64");
-		} break;
-	}
+	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
 void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "architecture/target", PROPERTY_HINT_ENUM, "arm,x86,x64"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm32"), "x86_64"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 
@@ -143,23 +134,18 @@ bool EditorExportPlatformUWP::can_export(const Ref<EditorExportPreset> &p_preset
 	bool valid = false;
 
 	// Look for export templates (first official, and if defined custom templates).
-
-	Platform arch = (Platform)(int)(p_preset->get("architecture/target"));
-	String platform_infix;
-	switch (arch) {
-		case EditorExportPlatformUWP::ARM: {
-			platform_infix = "arm";
-		} break;
-		case EditorExportPlatformUWP::X86: {
-			platform_infix = "x86";
-		} break;
-		case EditorExportPlatformUWP::X64: {
-			platform_infix = "x64";
-		} break;
+	String arch = p_preset->get("binary_format/architecture");
+	String arch_infix;
+	if (arch == "arm32") {
+		arch_infix = "arm";
+	} else if (arch == "x86_32") {
+		arch_infix = "x86";
+	} else if (arch == "x86_64") {
+		arch_infix = "x64";
 	}
 
-	bool dvalid = exists_export_template("uwp_" + platform_infix + "_debug.zip", &err);
-	bool rvalid = exists_export_template("uwp_" + platform_infix + "_release.zip", &err);
+	bool dvalid = exists_export_template("uwp_" + arch_infix + "_debug.zip", &err);
+	bool rvalid = exists_export_template("uwp_" + arch_infix + "_release.zip", &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -263,25 +249,21 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	src_appx = src_appx.strip_edges();
 
-	Platform arch = (Platform)(int)p_preset->get("architecture/target");
+	String arch = p_preset->get("binary_format/architecture");
 
 	if (src_appx.is_empty()) {
-		String err, infix;
-		switch (arch) {
-			case ARM: {
-				infix = "_arm_";
-			} break;
-			case X86: {
-				infix = "_x86_";
-			} break;
-			case X64: {
-				infix = "_x64_";
-			} break;
+		String err, arch_infix;
+		if (arch == "arm32") {
+			arch_infix = "arm";
+		} else if (arch == "x86_32") {
+			arch_infix = "x86";
+		} else if (arch == "x86_64") {
+			arch_infix = "x64";
 		}
 		if (p_debug) {
-			src_appx = find_export_template("uwp" + infix + "debug.zip", &err);
+			src_appx = find_export_template("uwp_" + arch_infix + "_debug.zip", &err);
 		} else {
-			src_appx = find_export_template("uwp" + infix + "release.zip", &err);
+			src_appx = find_export_template("uwp_" + arch_infix + "_release.zip", &err);
 		}
 		if (src_appx.is_empty()) {
 			EditorNode::add_io_error(err);
@@ -494,7 +476,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) {
+void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc");
 	r_features->push_back("uwp");
 }
