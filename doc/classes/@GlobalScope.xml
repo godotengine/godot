@@ -2711,7 +2711,10 @@
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="45" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PASSWORD" value="46" enum="PropertyHint">
+			Hints that a string property is a password, and every character is replaced with the secret character.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

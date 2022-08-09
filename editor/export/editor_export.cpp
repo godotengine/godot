@@ -312,12 +312,14 @@ void EditorExport::update_export_presets() {
 			// Clear the preset properties and values prior to reloading
 			preset->properties.clear();
 			preset->values.clear();
+			preset->update_visibility.clear();
 
 			for (const EditorExportPlatform::ExportOption &E : options) {
 				preset->properties.push_back(E.option);
 
 				StringName option_name = E.option.name;
 				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E.default_value;
+				preset->update_visibility[option_name] = E.update_visibility;
 			}
 		}
 	}
