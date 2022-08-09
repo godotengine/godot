@@ -117,6 +117,10 @@ class GridMap : public Node3D {
 		HashSet<IndexKey> cells;
 		RID collision_debug;
 		RID collision_debug_instance;
+#ifdef DEBUG_ENABLED
+		RID navigation_debug_edge_connections_instance;
+		Ref<ArrayMesh> navigation_debug_edge_connections_mesh;
+#endif // DEBUG_ENABLED
 
 		bool dirty = false;
 		RID static_body;
@@ -186,6 +190,11 @@ class GridMap : public Node3D {
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
+#ifdef DEBUG_ENABLED
+	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
+	void _navigation_map_changed(RID p_map);
+	void _update_navigation_debug_edge_connections();
+#endif // DEBUG_ENABLED
 	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
