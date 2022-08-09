@@ -370,6 +370,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *ask_full_convert_dialog = nullptr;
 	ConfirmationDialog *ask_update_settings = nullptr;
 	ConfirmationDialog *open_templates = nullptr;
+	AcceptDialog *bit_warning = nullptr;
 	EditorAbout *about = nullptr;
 
 	HBoxContainer *settings_hb = nullptr;
@@ -394,6 +395,7 @@ class ProjectManager : public Control {
 	LineEdit *new_tag_name = nullptr;
 	Label *tag_error = nullptr;
 
+	void _check_show_asset_library_dialog();
 	void _open_asset_library();
 	void _scan_projects();
 	void _run_project();

@@ -1973,6 +1973,11 @@ void ProjectManager::_notification(int p_what) {
 			if (open_templates && open_templates->is_visible()) {
 				open_templates->popup_centered();
 			}
+
+			if (bit_warning && bit_warning->is_visible()) {
+				bit_warning->popup_centered();
+			}
+
 			if (asset_library) {
 				real_t size = get_size().x / EDSCALE;
 				// Adjust names of tabs to fit the new size.
@@ -1999,9 +2004,13 @@ void ProjectManager::_notification(int p_what) {
 			}
 #endif
 
-			// Suggest browsing asset library to get templates/demos.
-			if (asset_library && open_templates && _project_list->get_project_count() == 0) {
-				open_templates->popup_centered();
+			if (bit_warning) {
+				// Asset library suggestion dialog will be shown if relevant when the dialog is acknowledged
+				// (prevent multiple exclusive dialogs at once).
+				bit_warning->popup_centered();
+			} else {
+				// Suggest browsing asset library to get templates/demos.
+				_check_show_asset_library_dialog();
 			}
 		} break;
 
@@ -2721,6 +2730,12 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_version_button_pressed", &ProjectManager::_version_button_pressed);
 }
 
+void ProjectManager::_check_show_asset_library_dialog() {
+	if (asset_library && open_templates && _project_list->get_project_count() == 0) {
+		open_templates->popup_centered();
+	}
+}
+
 void ProjectManager::_open_asset_library() {
 	asset_library->disable_community_support();
 	tabs->set_current_tab(1);
@@ -3137,6 +3152,15 @@ ProjectManager::ProjectManager() {
 			open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 			add_child(open_templates);
 		}
+
+#ifdef WINDOWS_ENABLED
+		if (OS::get_singleton()->get_environment("PROCESSOR_ARCHITEW6432") == "AMD64" && !OS::get_singleton()->has_environment("GODOT_SILENCE_32BIT_WARNING")) {
+			bit_warning = memnew(AcceptDialog);
+			bit_warning->set_text(TTR("Running a 32-bit engine binary on a 64-bit operating system.\nThis is slower than running a 64-bit engine binary on a 64-bit operating system.\nSet the environment variable `GODOT_SILENCE_32BIT_WARNING` to 1 to silence this warning."));
+			bit_warning->connect("confirmed", callable_mp(this, &ProjectManager::_check_show_asset_library_dialog));
+			add_child(bit_warning);
+		}
+#endif
 
 		about = memnew(EditorAbout);
 		add_child(about);
