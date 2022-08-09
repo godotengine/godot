@@ -516,7 +516,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_region_filter_clip", "set_region_filter_clip_enabled" }, // Sprite2D
 	{ "set_rotate", "set_rotates" }, // PathFollow2D
 	{ "set_scancode", "set_keycode" }, // InputEventKey
-	{ "set_shader_param", "set_shader_uniform" }, // InputEventWithModifiers
+	{ "set_shader_param", "set_shader_uniform" }, // ShaderMaterial
 	{ "set_shift", "set_shift_pressed" }, // InputEventWithModifiers
 	{ "set_size_override", "set_size_2d_override" }, // SubViewport broke ImageTexture
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, // SubViewport
