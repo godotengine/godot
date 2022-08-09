@@ -109,6 +109,8 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_native
 	type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	type.kind = GDScriptParser::DataType::ENUM;
 	type.builtin_type = Variant::INT;
+	type.enum_type = String(p_native_class) + p_enum_name;
+	type.native_type = String(p_native_class) + p_enum_name;
 	type.is_constant = true;
 	type.is_meta_type = true;
 
