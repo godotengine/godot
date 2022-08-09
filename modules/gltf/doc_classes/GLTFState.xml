@@ -208,6 +208,8 @@
 	<members>
 		<member name="buffers" type="Array" setter="set_buffers" getter="get_buffers" default="[  ]">
 		</member>
+		<member name="create_animations" type="bool" setter="set_create_animations" getter="get_create_animations" default="true">
+		</member>
 		<member name="glb_data" type="PoolByteArray" setter="set_glb_data" getter="get_glb_data" default="PoolByteArray(  )">
 		</member>
 		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
