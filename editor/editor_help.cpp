@@ -1785,7 +1785,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");

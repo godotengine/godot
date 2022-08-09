@@ -8,6 +8,7 @@
 		For the list of the global functions and constants see [@GlobalScope].
 	</description>
 	<tutorials>
+		<link title="GDScript exports">$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html</link>
 	</tutorials>
 	<methods>
 		<method name="Color8">
@@ -267,87 +268,178 @@
 		<annotation name="@export">
 			<return type="void" />
 			<description>
+				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property use the type hint notation.
+				[codeblock]
+				@export var int_number = 5
+				@export var float_number: float = 5
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_category">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
+				Define a new category for the following exported properties. This helps to organize properties in the Inspector dock.
+				See also [constant PROPERTY_USAGE_CATEGORY].
+				[codeblock]
+				@export_category("My Properties")
+				@export var number = 3
+				@export var string = ""
+				[/codeblock]
+				[b]Note:[/b] Categories in the property list are supposed to indicate different base types, so the use of this annotation is not encouraged. See [annotation @export_group] and [annotation @export_subgroup] instead.
 			</description>
 		</annotation>
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
+				Export a [Color] property without an alpha (fixed as [code]1.0[/code]).
+				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
+				[codeblock]
+				@export_color_no_alpha var modulate_color: Color
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_dir">
 			<return type="void" />
 			<description>
+				Export a [String] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
+				See also [constant PROPERTY_HINT_DIR].
+				[codeblock]
+				@export_dir var sprite_folder: String
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_enum" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
+				Export a [String] or integer property as an enumerated list of options. If the property is an integer field, then the index of the value is stored, in the same order the values are provided. You can add specific identifiers for allowed values using a colon.
+				See also [constant PROPERTY_HINT_ENUM].
+				[codeblock]
+				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
+				@export_enum("Warrior", "Magician", "Thief") var character_class: int
+				@export_enum("Walking:30", "Running:60", "Riding:200") var character_speed: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_exp_easing" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="hints" type="String" default="&quot;&quot;" />
 			<description>
+				Export a floating-point property with an easing editor widget. Additional hints can be provided to adjust the behavior of the widget. [code]"attenuation"[/code] flips the curve, which makes it more intuitive for editing attenuation properties. [code]"positive_only"[/code] limits values to only be greater than or equal to zero.
+				See also [constant PROPERTY_HINT_EXP_EASING].
+				[codeblock]
+				@export_exp_easing var transition_speed
+				@export_exp_easing("attenuation") var fading_attenuation
+				@export_exp_easing("positive_only") var effect_power
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_file" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
+				Export a [String] property as a path to a file. The path will be limited to the project folder and its subfolders. See [annotation @export_global_file] to allow picking from the entire filesystem.
+				If [param filter] is provided, only matching files will be available for picking.
+				See also [constant PROPERTY_HINT_FILE].
+				[codeblock]
+				@export_file var sound_effect_file: String
+				@export_file("*.txt") var notes_file: String
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
+				Export an integer property as a bit flag field. This allows to store several "checked" or [code]true[/code] values with one property, and comfortably select them from the Inspector dock.
+				See also [constant PROPERTY_HINT_FLAGS].
+				[codeblock]
+				@export_flags("Fire", "Water", "Earth", "Wind") var spell_elements = 0
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_2d_navigation">
 			<return type="void" />
 			<description>
+				Export an integer property as a bit flag field for 2D navigation layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/2d_navigation/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_2D_NAVIGATION].
+				[codeblock]
+				@export_flags_2d_navigation var navigation_layers: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_2d_physics">
 			<return type="void" />
 			<description>
+				Export an integer property as a bit flag field for 2D physics layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/2d_physics/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_2D_PHYSICS].
+				[codeblock]
+				@export_flags_2d_physics var physics_layers: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_2d_render">
 			<return type="void" />
 			<description>
+				Export an integer property as a bit flag field for 2D render layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/2d_render/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_2D_RENDER].
+				[codeblock]
+				@export_flags_2d_render var render_layers: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_3d_navigation">
 			<return type="void" />
 			<description>
+				Export an integer property as a bit flag field for 3D navigation layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/3d_navigation/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_3D_NAVIGATION].
+				[codeblock]
+				@export_flags_3d_navigation var navigation_layers: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_3d_physics">
 			<return type="void" />
 			<description>
+				Export an integer property as a bit flag field for 3D physics layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/3d_physics/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_3D_PHYSICS].
+				[codeblock]
+				@export_flags_3d_physics var physics_layers: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_3d_render">
 			<return type="void" />
 			<description>
+				Export an integer property as a bit flag field for 3D render layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/3d_render/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_3D_RENDER].
+				[codeblock]
+				@export_flags_3d_render var render_layers: int
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
+				Export a [String] property as a path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
+				See also [constant PROPERTY_HINT_GLOBAL_DIR].
+				[codeblock]
+				@export_global_dir var sprite_folder: String
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_global_file" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
+				Export a [String] property as a path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
+				If [param filter] is provided, only matching files will be available for picking.
+				See also [constant PROPERTY_HINT_GLOBAL_FILE].
+				[codeblock]
+				@export_global_file var sound_effect_file: String
+				@export_global_file("*.txt") var notes_file: String
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_group">
@@ -355,22 +447,54 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
+				Define a new group for the following exported properties. This helps to organize properties in the Inspector dock. Groups can be added with an optional [param prefix], which would make group to only consider properties that have this prefix. The grouping will break on the first property that doesn't have a prefix. The prefix is also removed from the property's name in the Inspector dock.
+				If no [param prefix] is provided, the every following property is added to the group. The group ends when then next group or category is defined. You can also force end a group by using this annotation with empty strings for paramters, [code]@export_group("", "")[/code].
+				Groups cannot be nested, use [annotation @export_subgroup] to add subgroups to your groups.
+				See also [constant PROPERTY_USAGE_GROUP].
+				[codeblock]
+				@export_group("My Properties")
+				@export var number = 3
+				@export var string = ""
+
+				@export_group("Prefixed Properties", "prefix_")
+				@export var prefix_number = 3
+				@export var prefix_string = ""
+
+				@export_group("", "")
+				@export var ungrouped_number = 3
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_multiline">
 			<return type="void" />
 			<description>
+				Export a [String] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
+				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
+				[codeblock]
+				@export_multiline var character_bio
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_node_path" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="type" type="String" default="&quot;&quot;" />
 			<description>
+				Export a [NodePath] property with a filter for allowed node types.
+				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
+				[codeblock]
+				@export_node_path(Button, TouchScreenButton) var some_button
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_placeholder">
 			<return type="void" />
+			<param index="0" name="placeholder" type="String" />
 			<description>
+				Export a [String] property with a placeholder text displayed in the editor widget when no value is present.
+				See also [constant PROPERTY_HINT_PLACEHOLDER_TEXT].
+				[codeblock]
+				@export_placeholder("Name in lowercase") var character_id: String
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_range" qualifiers="vararg">
@@ -380,6 +504,22 @@
 			<param index="2" name="step" type="float" default="1.0" />
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
+				Export a numeric property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
+				If hints [code]"or_greater"[/code] and [code]"or_lesser"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"no_slider"[/code] hint will hide the slider element of the editor widget.
+				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
+				See also [constant PROPERTY_HINT_RANGE].
+				[codeblock]
+				@export_range(0, 20) var number
+				@export_range(-10, 20) var number
+				@export_range(-10, 20, 0.2) var number: float
+
+				@export_range(0, 100, 1, "or_greater") var power_percent
+				@export_range(0, 100, 1, "or_greater", "or_lesser") var health_delta
+
+				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians
+				@export_range(0, 360, 1, "degrees") var angle_degrees
+				@export_range(-8, 8, 2, "suffix:px") var target_offset
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_subgroup">
@@ -387,17 +527,38 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
+				Define a new subgroup for the following exported properties. This helps to organize properties in the Inspector dock. Subgroups work exactly like groups, except they need a parent group to exist. See [annotation @export_group].
+				See also [constant PROPERTY_USAGE_SUBGROUP].
+				[codeblock]
+				@export_group("My Properties")
+				@export var number = 3
+				@export var string = ""
+
+				@export_subgroup("My Prefixed Properties", "prefix_")
+				@export var prefix_number = 3
+				@export var prefix_string = ""
+				[/codeblock]
+				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
 			</description>
 		</annotation>
 		<annotation name="@icon">
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />
 			<description>
+				Add a custom icon to the current script. The icon is displayed in the Scene dock for every node that the script is attached to. For named classes the icon is also displayed in various editor dialogs.
+				[codeblock]
+				@icon("res://path/to/class/icon.svg")
+				[/codeblock]
+				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported yet.
 			</description>
 		</annotation>
 		<annotation name="@onready">
 			<return type="void" />
 			<description>
+				Mark the following property as assigned on [Node]'s ready state change. Values for these properties are no assigned immediately upon the node's creation, and instead are computed and stored right before [method Node._ready].
+				[codeblock]
+				@onready var character_name: Label = $Label
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@rpc" qualifiers="vararg">
@@ -407,17 +568,34 @@
 			<param index="2" name="transfer_mode" type="String" default="&quot;&quot;" />
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
+				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
+				[codeblock]
+				@rpc()
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@tool">
 			<return type="void" />
 			<description>
+				Mark the current script as a tool script, allowing it to be loaded and executed by the editor. See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url].
+				[codeblock]
+				@tool
+				extends Node
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="warning" type="String" />
 			<description>
+				Mark the following statement to ignore the specified warning. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
+				[codeblock]
+				func test():
+				    print("hello")
+				    return
+				    @warning_ignore("unreachable_code")
+				    print("unreachable")
+				[/codeblock]
 			</description>
 		</annotation>
 	</annotations>

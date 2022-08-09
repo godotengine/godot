@@ -2573,7 +2573,7 @@
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_lesser"[/code].
-			Additionally, other keywords can be included: "exp" for exponential range editing, "radians" for editing radian angles in degrees, "degrees" to hint at an angle and "no_slider" to hide the slider.
+			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"no_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
 			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
@@ -2584,7 +2584,7 @@
 			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
-			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
+			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
 		</constant>
 		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
 			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
