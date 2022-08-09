@@ -41,7 +41,7 @@
 			<return type="XRInterface" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Finds an interface by its name. For instance, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
+				Finds an interface by its [param name]. For instance, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
 			</description>
 		</method>
 		<method name="get_hmd_transform">
@@ -54,7 +54,7 @@
 			<return type="XRInterface" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the interface registered at a given index in our list of interfaces.
+				Returns the interface registered at the given [param idx] index in the list of interfaces.
 			</description>
 		</method>
 		<method name="get_interface_count" qualifiers="const">
@@ -79,28 +79,28 @@
 			<return type="XRPositionalTracker" />
 			<param index="0" name="tracker_name" type="StringName" />
 			<description>
-				Returns the positional tracker with this name.
+				Returns the positional tracker with the given [param tracker_name].
 			</description>
 		</method>
 		<method name="get_trackers">
 			<return type="Dictionary" />
 			<param index="0" name="tracker_types" type="int" />
 			<description>
-				Returns a dictionary of trackers for this type.
+				Returns a dictionary of trackers for [param tracker_types].
 			</description>
 		</method>
 		<method name="remove_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
 			<description>
-				Removes this interface.
+				Removes this [param interface].
 			</description>
 		</method>
 		<method name="remove_tracker">
 			<return type="void" />
 			<param index="0" name="tracker" type="XRPositionalTracker" />
 			<description>
-				Removes this positional tracker.
+				Removes this positional [param tracker].
 			</description>
 		</method>
 	</methods>
