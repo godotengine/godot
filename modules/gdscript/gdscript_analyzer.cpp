@@ -588,6 +588,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				} else {
 					result = make_native_enum_type(result.native_type, p_type->type_chain[1]->name);
 				}
+			} else {
+				push_error(vformat(R"(Could not find nested enum type "%s" in class "%s".)", p_type->type_chain[1]->name, result.native_type), p_type->type_chain[1]);
 			}
 		} else {
 			push_error(vformat(R"(Could not find nested type "%s" under base "%s".)", p_type->type_chain[1]->name, result.to_string()), p_type->type_chain[1]);
