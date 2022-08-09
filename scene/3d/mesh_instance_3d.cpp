@@ -109,12 +109,14 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
+		mesh->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp(this, &MeshInstance3D::_mesh_property_list_changed));
 	}
 
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
 		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
+		mesh->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp(this, &MeshInstance3D::_mesh_property_list_changed));
 		_mesh_changed();
 		set_base(mesh->get_rid());
 	} else {
@@ -381,6 +383,10 @@ void MeshInstance3D::_mesh_changed() {
 	}
 
 	update_gizmos();
+}
+
+void MeshInstance3D::_mesh_property_list_changed() {
+	notify_property_list_changed();
 }
 
 void MeshInstance3D::create_debug_tangents() {

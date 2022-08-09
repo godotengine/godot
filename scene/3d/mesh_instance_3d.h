@@ -51,6 +51,7 @@ protected:
 	Vector<Ref<Material>> surface_override_materials;
 
 	void _mesh_changed();
+	void _mesh_property_list_changed();
 	void _resolve_skeleton_path();
 
 protected:

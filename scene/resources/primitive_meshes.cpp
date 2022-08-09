@@ -107,6 +107,10 @@ void PrimitiveMesh::_update() const {
 	const_cast<PrimitiveMesh *>(this)->emit_changed();
 }
 
+void PrimitiveMesh::_material_property_list_changed() {
+	notify_property_list_changed();
+}
+
 void PrimitiveMesh::_request_update() {
 	if (pending_request) {
 		return;
@@ -226,7 +230,12 @@ void PrimitiveMesh::_bind_methods() {
 }
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
+	if (material.is_valid()) {
+		material->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp(this, &PrimitiveMesh::_material_property_list_changed));
+	}
 	material = p_material;
+	material->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp(this, &PrimitiveMesh::_material_property_list_changed));
+
 	if (!pending_request) {
 		// just apply it, else it'll happen when _update is called.
 		RenderingServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());

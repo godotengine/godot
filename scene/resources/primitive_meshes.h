@@ -60,6 +60,8 @@ private:
 	mutable bool pending_request = true;
 	void _update() const;
 
+	void _material_property_list_changed();
+
 protected:
 	// assume primitive triangles as the type, correct for all but one and it will change this :)
 	Mesh::PrimitiveType primitive_type = Mesh::PRIMITIVE_TRIANGLES;
