@@ -40,21 +40,21 @@
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the right button of the tab at index [code]tab_idx[/code] or [code]null[/code] if the button has no [Texture2D].
+				Returns the [Texture2D] for the right button of the tab at index [param tab_idx] or [code]null[/code] if the button has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
+				Returns the [Texture2D] for the tab at index [param tab_idx] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_idx_at_point" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the index of the tab at local coordinates [code]point[/code]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
+				Returns the index of the tab at local coordinates [param point]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
 			</description>
 		</method>
 		<method name="get_tab_language" qualifiers="const">
@@ -88,21 +88,21 @@
 			<return type="String" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the title of the tab at index [code]tab_idx[/code].
+				Returns the title of the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
+				Returns [code]true[/code] if the tab at index [param tab_idx] is disabled.
 			</description>
 		</method>
 		<method name="is_tab_hidden" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
+				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -110,14 +110,14 @@
 			<param index="0" name="from" type="int" />
 			<param index="1" name="to" type="int" />
 			<description>
-				Moves a tab from [code]from[/code] to [code]to[/code].
+				Moves a tab from [param from] to [param to].
 			</description>
 		</method>
 		<method name="remove_tab">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Removes the tab at index [code]tab_idx[/code].
+				Removes the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
@@ -125,7 +125,7 @@
 			<param index="0" name="tab_idx" type="int" />
 			<param index="1" name="icon" type="Texture2D" />
 			<description>
-				Sets an [code]icon[/code] for the button of the tab at index [code]tab_idx[/code] (located to the right, before the close button), making it visible and clickable (See [signal tab_button_pressed]). Giving it a [code]null[/code] value will hide the button.
+				Sets an [param icon] for the button of the tab at index [param tab_idx] (located to the right, before the close button), making it visible and clickable (See [signal tab_button_pressed]). Giving it a [code]null[/code] value will hide the button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -133,7 +133,7 @@
 			<param index="0" name="tab_idx" type="int" />
 			<param index="1" name="disabled" type="bool" />
 			<description>
-				If [code]disabled[/code] is [code]true[/code], disables the tab at index [code]tab_idx[/code], making it non-interactable.
+				If [param disabled] is [code]true[/code], disables the tab at index [param tab_idx], making it non-interactable.
 			</description>
 		</method>
 		<method name="set_tab_hidden">
@@ -141,7 +141,7 @@
 			<param index="0" name="tab_idx" type="int" />
 			<param index="1" name="hidden" type="bool" />
 			<description>
-				If [code]hidden[/code] is [code]true[/code], hides the tab at index [code]tab_idx[/code], making it disappear from the tab area.
+				If [param hidden] is [code]true[/code], hides the tab at index [param tab_idx], making it disappear from the tab area.
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -149,7 +149,7 @@
 			<param index="0" name="tab_idx" type="int" />
 			<param index="1" name="icon" type="Texture2D" />
 			<description>
-				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
+				Sets an [param icon] for the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_language">
@@ -173,7 +173,7 @@
 			<param index="0" name="tab_idx" type="int" />
 			<param index="1" name="title" type="String" />
 			<description>
-				Sets a [code]title[/code] for the tab at index [code]tab_idx[/code].
+				Sets a [param title] for the tab at index [param tab_idx].
 			</description>
 		</method>
 	</methods>

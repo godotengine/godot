@@ -26,7 +26,7 @@
 			<return type="void" />
 			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a custom data layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a custom data layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Custom data layers allow assigning custom properties to atlas tiles.
 			</description>
 		</method>
@@ -34,7 +34,7 @@
 			<return type="void" />
 			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a navigation layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a navigation layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Navigation layers allow assigning a navigable area to atlas tiles.
 			</description>
 		</method>
@@ -42,7 +42,7 @@
 			<return type="void" />
 			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds an occlusion layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds an occlusion layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Occlusion layers allow assigning occlusion polygons to atlas tiles.
 			</description>
 		</method>
@@ -51,14 +51,14 @@
 			<param index="0" name="pattern" type="TileMapPattern" />
 			<param index="1" name="index" type="int" default="-1" />
 			<description>
-				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [code]index[/code].
+				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [param index].
 			</description>
 		</method>
 		<method name="add_physics_layer">
 			<return type="void" />
 			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a physics layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a physics layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Physics layers allow assigning collision polygons to atlas tiles.
 			</description>
 		</method>
@@ -67,7 +67,7 @@
 			<param index="0" name="source" type="TileSetSource" />
 			<param index="1" name="atlas_source_id_override" type="int" default="-1" />
 			<description>
-				Adds a [TileSetSource] to the TileSet. If [code]atlas_source_id_override[/code] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
+				Adds a [TileSetSource] to the TileSet. If [param atlas_source_id_override] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
 				The function returns the added source source ID or -1 if the source could not be added.
 			</description>
 		</method>
@@ -76,14 +76,14 @@
 			<param index="0" name="terrain_set" type="int" />
 			<param index="1" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a new terrain to the given terrain set [code]terrain_set[/code] at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a new terrain to the given terrain set [param terrain_set] at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 			</description>
 		</method>
 		<method name="add_terrain_set">
 			<return type="void" />
 			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a new terrain set at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a new terrain set at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 			</description>
 		</method>
 		<method name="cleanup_invalid_tile_proxies">
@@ -187,7 +187,7 @@
 			<return type="TileMapPattern" />
 			<param index="0" name="index" type="int" default="-1" />
 			<description>
-				Returns the [TileMapPattern] at the given [code]index[/code].
+				Returns the [TileMapPattern] at the given [param index].
 			</description>
 		</method>
 		<method name="get_patterns_count">
@@ -227,7 +227,7 @@
 			<return type="TileSetSource" />
 			<param index="0" name="source_id" type="int" />
 			<description>
-				Returns the [TileSetSource] with ID [code]source_id[/code].
+				Returns the [TileSetSource] with ID [param source_id].
 			</description>
 		</method>
 		<method name="get_source_count" qualifiers="const">
@@ -240,7 +240,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the source ID for source with index [code]index[/code].
+				Returns the source ID for source with index [param index].
 			</description>
 		</method>
 		<method name="get_source_level_tile_proxy">
@@ -334,7 +334,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the custom data layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the custom data layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_navigation_layer">
@@ -342,7 +342,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the navigation layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the navigation layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_occlusion_layer">
@@ -350,7 +350,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the occlusion layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the occlusion layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_physics_layer">
@@ -358,7 +358,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the physics layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the physics layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_terrain">
@@ -367,7 +367,7 @@
 			<param index="1" name="terrain_index" type="int" />
 			<param index="2" name="to_position" type="int" />
 			<description>
-				Moves the terrain at index [code]terrain_index[/code] for terrain set [code]terrain_set[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the terrain at index [param terrain_index] for terrain set [param terrain_set] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_terrain_set">
@@ -375,7 +375,7 @@
 			<param index="0" name="terrain_set" type="int" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the terrain set at index [code]terrain_set[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the terrain set at index [param terrain_set] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_alternative_level_tile_proxy">
@@ -399,21 +399,21 @@
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the custom data layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the custom data layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_navigation_layer">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the navigation layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the navigation layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_occlusion_layer">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the occlusion layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the occlusion layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_pattern">
@@ -427,7 +427,7 @@
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the physics layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the physics layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_source">
@@ -449,14 +449,14 @@
 			<param index="0" name="terrain_set" type="int" />
 			<param index="1" name="terrain_index" type="int" />
 			<description>
-				Removes the terrain at index [code]terrain_index[/code] in the given terrain set [code]terrain_set[/code]. Also updates the atlas tiles accordingly.
+				Removes the terrain at index [param terrain_index] in the given terrain set [param terrain_set]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_terrain_set">
 			<return type="void" />
 			<param index="0" name="terrain_set" type="int" />
 			<description>
-				Removes the terrain set at index [code]terrain_set[/code]. Also updates the atlas tiles accordingly.
+				Removes the terrain set at index [param terrain_set]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="set_alternative_level_tile_proxy">

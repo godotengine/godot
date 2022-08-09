@@ -14,21 +14,21 @@
 			<return type="int" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
-				Returns the tile alternative ID of the cell at [code]coords[/code].
+				Returns the tile alternative ID of the cell at [param coords].
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
-				Returns the tile atlas coordinates ID of the cell at [code]coords[/code].
+				Returns the tile atlas coordinates ID of the cell at [param coords].
 			</description>
 		</method>
 		<method name="get_cell_source_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
-				Returns the tile source ID of the cell at [code]coords[/code].
+				Returns the tile source ID of the cell at [param coords].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -71,7 +71,7 @@
 			<param index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
 			<param index="3" name="alternative_tile" type="int" default="-1" />
 			<description>
-				Sets the tile indentifiers for the cell at coordinates [code]coords[/code]. See [method TileMap.set_cell].
+				Sets the tile indentifiers for the cell at coordinates [param coords]. See [method TileMap.set_cell].
 			</description>
 		</method>
 		<method name="set_size">
