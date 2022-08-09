@@ -904,10 +904,12 @@ void GridMapEditor::update_palette() {
 	}
 
 	if (selected != -1 && mesh_library_palette->get_item_count() > 0) {
-		mesh_library_palette->select(selected);
+		// Make sure that this variable is set correctly.
+		selected_palette = MIN(selected, mesh_library_palette->get_item_count() - 1);
+		mesh_library_palette->select(selected_palette);
 	}
 
-	last_mesh_library = mesh_library.operator->();
+	last_mesh_library = *mesh_library;
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
