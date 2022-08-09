@@ -33,6 +33,7 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/container.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
@@ -70,8 +71,10 @@ private:
 	ConfirmationDialog *metadata_dialog = nullptr;
 	OptionButton *metadata_selection = nullptr;
 	AcceptDialog *set_up_dialog = nullptr;
+	CheckButton *toggle_vcs_choice = nullptr;
 	OptionButton *set_up_choice = nullptr;
-	Button *set_up_init_button = nullptr;
+	LineEdit *project_path_input = nullptr;
+	Button *select_project_path_button = nullptr;
 	VBoxContainer *set_up_vbc = nullptr;
 	VBoxContainer *set_up_settings_vbc = nullptr;
 	LineEdit *set_up_username = nullptr;
@@ -137,6 +140,7 @@ private:
 
 	void _notification(int p_what);
 	void _initialize_vcs();
+	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();
 	void _ssh_public_key_selected(String p_path);
 	void _ssh_private_key_selected(String p_path);
@@ -146,8 +150,7 @@ private:
 	void _update_opened_tabs();
 	void _update_extra_options();
 
-	bool _load_plugin(String p_path);
-	void _set_up();
+	bool _load_plugin(String p_name, String p_project_path);
 
 	void _pull();
 	void _push();
@@ -188,7 +191,9 @@ private:
 	bool _is_staging_area_empty();
 	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
 	void _create_vcs_metadata_files();
-	void _popup_ssh_key_file_dialog(Variant p_file_dialog_variant);
+	void _popup_file_dialog(Variant p_file_dialog_variant);
+	void _toggle_vcs_integration(bool p_toggled);
+	void _project_path_selected(String p_project_path);
 
 	friend class EditorVCSInterface;
 
@@ -211,4 +216,4 @@ public:
 	~VersionControlEditorPlugin();
 };
 
-#endif // !VERSION_CONTROL_EDITOR_PLUGIN_H
+#endif // VERSION_CONTROL_EDITOR_PLUGIN_H
