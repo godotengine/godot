@@ -12,7 +12,7 @@
 	<methods>
 		<method name="add_node">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Adds a node to the selection.
 				[b]Note:[/b] The newly selected node will not be automatically edited in the inspector. If you want to edit a node, use [method EditorInterface.edit_node].
@@ -38,7 +38,7 @@
 		</method>
 		<method name="remove_node">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Removes a node from the selection.
 			</description>

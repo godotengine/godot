@@ -9,21 +9,21 @@
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="state" type="PhysicsDirectBodyState3D" />
+			<param index="0" name="state" type="PhysicsDirectBodyState3D" />
 			<description>
 				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but the [member custom_integrator] property allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
+			<param index="0" name="impulse" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="apply_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="impulse" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 			</description>
 		</method>

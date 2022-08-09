@@ -15,17 +15,17 @@
 	<methods>
 		<method name="add_icon_item">
 			<return type="int" />
-			<argument index="0" name="icon" type="Texture2D" />
-			<argument index="1" name="selectable" type="bool" default="true" />
+			<param index="0" name="icon" type="Texture2D" />
+			<param index="1" name="selectable" type="bool" default="true" />
 			<description>
 				Adds an item to the item list with no text, only an icon. Returns the index of an added item.
 			</description>
 		</method>
 		<method name="add_item">
 			<return type="int" />
-			<argument index="0" name="text" type="String" />
-			<argument index="1" name="icon" type="Texture2D" default="null" />
-			<argument index="2" name="selectable" type="bool" default="true" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="icon" type="Texture2D" default="null" />
+			<param index="2" name="selectable" type="bool" default="true" />
 			<description>
 				Adds an item to the item list with specified text. Returns the index of an added item.
 				Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
@@ -40,7 +40,7 @@
 		</method>
 		<method name="deselect">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Ensures the item associated with the specified index is not selected.
 			</description>
@@ -59,8 +59,8 @@
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="position" type="Vector2" />
-			<argument index="1" name="exact" type="bool" default="false" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="exact" type="bool" default="false" />
 			<description>
 				Returns the item index at the given [code]position[/code].
 				When there is no item at that point, -1 will be returned if [code]exact[/code] is [code]true[/code], and the closest item index will be returned otherwise.
@@ -68,70 +68,70 @@
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the custom background color of the item specified by [code]idx[/code] index.
 			</description>
 		</method>
 		<method name="get_item_custom_fg_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the custom foreground color of the item specified by [code]idx[/code] index.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the icon associated with the specified index.
 			</description>
 		</method>
 		<method name="get_item_icon_modulate" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns a [Color] modulating item's icon at the specified index.
 			</description>
 		</method>
 		<method name="get_item_icon_region" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the region of item's icon used. The whole icon will be used if the region has no area.
 			</description>
 		</method>
 		<method name="get_item_language" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns item's text language code.
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the metadata value of the specified index.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the text associated with the specified index.
 			</description>
 		</method>
 		<method name="get_item_text_direction" qualifiers="const">
 			<return type="int" enum="Control.TextDirection" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns item's text base writing direction.
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the tooltip hint associated with the specified index.
 			</description>
@@ -157,58 +157,58 @@
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at the specified index is disabled.
 			</description>
 		</method>
 		<method name="is_item_icon_transposed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item icon will be drawn transposed, i.e. the X and Y axes are swapped.
 			</description>
 		</method>
 		<method name="is_item_selectable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at the specified index is selectable.
 			</description>
 		</method>
 		<method name="is_item_tooltip_enabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the tooltip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="is_selected" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at the specified index is currently selected.
 			</description>
 		</method>
 		<method name="move_item">
 			<return type="void" />
-			<argument index="0" name="from_idx" type="int" />
-			<argument index="1" name="to_idx" type="int" />
+			<param index="0" name="from_idx" type="int" />
+			<param index="1" name="to_idx" type="int" />
 			<description>
 				Moves item from index [code]from_idx[/code] to [code]to_idx[/code].
 			</description>
 		</method>
 		<method name="remove_item">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Removes the item specified by [code]idx[/code] index from the list.
 			</description>
 		</method>
 		<method name="select">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="single" type="bool" default="true" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="single" type="bool" default="true" />
 			<description>
 				Select the item at the specified index.
 				[b]Note:[/b] This method does not trigger the item selection signal.
@@ -216,24 +216,24 @@
 		</method>
 		<method name="set_item_custom_bg_color">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="custom_bg_color" type="Color" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="custom_bg_color" type="Color" />
 			<description>
 				Sets the background color of the item specified by [code]idx[/code] index to the specified [Color].
 			</description>
 		</method>
 		<method name="set_item_custom_fg_color">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="custom_fg_color" type="Color" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="custom_fg_color" type="Color" />
 			<description>
 				Sets the foreground color of the item specified by [code]idx[/code] index to the specified [Color].
 			</description>
 		</method>
 		<method name="set_item_disabled">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="disabled" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="disabled" type="bool" />
 			<description>
 				Disables (or enables) the item at the specified index.
 				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing [kbd]Enter[/kbd]).
@@ -241,88 +241,88 @@
 		</method>
 		<method name="set_item_icon">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="icon" type="Texture2D" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
 			<description>
 				Sets (or replaces) the icon's [Texture2D] associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_modulate">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="modulate" type="Color" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="modulate" type="Color" />
 			<description>
 				Sets a modulating [Color] of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_region">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Sets the region of item's icon used. The whole icon will be used if the region has no area.
 			</description>
 		</method>
 		<method name="set_item_icon_transposed">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="transposed" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="transposed" type="bool" />
 			<description>
 				Sets whether the item icon will be drawn transposed.
 			</description>
 		</method>
 		<method name="set_item_language">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="language" type="String" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="language" type="String" />
 			<description>
 				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
 		<method name="set_item_metadata">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="metadata" type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
 			<description>
 				Sets a value (of any type) to be stored with the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_selectable">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="selectable" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="selectable" type="bool" />
 			<description>
 				Allows or disallows selection of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_text">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="text" type="String" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="text" type="String" />
 			<description>
 				Sets text of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_text_direction">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="direction" type="int" enum="Control.TextDirection" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets item's text base writing direction.
 			</description>
 		</method>
 		<method name="set_item_tooltip">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="tooltip" type="String" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
 			<description>
 				Sets the tooltip hint for the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_tooltip_enabled">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Sets whether the tooltip hint is enabled for specified item index.
 			</description>
@@ -385,37 +385,37 @@
 	</members>
 	<signals>
 		<signal name="empty_clicked">
-			<argument index="0" name="at_position" type="Vector2" />
-			<argument index="1" name="mouse_button_index" type="int" />
+			<param index="0" name="at_position" type="Vector2" />
+			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Triggered when any mouse click is issued within the rect of the list but on empty space.
 			</description>
 		</signal>
 		<signal name="item_activated">
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
 		<signal name="item_clicked">
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="at_position" type="Vector2" />
-			<argument index="2" name="mouse_button_index" type="int" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="at_position" type="Vector2" />
+			<param index="2" name="mouse_button_index" type="int" />
 			<description>
 				Triggered when specified list item has been clicked with any mouse button.
 				The click position is also provided to allow appropriate popup of context menus at the correct location.
 			</description>
 		</signal>
 		<signal name="item_selected">
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Triggered when specified item has been selected.
 				[member allow_reselect] must be enabled to reselect an item.
 			</description>
 		</signal>
 		<signal name="multi_selected">
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="selected" type="bool" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="selected" type="bool" />
 			<description>
 				Triggered when a multiple selection is altered on a list allowing multiple selection.
 			</description>

@@ -11,17 +11,17 @@
 	<methods>
 		<method name="add_custom_node">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="category" type="String" />
-			<argument index="2" name="script" type="Script" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="category" type="String" />
+			<param index="2" name="script" type="Script" />
 			<description>
 				Add a custom Visual Script node to the editor. It'll be placed under "Custom Nodes" with the [code]category[/code] as the parameter.
 			</description>
 		</method>
 		<method name="remove_custom_node">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="category" type="String" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="category" type="String" />
 			<description>
 				Remove a custom Visual Script node from the editor. Custom nodes already placed on scripts won't be removed.
 			</description>

@@ -418,11 +418,14 @@ void NavigationRegion3D::_update_debug_mesh() {
 	Ref<StandardMaterial3D> face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
 	Ref<StandardMaterial3D> line_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
 
+	RandomPCG rand;
 	Color polygon_color = debug_navigation_geometry_face_color;
 
 	for (int i = 0; i < polygon_count; i++) {
 		if (enabled_geometry_face_random_color) {
-			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+			// Generate the polygon color, slightly randomly modified from the settings one.
+			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_navigation_geometry_face_color.a;
 		}
 
 		Vector<int> polygon = navmesh->get_polygon(i);

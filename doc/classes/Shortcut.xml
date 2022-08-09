@@ -24,7 +24,7 @@
 		</method>
 		<method name="matches_event" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Returns whether any [InputEvent] in [member events] equals [code]event[/code].
 			</description>

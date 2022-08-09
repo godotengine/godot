@@ -13,33 +13,33 @@
 	<methods>
 		<method name="convert_from_particles">
 			<return type="void" />
-			<argument index="0" name="particles" type="Node" />
+			<param index="0" name="particles" type="Node" />
 			<description>
 				Sets this node's properties to match a given [GPUParticles2D] node with an assigned [ParticlesMaterial].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
 			<return type="Curve" />
-			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
+			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
 			<description>
 				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_max" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
+			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
+			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
 			<description>
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
+			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<description>
 				Returns the enabled state of the given flag (see [enum ParticleFlags] for options).
 			</description>
@@ -52,30 +52,30 @@
 		</method>
 		<method name="set_param_curve">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
-			<argument index="1" name="curve" type="Curve" />
+			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
+			<param index="1" name="curve" type="Curve" />
 			<description>
 				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_max">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
+			<param index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_min">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
+			<param index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_particle_flag">
 			<return type="void" />
-			<argument index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Enables or disables the given flag (see [enum ParticleFlags] for options).
 			</description>

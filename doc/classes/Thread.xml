@@ -34,8 +34,8 @@
 		</method>
 		<method name="start">
 			<return type="int" enum="Error" />
-			<argument index="0" name="callable" type="Callable" />
-			<argument index="1" name="priority" type="int" enum="Thread.Priority" default="1" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="priority" type="int" enum="Thread.Priority" default="1" />
 			<description>
 				Starts a new [Thread] that calls [code]callable[/code].
 				If the method takes some arguments, you can pass them using [method Callable.bind].

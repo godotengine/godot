@@ -148,16 +148,16 @@
 	<methods>
 		<method name="setup">
 			<return type="int" enum="Error" />
-			<argument index="0" name="key" type="CryptoKey" />
-			<argument index="1" name="certificate" type="X509Certificate" />
-			<argument index="2" name="chain" type="X509Certificate" default="null" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="certificate" type="X509Certificate" />
+			<param index="2" name="chain" type="X509Certificate" default="null" />
 			<description>
 				Setup the DTLS server to use the given [code]private_key[/code] and provide the given [code]certificate[/code] to clients. You can pass the optional [code]chain[/code] parameter to provide additional CA chain information along with the certificate.
 			</description>
 		</method>
 		<method name="take_connection">
 			<return type="PacketPeerDTLS" />
-			<argument index="0" name="udp_peer" type="PacketPeerUDP" />
+			<param index="0" name="udp_peer" type="PacketPeerUDP" />
 			<description>
 				Try to initiate the DTLS handshake with the given [code]udp_peer[/code] which must be already connected (see [method PacketPeerUDP.connect_to_host]).
 				[b]Note:[/b] You must check that the state of the return PacketPeerUDP is [constant PacketPeerDTLS.STATUS_HANDSHAKING], as it is normal that 50% of the new connections will be invalid due to cookie exchange.

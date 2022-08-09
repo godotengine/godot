@@ -719,6 +719,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	vec3i_v = col_v;
 	CHECK(vec3i_v.get_type() == Variant::COLOR);
 }
+
 TEST_CASE("[Variant] Writer and parser array") {
 	Array a = build_array(1, String("hello"), build_array(Variant()));
 	String a_str;
@@ -909,6 +910,67 @@ TEST_CASE("[Variant] Nested dictionary comparison") {
 	CHECK_FALSE(v_d1 == v_d_other_key);
 	CHECK_NE(v_d1, v_d_other_val);
 	CHECK_FALSE(v_d1 == v_d_other_val);
+}
+
+struct ArgumentData {
+	Variant::Type type;
+	String name;
+	bool has_defval = false;
+	Variant defval;
+	int position;
+};
+
+struct MethodData {
+	StringName name;
+	Variant::Type return_type;
+	List<ArgumentData> arguments;
+	bool is_virtual = false;
+	bool is_vararg = false;
+};
+
+TEST_CASE("[Variant] Utility functions") {
+	List<MethodData> functions;
+
+	List<StringName> function_names;
+	Variant::get_utility_function_list(&function_names);
+	function_names.sort_custom<StringName::AlphCompare>();
+
+	for (const StringName &E : function_names) {
+		MethodData md;
+		md.name = E;
+
+		// Utility function's return type.
+		if (Variant::has_utility_function_return_value(E)) {
+			md.return_type = Variant::get_utility_function_return_type(E);
+		}
+
+		// Utility function's arguments.
+		if (Variant::is_utility_function_vararg(E)) {
+			md.is_vararg = true;
+		} else {
+			for (int i = 0; i < Variant::get_utility_function_argument_count(E); i++) {
+				ArgumentData arg;
+				arg.type = Variant::get_utility_function_argument_type(E, i);
+				arg.name = Variant::get_utility_function_argument_name(E, i);
+				arg.position = i;
+
+				md.arguments.push_back(arg);
+			}
+		}
+
+		functions.push_back(md);
+	}
+
+	SUBCASE("[Variant] Validate utility functions") {
+		for (const MethodData &E : functions) {
+			for (const ArgumentData &F : E.arguments) {
+				const ArgumentData &arg = F;
+
+				TEST_COND((arg.name.is_empty() || arg.name.begins_with("_unnamed_arg")),
+						vformat("Unnamed argument in position %d of function '%s'.", arg.position, E.name));
+			}
+		}
+	}
 }
 
 } // namespace TestVariant

@@ -27,10 +27,10 @@
 	<methods>
 		<method name="add_command">
 			<return type="void" />
-			<argument index="0" name="command_name" type="String" />
-			<argument index="1" name="key_name" type="String" />
-			<argument index="2" name="binded_callable" type="Callable" />
-			<argument index="3" name="shortcut_text" type="String" default="&quot;None&quot;" />
+			<param index="0" name="command_name" type="String" />
+			<param index="1" name="key_name" type="String" />
+			<param index="2" name="binded_callable" type="Callable" />
+			<param index="3" name="shortcut_text" type="String" default="&quot;None&quot;" />
 			<description>
 				Adds a custom command to EditorCommandPalette.
 				- [code]command_name[/code]: [String] (Name of the [b]Command[/b]. This is displayed to the user.)
@@ -41,7 +41,7 @@
 		</method>
 		<method name="remove_command">
 			<return type="void" />
-			<argument index="0" name="key_name" type="String" />
+			<param index="0" name="key_name" type="String" />
 			<description>
 				Removes the custom command from EditorCommandPalette.
 				- [code]key_name[/code]: [String] (Name of the key for a particular [b]Command[/b].)

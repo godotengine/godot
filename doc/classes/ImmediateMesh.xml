@@ -17,22 +17,22 @@
 		</method>
 		<method name="surface_add_vertex">
 			<return type="void" />
-			<argument index="0" name="vertex" type="Vector3" />
+			<param index="0" name="vertex" type="Vector3" />
 			<description>
 				Add a 3D vertex using the current attributes previously set.
 			</description>
 		</method>
 		<method name="surface_add_vertex_2d">
 			<return type="void" />
-			<argument index="0" name="vertex" type="Vector2" />
+			<param index="0" name="vertex" type="Vector2" />
 			<description>
 				Add a 2D vertex using the current attributes previously set.
 			</description>
 		</method>
 		<method name="surface_begin">
 			<return type="void" />
-			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
-			<argument index="1" name="material" type="Material" default="null" />
+			<param index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<param index="1" name="material" type="Material" default="null" />
 			<description>
 				Begin a new surface.
 			</description>
@@ -45,35 +45,35 @@
 		</method>
 		<method name="surface_set_color">
 			<return type="void" />
-			<argument index="0" name="color" type="Color" />
+			<param index="0" name="color" type="Color" />
 			<description>
 				Set the color attribute that will be pushed with the next vertex.
 			</description>
 		</method>
 		<method name="surface_set_normal">
 			<return type="void" />
-			<argument index="0" name="normal" type="Vector3" />
+			<param index="0" name="normal" type="Vector3" />
 			<description>
 				Set the normal attribute that will be pushed with the next vertex.
 			</description>
 		</method>
 		<method name="surface_set_tangent">
 			<return type="void" />
-			<argument index="0" name="tangent" type="Plane" />
+			<param index="0" name="tangent" type="Plane" />
 			<description>
 				Set the tangent attribute that will be pushed with the next vertex.
 			</description>
 		</method>
 		<method name="surface_set_uv">
 			<return type="void" />
-			<argument index="0" name="uv" type="Vector2" />
+			<param index="0" name="uv" type="Vector2" />
 			<description>
 				Set the UV attribute that will be pushed with the next vertex.
 			</description>
 		</method>
 		<method name="surface_set_uv2">
 			<return type="void" />
-			<argument index="0" name="uv2" type="Vector2" />
+			<param index="0" name="uv2" type="Vector2" />
 			<description>
 				Set the UV2 attribute that will be pushed with the next vertex.
 			</description>

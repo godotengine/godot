@@ -11,7 +11,7 @@
 	<methods>
 		<method name="get_end" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="name" type="Variant" default="0" />
+			<param index="0" name="name" type="Variant" default="0" />
 			<description>
 				Returns the end position of the match within the source string. The end position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
 				Returns -1 if the group did not match or doesn't exist.
@@ -25,7 +25,7 @@
 		</method>
 		<method name="get_start" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="name" type="Variant" default="0" />
+			<param index="0" name="name" type="Variant" default="0" />
 			<description>
 				Returns the starting position of the match within the source string. The starting position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
 				Returns -1 if the group did not match or doesn't exist.
@@ -33,7 +33,7 @@
 		</method>
 		<method name="get_string" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="name" type="Variant" default="0" />
+			<param index="0" name="name" type="Variant" default="0" />
 			<description>
 				Returns the substring of the match from the source string. Capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
 				Returns an empty string if the group did not match or doesn't exist.

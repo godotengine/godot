@@ -59,15 +59,15 @@
 		</method>
 		<method name="commit_to_surface">
 			<return type="int" enum="Error" />
-			<argument index="0" name="mesh" type="ArrayMesh" />
+			<param index="0" name="mesh" type="ArrayMesh" />
 			<description>
 				Adds a new surface to specified [Mesh] with edited data.
 			</description>
 		</method>
 		<method name="create_from_surface">
 			<return type="int" enum="Error" />
-			<argument index="0" name="mesh" type="ArrayMesh" />
-			<argument index="1" name="surface" type="int" />
+			<param index="0" name="mesh" type="ArrayMesh" />
+			<param index="1" name="surface" type="int" />
 			<description>
 				Uses specified surface of given [Mesh] to populate data for MeshDataTool.
 				Requires [Mesh] with primitive type [constant Mesh.PRIMITIVE_TRIANGLES].
@@ -81,22 +81,22 @@
 		</method>
 		<method name="get_edge_faces" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns array of faces that touch given edge.
 			</description>
 		</method>
 		<method name="get_edge_meta" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns meta information assigned to given edge.
 			</description>
 		</method>
 		<method name="get_edge_vertex" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="vertex" type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="vertex" type="int" />
 			<description>
 				Returns index of specified vertex connected to given edge.
 				Vertex argument can only be 0 or 1 because edges are comprised of two vertices.
@@ -110,8 +110,8 @@
 		</method>
 		<method name="get_face_edge" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="edge" type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="edge" type="int" />
 			<description>
 				Returns specified edge associated with given face.
 				Edge argument must be either 0, 1, or 2 because a face only has three edges.
@@ -119,22 +119,22 @@
 		</method>
 		<method name="get_face_meta" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the metadata associated with the given face.
 			</description>
 		</method>
 		<method name="get_face_normal" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Calculates and returns the face normal of the given face.
 			</description>
 		</method>
 		<method name="get_face_vertex" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="vertex" type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="vertex" type="int" />
 			<description>
 				Returns the specified vertex of the given face.
 				Vertex argument must be either 0, 1, or 2 because faces contain three vertices.
@@ -155,21 +155,21 @@
 		</method>
 		<method name="get_vertex" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the vertex at given index.
 			</description>
 		</method>
 		<method name="get_vertex_bones" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the bones of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the color of the given vertex.
 			</description>
@@ -182,151 +182,151 @@
 		</method>
 		<method name="get_vertex_edges" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns an array of edges that share the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_faces" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns an array of faces that share the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_meta" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the metadata associated with the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_normal" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the normal of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_tangent" qualifiers="const">
 			<return type="Plane" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the tangent of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_uv" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the UV of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_uv2" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the UV2 of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_weights" qualifiers="const">
 			<return type="PackedFloat32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns bone weights of the given vertex.
 			</description>
 		</method>
 		<method name="set_edge_meta">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="meta" type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="meta" type="Variant" />
 			<description>
 				Sets the metadata of the given edge.
 			</description>
 		</method>
 		<method name="set_face_meta">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="meta" type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="meta" type="Variant" />
 			<description>
 				Sets the metadata of the given face.
 			</description>
 		</method>
 		<method name="set_material">
 			<return type="void" />
-			<argument index="0" name="material" type="Material" />
+			<param index="0" name="material" type="Material" />
 			<description>
 				Sets the material to be used by newly-constructed [Mesh].
 			</description>
 		</method>
 		<method name="set_vertex">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="vertex" type="Vector3" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="vertex" type="Vector3" />
 			<description>
 				Sets the position of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_bones">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="bones" type="PackedInt32Array" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="bones" type="PackedInt32Array" />
 			<description>
 				Sets the bones of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_color">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_meta">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="meta" type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="meta" type="Variant" />
 			<description>
 				Sets the metadata associated with the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_normal">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="normal" type="Vector3" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="normal" type="Vector3" />
 			<description>
 				Sets the normal of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_tangent">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="tangent" type="Plane" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="tangent" type="Plane" />
 			<description>
 				Sets the tangent of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_uv">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="uv" type="Vector2" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="uv" type="Vector2" />
 			<description>
 				Sets the UV of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_uv2">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="uv2" type="Vector2" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="uv2" type="Vector2" />
 			<description>
 				Sets the UV2 of the given vertex.
 			</description>
 		</method>
 		<method name="set_vertex_weights">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="weights" type="PackedFloat32Array" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="weights" type="PackedFloat32Array" />
 			<description>
 				Sets the bone weights of the given vertex.
 			</description>

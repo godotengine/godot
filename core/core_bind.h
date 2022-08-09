@@ -666,6 +666,8 @@ public:
 	Dictionary get_license_info() const;
 	String get_license_text() const;
 
+	String get_architecture_name() const;
+
 	bool is_in_physics_frame() const;
 
 	bool has_singleton(const StringName &p_name) const;

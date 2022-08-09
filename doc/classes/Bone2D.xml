@@ -57,14 +57,14 @@
 		</method>
 		<method name="set_autocalculate_length_and_angle">
 			<return type="void" />
-			<argument index="0" name="auto_calculate" type="bool" />
+			<param index="0" name="auto_calculate" type="bool" />
 			<description>
 				When set to [code]true[/code], the [code]Bone2D[/code] node will attempt to automatically calculate the bone angle and length using the first child [code]Bone2D[/code] node, if one exists. If none exist, the [code]Bone2D[/code] cannot automatically calculate these values and will print a warning.
 			</description>
 		</method>
 		<method name="set_bone_angle">
 			<return type="void" />
-			<argument index="0" name="angle" type="float" />
+			<param index="0" name="angle" type="float" />
 			<description>
 				Sets the bone angle for the [code]Bone2D[/code] node. This is typically set to the rotation from the [code]Bone2D[/code] node to a child [code]Bone2D[/code] node.
 				[b]Note:[/b] This is different from the [code]Bone2D[/code]'s rotation. The bone angle is the rotation of the bone shown by the [code]Bone2D[/code] gizmo, and because [code]Bone2D[/code] bones are based on positions, this can vary from the actual rotation of the [code]Bone2D[/code] node.
@@ -72,14 +72,14 @@
 		</method>
 		<method name="set_default_length">
 			<return type="void" />
-			<argument index="0" name="default_length" type="float" />
+			<param index="0" name="default_length" type="float" />
 			<description>
 				Deprecated. Please use [code]set_length[/code] instead.
 			</description>
 		</method>
 		<method name="set_length">
 			<return type="void" />
-			<argument index="0" name="length" type="float" />
+			<param index="0" name="length" type="float" />
 			<description>
 				Sets the length of the bone in the [code]Bone2D[/code] node.
 			</description>

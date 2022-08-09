@@ -12,8 +12,8 @@
 	<methods>
 		<method name="_draw" qualifiers="virtual const">
 			<return type="void" />
-			<argument index="0" name="to_canvas_item" type="RID" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="to_canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 			</description>
 		</method>
@@ -24,27 +24,27 @@
 		</method>
 		<method name="_get_draw_rect" qualifiers="virtual const">
 			<return type="Rect2" />
-			<argument index="0" name="rect" type="Rect2" />
+			<param index="0" name="rect" type="Rect2" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_style_margin" qualifiers="virtual const">
 			<return type="float" />
-			<argument index="0" name="side" type="int" enum="Side" />
+			<param index="0" name="side" type="int" enum="Side" />
 			<description>
 			</description>
 		</method>
 		<method name="_test_mask" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="point" type="Vector2" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 			</description>
 		</method>
 		<method name="draw" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="canvas_item" type="RID" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Draws this stylebox using a canvas item identified by the given [RID].
 				The [RID] value can either be the result of [method CanvasItem.get_canvas_item] called on an existing [CanvasItem]-derived node, or directly from creating a canvas item in the [RenderingServer] with [method RenderingServer.canvas_item_create].
@@ -64,14 +64,14 @@
 		</method>
 		<method name="get_default_margin" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="margin" type="int" enum="Side" />
+			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the default margin of the specified [enum Side].
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="margin" type="int" enum="Side" />
+			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the content margin offset for the specified [enum Side].
 				Positive values reduce size inwards, unlike [Control]'s margin values.
@@ -91,16 +91,16 @@
 		</method>
 		<method name="set_default_margin">
 			<return type="void" />
-			<argument index="0" name="margin" type="int" enum="Side" />
-			<argument index="1" name="offset" type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="offset" type="float" />
 			<description>
 				Sets the default value of the specified [enum Side] to [code]offset[/code] pixels.
 			</description>
 		</method>
 		<method name="test_mask" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="point" type="Vector2" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Test a position in a rectangle, return whether it passes the mask test.
 			</description>

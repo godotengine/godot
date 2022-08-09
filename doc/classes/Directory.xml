@@ -59,7 +59,7 @@
 	<methods>
 		<method name="change_dir">
 			<return type="int" enum="Error" />
-			<argument index="0" name="todir" type="String" />
+			<param index="0" name="todir" type="String" />
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
@@ -67,8 +67,8 @@
 		</method>
 		<method name="copy">
 			<return type="int" enum="Error" />
-			<argument index="0" name="from" type="String" />
-			<argument index="1" name="to" type="String" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
 			<description>
 				Copies the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
@@ -82,7 +82,7 @@
 		</method>
 		<method name="dir_exists">
 			<return type="bool" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
 				If the [Directory] is not open, the path is relative to [code]res://[/code].
@@ -90,7 +90,7 @@
 		</method>
 		<method name="file_exists">
 			<return type="bool" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
 				If the [Directory] is not open, the path is relative to [code]res://[/code].
@@ -117,7 +117,7 @@
 		</method>
 		<method name="get_drive">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]).
 				On macOS, returns the path to the mounted volume passed as an argument.
@@ -170,7 +170,7 @@
 		</method>
 		<method name="make_dir">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
@@ -178,7 +178,7 @@
 		</method>
 		<method name="make_dir_recursive">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
@@ -186,7 +186,7 @@
 		</method>
 		<method name="open">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Opens an existing directory of the filesystem. The [code]path[/code] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
@@ -194,7 +194,7 @@
 		</method>
 		<method name="remove">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Permanently deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
 				If you don't want to delete the file/directory permanently, use [method OS.move_to_trash] instead.
@@ -203,8 +203,8 @@
 		</method>
 		<method name="rename">
 			<return type="int" enum="Error" />
-			<argument index="0" name="from" type="String" />
-			<argument index="1" name="to" type="String" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
 			<description>
 				Renames (move) the [code]from[/code] file or directory to the [code]to[/code] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
