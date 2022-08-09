@@ -9,14 +9,14 @@
 	<methods>
 		<method name="create_from_images">
 			<return type="int" enum="Error" />
-			<param index="0" name="images" type="Array" />
+			<argument index="0" name="images" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="update_layer">
 			<return type="void" />
-			<param index="0" name="image" type="Image" />
-			<param index="1" name="layer" type="int" />
+			<argument index="0" name="image" type="Image" />
+			<argument index="1" name="layer" type="int" />
 			<description>
 			</description>
 		</method>

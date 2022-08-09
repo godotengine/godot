@@ -59,15 +59,15 @@
 		</method>
 		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
-			<param index="0" name="quadrant" type="int" />
+			<argument index="0" name="quadrant" type="int" />
 			<description>
 				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_render_info">
 			<return type="int" />
-			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
-			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
+			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
+			<argument index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
 			</description>
 		</method>
@@ -133,22 +133,22 @@
 		</method>
 		<method name="push_input">
 			<return type="void" />
-			<param index="0" name="event" type="InputEvent" />
-			<param index="1" name="in_local_coords" type="bool" default="false" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="push_text_input">
 			<return type="void" />
-			<param index="0" name="text" type="String" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently embedding windows.
 			</description>
 		</method>
 		<method name="push_unhandled_input">
 			<return type="void" />
-			<param index="0" name="event" type="InputEvent" />
-			<param index="1" name="in_local_coords" type="bool" default="false" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -160,15 +160,15 @@
 		</method>
 		<method name="set_positional_shadow_atlas_quadrant_subdiv">
 			<return type="void" />
-			<param index="0" name="quadrant" type="int" />
-			<param index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
+			<argument index="0" name="quadrant" type="int" />
+			<argument index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<param index="0" name="position" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
@@ -302,7 +302,7 @@
 	</members>
 	<signals>
 		<signal name="gui_focus_changed">
-			<param index="0" name="node" type="Control" />
+			<argument index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
 			</description>

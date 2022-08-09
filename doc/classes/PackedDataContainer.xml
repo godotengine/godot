@@ -9,7 +9,7 @@
 	<methods>
 		<method name="pack">
 			<return type="int" enum="Error" />
-			<param index="0" name="value" type="Variant" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>

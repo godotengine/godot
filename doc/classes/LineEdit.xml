@@ -45,8 +45,8 @@
 		</method>
 		<method name="delete_text">
 			<return type="void" />
-			<param index="0" name="from_column" type="int" />
-			<param index="1" name="to_column" type="int" />
+			<argument index="0" name="from_column" type="int" />
+			<argument index="1" name="to_column" type="int" />
 			<description>
 				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
 			</description>
@@ -90,7 +90,7 @@
 		</method>
 		<method name="insert_text_at_caret">
 			<return type="void" />
-			<param index="0" name="text" type="String" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
@@ -103,15 +103,15 @@
 		</method>
 		<method name="menu_option">
 			<return type="void" />
-			<param index="0" name="option" type="int" />
+			<argument index="0" name="option" type="int" />
 			<description>
 				Executes a given action as defined in the [enum MenuItems] enum.
 			</description>
 		</method>
 		<method name="select">
 			<return type="void" />
-			<param index="0" name="from" type="int" default="0" />
-			<param index="1" name="to" type="int" default="-1" />
+			<argument index="0" name="from" type="int" default="0" />
+			<argument index="1" name="to" type="int" default="-1" />
 			<description>
 				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
 				[codeblocks]
@@ -252,19 +252,19 @@
 	</members>
 	<signals>
 		<signal name="text_change_rejected">
-			<param index="0" name="rejected_substring" type="String" />
+			<argument index="0" name="rejected_substring" type="String" />
 			<description>
 				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [code]rejected_substring[/code] argument.
 			</description>
 		</signal>
 		<signal name="text_changed">
-			<param index="0" name="new_text" type="String" />
+			<argument index="0" name="new_text" type="String" />
 			<description>
 				Emitted when the text changes.
 			</description>
 		</signal>
 		<signal name="text_submitted">
-			<param index="0" name="new_text" type="String" />
+			<argument index="0" name="new_text" type="String" />
 			<description>
 				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
 			</description>

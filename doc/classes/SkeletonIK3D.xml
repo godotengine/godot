@@ -20,7 +20,7 @@
 		</method>
 		<method name="start">
 			<return type="void" />
-			<param index="0" name="one_time" type="bool" default="false" />
+			<argument index="0" name="one_time" type="bool" default="false" />
 			<description>
 			</description>
 		</method>

@@ -27,14 +27,14 @@
 		</method>
 		<method name="play">
 			<return type="void" />
-			<param index="0" name="from_position" type="float" default="0.0" />
+			<argument index="0" name="from_position" type="float" default="0.0" />
 			<description>
 				Plays the audio from the given position [code]from_position[/code], in seconds.
 			</description>
 		</method>
 		<method name="seek">
 			<return type="void" />
-			<param index="0" name="to_position" type="float" />
+			<argument index="0" name="to_position" type="float" />
 			<description>
 				Sets the position from which audio will be played, in seconds.
 			</description>
