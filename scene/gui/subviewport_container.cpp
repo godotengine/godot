@@ -114,7 +114,6 @@ void SubViewportContainer::_notification(int p_what) {
 			recalc_force_viewport_sizes();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			for (int i = 0; i < get_child_count(); i++) {
 				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
@@ -127,8 +126,6 @@ void SubViewportContainer::_notification(int p_what) {
 				} else {
 					c->set_update_mode(SubViewport::UPDATE_DISABLED);
 				}
-
-				c->set_handle_input_locally(false); //do not handle input locally here
 			}
 		} break;
 
@@ -249,13 +246,28 @@ void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void SubViewportContainer::add_child_notify(Node *p_child) {
-	if (Object::cast_to<SubViewport>(p_child)) {
+	SubViewport *c = Object::cast_to<SubViewport>(p_child);
+	if (c) {
+		if (is_visible_in_tree()) {
+			c->set_update_mode(SubViewport::UPDATE_ALWAYS);
+		} else {
+			c->set_update_mode(SubViewport::UPDATE_DISABLED);
+		}
+
+		c->set_handle_input_locally(false); // Do not handle input locally here.
+		c->connect("size_changed", callable_mp(Object::cast_to<Control>(this), &Control::update_minimum_size));
+		c->connect("size_changed", callable_mp(Object::cast_to<CanvasItem>(this), &CanvasItem::queue_redraw));
+		update_minimum_size();
 		queue_redraw();
 	}
 }
 
 void SubViewportContainer::remove_child_notify(Node *p_child) {
-	if (Object::cast_to<SubViewport>(p_child)) {
+	SubViewport *c = Object::cast_to<SubViewport>(p_child);
+	if (c) {
+		c->disconnect("size_changed", callable_mp(Object::cast_to<Control>(this), &Control::update_minimum_size));
+		c->disconnect("size_changed", callable_mp(Object::cast_to<CanvasItem>(this), &CanvasItem::queue_redraw));
+		update_minimum_size();
 		queue_redraw();
 	}
 }
