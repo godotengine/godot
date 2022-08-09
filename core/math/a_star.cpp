@@ -811,11 +811,11 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 
 real_t AStar2D::get_path_score(int64_t p_from_id, int64_t p_to_id) {
 	AStar3D::Point *a;
-	bool from_exists = points.lookup(p_from_id, a);
+	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, -1, vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar3D::Point *b;
-	bool to_exists = points.lookup(p_to_id, b);
+	bool to_exists = astar.points.lookup(p_to_id, b);
 	ERR_FAIL_COND_V_MSG(!to_exists, -1, vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
