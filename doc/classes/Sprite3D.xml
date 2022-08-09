@@ -25,7 +25,11 @@
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 <<<<<<< HEAD
+<<<<<<< HEAD
 			[Texture2D] object to draw. If [member GeometryInstance.material_override] is used, this will be overridden. The size information is still used. 
+=======
+			[Texture2D] object to draw. If [member GeometryInstance3D.material_override] is used, this will be overridden. The size information is still used.
+>>>>>>> 3a236dfde74b07f0d0643e4a7d75956fffc1a530
 =======
 			[Texture2D] object to draw. If [member GeometryInstance3D.material_override] is used, this will be overridden. The size information is still used.
 >>>>>>> 3a236dfde74b07f0d0643e4a7d75956fffc1a530
