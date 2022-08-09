@@ -368,6 +368,7 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 		FcPatternDestroy(pattern);
 	}
 	FcObjectSetDestroy(object_set);
+	FcConfigDestroy(config);
 
 	for (const String &E : font_names) {
 		ret.push_back(E);
@@ -417,6 +418,8 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		FcPatternDestroy(pattern);
 	}
 	FcObjectSetDestroy(object_set);
+	FcConfigDestroy(config);
+
 	return ret;
 #else
 	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
