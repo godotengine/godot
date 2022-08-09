@@ -733,12 +733,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		fargs.stream = &fd->stream;
 
 		int max_index = 0;
-		FT_Face tmp_face;
+		FT_Face tmp_face = nullptr;
 		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-		if (error == 0) {
+		if (tmp_face && error == 0) {
 			max_index = tmp_face->num_faces - 1;
 		}
-		FT_Done_Face(tmp_face);
+		if (tmp_face) {
+			FT_Done_Face(tmp_face);
+		}
 
 		error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
 		if (error) {
