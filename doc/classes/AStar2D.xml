@@ -174,8 +174,8 @@
 		</method>
 		<method name="get_path_score">
 			<return type="float" />
-			<argument index="0" name="from_id" type="int" />
-			<argument index="1" name="to_id" type="int" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="to_id" type="int" />
 			<description>
 				Returns the calculated distance score of the path found by AStar2D between the given points. If no path is found, returns -1.
 			</description>
