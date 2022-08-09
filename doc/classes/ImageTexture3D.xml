@@ -9,18 +9,18 @@
 	<methods>
 		<method name="create">
 			<return type="int" enum="Error" />
-			<argument index="0" name="format" type="int" enum="Image.Format" />
-			<argument index="1" name="width" type="int" />
-			<argument index="2" name="height" type="int" />
-			<argument index="3" name="depth" type="int" />
-			<argument index="4" name="use_mipmaps" type="bool" />
-			<argument index="5" name="data" type="Image[]" />
+			<param index="0" name="format" type="int" enum="Image.Format" />
+			<param index="1" name="width" type="int" />
+			<param index="2" name="height" type="int" />
+			<param index="3" name="depth" type="int" />
+			<param index="4" name="use_mipmaps" type="bool" />
+			<param index="5" name="data" type="Image[]" />
 			<description>
 			</description>
 		</method>
 		<method name="update">
 			<return type="void" />
-			<argument index="0" name="data" type="Image[]" />
+			<param index="0" name="data" type="Image[]" />
 			<description>
 			</description>
 		</method>

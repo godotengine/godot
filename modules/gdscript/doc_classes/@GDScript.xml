@@ -12,10 +12,10 @@
 	<methods>
 		<method name="Color8">
 			<return type="Color" />
-			<argument index="0" name="r8" type="int" />
-			<argument index="1" name="g8" type="int" />
-			<argument index="2" name="b8" type="int" />
-			<argument index="3" name="a8" type="int" default="255" />
+			<param index="0" name="r8" type="int" />
+			<param index="1" name="g8" type="int" />
+			<param index="2" name="b8" type="int" />
+			<param index="3" name="a8" type="int" default="255" />
 			<description>
 				Returns a color constructed from integer red, green, blue, and alpha channels. Each channel should have 8 bits of information ranging from 0 to 255.
 				[code]r8[/code] red channel
@@ -29,8 +29,8 @@
 		</method>
 		<method name="assert">
 			<return type="void" />
-			<argument index="0" name="condition" type="bool" />
-			<argument index="1" name="message" type="String" default="&quot;&quot;" />
+			<param index="0" name="condition" type="bool" />
+			<param index="1" name="message" type="String" default="&quot;&quot;" />
 			<description>
 				Asserts that the [code]condition[/code] is [code]true[/code]. If the [code]condition[/code] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
 				[b]Note:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
@@ -47,7 +47,7 @@
 		</method>
 		<method name="char">
 			<return type="String" />
-			<argument index="0" name="char" type="int" />
+			<param index="0" name="char" type="int" />
 			<description>
 				Returns a character as a String of the given Unicode code point (which is compatible with ASCII code).
 				[codeblock]
@@ -59,8 +59,8 @@
 		</method>
 		<method name="convert">
 			<return type="Variant" />
-			<argument index="0" name="what" type="Variant" />
-			<argument index="1" name="type" type="int" />
+			<param index="0" name="what" type="Variant" />
+			<param index="1" name="type" type="int" />
 			<description>
 				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the [enum Variant.Type] values.
 				[codeblock]
@@ -75,7 +75,7 @@
 		</method>
 		<method name="dict2inst">
 			<return type="Object" />
-			<argument index="0" name="dictionary" type="Dictionary" />
+			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
 				Converts a dictionary (previously created with [method inst2dict]) back to an instance. Useful for deserializing.
 			</description>
@@ -103,7 +103,7 @@
 		</method>
 		<method name="inst2dict">
 			<return type="Dictionary" />
-			<argument index="0" name="instance" type="Object" />
+			<param index="0" name="instance" type="Object" />
 			<description>
 				Returns the passed instance converted to a dictionary (useful for serializing).
 				[codeblock]
@@ -122,7 +122,7 @@
 		</method>
 		<method name="len">
 			<return type="int" />
-			<argument index="0" name="var" type="Variant" />
+			<param index="0" name="var" type="Variant" />
 			<description>
 				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc.
 				[b]Note:[/b] Generates a fatal error if Variant can not provide a length.
@@ -134,7 +134,7 @@
 		</method>
 		<method name="load">
 			<return type="Resource" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Loads a resource from the filesystem located at [code]path[/code]. The resource is loaded on the method call (unless it's referenced already elsewhere, e.g. in another script or in the scene), which might cause slight delay, especially when loading scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
@@ -149,7 +149,7 @@
 		</method>
 		<method name="preload">
 			<return type="Resource" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at [code]path[/code]. The resource is loaded during script parsing, i.e. is loaded with the script and [method preload] effectively acts as a reference to that resource. Note that the method requires a constant path. If you want to load a resource from a dynamic/variable path, use [method load].
 				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
@@ -237,8 +237,13 @@
 		</method>
 		<method name="type_exists">
 			<return type="bool" />
-			<argument index="0" name="type" type="StringName" />
+			<param index="0" name="type" type="StringName" />
 			<description>
+				Returns whether the given [Object]-derived class exists in [ClassDB]. Note that [Variant] data types are not registered in [ClassDB].
+				[codeblock]
+				type_exists("Sprite2D") # Returns true
+				type_exists("NonExistentClass") # Returns false
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -266,7 +271,7 @@
 		</annotation>
 		<annotation name="@export_category">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 			</description>
 		</annotation>
@@ -282,25 +287,25 @@
 		</annotation>
 		<annotation name="@export_enum" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="names" type="String" />
+			<param index="0" name="names" type="String" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_exp_easing" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="hints" type="String" default="&quot;&quot;" />
+			<param index="0" name="hints" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_file" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="filter" type="String" default="&quot;&quot;" />
+			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_flags" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="names" type="String" />
+			<param index="0" name="names" type="String" />
 			<description>
 			</description>
 		</annotation>
@@ -341,14 +346,14 @@
 		</annotation>
 		<annotation name="@export_global_file" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="filter" type="String" default="&quot;&quot;" />
+			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_group">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
@@ -359,7 +364,7 @@
 		</annotation>
 		<annotation name="@export_node_path" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="type" type="String" default="&quot;&quot;" />
+			<param index="0" name="type" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
@@ -370,23 +375,23 @@
 		</annotation>
 		<annotation name="@export_range" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="min" type="float" />
-			<argument index="1" name="max" type="float" />
-			<argument index="2" name="step" type="float" default="1.0" />
-			<argument index="3" name="extra_hints" type="String" default="&quot;&quot;" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<param index="2" name="step" type="float" default="1.0" />
+			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_subgroup">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@icon">
 			<return type="void" />
-			<argument index="0" name="icon_path" type="String" />
+			<param index="0" name="icon_path" type="String" />
 			<description>
 			</description>
 		</annotation>
@@ -397,10 +402,10 @@
 		</annotation>
 		<annotation name="@rpc" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="mode" type="String" default="&quot;&quot;" />
-			<argument index="1" name="sync" type="String" default="&quot;&quot;" />
-			<argument index="2" name="transfer_mode" type="String" default="&quot;&quot;" />
-			<argument index="3" name="transfer_channel" type="int" default="0" />
+			<param index="0" name="mode" type="String" default="&quot;&quot;" />
+			<param index="1" name="sync" type="String" default="&quot;&quot;" />
+			<param index="2" name="transfer_mode" type="String" default="&quot;&quot;" />
+			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 			</description>
 		</annotation>
@@ -411,7 +416,7 @@
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="warning" type="String" />
+			<param index="0" name="warning" type="String" />
 			<description>
 			</description>
 		</annotation>

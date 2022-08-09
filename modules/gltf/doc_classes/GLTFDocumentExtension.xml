@@ -9,50 +9,50 @@
 	<methods>
 		<method name="_export_node" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="state" type="GLTFState" />
-			<argument index="1" name="gltf_node" type="GLTFNode" />
-			<argument index="2" name="json" type="Dictionary" />
-			<argument index="3" name="node" type="Node" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="json" type="Dictionary" />
+			<param index="3" name="node" type="Node" />
 			<description>
 			</description>
 		</method>
 		<method name="_export_post" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="state" type="GLTFState" />
+			<param index="0" name="state" type="GLTFState" />
 			<description>
 			</description>
 		</method>
 		<method name="_export_preflight" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="root" type="Node" />
+			<param index="0" name="root" type="Node" />
 			<description>
 			</description>
 		</method>
 		<method name="_import_node" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="state" type="GLTFState" />
-			<argument index="1" name="gltf_node" type="GLTFNode" />
-			<argument index="2" name="json" type="Dictionary" />
-			<argument index="3" name="node" type="Node" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="json" type="Dictionary" />
+			<param index="3" name="node" type="Node" />
 			<description>
 			</description>
 		</method>
 		<method name="_import_post" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="state" type="GLTFState" />
-			<argument index="1" name="root" type="Node" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="root" type="Node" />
 			<description>
 			</description>
 		</method>
 		<method name="_import_post_parse" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="state" type="GLTFState" />
+			<param index="0" name="state" type="GLTFState" />
 			<description>
 			</description>
 		</method>
 		<method name="_import_preflight" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="state" type="GLTFState" />
+			<param index="0" name="state" type="GLTFState" />
 			<description>
 			</description>
 		</method>

@@ -19,7 +19,7 @@
 		</method>
 		<method name="get_line_height" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" default="-1" />
+			<param index="0" name="line" type="int" default="-1" />
 			<description>
 				Returns the height of the line [code]line[/code].
 				If [code]line[/code] is set to [code]-1[/code], returns the biggest line height.

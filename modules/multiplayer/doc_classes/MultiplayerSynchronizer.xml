@@ -16,7 +16,7 @@
 	<methods>
 		<method name="add_visibility_filter">
 			<return type="void" />
-			<argument index="0" name="filter" type="Callable" />
+			<param index="0" name="filter" type="Callable" />
 			<description>
 				Adds a peer visibility filter for this synchronizer.
 
@@ -25,29 +25,29 @@
 		</method>
 		<method name="get_visibility_for" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="peer" type="int" />
+			<param index="0" name="peer" type="int" />
 			<description>
 				Queries the current visibility for peer [code]peer[/code].
 			</description>
 		</method>
 		<method name="remove_visibility_filter">
 			<return type="void" />
-			<argument index="0" name="filter" type="Callable" />
+			<param index="0" name="filter" type="Callable" />
 			<description>
 				Removes a peer visiblity filter from this synchronizer.
 			</description>
 		</method>
 		<method name="set_visibility_for">
 			<return type="void" />
-			<argument index="0" name="peer" type="int" />
-			<argument index="1" name="visible" type="bool" />
+			<param index="0" name="peer" type="int" />
+			<param index="1" name="visible" type="bool" />
 			<description>
 				Sets the visibility of [code]peer[/code] to [code]visible[/code]. If [code]peer[/code] is [code]0[/code], the value of [member public_visibility] will be updated instead.
 			</description>
 		</method>
 		<method name="update_visibility">
 			<return type="void" />
-			<argument index="0" name="for_peer" type="int" default="0" />
+			<param index="0" name="for_peer" type="int" default="0" />
 			<description>
 				Updates the visibility of [code]peer[/code] according to visibility filters. If [code]peer[/code] is [code]0[/code] (the default), all peers' visibilties are updated.
 			</description>
@@ -73,7 +73,7 @@
 	</members>
 	<signals>
 		<signal name="visibility_changed">
-			<argument index="0" name="for_peer" type="int" />
+			<param index="0" name="for_peer" type="int" />
 			<description>
 				Emitted when visibility of [code]for_peer[/code] is updated. See [method update_visibility].
 			</description>

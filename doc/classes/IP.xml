@@ -11,14 +11,14 @@
 	<methods>
 		<method name="clear_cache">
 			<return type="void" />
-			<argument index="0" name="hostname" type="String" default="&quot;&quot;" />
+			<param index="0" name="hostname" type="String" default="&quot;&quot;" />
 			<description>
 				Removes all of a [code]hostname[/code]'s cached references. If no [code]hostname[/code] is given, all cached IP addresses are removed.
 			</description>
 		</method>
 		<method name="erase_resolve_item">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Removes a given item [code]id[/code] from the queue. This should be used to free a queue after it has completed to enable more queries to happen.
 			</description>
@@ -46,45 +46,45 @@
 		</method>
 		<method name="get_resolve_item_address" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns a queued hostname's IP address, given its queue [code]id[/code]. Returns an empty string on error or if resolution hasn't happened yet (see [method get_resolve_item_status]).
 			</description>
 		</method>
 		<method name="get_resolve_item_addresses" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns resolved addresses, or an empty array if an error happened or resolution didn't happen yet (see [method get_resolve_item_status]).
 			</description>
 		</method>
 		<method name="get_resolve_item_status" qualifiers="const">
 			<return type="int" enum="IP.ResolverStatus" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns a queued hostname's status as a [enum ResolverStatus] constant, given its queue [code]id[/code].
 			</description>
 		</method>
 		<method name="resolve_hostname">
 			<return type="String" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
 			<description>
 				Returns a given hostname's IPv4 or IPv6 address when resolved (blocking-type method). The address type returned depends on the [enum Type] constant given as [code]ip_type[/code].
 			</description>
 		</method>
 		<method name="resolve_hostname_addresses">
 			<return type="Array" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
 			<description>
 				Resolves a given hostname in a blocking way. Addresses are returned as an [Array] of IPv4 or IPv6 addresses depending on [code]ip_type[/code].
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">
 			<return type="int" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
 			<description>
 				Creates a queue item to resolve a hostname to an IPv4 or IPv6 address depending on the [enum Type] constant given as [code]ip_type[/code]. Returns the queue ID if successful, or [constant RESOLVER_INVALID_ID] on error.
 			</description>

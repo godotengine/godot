@@ -18,7 +18,7 @@
 		</method>
 		<method name="set_file">
 			<return type="void" />
-			<argument index="0" name="file" type="String" />
+			<param index="0" name="file" type="String" />
 			<description>
 				Sets the Ogg Theora video file that this [VideoStreamTheora] resource handles. The [code]file[/code] name should have the [code].ogv[/code] extension.
 			</description>

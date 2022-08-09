@@ -62,15 +62,15 @@
 		</method>
 		<method name="start">
 			<return type="int" enum="Error" />
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
-			<argument index="1" name="key" type="PackedByteArray" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="key" type="PackedByteArray" />
 			<description>
 				Initializes the HMACContext. This method cannot be called again on the same HMACContext until [method finish] has been called.
 			</description>
 		</method>
 		<method name="update">
 			<return type="int" enum="Error" />
-			<argument index="0" name="data" type="PackedByteArray" />
+			<param index="0" name="data" type="PackedByteArray" />
 			<description>
 				Updates the message to be HMACed. This can be called multiple times before [method finish] is called to append [code]data[/code] to the message, but cannot be called until [method start] has been called.
 			</description>

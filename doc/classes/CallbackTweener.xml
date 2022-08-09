@@ -12,7 +12,7 @@
 	<methods>
 		<method name="set_delay">
 			<return type="CallbackTweener" />
-			<argument index="0" name="delay" type="float" />
+			<param index="0" name="delay" type="float" />
 			<description>
 				Makes the callback call delayed by given time in seconds. Example:
 				[codeblock]

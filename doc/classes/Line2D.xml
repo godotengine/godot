@@ -13,8 +13,8 @@
 	<methods>
 		<method name="add_point">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
-			<argument index="1" name="at_position" type="int" default="-1" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a point at the [code]position[/code]. Appends the point at the end of the line.
 				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt; 0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
@@ -34,22 +34,22 @@
 		</method>
 		<method name="get_point_position" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="i" type="int" />
+			<param index="0" name="i" type="int" />
 			<description>
 				Returns point [code]i[/code]'s position.
 			</description>
 		</method>
 		<method name="remove_point">
 			<return type="void" />
-			<argument index="0" name="i" type="int" />
+			<param index="0" name="i" type="int" />
 			<description>
 				Removes the point at index [code]i[/code] from the line.
 			</description>
 		</method>
 		<method name="set_point_position">
 			<return type="void" />
-			<argument index="0" name="i" type="int" />
-			<argument index="1" name="position" type="Vector2" />
+			<param index="0" name="i" type="int" />
+			<param index="1" name="position" type="Vector2" />
 			<description>
 				Overwrites the position in point [code]i[/code] with the supplied [code]position[/code].
 			</description>

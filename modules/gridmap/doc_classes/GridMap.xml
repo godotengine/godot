@@ -29,7 +29,7 @@
 		</method>
 		<method name="get_bake_mesh_instance">
 			<return type="RID" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -41,28 +41,28 @@
 		</method>
 		<method name="get_cell_item" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="position" type="Vector3i" />
+			<param index="0" name="position" type="Vector3i" />
 			<description>
 				The [MeshLibrary] item index located at the given grid coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="position" type="Vector3i" />
+			<param index="0" name="position" type="Vector3i" />
 			<description>
 				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty.
 			</description>
 		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -75,7 +75,7 @@
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -88,36 +88,36 @@
 		</method>
 		<method name="get_used_cells_by_item" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="item" type="int" />
+			<param index="0" name="item" type="int" />
 			<description>
 				Returns an array of all cells with the given item index specified in [code]item[/code].
 			</description>
 		</method>
 		<method name="make_baked_meshes">
 			<return type="void" />
-			<argument index="0" name="gen_lightmap_uv" type="bool" default="false" />
-			<argument index="1" name="lightmap_uv_texel_size" type="float" default="0.1" />
+			<param index="0" name="gen_lightmap_uv" type="bool" default="false" />
+			<param index="1" name="lightmap_uv_texel_size" type="float" default="0.1" />
 			<description>
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="map_position" type="Vector3i" />
+			<param index="0" name="map_position" type="Vector3i" />
 			<description>
 				Returns the position of a grid cell in the GridMap's local coordinate space.
 			</description>
 		</method>
 		<method name="resource_changed">
 			<return type="void" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>
 		<method name="set_cell_item">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector3i" />
-			<argument index="1" name="item" type="int" />
-			<argument index="2" name="orientation" type="int" default="0" />
+			<param index="0" name="position" type="Vector3i" />
+			<param index="1" name="item" type="int" />
+			<param index="2" name="orientation" type="int" default="0" />
 			<description>
 				Sets the mesh index for the cell referenced by its grid coordinates.
 				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
@@ -126,31 +126,31 @@
 		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
 			<return type="Vector3i" />
-			<argument index="0" name="world_position" type="Vector3" />
+			<param index="0" name="world_position" type="Vector3" />
 			<description>
 				Returns the coordinates of the grid cell containing the given point.
 				[code]pos[/code] should be in the GridMap's local coordinate space.
@@ -200,7 +200,7 @@
 	</members>
 	<signals>
 		<signal name="cell_size_changed">
-			<argument index="0" name="cell_size" type="Vector3" />
+			<param index="0" name="cell_size" type="Vector3" />
 			<description>
 				Emitted when [member cell_size] changes.
 			</description>

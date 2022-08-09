@@ -14,13 +14,13 @@
 		</method>
 		<method name="reset">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector3" />
+			<param index="0" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="update_position">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector3" />
+			<param index="0" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>

@@ -36,7 +36,7 @@
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -85,29 +85,29 @@
 		</method>
 		<method name="set_navigation_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_navigation_map">
 			<return type="void" />
-			<argument index="0" name="navigation_map" type="RID" />
+			<param index="0" name="navigation_map" type="RID" />
 			<description>
 				Sets the [RID] of the navigation map this NavigationAgent node should use and also updates the [code]agent[/code] on the NavigationServer.
 			</description>
 		</method>
 		<method name="set_target_location">
 			<return type="void" />
-			<argument index="0" name="location" type="Vector2" />
+			<param index="0" name="location" type="Vector2" />
 			<description>
 				Sets the user desired final location. This will clear the current navigation path.
 			</description>
 		</method>
 		<method name="set_velocity">
 			<return type="void" />
-			<argument index="0" name="velocity" type="Vector2" />
+			<param index="0" name="velocity" type="Vector2" />
 			<description>
 				Sends the passed in velocity to the collision avoidance algorithm. It will adjust the velocity to avoid collisions. Once the adjustment to the velocity is complete, it will emit the [signal velocity_computed] signal.
 			</description>
@@ -163,7 +163,7 @@
 			</description>
 		</signal>
 		<signal name="velocity_computed">
-			<argument index="0" name="safe_velocity" type="Vector3" />
+			<param index="0" name="safe_velocity" type="Vector3" />
 			<description>
 				Notifies when the collision avoidance velocity is calculated. Emitted by [method set_velocity].
 			</description>

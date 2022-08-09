@@ -25,77 +25,77 @@
 		</method>
 		<method name="draw_animation_slice">
 			<return type="void" />
-			<argument index="0" name="animation_length" type="float" />
-			<argument index="1" name="slice_begin" type="float" />
-			<argument index="2" name="slice_end" type="float" />
-			<argument index="3" name="offset" type="float" default="0.0" />
+			<param index="0" name="animation_length" type="float" />
+			<param index="1" name="slice_begin" type="float" />
+			<param index="2" name="slice_end" type="float" />
+			<param index="3" name="offset" type="float" default="0.0" />
 			<description>
 				Subsequent drawing commands will be ignored unless they fall within the specified animation slice. This is a faster way to implement animations that loop on background rather than redrawing constantly.
 			</description>
 		</method>
 		<method name="draw_arc">
 			<return type="void" />
-			<argument index="0" name="center" type="Vector2" />
-			<argument index="1" name="radius" type="float" />
-			<argument index="2" name="start_angle" type="float" />
-			<argument index="3" name="end_angle" type="float" />
-			<argument index="4" name="point_count" type="int" />
-			<argument index="5" name="color" type="Color" />
-			<argument index="6" name="width" type="float" default="1.0" />
-			<argument index="7" name="antialiased" type="bool" default="false" />
+			<param index="0" name="center" type="Vector2" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="start_angle" type="float" />
+			<param index="3" name="end_angle" type="float" />
+			<param index="4" name="point_count" type="int" />
+			<param index="5" name="color" type="Color" />
+			<param index="6" name="width" type="float" default="1.0" />
+			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a unfilled arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve. See also [method draw_circle].
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="char" type="String" />
-			<argument index="3" name="font_size" type="int" default="16" />
-			<argument index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="char" type="String" />
+			<param index="3" name="font_size" type="int" default="16" />
+			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a string first character using a custom font.
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="char" type="String" />
-			<argument index="3" name="font_size" type="int" default="16" />
-			<argument index="4" name="size" type="int" default="-1" />
-			<argument index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="char" type="String" />
+			<param index="3" name="font_size" type="int" default="16" />
+			<param index="4" name="size" type="int" default="-1" />
+			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a string first character outline using a custom font.
 			</description>
 		</method>
 		<method name="draw_circle">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
-			<argument index="1" name="radius" type="float" />
-			<argument index="2" name="color" type="Color" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="color" type="Color" />
 			<description>
 				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="color" type="Color" />
-			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
-			<argument index="3" name="texture" type="Texture2D" default="null" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
+			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
 				Draws a colored polygon of any amount of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 			</description>
 		</method>
 		<method name="draw_dashed_line">
 			<return type="void" />
-			<argument index="0" name="from" type="Vector2" />
-			<argument index="1" name="to" type="Vector2" />
-			<argument index="2" name="color" type="Color" />
-			<argument index="3" name="width" type="float" default="1.0" />
-			<argument index="4" name="dash" type="float" default="2.0" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="width" type="float" default="1.0" />
+			<param index="4" name="dash" type="float" default="2.0" />
 			<description>
 				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
 			</description>
@@ -108,33 +108,33 @@
 		</method>
 		<method name="draw_line">
 			<return type="void" />
-			<argument index="0" name="from" type="Vector2" />
-			<argument index="1" name="to" type="Vector2" />
-			<argument index="2" name="color" type="Color" />
-			<argument index="3" name="width" type="float" default="1.0" />
-			<argument index="4" name="antialiased" type="bool" default="false" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="width" type="float" default="1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
 			</description>
 		</method>
 		<method name="draw_mesh">
 			<return type="void" />
-			<argument index="0" name="mesh" type="Mesh" />
-			<argument index="1" name="texture" type="Texture2D" />
-			<argument index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
-			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="0" name="mesh" type="Mesh" />
+			<param index="1" name="texture" type="Texture2D" />
+			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
 			</description>
 		</method>
 		<method name="draw_msdf_texture_rect_region">
 			<return type="void" />
-			<argument index="0" name="texture" type="Texture2D" />
-			<argument index="1" name="rect" type="Rect2" />
-			<argument index="2" name="src_rect" type="Rect2" />
-			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="outline" type="float" default="0.0" />
-			<argument index="5" name="pixel_range" type="float" default="4.0" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="src_rect" type="Rect2" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="outline" type="float" default="0.0" />
+			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<description>
 				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [code]outline[/code] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [code]outline[/code] radius.
@@ -143,114 +143,114 @@
 		</method>
 		<method name="draw_multiline">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="color" type="Color" />
-			<argument index="2" name="width" type="float" default="1.0" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="width" type="float" default="1.0" />
 			<description>
 				Draws multiple disconnected lines with a uniform [code]color[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="colors" type="PackedColorArray" />
-			<argument index="2" name="width" type="float" default="1.0" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="colors" type="PackedColorArray" />
+			<param index="2" name="width" type="float" default="1.0" />
 			<description>
 				Draws multiple disconnected lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="text" type="String" />
-			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
-			<argument index="4" name="width" type="float" default="-1" />
-			<argument index="5" name="font_size" type="int" default="16" />
-			<argument index="6" name="max_lines" type="int" default="-1" />
-			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<argument index="9" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
-			<argument index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="max_lines" type="int" default="-1" />
+			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<param index="9" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Breaks [code]text[/code] to the lines and draws it using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="text" type="String" />
-			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
-			<argument index="4" name="width" type="float" default="-1" />
-			<argument index="5" name="font_size" type="int" default="16" />
-			<argument index="6" name="max_lines" type="int" default="-1" />
-			<argument index="7" name="size" type="int" default="1" />
-			<argument index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<argument index="10" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
-			<argument index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="max_lines" type="int" default="-1" />
+			<param index="7" name="size" type="int" default="1" />
+			<param index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<param index="10" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Breaks [code]text[/code] to the lines and draws text outline using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
 		<method name="draw_multimesh">
 			<return type="void" />
-			<argument index="0" name="multimesh" type="MultiMesh" />
-			<argument index="1" name="texture" type="Texture2D" />
+			<param index="0" name="multimesh" type="MultiMesh" />
+			<param index="1" name="texture" type="Texture2D" />
 			<description>
 				Draws a [MultiMesh] in 2D with the provided texture. See [MultiMeshInstance2D] for related documentation.
 			</description>
 		</method>
 		<method name="draw_polygon">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="colors" type="PackedColorArray" />
-			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
-			<argument index="3" name="texture" type="Texture2D" default="null" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="colors" type="PackedColorArray" />
+			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
+			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
 				Draws a solid polygon of any amount of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
 			</description>
 		</method>
 		<method name="draw_polyline">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="color" type="Color" />
-			<argument index="2" name="width" type="float" default="1.0" />
-			<argument index="3" name="antialiased" type="bool" default="false" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="width" type="float" default="1.0" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="colors" type="PackedColorArray" />
-			<argument index="2" name="width" type="float" default="1.0" />
-			<argument index="3" name="antialiased" type="bool" default="false" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="colors" type="PackedColorArray" />
+			<param index="2" name="width" type="float" default="1.0" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_primitive">
 			<return type="void" />
-			<argument index="0" name="points" type="PackedVector2Array" />
-			<argument index="1" name="colors" type="PackedColorArray" />
-			<argument index="2" name="uvs" type="PackedVector2Array" />
-			<argument index="3" name="texture" type="Texture2D" default="null" />
-			<argument index="4" name="width" type="float" default="1.0" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="colors" type="PackedColorArray" />
+			<param index="2" name="uvs" type="PackedVector2Array" />
+			<param index="3" name="texture" type="Texture2D" default="null" />
+			<param index="4" name="width" type="float" default="1.0" />
 			<description>
 				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
 			</description>
 		</method>
 		<method name="draw_rect">
 			<return type="void" />
-			<argument index="0" name="rect" type="Rect2" />
-			<argument index="1" name="color" type="Color" />
-			<argument index="2" name="filled" type="bool" default="true" />
-			<argument index="3" name="width" type="float" default="1.0" />
+			<param index="0" name="rect" type="Rect2" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="filled" type="bool" default="true" />
+			<param index="3" name="width" type="float" default="1.0" />
 			<description>
 				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified.
 				[b]Note:[/b] [code]width[/code] is only effective if [code]filled[/code] is [code]false[/code].
@@ -258,32 +258,32 @@
 		</method>
 		<method name="draw_set_transform">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
-			<argument index="1" name="rotation" type="float" default="0.0" />
-			<argument index="2" name="scale" type="Vector2" default="Vector2(1, 1)" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="rotation" type="float" default="0.0" />
+			<param index="2" name="scale" type="Vector2" default="Vector2(1, 1)" />
 			<description>
 				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_set_transform_matrix">
 			<return type="void" />
-			<argument index="0" name="xform" type="Transform2D" />
+			<param index="0" name="xform" type="Transform2D" />
 			<description>
 				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_string" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="text" type="String" />
-			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
-			<argument index="4" name="width" type="float" default="-1" />
-			<argument index="5" name="font_size" type="int" default="16" />
-			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="7" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
-			<argument index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="7" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 				[b]Example using the default project font:[/b]
@@ -310,57 +310,57 @@
 		</method>
 		<method name="draw_string_outline" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="text" type="String" />
-			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
-			<argument index="4" name="width" type="float" default="-1" />
-			<argument index="5" name="font_size" type="int" default="16" />
-			<argument index="6" name="size" type="int" default="1" />
-			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="8" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
-			<argument index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="size" type="int" default="1" />
+			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="8" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Draws [code]text[/code] outline using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
 		<method name="draw_style_box">
 			<return type="void" />
-			<argument index="0" name="style_box" type="StyleBox" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="style_box" type="StyleBox" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Draws a styled rectangle.
 			</description>
 		</method>
 		<method name="draw_texture">
 			<return type="void" />
-			<argument index="0" name="texture" type="Texture2D" />
-			<argument index="1" name="position" type="Vector2" />
-			<argument index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="position" type="Vector2" />
+			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a texture at a given position.
 			</description>
 		</method>
 		<method name="draw_texture_rect">
 			<return type="void" />
-			<argument index="0" name="texture" type="Texture2D" />
-			<argument index="1" name="rect" type="Rect2" />
-			<argument index="2" name="tile" type="bool" />
-			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="transpose" type="bool" default="false" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="tile" type="bool" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
 				Draws a textured rectangle at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
 			<return type="void" />
-			<argument index="0" name="texture" type="Texture2D" />
-			<argument index="1" name="rect" type="Rect2" />
-			<argument index="2" name="src_rect" type="Rect2" />
-			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="transpose" type="bool" default="false" />
-			<argument index="5" name="clip_uv" type="bool" default="true" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="src_rect" type="Rect2" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="transpose" type="bool" default="false" />
+			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
 				Draws a textured rectangle region at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
 			</description>
@@ -470,28 +470,28 @@
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="screen_point" type="Vector2" />
+			<param index="0" name="screen_point" type="Vector2" />
 			<description>
 				Assigns [code]screen_point[/code] as this node's new local transform.
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
 			<return type="InputEvent" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Transformations issued by [code]event[/code]'s inputs are applied in local space instead of global space.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
 			</description>
 		</method>
 		<method name="set_notify_transform">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
 			</description>

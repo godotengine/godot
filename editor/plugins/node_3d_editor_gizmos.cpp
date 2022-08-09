@@ -4839,6 +4839,10 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
+	create_material("face_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color(), false, false, true);
+	create_material("face_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color(), false, false, true);
+	create_material("edge_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color());
+	create_material("edge_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color());
 }
 
 bool NavigationRegion3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -4924,6 +4928,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	tmesh->create(tmeshfaces);
 
 	p_gizmo->add_collision_triangles(tmesh);
+	p_gizmo->add_collision_segments(lines);
 
 	Ref<ArrayMesh> debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	int polygon_count = navigationmesh->get_polygon_count();
@@ -4945,6 +4950,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
 	// if enabled add vertex colors to colorize each face individually
+	RandomPCG rand;
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
 		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
@@ -4954,7 +4960,9 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		face_color_array.resize(polygon_count * 3);
 
 		for (int i = 0; i < polygon_count; i++) {
-			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+			// Generate the polygon color, slightly randomly modified from the settings one.
+			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_navigation_geometry_face_color.a;
 
 			Vector<int> polygon = navigationmesh->get_polygon(i);
 
@@ -4966,12 +4974,10 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
-	debug_mesh->surface_set_material(0, debug_geometry_face_material);
+	p_gizmo->add_mesh(debug_mesh, navigationregion->is_enabled() ? get_material("face_material", p_gizmo) : get_material("face_material_disabled", p_gizmo));
 
 	// if enabled build geometry edge line surface
 	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
-
 	if (enabled_edge_lines) {
 		Vector<Vector3> line_vertex_array;
 		line_vertex_array.resize(polygon_count * 6);
@@ -4987,27 +4993,8 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			line_vertex_array.push_back(vertices[polygon[0]]);
 		}
 
-		Array line_mesh_array;
-		line_mesh_array.resize(Mesh::ARRAY_MAX);
-		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
-		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
-		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
-		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
+		p_gizmo->add_lines(line_vertex_array, navigationregion->is_enabled() ? get_material("edge_material", p_gizmo) : get_material("edge_material_disabled", p_gizmo));
 	}
-
-	if (!navigationregion->is_enabled()) {
-		if (debug_mesh.is_valid()) {
-			if (debug_mesh->get_surface_count() > 0) {
-				debug_mesh->surface_set_material(0, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_disabled_material());
-			}
-			if (debug_mesh->get_surface_count() > 1) {
-				debug_mesh->surface_set_material(1, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_disabled_material());
-			}
-		}
-	}
-
-	p_gizmo->add_mesh(debug_mesh);
-	p_gizmo->add_collision_segments(lines);
 }
 
 //////

@@ -63,7 +63,7 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 
 	PropertyInfo info = _gen_argument_type_info(p_argument);
 #ifdef DEBUG_METHODS_ENABLED
-	info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
+	info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("_unnamed_arg" + itos(p_argument));
 #endif
 	return info;
 }

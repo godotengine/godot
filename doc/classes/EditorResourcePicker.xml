@@ -12,14 +12,14 @@
 	<methods>
 		<method name="_handle_menu_selected" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				This virtual method can be implemented to handle context menu items not handled by default. See [method _set_create_options].
 			</description>
 		</method>
 		<method name="_set_create_options" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="menu_node" type="Object" />
+			<param index="0" name="menu_node" type="Object" />
 			<description>
 				This virtual method is called when updating the context menu of [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [code]menu_node[/code] is a reference to the [PopupMenu] node.
 				[b]Note:[/b] Implement [method _handle_menu_selected] to handle these custom items.
@@ -33,7 +33,7 @@
 		</method>
 		<method name="set_toggle_pressed">
 			<return type="void" />
-			<argument index="0" name="pressed" type="bool" />
+			<param index="0" name="pressed" type="bool" />
 			<description>
 				Sets the toggle mode state for the main button. Works only if [member toggle_mode] is set to [code]true[/code].
 			</description>
@@ -55,14 +55,14 @@
 	</members>
 	<signals>
 		<signal name="resource_changed">
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				Emitted when the value of the edited resource was changed.
 			</description>
 		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="resource" type="Resource" />
-			<argument index="1" name="edit" type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="edit" type="bool" />
 			<description>
 				Emitted when the resource value was set and user clicked to edit it. When [code]edit[/code] is [code]true[/code], the signal was caused by the context menu "Edit" option.
 			</description>

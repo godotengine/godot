@@ -9,14 +9,14 @@
 	<methods>
 		<method name="add_animation">
 			<return type="int" enum="Error" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="animation" type="Animation" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="animation" type="Animation" />
 			<description>
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
@@ -27,20 +27,20 @@
 		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="remove_animation">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
 		<method name="rename_animation">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="newname" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="newname" type="StringName" />
 			<description>
 			</description>
 		</method>
@@ -51,18 +51,18 @@
 	</members>
 	<signals>
 		<signal name="animation_added">
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</signal>
 		<signal name="animation_removed">
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</signal>
 		<signal name="animation_renamed">
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="to_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="to_name" type="StringName" />
 			<description>
 			</description>
 		</signal>

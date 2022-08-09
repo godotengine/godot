@@ -13,7 +13,7 @@
 	<methods>
 		<method name="can_get_buffer" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="frames" type="int" />
+			<param index="0" name="frames" type="int" />
 			<description>
 				Returns [code]true[/code] if at least [code]frames[/code] audio frames are available to read in the internal ring buffer.
 			</description>
@@ -26,7 +26,7 @@
 		</method>
 		<method name="get_buffer">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="frames" type="int" />
+			<param index="0" name="frames" type="int" />
 			<description>
 				Gets the next [code]frames[/code] audio samples from the internal ring buffer.
 				Returns a [PackedVector2Array] containing exactly [code]frames[/code] audio samples if available, or an empty [PackedVector2Array] if insufficient data was available.

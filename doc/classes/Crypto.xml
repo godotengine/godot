@@ -74,8 +74,8 @@
 	<methods>
 		<method name="constant_time_compare">
 			<return type="bool" />
-			<argument index="0" name="trusted" type="PackedByteArray" />
-			<argument index="1" name="received" type="PackedByteArray" />
+			<param index="0" name="trusted" type="PackedByteArray" />
+			<param index="1" name="received" type="PackedByteArray" />
 			<description>
 				Compares two [PackedByteArray]s for equality without leaking timing information in order to prevent timing attacks.
 				See [url=https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy]this blog post[/url] for more information.
@@ -83,8 +83,8 @@
 		</method>
 		<method name="decrypt">
 			<return type="PackedByteArray" />
-			<argument index="0" name="key" type="CryptoKey" />
-			<argument index="1" name="ciphertext" type="PackedByteArray" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="ciphertext" type="PackedByteArray" />
 			<description>
 				Decrypt the given [code]ciphertext[/code] with the provided private [code]key[/code].
 				[b]Note:[/b] The maximum size of accepted ciphertext is limited by the key size.
@@ -92,8 +92,8 @@
 		</method>
 		<method name="encrypt">
 			<return type="PackedByteArray" />
-			<argument index="0" name="key" type="CryptoKey" />
-			<argument index="1" name="plaintext" type="PackedByteArray" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="plaintext" type="PackedByteArray" />
 			<description>
 				Encrypt the given [code]plaintext[/code] with the provided public [code]key[/code].
 				[b]Note:[/b] The maximum size of accepted plaintext is limited by the key size.
@@ -101,24 +101,24 @@
 		</method>
 		<method name="generate_random_bytes">
 			<return type="PackedByteArray" />
-			<argument index="0" name="size" type="int" />
+			<param index="0" name="size" type="int" />
 			<description>
 				Generates a [PackedByteArray] of cryptographically secure random bytes with given [code]size[/code].
 			</description>
 		</method>
 		<method name="generate_rsa">
 			<return type="CryptoKey" />
-			<argument index="0" name="size" type="int" />
+			<param index="0" name="size" type="int" />
 			<description>
 				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerSSL.accept_stream].
 			</description>
 		</method>
 		<method name="generate_self_signed_certificate">
 			<return type="X509Certificate" />
-			<argument index="0" name="key" type="CryptoKey" />
-			<argument index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;" />
-			<argument index="2" name="not_before" type="String" default="&quot;20140101000000&quot;" />
-			<argument index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;" />
+			<param index="2" name="not_before" type="String" default="&quot;20140101000000&quot;" />
+			<param index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
 			<description>
 				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [code]issuer_name[/code]. The certificate validity will be defined by [code]not_before[/code] and [code]not_after[/code] (first valid date and last valid date). The [code]issuer_name[/code] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
 				A small example to generate an RSA key and a X509 self-signed certificate.
@@ -142,9 +142,9 @@
 		</method>
 		<method name="hmac_digest">
 			<return type="PackedByteArray" />
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
-			<argument index="1" name="key" type="PackedByteArray" />
-			<argument index="2" name="msg" type="PackedByteArray" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="msg" type="PackedByteArray" />
 			<description>
 				Generates an [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] digest of [code]msg[/code] using [code]key[/code]. The [code]hash_type[/code] parameter is the hashing algorithm that is used for the inner and outer hashes.
 				Currently, only [constant HashingContext.HASH_SHA256] and [constant HashingContext.HASH_SHA1] are supported.
@@ -152,19 +152,19 @@
 		</method>
 		<method name="sign">
 			<return type="PackedByteArray" />
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
-			<argument index="1" name="hash" type="PackedByteArray" />
-			<argument index="2" name="key" type="CryptoKey" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="hash" type="PackedByteArray" />
+			<param index="2" name="key" type="CryptoKey" />
 			<description>
 				Sign a given [code]hash[/code] of type [code]hash_type[/code] with the provided private [code]key[/code].
 			</description>
 		</method>
 		<method name="verify">
 			<return type="bool" />
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
-			<argument index="1" name="hash" type="PackedByteArray" />
-			<argument index="2" name="signature" type="PackedByteArray" />
-			<argument index="3" name="key" type="CryptoKey" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="hash" type="PackedByteArray" />
+			<param index="2" name="signature" type="PackedByteArray" />
+			<param index="3" name="key" type="CryptoKey" />
 			<description>
 				Verify that a given [code]signature[/code] for [code]hash[/code] of type [code]hash_type[/code] against the provided public [code]key[/code].
 			</description>

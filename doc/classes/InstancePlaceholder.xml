@@ -12,10 +12,11 @@
 	<methods>
 		<method name="create_instance">
 			<return type="Node" />
-			<argument index="0" name="replace" type="bool" default="false" />
-			<argument index="1" name="custom_scene" type="PackedScene" default="null" />
+			<param index="0" name="replace" type="bool" default="false" />
+			<param index="1" name="custom_scene" type="PackedScene" default="null" />
 			<description>
-				Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
+				Call this method to actually load in the node. The created node will be placed as a sibling [i]above[/i] the [InstancePlaceholder] in the scene tree. The [Node]'s reference is also returned for convenience.
+				[b]Note:[/b] [method create_instance] is not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
 		</method>
 		<method name="get_instance_path" qualifiers="const">
@@ -26,8 +27,10 @@
 		</method>
 		<method name="get_stored_values">
 			<return type="Dictionary" />
-			<argument index="0" name="with_order" type="bool" default="false" />
+			<param index="0" name="with_order" type="bool" default="false" />
 			<description>
+				Returns the list of properties that will be applied to the node when [method create_instance] is called.
+				If [code]with_order[/code] is [code]true[/code], a key named [code].order[/code] (note the leading period) is added to the dictionary. This [code].order[/code] key is an [Array] of [String] property names specifying the order in which properties will be applied (with index 0 being the first).
 			</description>
 		</method>
 	</methods>

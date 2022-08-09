@@ -45,7 +45,7 @@
 		</method>
 		<method name="set_target_peer">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Sets the peer to which packets will be sent.
 				The [code]id[/code] can be one of: [constant TARGET_PEER_BROADCAST] to send to all connected peers, [constant TARGET_PEER_SERVER] to send to the peer acting as server, a valid peer ID to send to that specific peer, a negative peer ID to send to all peers except that one. By default, the target peer is [constant TARGET_PEER_BROADCAST].
@@ -76,13 +76,13 @@
 			</description>
 		</signal>
 		<signal name="peer_connected">
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Emitted by the server when a client connects.
 			</description>
 		</signal>
 		<signal name="peer_disconnected">
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Emitted by the server when a client disconnects.
 			</description>

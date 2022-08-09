@@ -14,30 +14,30 @@
 	<methods>
 		<method name="disconnect_peer">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="code" type="int" default="1000" />
-			<argument index="2" name="reason" type="String" default="&quot;&quot;" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="code" type="int" default="1000" />
+			<param index="2" name="reason" type="String" default="&quot;&quot;" />
 			<description>
 				Disconnects the peer identified by [code]id[/code] from the server. See [method WebSocketPeer.close] for more information.
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns the IP address of the given peer.
 			</description>
 		</method>
 		<method name="get_peer_port" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns the remote port of the given peer.
 			</description>
 		</method>
 		<method name="has_peer" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Returns [code]true[/code] if a peer with the given ID is connected.
 			</description>
@@ -50,9 +50,9 @@
 		</method>
 		<method name="listen">
 			<return type="int" enum="Error" />
-			<argument index="0" name="port" type="int" />
-			<argument index="1" name="protocols" type="PackedStringArray" default="PackedStringArray()" />
-			<argument index="2" name="gd_mp_api" type="bool" default="false" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="protocols" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="gd_mp_api" type="bool" default="false" />
 			<description>
 				Starts listening on the given port.
 				You can specify the desired subprotocols via the "protocols" array. If the list empty (default), no sub-protocol will be requested.
@@ -62,7 +62,7 @@
 		</method>
 		<method name="set_extra_headers">
 			<return type="void" />
-			<argument index="0" name="headers" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="0" name="headers" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
 				Sets additional headers to be sent to clients during the HTTP handshake.
 			</description>
@@ -93,31 +93,31 @@
 	</members>
 	<signals>
 		<signal name="client_close_request">
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="code" type="int" />
-			<argument index="2" name="reason" type="String" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="code" type="int" />
+			<param index="2" name="reason" type="String" />
 			<description>
 				Emitted when a client requests a clean close. You should keep polling until you get a [signal client_disconnected] signal with the same [code]id[/code] to achieve the clean close. See [method WebSocketPeer.close] for more details.
 			</description>
 		</signal>
 		<signal name="client_connected">
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="protocol" type="String" />
-			<argument index="2" name="resource_name" type="String" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="protocol" type="String" />
+			<param index="2" name="resource_name" type="String" />
 			<description>
 				Emitted when a new client connects. "protocol" will be the sub-protocol agreed with the client, and "resource_name" will be the resource name of the URI the peer used.
 				"resource_name" is a path (at the very least a single forward slash) and potentially a query string.
 			</description>
 		</signal>
 		<signal name="client_disconnected">
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="was_clean_close" type="bool" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="was_clean_close" type="bool" />
 			<description>
 				Emitted when a client disconnects. [code]was_clean_close[/code] will be [code]true[/code] if the connection was shutdown cleanly.
 			</description>
 		</signal>
 		<signal name="data_received">
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when a new message is received.
 				[b]Note:[/b] This signal is [i]not[/i] emitted when used as high-level multiplayer peer.

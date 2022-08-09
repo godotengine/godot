@@ -9,49 +9,49 @@
 	<methods>
 		<method name="add_group_task">
 			<return type="int" />
-			<argument index="0" name="action" type="Callable" />
-			<argument index="1" name="elements" type="int" />
-			<argument index="2" name="tasks_needed" type="int" default="-1" />
-			<argument index="3" name="high_priority" type="bool" default="false" />
-			<argument index="4" name="description" type="String" default="&quot;&quot;" />
+			<param index="0" name="action" type="Callable" />
+			<param index="1" name="elements" type="int" />
+			<param index="2" name="tasks_needed" type="int" default="-1" />
+			<param index="3" name="high_priority" type="bool" default="false" />
+			<param index="4" name="description" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
 		<method name="add_task">
 			<return type="int" />
-			<argument index="0" name="action" type="Callable" />
-			<argument index="1" name="high_priority" type="bool" default="false" />
-			<argument index="2" name="description" type="String" default="&quot;&quot;" />
+			<param index="0" name="action" type="Callable" />
+			<param index="1" name="high_priority" type="bool" default="false" />
+			<param index="2" name="description" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
 		<method name="get_group_processed_element_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="group_id" type="int" />
+			<param index="0" name="group_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_group_task_completed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="group_id" type="int" />
+			<param index="0" name="group_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_task_completed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="task_id" type="int" />
+			<param index="0" name="task_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="wait_for_group_task_completion">
 			<return type="void" />
-			<argument index="0" name="group_id" type="int" />
+			<param index="0" name="group_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="wait_for_task_completion">
 			<return type="void" />
-			<argument index="0" name="task_id" type="int" />
+			<param index="0" name="task_id" type="int" />
 			<description>
 			</description>
 		</method>

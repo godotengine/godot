@@ -11,9 +11,9 @@
 	<methods>
 		<method name="connect_to_signal">
 			<return type="void" />
-			<argument index="0" name="obj" type="Object" />
-			<argument index="1" name="signals" type="String" />
-			<argument index="2" name="args" type="Array" />
+			<param index="0" name="obj" type="Object" />
+			<param index="1" name="signals" type="String" />
+			<param index="2" name="args" type="Array" />
 			<description>
 				Connects this [VisualScriptFunctionState] to a signal in the given object to automatically resume when it's emitted.
 			</description>
@@ -26,7 +26,7 @@
 		</method>
 		<method name="resume">
 			<return type="Variant" />
-			<argument index="0" name="args" type="Array" default="[]" />
+			<param index="0" name="args" type="Array" default="[]" />
 			<description>
 				Resumes the function to run from the point it was yielded.
 			</description>

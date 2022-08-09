@@ -14,7 +14,7 @@
 	<methods>
 		<method name="_spawn_custom" qualifiers="virtual">
 			<return type="Node" />
-			<argument index="0" name="data" type="Variant" />
+			<param index="0" name="data" type="Variant" />
 			<description>
 				Method called on all peers when a custom spawn was requested by the authority using [method spawn]. Should return a [Node] that is not in the scene tree.
 
@@ -23,7 +23,7 @@
 		</method>
 		<method name="add_spawnable_scene">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Adds a scene path to spawnable scenes, making it automatically replicated from the multiplayer authority to other peers when added as children of the node pointed by [member spawn_path].
 			</description>
@@ -36,7 +36,7 @@
 		</method>
 		<method name="get_spawnable_scene" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Returns the spawnable scene path by index.
 			</description>
@@ -49,7 +49,7 @@
 		</method>
 		<method name="spawn">
 			<return type="Node" />
-			<argument index="0" name="data" type="Variant" default="null" />
+			<param index="0" name="data" type="Variant" default="null" />
 			<description>
 				Requests a custom spawn, with [code]data[/code] passed to [method _spawn_custom] on all peers. Returns the locally spawned node instance already inside the scene tree, and added as a child of the node pointed by [member spawn_path].
 
@@ -69,13 +69,13 @@
 	</members>
 	<signals>
 		<signal name="despawned">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a spawnable scene or custom spawn was despawned by the multiplayer authority. Only called on puppets.
 			</description>
 		</signal>
 		<signal name="spawned">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a spawnable scene or custom spawn was spawned by the multiplayer authority. Only called on puppets.
 			</description>

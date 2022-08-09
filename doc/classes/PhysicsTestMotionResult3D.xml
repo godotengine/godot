@@ -11,35 +11,35 @@
 	<methods>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's attached [Object] given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
 		</method>
 		<method name="get_collider_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the unique instance ID of the colliding body's attached [Object] given a collision index (the deepest collision by default), if a collision occurred. See [method Object.get_instance_id].
 			</description>
 		</method>
 		<method name="get_collider_rid" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's [RID] used by the [PhysicsServer3D] given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's shape index given a collision index (the deepest collision by default), if a collision occurred. See [CollisionObject3D].
 			</description>
 		</method>
 		<method name="get_collider_velocity" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's velocity given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
@@ -52,28 +52,28 @@
 		</method>
 		<method name="get_collision_depth" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the length of overlap along the collision normal given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
 		</method>
 		<method name="get_collision_local_shape" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the moving object's colliding shape given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's shape's normal at the point of collision given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the point of collision in global coordinates given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
