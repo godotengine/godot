@@ -48,8 +48,10 @@ public:
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
+#ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
 	const static PackedStringArray get_unsupported_features(const PackedStringArray &p_project_features);
+#endif // TOOLS_ENABLED
 
 	struct AutoloadInfo {
 		StringName name;
@@ -116,8 +118,10 @@ protected:
 
 	Error _save_custom_bnd(const String &p_file);
 
+#ifdef TOOLS_ENABLED
 	const static PackedStringArray _get_supported_features();
 	const static PackedStringArray _trim_to_supported_features(const PackedStringArray &p_project_features);
+#endif // TOOLS_ENABLED
 
 	void _convert_to_last_version(int p_from_version);
 
