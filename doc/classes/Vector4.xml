@@ -80,6 +80,14 @@
 				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector4" />
+			<description>
+				Returns the squared distance between this vector and [code]to[/code].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
 		<method name="distance_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="to" type="Vector4" />

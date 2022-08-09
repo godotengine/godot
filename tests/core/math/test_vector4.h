@@ -98,6 +98,9 @@ TEST_CASE("[Vector4] Length methods") {
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector1.distance_to(vector2), (real_t)54.772255750517),
 			"Vector4 distance_to should work as expected.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(vector1.distance_squared_to(vector2), 3000),
+			"Vector4 distance_squared_to should work as expected.");
 }
 
 TEST_CASE("[Vector4] Limiting methods") {
