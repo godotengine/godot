@@ -106,7 +106,7 @@ protected:
 	uint32_t skin_stride = 0;
 	uint32_t mesh_surface_format = 0;
 
-	void _queue_update();
+	void _queue_redraw();
 
 public:
 	void set_centered(bool p_center);
@@ -209,15 +209,19 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	Ref<SpriteFrames> frames;
 	bool playing = false;
+	bool backwards = false;
 	StringName animation = "default";
 	int frame = 0;
+	float speed_scale = 1.0f;
 
 	bool centered = false;
 
+	bool is_over = false;
 	double timeout = 0.0;
 
 	void _res_changed();
 
+	double _get_frame_duration();
 	void _reset_timeout();
 
 	RID last_shader;
@@ -233,7 +237,7 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName());
+	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
 	void stop();
 
 	void set_playing(bool p_playing);
@@ -244,6 +248,9 @@ public:
 
 	void set_frame(int p_frame);
 	int get_frame() const;
+
+	void set_speed_scale(double p_speed_scale);
+	double get_speed_scale() const;
 
 	virtual Rect2 get_item_rect() const override;
 
