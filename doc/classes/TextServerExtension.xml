@@ -939,7 +939,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="dict" type="PackedStringArray" />
 			<description>
-				Returns index of the first string in [code]dict[/dict] which is visually confusable with the [code]string[/string], or [code]-1[/code] if none is found.
+				Returns index of the first string in [param dict] which is visually confusable with the [param string], or [code]-1[/code] if none is found.
 			</description>
 		</method>
 		<method name="is_locale_right_to_left" qualifiers="virtual const">
