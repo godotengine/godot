@@ -174,6 +174,7 @@ public:
 		bool uses_time = false;
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
+		bool uses_screen_texture_mipmaps = false;
 		Cull cull_mode = CULL_DISABLED;
 
 		uint64_t last_pass = 0;

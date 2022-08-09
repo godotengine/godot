@@ -941,6 +941,12 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 			continue; //instance uniforms don't appear in the buffer
 		}
 
+		if (E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+			continue;
+		}
+
 		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 			//this is a global variable, get the index to it
 			GlobalShaderUniforms::Variable *gv = material_storage->global_shader_uniforms.variables.getptr(E.key);
@@ -1051,6 +1057,12 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 		int uniform_array_size = p_texture_uniforms[i].array_size;
 
 		Vector<RID> textures;
+
+		if (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+			continue;
+		}
 
 		if (p_texture_uniforms[i].global) {
 			uses_global_textures = true;
@@ -1307,7 +1319,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), true);
 	}
 
-	if (p_ubo_size == 0 && p_texture_uniforms.size() == 0) {
+	if (p_ubo_size == 0 && (p_texture_uniforms.size() == 0)) {
 		// This material does not require an uniform set, so don't create it.
 		return false;
 	}

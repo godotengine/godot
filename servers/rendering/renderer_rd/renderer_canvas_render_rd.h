@@ -174,6 +174,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		bool uses_screen_texture = false;
+		bool uses_screen_texture_mipmaps = false;
 		bool uses_sdf = false;
 		bool uses_time = false;
 
