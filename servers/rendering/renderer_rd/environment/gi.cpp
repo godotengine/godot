@@ -1140,6 +1140,7 @@ void GI::SDFGI::erase() {
 
 	RD::get_singleton()->free(lightprobe_data);
 	RD::get_singleton()->free(lightprobe_history_scroll);
+	RD::get_singleton()->free(lightprobe_average_scroll);
 	RD::get_singleton()->free(occlusion_data);
 	RD::get_singleton()->free(ambient_texture);
 
@@ -2427,18 +2428,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 	if (last_probe_data_version != data_version) {
 		//need to re-create everything
-		if (texture.is_valid()) {
-			RD::get_singleton()->free(texture);
-			RD::get_singleton()->free(write_buffer);
-			mipmaps.clear();
-		}
-
-		for (int i = 0; i < dynamic_maps.size(); i++) {
-			RD::get_singleton()->free(dynamic_maps[i].texture);
-			RD::get_singleton()->free(dynamic_maps[i].depth);
-		}
-
-		dynamic_maps.clear();
+		free_resources();
 
 		Vector3i octree_size = gi->voxel_gi_get_octree_size(probe);
 
@@ -3128,6 +3118,37 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 	}
 
 	last_probe_version = gi->voxel_gi_get_version(probe);
+}
+
+void GI::VoxelGIInstance::free_resources() {
+	if (texture.is_valid()) {
+		RD::get_singleton()->free(texture);
+		RD::get_singleton()->free(write_buffer);
+
+		texture = RID();
+		write_buffer = RID();
+		mipmaps.clear();
+	}
+
+	for (int i = 0; i < dynamic_maps.size(); i++) {
+		RD::get_singleton()->free(dynamic_maps[i].texture);
+		RD::get_singleton()->free(dynamic_maps[i].depth);
+
+		// these only exist on the first level...
+		if (dynamic_maps[i].fb_depth.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].fb_depth);
+		}
+		if (dynamic_maps[i].albedo.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].albedo);
+		}
+		if (dynamic_maps[i].normal.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].normal);
+		}
+		if (dynamic_maps[i].orm.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].orm);
+		}
+	}
+	dynamic_maps.clear();
 }
 
 void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
@@ -3934,6 +3955,12 @@ RID GI::voxel_gi_instance_create(RID p_base) {
 	voxel_gi.probe = p_base;
 	RID rid = voxel_gi_instance_owner.make_rid(voxel_gi);
 	return rid;
+}
+
+void GI::voxel_gi_instance_free(RID p_rid) {
+	GI::VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_rid);
+	voxel_gi->free_resources();
+	voxel_gi_instance_owner.free(p_rid);
 }
 
 void GI::voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) {

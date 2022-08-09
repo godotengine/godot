@@ -469,6 +469,7 @@ public:
 
 		void update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
 		void debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+		void free_resources();
 	};
 
 	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
@@ -482,6 +483,12 @@ public:
 		ERR_FAIL_COND_V(!voxel_gi, RID());
 		return voxel_gi->texture;
 	};
+
+	bool voxel_gi_instance_owns(RID p_rid) const {
+		return voxel_gi_instance_owner.owns(p_rid);
+	}
+
+	void voxel_gi_instance_free(RID p_rid);
 
 	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 
