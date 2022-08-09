@@ -22,7 +22,7 @@
 	</methods>
 	<signals>
 		<signal name="on_url_received">
-			<argument index="0" name="url" type="String" />
+			<param index="0" name="url" type="String" />
 			<description>
 				the url format will return the exact link clicked
 				for example yourappname://your_event_here could be put on a web browser page
