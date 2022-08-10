@@ -17,7 +17,7 @@
 			<return type="Vector2" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a [Vector2] for the input with the given [code]name[/code]. This is used for thumbsticks and thumbpads found on many controllers.
+				Returns a [Vector2] for the input with the given [param name]. This is used for thumbsticks and thumbpads found on many controllers.
 			</description>
 		</method>
 		<method name="get_tracker_hand" qualifiers="const">
@@ -30,14 +30,14 @@
 			<return type="float" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a numeric value for the input with the given [code]name[/code]. This is used for triggers and grip sensors.
+				Returns a numeric value for the input with the given [param name]. This is used for triggers and grip sensors.
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the button with the given [code]name[/code] is pressed.
+				Returns [code]true[/code] if the button with the given [param name] is pressed.
 			</description>
 		</method>
 	</methods>

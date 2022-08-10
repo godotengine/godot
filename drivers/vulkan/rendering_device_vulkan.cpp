@@ -8745,6 +8745,14 @@ void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_frame
 #endif
 
 void RenderingDeviceVulkan::_free_internal(RID p_id) {
+#ifdef DEV_ENABLED
+	String resource_name;
+	if (resource_names.has(p_id)) {
+		resource_name = resource_names[p_id];
+		resource_names.erase(p_id);
+	}
+#endif
+
 	//push everything so it's disposed of next time this frame index is processed (means, it's safe to do it)
 	if (texture_owner.owns(p_id)) {
 		Texture *texture = texture_owner.get_or_null(p_id);
@@ -8814,7 +8822,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 		frames[frame].compute_pipelines_to_dispose_of.push_back(*pipeline);
 		compute_pipeline_owner.free(p_id);
 	} else {
+#ifdef DEV_ENABLED
+		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()) + " " + resource_name);
+#else
 		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
+#endif
 	}
 }
 
@@ -8876,7 +8888,11 @@ void RenderingDeviceVulkan::set_resource_name(RID p_id, const String p_name) {
 		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(pipeline->pipeline_layout), p_name + " Layout");
 	} else {
 		ERR_PRINT("Attempted to name invalid ID: " + itos(p_id.get_id()));
+		return;
 	}
+#ifdef DEV_ENABLED
+	resource_names[p_id] = p_name;
+#endif
 }
 
 void RenderingDeviceVulkan::draw_command_begin_label(String p_label_name, const Color p_color) {
@@ -9369,6 +9385,11 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
 		}
 		for (const RID &E : owned) {
+#ifdef DEV_ENABLED
+			if (resource_names.has(E)) {
+				print_line(String(" - ") + resource_names[E]);
+			}
+#endif
 			free(E);
 		}
 	}
@@ -9687,6 +9708,11 @@ void RenderingDeviceVulkan::finalize() {
 			for (List<RID>::Element *E = owned.front(); E;) {
 				List<RID>::Element *N = E->next();
 				if (texture_is_shared(E->get())) {
+#ifdef DEV_ENABLED
+					if (resource_names.has(E->get())) {
+						print_line(String(" - ") + resource_names[E->get()]);
+					}
+#endif
 					free(E->get());
 					owned.erase(E);
 				}
@@ -9694,6 +9720,11 @@ void RenderingDeviceVulkan::finalize() {
 			}
 			//free non shared second, this will avoid an error trying to free unexisting textures due to dependencies.
 			for (const RID &E : owned) {
+#ifdef DEV_ENABLED
+				if (resource_names.has(E)) {
+					print_line(String(" - ") + resource_names[E]);
+				}
+#endif
 				free(E);
 			}
 		}

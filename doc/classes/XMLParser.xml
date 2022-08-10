@@ -19,14 +19,14 @@
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the name of the attribute specified by the index in [code]idx[/code] argument.
+				Gets the name of the attribute specified by the [param idx] index.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the value of the attribute specified by the index in [code]idx[/code] argument.
+				Gets the value of the attribute specified by the [param idx] index.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
@@ -39,14 +39,14 @@
 			<return type="String" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Gets the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
+				Gets the value of a certain attribute of the current element by [param name]. This will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Gets the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
+				Gets the value of a certain attribute of the current element by [param name]. This will return an empty [String] if the attribute is not found.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
@@ -90,14 +90,14 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Opens an XML file for parsing. This returns an error code.
+				Opens an XML [param file] for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
-				Opens an XML raw buffer for parsing. This returns an error code.
+				Opens an XML raw [param buffer] for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="read">

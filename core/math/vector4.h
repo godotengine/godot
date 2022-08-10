@@ -79,6 +79,7 @@ struct _NO_DISCARD_ Vector4 {
 	bool is_normalized() const;
 
 	real_t distance_to(const Vector4 &p_to) const;
+	real_t distance_squared_to(const Vector4 &p_to) const;
 	Vector4 direction_to(const Vector4 &p_to) const;
 
 	Vector4 abs() const;

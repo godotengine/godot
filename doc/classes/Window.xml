@@ -32,7 +32,7 @@
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="Window.Flags" />
 			<description>
-				Returns [code]true[/code] if the flag is set.
+				Returns [code]true[/code] if the [param flag] is set.
 			</description>
 		</method>
 		<method name="get_layout_direction" qualifiers="const">
@@ -52,7 +52,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Color] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [Color] at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -61,7 +61,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the constant at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the constant at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -91,7 +91,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Font] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [Font] at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -100,7 +100,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the font size at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the font size at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -109,7 +109,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the icon at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the icon at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -118,7 +118,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [StyleBox] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [StyleBox] at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -139,7 +139,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Color] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [Color] with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_constant" qualifiers="const">
@@ -147,7 +147,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if constant with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if constant with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_font" qualifiers="const">
@@ -155,7 +155,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [Font] with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
@@ -163,7 +163,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if font size with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if font size with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
@@ -171,7 +171,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if icon with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if icon with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
@@ -179,7 +179,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [StyleBox] with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="hide">
@@ -222,7 +222,7 @@
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [code]rect[/code] is provided, it will be set as the [Window]'s size.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size.
 				Fails if called on the main window.
 			</description>
 		</method>
@@ -247,7 +247,7 @@
 			<return type="void" />
 			<param index="0" name="ratio" type="float" default="0.8" />
 			<description>
-				Popups the [Window] centered inside its parent [Window] and sets its size as a [code]ratio[/code] of parent's size.
+				Popups the [Window] centered inside its parent [Window] and sets its size as a [param ratio] of parent's size.
 			</description>
 		</method>
 		<method name="popup_on_parent">
@@ -282,7 +282,7 @@
 			<return type="void" />
 			<param index="0" name="active" type="bool" />
 			<description>
-				If [code]active[/code] is [code]true[/code], enables system's native IME (Input Method Editor).
+				If [param active] is [code]true[/code], enables system's native IME (Input Method Editor).
 			</description>
 		</method>
 		<method name="set_ime_position">
