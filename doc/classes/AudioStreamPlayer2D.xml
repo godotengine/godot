@@ -4,7 +4,8 @@
 		Plays positional sound in 2D space.
 	</brief_description>
 	<description>
-		Plays audio that dampens with distance from screen center.
+		Plays audio that dampens with distance from a given position.
+		By default, audio is heard from the screen center. This can be changed by adding a [Listener2D] node to the scene and enabling it by calling [method Listener2D.make_current] on it.
 		See also [AudioStreamPlayer] to play a sound non-positionally.
 		[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
