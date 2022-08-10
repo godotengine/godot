@@ -1481,7 +1481,7 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 
 void BulletPhysicsServer::free(RID p_rid) {
 	if (!p_rid.is_valid()) {
-		ERR_FAIL_MSG("Invalid RID.");
+		ERR_FAIL_MSG("PhysicsServer attempted to free a NULL RID.");
 		return;
 	}
 
@@ -1540,7 +1540,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(space);
 
 	} else {
-		ERR_FAIL_MSG("Invalid RID.");
+		ERR_FAIL_MSG("RID not found by PhysicsServer.");
 	}
 }
 
