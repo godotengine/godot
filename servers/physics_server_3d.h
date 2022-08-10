@@ -550,6 +550,7 @@ public:
 	struct MotionResult {
 		Vector3 travel;
 		Vector3 remainder;
+		real_t collision_depth = 0.0;
 		real_t collision_safe_fraction = 0.0;
 		real_t collision_unsafe_fraction = 0.0;
 
