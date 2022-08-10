@@ -199,6 +199,9 @@ public:
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask) override;
 	virtual uint32_t body_get_collision_mask(RID p_body) const override;
 
+	virtual void body_set_collision_priority(RID p_body, real_t p_priority) override;
+	virtual real_t body_get_collision_priority(RID p_body) const override;
+
 	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override;
 	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override;
 

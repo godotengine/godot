@@ -59,6 +59,7 @@ private:
 	ObjectID instance_id;
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
 
 	struct Shape {
 		Transform3D xform;
@@ -164,6 +165,13 @@ public:
 		_shape_changed();
 	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
+
+	_FORCE_INLINE_ void set_collision_priority(real_t p_priority) {
+		ERR_FAIL_COND_MSG(p_priority <= 0, "Priority must be greater than 0.");
+		collision_priority = p_priority;
+		_shape_changed();
+	}
+	_FORCE_INLINE_ real_t get_collision_priority() const { return collision_priority; }
 
 	_FORCE_INLINE_ bool collides_with(GodotCollisionObject3D *p_other) const {
 		return p_other->collision_layer & collision_mask;
