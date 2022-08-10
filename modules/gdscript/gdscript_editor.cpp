@@ -2517,39 +2517,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	GDScriptCompletionIdentifier connect_base;
 
-	if (Variant::has_utility_function(call->function_name)) {
-		MethodInfo info = Variant::get_utility_function_info(call->function_name);
-		r_arghint = _make_arguments_hint(info, p_argidx);
-		return;
-	} else if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
-		MethodInfo info = GDScriptUtilityFunctions::get_function_info(call->function_name);
-		r_arghint = _make_arguments_hint(info, p_argidx);
-		return;
-	} else if (GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
-		// Complete constructor.
-		List<MethodInfo> constructors;
-		Variant::get_constructor_list(GDScriptParser::get_builtin_type(call->function_name), &constructors);
-
-		int i = 0;
-		for (const MethodInfo &E : constructors) {
-			if (p_argidx >= E.arguments.size()) {
-				continue;
-			}
-			if (i > 0) {
-				r_arghint += "\n";
-			}
-			r_arghint += _make_arguments_hint(E, p_argidx);
-			i++;
-		}
-		return;
-	} else if (call->is_super || callee_type == GDScriptParser::Node::IDENTIFIER) {
-		base = p_context.base;
-
-		if (p_context.current_class) {
-			base_type = p_context.current_class->get_datatype();
-			_static = !p_context.current_function || p_context.current_function->is_static;
-		}
-	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
+	if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
 
 		if (subscript->base != nullptr && subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
@@ -2588,6 +2556,38 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 
 			_static = base_type.is_meta_type;
+		}
+	} else if (Variant::has_utility_function(call->function_name)) {
+		MethodInfo info = Variant::get_utility_function_info(call->function_name);
+		r_arghint = _make_arguments_hint(info, p_argidx);
+		return;
+	} else if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
+		MethodInfo info = GDScriptUtilityFunctions::get_function_info(call->function_name);
+		r_arghint = _make_arguments_hint(info, p_argidx);
+		return;
+	} else if (GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
+		// Complete constructor.
+		List<MethodInfo> constructors;
+		Variant::get_constructor_list(GDScriptParser::get_builtin_type(call->function_name), &constructors);
+
+		int i = 0;
+		for (const MethodInfo &E : constructors) {
+			if (p_argidx >= E.arguments.size()) {
+				continue;
+			}
+			if (i > 0) {
+				r_arghint += "\n";
+			}
+			r_arghint += _make_arguments_hint(E, p_argidx);
+			i++;
+		}
+		return;
+	} else if (call->is_super || callee_type == GDScriptParser::Node::IDENTIFIER) {
+		base = p_context.base;
+
+		if (p_context.current_class) {
+			base_type = p_context.current_class->get_datatype();
+			_static = !p_context.current_function || p_context.current_function->is_static;
 		}
 	} else {
 		return;
