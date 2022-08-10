@@ -3957,7 +3957,9 @@ bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 
 	StringName base_native = base.native_type;
 
-	ERR_FAIL_COND_V_MSG(!class_exists(base_native), false, "Non-existent native base class.");
+	if (!class_exists(base_native)) {
+		return false;
+	}
 
 	StringName parent = base_native;
 	while (parent != StringName()) {
