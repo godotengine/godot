@@ -601,6 +601,12 @@
 				Returns the word at [param position].
 			</description>
 		</method>
+		<method name="get_word_line_column_at_pos" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="position" type="Vector2" />
+			<description>
+			</description>
+		</method>
 		<method name="get_word_under_caret" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="caret_index" type="int" default="-1" />

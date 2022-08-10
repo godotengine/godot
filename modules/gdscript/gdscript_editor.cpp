@@ -3586,6 +3586,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	if (ClassDB::class_exists(p_symbol)) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
 		r_result.class_name = p_symbol;
+		r_result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_CLASS;
+		if (EditorHelp::get_doc_data()->class_list.has(p_symbol)) {
+			r_result.hint.description = EditorHelp::get_doc_data()->class_list[p_symbol].brief_description;
+		}
 		return OK;
 	}
 
@@ -3642,19 +3646,19 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			r_result.class_name = "@GDScript";
 			r_result.class_member = p_symbol;
 			r_result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_CONSTANT;
-		DocData::ClassDoc gdscript = EditorHelp::get_doc_data()->class_list["@GDScript"];
-		for (int i = 0; i < gdscript.constants.size(); i++) {
-			if (gdscript.constants[i].name == p_symbol) {
-				if ("PI" == p_symbol || "TAU" == p_symbol) {
-					r_result.hint.value = gdscript.constants[i].value.to_float();
-				} else {
-					r_result.hint.value = gdscript.constants[i].value;
+			DocData::ClassDoc gdscript = EditorHelp::get_doc_data()->class_list["@GDScript"];
+			for (int i = 0; i < gdscript.constants.size(); i++) {
+				if (gdscript.constants[i].name == p_symbol) {
+					if ("PI" == p_symbol || "TAU" == p_symbol) {
+						r_result.hint.value = gdscript.constants[i].value.to_float();
+					} else {
+						r_result.hint.value = gdscript.constants[i].value;
+					}
+					r_result.hint.description = gdscript.constants[i].description;
+					break;
 				}
-				r_result.hint.description = gdscript.constants[i].description;
-				break;
 			}
-		}
-		return OK;
+			return OK;
 		}
 	}
 
@@ -3747,11 +3751,22 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				const GDScriptParser::SuiteNode *suite = context.current_suite;
 				while (suite) {
 					if (suite->has_local(p_symbol)) {
+						GDScriptParser::SuiteNode::Local local_suite = suite->get_local(p_symbol);
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
-						r_result.location = suite->get_local(p_symbol).start_line;
+						r_result.location = local_suite.start_line;
 						r_result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_LOCAL_VAR;
+						r_result.hint.datatype = local_suite.get_datatype().native_type;
 						if (context.current_class->identifier) {
 							r_result.hint._namespace = context.current_class->identifier->name;
+							if (EditorHelp::get_doc_data()->has_doc(context.current_class->identifier->name)) {
+								DocData::ClassDoc current_class_doc = EditorHelp::get_doc_data()->class_list[context.current_class->identifier->name];
+								for (int j = 0; j < current_class_doc.properties.size(); j++) {
+									if (current_class_doc.properties[j].name == p_symbol) {
+										r_result.hint.description = current_class_doc.properties[j].description;
+										break;
+									}
+								}
+							}
 						}
 						// TODO: Datatype suite->get_local(p_symbol).
 						// TODO(require core): Implement local variable description.
@@ -3782,7 +3797,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 							r_result.location = 0;
 							r_result.script = ResourceLoader::load(scr_path);
 							r_result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_PROPERTY;
-							r_result.hint._namespace = "@autoload";
+							r_result.hint._namespace = "@Autoload";
 							r_result.hint.datatype = "Script";
 							// TODO(require core): Script description.
 							return OK;
@@ -3928,6 +3943,24 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION;
 				r_result.class_name = "@GDScript";
 				r_result.class_member = annotation_symbol;
+				r_result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_ANNOTATION;
+				DocData::ClassDoc gdscript = EditorHelp::get_doc_data()->class_list["@GDScript"];
+				for (int j = 0; j < gdscript.annotations.size(); j++) {
+					if (gdscript.annotations[j].name == annotation_symbol) {
+						if (!gdscript.annotations[j].description.is_empty()) {
+							r_result.hint.description = gdscript.annotations[j].description;
+						}
+						for (int i = 0; i < gdscript.annotations[j].arguments.size(); i++) {
+							ScriptLanguage::SymbolHint::Parameter parameter;
+							parameter.name = gdscript.annotations[j].arguments[i].name;
+							if (!gdscript.annotations[j].arguments[i].type.is_empty()) {
+								parameter.datatype = gdscript.annotations[j].arguments[i].type;
+							}
+							r_result.hint.parameters.push_back(parameter);
+						}
+						break;
+					}
+				}
 				return OK;
 			}
 		} break;

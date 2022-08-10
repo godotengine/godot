@@ -604,6 +604,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/completion/add_type_hints", false);
 	_initial_set("text_editor/completion/use_single_quotes", false);
 
+	// Hints
+	_initial_set("text_editor/hints/hover/enabled", true);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/hints/hover/hover_delay", 0.1, "0,5,0.01");
+	_initial_set("text_editor/hints/hover/max_size", Size2i(350, 145));
+	_initial_set("text_editor/hints/hover/symbol_type_color", Color(0, 1, 1));
+	_initial_set("text_editor/hints/hover/symbol_color", Color(.4, .6, 0));
+	_initial_set("text_editor/hints/hover/value_color", Color(0.9, 0.74, 0.34));
+	_initial_set("text_editor/hints/hover/description_default_color", Color(1, 1, 1));
+
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_font_size", 16, "8,48,1")

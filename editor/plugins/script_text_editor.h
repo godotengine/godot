@@ -54,12 +54,45 @@ public:
 	ConnectionInfoDialog();
 };
 
+class SymbolHintHelpBit : public MarginContainer {
+	GDCLASS(SymbolHintHelpBit, MarginContainer);
+
+	RichTextLabel *rich_text = nullptr;
+	void _go_to_help(String p_what);
+	void _meta_clicked(String p_select);
+
+	void _push_text(const String &p_text, bool p_pop = true);
+
+	ScriptLanguage::SymbolHint symbol_hint;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	RichTextLabel *get_rich_text() const { return rich_text; }
+
+	void set_symbol_hint(const ScriptLanguage::SymbolHint &p_symbol_hint);
+	ScriptLanguage::SymbolHint get_symbol_hint() const { return symbol_hint; }
+
+	virtual Size2 get_minimum_size() const override;
+
+	SymbolHintHelpBit();
+};
+
 class ScriptTextEditor : public ScriptEditorBase {
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
 	CodeTextEditor *code_editor = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
 	RichTextLabel *errors_panel = nullptr;
+
+	Vector2i symbol_hint_mouse_position;
+	Vector2i symbol_hint_column_line;
+	ScriptLanguage::SymbolHint symbol_hint;
+	PopupPanel *symbol_hint_popup = nullptr;
+	SymbolHintHelpBit *symbol_hint_help_bit = nullptr;
+	Ref<SceneTreeTimer> symbol_hint_timer;
 
 	Ref<Script> script;
 	bool script_is_valid = false;
@@ -190,7 +223,11 @@ protected:
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
-	void _validate_symbol(const String &p_symbol, bool p_lookup = true);
+	void _validate_symbol(const String &p_symbol);
+	void _hovered_symbol(const String &p_symbol, Point2i p_column_line);
+
+	void _show_symbol_hint();
+	void _hide_symbol_hint();
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 

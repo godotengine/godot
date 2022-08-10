@@ -33,12 +33,8 @@
 
 #include "scene/gui/text_edit.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/object/script_language.h"
-#endif
-
 class CodeEdit : public TextEdit {
-	GDCLASS(CodeEdit, TextEdit)
+	GDCLASS(CodeEdit, TextEdit);
 
 public:
 	// Keep enums in sync with:
@@ -230,11 +226,6 @@ private:
 	String symbol_lookup_new_word = "";
 	String symbol_lookup_word = "";
 	Point2i symbol_lookup_pos;
-
-#ifdef TOOLS_ENABLED
-	ScriptLanguage::SymbolHint hovered_hint;
-	Vector2i hovered_word_position;
-#endif
 
 	/* Visual */
 	struct ThemeCache {
@@ -467,10 +458,6 @@ public:
 	String get_text_for_symbol_lookup();
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
-
-#ifdef TOOLS_ENABLED
-	void set_hovered_hint(const ScriptLanguage::SymbolHint &p_symbol_hint);
-#endif
 
 	CodeEdit();
 	~CodeEdit();

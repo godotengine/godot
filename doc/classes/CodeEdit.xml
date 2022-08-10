@@ -516,6 +516,12 @@
 				Emitted when the user requests code completion.
 			</description>
 		</signal>
+		<signal name="symbol_hovered">
+			<param index="0" name="symbol" type="String" />
+			<param index="1" name="symbol_column_line" type="Vector2i" />
+			<description>
+			</description>
+		</signal>
 		<signal name="symbol_lookup">
 			<param index="0" name="symbol" type="String" />
 			<param index="1" name="line" type="int" />

@@ -870,6 +870,20 @@
 		<member name="text_editor/help/show_help_index" type="bool" setter="" getter="">
 			If [code]true[/code], displays a table of contents at the left of the editor help (at the location where the members overview would appear when editing a script).
 		</member>
+		<member name="text_editor/hints/hover/description_default_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/hints/hover/enabled" type="bool" setter="" getter="">
+		</member>
+		<member name="text_editor/hints/hover/hover_delay" type="float" setter="" getter="">
+		</member>
+		<member name="text_editor/hints/hover/max_size" type="Vector2i" setter="" getter="">
+		</member>
+		<member name="text_editor/hints/hover/symbol_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/hints/hover/symbol_type_color" type="Color" setter="" getter="">
+		</member>
+		<member name="text_editor/hints/hover/value_color" type="Color" setter="" getter="">
+		</member>
 		<member name="text_editor/script_list/show_members_overview" type="bool" setter="" getter="">
 			If [code]true[/code], displays an overview of the current script's member variables and functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
 		</member>
