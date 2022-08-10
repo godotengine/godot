@@ -27,7 +27,7 @@
 			<return type="void" />
 			<param index="0" name="size" type="float" />
 			<description>
-				Sets the expand margin to [code]size[/code] pixels for all margins.
+				Sets the expand margin to [param size] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_expand_margin_individual">
@@ -37,7 +37,7 @@
 			<param index="2" name="size_right" type="float" />
 			<param index="3" name="size_bottom" type="float" />
 			<description>
-				Sets the expand margin for each margin to [code]size_left[/code], [code]size_top[/code], [code]size_right[/code], and [code]size_bottom[/code] pixels.
+				Sets the expand margin for each margin to [param size_left], [param size_top], [param size_right], and [param size_bottom] pixels.
 			</description>
 		</method>
 		<method name="set_expand_margin_size">
@@ -45,7 +45,7 @@
 			<param index="0" name="margin" type="int" enum="Side" />
 			<param index="1" name="size" type="float" />
 			<description>
-				Sets the expand margin to [code]size[/code] pixels for the specified [enum Side].
+				Sets the expand margin to [param size] pixels for the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_margin_size">
@@ -53,7 +53,7 @@
 			<param index="0" name="margin" type="int" enum="Side" />
 			<param index="1" name="size" type="float" />
 			<description>
-				Sets the margin to [code]size[/code] pixels for the specified [enum Side].
+				Sets the margin to [param size] pixels for the specified [enum Side].
 			</description>
 		</method>
 	</methods>

@@ -86,7 +86,7 @@
 			<param index="1" name="flags" type="int" default="0" />
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
-				[b]FIXME:[/b] Document possible values for [code]flags[/code], it changed in 4.0. Likely some combinations of [enum Mesh.ArrayFormat].
+				[b]FIXME:[/b] Document possible values for [param flags], it changed in 4.0. Likely some combinations of [enum Mesh.ArrayFormat].
 			</description>
 		</method>
 		<method name="commit_to_arrays">
@@ -123,7 +123,7 @@
 			<param index="0" name="nd_threshold" type="float" />
 			<param index="1" name="target_index_count" type="int" default="3" />
 			<description>
-				Generates a LOD for a given [code]nd_threshold[/code] in linear units (square root of quadric error metric), using at most [code]target_index_count[/code] indices.
+				Generates a LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
 				Deprecated. Unused internally and neglects to preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.
 			</description>
 		</method>
@@ -131,7 +131,7 @@
 			<return type="void" />
 			<param index="0" name="flip" type="bool" default="false" />
 			<description>
-				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays]. For correct display of normal-mapped surfaces, you will also have to generate tangents using [method generate_tangents].
+				Generates normals from vertices so you do not have to do it manually. If [param flip] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays]. For correct display of normal-mapped surfaces, you will also have to generate tangents using [method generate_tangents].
 				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
@@ -151,7 +151,7 @@
 			<return type="int" enum="SurfaceTool.CustomFormat" />
 			<param index="0" name="channel_index" type="int" />
 			<description>
-				Returns the format for custom [code]channel_index[/code] (currently up to 4). Returns [constant CUSTOM_MAX] if this custom channel is unused.
+				Returns the format for custom [param channel_index] (currently up to 4). Returns [constant CUSTOM_MAX] if this custom channel is unused.
 			</description>
 		</method>
 		<method name="get_primitive_type" qualifiers="const">
@@ -184,7 +184,7 @@
 			<return type="void" />
 			<param index="0" name="bones" type="PackedInt32Array" />
 			<description>
-				Specifies an array of bones to use for the [i]next[/i] vertex. [code]bones[/code] must contain 4 integers.
+				Specifies an array of bones to use for the [i]next[/i] vertex. [param bones] must contain 4 integers.
 			</description>
 		</method>
 		<method name="set_color">
@@ -200,8 +200,8 @@
 			<param index="0" name="channel_index" type="int" />
 			<param index="1" name="custom_color" type="Color" />
 			<description>
-				Sets the custom value on this vertex for [code]channel_index[/code].
-				[method set_custom_format] must be called first for this [code]channel_index[/code]. Formats which are not RGBA will ignore other color channels.
+				Sets the custom value on this vertex for [param channel_index].
+				[method set_custom_format] must be called first for this [param channel_index]. Formats which are not RGBA will ignore other color channels.
 			</description>
 		</method>
 		<method name="set_custom_format">
@@ -209,7 +209,7 @@
 			<param index="0" name="channel_index" type="int" />
 			<param index="1" name="format" type="int" enum="SurfaceTool.CustomFormat" />
 			<description>
-				Sets the color format for this custom [code]channel_index[/code]. Use [constant CUSTOM_MAX] to disable.
+				Sets the color format for this custom [param channel_index]. Use [constant CUSTOM_MAX] to disable.
 				Must be invoked after [method begin] and should be set before [method commit] or [method commit_to_arrays].
 			</description>
 		</method>
@@ -268,7 +268,7 @@
 			<return type="void" />
 			<param index="0" name="weights" type="PackedFloat32Array" />
 			<description>
-				Specifies weight values to use for the [i]next[/i] vertex. [code]weights[/code] must contain 4 values. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
+				Specifies weight values to use for the [i]next[/i] vertex. [param weights] must contain 4 values. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 	</methods>

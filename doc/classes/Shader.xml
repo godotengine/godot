@@ -16,8 +16,8 @@
 			<param index="1" name="index" type="int" default="0" />
 			<description>
 				Returns the texture that is set as default for the specified parameter.
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
-				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
+				[b]Note:[/b] [param param] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
@@ -31,7 +31,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the shader has this param defined as a uniform in its code.
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] [param name] must match the name of the uniform in the code exactly.
 			</description>
 		</method>
 		<method name="set_default_texture_param">
@@ -41,8 +41,8 @@
 			<param index="2" name="index" type="int" default="0" />
 			<description>
 				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
-				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
+				[b]Note:[/b] [param param] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
 	</methods>

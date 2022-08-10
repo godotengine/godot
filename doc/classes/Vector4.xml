@@ -84,7 +84,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector4" />
 			<description>
-				Returns the squared distance between this vector and [code]to[/code].
+				Returns the squared distance between this vector and [param to].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>

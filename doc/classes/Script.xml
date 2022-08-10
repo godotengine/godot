@@ -78,7 +78,7 @@
 			<return type="bool" />
 			<param index="0" name="base_object" type="Object" />
 			<description>
-				Returns [code]true[/code] if [code]base_object[/code] is an instance of this script.
+				Returns [code]true[/code] if [param base_object] is an instance of this script.
 			</description>
 		</method>
 		<method name="is_tool" qualifiers="const">
