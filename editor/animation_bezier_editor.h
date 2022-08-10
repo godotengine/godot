@@ -54,6 +54,7 @@ class AnimationBezierTrackEdit : public Control {
 	float play_position_pos = 0;
 
 	Ref<Animation> animation;
+	bool read_only = false;
 	int selected_track = 0;
 
 	Vector<Rect2> view_rects;
@@ -176,7 +177,7 @@ public:
 
 	Ref<Animation> get_animation() const;
 
-	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
+	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
