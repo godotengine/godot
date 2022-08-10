@@ -179,7 +179,9 @@ GIProbeData::GIProbeData() {
 }
 
 GIProbeData::~GIProbeData() {
-	VS::get_singleton()->free(probe);
+	if (probe.is_valid()) {
+		VS::get_singleton()->free(probe);
+	}
 }
 
 //////////////////////
@@ -527,5 +529,7 @@ GIProbe::GIProbe() {
 }
 
 GIProbe::~GIProbe() {
-	VS::get_singleton()->free(gi_probe);
+	if (gi_probe.is_valid()) {
+		VS::get_singleton()->free(gi_probe);
+	}
 }

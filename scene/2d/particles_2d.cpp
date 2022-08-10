@@ -419,5 +419,7 @@ Particles2D::Particles2D() {
 }
 
 Particles2D::~Particles2D() {
-	VS::get_singleton()->free(particles);
+	if (particles.is_valid()) {
+		VS::get_singleton()->free(particles);
+	}
 }
