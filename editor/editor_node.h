@@ -801,7 +801,7 @@ public:
 
 	void select_editor_by_name(const String &p_name);
 
-	void open_request(const String &p_path);
+	void open_request(const String &p_path, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
 	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);

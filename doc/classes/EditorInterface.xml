@@ -188,6 +188,11 @@
 		<method name="open_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
+			<param index="1" name="ignore_broken_deps" type="bool" default="false" />
+			<param index="2" name="set_inherited" type="bool" default="false" />
+			<param index="3" name="clear_errors" type="bool" default="true" />
+			<param index="4" name="force_open_imported" type="bool" default="false" />
+			<param index="5" name="silent_change_tab" type="bool" default="false" />
 			<description>
 				Opens the scene at the given path.
 			</description>

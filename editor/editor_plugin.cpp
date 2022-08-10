@@ -178,12 +178,12 @@ void EditorInterface::edit_script(const Ref<Script> &p_script, int p_line, int p
 	ScriptEditor::get_singleton()->edit(p_script, p_line, p_col, p_grab_focus);
 }
 
-void EditorInterface::open_scene_from_path(const String &scene_path) {
+void EditorInterface::open_scene_from_path(const String &scene_path, bool p_ignore_broken_deps, bool p_set_inherited, bool p_clear_errors, bool p_force_open_imported, bool p_silent_change_tab) {
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
 
-	EditorNode::get_singleton()->open_request(scene_path);
+	EditorNode::get_singleton()->open_request(scene_path, p_ignore_broken_deps, p_set_inherited, p_clear_errors, p_force_open_imported, p_silent_change_tab);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
@@ -358,7 +358,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
 	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
 	ClassDB::bind_method(D_METHOD("edit_script", "script", "line", "column", "grab_focus"), &EditorInterface::edit_script, DEFVAL(-1), DEFVAL(0), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorInterface::open_scene_from_path);
+	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "ignore_broken_deps", "set_inherited", "clear_errors", "force_open_imported", "silent_change_tab"), &EditorInterface::open_scene_from_path, DEFVAL(false), DEFVAL(false), DEFVAL(true), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 	ClassDB::bind_method(D_METHOD("play_main_scene"), &EditorInterface::play_main_scene);
 	ClassDB::bind_method(D_METHOD("play_current_scene"), &EditorInterface::play_current_scene);
