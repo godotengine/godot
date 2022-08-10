@@ -126,11 +126,7 @@ public:
 
 		bool orientation = an.cross(bn) > 0;
 
-		if ((bn.cross(cn) > 0) != orientation) {
-			return false;
-		}
-
-		return (cn.cross(an) > 0) == orientation;
+		return (bn.cross(cn) > 0) == orientation && (cn.cross(an) > 0) == orientation;
 	}
 
 	static Vector2 get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 *p_segment) {
