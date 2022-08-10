@@ -68,7 +68,7 @@ private:
 		SafeFlag completed;
 		SafeNumeric<uint32_t> finished;
 		uint32_t tasks_used = 0;
-		TightLocalVector<Task *> low_priority_native_tasks;
+		LocalVector<Task *> low_priority_native_tasks;
 	};
 
 	struct Task {
@@ -106,7 +106,7 @@ private:
 		Thread thread;
 	};
 
-	TightLocalVector<ThreadData> threads;
+	LocalVector<ThreadData> threads;
 	SafeFlag exit_threads;
 
 	HashMap<Thread::ID, int> thread_ids;

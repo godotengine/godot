@@ -323,7 +323,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 	task_mutex.unlock();
 
 	if (!p_high_priority && use_native_low_priority_threads) {
-		group->low_priority_native_tasks.resize(p_tasks);
+		group->low_priority_native_tasks.resize(p_tasks, LocalVectorT::ALLOC_EXACT);
 	}
 
 	for (int i = 0; i < p_tasks; i++) {
@@ -419,7 +419,7 @@ void WorkerThreadPool::init(int p_thread_count, bool p_use_native_threads_low_pr
 
 	use_native_low_priority_threads = p_use_native_threads_low_priority;
 
-	threads.resize(p_thread_count);
+	threads.resize(p_thread_count, LocalVectorT::ALLOC_EXACT);
 
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;

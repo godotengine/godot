@@ -9258,7 +9258,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
-	frames.resize(frame_count);
+	frames.resize(frame_count, LocalVectorT::ALLOC_EXACT);
 	frame = 0;
 	// Create setup and frame buffers.
 	for (int i = 0; i < frame_count; i++) {
@@ -9304,12 +9304,12 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 
 			vkCreateQueryPool(device, &query_pool_create_info, nullptr, &frames[i].timestamp_pool);
 
-			frames[i].timestamp_names.resize(max_timestamp_query_elements);
-			frames[i].timestamp_cpu_values.resize(max_timestamp_query_elements);
+			frames[i].timestamp_names.resize(max_timestamp_query_elements, LocalVectorT::ALLOC_EXACT);
+			frames[i].timestamp_cpu_values.resize(max_timestamp_query_elements, LocalVectorT::ALLOC_EXACT);
 			frames[i].timestamp_count = 0;
-			frames[i].timestamp_result_names.resize(max_timestamp_query_elements);
-			frames[i].timestamp_cpu_result_values.resize(max_timestamp_query_elements);
-			frames[i].timestamp_result_values.resize(max_timestamp_query_elements);
+			frames[i].timestamp_result_names.resize(max_timestamp_query_elements, LocalVectorT::ALLOC_EXACT);
+			frames[i].timestamp_cpu_result_values.resize(max_timestamp_query_elements, LocalVectorT::ALLOC_EXACT);
+			frames[i].timestamp_result_values.resize(max_timestamp_query_elements, LocalVectorT::ALLOC_EXACT);
 			frames[i].timestamp_result_count = 0;
 		}
 	}

@@ -39,9 +39,15 @@
 #include <initializer_list>
 #include <type_traits>
 
-// If tight, it grows strictly as much as needed.
-// Otherwise, it grows exponentially (the default and what you want in most cases).
-template <class T, class U = uint32_t, bool force_trivial = false, bool tight = false>
+class LocalVectorT {
+public:
+	enum AllocStrategy {
+		ALLOC_POW2,
+		ALLOC_EXACT,
+	};
+};
+
+template <class T, class U = uint32_t, bool force_trivial = false>
 class LocalVector {
 private:
 	U count = 0;
@@ -123,17 +129,29 @@ public:
 	}
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
-	_FORCE_INLINE_ void reserve(U p_size) {
-		p_size = tight ? p_size : nearest_power_of_2_templated(p_size);
-		if (p_size > capacity) {
-			capacity = p_size;
-			data = (T *)memrealloc(data, capacity * sizeof(T));
-			CRASH_COND_MSG(!data, "Out of memory");
+	_FORCE_INLINE_ void reserve(U p_size, LocalVectorT::AllocStrategy p_strategy = LocalVectorT::ALLOC_POW2) {
+		if (p_strategy == LocalVectorT::ALLOC_POW2) {
+			p_size = nearest_power_of_2_templated(p_size);
+			if (p_size <= capacity) {
+				return;
+			}
+		} else {
+			// Cannot reserve a smaller size that the current vector.
+			p_size = MAX(p_size, count);
+			if (p_size == capacity) {
+				return;
+			}
 		}
+
+		capacity = p_size;
+		data = (T *)memrealloc(data, capacity * sizeof(T));
+		CRASH_COND_MSG(!data, "Out of memory");
 	}
 
 	_FORCE_INLINE_ U size() const { return count; }
-	void resize(U p_size) {
+	void resize(U p_size, LocalVectorT::AllocStrategy p_strategy = LocalVectorT::ALLOC_POW2) {
+		bool exact = (p_strategy == LocalVectorT::ALLOC_EXACT);
+
 		if (p_size < count) {
 			if (!std::is_trivially_destructible<T>::value && !force_trivial) {
 				for (U i = p_size; i < count; i++) {
@@ -143,12 +161,7 @@ public:
 			count = p_size;
 		} else if (p_size > count) {
 			if (unlikely(p_size > capacity)) {
-				if (capacity == 0) {
-					capacity = 1;
-				}
-				while (capacity < p_size) {
-					capacity <<= 1;
-				}
+				capacity = exact ? p_size : nearest_power_of_2_templated(p_size);
 				data = (T *)memrealloc(data, capacity * sizeof(T));
 				CRASH_COND_MSG(!data, "Out of memory");
 			}
@@ -159,6 +172,13 @@ public:
 			}
 			count = p_size;
 		}
+
+		if (exact) {
+			shrink_to_fit();
+		}
+	}
+	void shrink_to_fit(LocalVectorT::AllocStrategy p_strategy = LocalVectorT::ALLOC_EXACT) {
+		reserve((p_strategy == LocalVectorT::ALLOC_EXACT) ? count : nearest_power_of_2_templated(count), LocalVectorT::ALLOC_EXACT);
 	}
 	_FORCE_INLINE_ const T &operator[](U p_index) const {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
@@ -264,8 +284,5 @@ public:
 		}
 	}
 };
-
-template <class T, class U = uint32_t, bool force_trivial = false>
-using TightLocalVector = LocalVector<T, U, force_trivial, true>;
 
 #endif // LOCAL_VECTOR_H

@@ -997,19 +997,19 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		VkQueryPool timestamp_pool;
 
-		TightLocalVector<String> timestamp_names;
-		TightLocalVector<uint64_t> timestamp_cpu_values;
+		LocalVector<String> timestamp_names;
+		LocalVector<uint64_t> timestamp_cpu_values;
 		uint32_t timestamp_count = 0;
-		TightLocalVector<String> timestamp_result_names;
-		TightLocalVector<uint64_t> timestamp_cpu_result_values;
-		TightLocalVector<uint64_t> timestamp_result_values;
+		LocalVector<String> timestamp_result_names;
+		LocalVector<uint64_t> timestamp_cpu_result_values;
+		LocalVector<uint64_t> timestamp_result_values;
 		uint32_t timestamp_result_count = 0;
 		uint64_t index = 0;
 	};
 
 	uint32_t max_timestamp_query_elements = 0;
 
-	TightLocalVector<Frame> frames; // Frames available, for main device they are cycled (usually 3), for local devices only 1.
+	LocalVector<Frame> frames; // Frames available, for main device they are cycled (usually 3), for local devices only 1.
 	int frame = 0; // Current frame.
 	int frame_count = 0; // Total amount of frames.
 	uint64_t frames_drawn = 0;
