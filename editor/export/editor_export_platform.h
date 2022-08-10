@@ -85,11 +85,6 @@ private:
 		EditorProgress *ep = nullptr;
 	};
 
-	struct FeatureContainers {
-		HashSet<String> features;
-		Vector<String> features_pv;
-	};
-
 	Vector<ExportMessage> messages;
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
@@ -110,7 +105,7 @@ protected:
 		~ExportNotifier();
 	};
 
-	FeatureContainers get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
+	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
 	bool exists_export_template(String template_file_name, String *err) const;
 	String find_export_template(String template_file_name, String *err = nullptr) const;
