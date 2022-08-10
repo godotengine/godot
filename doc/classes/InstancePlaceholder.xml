@@ -25,6 +25,12 @@
 				Gets the path to the [PackedScene] resource file that is loaded by default when calling [method create_instance]. Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
 		</method>
+		<method name="get_stored_groups">
+			<return type="Array" />
+			<description>
+				Returns the list of groups that will be applied to the node when [method create_instance] is called.
+			</description>
+		</method>
 		<method name="get_stored_values">
 			<return type="Dictionary" />
 			<param index="0" name="with_order" type="bool" default="false" />
