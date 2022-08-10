@@ -2459,6 +2459,19 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		p_internal_width = p_width;
 	}
 
+	if (p_use_taa) {
+		// Use negative mipmap LOD bias when TAA is enabled to compensate for loss of sharpness.
+		// This restores sharpness in still images to be roughly at the same level as without TAA,
+		// but moving scenes will still be blurrier.
+		p_texture_mipmap_bias -= 0.5;
+	}
+
+	if (p_screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+		// Use negative mipmap LOD bias when FXAA is enabled to compensate for loss of sharpness.
+		// If both TAA and FXAA are enabled, combine their negative LOD biases together.
+		p_texture_mipmap_bias -= 0.25;
+	}
+
 	material_storage->sampler_rd_configure_custom(p_texture_mipmap_bias);
 	update_uniform_sets();
 
