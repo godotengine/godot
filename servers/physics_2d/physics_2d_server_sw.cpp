@@ -1122,7 +1122,7 @@ Physics2DServer::JointType Physics2DServerSW::joint_get_type(RID p_joint) const 
 
 void Physics2DServerSW::free(RID p_rid) {
 	if (!p_rid.is_valid()) {
-		ERR_FAIL_MSG("Invalid RID.");
+		ERR_FAIL_MSG("PhysicsServer attempted to free a NULL RID.");
 		return;
 	}
 
@@ -1195,7 +1195,7 @@ void Physics2DServerSW::free(RID p_rid) {
 		memdelete(joint);
 
 	} else {
-		ERR_FAIL_MSG("Invalid RID.");
+		ERR_FAIL_MSG("RID not found by PhysicsServer.");
 	}
 };
 
