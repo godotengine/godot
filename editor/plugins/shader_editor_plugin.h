@@ -250,6 +250,14 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
 	void _update_shader_list_status();
+	void _move_shader_tab(int p_from, int p_to);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual void edit(Object *p_object) override;
