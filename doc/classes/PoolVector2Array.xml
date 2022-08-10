@@ -43,6 +43,11 @@
 				Appends a [PoolVector2Array] at the end of this array.
 			</description>
 		</method>
+		<method name="clear">
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
 		<method name="count">
 			<return type="int" />
 			<argument index="0" name="value" type="Vector2" />

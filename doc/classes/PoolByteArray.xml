@@ -42,6 +42,11 @@
 				Appends a [PoolByteArray] at the end of this array.
 			</description>
 		</method>
+		<method name="clear">
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
 		<method name="compress">
 			<return type="PoolByteArray" />
 			<argument index="0" name="compression_mode" type="int" default="0" />
