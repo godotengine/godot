@@ -1657,6 +1657,9 @@ int RichTextLabel::_find_first_line(int p_from, int p_to, int p_vofs) const {
 		int m = Math::floor(double(l + r) / 2.0);
 		MutexLock lock(main->lines[m].text_buf->get_mutex());
 		int ofs = _calculate_line_vertical_offset(main->lines[m]);
+		if (ofs < 0) {
+			return 0;
+		}
 		if (ofs < p_vofs) {
 			l = m + 1;
 		} else {
