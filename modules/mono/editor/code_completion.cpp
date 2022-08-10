@@ -182,7 +182,7 @@ PoolStringArray get_code_completion(CompletionKind p_kind, const String &p_scrip
 			script->get_script_signal_list(&signals);
 
 			StringName native = script->get_instance_base_type();
-			if (native != StringName()) {
+			if (native) {
 				ClassDB::get_signal_list(native, &signals, /* p_no_inheritance: */ false);
 			}
 

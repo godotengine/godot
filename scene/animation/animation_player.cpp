@@ -169,7 +169,7 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
 		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-		if (E->get().next != StringName()) {
+		if (E->get().next) {
 			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
@@ -1208,7 +1208,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	}
 
 	StringName next = animation_get_next(p_name);
-	if (next != StringName() && animation_set.has(next)) {
+	if (next && animation_set.has(next)) {
 		queue(next);
 	}
 }

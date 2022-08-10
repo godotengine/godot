@@ -1068,7 +1068,7 @@ void AnimationTreePlayerEditor::_find_paths_for_filter(const StringName &p_node,
 
 	for (int i = 0; i < anim_tree->node_get_input_count(p_node); i++) {
 		StringName port = anim_tree->node_get_input_source(p_node, i);
-		if (port == StringName()) {
+		if (port.is_empty()) {
 			continue;
 		}
 		_find_paths_for_filter(port, paths);

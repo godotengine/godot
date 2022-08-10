@@ -123,7 +123,7 @@ static String get_type_name(const PropertyInfo &info) {
 	if (info.type == Variant::INT && (info.usage & PROPERTY_USAGE_CLASS_IS_ENUM)) {
 		return String("enum.") + String(info.class_name).replace(".", "::");
 	}
-	if (info.class_name != StringName()) {
+	if (info.class_name) {
 		return info.class_name;
 	}
 	if (info.hint == PROPERTY_HINT_RESOURCE_TYPE) {

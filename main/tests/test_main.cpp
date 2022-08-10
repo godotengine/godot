@@ -47,6 +47,7 @@
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
+#include "test_string_name.h"
 #include "test_theme.h"
 #include "test_transform.h"
 #include "test_xml_parser.h"
@@ -54,6 +55,7 @@
 const char **tests_get_names() {
 	static const char *test_names[] = {
 		"string",
+		"string_name",
 		"math",
 		"basis",
 		"transform",
@@ -80,6 +82,10 @@ const char **tests_get_names() {
 MainLoop *test_main(String p_test, const List<String> &p_args) {
 	if (p_test == "string") {
 		return TestString::test();
+	}
+
+	if (p_test == "string_name") {
+		return TestStringName::test();
 	}
 
 	if (p_test == "math") {

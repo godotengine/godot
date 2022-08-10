@@ -1066,9 +1066,9 @@ void Theme::get_theme_item_types(DataType p_data_type, List<StringName> *p_list)
 void Theme::set_type_variation(const StringName &p_theme_type, const StringName &p_base_type) {
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_base_type), vformat("Invalid type name: '%s'", p_base_type));
-	ERR_FAIL_COND_MSG(p_theme_type == StringName(), "An empty theme type cannot be marked as a variation of another type.");
+	ERR_FAIL_COND_MSG(p_theme_type.is_empty(), "An empty theme type cannot be marked as a variation of another type.");
 	ERR_FAIL_COND_MSG(ClassDB::class_exists(p_theme_type), "A type associated with a built-in class cannot be marked as a variation of another type.");
-	ERR_FAIL_COND_MSG(p_base_type == StringName(), "An empty theme type cannot be the base type of a variation. Use clear_type_variation() instead if you want to unmark '" + String(p_theme_type) + "' as a variation.");
+	ERR_FAIL_COND_MSG(p_base_type.is_empty(), "An empty theme type cannot be the base type of a variation. Use clear_type_variation() instead if you want to unmark '" + String(p_theme_type) + "' as a variation.");
 
 	if (variation_map.has(p_theme_type)) {
 		StringName old_base = variation_map[p_theme_type];
@@ -1141,7 +1141,7 @@ void Theme::remove_type(const StringName &p_theme_type) {
 	}
 
 	// If type is a variation, remove that connection.
-	if (get_type_variation_base(p_theme_type) != StringName()) {
+	if (get_type_variation_base(p_theme_type)) {
 		clear_type_variation(p_theme_type);
 	}
 
@@ -1198,9 +1198,9 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 	ERR_FAIL_NULL(p_list);
 
 	// Build the dependency chain for type variations.
-	if (p_type_variation != StringName()) {
+	if (p_type_variation) {
 		StringName variation_name = p_type_variation;
-		while (variation_name != StringName()) {
+		while (variation_name) {
 			p_list->push_back(variation_name);
 			variation_name = get_type_variation_base(variation_name);
 
@@ -1213,7 +1213,7 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 
 	// Continue building the chain using native class hierarchy.
 	StringName class_name = p_base_type;
-	while (class_name != StringName()) {
+	while (class_name) {
 		p_list->push_back(class_name);
 		class_name = ClassDB::get_parent_class_nocheck(class_name);
 	}

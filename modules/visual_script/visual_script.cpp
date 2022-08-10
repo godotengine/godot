@@ -241,7 +241,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 		}
 	}
 
-	ERR_FAIL_COND(function == StringName());
+	ERR_FAIL_COND(function.is_empty());
 
 	Function &func = functions[function];
 	Ref<VisualScriptNode> vsn = func.nodes[p_id].node;
@@ -2236,7 +2236,7 @@ VisualScriptInstance::~VisualScriptInstance() {
 /////////////////////
 
 Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	ERR_FAIL_COND_V(function == StringName(), Variant());
+	ERR_FAIL_COND_V(function.is_empty(), Variant());
 
 #ifdef DEBUG_ENABLED
 
@@ -2292,11 +2292,11 @@ void VisualScriptFunctionState::connect_to_signal(Object *p_obj, const String &p
 }
 
 bool VisualScriptFunctionState::is_valid() const {
-	return function != StringName();
+	return function;
 }
 
 Variant VisualScriptFunctionState::resume(Array p_args) {
-	ERR_FAIL_COND_V(function == StringName(), Variant());
+	ERR_FAIL_COND_V(function.is_empty(), Variant());
 #ifdef DEBUG_ENABLED
 
 	ERR_FAIL_COND_V_MSG(instance_id && !ObjectDB::get_instance(instance_id), Variant(), "Resumed after yield, but class instance is gone.");
@@ -2327,7 +2327,7 @@ VisualScriptFunctionState::VisualScriptFunctionState() {
 }
 
 VisualScriptFunctionState::~VisualScriptFunctionState() {
-	if (function != StringName()) {
+	if (function) {
 		Variant *s = ((Variant *)stack.ptr());
 		for (int i = 0; i < variant_stack_size; i++) {
 			s[i].~Variant();

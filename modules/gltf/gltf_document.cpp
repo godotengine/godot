@@ -6109,11 +6109,11 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 					int bone_i = skin->get_bind_bone(bind_i);
 					Transform bind_pose = skin->get_bind_pose(bind_i);
 					StringName bind_name = skin->get_bind_name(bind_i);
-					if (bind_name != StringName()) {
+					if (bind_name) {
 						bone_i = bone_name_to_idx[bind_name];
 					}
 					ERR_CONTINUE(bone_i < 0 || bone_i >= bone_cnt);
-					if (bind_name == StringName()) {
+					if (bind_name.is_empty()) {
 						bind_name = skeleton->get_bone_name(bone_i);
 					}
 					GLTFNodeIndex skeleton_bone_i = gltf_skeleton->joints[bone_i];

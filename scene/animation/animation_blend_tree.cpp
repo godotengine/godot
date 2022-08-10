@@ -990,7 +990,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 		return CONNECTION_ERROR_NO_INPUT_INDEX;
 	}
 
-	if (nodes[p_input_node].connections[p_input_index] != StringName()) {
+	if (nodes[p_input_node].connections[p_input_index]) {
 		return CONNECTION_ERROR_CONNECTION_EXISTS;
 	}
 
@@ -1009,7 +1009,7 @@ void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connec
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			StringName output = E->get().connections[i];
-			if (output != StringName()) {
+			if (output) {
 				NodeConnection nc;
 				nc.input_node = E->key();
 				nc.input_index = i;

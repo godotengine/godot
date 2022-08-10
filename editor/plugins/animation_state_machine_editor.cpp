@@ -67,7 +67,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
-		if (selected_node != StringName() || selected_transition_to != StringName() || selected_transition_from != StringName()) {
+		if (selected_node || selected_transition_to || selected_transition_from) {
 			_erase_selected();
 			accept_event();
 		}
@@ -251,7 +251,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	//end connecting nodes
 	if (mb.is_valid() && connecting && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
-		if (connecting_to_node != StringName()) {
+		if (connecting_to_node) {
 			if (state_machine->has_transition(connecting_from, connecting_to_node)) {
 				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
 
@@ -593,11 +593,11 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	//snap lines
 	if (dragging_selected) {
 		Vector2 from = (state_machine->get_node_position(selected_node) * EDSCALE) + drag_ofs - state_machine->get_graph_offset() * EDSCALE;
-		if (snap_x != StringName()) {
+		if (snap_x) {
 			Vector2 to = (state_machine->get_node_position(snap_x) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
 			state_machine_draw->draw_line(from, to, linecolor, 2);
 		}
-		if (snap_y != StringName()) {
+		if (snap_y) {
 			Vector2 to = (state_machine->get_node_position(snap_y) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
 			state_machine_draw->draw_line(from, to, linecolor, 2);
 		}
@@ -647,7 +647,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	if (connecting) {
 		Vector2 from = (state_machine->get_node_position(connecting_from) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
 		Vector2 to;
-		if (connecting_to_node != StringName()) {
+		if (connecting_to_node) {
 			to = (state_machine->get_node_position(connecting_to_node) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
 		} else {
 			to = connecting_to;
@@ -725,7 +725,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		bool auto_advance = tl.auto_advance;
 		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
-		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
+		if (tl.advance_condition_name && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
 			tl.advance_condition_state = true;
 			auto_advance = true;
 		}
@@ -923,7 +923,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
 			error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
 			/*} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
-			if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
+			if (state_machine->get_start_node().is_empty() || state_machine->get_end_node().is_empty()) {
 				error = TTR("Start and end nodes are needed for a sub-transition.");
 			}*/
 		} else if (playback.is_null()) {
@@ -973,7 +973,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				break;
 			}
 
-			bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+			bool acstate = transition_lines[i].advance_condition_name && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
 
 			if (transition_lines[i].advance_condition_state != acstate) {
 				state_machine_draw->update();
@@ -1022,7 +1022,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		}
 
 		{
-			if (current_node != StringName() && state_machine->has_node(current_node)) {
+			if (current_node && state_machine->has_node(current_node)) {
 				String next = current_node;
 				Ref<AnimationNodeStateMachine> anodesm = state_machine->get_node(next);
 				Ref<AnimationNodeStateMachinePlayback> current_node_playback;
@@ -1109,7 +1109,7 @@ void AnimationNodeStateMachineEditor::_scroll_changed(double) {
 }
 
 void AnimationNodeStateMachineEditor::_erase_selected() {
-	if (selected_node != StringName() && state_machine->has_node(selected_node)) {
+	if (selected_node && state_machine->has_node(selected_node)) {
 		updating = true;
 		undo_redo->create_action(TTR("Node Removed"));
 		undo_redo->add_do_method(state_machine.ptr(), "remove_node", selected_node);
@@ -1131,7 +1131,7 @@ void AnimationNodeStateMachineEditor::_erase_selected() {
 		selected_node = StringName();
 	}
 
-	if (selected_transition_to != StringName() && selected_transition_from != StringName() && state_machine->has_transition(selected_transition_from, selected_transition_to)) {
+	if (selected_transition_to && selected_transition_from && state_machine->has_transition(selected_transition_from, selected_transition_to)) {
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(state_machine->find_transition(selected_transition_from, selected_transition_to));
 		updating = true;
 		undo_redo->create_action(TTR("Transition Removed"));
@@ -1149,7 +1149,7 @@ void AnimationNodeStateMachineEditor::_erase_selected() {
 }
 
 void AnimationNodeStateMachineEditor::_autoplay_selected() {
-	if (selected_node != StringName() && state_machine->has_node(selected_node)) {
+	if (selected_node && state_machine->has_node(selected_node)) {
 		StringName new_start_node;
 		if (state_machine->get_start_node() == selected_node) { //toggle it
 			new_start_node = StringName();
@@ -1170,7 +1170,7 @@ void AnimationNodeStateMachineEditor::_autoplay_selected() {
 }
 
 void AnimationNodeStateMachineEditor::_end_selected() {
-	if (selected_node != StringName() && state_machine->has_node(selected_node)) {
+	if (selected_node && state_machine->has_node(selected_node)) {
 		StringName new_end_node;
 		if (state_machine->get_end_node() == selected_node) { //toggle it
 			new_end_node = StringName();
@@ -1192,9 +1192,9 @@ void AnimationNodeStateMachineEditor::_end_selected() {
 void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
 		tool_erase_hb->show();
-		tool_erase->set_disabled(selected_node == StringName() && selected_transition_from == StringName() && selected_transition_to == StringName());
-		tool_autoplay->set_disabled(selected_node == StringName());
-		tool_end->set_disabled(selected_node == StringName());
+		tool_erase->set_disabled(selected_node.is_empty() && selected_transition_from.is_empty() && selected_transition_to.is_empty());
+		tool_autoplay->set_disabled(selected_node.is_empty());
+		tool_end->set_disabled(selected_node.is_empty());
 	} else {
 		tool_erase_hb->hide();
 	}

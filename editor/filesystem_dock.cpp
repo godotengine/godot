@@ -600,7 +600,7 @@ bool FileSystemDock::_is_file_type_disabled_by_feature_profile(const StringName 
 
 	StringName class_name = p_class;
 
-	while (class_name != StringName()) {
+	while (class_name) {
 		if (profile->is_class_disabled(class_name)) {
 			return true;
 		}

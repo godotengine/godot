@@ -255,7 +255,7 @@ bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const Strin
 	}
 
 	StringName class_name = p_class;
-	while (class_name != StringName()) {
+	while (class_name) {
 		if (!ClassDB::class_exists(class_name)) {
 			return false;
 		}

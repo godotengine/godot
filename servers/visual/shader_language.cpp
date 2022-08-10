@@ -2851,7 +2851,7 @@ bool ShaderLanguage::_get_completable_identifier(BlockNode *p_block, CompletionT
 			_set_tkpos(pos);
 		}
 		return true;
-	} else if (identifier != StringName()) {
+	} else if (identifier) {
 		_set_tkpos(pos);
 	}
 
@@ -3494,7 +3494,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											}
 										}
 
-										if (!error && varname != StringName()) {
+										if (!error && varname) {
 											if (shader->constants.has(varname)) {
 												error = true;
 											} else if (shader->uniforms.has(varname)) {
@@ -3750,7 +3750,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 				}
 
-				if (identifier == StringName()) {
+				if (identifier.is_empty()) {
 					_set_error("Expected identifier as member");
 					return nullptr;
 				}
@@ -5656,7 +5656,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	StringName shader_type_identifier;
 	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
 
-	if (shader_type_identifier == StringName()) {
+	if (shader_type_identifier.is_empty()) {
 		_set_error("Expected identifier after 'shader_type', indicating type of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
 	}
@@ -5683,7 +5683,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					StringName mode;
 					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
 
-					if (mode == StringName()) {
+					if (mode.is_empty()) {
 						_set_error("Expected identifier for render mode");
 						return ERR_PARSE_ERROR;
 					}
@@ -6214,7 +6214,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				_get_completable_identifier(nullptr, COMPLETION_MAIN_FUNCTION, name);
 
-				if (name == StringName()) {
+				if (name.is_empty()) {
 					_set_error("Expected function name after datatype");
 					return ERR_PARSE_ERROR;
 				}
@@ -7001,7 +7001,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 					}
 
-					if (skip_function != StringName() && p_functions.has(skip_function)) {
+					if (skip_function && p_functions.has(skip_function)) {
 						for (Map<StringName, BuiltInInfo>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E->get().constant) {

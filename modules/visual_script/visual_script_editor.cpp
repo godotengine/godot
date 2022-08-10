@@ -66,7 +66,7 @@ protected:
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-		if (sig == StringName()) {
+		if (sig.is_empty()) {
 			return false;
 		}
 
@@ -128,7 +128,7 @@ protected:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		if (sig == StringName()) {
+		if (sig.is_empty()) {
 			return false;
 		}
 
@@ -153,7 +153,7 @@ protected:
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		if (sig == StringName()) {
+		if (sig.is_empty()) {
 			return;
 		}
 
@@ -204,7 +204,7 @@ protected:
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-		if (var == StringName()) {
+		if (var.is_empty()) {
 			return false;
 		}
 
@@ -280,7 +280,7 @@ protected:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		if (var == StringName()) {
+		if (var.is_empty()) {
 			return false;
 		}
 
@@ -312,7 +312,7 @@ protected:
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		if (var == StringName()) {
+		if (var.is_empty()) {
 			return;
 		}
 
@@ -3626,7 +3626,7 @@ void VisualScriptEditor::_port_action_menu(int p_option, const StringName &func)
 
 			VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
 
-			if (tg.gdclass != StringName()) {
+			if (tg.gdclass) {
 				n->set_base_type(tg.gdclass);
 			} else {
 				n->set_base_type("Object");
@@ -3720,7 +3720,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	bool port_node_exists = true;
 
 	StringName func = _get_function_of_node(port_action_node);
-	if (func == StringName()) {
+	if (func.is_empty()) {
 		func = default_func;
 		port_node_exists = false;
 	}
@@ -3884,7 +3884,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			if (tg.type == Variant::OBJECT) {
 				vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
 				vsfc->set_base_type(String(""));
-				if (tg.gdclass != StringName()) {
+				if (tg.gdclass) {
 					vsfc->set_base_type(tg.gdclass);
 
 				} else if (script->get_node(func, port_action_node).is_valid()) {
@@ -3919,7 +3919,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			if (tg.type == Variant::OBJECT) {
 				vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
 				vsp->set_base_type(String(""));
-				if (tg.gdclass != StringName()) {
+				if (tg.gdclass) {
 					vsp->set_base_type(tg.gdclass);
 
 				} else if (script->get_node(func, port_action_node).is_valid()) {
@@ -3949,7 +3949,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			if (tg.type == Variant::OBJECT) {
 				vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
 				vsp->set_base_type(String(""));
-				if (tg.gdclass != StringName()) {
+				if (tg.gdclass) {
 					vsp->set_base_type(tg.gdclass);
 
 				} else if (script->get_node(func, port_action_node).is_valid()) {
@@ -4095,7 +4095,7 @@ void VisualScriptEditor::_cancel_connect_node() {
 
 int VisualScriptEditor::_create_new_node_from_name(const String &p_text, const Vector2 &p_point, const StringName &p_func) {
 	StringName func = default_func;
-	if (p_func != StringName()) {
+	if (p_func) {
 		func = p_func;
 	}
 

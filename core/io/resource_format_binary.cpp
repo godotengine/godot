@@ -692,7 +692,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	for (int i = 0; i < pc; i++) {
 		StringName name = _get_string();
 
-		if (name == StringName()) {
+		if (name.is_empty()) {
 			error = ERR_FILE_CORRUPT;
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}

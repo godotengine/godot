@@ -1625,7 +1625,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 			String header = "[node";
 			header += " name=\"" + String(name).c_escape() + "\"";
-			if (type != StringName()) {
+			if (type) {
 				header += " type=\"" + String(type) + "\"";
 			}
 			if (path != NodePath()) {

@@ -1336,7 +1336,7 @@ AnimationTreePlayer::ConnectError AnimationTreePlayer::_cycle_test(const StringN
 	nb->cycletest = true;
 
 	for (int i = 0; i < nb->inputs.size(); i++) {
-		if (nb->inputs[i].node == StringName()) {
+		if (nb->inputs[i].node.is_empty()) {
 			return CONNECT_INCOMPLETE;
 		}
 
@@ -1418,7 +1418,7 @@ void AnimationTreePlayer::get_connection_list(List<Connection> *p_connections) c
 	for (Map<StringName, NodeBase *>::Element *E = node_map.front(); E; E = E->next()) {
 		NodeBase *nb = E->get();
 		for (int i = 0; i < nb->inputs.size(); i++) {
-			if (nb->inputs[i].node != StringName()) {
+			if (nb->inputs[i].node) {
 				Connection c;
 				c.src_node = nb->inputs[i].node;
 				c.dst_node = E->key();
@@ -1619,7 +1619,7 @@ Error AnimationTreePlayer::node_rename(const StringName &p_node, const StringNam
 	}
 	ERR_FAIL_COND_V(!node_map.has(p_node), ERR_ALREADY_EXISTS);
 	ERR_FAIL_COND_V(node_map.has(p_new_name), ERR_ALREADY_EXISTS);
-	ERR_FAIL_COND_V(p_new_name == StringName(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_new_name.is_empty(), ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(p_node == out_name, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(p_new_name == out_name, ERR_INVALID_DATA);
 

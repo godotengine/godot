@@ -231,7 +231,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 				StringName godot_method_name = CACHED_FIELD(GodotMethodAttribute, methodName)->get_string_value(attr);
 #ifdef DEBUG_ENABLED
-				CRASH_COND(godot_method_name == StringName());
+				CRASH_COND(godot_method_name.is_empty());
 #endif
 				MethodKey key = MethodKey(godot_method_name, method->get_parameters_count());
 				GDMonoMethod **existing_method = methods.getptr(key);

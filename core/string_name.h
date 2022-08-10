@@ -120,6 +120,9 @@ public:
 			return 0;
 		}
 	}
+	_FORCE_INLINE_ bool is_empty() const {
+		return !(*this);
+	}
 	_FORCE_INLINE_ const void *data_unique_pointer() const {
 		return (void *)_data;
 	}

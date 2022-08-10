@@ -316,7 +316,7 @@ void Skeleton::_notification(int p_what) {
 					for (uint32_t i = 0; i < bind_count; i++) {
 						StringName bind_name = skin->get_bind_name(i);
 
-						if (bind_name != StringName()) {
+						if (bind_name) {
 							//bind name used, use this
 							bool found = false;
 							for (int j = 0; j < len; j++) {

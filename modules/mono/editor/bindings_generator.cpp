@@ -1184,7 +1184,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const String &p_output_file) {
 	CRASH_COND(!itype.is_object_type);
 
-	bool is_derived_type = itype.base_name != StringName();
+	bool is_derived_type = itype.base_name;
 
 	if (!is_derived_type) {
 		// Some Godot.Object assertions
@@ -1433,7 +1433,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	// Search it in base types too
 	const TypeInterface *current_type = &p_itype;
-	while (!setter && current_type->base_name != StringName()) {
+	while (!setter && current_type->base_name) {
 		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_COND_V(!base_match, ERR_BUG);
 		current_type = &base_match.get();
@@ -1444,7 +1444,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	// Search it in base types too
 	current_type = &p_itype;
-	while (!getter && current_type->base_name != StringName()) {
+	while (!getter && current_type->base_name) {
 		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_COND_V(!base_match, ERR_BUG);
 		current_type = &base_match.get();
@@ -1789,7 +1789,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	for (OrderedHashMap<StringName, TypeInterface>::Element type_elem = obj_types.front(); type_elem; type_elem = type_elem.next()) {
 		const TypeInterface &itype = type_elem.get();
 
-		bool is_derived_type = itype.base_name != StringName();
+		bool is_derived_type = itype.base_name;
 
 		if (!is_derived_type) {
 			// Some Object assertions
@@ -2307,9 +2307,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
-			if (iprop.setter != StringName())
+			if (iprop.setter)
 				accessor_methods[iprop.setter] = iprop.cname;
-			if (iprop.getter != StringName())
+			if (iprop.getter)
 				accessor_methods[iprop.getter] = iprop.cname;
 
 			bool valid = false;
@@ -2402,7 +2402,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
 				imethod.return_type.is_enum = true;
-			} else if (return_info.class_name != StringName()) {
+			} else if (return_info.class_name) {
 				imethod.return_type.cname = return_info.class_name;
 				if (!imethod.is_virtual && ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference) && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 					/* clang-format off */
@@ -2438,7 +2438,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
-				} else if (arginfo.class_name != StringName()) {
+				} else if (arginfo.class_name) {
 					iarg.type.cname = arginfo.class_name;
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
@@ -3048,7 +3048,7 @@ void BindingsGenerator::_populate_global_constants() {
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
 			iconstant.const_doc = const_doc;
 
-			if (enum_name != StringName()) {
+			if (enum_name) {
 				EnumInterface ienum(enum_name);
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {

@@ -284,7 +284,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 
 float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, float p_time, bool p_seek) {
 	//if not playing and it can restart, then restart
-	if (!playing && start_request == StringName()) {
+	if (!playing && start_request.is_empty()) {
 		if (!stop_request && p_state_machine->start_node) {
 			start(p_state_machine->start_node);
 		} else {
@@ -300,7 +300,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 	bool play_start = false;
 
-	if (start_request != StringName()) {
+	if (start_request) {
 		if (start_request_travel) {
 			if (!playing) {
 				if (!stop_request && p_state_machine->start_node) {
@@ -339,10 +339,10 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 		}
 	}
 
-	bool do_start = (p_seek && p_time == 0) || play_start || current == StringName();
+	bool do_start = (p_seek && p_time == 0) || play_start || current.is_empty();
 
 	if (do_start) {
-		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
+		if (p_state_machine->start_node && p_seek && p_time == 0) {
 			current = p_state_machine->start_node;
 		}
 
@@ -357,7 +357,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	}
 	float fade_blend = 1.0;
 
-	if (fading_from != StringName()) {
+	if (fading_from) {
 		if (!p_state_machine->states.has(fading_from)) {
 			fading_from = StringName();
 		} else {
@@ -373,7 +373,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, fade_blend, AnimationNode::FILTER_IGNORE, false);
 
-	if (fading_from != StringName()) {
+	if (fading_from) {
 		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, false);
 	}
 
@@ -410,7 +410,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 				auto_advance = true;
 			}
 			StringName advance_condition_name = p_state_machine->transitions[i].transition->get_advance_condition_name();
-			if (advance_condition_name != StringName() && bool(p_state_machine->get_parameter(advance_condition_name))) {
+			if (advance_condition_name && bool(p_state_machine->get_parameter(advance_condition_name))) {
 				auto_advance = true;
 			}
 
@@ -430,7 +430,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	}
 
 	//if next, see when to transition
-	if (next != StringName()) {
+	if (next) {
 		bool goto_next = false;
 
 		if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
@@ -439,7 +439,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 				next_xfade = 0;
 			}
 		} else {
-			goto_next = fading_from == StringName();
+			goto_next = fading_from.is_empty();
 		}
 
 		if (goto_next) { //end_loop should be used because fade time may be too small or zero and animation may have looped
@@ -473,7 +473,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	}
 
 	//compute time left for transitions by using the end node
-	if (p_state_machine->end_node != StringName() && p_state_machine->end_node != current) {
+	if (p_state_machine->end_node && p_state_machine->end_node != current) {
 		rem = p_state_machine->blend_node(p_state_machine->end_node, p_state_machine->states[p_state_machine->end_node].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 	}
 
@@ -507,7 +507,7 @@ void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) c
 	List<StringName> advance_conditions;
 	for (int i = 0; i < transitions.size(); i++) {
 		StringName ac = transitions[i].transition->get_advance_condition_name();
-		if (ac != StringName() && advance_conditions.find(ac) == nullptr) {
+		if (ac && advance_conditions.find(ac) == nullptr) {
 			advance_conditions.push_back(ac);
 		}
 	}
@@ -762,7 +762,7 @@ void AnimationNodeStateMachine::remove_transition_by_index(int p_transition) {
 }
 
 void AnimationNodeStateMachine::set_start_node(const StringName &p_node) {
-	ERR_FAIL_COND(p_node != StringName() && !states.has(p_node));
+	ERR_FAIL_COND(p_node && !states.has(p_node));
 	start_node = p_node;
 }
 
@@ -771,7 +771,7 @@ String AnimationNodeStateMachine::get_start_node() const {
 }
 
 void AnimationNodeStateMachine::set_end_node(const StringName &p_node) {
-	ERR_FAIL_COND(p_node != StringName() && !states.has(p_node));
+	ERR_FAIL_COND(p_node && !states.has(p_node));
 	end_node = p_node;
 }
 

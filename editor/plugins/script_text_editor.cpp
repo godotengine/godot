@@ -173,7 +173,7 @@ void ScriptTextEditor::_update_member_keywords() {
 
 	StringName instance_base = script->get_instance_base_type();
 
-	if (instance_base == StringName()) {
+	if (instance_base.is_empty()) {
 		return;
 	}
 	List<PropertyInfo> plist;
@@ -941,7 +941,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				StringName success;
 				while (true) {
 					success = ClassDB::get_integer_constant_enum(cname, result.class_member, true);
-					if (success != StringName()) {
+					if (success) {
 						result.class_name = cname;
 						cname = ClassDB::get_parent_class(cname);
 					} else {

@@ -96,7 +96,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	// Create a new one
 
 #ifdef DEBUG_ENABLED
-	CRASH_COND(script_binding.type_name == StringName());
+	CRASH_COND(script_binding.type_name.is_empty());
 	CRASH_COND(script_binding.wrapper_class == NULL);
 #endif
 

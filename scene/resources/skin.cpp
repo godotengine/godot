@@ -54,7 +54,7 @@ void Skin::add_named_bind(const String &p_name, const Transform &p_pose) {
 
 void Skin::set_bind_name(int p_index, const StringName &p_name) {
 	ERR_FAIL_INDEX(p_index, bind_count);
-	bool notify_change = (binds_ptr[p_index].name != StringName()) != (p_name != StringName());
+	bool notify_change = (binds_ptr[p_index].name) != (p_name);
 	binds_ptr[p_index].name = p_name;
 	emit_changed();
 	if (notify_change) {
@@ -129,7 +129,7 @@ void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_bind_count(); i++) {
 		const String prefix = vformat("%s/%d/", PNAME("bind"), i);
 		p_list->push_back(PropertyInfo(Variant::STRING, prefix + PNAME("name")));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("bone"), PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("bone"), PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prefix + PNAME("pose")));
 	}
 }

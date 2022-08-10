@@ -875,8 +875,8 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Theme::DataType p_
 }
 
 void Control::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(data.theme_type_variation) != StringName()) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(data.theme_type_variation)) {
 			Theme::get_project_default()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
 		} else {
 			Theme::get_default()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
@@ -887,7 +887,7 @@ void Control::_get_theme_type_dependencies(const StringName &p_theme_type, List<
 }
 
 Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
 		if (tex) {
 			return *tex;
@@ -900,7 +900,7 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_the
 }
 
 Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name()) {
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
 		if (sdr) {
 			return *sdr;
@@ -915,7 +915,7 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_th
 	while (theme_owner) {
 		StringName class_name = type;
 
-		while (class_name != StringName()) {
+		while (class_name) {
 			if (theme_owner->data.theme->has_shader(p_name, class_name)) {
 				return theme_owner->data.theme->get_shader(p_name, class_name);
 			}
@@ -942,7 +942,7 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_th
 }
 
 Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 		if (style) {
 			return *style;
@@ -955,7 +955,7 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 }
 
 Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
 		if (font) {
 			return *font;
@@ -968,7 +968,7 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_
 }
 
 Color Control::get_color(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Color *color = data.color_override.getptr(p_name);
 		if (color) {
 			return *color;
@@ -981,7 +981,7 @@ Color Control::get_color(const StringName &p_name, const StringName &p_theme_typ
 }
 
 int Control::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const int *constant = data.constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
@@ -1024,7 +1024,7 @@ bool Control::has_constant_override(const StringName &p_name) const {
 }
 
 bool Control::has_icon(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_icon_override(p_name)) {
 			return true;
 		}
@@ -1036,7 +1036,7 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_theme_type)
 }
 
 bool Control::has_shader(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name()) {
 		if (has_shader_override(p_name)) {
 			return true;
 		}
@@ -1050,7 +1050,7 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_theme_typ
 	while (theme_owner) {
 		StringName class_name = type;
 
-		while (class_name != StringName()) {
+		while (class_name) {
 			if (theme_owner->data.theme->has_shader(p_name, class_name)) {
 				return true;
 			}
@@ -1075,7 +1075,7 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_theme_typ
 }
 
 bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_stylebox_override(p_name)) {
 			return true;
 		}
@@ -1087,7 +1087,7 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_t
 }
 
 bool Control::has_font(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_font_override(p_name)) {
 			return true;
 		}
@@ -1099,7 +1099,7 @@ bool Control::has_font(const StringName &p_name, const StringName &p_theme_type)
 }
 
 bool Control::has_color(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_color_override(p_name)) {
 			return true;
 		}
@@ -1111,7 +1111,7 @@ bool Control::has_color(const StringName &p_name, const StringName &p_theme_type
 }
 
 bool Control::has_constant(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (p_theme_type.is_empty() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_constant_override(p_name)) {
 			return true;
 		}

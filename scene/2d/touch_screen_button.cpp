@@ -276,7 +276,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 void TouchScreenButton::_press(int p_finger_pressed) {
 	finger_pressed = p_finger_pressed;
 
-	if (action != StringName()) {
+	if (action) {
 		Input::get_singleton()->action_press(action);
 		Ref<InputEventAction> iea;
 		iea.instance();
@@ -292,7 +292,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 void TouchScreenButton::_release(bool p_exiting_tree) {
 	finger_pressed = -1;
 
-	if (action != StringName()) {
+	if (action) {
 		Input::get_singleton()->action_release(action);
 		if (!p_exiting_tree) {
 			Ref<InputEventAction> iea;

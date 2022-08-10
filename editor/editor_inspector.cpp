@@ -370,7 +370,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 }
 
 void EditorProperty::update_revert_and_pin_status() {
-	if (property == StringName()) {
+	if (property.is_empty()) {
 		return; //no property, so nothing to do
 	}
 
@@ -486,7 +486,7 @@ bool EditorProperty::is_selected() const {
 }
 
 void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
-	if (property == StringName()) {
+	if (property.is_empty()) {
 		return;
 	}
 
@@ -596,7 +596,7 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 	bottom_editor = p_control;
 }
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
-	if (property == StringName()) {
+	if (property.is_empty()) {
 		return Variant();
 	}
 
@@ -1376,7 +1376,7 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 
 	StringName class_name = object->get_class();
 
-	while (class_name != StringName()) {
+	while (class_name) {
 		if (profile->is_class_property_disabled(class_name, p_property)) {
 			return true;
 		}

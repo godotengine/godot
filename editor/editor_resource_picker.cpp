@@ -746,7 +746,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 		}
 
 		if (!is_custom && !_is_type_valid(edited_resource->get_class(), allowed_types)) {
-			String class_str = (custom_class == StringName() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
+			String class_str = (custom_class.is_empty() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
 			WARN_PRINT(vformat("Value mismatch between the new base type of this EditorResourcePicker, '%s', and the type of the value it already has, '%s'.", base_type, class_str));
 		}
 	} else {
@@ -796,7 +796,7 @@ void EditorResourcePicker::set_edited_resource(RES p_resource) {
 		}
 
 		if (!is_custom && !_is_type_valid(p_resource->get_class(), allowed_types)) {
-			String class_str = (custom_class == StringName() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
+			String class_str = (custom_class.is_empty() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
 	}

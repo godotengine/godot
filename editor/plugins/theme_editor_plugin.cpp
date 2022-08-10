@@ -2202,7 +2202,7 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 	if (include_default) {
 		names.clear();
 		String default_type = p_type_name;
-		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
+		if (edited_theme->get_type_variation_base(p_type_name)) {
 			default_type = edited_theme->get_type_variation_base(p_type_name);
 		}
 
@@ -2563,7 +2563,7 @@ void ThemeTypeEditor::_add_type_button_cbk() {
 void ThemeTypeEditor::_add_default_type_items() {
 	List<StringName> names;
 	String default_type = edited_type;
-	if (edited_theme->get_type_variation_base(edited_type) != StringName()) {
+	if (edited_theme->get_type_variation_base(edited_type)) {
 		default_type = edited_theme->get_type_variation_base(edited_type);
 	}
 

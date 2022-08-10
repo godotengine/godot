@@ -1065,7 +1065,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 						Vector<int> setchain;
 
-						if (assign_property != StringName()) {
+						if (assign_property) {
 							// recover and assign at the end, this allows stuff like
 							// position.x+=2.0
 							// in Node2D

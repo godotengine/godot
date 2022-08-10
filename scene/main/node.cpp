@@ -1116,7 +1116,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		bool unique = true;
 
-		if (p_child->data.name == StringName()) {
+		if (p_child->data.name.is_empty()) {
 			//new unique name must be assigned
 			unique = false;
 		} else {
@@ -1169,7 +1169,7 @@ String increase_numeric_string(const String &s) {
 }
 
 void Node::_generate_serial_child_name(const Node *p_child, StringName &name) const {
-	if (name == StringName()) {
+	if (name.is_empty()) {
 		//no name and a new nade is needed, create one.
 
 		name = p_child->get_class();

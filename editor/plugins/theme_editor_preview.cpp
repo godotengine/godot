@@ -116,8 +116,8 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		highlight_rect.position = picker_overlay->get_global_transform().affine_inverse().xform(highlight_rect.position);
 		picker_overlay->draw_style_box(theme_cache.preview_picker_overlay, highlight_rect);
 
-		String highlight_name = hovered_control->get_theme_type_variation();
-		if (highlight_name == StringName()) {
+		StringName highlight_name = hovered_control->get_theme_type_variation();
+		if (highlight_name.is_empty()) {
 			highlight_name = hovered_control->get_class_name();
 		}
 
@@ -152,7 +152,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		if (hovered_control) {
 			StringName theme_type = hovered_control->get_theme_type_variation();
-			if (theme_type == StringName()) {
+			if (theme_type.is_empty()) {
 				theme_type = hovered_control->get_class_name();
 			}
 

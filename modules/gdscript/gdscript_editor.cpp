@@ -599,7 +599,7 @@ static GDScriptCompletionIdentifier _type_from_property(const PropertyInfo &p_pr
 	ci.type.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
 		ci.type.kind = GDScriptParser::DataType::NATIVE;
-		ci.type.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		ci.type.native_type = p_property.class_name.is_empty() ? "Object" : p_property.class_name;
 	} else {
 		ci.type.kind = GDScriptParser::DataType::BUILTIN;
 	}
@@ -1519,7 +1519,7 @@ static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_contex
 
 					if (prop.name == p_identifier) {
 						StringName getter = ClassDB::get_property_getter(class_name, p_identifier);
-						if (getter != StringName()) {
+						if (getter) {
 							MethodBind *g = ClassDB::get_method(class_name, getter);
 							if (g) {
 								r_type = _type_from_property(g->get_return_info());
@@ -1991,7 +1991,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 						base_type.kind = GDScriptParser::DataType::GDSCRIPT;
 						base_type.script_type = script->get_base();
 					} else {
-						base_type.has_type = script->get_instance_base_type() != StringName();
+						base_type.has_type = script->get_instance_base_type();
 						base_type.kind = GDScriptParser::DataType::NATIVE;
 						base_type.native_type = script->get_instance_base_type();
 					}
@@ -2748,7 +2748,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 						method_hint += arg;
 						if (use_type_hint && mi.arguments[i].type != Variant::NIL) {
 							method_hint += ": ";
-							if (mi.arguments[i].type == Variant::OBJECT && mi.arguments[i].class_name != StringName()) {
+							if (mi.arguments[i].type == Variant::OBJECT && mi.arguments[i].class_name) {
 								method_hint += mi.arguments[i].class_name.operator String();
 							} else {
 								method_hint += Variant::get_type_name(mi.arguments[i].type);
@@ -2761,7 +2761,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 					method_hint += " -> ";
 					if (mi.return_val.type == Variant::NIL) {
 						method_hint += "void";
-					} else if (mi.return_val.type == Variant::OBJECT && mi.return_val.class_name != StringName()) {
+					} else if (mi.return_val.type == Variant::OBJECT && mi.return_val.class_name) {
 						method_hint += mi.return_val.class_name.operator String();
 					} else {
 						method_hint += Variant::get_type_name(mi.return_val.type);
@@ -2873,7 +2873,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 					}
 				}
 				for (int i = 0; i < clss->subclasses.size(); i++) {
-					if (clss->subclasses[i]->name != StringName()) {
+					if (clss->subclasses[i]->name) {
 						ScriptCodeCompletionOption option(clss->subclasses[i]->name.operator String(), ScriptCodeCompletionOption::KIND_CLASS);
 						options.insert(option.display, option);
 					}
@@ -2972,7 +2972,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 								}
 							}
 							for (int i = 0; i < base_type.class_type->subclasses.size(); i++) {
-								if (base_type.class_type->subclasses[i]->name != StringName()) {
+								if (base_type.class_type->subclasses[i]->name) {
 									ScriptCodeCompletionOption option(base_type.class_type->subclasses[i]->name.operator String(), ScriptCodeCompletionOption::KIND_CLASS);
 									options.insert(option.display, option);
 								}
@@ -3214,7 +3214,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 
 				StringName enum_name = ClassDB::get_integer_constant_enum(class_name, p_symbol, true);
-				if (enum_name != StringName()) {
+				if (enum_name) {
 					r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_ENUM;
 					r_result.class_name = base_type.native_type;
 					r_result.class_member = enum_name;
@@ -3244,7 +3244,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 
 				StringName parent = ClassDB::get_parent_class(class_name);
-				if (parent != StringName()) {
+				if (parent) {
 					if (String(parent).begins_with("_")) {
 						base_type.native_type = String(parent).right(1);
 					} else {
@@ -3404,7 +3404,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				}
 			}
 
-			if (context.function && context.function->name != StringName()) {
+			if (context.function && context.function->name) {
 				// Lookup function arguments
 				for (int i = 0; i < context.function->arguments.size(); i++) {
 					if (context.function->arguments[i] == p_symbol) {

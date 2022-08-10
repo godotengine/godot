@@ -202,7 +202,7 @@ static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const Property
 			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
 		}
 		p_method.return_type = "int";
-	} else if (p_retinfo.class_name != StringName()) {
+	} else if (p_retinfo.class_name) {
 		p_method.return_type = p_retinfo.class_name;
 	} else if (p_retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		p_method.return_type = p_retinfo.hint_string;
@@ -224,7 +224,7 @@ static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const Pr
 			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());
 		}
 		p_argument.type = "int";
-	} else if (p_arginfo.class_name != StringName()) {
+	} else if (p_arginfo.class_name) {
 		p_argument.type = p_arginfo.class_name;
 	} else if (p_arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		p_argument.type = p_arginfo.hint_string;
@@ -361,7 +361,7 @@ void DocData::generate(bool p_basic_types) {
 			prop.getter = getter;
 
 			bool found_type = false;
-			if (getter != StringName()) {
+			if (getter) {
 				MethodBind *mb = ClassDB::get_method(name, getter);
 				if (mb) {
 					PropertyInfo retinfo = mb->get_return_info();
@@ -370,7 +370,7 @@ void DocData::generate(bool p_basic_types) {
 					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 						prop.enumeration = retinfo.class_name;
 						prop.type = "int";
-					} else if (retinfo.class_name != StringName()) {
+					} else if (retinfo.class_name) {
 						prop.type = retinfo.class_name;
 					} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 						prop.type = retinfo.hint_string;
@@ -386,7 +386,7 @@ void DocData::generate(bool p_basic_types) {
 				setters_getters.insert(getter);
 			}
 
-			if (setter != StringName()) {
+			if (setter) {
 				setters_getters.insert(setter);
 			}
 

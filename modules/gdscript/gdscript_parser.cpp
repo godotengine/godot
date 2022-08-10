@@ -645,7 +645,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				completion_built_in_constant = bi_type;
 			}
 
-			if (identifier == StringName()) {
+			if (identifier.is_empty()) {
 				_set_error("Built-in type constant or static function expected after \".\".");
 				return nullptr;
 			}
@@ -1234,7 +1234,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 					StringName identifier;
 					if (_get_completable_identifier(COMPLETION_INDEX, identifier)) {
-						if (identifier == StringName()) {
+						if (identifier.is_empty()) {
 							identifier = "@temp"; //so it parses alright
 						}
 						completion_node = op;
@@ -3918,7 +3918,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (_get_completable_identifier(COMPLETION_VIRTUAL_FUNC, name)) {
 				}
 
-				if (name == StringName()) {
+				if (name.is_empty()) {
 					_set_error("Expected an identifier after \"func\" (syntax: \"func <identifier>([arguments]):\").");
 					return;
 				}
@@ -5626,7 +5626,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 			p_class->base_type.kind = DataType::GDSCRIPT;
 			p_class->base_type.script_type = script;
 			p_class->base_type.native_type = script->get_instance_base_type();
-		} else if (native != StringName()) {
+		} else if (native) {
 			p_class->base_type.has_type = true;
 			p_class->base_type.kind = DataType::NATIVE;
 			p_class->base_type.native_type = native;
@@ -5695,7 +5695,7 @@ String GDScriptParser::DataType::to_string() const {
 			if (is_meta_type) {
 				return "GDScript";
 			}
-			if (class_type->name == StringName()) {
+			if (class_type->name.is_empty()) {
 				return "self";
 			}
 			return class_type->name.operator String();
@@ -5794,7 +5794,7 @@ bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 
 					StringName id;
 					bool has_completion = _get_completable_identifier(COMPLETION_TYPE_HINT_INDEX, id);
-					if (id == StringName()) {
+					if (id.is_empty()) {
 						id = "@temp";
 					}
 
@@ -6068,7 +6068,7 @@ GDScriptParser::DataType GDScriptParser::_type_from_property(const PropertyInfo 
 	ret.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
 		ret.kind = DataType::NATIVE;
-		ret.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		ret.native_type = p_property.class_name.is_empty() ? "Object" : p_property.class_name;
 	} else {
 		ret.kind = DataType::BUILTIN;
 	}
@@ -7038,7 +7038,7 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 		base_script = base_script->get_base_script();
 	}
 
-	if (native == StringName()) {
+	if (native.is_empty()) {
 		// Empty native class, might happen in some Script implementations
 		// Just ignore it
 		return false;
@@ -7579,7 +7579,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		scr = scr->get_base_script();
 	}
 
-	if (native == StringName()) {
+	if (native.is_empty()) {
 		// Empty native class, might happen in some Script implementations
 		// Just ignore it
 		return false;
@@ -7615,7 +7615,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 			if (E->get().name == p_member && IS_USAGE_MEMBER(E->get().usage)) {
 				// Check if a getter exists
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
-				if (getter_name != StringName()) {
+				if (getter_name) {
 					// Use the getter return type
 					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
 					if (getter_method) {
@@ -7651,7 +7651,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 			if (E->get().name == p_member && IS_USAGE_MEMBER(E->get().usage)) {
 				// Check if a getter exists
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
-				if (getter_name != StringName()) {
+				if (getter_name) {
 					// Use the getter return type
 					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
 					if (getter_method) {
@@ -7969,7 +7969,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		}
 
 		// Setter and getter
-		if (v.setter == StringName() && v.getter == StringName()) {
+		if (v.setter.is_empty() && v.getter.is_empty()) {
 			continue;
 		}
 
@@ -8019,7 +8019,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			}
 		}
 
-		if ((found_getter || v.getter == StringName()) && (found_setter || v.setter == StringName())) {
+		if ((found_getter || v.getter.is_empty()) && (found_setter || v.setter.is_empty())) {
 			continue;
 		}
 
@@ -8037,12 +8037,12 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			}
 		}
 
-		if (!found_setter && v.setter != StringName()) {
+		if (!found_setter && v.setter) {
 			_set_error("The setter function isn't defined.", v.line);
 			return;
 		}
 
-		if (!found_getter && v.getter != StringName()) {
+		if (!found_getter && v.getter) {
 			_set_error("The getter function isn't defined.", v.line);
 			return;
 		}
@@ -8080,7 +8080,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		native = base.native_type;
 	}
 
-	if (native != StringName()) {
+	if (native) {
 		for (int i = 0; i < p_class->_signals.size(); i++) {
 			if (ClassDB::has_signal(native, p_class->_signals[i].name)) {
 				_set_error("The signal \"" + p_class->_signals[i].name + "\" already exists in a parent class.", p_class->_signals[i].line);

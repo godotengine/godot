@@ -1899,7 +1899,7 @@ bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &
 
 	StringName class_name = p_class;
 
-	while (class_name != StringName()) {
+	while (class_name) {
 		if (profile->is_class_disabled(class_name)) {
 			return true;
 		}
@@ -3947,12 +3947,12 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 	if (script.is_valid()) {
 		// Uncommenting would break things! Consider adding a parameter if you need it.
 		// StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
-		// if (name != StringName())
+		// if (name)
 		// 	return name;
 
 		// should probably be deprecated in 4.x
 		StringName base = script->get_instance_base_type();
-		if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
+		if (base && EditorNode::get_editor_data().get_custom_types().has(base)) {
 			const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
 
 			Ref<Script> base_script = script;
@@ -3982,13 +3982,13 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 		Ref<Script> base_script = script;
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
-			if (name != StringName()) {
+			if (name) {
 				return name;
 			}
 
 			// should probably be deprecated in 4.x
 			StringName base = base_script->get_instance_base_type();
-			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
+			if (base && EditorNode::get_editor_data().get_custom_types().has(base)) {
 				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
 				for (int i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_script) {
@@ -4057,7 +4057,7 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 
 			// should probably be deprecated in 4.x
 			StringName base = base_script->get_instance_base_type();
-			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
+			if (base && EditorNode::get_editor_data().get_custom_types().has(base)) {
 				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
 				for (int i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_script && types[i].icon.is_valid()) {

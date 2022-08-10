@@ -979,7 +979,7 @@ String VisualScriptPropertySet::get_output_sequence_port_text(int p_port) const 
 }
 
 void VisualScriptPropertySet::_adjust_input_index(PropertyInfo &pinfo) const {
-	if (index != StringName()) {
+	if (index) {
 		Variant v;
 		Variant::CallError ce;
 		v = Variant::construct(pinfo.type, nullptr, 0, ce);
@@ -1004,7 +1004,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
 			String detail_prop_name = property;
-			if (index != StringName()) {
+			if (index) {
 				detail_prop_name += "." + String(index);
 			}
 			PropertyInfo pinfo = PropertyInfo(E->get().type, detail_prop_name, E->get().hint, E->get().hint_string);
@@ -1045,7 +1045,7 @@ String VisualScriptPropertySet::get_caption() const {
 	}
 
 	String prop = property;
-	if (index != StringName()) {
+	if (index) {
 		prop += "." + String(index);
 	}
 
@@ -1467,11 +1467,11 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	_FORCE_INLINE_ void _process_get(Variant &source, const Variant &p_argument, bool &valid) {
-		if (index != StringName() && assign_op == VisualScriptPropertySet::ASSIGN_OP_NONE) {
+		if (index && assign_op == VisualScriptPropertySet::ASSIGN_OP_NONE) {
 			source.set_named(index, p_argument, &valid);
 		} else {
 			Variant value;
-			if (index != StringName()) {
+			if (index) {
 				value = source.get_named(index, &valid);
 			} else {
 				value = source;
@@ -1515,7 +1515,7 @@ public:
 				}
 			}
 
-			if (index != StringName()) {
+			if (index) {
 				source.set_named(index, value, &valid);
 			} else {
 				source = value;
@@ -1611,7 +1611,7 @@ VisualScriptNodeInstance *VisualScriptPropertySet::instance(VisualScriptInstance
 	instance->node_path = base_path;
 	instance->assign_op = assign_op;
 	instance->index = index;
-	instance->needs_get = index != StringName() || assign_op != ASSIGN_OP_NONE;
+	instance->needs_get = index || assign_op != ASSIGN_OP_NONE;
 	return instance;
 }
 
@@ -1757,7 +1757,7 @@ PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptPropertyGet::get_caption() const {
 	String prop = property;
-	if (index != StringName()) {
+	if (index) {
 		prop += "." + String(index);
 	}
 
@@ -1953,7 +1953,7 @@ Variant::Type VisualScriptPropertyGet::_get_type_cache() const {
 }
 
 void VisualScriptPropertyGet::_adjust_input_index(PropertyInfo &pinfo) const {
-	if (index != StringName()) {
+	if (index) {
 		Variant v;
 		Variant::CallError ce;
 		v = Variant::construct(pinfo.type, nullptr, 0, ce);
@@ -2145,7 +2145,7 @@ public:
 
 				*p_outputs[0] = object->get(property, &valid);
 
-				if (index != StringName()) {
+				if (index) {
 					*p_outputs[0] = p_outputs[0]->get_named(index);
 				}
 
@@ -2174,7 +2174,7 @@ public:
 
 				*p_outputs[0] = another->get(property, &valid);
 
-				if (index != StringName()) {
+				if (index) {
 					*p_outputs[0] = p_outputs[0]->get_named(index);
 				}
 
@@ -2191,7 +2191,7 @@ public:
 
 				// port 'pass' not backported to 3.x to keep script backwards compatibility
 				*p_outputs[0] = v.get(property, &valid);
-				if (index != StringName()) {
+				if (index) {
 					*p_outputs[0] = p_outputs[0]->get_named(index);
 				}
 

@@ -80,14 +80,14 @@ void Translation::set_locale(const String &p_locale) {
 }
 
 void Translation::add_context_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {
-	if (p_context != StringName()) {
+	if (p_context) {
 		WARN_PRINT("Translation class doesn't handle context.");
 	}
 	add_message(p_src_text, p_xlated_text);
 }
 
 StringName Translation::get_context_message(const StringName &p_src_text, const StringName &p_context) const {
-	if (p_context != StringName()) {
+	if (p_context) {
 		WARN_PRINT("Translation class doesn't handle context.");
 	}
 	return get_message(p_src_text);
@@ -148,7 +148,7 @@ Translation::Translation() :
 ///////////////////////////////////////////////
 
 void ContextTranslation::add_context_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {
-	if (p_context == StringName()) {
+	if (p_context.is_empty()) {
 		add_message(p_src_text, p_xlated_text);
 	} else {
 		context_translation_map[p_context][p_src_text] = p_xlated_text;
@@ -156,7 +156,7 @@ void ContextTranslation::add_context_message(const StringName &p_src_text, const
 }
 
 StringName ContextTranslation::get_context_message(const StringName &p_src_text, const StringName &p_context) const {
-	if (p_context == StringName()) {
+	if (p_context.is_empty()) {
 		return get_message(p_src_text);
 	}
 

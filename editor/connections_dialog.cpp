@@ -961,7 +961,7 @@ void ConnectionsDock::update_tree() {
 						signaldesc += ", ";
 					}
 					String tname = "var";
-					if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
+					if (pi.type == Variant::OBJECT && pi.class_name) {
 						tname = pi.class_name.operator String();
 					} else if (pi.type != Variant::NIL) {
 						tname = Variant::get_type_name(pi.type);

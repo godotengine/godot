@@ -116,14 +116,14 @@ bool test_good_theme_type_names() {
 
 		ErrorDetector ed;
 		theme->set_type_variation(fixture.valid_type_name, name);
-		CHECK(ed.has_error == (name == StringName()));
+		CHECK(ed.has_error == (name.is_empty()));
 	}
 	for (const StringName &name : names) {
 		Ref<Theme> theme = memnew(Theme);
 
 		ErrorDetector ed;
 		theme->set_type_variation(name, fixture.valid_type_name);
-		CHECK(ed.has_error == (name == StringName()));
+		CHECK(ed.has_error == (name.is_empty()));
 	}
 
 	return true;
