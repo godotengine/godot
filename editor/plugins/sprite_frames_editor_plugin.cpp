@@ -422,6 +422,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			new_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			duplicate_anim->set_icon(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
 			remove_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
@@ -773,6 +774,82 @@ void SpriteFramesEditor::_animation_add() {
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", current);
+	}
+
+	edited_anim = name;
+
+	undo_redo->commit_action();
+	animations->grab_focus();
+}
+
+void SpriteFramesEditor::_animation_duplicate() {
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
+	int counter = 1;
+	String name = String(edited_anim) + " " + itos(counter);
+	while (frames->has_animation(name)) {
+		counter++;
+		name = String(edited_anim) + " " + itos(counter);
+	}
+
+	undo_redo->create_action(TTR("Duplicate Animation"));
+	undo_redo->add_do_method(frames, "add_animation", name);
+	undo_redo->add_do_method(frames, "set_animation_loop", name, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method(frames, "set_animation_speed", name, frames->get_animation_speed(edited_anim));
+	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
+		undo_redo->add_do_method(frames, "add_frame", name, frames->get_frame(edited_anim, i));
+	}
+	undo_redo->add_undo_method(frames, "remove_animation", name);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+
+	// Not sure whether this part is needed/wanted (`_animation_add` is doing the same thing).
+	List<Node *> nodes;
+	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", current);
+	}
+
+	edited_anim = name;
+
+	undo_redo->commit_action();
+	animations->grab_focus();
+}
+
+void SpriteFramesEditor::_animation_duplicate() {
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
+	int counter = 1;
+	String name = String(edited_anim) + " " + itos(counter);
+	while (frames->has_animation(name)) {
+		counter++;
+		name = String(edited_anim) + " " + itos(counter);
+	}
+
+	undo_redo->create_action(TTR("Duplicate Animation"));
+	undo_redo->add_do_method(frames, "add_animation", name);
+	undo_redo->add_do_method(frames, "set_animation_loop", name, frames->get_animation_loop(edited_anim));	
+	undo_redo->add_do_method(frames, "set_animation_speed", name, frames->get_animation_speed(edited_anim));
+	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
+		undo_redo->add_do_method(frames, "add_frame", name, frames->get_frame(edited_anim, i));
+	}
+	undo_redo->add_undo_method(frames, "remove_animation", name);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+
+	// Not sure whether this part is needed/wanted (`_animation_add` is doing the same thing).
+	List<Node *> nodes;
+	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 	for (Node *E : nodes) {
 		String current = E->call("get_animation");
 		undo_redo->add_do_method(E, "set_animation", name);
@@ -1159,6 +1236,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	new_anim->set_tooltip(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
 	new_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
+
+	duplicate_anim = memnew(Button);
+	duplicate_anim->set_flat(true);
+	duplicate_anim->set_tooltip(TTR("Duplicate Animation"));
+	hbc_animlist->add_child(duplicate_anim);
+	duplicate_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
 
 	remove_anim = memnew(Button);
 	remove_anim->set_flat(true);

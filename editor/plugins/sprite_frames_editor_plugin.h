@@ -74,6 +74,8 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *new_anim = nullptr;
 	Button *remove_anim = nullptr;
+	Button *duplicate_anim = nullptr;
+
 	LineEdit *anim_search_box = nullptr;
 
 	Tree *animations = nullptr;
@@ -137,6 +139,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_select();
 	void _animation_name_edited();
 	void _animation_add();
+	void _animation_duplicate();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
