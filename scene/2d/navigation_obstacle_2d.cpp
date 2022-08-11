@@ -46,6 +46,12 @@ void NavigationObstacle2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationObstacle2D::get_radius);
 
+	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle2D::set_navigation_node);
+	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle2D::get_navigation_node);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationObstacle2D::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationObstacle2D::get_navigation_map);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "estimate_radius"), "set_estimate_radius", "is_radius_estimated");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.01,500,0.01"), "set_radius", "get_radius");
 }
@@ -60,10 +66,7 @@ void NavigationObstacle2D::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			parent_node2d = Object::cast_to<Node2D>(get_parent());
-			reevaluate_agent_radius();
-
+		case NOTIFICATION_POST_ENTER_TREE: {
 			// Search the navigation node and set it
 			{
 				Navigation2D *nav = nullptr;
@@ -79,44 +82,59 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 				set_navigation(nav);
 			}
-
+			// need to use POST_ENTER_TREE cause with normal ENTER_TREE not all required Nodes are ready.
+			// cannot use READY as ready does not get called if Node is readded to SceneTree
+			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 		} break;
+
+		case NOTIFICATION_PARENTED: {
+			if (is_inside_tree() && (get_parent() != agent_parent)) {
+				// only react to PARENTED notifications when already inside_tree and parent changed, e.g. users switch nodes around
+				// PARENTED notification fires also when Node is added in scripts to a parent
+				// this would spam transforms fails and world fails while Node is outside SceneTree
+				// when node gets reparented when joining the tree POST_ENTER_TREE takes care of this
+				set_agent_parent(get_parent());
+				set_physics_process_internal(true);
+			}
+		} break;
+
+		case NOTIFICATION_UNPARENTED: {
+			// if agent has no parent no point in processing it until reparented
+			set_agent_parent(nullptr);
+			set_physics_process_internal(false);
+		} break;
+
+		case NOTIFICATION_PAUSED: {
+			if (agent_parent && !agent_parent->can_process()) {
+				map_before_pause = Navigation2DServer::get_singleton()->agent_get_map(get_rid());
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			if (agent_parent && !agent_parent->can_process()) {
+				map_before_pause = Navigation2DServer::get_singleton()->agent_get_map(get_rid());
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
+			set_agent_parent(nullptr);
 			set_navigation(nullptr);
 			set_physics_process_internal(false);
-			request_ready(); // required to solve an issue with losing the navigation
 		} break;
-		case NOTIFICATION_PARENTED: {
-			parent_node2d = Object::cast_to<Node2D>(get_parent());
-			reevaluate_agent_radius();
-		} break;
-		case NOTIFICATION_UNPARENTED: {
-			parent_node2d = nullptr;
-		} break;
-		case NOTIFICATION_PAUSED: {
-			if (parent_node2d && !parent_node2d->can_process()) {
-				map_before_pause = Navigation2DServer::get_singleton()->agent_get_map(get_rid());
-				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
-				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
-			}
-		} break;
-		case NOTIFICATION_UNPAUSED: {
-			if (parent_node2d && !parent_node2d->can_process()) {
-				map_before_pause = Navigation2DServer::get_singleton()->agent_get_map(get_rid());
-				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
-				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
-			}
-		} break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (parent_node2d && parent_node2d->is_inside_tree()) {
-				Navigation2DServer::get_singleton()->agent_set_position(agent, parent_node2d->get_global_transform().get_origin());
-			}
 
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (agent_parent && agent_parent->is_inside_tree()) {
+				Navigation2DServer::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().get_origin());
+			}
 		} break;
 	}
 }
@@ -131,6 +149,26 @@ NavigationObstacle2D::NavigationObstacle2D() :
 NavigationObstacle2D::~NavigationObstacle2D() {
 	Navigation2DServer::get_singleton()->free(agent);
 	agent = RID(); // Pointless
+}
+
+void NavigationObstacle2D::set_agent_parent(Node *p_agent_parent) {
+	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
+		// place agent on navigation map first
+		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
+		if (map_override.is_valid()) {
+			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_override);
+		} else if (navigation != nullptr) {
+			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), navigation->get_rid());
+		} else {
+			// no navigation node found in parent nodes, use default navigation map from world resource
+			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
+		}
+		// update agent radius
+		reevaluate_agent_radius();
+	} else {
+		agent_parent = nullptr;
+		Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
+	}
 }
 
 void NavigationObstacle2D::set_navigation(Navigation2D *p_nav) {
@@ -150,6 +188,22 @@ void NavigationObstacle2D::set_navigation_node(Node *p_nav) {
 
 Node *NavigationObstacle2D::get_navigation_node() const {
 	return Object::cast_to<Node>(navigation);
+}
+
+void NavigationObstacle2D::set_navigation_map(RID p_navigation_map) {
+	map_override = p_navigation_map;
+	Navigation2DServer::get_singleton()->agent_set_map(agent, map_override);
+}
+
+RID NavigationObstacle2D::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (navigation != nullptr) {
+		return navigation->get_rid();
+	} else if (agent_parent != nullptr) {
+		return agent_parent->get_world_2d()->get_navigation_map();
+	}
+	return RID();
 }
 
 String NavigationObstacle2D::get_configuration_warning() const {
@@ -175,18 +229,18 @@ void NavigationObstacle2D::initialize_agent() {
 void NavigationObstacle2D::reevaluate_agent_radius() {
 	if (!estimate_radius) {
 		Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_node2d && parent_node2d->is_inside_tree()) {
+	} else if (agent_parent && agent_parent->is_inside_tree()) {
 		Navigation2DServer::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
 	}
 }
 
 real_t NavigationObstacle2D::estimate_agent_radius() const {
-	if (parent_node2d && parent_node2d->is_inside_tree()) {
+	if (agent_parent && agent_parent->is_inside_tree()) {
 		// Estimate the radius of this physics body
 		real_t radius = 0.0;
-		for (int i(0); i < parent_node2d->get_child_count(); i++) {
+		for (int i(0); i < agent_parent->get_child_count(); i++) {
 			// For each collision shape
-			CollisionShape2D *cs = Object::cast_to<CollisionShape2D>(parent_node2d->get_child(i));
+			CollisionShape2D *cs = Object::cast_to<CollisionShape2D>(agent_parent->get_child(i));
 			if (cs && cs->is_inside_tree()) {
 				// Take the distance between the Body center to the shape center
 				real_t r = cs->get_transform().get_origin().length();
@@ -203,12 +257,11 @@ real_t NavigationObstacle2D::estimate_agent_radius() const {
 						   "\nMove the NavigationObstacle2D to a child position below any CollisionShape2D node of the parent node so the CollisionShape2D is already inside the SceneTree.");
 			}
 		}
-		Vector2 s = parent_node2d->get_global_transform().get_scale();
+		Vector2 s = agent_parent->get_global_transform().get_scale();
 		radius *= MAX(s.x, s.y);
-
-		if (radius > 0.0) {
-			return radius;
-		}
+	}
+	if (radius > 0.0) {
+		return radius;
 	}
 	return 1.0; // Never a 0 radius
 }
