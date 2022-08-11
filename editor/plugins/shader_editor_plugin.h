@@ -185,6 +185,7 @@ public:
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void save_external_data(const String &p_str = "");
 	void validate_script();
+	bool is_unsaved() const;
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 
@@ -226,6 +227,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	void _update_shader_list();
 	void _shader_selected(int p_index);
+	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _menu_item_pressed(int p_index);
 	void _resource_saved(Object *obj);
 	void _close_shader(int p_index);
@@ -235,8 +237,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _update_shader_list_status();
 
 public:
-	virtual String get_name() const override { return "Shader"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
