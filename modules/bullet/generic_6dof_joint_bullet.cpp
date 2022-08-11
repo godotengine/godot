@@ -35,6 +35,7 @@
 #include "rigid_body_bullet.h"
 
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
+#include <BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraintQuaternion.h>
 
 /**
 	@author AndreaCatania
@@ -57,9 +58,11 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 		btTransform btFrameB;
 		G_TO_B(scaled_BFrame, btFrameB);
 
-		sixDOFConstraint = bulletnew(btGeneric6DofSpring2Constraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));
+		//PHOBOSS//sixDOFConstraint = bulletnew(btGeneric6DofSpring2Constraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));
+		sixDOFConstraint = bulletnew(btGeneric6DofSpringConstraintQuaternion(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));//PHOBOSS//
 	} else {
-		sixDOFConstraint = bulletnew(btGeneric6DofSpring2Constraint(*rbA->get_bt_rigid_body(), btFrameA));
+		//PHOBOSS//sixDOFConstraint = bulletnew(btGeneric6DofSpring2Constraint(*rbA->get_bt_rigid_body(), btFrameA));
+		sixDOFConstraint = bulletnew(btGeneric6DofSpringConstraintQuaternion(*rbA->get_bt_rigid_body(), btFrameA));//PHOBOSS//
 	}
 
 	setup(sixDOFConstraint);
