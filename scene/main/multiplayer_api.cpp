@@ -62,7 +62,7 @@ Ref<MultiplayerAPI> MultiplayerAPI::create_default_interface() {
 // - The first LSB 5 bits are used for the variant type.
 // - The next two bits are used to store the encoding mode.
 // - The most significant is used to store the boolean value.
-#define VARIANT_META_TYPE_MASK 0x1F
+#define VARIANT_META_TYPE_MASK 0x3F
 #define VARIANT_META_EMODE_MASK 0x60
 #define VARIANT_META_BOOL_MASK 0x80
 #define ENCODE_8 0 << 5
@@ -70,7 +70,7 @@ Ref<MultiplayerAPI> MultiplayerAPI::create_default_interface() {
 #define ENCODE_32 2 << 5
 #define ENCODE_64 3 << 5
 Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_allow_object_decoding) {
-	// Unreachable because `VARIANT_MAX` == 27 and `ENCODE_VARIANT_MASK` == 31
+	// Unreachable because `VARIANT_MAX` == 38
 	CRASH_COND(p_variant.get_type() > VARIANT_META_TYPE_MASK);
 
 	uint8_t *buf = r_buffer;
