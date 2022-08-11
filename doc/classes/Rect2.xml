@@ -106,7 +106,7 @@
 			<return type="Rect2" />
 			<param index="0" name="amount" type="float" />
 			<description>
-				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on all sides.
+				Returns a copy of the [Rect2] grown by the specified [param amount] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual" qualifiers="const">
@@ -124,7 +124,7 @@
 			<param index="0" name="side" type="int" />
 			<param index="1" name="amount" type="float" />
 			<description>
-				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on the specified [enum Side].
+				Returns a copy of the [Rect2] grown by the specified [param amount] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area" qualifiers="const">
@@ -146,7 +146,7 @@
 			<return type="Rect2" />
 			<param index="0" name="b" type="Rect2" />
 			<description>
-				Returns the intersection of this [Rect2] and [code]b[/code].
+				Returns the intersection of this [Rect2] and [param b].
 				If the rectangles do not intersect, an empty [Rect2] is returned.
 			</description>
 		</method>
@@ -156,21 +156,21 @@
 			<param index="1" name="include_borders" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. they have at least one point in common).
-				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
+				If [param include_borders] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns [code]true[/code] if this [Rect2] and [code]rect[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this [Rect2] and [param rect] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="b" type="Rect2" />
 			<description>
-				Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code].
+				Returns a larger [Rect2] that contains this [Rect2] and [param b].
 			</description>
 		</method>
 	</methods>
