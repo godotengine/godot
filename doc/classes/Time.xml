@@ -18,7 +18,7 @@
 			<param index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns the current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], and [code]dst[/code] (Daylight Savings Time).
-				The returned values are in the system's local time when [code]utc[/code] is false, otherwise they are in UTC.
+				The returned values are in the system's local time when [param utc] is [code]false[/code], otherwise they are in UTC.
 			</description>
 		</method>
 		<method name="get_date_dict_from_unix_time" qualifiers="const">
@@ -33,7 +33,7 @@
 			<param index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns the current date as an ISO 8601 date string (YYYY-MM-DD).
-				The returned values are in the system's local time when [code]utc[/code] is false, otherwise they are in UTC.
+				The returned values are in the system's local time when [param utc] is [code]false[/code], otherwise they are in UTC.
 			</description>
 		</method>
 		<method name="get_date_string_from_unix_time" qualifiers="const">
@@ -49,7 +49,7 @@
 			<param index="1" name="weekday" type="bool" />
 			<description>
 				Converts the given ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS) to a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code].
-				If [code]weekday[/code] is false, then the [code]weekday[/code] entry is excluded (the calculation is relatively expensive).
+				If [param weekday] is [code]false[/code], then the [code]weekday[/code] entry is excluded (the calculation is relatively expensive).
 				[b]Note:[/b] Any decimal fraction in the time string will be ignored silently.
 			</description>
 		</method>
@@ -76,7 +76,7 @@
 				Converts the given dictionary of keys to an ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS).
 				The given dictionary can be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code]. Any other entries (including [code]dst[/code]) are ignored.
 				If the dictionary is empty, [code]0[/code] is returned. If some keys are omitted, they default to the equivalent values for the Unix epoch timestamp 0 (1970-01-01 at 00:00:00).
-				If [code]use_space[/code] is true, use a space instead of the letter T in the middle.
+				If [param use_space] is [code]true[/code], the date and time bits are separated by an empty space character instead of the letter T.
 			</description>
 		</method>
 		<method name="get_datetime_string_from_system" qualifiers="const">
@@ -85,8 +85,8 @@
 			<param index="1" name="use_space" type="bool" default="false" />
 			<description>
 				Returns the current date and time as an ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS).
-				The returned values are in the system's local time when [code]utc[/code] is false, otherwise they are in UTC.
-				If [code]use_space[/code] is true, use a space instead of the letter T in the middle.
+				The returned values are in the system's local time when [param utc] is [code]false[/code], otherwise they are in UTC.
+				If [param use_space] is [code]true[/code], the date and time bits are separated by an empty space character instead of the letter T.
 			</description>
 		</method>
 		<method name="get_datetime_string_from_unix_time" qualifiers="const">
@@ -95,7 +95,7 @@
 			<param index="1" name="use_space" type="bool" default="false" />
 			<description>
 				Converts the given Unix timestamp to an ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS).
-				If [code]use_space[/code] is true, use a space instead of the letter T in the middle.
+				If [param use_space] is [code]true[/code], the date and time bits are separated by an empty space character instead of the letter T.
 			</description>
 		</method>
 		<method name="get_offset_string_from_offset_minutes" qualifiers="const">
@@ -124,7 +124,7 @@
 			<param index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns the current time as a dictionary of keys: [code]hour[/code], [code]minute[/code], and [code]second[/code].
-				The returned values are in the system's local time when [code]utc[/code] is false, otherwise they are in UTC.
+				The returned values are in the system's local time when [param utc] is [code]false[/code], otherwise they are in UTC.
 			</description>
 		</method>
 		<method name="get_time_dict_from_unix_time" qualifiers="const">
@@ -139,7 +139,7 @@
 			<param index="0" name="utc" type="bool" default="false" />
 			<description>
 				Returns the current time as an ISO 8601 time string (HH:MM:SS).
-				The returned values are in the system's local time when [code]utc[/code] is false, otherwise they are in UTC.
+				The returned values are in the system's local time when [param utc] is [code]false[/code], otherwise they are in UTC.
 			</description>
 		</method>
 		<method name="get_time_string_from_unix_time" qualifiers="const">

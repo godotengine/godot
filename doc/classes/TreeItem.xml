@@ -18,14 +18,14 @@
 			<param index="3" name="disabled" type="bool" default="false" />
 			<param index="4" name="tooltip" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [code]button[/code] at column [code]column[/code]. The [code]id[/code] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
+				Calls the [param method] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">
@@ -47,7 +47,7 @@
 			<param index="0" name="idx" type="int" default="-1" />
 			<description>
 				Creates an item and adds it as a child.
-				The new item will be inserted as position [code]idx[/code] (the default value [code]-1[/code] means the last position), or it will be the last child if [code]idx[/code] is higher than the child count.
+				The new item will be inserted as position [param idx] (the default value [code]-1[/code] means the last position), or it will be the last child if [param idx] is higher than the child count.
 			</description>
 		</method>
 		<method name="deselect">
@@ -62,7 +62,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Removes the button at index [code]button_idx[/code] in column [code]column[/code].
+				Removes the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
@@ -70,7 +70,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Returns the [Texture2D] of the button at index [code]button_idx[/code] in column [code]column[/code].
+				Returns the [Texture2D] of the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_by_id" qualifiers="const">
@@ -78,14 +78,14 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="id" type="int" />
 			<description>
-				Returns the button index if there is a button with id [code]id[/code] in column [code]column[/code], otherwise returns -1.
+				Returns the button index if there is a button with id [param id] in column [param column], otherwise returns -1.
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the number of buttons in column [code]column[/code].
+				Returns the number of buttons in column [param column].
 			</description>
 		</method>
 		<method name="get_button_id" qualifiers="const">
@@ -93,7 +93,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Returns the id for the button at index [code]button_idx[/code] in column [code]column[/code].
+				Returns the id for the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_tooltip" qualifiers="const">
@@ -101,7 +101,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Returns the tooltip string for the button at index [code]button_idx[/code] in column [code]column[/code].
+				Returns the tooltip string for the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
@@ -135,28 +135,28 @@
 			<return type="Color" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the custom background color of column [code]column[/code].
+				Returns the custom background color of column [param column].
 			</description>
 		</method>
 		<method name="get_custom_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the custom color of column [code]column[/code].
+				Returns the custom color of column [param column].
 			</description>
 		</method>
 		<method name="get_custom_font" qualifiers="const">
 			<return type="Font" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns custom font used to draw text in the column [code]column[/code].
+				Returns custom font used to draw text in the column [param column].
 			</description>
 		</method>
 		<method name="get_custom_font_size" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns custom font size used to draw text in the column [code]column[/code].
+				Returns custom font size used to draw text in the column [param column].
 			</description>
 		</method>
 		<method name="get_expand_right" qualifiers="const">
@@ -231,7 +231,7 @@
 			<param index="0" name="wrap" type="bool" default="false" />
 			<description>
 				Returns the next visible sibling TreeItem in the tree or a null object if there is none.
-				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
+				If [param wrap] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
@@ -251,7 +251,7 @@
 			<param index="0" name="wrap" type="bool" default="false" />
 			<description>
 				Returns the previous visible sibling TreeItem in the tree or a null object if there is none.
-				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
+				If [param wrap] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_range" qualifiers="const">
@@ -326,14 +326,14 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the button at index [code]button_idx[/code] for the given column is disabled.
+				Returns [code]true[/code] if the button at index [param button_idx] for the given [param column] is disabled.
 			</description>
 		</method>
 		<method name="is_checked" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns [code]true[/code] if the given column is checked.
+				Returns [code]true[/code] if the given [param column] is checked.
 			</description>
 		</method>
 		<method name="is_custom_set_as_button" qualifiers="const">
@@ -346,35 +346,35 @@
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns [code]true[/code] if column [code]column[/code] is editable.
+				Returns [code]true[/code] if the given [param column] is editable.
 			</description>
 		</method>
 		<method name="is_indeterminate" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns [code]true[/code] if the given column is indeterminate.
+				Returns [code]true[/code] if the given [param column] is indeterminate.
 			</description>
 		</method>
 		<method name="is_selectable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns [code]true[/code] if column [code]column[/code] is selectable.
+				Returns [code]true[/code] if the given [param column] is selectable.
 			</description>
 		</method>
 		<method name="is_selected">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns [code]true[/code] if column [code]column[/code] is selected.
+				Returns [code]true[/code] if the given [param column] is selected.
 			</description>
 		</method>
 		<method name="move_after">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
 			<description>
-				Moves this TreeItem right after the given [code]item[/code].
+				Moves this TreeItem right after the given [param item].
 				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
@@ -382,7 +382,7 @@
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
 			<description>
-				Moves this TreeItem right before the given [code]item[/code].
+				Moves this TreeItem right before the given [param item].
 				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
@@ -391,7 +391,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="emit_signal" type="bool" default="true" />
 			<description>
-				Propagates this item's checked status to its children and parents for the given [code]column[/code]. It is possible to process the items affected by this method call by connecting to [signal Tree.check_propagated_to_item]. The order that the items affected will be processed is as follows: the item invoking this method, children of that item, and finally parents of that item. If [code]emit_signal[/code] is [code]false[/code], then [signal Tree.check_propagated_to_item] will not be emitted.
+				Propagates this item's checked status to its children and parents for the given [param column]. It is possible to process the items affected by this method call by connecting to [signal Tree.check_propagated_to_item]. The order that the items affected will be processed is as follows: the item invoking this method, children of that item, and finally parents of that item. If [param emit_signal] is [code]false[/code], then [signal Tree.check_propagated_to_item] will not be emitted.
 			</description>
 		</method>
 		<method name="remove_child">
@@ -405,7 +405,7 @@
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Selects the column [code]column[/code].
+				Selects the given [param column].
 			</description>
 		</method>
 		<method name="set_button">
@@ -414,7 +414,7 @@
 			<param index="1" name="button_idx" type="int" />
 			<param index="2" name="button" type="Texture2D" />
 			<description>
-				Sets the given column's button [Texture2D] at index [code]button_idx[/code] to [code]button[/code].
+				Sets the given column's button [Texture2D] at index [param button_idx] to [param button].
 			</description>
 		</method>
 		<method name="set_button_disabled">
@@ -423,7 +423,7 @@
 			<param index="1" name="button_idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
-				If [code]true[/code], disables the button at index [code]button_idx[/code] in column [code]column[/code].
+				If [code]true[/code], disables the button at index [param button_idx] in the given [param column].
 			</description>
 		</method>
 		<method name="set_cell_mode">
@@ -431,7 +431,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="mode" type="int" enum="TreeItem.TreeCellMode" />
 			<description>
-				Sets the given column's cell mode to [code]mode[/code]. See [enum TreeCellMode] constants.
+				Sets the given column's cell mode to [param mode]. See [enum TreeCellMode] constants.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -439,7 +439,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="checked" type="bool" />
 			<description>
-				If [code]true[/code], the column [code]column[/code] is checked. Clears column's indeterminate status.
+				If [code]true[/code], the given [param column] is checked. Clears column's indeterminate status.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -472,8 +472,8 @@
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="callback" type="StringName" />
 			<description>
-				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
-				The [code]callback[/code] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+				Sets the given column's custom draw callback to [param callback] method on [param object].
+				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
 		<method name="set_custom_font">
@@ -481,7 +481,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="font" type="Font" />
 			<description>
-				Sets custom font used to draw text in the column [code]column[/code].
+				Sets custom font used to draw text in the given [param column].
 			</description>
 		</method>
 		<method name="set_custom_font_size">
@@ -489,7 +489,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="font_size" type="int" />
 			<description>
-				Sets custom font size used to draw text in the column [code]column[/code].
+				Sets custom font size used to draw text in the given [param column].
 			</description>
 		</method>
 		<method name="set_editable">
@@ -497,7 +497,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], column [code]column[/code] is editable.
+				If [code]true[/code], the given [param column] is editable.
 			</description>
 		</method>
 		<method name="set_expand_right">
@@ -505,7 +505,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], column [code]column[/code] is expanded to the right.
+				If [code]true[/code], the given [param column] is expanded to the right.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -529,7 +529,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="modulate" type="Color" />
 			<description>
-				Modulates the given column's icon with [code]modulate[/code].
+				Modulates the given column's icon with [param modulate].
 			</description>
 		</method>
 		<method name="set_icon_region">
@@ -545,7 +545,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="indeterminate" type="bool" />
 			<description>
-				If [code]true[/code], the column [code]column[/code] is marked indeterminate.
+				If [code]true[/code], the given [param column] is marked [param indeterminate].
 				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
 			</description>
 		</method>
@@ -582,7 +582,7 @@
 			<param index="4" name="expr" type="bool" default="false" />
 			<description>
 				Sets the range of accepted values for a column. The column must be in the [constant CELL_MODE_RANGE] mode.
-				If [code]expr[/code] is [code]true[/code], the edit mode slider will use an exponential scale as with [member Range.exp_edit].
+				If [param expr] is [code]true[/code], the edit mode slider will use an exponential scale as with [member Range.exp_edit].
 			</description>
 		</method>
 		<method name="set_selectable">

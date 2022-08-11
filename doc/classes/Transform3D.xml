@@ -66,7 +66,7 @@
 			<param index="0" name="xform" type="Transform3D" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
+				Returns a transform interpolated between this transform and another by a given [param weight] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
@@ -87,8 +87,8 @@
 			<param index="0" name="target" type="Vector3" />
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
-				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [code]target[/code] position.
-				The up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [code]target[/code] and [code]up[/code] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
+				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [param target] position.
+				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [param target] and [param up] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
@@ -102,8 +102,8 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians).
-				The [code]axis[/code] must be a normalized vector.
+				Returns a copy of the transform rotated around the given [param axis] by the given [param angle] (in radians).
+				The [param axis] must be a normalized vector.
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
@@ -114,8 +114,8 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians).
-				The [code]axis[/code] must be a normalized vector.
+				Returns a copy of the transform rotated around the given [param axis] by the given [param angle] (in radians).
+				The [param axis] must be a normalized vector.
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
 				This can be seen as transforming with respect to the local frame.
@@ -125,7 +125,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Returns a copy of the transform scaled by the given [code]scale[/code] factor.
+				Returns a copy of the transform scaled by the given [param scale] factor.
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
@@ -135,7 +135,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Returns a copy of the transform scaled by the given [code]scale[/code] factor.
+				Returns a copy of the transform scaled by the given [param scale] factor.
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
 				This can be seen as transforming with respect to the local frame.
@@ -146,14 +146,14 @@
 			<param index="0" name="xform" type="Transform3D" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns a transform spherically interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
+				Returns a transform spherically interpolated between this transform and another by a given [param weight] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="offset" type="Vector3" />
 			<description>
-				Returns a copy of the transform translated by the given [code]offset[/code].
+				Returns a copy of the transform translated by the given [param offset].
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
@@ -163,7 +163,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="offset" type="Vector3" />
 			<description>
-				Returns a copy of the transform translated by the given [code]offset[/code].
+				Returns a copy of the transform translated by the given [param offset].
 				This method is an optimized version of multiplying the given transform [code]X[/code]
 				with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
 				This can be seen as transforming with respect to the local frame.
