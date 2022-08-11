@@ -340,6 +340,8 @@ void EditorProperty::_notification(int p_what) {
 				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
 			}
 
+			ofs = size.width;
+
 			if (keying) {
 				Ref<Texture2D> key;
 
@@ -349,7 +351,7 @@ void EditorProperty::_notification(int p_what) {
 					key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
 				}
 
-				ofs = size.width - key->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				ofs -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
 				Color color2(1, 1, 1);
 				if (keying_hover) {
@@ -373,7 +375,7 @@ void EditorProperty::_notification(int p_what) {
 
 				close = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
 
-				ofs = size.width - close->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				ofs -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
 				Color color2(1, 1, 1);
 				if (delete_hover) {
