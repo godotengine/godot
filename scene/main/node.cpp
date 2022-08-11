@@ -1306,15 +1306,16 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			}
 
 		} else if (name.is_node_unique_name()) {
+			StringName key = String(name).trim_prefix(UNIQUE_NODE_PREFIX);
 			if (current->data.owned_unique_nodes.size()) {
 				// Has unique nodes in ownership
-				Node **unique = current->data.owned_unique_nodes.getptr(name);
+				Node **unique = current->data.owned_unique_nodes.getptr(key);
 				if (!unique) {
 					return nullptr;
 				}
 				next = *unique;
 			} else if (current->data.owner) {
-				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(key);
 				if (!unique) {
 					return nullptr;
 				}
@@ -1369,18 +1370,16 @@ Node *Node::get_unique_node(const StringName &p_name) const {
 		ERR_FAIL_V_MSG(nullptr, "'name' parameter cannot be empty");
 	}
 
-	const StringName key = StringName(UNIQUE_NODE_PREFIX + p_name);
-
 	if (data.owned_unique_nodes.size()) {
 		// Has unique nodes in ownership.
-		Node *const *unique = data.owned_unique_nodes.getptr(key);
+		Node *const *unique = data.owned_unique_nodes.getptr(p_name);
 		if (!unique) {
 			// Could not find 'p_name' among the Unique Nodes this node owns.
 			return nullptr;
 		}
 		return *unique;
 	} else if (data.owner) {
-		Node **unique = data.owner->data.owned_unique_nodes.getptr(key);
+		Node **unique = data.owner->data.owned_unique_nodes.getptr(p_name);
 		if (!unique) {
 			// Could not find 'p_name' among the Unique Nodes this node's owner contains.
 			return nullptr;
@@ -1580,7 +1579,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Sanity check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = data.name;
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
@@ -1590,7 +1589,7 @@ void Node::_release_unique_name_in_owner() {
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Sanity check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = data.name;
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
