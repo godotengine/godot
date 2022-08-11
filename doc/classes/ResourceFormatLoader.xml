@@ -24,7 +24,7 @@
 				If implemented, gets the path of a script attached to a resource. The script is usually attached when creating a new instance of a [Resource]-based custom class.
 			</description>
 		</method>
-    <method name="_get_classes_used" qualifiers="virtual const">
+		<method name="_get_classes_used" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<argument index="0" name="path" type="String" />
 			<description>
