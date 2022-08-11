@@ -74,6 +74,9 @@ void OptionButton::_notification(int p_what) {
 					case DRAW_HOVER:
 						clr = get_theme_color(SNAME("font_hover_color"));
 						break;
+					case DRAW_HOVER_PRESSED:
+						clr = get_theme_color(SNAME("font_hover_pressed_color"));
+						break;
 					case DRAW_DISABLED:
 						clr = get_theme_color(SNAME("font_disabled_color"));
 						break;

@@ -594,11 +594,20 @@
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked checkbox items.
 		</theme_item>
+		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the checked checkbox items when they are disabled.
+		</theme_item>
 		<theme_item name="radio_checked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked radio button items.
 		</theme_item>
+		<theme_item name="radio_checked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the checked radio button items when they are disabled.
+		</theme_item>
 		<theme_item name="radio_unchecked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the unchecked radio button items.
+		</theme_item>
+		<theme_item name="radio_unchecked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the unchecked radio button items when they are disabled.
 		</theme_item>
 		<theme_item name="submenu" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the submenu arrow (for left-to-right layouts).
@@ -608,6 +617,9 @@
 		</theme_item>
 		<theme_item name="unchecked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the unchecked checkbox items.
+		</theme_item>
+		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the unchecked checkbox items when they are disabled.
 		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] displayed when the [PopupMenu] item is hovered.
