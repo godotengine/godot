@@ -72,6 +72,7 @@ class PopupMenu : public Popup {
 		Ref<Shortcut> shortcut;
 		bool shortcut_is_global = false;
 		bool shortcut_is_disabled = false;
+		bool shortcut_allow_echo = false;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -158,8 +159,8 @@ public:
 
 	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, Key p_accel = Key::NONE);
 
-	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
+	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
 	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
@@ -182,7 +183,7 @@ public:
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
-	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
+	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false, bool p_allow_echo = false);
 	void set_item_horizontal_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
@@ -219,7 +220,7 @@ public:
 
 	void scroll_to_item(int p_item);
 
-	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
+	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false, bool p_is_echo = false);
 	void activate_item(int p_item);
 
 	void remove_item(int p_idx);
