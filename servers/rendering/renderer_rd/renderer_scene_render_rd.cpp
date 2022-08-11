@@ -2459,8 +2459,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		p_internal_width = p_width;
 	}
 
-	const float texture_mipmap_bias = -log2f(p_width / p_internal_width) + p_texture_mipmap_bias;
-	material_storage->sampler_rd_configure_custom(texture_mipmap_bias);
+	material_storage->sampler_rd_configure_custom(p_texture_mipmap_bias);
 	update_uniform_sets();
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
