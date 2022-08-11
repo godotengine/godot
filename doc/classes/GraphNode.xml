@@ -321,6 +321,9 @@
 		<theme_item name="separation" data_type="constant" type="int" default="2">
 			The vertical distance between ports.
 		</theme_item>
+		<theme_item name="title_h_offset" data_type="constant" type="int" default="0">
+			Horizontal offset of the title text.
+		</theme_item>
 		<theme_item name="title_offset" data_type="constant" type="int" default="26">
 			Vertical offset of the title text.
 		</theme_item>

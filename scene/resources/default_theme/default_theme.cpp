@@ -224,6 +224,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "OptionButton", control_font_color);
 	theme->set_color("font_pressed_color", "OptionButton", control_font_pressed_color);
 	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
+	theme->set_color("font_hover_pressed_color", "OptionButton", control_font_pressed_color);
 	theme->set_color("font_focus_color", "OptionButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
 	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
@@ -231,6 +232,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "OptionButton", 2 * scale);
 	theme->set_constant("arrow_margin", "OptionButton", 4 * scale);
 	theme->set_constant("outline_size", "OptionButton", 0);
+	theme->set_constant("modulate_arrow", "OptionButton", false);
 
 	// MenuButton
 
@@ -644,9 +646,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", separator_horizontal);
 
 	theme->set_icon("checked", "PopupMenu", icons["checked"]);
+	theme->set_icon("checked_disabled", "PopupMenu", icons["checked"]);
 	theme->set_icon("unchecked", "PopupMenu", icons["unchecked"]);
+	theme->set_icon("unchecked_disabled", "PopupMenu", icons["unchecked"]);
 	theme->set_icon("radio_checked", "PopupMenu", icons["radio_checked"]);
+	theme->set_icon("radio_checked_disabled", "PopupMenu", icons["radio_checked"]);
 	theme->set_icon("radio_unchecked", "PopupMenu", icons["radio_unchecked"]);
+	theme->set_icon("radio_unchecked_disabled", "PopupMenu", icons["radio_unchecked"]);
 	theme->set_icon("submenu", "PopupMenu", icons["popup_menu_arrow_right"]);
 	theme->set_icon("submenu_mirrored", "PopupMenu", icons["popup_menu_arrow_left"]);
 
@@ -703,6 +709,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
 	theme->set_constant("separation", "GraphNode", 2 * scale);
 	theme->set_constant("title_offset", "GraphNode", 26 * scale);
+	theme->set_constant("title_h_offset", "GraphNode", 0);
 	theme->set_constant("close_offset", "GraphNode", 22 * scale);
 	theme->set_constant("close_h_offset", "GraphNode", 22 * scale);
 	theme->set_constant("port_offset", "GraphNode", 0);
