@@ -176,6 +176,10 @@ bool Plane::is_equal_approx(const Plane &p_plane) const {
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
 }
 
+bool Plane::is_finite() const {
+	return normal.is_finite() && Math::is_finite(d);
+}
+
 Plane::operator String() const {
 	return "[N: " + normal.operator String() + ", D: " + String::num_real(d, false) + "]";
 }

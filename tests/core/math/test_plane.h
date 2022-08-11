@@ -167,6 +167,29 @@ TEST_CASE("[Plane] Intersection") {
 			vec_out.is_equal_approx(Vector3(1, 1, 1)),
 			"intersects_segment() should modify vec_out to the expected result.");
 }
+
+TEST_CASE("[Plane] Finite number checks") {
+	const Vector3 x(0, 1, 2);
+	const Vector3 infinite_vec(NAN, NAN, NAN);
+	const real_t y = 0;
+	const real_t infinite_y = NAN;
+
+	CHECK_MESSAGE(
+			Plane(x, y).is_finite(),
+			"Plane with all components finite should be finite");
+
+	CHECK_FALSE_MESSAGE(
+			Plane(x, infinite_y).is_finite(),
+			"Plane with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Plane(infinite_vec, y).is_finite(),
+			"Plane with one component infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Plane(infinite_vec, infinite_y).is_finite(),
+			"Plane with two components infinite should not be finite.");
+}
+
 } // namespace TestPlane
 
 #endif // TEST_PLANE_H

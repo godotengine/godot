@@ -136,6 +136,7 @@ struct _NO_DISCARD_ Vector3 {
 
 	bool is_equal_approx(const Vector3 &p_v) const;
 	bool is_zero_approx() const;
+	bool is_finite() const;
 
 	/* Operators */
 

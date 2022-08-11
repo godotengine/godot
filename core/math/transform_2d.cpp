@@ -168,6 +168,10 @@ bool Transform2D::is_equal_approx(const Transform2D &p_transform) const {
 	return columns[0].is_equal_approx(p_transform.columns[0]) && columns[1].is_equal_approx(p_transform.columns[1]) && columns[2].is_equal_approx(p_transform.columns[2]);
 }
 
+bool Transform2D::is_finite() const {
+	return columns[0].is_finite() && columns[1].is_finite() && columns[2].is_finite();
+}
+
 Transform2D Transform2D::looking_at(const Vector2 &p_target) const {
 	Transform2D return_trans = Transform2D(get_rotation(), get_origin());
 	Vector2 target_position = affine_inverse().xform(p_target);

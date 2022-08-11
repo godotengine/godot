@@ -119,6 +119,12 @@
 				Returns [code]true[/code] if this plane and [param to_plane] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this plane is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
 		<method name="is_point_over" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector3" />
