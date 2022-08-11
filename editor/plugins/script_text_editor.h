@@ -79,7 +79,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *breakpoints_menu = nullptr;
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
-	PopupMenu *convert_case = nullptr;
 
 	GotoLineDialog *goto_line_dialog = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
