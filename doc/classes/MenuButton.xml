@@ -64,11 +64,23 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
+		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			[Color] of the text's shadow effect.
+		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="3">
 			The horizontal space between [MenuButton]'s icon and text.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
+		</theme_item>
+		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
+			The horizontal offset of the text's shadow.
+		</theme_item>
+		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
+			The vertical offset of the text's shadow.
+		</theme_item>
+		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
+			The size of the shadow outline.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] of the [MenuButton]'s text.
