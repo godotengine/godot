@@ -989,6 +989,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 				r_result->collision_unsafe_fraction = unsafe;
 
 				r_result->collision_count = rcd.result_count;
+				r_result->collision_depth = rcd.best_result.len;
 			}
 
 			collided = true;
@@ -1002,6 +1003,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 		r_result->collision_safe_fraction = 1.0;
 		r_result->collision_unsafe_fraction = 1.0;
+		r_result->collision_depth = 0.0;
 	}
 
 	return collided;

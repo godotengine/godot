@@ -95,7 +95,7 @@ private:
 	String text;
 	String placeholder;
 	String placeholder_translated;
-	String secret_character = "*";
+	String secret_character = U"•";
 	String ime_text;
 	Point2 ime_selection;
 

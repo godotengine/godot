@@ -79,6 +79,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildphase;
 		String modules_buildgrp;
 		Vector<String> capabilities;
+		bool use_swift_runtime;
 	};
 	struct ExportArchitecture {
 		String name;

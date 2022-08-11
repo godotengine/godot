@@ -55,6 +55,12 @@
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
 		<method name="count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="float" />

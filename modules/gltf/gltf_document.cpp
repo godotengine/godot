@@ -6899,7 +6899,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 	Node *root = gltf_root_node->get_parent();
 	ERR_FAIL_NULL_V(root, nullptr);
 	_process_mesh_instances(state, root);
-	if (state->animations.size()) {
+	if (state->get_create_animations() && state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		root->add_child(ap, true);
 		ap->set_owner(root);

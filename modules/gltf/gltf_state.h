@@ -61,6 +61,7 @@ class GLTFState : public Resource {
 	bool use_named_skin_binds = false;
 	bool use_khr_texture_transform = false;
 	bool discard_meshes_and_materials = false;
+	bool create_animations = true;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -167,6 +168,9 @@ public:
 
 	Dictionary get_skeleton_to_node();
 	void set_skeleton_to_node(Dictionary p_skeleton_to_node);
+
+	bool get_create_animations();
+	void set_create_animations(bool p_create_animations);
 
 	Array get_animations();
 	void set_animations(Array p_animations);
