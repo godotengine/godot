@@ -94,7 +94,7 @@
 			<param index="0" name="margin" type="int" enum="Side" />
 			<param index="1" name="offset" type="float" />
 			<description>
-				Sets the default value of the specified [enum Side] to [code]offset[/code] pixels.
+				Sets the default value of the specified [enum Side] to [param offset] pixels.
 			</description>
 		</method>
 		<method name="test_mask" qualifiers="const">
