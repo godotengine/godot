@@ -108,6 +108,7 @@ class Dijkstra3D : public RefCounted {
 	HashSet<Segment, Segment> segments;
 
 	void _solve(Point *target_point);
+
 protected:
 	static void _bind_methods();
 

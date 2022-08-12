@@ -331,7 +331,6 @@ void Dijkstra3D::_solve(Point *target_point) {
 	Vector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
 
-
 	target_point->tentative_distance = 0;
 	open_list.push_back(target_point);
 
@@ -395,8 +394,7 @@ real_t Dijkstra3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-float Dijkstra3D::get_distance(int64_t p_from_id)
-{
+float Dijkstra3D::get_distance(int64_t p_from_id) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point with id: %d doesn't exist.", p_from_id));
@@ -426,7 +424,6 @@ Vector<Vector3> Dijkstra3D::get_point_path(int64_t p_from_id) {
 	Point *begin_point = a;
 	Point *end_point = b;
 
-
 	Point *p = begin_point;
 	int64_t pc = 1; // Begin point
 	while (p != end_point) {
@@ -447,7 +444,7 @@ Vector<Vector3> Dijkstra3D::get_point_path(int64_t p_from_id) {
 			p2 = p2->prev_point;
 		}
 
-		w[pc-1] = p2->pos; // Assign last
+		w[pc - 1] = p2->pos; // Assign last
 	}
 
 	return path;
@@ -461,7 +458,7 @@ Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
 	Point *b;
 	bool to_exists = points.lookup(target_id, b);
 	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Destination point with id: %d doesn't exist.", target_id));
-	
+
 	Vector<int64_t> path;
 	if (p_from_id == target_id) {
 		path.push_back(target_id);
@@ -471,7 +468,6 @@ Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	
 	Point *p = begin_point;
 	int64_t pc = 1; // Begin point
 	while (p != end_point) {
@@ -493,14 +489,13 @@ Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
 			p = p->prev_point;
 		}
 
-		w[pc-1] = p->id; // Assign last
+		w[pc - 1] = p->id; // Assign last
 	}
 
 	return path;
 }
 
-void Dijkstra3D::set_target(int64_t p_target_id)
-{
+void Dijkstra3D::set_target(int64_t p_target_id) {
 	bool from_exists = points.has(p_target_id);
 	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't set target. Point with id: %d doesn't exist.", p_target_id));
 
@@ -508,18 +503,17 @@ void Dijkstra3D::set_target(int64_t p_target_id)
 	pass++;
 }
 
-int64_t Dijkstra3D::get_target()
-{
+int64_t Dijkstra3D::get_target() {
 	return target_id;
 }
 
-void Dijkstra3D::recalculate()
-{
+void Dijkstra3D::recalculate() {
 	ERR_FAIL_COND_MSG(target_id == -1, vformat("Can't recalculate Dijsktra2D pathfinding: No target point set."));
 
 	Dijkstra3D::Point *a;
 	bool from_exists = points.lookup(target_id, a);
-	if (!from_exists) return;
+	if (!from_exists)
+		return;
 	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't recalculate Dijsktra2D pathfinding: Target point with id: %d doesn't exist.", target_id));
 
 	_solve(a);
@@ -728,7 +722,7 @@ Vector<Vector2> Dijkstra2D::get_point_path(int64_t p_from_id) {
 			p2 = p2->prev_point;
 		}
 
-		w[pc-1] = Vector2(p2->pos.x, p2->pos.y); // Assign last
+		w[pc - 1] = Vector2(p2->pos.x, p2->pos.y); // Assign last
 	}
 
 	return path;
@@ -779,8 +773,7 @@ Vector<int64_t> Dijkstra2D::get_id_path(int64_t p_from_id) {
 	return path;
 }
 
-float Dijkstra2D::get_distance(int64_t p_from_id)
-{
+float Dijkstra2D::get_distance(int64_t p_from_id) {
 	Dijkstra3D::Point *a;
 	bool from_exists = dijkstra.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point with id: %d doesn't exist.", p_from_id));
@@ -788,7 +781,7 @@ float Dijkstra2D::get_distance(int64_t p_from_id)
 	if (a->closed_pass != dijkstra.pass || a->tentative_distance == INFINITY) {
 		return INFINITY; // Point not visited during last _solve() call
 	}
-	
+
 	return a->tentative_distance;
 }
 
@@ -800,13 +793,13 @@ int64_t Dijkstra2D::get_target() {
 	return dijkstra.target_id;
 }
 
-void Dijkstra2D::recalculate()
-{
+void Dijkstra2D::recalculate() {
 	ERR_FAIL_COND_MSG(dijkstra.target_id == -1, vformat("Can't recalculate Dijsktra2D pathfinding: No target point set."));
 
 	Dijkstra3D::Point *a;
 	bool from_exists = dijkstra.points.lookup(dijkstra.target_id, a);
-	if (!from_exists) return;
+	if (!from_exists)
+		return;
 	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't recalculate Dijsktra2D pathfinding: Target point with id: %d doesn't exist.", dijkstra.target_id));
 
 	_solve(a);
@@ -861,8 +854,7 @@ void Dijkstra2D::_solve(Dijkstra3D::Point *target_point) {
 
 			if (new_point) { // The position of the new points is already known.
 				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
-			}
-			else {
+			} else {
 				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
 			}
 		}
@@ -905,6 +897,6 @@ void Dijkstra2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target", "target_id"), &Dijkstra2D::set_target);
 	ClassDB::bind_method(D_METHOD("get_target"), &Dijkstra2D::get_target);
 	ClassDB::bind_method(D_METHOD("recalculate"), &Dijkstra2D::recalculate);
-	
+
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
