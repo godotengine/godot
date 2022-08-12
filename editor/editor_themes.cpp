@@ -1262,7 +1262,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "LineEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_line_edit_disabled);
 	theme->set_icon("clear", "LineEdit", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
-	theme->set_color("read_only", "LineEdit", font_disabled_color);
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_selected_color", "LineEdit", mono_color);
 	theme->set_color("font_uneditable_color", "LineEdit", font_readonly_color);
@@ -1455,7 +1454,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tooltip->set_bg_color(dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
 	style_tooltip->set_border_width_all(0);
 	theme->set_color("font_color", "TooltipLabel", font_hover_color);
-	theme->set_color("font_color_shadow", "TooltipLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_shadow_color", "TooltipLabel", Color(0, 0, 0, 0));
 	theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
 
 	// PopupPanel

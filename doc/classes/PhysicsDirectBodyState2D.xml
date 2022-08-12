@@ -25,7 +25,7 @@
 			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="add_constant_torque">
@@ -58,7 +58,7 @@
 			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -68,7 +68,7 @@
 			<description>
 				Applies a positioned impulse to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_torque">

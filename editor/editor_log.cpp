@@ -93,6 +93,12 @@ void EditorLog::_update_theme() {
 	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
 	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
+	theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+	theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
+	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+	theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
+	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_notification(int p_what) {
@@ -264,22 +270,22 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_STD_RICH: {
 		} break;
 		case MSG_TYPE_ERROR: {
-			log->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
-			Ref<Texture2D> icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
+			log->push_color(theme_cache.error_color);
+			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
-			log->push_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-			Ref<Texture2D> icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
+			log->push_color(theme_cache.warning_color);
+			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
-			log->push_color(get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6));
+			log->push_color(theme_cache.message_color);
 		} break;
 	}
 

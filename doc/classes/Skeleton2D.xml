@@ -23,7 +23,7 @@
 			<return type="Bone2D" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The object to return is identified by the parameter [code]idx[/code]. Bones are indexed by descending the node hierarchy from top to bottom, adding the children of each branch before moving to the next sibling.
+				Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The object to return is identified by the parameter [param idx]. Bones are indexed by descending the node hierarchy from top to bottom, adding the children of each branch before moving to the next sibling.
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
@@ -36,7 +36,7 @@
 			<return type="Transform2D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the local pose override transform for [code]bone_idx[/code].
+				Returns the local pose override transform for [param bone_idx].
 			</description>
 		</method>
 		<method name="get_modification_stack" qualifiers="const">
@@ -58,9 +58,9 @@
 			<param index="2" name="strength" type="float" />
 			<param index="3" name="persistent" type="bool" />
 			<description>
-				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
-				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [code]bone_idx[/code]!
+				Sets the local pose transform, [param override_pose], for the bone at [param bone_idx].
+				[param strength] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
+				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [param bone_idx]!
 			</description>
 		</method>
 		<method name="set_modification_stack">

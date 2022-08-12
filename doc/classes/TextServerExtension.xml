@@ -20,7 +20,7 @@
 			<param index="0" name="direction" type="int" enum="TextServer.Direction" />
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" />
 			<description>
-				Creates new buffer for complex text layout, with the given [code]direction[/code] and [code]orientation[/code]. To free the resulting buffer, use [method free_rid] method.
+				Creates new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="virtual const">
@@ -75,7 +75,7 @@
 			<param index="4" name="index" type="int" />
 			<param index="5" name="color" type="Color" />
 			<description>
-				Draws single glyph into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
+				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size].
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="virtual const">
@@ -88,7 +88,7 @@
 			<param index="5" name="index" type="int" />
 			<param index="6" name="color" type="Color" />
 			<description>
-				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
+				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size].
 			</description>
 		</method>
 		<method name="font_get_ascent" qualifiers="virtual const">
@@ -176,7 +176,7 @@
 			<param index="2" name="char" type="int" />
 			<param index="3" name="variation_selector" type="int" />
 			<description>
-				Returns the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
+				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].
 			</description>
 		</method>
 		<method name="font_get_glyph_list" qualifiers="virtual const">
@@ -270,7 +270,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns [code]true[/code] if support override is enabled for the [code]language[/code].
+				Returns [code]true[/code] if support override is enabled for the [param language].
 			</description>
 		</method>
 		<method name="font_get_language_support_overrides" qualifiers="virtual">
@@ -328,7 +328,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="script" type="String" />
 			<description>
-				Returns [code]true[/code] if support override is enabled for the [code]script[/code].
+				Returns [code]true[/code] if support override is enabled for the [param script].
 			</description>
 		</method>
 		<method name="font_get_script_support_overrides" qualifiers="virtual">
@@ -434,7 +434,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="char" type="int" />
 			<description>
-				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [param char] is available in the font.
 			</description>
 		</method>
 		<method name="font_is_antialiased" qualifiers="virtual const">
@@ -575,7 +575,7 @@
 			<param index="1" name="data_ptr" type="const uint8_t*" />
 			<param index="2" name="data_size" type="int" />
 			<description>
-				Sets font source data, e.g contents of the dynamic font source file. [code]data_ptr[/code] memory buffer must remain accessible during font lifetime.
+				Sets font source data, e.g contents of the dynamic font source file. [param data_ptr] memory buffer must remain accessible during font lifetime.
 			</description>
 		</method>
 		<method name="font_set_descent" qualifiers="virtual">
@@ -592,7 +592,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="strength" type="float" />
 			<description>
-				Sets font embolden strength. If [code]strength[/code] is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+				Sets font embolden strength. If [param strength] is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
 		<method name="font_set_face_index" qualifiers="virtual">
@@ -877,7 +877,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Converts a number from the Western Arabic (0..9) to the numeral systems used in [code]language[/code].
+				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
 			</description>
 		</method>
 		<method name="free_rid" qualifiers="virtual">
@@ -924,7 +924,7 @@
 			<return type="bool" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Returns [code]true[/code] if [code]rid[/code] is valid resource owned by this text server.
+				Returns [code]true[/code] if [param rid] is valid resource owned by this text server.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="virtual const">
@@ -953,7 +953,7 @@
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Returns [code]true[/code] is [code]string[/code] is a valid identifier.
+				Returns [code]true[/code] is [param string] is a valid identifier.
 			</description>
 		</method>
 		<method name="load_support_data" qualifiers="virtual">
@@ -975,7 +975,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Converts a number from the numeral systems used in [code]language[/code] to Western Arabic (0..9).
+				Converts a number from the numeral systems used in [param language] to Western Arabic (0..9).
 			</description>
 		</method>
 		<method name="parse_structured_text" qualifiers="virtual const">
@@ -990,7 +990,7 @@
 			<return type="String" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns percent sign used in the [code]language[/code].
+				Returns percent sign used in the [param language].
 			</description>
 		</method>
 		<method name="save_support_data" qualifiers="virtual const">
@@ -1035,7 +1035,7 @@
 			<param index="3" name="inline_align" type="int" enum="InlineAlignment" />
 			<param index="4" name="length" type="int" />
 			<description>
-				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
+				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
 			</description>
 		</method>
 		<method name="shaped_text_add_string" qualifiers="virtual">
@@ -1067,7 +1067,7 @@
 			<param index="4" name="clip_r" type="float" />
 			<param index="5" name="color" type="Color" />
 			<description>
-				Draw shaped text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
+				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
 			</description>
 		</method>
@@ -1081,7 +1081,7 @@
 			<param index="5" name="outline_size" type="int" />
 			<param index="6" name="color" type="Color" />
 			<description>
-				Draw the outline of the shaped text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
+				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
 			</description>
 		</method>
@@ -1107,7 +1107,7 @@
 			<param index="1" name="position" type="int" />
 			<param index="2" name="caret" type="CaretInfo*" />
 			<description>
-				Returns shapes of the carets corresponding to the character offset [code]position[/code] in the text. Returned caret shape is 1 pixel wide rectangle.
+				Returns shapes of the carets corresponding to the character offset [param position] in the text. Returned caret shape is 1 pixel wide rectangle.
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
 			</description>
 		</method>
@@ -1359,7 +1359,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
-				Returns composite character end position closest to the [code]pos[/code].
+				Returns composite character end position closest to the [param pos].
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
 			</description>
 		</method>
@@ -1377,7 +1377,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
-				Returns composite character start position closest to the [code]pos[/code].
+				Returns composite character start position closest to the [param pos].
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
 			</description>
 		</method>
@@ -1413,7 +1413,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="direction" type="int" enum="TextServer.Direction" />
 			<description>
-				Sets desired text direction. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
+				Sets desired text [param direction]. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation" qualifiers="virtual">
@@ -1469,7 +1469,7 @@
 			<param index="1" name="start" type="int" />
 			<param index="2" name="length" type="int" />
 			<description>
-				Returns text buffer for the substring of the text in the [code]shaped[/code] text buffer (including inline objects).
+				Returns text buffer for the substring of the text in the [param shaped] text buffer (including inline objects).
 			</description>
 		</method>
 		<method name="shaped_text_tab_align" qualifiers="virtual">
@@ -1500,7 +1500,7 @@
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Returns [code]true[/code] if [code]string[/code] is likely to be an attempt at confusing the reader.
+				Returns [code]true[/code] if [param string] is likely to be an attempt at confusing the reader.
 			</description>
 		</method>
 		<method name="string_get_word_breaks" qualifiers="virtual const">

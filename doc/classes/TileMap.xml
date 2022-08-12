@@ -23,9 +23,9 @@
 			<param index="2" name="tile_data" type="TileData" />
 			<description>
 				Called with a TileData object about to be used internally by the TileMap, allowing its modification at runtime.
-				This method is only called if [method _use_tile_data_runtime_update] is implemented and returns [code]true[/code] for the given tile [code]coords[/coords] and [code]layer[/code].
-				[b]Warning:[/b] The [code]tile_data[/code] object's sub-resources are the same as the one in the TileSet. Modifying them might impact the whole TileSet. Instead, make sure to duplicate those resources.
-				[b]Note:[/b] If the properties of [code]tile_data[/code] object should change over time, use [method force_update] to trigger a TileMap update.
+				This method is only called if [method _use_tile_data_runtime_update] is implemented and returns [code]true[/code] for the given tile [param coords] and [param layer].
+				[b]Warning:[/b] The [param tile_data] object's sub-resources are the same as the one in the TileSet. Modifying them might impact the whole TileSet. Instead, make sure to duplicate those resources.
+				[b]Note:[/b] If the properties of [param tile_data] object should change over time, use [method force_update] to trigger a TileMap update.
 			</description>
 		</method>
 		<method name="_use_tile_data_runtime_update" qualifiers="virtual">
@@ -33,7 +33,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="coords" type="Vector2i" />
 			<description>
-				Should return [code]true[/code] if the tile at coordinates [code]coords[/coords] on layer [code]layer[/code] requires a runtime update.
+				Should return [code]true[/code] if the tile at coordinates [param coords] on layer [param layer] requires a runtime update.
 				[b]Warning:[/b] Make sure this function only return [code]true[/code] when needed. Any tile processed at runtime without a need for it will imply a significant performance penalty.
 			</description>
 		</method>
@@ -41,7 +41,7 @@
 			<return type="void" />
 			<param index="0" name="to_position" type="int" />
 			<description>
-				Adds a layer at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a layer at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 			</description>
 		</method>
 		<method name="clear">
@@ -62,7 +62,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="coords" type="Vector2i" />
 			<description>
-				Erases the cell on layer [code]layer[/code] at coordinates [code]coords[/code].
+				Erases the cell on layer [param layer] at coordinates [param coords].
 			</description>
 		</method>
 		<method name="fix_invalid_tiles">
@@ -75,7 +75,7 @@
 			<return type="void" />
 			<param index="0" name="layer" type="int" default="-1" />
 			<description>
-				Triggers an update of the TileMap. If [code]layer[/code] is provided, only updates the given layer.
+				Triggers an update of the TileMap. If [param layer] is provided, only updates the given layer.
 				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
 				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurrences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
 			</description>
@@ -86,7 +86,7 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" />
 			<description>
-				Returns the tile alternative ID of the cell on layer [code]layer[/code] at [code]coords[/code]. If [code]use_proxies[/code] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				Returns the tile alternative ID of the cell on layer [param layer] at [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
@@ -95,7 +95,7 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" />
 			<description>
-				Returns the tile atlas coordinates ID of the cell on layer [code]layer[/code] at coordinates [code]coords[/code]. If [code]use_proxies[/code] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 			</description>
 		</method>
 		<method name="get_cell_source_id" qualifiers="const">
@@ -104,7 +104,7 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" />
 			<description>
-				Returns the tile source ID of the cell on layer [code]layer[/code] at coordinates [code]coords[/code]. If [code]use_proxies[/code] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				Returns the tile source ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 			</description>
 		</method>
 		<method name="get_coords_for_body_rid">
@@ -152,7 +152,7 @@
 			<param index="0" name="coords" type="Vector2i" />
 			<param index="1" name="neighbor" type="int" enum="TileSet.CellNeighbor" />
 			<description>
-				Returns the neighboring cell to the one at coordinates [code]coords[/code], identified by the [code]neighbor[/code] direction. This method takes into account the different layouts a TileMap can take.
+				Returns the neighboring cell to the one at coordinates [param coords], identified by the [param neighbor] direction. This method takes into account the different layouts a TileMap can take.
 			</description>
 		</method>
 		<method name="get_pattern">
@@ -167,7 +167,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
-				Returns the list of all neighbourings cells to the one at [code]coords[/code]
+				Returns the list of all neighbourings cells to the one at [param coords]
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
@@ -203,7 +203,7 @@
 			<param index="1" name="coords_in_pattern" type="Vector2i" />
 			<param index="2" name="pattern" type="TileMapPattern" />
 			<description>
-				Returns for the given coordinate [code]coords_in_pattern[/code] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [code]position_in_tilemap[/code] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
+				Returns for the given coordinate [param coords_in_pattern] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [param position_in_tilemap] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
@@ -219,14 +219,14 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array.
+				Moves the layer at index [param layer] to the given position [param to_position] in the array.
 			</description>
 		</method>
 		<method name="remove_layer">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Removes the layer at index [code]layer[/code].
+				Removes the layer at index [param layer].
 			</description>
 		</method>
 		<method name="set_cell">
@@ -237,10 +237,10 @@
 			<param index="3" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
 			<param index="4" name="alternative_tile" type="int" default="0" />
 			<description>
-				Sets the tile indentifiers for the cell on layer [code]layer[/code] at coordinates [code]coords[/code]. Each tile of the [TileSet] is identified using three parts:
-				- The source identifier [code]source_id[/code] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
-				- The atlas coordinates identifier [code]atlas_coords[/code] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]. For [TileSetScenesCollectionSource] it should be 0),
-				- The alternative tile identifier [code]alternative_tile[/code] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
+				Sets the tile indentifiers for the cell on layer [param layer] at coordinates [param coords]. Each tile of the [TileSet] is identified using three parts:
+				- The source identifier [param source_id] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
+				- The atlas coordinates identifier [param atlas_coords] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]. For [TileSetScenesCollectionSource] it should be 0),
+				- The alternative tile identifier [param alternative_tile] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
 			</description>
 		</method>
 		<method name="set_cells_terrain_connect">
@@ -251,8 +251,9 @@
 			<param index="3" name="terrain" type="int" />
 			<param index="4" name="ignore_empty_terrains" type="bool" default="true" />
 			<description>
-				Update all the cells in the [code]cells[/code] coordinates array so that they use the given [code]terrain[/code] for the given [code]terrain_set[/code]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.				If [code]ignore_empty_terrains[/code] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
-				If [code]ignore_empty_terrains[/code] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
+				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				[b]Note:[/b] To work correctly, [code]set_cells_terrain_connect[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
@@ -264,8 +265,8 @@
 			<param index="3" name="terrain" type="int" />
 			<param index="4" name="ignore_empty_terrains" type="bool" default="true" />
 			<description>
-				Update all the cells in the [code]cells[/code] coordinates array so that they use the given [code]terrain[/code] for the given [code]terrain_set[/code]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
-				If [code]ignore_empty_terrains[/code] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				Update all the cells in the [param path] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
+				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				[b]Note:[/b] To work correctly, [code]set_cells_terrain_path[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
@@ -274,7 +275,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Enables or disables the layer [code]layer[/code]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc...).
 			</description>
 		</method>
 		<method name="set_layer_modulate">
@@ -325,7 +326,7 @@
 			<param index="1" name="position" type="Vector2i" />
 			<param index="2" name="pattern" type="TileMapPattern" />
 			<description>
-				Paste the given [TileMapPattern] at the given [code]position[/code] and [code]layer[/code] in the tile map.
+				Paste the given [TileMapPattern] at the given [param position] and [param layer] in the tile map.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">

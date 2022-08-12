@@ -290,7 +290,9 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 #endif
 				mi.arguments.push_back(arginfo);
 			}
-
+#ifdef TOOLS_ENABLED
+			mi.default_arguments.append_array(func->get_default_arg_values());
+#endif
 			mi.return_val = func->get_return_type();
 			r_list->push_back(mi);
 		}

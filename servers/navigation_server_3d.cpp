@@ -123,6 +123,12 @@ NavigationServer3D::NavigationServer3D() {
 	debug_navigation_enable_edge_lines = GLOBAL_DEF("debug/shapes/navigation/enable_edge_lines", true);
 	debug_navigation_enable_edge_lines_xray = GLOBAL_DEF("debug/shapes/navigation/enable_edge_lines_xray", true);
 	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/enable_geometry_face_random_color", true);
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// enable NavigationServer3D when in Editor or else navmesh edge connections are invisible
+		// on runtime tests SceneTree has "Visible Navigation" set and main iteration takes care of this
+		set_debug_enabled(true);
+	}
 #endif // DEBUG_ENABLED
 }
 

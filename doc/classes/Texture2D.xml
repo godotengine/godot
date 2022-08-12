@@ -71,7 +71,7 @@
 			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="3" name="transpose" type="bool" default="false" />
 			<description>
-				Draws the texture using a [CanvasItem] with the [RenderingServer] API at the specified [code]position[/code].
+				Draws the texture using a [CanvasItem] with the [RenderingServer] API at the specified [param position].
 			</description>
 		</method>
 		<method name="draw_rect" qualifiers="const">

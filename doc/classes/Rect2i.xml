@@ -104,7 +104,7 @@
 			<return type="Rect2i" />
 			<param index="0" name="amount" type="int" />
 			<description>
-				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on all sides.
+				Returns a copy of the [Rect2i] grown by the specified [param amount] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual" qualifiers="const">
@@ -122,7 +122,7 @@
 			<param index="0" name="side" type="int" />
 			<param index="1" name="amount" type="int" />
 			<description>
-				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on the specified [enum Side].
+				Returns a copy of the [Rect2i] grown by the specified [param amount] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area" qualifiers="const">
@@ -159,7 +159,7 @@
 			<return type="Rect2i" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
-				Returns a larger [Rect2i] that contains this [Rect2i] and [code]b[/code].
+				Returns a larger [Rect2i] that contains this [Rect2i] and [param b].
 			</description>
 		</method>
 	</methods>

@@ -363,6 +363,12 @@ NavigationRegion3D::~NavigationRegion3D() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion3D::_update_debug_mesh() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// don't update inside Editor as node 3d gizmo takes care of this
+		// as collisions and selections for Editor Viewport need to be updated
+		return;
+	}
+
 	if (!NavigationServer3D::get_singleton()->get_debug_enabled()) {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);

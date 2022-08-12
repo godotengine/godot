@@ -15,7 +15,7 @@
 			<param index="1" name="type" type="int" />
 			<param index="2" name="name" type="String" />
 			<description>
-				Adds an input port with the specified [code]type[/code] (see [enum VisualShaderNode.PortType]) and [code]name[/code].
+				Adds an input port with the specified [param type] (see [enum VisualShaderNode.PortType]) and [param name].
 			</description>
 		</method>
 		<method name="add_output_port">
@@ -24,7 +24,7 @@
 			<param index="1" name="type" type="int" />
 			<param index="2" name="name" type="String" />
 			<description>
-				Adds an output port with the specified [code]type[/code] (see [enum VisualShaderNode.PortType]) and [code]name[/code].
+				Adds an output port with the specified [param type] (see [enum VisualShaderNode.PortType]) and [param name].
 			</description>
 		</method>
 		<method name="clear_input_ports">

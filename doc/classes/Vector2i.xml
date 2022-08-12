@@ -39,7 +39,7 @@
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
-				Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code].
+				Constructs a new [Vector2i] from the given [param x] and [param y].
 			</description>
 		</constructor>
 	</constructors>
@@ -61,7 +61,7 @@
 			<param index="0" name="min" type="Vector2i" />
 			<param index="1" name="max" type="Vector2i" />
 			<description>
-				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="length" qualifiers="const">
@@ -236,14 +236,14 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Vector2i" />
 			<description>
-				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Vector2i" />
 			<description>
-				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -257,21 +257,21 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Vector2i" />
 			<description>
-				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Vector2i" />
 			<description>
-				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Access vector components using their index. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
+				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
 			</description>
 		</operator>
 		<operator name="operator unary+">

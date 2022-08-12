@@ -221,8 +221,8 @@
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret" default="false">
 			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
 		</member>
-		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;*&quot;">
-			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
+		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;•&quot;">
+			The character to use to mask secret input (defaults to "•"). Only a single character can be used as the secret character.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 			If [code]false[/code], it's impossible to select the text using mouse nor keyboard.

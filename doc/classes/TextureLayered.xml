@@ -61,7 +61,7 @@
 			<return type="Image" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns an [Image] resource with the data from specified [code]layer[/code].
+				Returns an [Image] resource with the data from specified [param layer].
 			</description>
 		</method>
 		<method name="get_layered_type" qualifiers="const">

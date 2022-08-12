@@ -103,7 +103,7 @@
 			<param index="3" name="z_near" type="float" />
 			<param index="4" name="z_far" type="float" />
 			<description>
-				Sets camera to use frustum projection. This mode allows adjusting the [code]offset[/code] argument to create "tilted frustum" effects.
+				Sets camera to use frustum projection. This mode allows adjusting the [param offset] argument to create "tilted frustum" effects.
 			</description>
 		</method>
 		<method name="camera_set_orthogonal">
@@ -1172,7 +1172,7 @@
 			<param index="0" name="size" type="int" />
 			<param index="1" name="depth" type="int" />
 			<description>
-				Sets the resolution of the volumetric fog's froxel buffer. [code]size[/code] is modified by the screen's aspect ratio and then used to set the width and height of the buffer. While [code]depth[/code] is directly used to set the depth of the buffer.
+				Sets the resolution of the volumetric fog's froxel buffer. [param size] is modified by the screen's aspect ratio and then used to set the width and height of the buffer. While [param depth] is directly used to set the depth of the buffer.
 			</description>
 		</method>
 		<method name="fog_volume_create">
@@ -1290,7 +1290,7 @@
 			<return type="void" />
 			<param index="0" name="half_resolution" type="bool" />
 			<description>
-				If [code]half_resolution[/code] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
+				If [param half_resolution] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
 		<method name="global_shader_uniform_add">
@@ -1355,7 +1355,7 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="String" />
 			<description>
-				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], and [code]etc2[/code].
+				Returns [code]true[/code] if the OS supports a certain [param feature]. Features might be [code]s3tc[/code], [code]etc[/code], and [code]etc2[/code].
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">
@@ -1474,9 +1474,9 @@
 			<param index="1" name="transparency" type="float" />
 			<description>
 				Sets the transparency for the given geometry instance. Equivalent to [member GeometryInstance3D.transparency].
-				A transparency of [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [code]transparency[/code] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
+				A transparency of [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [param transparency] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
 				In spatial shaders, [code]1.0 - transparency[/code] is set as the default value of the [code]ALPHA[/code] built-in.
-				[b]Note:[/b] [code]transparency[/code] is clamped between [code]0.0[/code] and [code]1.0[/code], so this property cannot be used to make transparent materials more opaque than they originally are.
+				[b]Note:[/b] [param transparency] is clamped between [code]0.0[/code] and [code]1.0[/code], so this property cannot be used to make transparent materials more opaque than they originally are.
 			</description>
 		</method>
 		<method name="instance_geometry_set_visibility_range">
@@ -2693,7 +2693,7 @@
 			<param index="2" name="scale" type="bool" />
 			<param index="3" name="use_filter" type="bool" default="true" />
 			<description>
-				Sets a boot image. The color defines the background color. If [code]scale[/code] is [code]true[/code], the image will be scaled to fit the screen size. If [code]use_filter[/code] is [code]true[/code], the image will be scaled with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+				Sets a boot image. The color defines the background color. If [param scale] is [code]true[/code], the image will be scaled to fit the screen size. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -2731,7 +2731,7 @@
 			<param index="2" name="index" type="int" default="0" />
 			<description>
 				Returns a default texture from a shader searched by name.
-				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
 		<method name="shader_get_param_default" qualifiers="const">
@@ -2763,7 +2763,7 @@
 			<param index="3" name="index" type="int" default="0" />
 			<description>
 				Sets a shader's default texture. Overwrites the texture given by name.
-				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
 		<method name="shader_set_path_hint">
@@ -3039,7 +3039,7 @@
 			<param index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="2" name="screen" type="int" default="0" />
 			<description>
-				Copies the viewport to a region of the screen specified by [code]rect[/code]. If [method viewport_set_render_direct_to_screen] is [code]true[/code], then the viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
+				Copies the viewport to a region of the screen specified by [param rect]. If [method viewport_set_render_direct_to_screen] is [code]true[/code], then the viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
 				For example, you can set the root viewport to not render at all with the following code:
 				FIXME: The method seems to be non-existent.
 				[codeblocks]
@@ -3110,7 +3110,7 @@
 			<param index="3" name="sublayer" type="int" />
 			<description>
 				Sets the stacking order for a viewport's canvas.
-				[code]layer[/code] is the actual canvas layer, while [code]sublayer[/code] specifies the stacking order of the canvas among those in the same layer.
+				[param layer] is the actual canvas layer, while [param sublayer] specifies the stacking order of the canvas among those in the same layer.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_transform">
