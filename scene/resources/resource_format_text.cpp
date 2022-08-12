@@ -403,7 +403,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			path = remaps[path];
 		}
 
-		RES res = ResourceLoader::load(path, type, no_subresource_cache);
+		RES res = ResourceLoader::load(path, type, false);
 
 		if (res.is_null()) {
 			if (ResourceLoader::get_abort_on_missing_resources()) {
