@@ -2761,6 +2761,32 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
 	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
 
+	// textureQueryLod
+
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_SAMPLER2D, TYPE_VEC2 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_ISAMPLER2D, TYPE_VEC2 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_USAMPLER2D, TYPE_VEC2 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_SAMPLER2DARRAY, TYPE_VEC2 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_ISAMPLER2DARRAY, TYPE_VEC2 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_USAMPLER2DARRAY, TYPE_VEC2 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_SAMPLER3D, TYPE_VEC3 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_ISAMPLER3D, TYPE_VEC3 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_USAMPLER3D, TYPE_VEC3 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureQueryLod", TYPE_VEC2, { TYPE_SAMPLERCUBE, TYPE_VEC3 }, { "sampler", "coords" }, TAG_GLOBAL, true },
+
+	// textureQueryLevels
+
+	{ "textureQueryLevels", TYPE_INT, { TYPE_SAMPLER2D }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_ISAMPLER2D }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_USAMPLER2D }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_SAMPLER2DARRAY }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_ISAMPLER2DARRAY }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_USAMPLER2DARRAY }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_SAMPLER3D }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_ISAMPLER3D }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_USAMPLER3D }, { "sampler" }, TAG_GLOBAL, true },
+	{ "textureQueryLevels", TYPE_INT, { TYPE_SAMPLERCUBE }, { "sampler" }, TAG_GLOBAL, true },
+
 	// dFdx
 
 	{ "dFdx", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
