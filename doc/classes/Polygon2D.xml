@@ -14,7 +14,7 @@
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="weights" type="PackedFloat32Array" />
 			<description>
-				Adds a bone with the specified [code]path[/code] and [code]weights[/code].
+				Adds a bone with the specified [param path] and [param weights].
 			</description>
 		</method>
 		<method name="clear_bones">
