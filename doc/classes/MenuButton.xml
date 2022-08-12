@@ -65,7 +65,7 @@
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="3">
-			The horizontal space between [MenuButton]'s icon and text.
+			The horizontal space between [MenuButton]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
