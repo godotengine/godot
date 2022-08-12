@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Base class of anything 2D. Canvas items are laid out in a tree; children inherit and extend their parent's transform. [CanvasItem] is extended by [Control] for anything GUI-related, and by [Node2D] for anything related to the 2D engine.
-		Any [CanvasItem] can draw. For this, [method update] must be called, then [constant NOTIFICATION_DRAW] will be received on idle time to request redraw. Because of this, canvas items don't need to be redrawn on every frame, improving the performance significantly. Several functions for drawing on the [CanvasItem] are provided (see [code]draw_*[/code] functions). However, they can only be used inside the [method Object._notification], signal or [method _draw] virtual functions.
+		Any [CanvasItem] can draw. For this, [method update] is called by the engine, then [constant NOTIFICATION_DRAW] will be received on idle time to request redraw. Because of this, canvas items don't need to be redrawn on every frame, improving the performance significantly. Several functions for drawing on the [CanvasItem] are provided (see [code]draw_*[/code] functions). However, they can only be used inside [method _draw], its corresponding [method Object._notification] or methods connected to the [signal draw] signal.
 		Canvas items are drawn in tree order. By default, children are on top of their parents so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can also be hidden, which will also hide its children. It provides many ways to change parameters such as modulation (for itself and its children) and self modulation (only for itself), as well as its blend mode.
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
@@ -20,7 +20,8 @@
 		<method name="_draw" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Overridable function called by the engine (if defined) to draw the canvas item.
+				Called when [CanvasItem] has been requested to redraw (when [method update] is called, either manually or by the engine).
+				Corresponds to the [constant NOTIFICATION_DRAW] notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="draw_arc">
@@ -366,7 +367,7 @@
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -413,7 +414,7 @@
 		<method name="update">
 			<return type="void" />
 			<description>
-				Queue the [CanvasItem] for update. [constant NOTIFICATION_DRAW] will be called on idle time to request redraw.
+				Queues the [CanvasItem] to redraw. During idle time, if [CanvasItem] is visible, [constant NOTIFICATION_DRAW] is sent and [method _draw] is called. This only occurs [b]once[/b] per frame, even if this method has been called multiple times.
 			</description>
 		</method>
 	</methods>
@@ -447,7 +448,8 @@
 	<signals>
 		<signal name="draw">
 			<description>
-				Emitted when the [CanvasItem] must redraw. This can only be connected realtime, as deferred will not allow drawing.
+				Emitted when the [CanvasItem] must redraw, [i]after[/i] the related [constant NOTIFICATION_DRAW] notification, and [i]before[/i] [method _draw] is called.
+				[b]Note:[/b] Deferred connections do not allow drawing through the [code]draw_*[/code] methods.
 			</description>
 		</signal>
 		<signal name="hide">
@@ -492,7 +494,7 @@
 			The [CanvasItem]'s local transform has changed. This notification is only received if enabled by [method set_notify_local_transform].
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
-			The [CanvasItem] is requested to draw.
+			The [CanvasItem] is requested to draw (see [method _draw]).
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31">
 			The [CanvasItem]'s visibility has changed.
