@@ -209,4 +209,4 @@ public:
 	~Dijkstra2D() {}
 };
 
-#endif // A_STAR_H
+#endif // DIJKSTRA_H
