@@ -634,11 +634,11 @@
 		</method>
 		<method name="rsplit" qualifiers="const">
 			<return type="PackedStringArray" />
-			<param index="0" name="delimiter" type="String" />
+			<param index="0" name="delimiter" type="String" default="&quot;&quot;" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<param index="2" name="maxsplit" type="int" default="0" />
 			<description>
-				Splits the string by a [param delimiter] string and returns an array of the substrings, starting from right.
+				Splits the string by a [param delimiter] string and returns an array of the substrings, starting from right. If [param delimiter] is an empty string, each substring will be a single character.
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 				If [param maxsplit] is specified, it defines the number of splits to do from the right up to [param maxsplit]. The default value of 0 means that all items are split, thus giving the same result as [method split].
@@ -710,11 +710,11 @@
 		</method>
 		<method name="split" qualifiers="const">
 			<return type="PackedStringArray" />
-			<param index="0" name="delimiter" type="String" />
+			<param index="0" name="delimiter" type="String" default="&quot;&quot;" />
 			<param index="1" name="allow_empty" type="bool" default="true" />
 			<param index="2" name="maxsplit" type="int" default="0" />
 			<description>
-				Splits the string by a [param delimiter] string and returns an array of the substrings. The [param delimiter] can be of any length.
+				Splits the string by a [param delimiter] string and returns an array of the substrings. The [param delimiter] can be of any length. If [param delimiter] is an empty string, each substring will be a single character.
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 				If [param maxsplit] is specified, it defines the number of splits to do from the left up to [param maxsplit]. The default value of [code]0[/code] means that all items are split.
 				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.

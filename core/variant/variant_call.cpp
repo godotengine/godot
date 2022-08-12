@@ -1509,8 +1509,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, to_camel_case, sarray(), varray());
 	bind_method(String, to_pascal_case, sarray(), varray());
 	bind_method(String, to_snake_case, sarray(), varray());
-	bind_method(String, split, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
-	bind_method(String, rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
+	bind_method(String, split, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_method(String, rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_method(String, split_floats, sarray("delimiter", "allow_empty"), varray(true));
 	bind_method(String, join, sarray("parts"), varray());
 
