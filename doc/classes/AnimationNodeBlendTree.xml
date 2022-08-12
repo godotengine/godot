@@ -17,7 +17,7 @@
 			<param index="1" name="node" type="AnimationNode" />
 			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds an [AnimationNode] at the given [code]position[/code]. The [code]name[/code] is used to identify the created sub-node later.
+				Adds an [AnimationNode] at the given [param position]. The [param name] is used to identify the created sub-node later.
 			</description>
 		</method>
 		<method name="connect_node">
@@ -26,7 +26,7 @@
 			<param index="1" name="input_index" type="int" />
 			<param index="2" name="output_node" type="StringName" />
 			<description>
-				Connects the output of an [AnimationNode] as input for another [AnimationNode], at the input port specified by [code]input_index[/code].
+				Connects the output of an [AnimationNode] as input for another [AnimationNode], at the input port specified by [param input_index].
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -41,21 +41,21 @@
 			<return type="AnimationNode" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the sub-node with the specified [code]name[/code].
+				Returns the sub-node with the specified [param name].
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the position of the sub-node with the specified [code]name[/code].
+				Returns the position of the sub-node with the specified [param name].
 			</description>
 		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if a sub-node with specified [code]name[/code] exists.
+				Returns [code]true[/code] if a sub-node with specified [param name] exists.
 			</description>
 		</method>
 		<method name="remove_node">

@@ -27,7 +27,7 @@
 			<param index="1" name="node" type="AnimationNode" />
 			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a new node to the graph. The [code]position[/code] is used for display in the editor.
+				Adds a new node to the graph. The [param position] is used for display in the editor.
 			</description>
 		</method>
 		<method name="add_transition">
