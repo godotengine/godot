@@ -152,7 +152,7 @@
 			<param index="4" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="5" name="index" type="int" default="-1" />
 			<description>
-				Adds a new checkable item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -171,7 +171,7 @@
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
-				Adds a new checkable item with text [code]label[/code] and icon [code]icon[/code] to the global menu with ID [code]menu_root[/code].
+				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -190,7 +190,7 @@
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
-				Adds a new item with text [code]label[/code] and icon [code]icon[/code] to the global menu with ID [code]menu_root[/code].
+				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -209,7 +209,7 @@
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
-				Adds a new radio-checkable item with text [code]label[/code] and icon [code]icon[/code] to the global menu with ID [code]menu_root[/code].
+				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -228,7 +228,7 @@
 			<param index="4" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="5" name="index" type="int" default="-1" />
 			<description>
-				Adds a new item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -248,8 +248,8 @@
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
 			<description>
-				Adds a new item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
-				Contrarily to normal binary items, multistate items can have more than two states, as defined by [code]max_states[/code]. Each press or activate of the item will increase the state by one. The default value is defined by [code]default_state[/code].
+				Adds a new item with text [param labe] to the global menu with ID [param menu_root].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -267,7 +267,7 @@
 			<param index="4" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="5" name="index" type="int" default="-1" />
 			<description>
-				Adds a new radio-checkable item with text [code]label[/code] to the global menu with ID [code]menu_root[/code].
+				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -282,7 +282,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="index" type="int" default="-1" />
 			<description>
-				Adds a separator between items to the global menu with ID [code]menu_root[/code]. Separators also occupy an index.
+				Adds a separator between items to the global menu with ID [param menu_root]. Separators also occupy an index.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -298,7 +298,7 @@
 			<param index="2" name="submenu" type="String" />
 			<param index="3" name="index" type="int" default="-1" />
 			<description>
-				Adds an item that will act as a submenu of the global menu [code]menu_root[/code]. The [code]submenu[/code] argument is the ID of the global menu root that will be shown when the item is clicked.
+				Adds an item that will act as a submenu of the global menu [param menu_root]. The [param submenu] argument is the ID of the global menu root that will be shown when the item is clicked.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -311,7 +311,7 @@
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<description>
-				Removes all items from the global menu with ID [code]menu_root[/code].
+				Removes all items from the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -325,7 +325,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Returns the accelerator of the item at index [param idx]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -334,7 +334,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the callback of the item at index [code]idx[/code].
+				Returns the callback of the item at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -343,7 +343,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the icon of the item at index [code]idx[/code].
+				Returns the icon of the item at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -352,7 +352,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="tag" type="Variant" />
 			<description>
-				Returns the index of the item with the specified [code]tag[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item with the specified [param tag]. Index is automatically assigned to each item by the engine. Index can not be set manually.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -361,7 +361,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="text" type="String" />
 			<description>
-				Returns the index of the item with the specified [code]text[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item with the specified [param text]. Index is automatically assigned to each item by the engine. Index can not be set manually.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -388,7 +388,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the submenu ID of the item at index [code]idx[/code]. See [method global_menu_add_submenu_item] for more info on how to add a submenu.
+				Returns the submenu ID of the item at index [param idx]. See [method global_menu_add_submenu_item] for more info on how to add a submenu.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -406,7 +406,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the text of the item at index [code]idx[/code].
+				Returns the text of the item at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -415,7 +415,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns the tooltip associated with the specified index index [code]idx[/code].
+				Returns the tooltip associated with the specified index index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -424,7 +424,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is checkable in some way, i.e. if it has a checkbox or radio button.
+				Returns [code]true[/code] if the item at index [param idx] is checkable in some way, i.e. if it has a checkbox or radio button.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -433,7 +433,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is checked.
+				Returns [code]true[/code] if the item at index [param idx] is checked.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -442,7 +442,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled. When it is disabled it can't be selected, or its action invoked.
+				Returns [code]true[/code] if the item at index [param idx] is disabled. When it is disabled it can't be selected, or its action invoked.
 				See [method global_menu_set_item_disabled] for more info on how to disable an item.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
@@ -452,7 +452,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] has radio button-style checkability.
+				Returns [code]true[/code] if the item at index [param idx] has radio button-style checkability.
 				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
@@ -462,7 +462,7 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
 			<description>
-				Removes the item at index [code]idx[/code] from the global menu [code]menu_root[/code].
+				Removes the item at index [param idx] from the global menu [param menu_root].
 				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
@@ -473,7 +473,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="keycode" type="int" enum="Key" />
 			<description>
-				Sets the accelerator of the item at index [code]idx[/code].
+				Sets the accelerator of the item at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -483,7 +483,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="callback" type="Callable" />
 			<description>
-				Sets the callback of the item at index [code]idx[/code]. Callback is emitted when an item is pressed or its accelerator is activated.
+				Sets the callback of the item at index [param idx]. Callback is emitted when an item is pressed or its accelerator is activated.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -493,7 +493,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="checkable" type="bool" />
 			<description>
-				Sets whether the item at index [code]idx[/code] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
+				Sets whether the item at index [param idx] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -503,7 +503,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="checked" type="bool" />
 			<description>
-				Sets the checkstate status of the item at index [code]idx[/code].
+				Sets the checkstate status of the item at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -513,7 +513,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
-				Enables/disables the item at index [code]idx[/code]. When it is disabled, it can't be selected and its action can't be invoked.
+				Enables/disables the item at index [param idx]. When it is disabled, it can't be selected and its action can't be invoked.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -523,7 +523,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="icon" type="Texture2D" />
 			<description>
-				Replaces the [Texture2D] icon of the specified [code]idx[/code].
+				Replaces the [Texture2D] icon of the specified [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Note:[/b] This method is not supported by macOS "_dock" menu items.
 			</description>
@@ -544,7 +544,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="checkable" type="bool" />
 			<description>
-				Sets the type of the item at the specified index [code]idx[/code] to radio button. If [code]false[/code], sets the type of the item to plain text
+				Sets the type of the item at the specified index [param idx] to radio button. If [code]false[/code], sets the type of the item to plain text
 				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
@@ -565,7 +565,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="submenu" type="String" />
 			<description>
-				Sets the submenu of the item at index [code]idx[/code]. The submenu is the ID of a global menu root that would be shown when the item is clicked.
+				Sets the submenu of the item at index [param idx]. The submenu is the ID of a global menu root that would be shown when the item is clicked.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -585,7 +585,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="text" type="String" />
 			<description>
-				Sets the text of the item at index [code]idx[/code].
+				Sets the text of the item at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -595,7 +595,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="tooltip" type="String" />
 			<description>
-				Sets the [String] tooltip of the item at the specified index [code]idx[/code].
+				Sets the [String] tooltip of the item at the specified index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -626,7 +626,7 @@
 			<return type="int" enum="Key" />
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
-				Converts a physical (US QWERTY) [code]keycode[/code] to one in the active keyboard layout.
+				Converts a physical (US QWERTY) [param keycode] to one in the active keyboard layout.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
@@ -641,7 +641,7 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
+				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [param index].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
@@ -649,7 +649,7 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the localized name of the keyboard layout at position [code]index[/code].
+				Returns the localized name of the keyboard layout at position [param index].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
@@ -692,7 +692,7 @@
 			<return type="int" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
+				Returns the dots per inch density of the specified screen. If [param screen] is [/code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
 				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
@@ -730,7 +730,7 @@
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
+				Returns the current refresh rate of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
 				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
 				To fallback to a default refresh rate if the method fails, try:
 				[codeblock]
@@ -842,7 +842,7 @@
 			<return type="PackedStringArray" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns an [PackedStringArray] of voice identifiers for the [code]language[/code].
+				Returns an [PackedStringArray] of voice identifiers for the [param language].
 				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
 			</description>
 		</method>
@@ -896,13 +896,13 @@
 			<param index="5" name="utterance_id" type="int" default="0" />
 			<param index="6" name="interrupt" type="bool" default="false" />
 			<description>
-				Adds an utterance to the queue. If [code]interrupt[/code] is [code]true[/code], the queue is cleared first.
-				- [code]voice[/code] identifier is one of the [code]"id"[/code] values returned by [method tts_get_voices] or one of the values returned by [method tts_get_voices_for_language].
-				- [code]volume[/code] ranges from [code]0[/code] (lowest) to [code]100[/code] (highest).
-				- [code]pitch[/code] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
-				- [code]rate[/code] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
-				- [code]utterance_id[/code] is passed as a parameter to the callback functions.
-				[b]Note:[/b] On Windows and Linux, utterance [code]text[/code] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
+				Adds an utterance to the queue. If [param interrupt] is [code]true[/code], the queue is cleared first.
+				- [param voice] identifier is one of the [code]"id"[/code] values returned by [method tts_get_voices] or one of the values returned by [method tts_get_voices_for_language].
+				- [param volume] ranges from [code]0[/code] (lowest) to [code]100[/code] (highest).
+				- [param pitch] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
+				- [param rate] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
+				- [param utterance_id] is passed as a parameter to the callback functions.
+				[b]Note:[/b] On Windows and Linux, utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
 				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
 				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
 			</description>
@@ -936,12 +936,12 @@
 			<param index="5" name="cursor_end" type="int" default="-1" />
 			<description>
 				Shows the virtual keyboard if the platform has one.
-				[code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
-				[code]position[/code] parameter is the screen space [Rect2] of the edited text.
-				[code]type[/code] parameter allows configuring which type of virtual keyboard to show.
-				[code]max_length[/code] limits the number of characters that can be entered if different from [code]-1[/code].
-				[code]cursor_start[/code] can optionally define the current text cursor position if [code]cursor_end[/code] is not set.
-				[code]cursor_start[/code] and [code]cursor_end[/code] can optionally define the current text selection.
+				[param existing_text] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				[param position] parameter is the screen space [Rect2] of the edited text.
+				[param type] parameter allows configuring which type of virtual keyboard to show.
+				[param max_length] limits the number of characters that can be entered if different from [code]-1[/code].
+				[param cursor_start] can optionally define the current text cursor position if [param cursor_end] is not set.
+				[param cursor_start] and [param cursor_end] can optionally define the current text selection.
 				[b]Note:[/b] This method is implemented on Android, iOS and HTML5.
 			</description>
 		</method>
@@ -949,7 +949,7 @@
 			<return type="void" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Sets the mouse cursor position to the given [code]position[/code] relative to an origin at the upper left corner of the currently focused game Window Manager window.
+				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window.
 			</description>
 		</method>
 		<method name="window_attach_instance_id">
@@ -988,7 +988,7 @@
 			<param index="0" name="flag" type="int" enum="DisplayServer.WindowFlags" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Returns the current value of the given window's [code]flag[/code].
+				Returns the current value of the given window's [param flag].
 			</description>
 		</method>
 		<method name="window_get_max_size" qualifiers="const">
@@ -1094,7 +1094,7 @@
 			<param index="1" name="enabled" type="bool" />
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
-				Enables or disables the given window's given [code]flag[/code]. See [enum WindowFlags] for possible values and their behavior.
+				Enables or disables the given window's given [param flag]. See [enum WindowFlags] for possible values and their behavior.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -1137,7 +1137,7 @@
 			<param index="0" name="min_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the minimum size for the given window to [code]min_size[/code] (in pixels).
+				Sets the minimum size for the given window to [param min_size] (in pixels).
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 			</description>
 		</method>
@@ -1146,7 +1146,7 @@
 			<param index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets window mode for the given window to [code]mode[/code]. See [enum WindowMode] for possible values and how each mode behaves.
+				Sets window mode for the given window to [param mode]. See [enum WindowMode] for possible values and how each mode behaves.
 				[b]Note:[/b] Setting the window to fullscreen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
@@ -1196,7 +1196,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the position of the given window to [code]position[/code].
+				Sets the position of the given window to [param position].
 			</description>
 		</method>
 		<method name="window_set_rect_changed_callback">
@@ -1211,7 +1211,7 @@
 			<param index="0" name="size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the size of the given window to [code]size[/code].
+				Sets the size of the given window to [param size].
 			</description>
 		</method>
 		<method name="window_set_title">
@@ -1219,7 +1219,7 @@
 			<param index="0" name="title" type="String" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the title of the given window to [code]title[/code].
+				Sets the title of the given window to [param title].
 			</description>
 		</method>
 		<method name="window_set_transient">
