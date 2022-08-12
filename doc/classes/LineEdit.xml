@@ -48,7 +48,7 @@
 			<param index="0" name="from_column" type="int" />
 			<param index="1" name="to_column" type="int" />
 			<description>
-				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
+				Deletes a section of the [member text] going from position [param from_column] to [param to_column]. Both parameters should be within the text's length.
 			</description>
 		</method>
 		<method name="deselect">
@@ -92,7 +92,7 @@
 			<return type="void" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
+				Inserts [param text] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
@@ -113,7 +113,7 @@
 			<param index="0" name="from" type="int" default="0" />
 			<param index="1" name="to" type="int" default="-1" />
 			<description>
-				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
+				Selects characters inside [LineEdit] between [param from] and [param to]. By default, [param from] is at the beginning and [param to] at the end.
 				[codeblocks]
 				[gdscript]
 				text = "Welcome"

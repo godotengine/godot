@@ -31,7 +31,7 @@
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Called when the engine determines whether this [MovieWriter] is able to handle the file at [code]path[/code]. Must return [code]true[/code] if this [MovieWriter] is able to handle the given file path, [code]false[/code] otherwise. Typically, [method _handles_file] is overridden as follows to allow the user to record a file at any path with a given file extension:
+				Called when the engine determines whether this [MovieWriter] is able to handle the file at [param path]. Must return [code]true[/code] if this [MovieWriter] is able to handle the given file path, [code]false[/code] otherwise. Typically, [method _handles_file] is overridden as follows to allow the user to record a file at any path with a given file extension:
 				[codeblock]
 				func _handles_file(path):
 				    # Allows specifying an output file with a `.mkv` file extension (case-insensitive),
@@ -46,7 +46,7 @@
 			<param index="1" name="fps" type="int" />
 			<param index="2" name="base_path" type="String" />
 			<description>
-				Called once before the engine starts writing video and audio data. [code]movie_size[/code] is the width and height of the video to save. [code]fps[/code] is the number of frames per second specified in the project settings or using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+				Called once before the engine starts writing video and audio data. [param movie_size] is the width and height of the video to save. [param fps] is the number of frames per second specified in the project settings or using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
 			</description>
 		</method>
 		<method name="_write_end" qualifiers="virtual">
@@ -61,7 +61,7 @@
 			<param index="0" name="frame_image" type="Image" />
 			<param index="1" name="audio_frame_block" type="const void*" />
 			<description>
-				Called at the end of every rendered frame. The [code]frame_image[/code] and [code]audio_frame_block[/code] function arguments should be written to.
+				Called at the end of every rendered frame. The [param frame_image] and [param audio_frame_block] function arguments should be written to.
 			</description>
 		</method>
 		<method name="add_writer" qualifiers="static">

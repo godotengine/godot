@@ -28,7 +28,7 @@
 			<param index="2" name="selectable" type="bool" default="true" />
 			<description>
 				Adds an item to the item list with specified text. Returns the index of an added item.
-				Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
+				Specify an [param icon], or use [code]null[/code] as the [param icon] for a list item with no icon.
 				If selectable is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
@@ -62,22 +62,22 @@
 			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="exact" type="bool" default="false" />
 			<description>
-				Returns the item index at the given [code]position[/code].
-				When there is no item at that point, -1 will be returned if [code]exact[/code] is [code]true[/code], and the closest item index will be returned otherwise.
+				Returns the item index at the given [param position].
+				When there is no item at that point, -1 will be returned if [param exact] is [code]true[/code], and the closest item index will be returned otherwise.
 			</description>
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the custom background color of the item specified by [code]idx[/code] index.
+				Returns the custom background color of the item specified by [param idx] index.
 			</description>
 		</method>
 		<method name="get_item_custom_fg_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the custom foreground color of the item specified by [code]idx[/code] index.
+				Returns the custom foreground color of the item specified by [param idx] index.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -195,14 +195,14 @@
 			<param index="0" name="from_idx" type="int" />
 			<param index="1" name="to_idx" type="int" />
 			<description>
-				Moves item from index [code]from_idx[/code] to [code]to_idx[/code].
+				Moves item from index [param from_idx] to [param to_idx].
 			</description>
 		</method>
 		<method name="remove_item">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Removes the item specified by [code]idx[/code] index from the list.
+				Removes the item specified by [param idx] index from the list.
 			</description>
 		</method>
 		<method name="select">
@@ -219,7 +219,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="custom_bg_color" type="Color" />
 			<description>
-				Sets the background color of the item specified by [code]idx[/code] index to the specified [Color].
+				Sets the background color of the item specified by [param idx] index to the specified [Color].
 			</description>
 		</method>
 		<method name="set_item_custom_fg_color">
@@ -227,7 +227,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="custom_fg_color" type="Color" />
 			<description>
-				Sets the foreground color of the item specified by [code]idx[/code] index to the specified [Color].
+				Sets the foreground color of the item specified by [param idx] index to the specified [Color].
 			</description>
 		</method>
 		<method name="set_item_disabled">

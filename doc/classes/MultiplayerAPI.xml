@@ -60,7 +60,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="configuration" type="Variant" />
 			<description>
-				Notifies the MultiplayerAPI of a new [code]configuration[/code] for the given [code]object[/code]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and a valid [NodePath] as [code]configuration[/code]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
+				Notifies the MultiplayerAPI of a new [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and a valid [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
 				[b]Note:[/b] This method is mostly relevant when extending or overriding the MultiplayerAPI behavior via [MultiplayerAPIExtension].
 			</description>
 		</method>
@@ -69,7 +69,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="configuration" type="Variant" />
 			<description>
-				Notifies the MultiplayerAPI to remove a [code]configuration[/code] for the given [code]object[/code]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and an empty [NodePath] as [code]configuration[/code]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
+				Notifies the MultiplayerAPI to remove a [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and an empty [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
 				[b]Note:[/b] This method is mostly relevant when extending or overriding the MultiplayerAPI behavior via [MultiplayerAPIExtension].
 			</description>
 		</method>
@@ -87,7 +87,7 @@
 			<param index="2" name="method" type="StringName" />
 			<param index="3" name="arguments" type="Array" default="[]" />
 			<description>
-				Sends an RPC to the target [code]peer[/code]. The given [code]method[/code] will be called on the remote [code]object[/code] with the provided [code]arguments[/code]. The RPC may also be called locally depending on the implementation and RPC configuration. See [method Node.rpc] and [method Node.rpc_config].
+				Sends an RPC to the target [param peer]. The given [param method] will be called on the remote [param object] with the provided [param arguments]. The RPC may also be called locally depending on the implementation and RPC configuration. See [method Node.rpc] and [method Node.rpc_config].
 				[b]Note:[/b] Prefer using [method Node.rpc], [method Node.rpc_id], or [code]my_method.rpc(peer, arg1, arg2, ...)[/code] (in GDScript), since they are faster. This method is mostly useful in conjunction with [MultiplayerAPIExtension] when augmenting or replacing the multiplayer capabilities.
 			</description>
 		</method>

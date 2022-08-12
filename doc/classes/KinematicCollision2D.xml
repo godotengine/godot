@@ -14,7 +14,7 @@
 			<return type="float" />
 			<param index="0" name="up_direction" type="Vector2" default="Vector2(0, -1)" />
 			<description>
-				Returns the collision angle according to [code]up_direction[/code], which is [code]Vector2.UP[/code] by default. This value is always positive.
+				Returns the collision angle according to [param up_direction], which is [constant Vector2.UP] by default. This value is always positive.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
