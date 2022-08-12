@@ -285,7 +285,7 @@
 		</signal>
 		<signal name="connection_drag_started">
 			<param index="0" name="from" type="String" />
-			<param index="1" name="slot" type="int" />
+			<param index="1" name="slot" type="String" />
 			<param index="2" name="is_output" type="bool" />
 			<description>
 				Emitted at the beginning of a connection drag.
