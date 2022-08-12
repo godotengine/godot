@@ -47,6 +47,10 @@
 #include <windows.h>
 #endif
 
+#ifdef ANDROID_ENABLED
+#include <jni.h>
+#endif
+
 // include platform dependent structs
 #include <openxr/openxr_platform.h>
 

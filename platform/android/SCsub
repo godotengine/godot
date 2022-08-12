@@ -74,3 +74,6 @@ if lib_arch_dir != "":
         str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
     )
     env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+
+    libopenxr_loader_path = '#/thirdparty/openxr/src/oculus_loader/' + lib_arch_dir + '/libopenxr_loader.so'
+    env_android.Command(out_dir + "/libopenxr_loader.so", libopenxr_loader_path, Copy("$TARGET", "$SOURCE"))

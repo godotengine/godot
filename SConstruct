@@ -501,6 +501,12 @@ if selected_platform in platform_list:
     # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
 
+    if env["platform"] == "android":
+        if env["android_arch"] == "armv7":
+            env.AppendUnique(LIBS=[File('#thirdparty/openxr/src/oculus_loader/armeabi-v7a/libopenxr_loader.so')])
+        elif env["android_arch"] == "arm64v8":
+            env.AppendUnique(LIBS=[File('#thirdparty/openxr/src/oculus_loader/arm64-v8a/libopenxr_loader.so')])  
+
     # Set our C and C++ standard requirements.
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
     # Prepending to make it possible to override.
