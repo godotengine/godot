@@ -254,6 +254,9 @@ private:
 		uint32_t view_count;
 		RID framebuffer;
 		RID color;
+		RID color_multisample; // Needed when MSAA is enabled.
+
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 
 		//used for retrieving from CPU
 		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
@@ -556,6 +559,7 @@ public:
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
 	virtual bool render_target_was_used(RID p_render_target) override;
 	virtual void render_target_set_as_unused(RID p_render_target) override;
+	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);

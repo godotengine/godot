@@ -2392,8 +2392,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	// Update MSAA, screen-space AA and debanding if changed
 
-	const int msaa_mode = ProjectSettings::get_singleton()->get("rendering/anti_aliasing/quality/msaa");
-	viewport->set_msaa(Viewport::MSAA(msaa_mode));
+	const int msaa_mode = ProjectSettings::get_singleton()->get("rendering/anti_aliasing/quality/msaa_3d");
+	viewport->set_msaa_3d(Viewport::MSAA(msaa_mode));
 	const int ssaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/screen_space_aa");
 	viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 	const bool use_taa = GLOBAL_GET("rendering/anti_aliasing/quality/use_taa");

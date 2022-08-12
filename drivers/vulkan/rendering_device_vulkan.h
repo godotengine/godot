@@ -150,6 +150,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		bool used_in_raster = false;
 		bool used_in_compute = false;
 
+		bool is_resolve_buffer = false;
+
 		uint32_t read_aspect_mask = 0;
 		uint32_t barrier_aspect_mask = 0;
 		bool bound = false; // Bound to framebffer.
@@ -1041,6 +1043,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 #ifdef DEV_ENABLED
 	HashMap<RID, String> resource_names;
 #endif
+
+	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count) const;
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());

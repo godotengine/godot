@@ -3198,12 +3198,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="viewport_set_msaa">
+		<method name="viewport_set_msaa_2d">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the anti-aliasing mode. See [enum ViewportMSAA] for options.
+				Sets the multisample anti-aliasing mode for 2D/Canvas. See [enum ViewportMSAA] for options.
+			</description>
+		</method>
+		<method name="viewport_set_msaa_3d">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
+			<description>
+				Sets the multisample anti-aliasing mode for 3D. See [enum ViewportMSAA] for options.
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_culling_build_quality">

@@ -462,6 +462,7 @@ public:
 		TextureSamples samples;
 		uint32_t usage_bits;
 		Vector<DataFormat> shareable_formats;
+		bool is_resolve_buffer = false;
 
 		TextureFormat() {
 			format = DATA_FORMAT_R8_UNORM;

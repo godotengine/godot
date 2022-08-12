@@ -2471,7 +2471,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->height = p_height;
 	rb->fsr_sharpness = p_fsr_sharpness;
 	rb->render_target = p_render_target;
-	rb->msaa = p_msaa;
+	rb->msaa_3d = p_msaa;
 	rb->screen_space_aa = p_screen_space_aa;
 	rb->use_taa = p_use_taa;
 	rb->use_debanding = p_use_debanding;
@@ -2496,7 +2496,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		tf.height = rb->internal_height; // If set to rb->width, msaa won't crash
 		tf.array_layers = rb->view_count; // create a layer for every view
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0) | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+		if (rb->msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
 			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		}
 		tf.usage_bits |= RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT; // only needed when using subpasses in the mobile renderer
@@ -2519,7 +2519,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		if (rb->view_count > 1) {
 			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		}
-		if (rb->msaa == RS::VIEWPORT_MSAA_DISABLED) {
+		if (rb->msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
 			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, (RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT)) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 		} else {
 			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
@@ -2530,7 +2530,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 		tf.array_layers = rb->view_count; // create a layer for every view
 
-		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+		if (rb->msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
 			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		} else {
 			tf.usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
