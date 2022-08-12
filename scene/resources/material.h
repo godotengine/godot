@@ -54,7 +54,7 @@ protected:
 	virtual bool _can_do_next_pass() const;
 	virtual bool _can_use_render_priority() const;
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL0RC(RID, _get_shader_rid)
 	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
@@ -553,7 +553,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	virtual bool _can_do_next_pass() const override { return true; }
 	virtual bool _can_use_render_priority() const override { return true; }
 

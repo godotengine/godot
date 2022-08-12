@@ -376,16 +376,14 @@ AABB GPUParticles3D::capture_aabb() const {
 	return RS::get_singleton()->particles_get_current_aabb(particles);
 }
 
-void GPUParticles3D::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("draw_pass_")) {
-		int index = property.name.get_slicec('_', 2).to_int() - 1;
+void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("draw_pass_")) {
+		int index = p_property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
-
-	GeometryInstance3D::_validate_property(property);
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {

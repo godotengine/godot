@@ -471,6 +471,15 @@ protected:                                                                      
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
 		}                                                                                                                                        \
 	}                                                                                                                                            \
+	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo & p_property) const {                                             \
+		return (void(Object::*)(PropertyInfo &) const) & m_class::_validate_property;                                                            \
+	}                                                                                                                                            \
+	virtual void _validate_propertyv(PropertyInfo &p_property) const override {                                                                  \
+		m_inherits::_validate_propertyv(p_property);                                                                                             \
+		if (m_class::_get_validate_property() != m_inherits::_get_validate_property()) {                                                         \
+			_validate_property(p_property);                                                                                                      \
+		}                                                                                                                                        \
+	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_property_can_revert() const)(const StringName &p_name) const {                                            \
 		return (bool(Object::*)(const StringName &) const) & m_class::_property_can_revert;                                                      \
 	}                                                                                                                                            \
@@ -637,6 +646,7 @@ protected:
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {};
+	virtual void _validate_propertyv(PropertyInfo &p_property) const {};
 	virtual bool _property_can_revertv(const StringName &p_name) const { return false; };
 	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
@@ -645,6 +655,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
+	void _validate_property(PropertyInfo &p_property) const {};
 	bool _property_can_revert(const StringName &p_name) const { return false; };
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; };
 	void _notification(int p_notification) {}
@@ -660,6 +671,9 @@ protected:
 	}
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> *p_list) const {
 		return &Object::_get_property_list;
+	}
+	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo &p_property) const {
+		return &Object::_validate_property;
 	}
 	_FORCE_INLINE_ bool (Object::*_get_property_can_revert() const)(const StringName &p_name) const {
 		return &Object::_property_can_revert;
@@ -690,7 +704,6 @@ protected:
 	void _clear_internal_resource_paths(const Variant &p_var);
 
 	friend class ClassDB;
-	virtual void _validate_property(PropertyInfo &property) const;
 
 	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
@@ -791,6 +804,7 @@ public:
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
+	void validate_property(PropertyInfo &p_property) const;
 	bool property_can_revert(const String &p_name) const;
 	Variant property_get_revert(const String &p_name) const;
 

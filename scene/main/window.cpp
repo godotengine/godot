@@ -1510,8 +1510,8 @@ bool Window::is_auto_translating() const {
 	return auto_translate;
 }
 
-void Window::_validate_property(PropertyInfo &property) const {
-	if (property.name == "theme_type_variation") {
+void Window::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		// Only the default theme and the project theme are used for the list of options.
@@ -1534,7 +1534,7 @@ void Window::_validate_property(PropertyInfo &property) const {
 			unique_names.append(E);
 		}
 
-		property.hint_string = hint_string;
+		p_property.hint_string = hint_string;
 	}
 }
 

@@ -75,7 +75,7 @@ private:
 	Dictionary _get_argument_cache() const;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -187,7 +187,7 @@ private:
 	void _adjust_input_index(PropertyInfo &pinfo) const;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -275,7 +275,7 @@ private:
 	void _adjust_input_index(PropertyInfo &pinfo) const;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -330,7 +330,7 @@ private:
 	StringName name;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 

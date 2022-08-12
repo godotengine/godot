@@ -178,13 +178,12 @@ AABB ReflectionProbe::get_aabb() const {
 	return aabb;
 }
 
-void ReflectionProbe::_validate_property(PropertyInfo &property) const {
-	if (property.name == "ambient_color" || property.name == "ambient_color_energy") {
+void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
-	VisualInstance3D::_validate_property(property);
 }
 
 void ReflectionProbe::_bind_methods() {

@@ -174,8 +174,8 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
-void AnimationPlayer::_validate_property(PropertyInfo &property) const {
-	if (property.name == "current_animation") {
+void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "current_animation") {
 		List<String> names;
 
 		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
@@ -191,10 +191,8 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 			hint += E->get();
 		}
 
-		property.hint_string = hint;
+		p_property.hint_string = hint;
 	}
-
-	Node::_validate_property(property);
 }
 
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {

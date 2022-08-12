@@ -584,15 +584,14 @@ bool CSGShape3D::is_calculating_tangents() const {
 	return calculate_tangents;
 }
 
-void CSGShape3D::_validate_property(PropertyInfo &property) const {
-	bool is_collision_prefixed = property.name.begins_with("collision_");
-	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
+void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
+	bool is_collision_prefixed = p_property.name.begins_with("collision_");
+	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
-	GeometryInstance3D::_validate_property(property);
 }
 
 Array CSGShape3D::get_meshes() const {
@@ -2058,18 +2057,16 @@ void CSGPolygon3D::_notification(int p_what) {
 	}
 }
 
-void CSGPolygon3D::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("spin") && mode != MODE_SPIN) {
-		property.usage = PROPERTY_USAGE_NONE;
+void CSGPolygon3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("spin") && mode != MODE_SPIN) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name.begins_with("path") && mode != MODE_PATH) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("path") && mode != MODE_PATH) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name == "depth" && mode != MODE_DEPTH) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "depth" && mode != MODE_DEPTH) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	CSGShape3D::_validate_property(property);
 }
 
 void CSGPolygon3D::_path_changed() {

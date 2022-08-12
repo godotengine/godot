@@ -85,7 +85,7 @@ private:
 	float cached_global_panning_strength = 1.0f;
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -512,32 +512,32 @@ Dictionary VisualScriptFunctionCall::_get_argument_cache() const {
 	return method_cache;
 }
 
-void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const {
-	if (property.name == "base_type") {
+void VisualScriptFunctionCall::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "base_script") {
+	if (p_property.name == "base_script") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
-	if (property.name == "basic_type") {
+	if (p_property.name == "basic_type") {
 		if (call_mode != CALL_MODE_BASIC_TYPE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
-	if (property.name == "singleton") {
+	if (p_property.name == "singleton") {
 		if (call_mode != CALL_MODE_SINGLETON) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			List<Engine::Singleton> names;
 			Engine::get_singleton()->get_singletons(&names);
-			property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint = PROPERTY_HINT_ENUM;
 			String sl;
 			for (const Engine::Singleton &E : names) {
 				if (!sl.is_empty()) {
@@ -545,41 +545,41 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 				}
 				sl += E.name;
 			}
-			property.hint_string = sl;
+			p_property.hint_string = sl;
 		}
 	}
 
-	if (property.name == "node_path") {
+	if (p_property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to long string
+				p_property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
 
-	if (property.name == "function") {
+	if (p_property.name == "function") {
 		if (call_mode == CALL_MODE_BASIC_TYPE) {
-			property.hint = PROPERTY_HINT_METHOD_OF_VARIANT_TYPE;
-			property.hint_string = Variant::get_type_name(basic_type);
+			p_property.hint = PROPERTY_HINT_METHOD_OF_VARIANT_TYPE;
+			p_property.hint_string = Variant::get_type_name(basic_type);
 
 		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-			property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_id());
+			p_property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
+			p_property.hint_string = itos(get_visual_script()->get_instance_id());
 		} else if (call_mode == CALL_MODE_SINGLETON) {
 			Object *obj = Engine::get_singleton()->get_singleton_object(singleton);
 			if (obj) {
-				property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
-				property.hint_string = itos(obj->get_instance_id());
+				p_property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
+				p_property.hint_string = itos(obj->get_instance_id());
 			} else {
-				property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
-				property.hint_string = base_type; //should be cached
+				p_property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
+				p_property.hint_string = base_type; //should be cached
 			}
 		} else if (call_mode == CALL_MODE_INSTANCE) {
-			property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
-			property.hint_string = base_type;
+			p_property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
+			p_property.hint_string = base_type;
 
 			if (!base_script.is_empty()) {
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
@@ -589,8 +589,8 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 				if (ResourceCache::has(base_script)) {
 					Ref<Script> script = ResourceCache::get_ref(base_script);
 					if (script.is_valid()) {
-						property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
-						property.hint_string = itos(script->get_instance_id());
+						p_property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
+						p_property.hint_string = itos(script->get_instance_id());
 					}
 				}
 			}
@@ -598,17 +598,17 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		} else if (call_mode == CALL_MODE_NODE_PATH) {
 			Node *node = _get_base_node();
 			if (node) {
-				property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
-				property.hint_string = itos(node->get_instance_id());
+				p_property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
+				p_property.hint_string = itos(node->get_instance_id());
 			} else {
-				property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
-				property.hint_string = get_base_type();
+				p_property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
+				p_property.hint_string = get_base_type();
 			}
 		}
 	}
 
-	if (property.name == "use_default_args") {
-		property.hint = PROPERTY_HINT_RANGE;
+	if (p_property.name == "use_default_args") {
+		p_property.hint = PROPERTY_HINT_RANGE;
 
 		int mc = 0;
 
@@ -622,15 +622,15 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		}
 
 		if (mc == 0) {
-			property.usage = PROPERTY_USAGE_NONE; //do not show
+			p_property.usage = PROPERTY_USAGE_NONE; //do not show
 		} else {
-			property.hint_string = "0," + itos(mc) + ",1";
+			p_property.hint_string = "0," + itos(mc) + ",1";
 		}
 	}
 
-	if (property.name == "rpc_call_mode") {
+	if (p_property.name == "rpc_call_mode") {
 		if (call_mode == CALL_MODE_BASIC_TYPE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -1290,47 +1290,47 @@ VisualScriptPropertySet::AssignOp VisualScriptPropertySet::get_assign_op() const
 	return assign_op;
 }
 
-void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "base_type") {
+void VisualScriptPropertySet::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "base_script") {
+	if (p_property.name == "base_script") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
-	if (property.name == "basic_type") {
+	if (p_property.name == "basic_type") {
 		if (call_mode != CALL_MODE_BASIC_TYPE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
-	if (property.name == "node_path") {
+	if (p_property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to long string
+				p_property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
 
-	if (property.name == "property") {
+	if (p_property.name == "property") {
 		if (call_mode == CALL_MODE_BASIC_TYPE) {
-			property.hint = PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE;
-			property.hint_string = Variant::get_type_name(basic_type);
+			p_property.hint = PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE;
+			p_property.hint_string = Variant::get_type_name(basic_type);
 
 		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-			property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_id());
+			p_property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
+			p_property.hint_string = itos(get_visual_script()->get_instance_id());
 		} else if (call_mode == CALL_MODE_INSTANCE) {
-			property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
-			property.hint_string = base_type;
+			p_property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
+			p_property.hint_string = base_type;
 
 			if (!base_script.is_empty()) {
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
@@ -1340,8 +1340,8 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 				if (ResourceCache::has(base_script)) {
 					Ref<Script> script = ResourceCache::get_ref(base_script);
 					if (script.is_valid()) {
-						property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-						property.hint_string = itos(script->get_instance_id());
+						p_property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
+						p_property.hint_string = itos(script->get_instance_id());
 					}
 				}
 			}
@@ -1349,16 +1349,16 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 		} else if (call_mode == CALL_MODE_NODE_PATH) {
 			Node *node = _get_base_node();
 			if (node) {
-				property.hint = PROPERTY_HINT_PROPERTY_OF_INSTANCE;
-				property.hint_string = itos(node->get_instance_id());
+				p_property.hint = PROPERTY_HINT_PROPERTY_OF_INSTANCE;
+				p_property.hint_string = itos(node->get_instance_id());
 			} else {
-				property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
-				property.hint_string = get_base_type();
+				p_property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
+				p_property.hint_string = get_base_type();
 			}
 		}
 	}
 
-	if (property.name == "index") {
+	if (p_property.name == "index") {
 		Callable::CallError ce;
 		Variant v;
 		Variant::construct(type_cache.type, v, nullptr, 0, ce);
@@ -1369,11 +1369,11 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 			options += "," + E.name;
 		}
 
-		property.hint = PROPERTY_HINT_ENUM;
-		property.hint_string = options;
-		property.type = Variant::STRING;
+		p_property.hint = PROPERTY_HINT_ENUM;
+		p_property.hint_string = options;
+		p_property.type = Variant::STRING;
 		if (options.is_empty()) {
-			property.usage = PROPERTY_USAGE_NONE; //hide if type has no usable index
+			p_property.usage = PROPERTY_USAGE_NONE; //hide if type has no usable index
 		}
 	}
 }
@@ -1996,47 +1996,47 @@ StringName VisualScriptPropertyGet::get_index() const {
 	return index;
 }
 
-void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "base_type") {
+void VisualScriptPropertyGet::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "base_script") {
+	if (p_property.name == "base_script") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
-	if (property.name == "basic_type") {
+	if (p_property.name == "basic_type") {
 		if (call_mode != CALL_MODE_BASIC_TYPE) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
-	if (property.name == "node_path") {
+	if (p_property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to long string
+				p_property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
 
-	if (property.name == "property") {
+	if (p_property.name == "property") {
 		if (call_mode == CALL_MODE_BASIC_TYPE) {
-			property.hint = PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE;
-			property.hint_string = Variant::get_type_name(basic_type);
+			p_property.hint = PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE;
+			p_property.hint_string = Variant::get_type_name(basic_type);
 
 		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-			property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_id());
+			p_property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
+			p_property.hint_string = itos(get_visual_script()->get_instance_id());
 		} else if (call_mode == CALL_MODE_INSTANCE) {
-			property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
-			property.hint_string = base_type;
+			p_property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
+			p_property.hint_string = base_type;
 
 			if (!base_script.is_empty()) {
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
@@ -2046,24 +2046,24 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 				if (ResourceCache::has(base_script)) {
 					Ref<Script> script = ResourceCache::get_ref(base_script);
 					if (script.is_valid()) {
-						property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-						property.hint_string = itos(script->get_instance_id());
+						p_property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
+						p_property.hint_string = itos(script->get_instance_id());
 					}
 				}
 			}
 		} else if (call_mode == CALL_MODE_NODE_PATH) {
 			Node *node = _get_base_node();
 			if (node) {
-				property.hint = PROPERTY_HINT_PROPERTY_OF_INSTANCE;
-				property.hint_string = itos(node->get_instance_id());
+				p_property.hint = PROPERTY_HINT_PROPERTY_OF_INSTANCE;
+				p_property.hint_string = itos(node->get_instance_id());
 			} else {
-				property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
-				property.hint_string = get_base_type();
+				p_property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
+				p_property.hint_string = get_base_type();
 			}
 		}
 	}
 
-	if (property.name == "index") {
+	if (p_property.name == "index") {
 		Callable::CallError ce;
 		Variant v;
 		Variant::construct(type_cache, v, nullptr, 0, ce);
@@ -2074,11 +2074,11 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 			options += "," + E.name;
 		}
 
-		property.hint = PROPERTY_HINT_ENUM;
-		property.hint_string = options;
-		property.type = Variant::STRING;
+		p_property.hint = PROPERTY_HINT_ENUM;
+		p_property.hint_string = options;
+		p_property.type = Variant::STRING;
 		if (options.is_empty()) {
-			property.usage = PROPERTY_USAGE_NONE; //hide if type has no usable index
+			p_property.usage = PROPERTY_USAGE_NONE; //hide if type has no usable index
 		}
 	}
 }
@@ -2322,9 +2322,9 @@ StringName VisualScriptEmitSignal::get_signal() const {
 	return name;
 }
 
-void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
-	if (property.name == "signal") {
-		property.hint = PROPERTY_HINT_ENUM;
+void VisualScriptEmitSignal::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "signal") {
+		p_property.hint = PROPERTY_HINT_ENUM;
 
 		List<StringName> sigs;
 		List<MethodInfo> base_sigs;
@@ -2349,7 +2349,7 @@ void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
 			ml += E.name;
 		}
 
-		property.hint_string = ml;
+		p_property.hint_string = ml;
 	}
 }
 

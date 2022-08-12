@@ -47,8 +47,8 @@ void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) cons
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
-void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
-	if (property.name == "animation" && get_editable_animation_list) {
+void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "animation" && get_editable_animation_list) {
 		Vector<String> names = get_editable_animation_list();
 		String anims;
 		for (int i = 0; i < names.size(); i++) {
@@ -58,8 +58,8 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 			anims += String(names[i]);
 		}
 		if (!anims.is_empty()) {
-			property.hint = PROPERTY_HINT_ENUM;
-			property.hint_string = anims;
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = anims;
 		}
 	}
 }
@@ -768,18 +768,16 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 	return rem;
 }
 
-void AnimationNodeTransition::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("input_")) {
-		String n = property.name.get_slicec('/', 0).get_slicec('_', 1);
+void AnimationNodeTransition::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("input_")) {
+		String n = p_property.name.get_slicec('/', 0).get_slicec('_', 1);
 		if (n != "count") {
 			int idx = n.to_int();
 			if (idx >= enabled_inputs) {
-				property.usage = PROPERTY_USAGE_NONE;
+				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 		}
 	}
-
-	AnimationNode::_validate_property(property);
 }
 
 void AnimationNodeTransition::_bind_methods() {

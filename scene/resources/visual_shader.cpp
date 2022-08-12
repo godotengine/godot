@@ -3153,8 +3153,8 @@ String VisualShaderNodeInput::get_input_index_name(int p_index) const {
 	return "";
 }
 
-void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
-	if (property.name == "input_name") {
+void VisualShaderNodeInput::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "input_name") {
 		String port_list;
 
 		int idx = 0;
@@ -3172,7 +3172,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 		if (port_list.is_empty()) {
 			port_list = RTR("None");
 		}
-		property.hint_string = port_list;
+		p_property.hint_string = port_list;
 	}
 }
 

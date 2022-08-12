@@ -167,7 +167,7 @@ void BoneMap::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("profile_updated"));
 }
 
-void BoneMap::_validate_property(PropertyInfo &property) const {
+void BoneMap::_validate_property(PropertyInfo &p_property) const {
 	//
 }
 

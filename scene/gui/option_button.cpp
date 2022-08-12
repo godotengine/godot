@@ -471,9 +471,9 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
 
-void OptionButton::_validate_property(PropertyInfo &property) const {
-	if (property.name == "text" || property.name == "icon") {
-		property.usage = PROPERTY_USAGE_NONE;
+void OptionButton::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "text" || p_property.name == "icon") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 

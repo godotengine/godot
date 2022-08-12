@@ -446,12 +446,11 @@ void GraphNode::_edit_set_position(const Point2 &p_position) {
 	set_position(p_position);
 }
 
-void GraphNode::_validate_property(PropertyInfo &property) const {
-	Control::_validate_property(property);
+void GraphNode::_validate_property(PropertyInfo &p_property) const {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
-		if (property.name == "position") {
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		if (p_property.name == "position") {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }

@@ -171,10 +171,10 @@ double VisualScriptYield::get_wait_time() {
 	return wait_time;
 }
 
-void VisualScriptYield::_validate_property(PropertyInfo &property) const {
-	if (property.name == "wait_time") {
+void VisualScriptYield::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "wait_time") {
 		if (yield_mode != YIELD_WAIT) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -417,26 +417,26 @@ VisualScriptYieldSignal::CallMode VisualScriptYieldSignal::get_call_mode() const
 	return call_mode;
 }
 
-void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
-	if (property.name == "base_type") {
+void VisualScriptYieldSignal::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "node_path") {
+	if (p_property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to long string
+				p_property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
 
-	if (property.name == "signal") {
-		property.hint = PROPERTY_HINT_ENUM;
+	if (p_property.name == "signal") {
+		p_property.hint = PROPERTY_HINT_ENUM;
 
 		List<MethodInfo> methods;
 
@@ -460,7 +460,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 			ml += E;
 		}
 
-		property.hint_string = ml;
+		p_property.hint_string = ml;
 	}
 }
 

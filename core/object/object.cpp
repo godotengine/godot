@@ -515,7 +515,8 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 }
 
-void Object::_validate_property(PropertyInfo &property) const {
+void Object::validate_property(PropertyInfo &p_property) const {
+	_validate_propertyv(p_property);
 }
 
 bool Object::property_can_revert(const String &p_name) const {

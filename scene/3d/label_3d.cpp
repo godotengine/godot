@@ -162,19 +162,19 @@ void Label3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_CUT_OPAQUE_PREPASS);
 }
 
-void Label3D::_validate_property(PropertyInfo &property) const {
+void Label3D::_validate_property(PropertyInfo &p_property) const {
 	if (
-			property.name == "material_override" ||
-			property.name == "material_overlay" ||
-			property.name == "lod_bias" ||
-			property.name == "gi_mode" ||
-			property.name == "gi_lightmap_scale") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.name == "material_override" ||
+			p_property.name == "material_overlay" ||
+			p_property.name == "lod_bias" ||
+			p_property.name == "gi_mode" ||
+			p_property.name == "gi_lightmap_scale") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+	if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
 		// Alpha-blended materials can't cast shadows.
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

@@ -176,39 +176,37 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void Skeleton3D::_validate_property(PropertyInfo &property) const {
-	PackedStringArray split = property.name.split("/");
+void Skeleton3D::_validate_property(PropertyInfo &p_property) const {
+	PackedStringArray split = p_property.name.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		if (split[2] == "rest") {
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 		if (is_show_rest_only()) {
 			if (split[2] == "enabled") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "position") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "rotation") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		} else if (!is_bone_enabled(split[1].to_int())) {
 			if (split[2] == "position") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "rotation") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		}
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void Skeleton3D::_update_process_order() {
