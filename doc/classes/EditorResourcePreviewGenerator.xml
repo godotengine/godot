@@ -47,7 +47,7 @@
 			<return type="bool" />
 			<param index="0" name="type" type="String" />
 			<description>
-				Returns [code]true[/code] if your generator supports the resource of type [code]type[/code].
+				Returns [code]true[/code] if your generator supports the resource of type [param type].
 			</description>
 		</method>
 	</methods>

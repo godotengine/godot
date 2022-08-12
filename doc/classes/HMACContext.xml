@@ -72,7 +72,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="data" type="PackedByteArray" />
 			<description>
-				Updates the message to be HMACed. This can be called multiple times before [method finish] is called to append [code]data[/code] to the message, but cannot be called until [method start] has been called.
+				Updates the message to be HMACed. This can be called multiple times before [method finish] is called to append [param data] to the message, but cannot be called until [method start] has been called.
 			</description>
 		</method>
 	</methods>

@@ -27,7 +27,7 @@
 			<return type="EditorFileSystemDirectory" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a view into the filesystem at [code]path[/code].
+				Returns a view into the filesystem at [param path].
 			</description>
 		</method>
 		<method name="get_scanning_progress" qualifiers="const">

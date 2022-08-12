@@ -26,7 +26,7 @@
 			<param index="1" name="src_rect" type="Rect2i" />
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
+				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -36,7 +36,7 @@
 			<param index="2" name="src_rect" type="Rect2i" />
 			<param index="3" name="dst" type="Vector2i" />
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code], clipped accordingly to both image bounds. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
+				Alpha-blends [param src_rect] from [param src] image to this image using [param mask] image at coordinates [param dst], clipped accordingly to both image bounds. Alpha channels are required for both [param src] and [param mask]. [param dst] pixels and [param src] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect">
@@ -45,7 +45,7 @@
 			<param index="1" name="src_rect" type="Rect2i" />
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
-				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
+				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -55,7 +55,7 @@
 			<param index="2" name="src_rect" type="Rect2i" />
 			<param index="3" name="dst" type="Vector2i" />
 			<description>
-				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code], clipped accordingly to both image bounds. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
+				Blits [param src_rect] area from [param src] image to this image at the coordinates given by [param dst], clipped accordingly to both image bounds. [param src] pixel is copied onto [param dst] if the corresponding [param mask] pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="bump_map_to_normal_map">
@@ -108,7 +108,7 @@
 			<return type="void" />
 			<param index="0" name="src" type="Image" />
 			<description>
-				Copies [code]src[/code] image to this image.
+				Copies [param src] image to this image.
 			</description>
 		</method>
 		<method name="create">
@@ -118,7 +118,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data">
@@ -129,7 +129,7 @@
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<param index="4" name="data" type="PackedByteArray" />
 			<description>
-				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then loads mipmaps for this image from [code]data[/code]. See [method generate_mipmaps].
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code] then loads mipmaps for this image from [param data]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -137,7 +137,7 @@
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
 			<description>
-				Crops the image to the given [code]width[/code] and [code]height[/code]. If the specified size is larger than the current size, the extra area is filled with black pixels.
+				Crops the image to the given [param width] and [param height]. If the specified size is larger than the current size, the extra area is filled with black pixels.
 			</description>
 		</method>
 		<method name="decompress">
@@ -163,7 +163,7 @@
 			<return type="void" />
 			<param index="0" name="color" type="Color" />
 			<description>
-				Fills the image with [code]color[/code].
+				Fills the image with [param color].
 			</description>
 		</method>
 		<method name="fill_rect">
@@ -171,7 +171,7 @@
 			<param index="0" name="rect" type="Rect2i" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Fills [code]rect[/code] with [code]color[/code].
+				Fills [param rect] with [param color].
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
@@ -222,7 +222,7 @@
 			<return type="int" />
 			<param index="0" name="mipmap" type="int" />
 			<description>
-				Returns the offset where the image's mipmap with index [code]mipmap[/code] is stored in the [code]data[/code] dictionary.
+				Returns the offset where the image's mipmap with index [param mipmap] is stored in the [code]data[/code] dictionary.
 			</description>
 		</method>
 		<method name="get_pixel" qualifiers="const">
@@ -238,7 +238,7 @@
 			<return type="Color" />
 			<param index="0" name="point" type="Vector2i" />
 			<description>
-				Returns the color of the pixel at [code]point[/code].
+				Returns the color of the pixel at [param point].
 				This is the same as [method get_pixel], but with a [Vector2i] argument instead of two integer arguments.
 			</description>
 		</method>
@@ -246,7 +246,7 @@
 			<return type="Image" />
 			<param index="0" name="rect" type="Rect2i" />
 			<description>
-				Returns a new image that is a copy of the image's area specified with [code]rect[/code].
+				Returns a new image that is a copy of the image's area specified with [param rect].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -295,7 +295,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Loads an image from file [code]path[/code]. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
+				Loads an image from file [param path]. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
 				See also [ImageTexture] description for usage examples.
 			</description>
@@ -361,7 +361,7 @@
 			<param index="1" name="height" type="int" />
 			<param index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Resizes the image to the given [code]width[/code] and [code]height[/code]. New pixels are calculated using the [code]interpolation[/code] mode defined via [enum Interpolation] constants.
+				Resizes the image to the given [param width] and [param height]. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="resize_to_po2">
@@ -369,7 +369,7 @@
 			<param index="0" name="square" type="bool" default="false" />
 			<param index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [code]interpolation[/code] mode defined via [enum Interpolation] constants.
+				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="rgbe_to_srgb">
@@ -388,7 +388,7 @@
 			<return type="void" />
 			<param index="0" name="direction" type="int" enum="ClockDirection" />
 			<description>
-				Rotates the image in the specified [code]direction[/code] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
+				Rotates the image in the specified [param direction] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">
@@ -396,7 +396,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="grayscale" type="bool" default="false" />
 			<description>
-				Saves the image as an EXR file to [code]path[/code]. If [code]grayscale[/code] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
+				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
 			</description>
 		</method>
@@ -404,7 +404,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
-				Saves the image as an EXR file to a byte array. If [code]grayscale[/code] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
+				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
 			</description>
 		</method>
@@ -413,7 +413,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a JPEG file to [code]path[/code] with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				Saves the image as a JPEG file to [param path] with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger file sizes. Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
 				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
 			</description>
 		</method>
@@ -421,7 +421,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a JPEG file to a byte array with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				Saves the image as a JPEG file to a byte array with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
 				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
 			</description>
 		</method>
@@ -429,7 +429,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Saves the image as a PNG file to the file at [code]path[/code].
+				Saves the image as a PNG file to the file at [param path].
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
@@ -444,7 +444,7 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [code]path[/code]. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
 			</description>
 		</method>
 		<method name="save_webp_to_buffer" qualifiers="const">
@@ -452,7 +452,7 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
 			</description>
 		</method>
 		<method name="set_pixel">
@@ -461,7 +461,7 @@
 			<param index="1" name="y" type="int" />
 			<param index="2" name="color" type="Color" />
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code] to [code]color[/code]. Example:
+				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color]. Example:
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -488,7 +488,7 @@
 			<param index="0" name="point" type="Vector2i" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the [Color] of the pixel at [code]point[/code] to [code]color[/code]. Example:
+				Sets the [Color] of the pixel at [param point] to [param color]. Example:
 				[codeblocks]
 				[gdscript]
 				var img_width = 10

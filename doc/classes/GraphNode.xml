@@ -21,14 +21,14 @@
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Disables input and output slot whose index is [code]idx[/code].
+				Disables input and output slot whose index is [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_color">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the [Color] of the input connection [code]idx[/code].
+				Returns the [Color] of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_count">
@@ -41,28 +41,28 @@
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the height of the input connection [code]idx[/code].
+				Returns the height of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_position">
 			<return type="Vector2" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the input connection [code]idx[/code].
+				Returns the position of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_type">
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the type of the input connection [code]idx[/code].
+				Returns the type of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_color">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the [Color] of the output connection [code]idx[/code].
+				Returns the [Color] of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_count">
@@ -75,70 +75,70 @@
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the height of the output connection [code]idx[/code].
+				Returns the height of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_position">
 			<return type="Vector2" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the output connection [code]idx[/code].
+				Returns the position of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_type">
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the type of the output connection [code]idx[/code].
+				Returns the type of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the left (input) [Color] of the slot [code]idx[/code].
+				Returns the left (input) [Color] of the slot [param idx].
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the right (output) [Color] of the slot [code]idx[/code].
+				Returns the right (output) [Color] of the slot [param idx].
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the left (input) type of the slot [code]idx[/code].
+				Returns the left (input) type of the slot [param idx].
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the right (output) type of the slot [code]idx[/code].
+				Returns the right (output) type of the slot [param idx].
 			</description>
 		</method>
 		<method name="is_slot_draw_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns true if the background [StyleBox] of the slot [code]idx[/code] is drawn.
+				Returns true if the background [StyleBox] of the slot [param idx] is drawn.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if left (input) side of the slot [code]idx[/code] is enabled.
+				Returns [code]true[/code] if left (input) side of the slot [param idx] is enabled.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if right (output) side of the slot [code]idx[/code] is enabled.
+				Returns [code]true[/code] if right (output) side of the slot [param idx] is enabled.
 			</description>
 		</method>
 		<method name="set_slot">
@@ -154,11 +154,11 @@
 			<param index="8" name="custom_right" type="Texture2D" default="null" />
 			<param index="9" name="enable" type="bool" default="true" />
 			<description>
-				Sets properties of the slot with ID [code]idx[/code].
-				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
-				[code]type_left[/code]/[code]right[/code] is an arbitrary type of the port. Only ports with the same type values can be connected.
-				[code]color_left[/code]/[code]right[/code] is the tint of the port's icon on this side.
-				[code]custom_left[/code]/[code]right[/code] is a custom texture for this side's port.
+				Sets properties of the slot with ID [param idx].
+				If [param enable_left]/[param enable_right], a port will appear and the slot will be able to be connected from this side.
+				[param type_left]/[param type_right] is an arbitrary type of the port. Only ports with the same type values can be connected.
+				[param color_left]/[param color_right] is the tint of the port's icon on this side.
+				[param custom_left]/[param custom_right] is a custom texture for this side's port.
 				[b]Note:[/b] This method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
 				Individual properties can be set using one of the [code]set_slot_*[/code] methods. You must enable at least one side of the slot to do so.
 			</description>
@@ -168,7 +168,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="color_left" type="Color" />
 			<description>
-				Sets the [Color] of the left (input) side of the slot [code]idx[/code] to [code]color_left[/code].
+				Sets the [Color] of the left (input) side of the slot [param idx] to [param color_left].
 			</description>
 		</method>
 		<method name="set_slot_color_right">
@@ -176,7 +176,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="color_right" type="Color" />
 			<description>
-				Sets the [Color] of the right (output) side of the slot [code]idx[/code] to [code]color_right[/code].
+				Sets the [Color] of the right (output) side of the slot [param idx] to [param color_right].
 			</description>
 		</method>
 		<method name="set_slot_draw_stylebox">
@@ -184,7 +184,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="draw_stylebox" type="bool" />
 			<description>
-				Toggles the background [StyleBox] of the slot [code]idx[/code].
+				Toggles the background [StyleBox] of the slot [param idx].
 			</description>
 		</method>
 		<method name="set_slot_enabled_left">
@@ -192,7 +192,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="enable_left" type="bool" />
 			<description>
-				Toggles the left (input) side of the slot [code]idx[/code]. If [code]enable_left[/code] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
+				Toggles the left (input) side of the slot [param idx]. If [param enable_left] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_enabled_right">
@@ -200,7 +200,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="enable_right" type="bool" />
 			<description>
-				Toggles the right (output) side of the slot [code]idx[/code]. If [code]enable_right[/code] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
+				Toggles the right (output) side of the slot [param idx]. If [param enable_right] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_type_left">
@@ -208,7 +208,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="type_left" type="int" />
 			<description>
-				Sets the left (input) type of the slot [code]idx[/code] to [code]type_left[/code].
+				Sets the left (input) type of the slot [param idx] to [param type_left].
 			</description>
 		</method>
 		<method name="set_slot_type_right">
@@ -216,7 +216,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="type_right" type="int" />
 			<description>
-				Sets the right (output) type of the slot [code]idx[/code] to [code]type_right[/code].
+				Sets the right (output) type of the slot [param idx] to [param type_right].
 			</description>
 		</method>
 	</methods>
