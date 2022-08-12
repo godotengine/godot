@@ -100,15 +100,14 @@ class Dijkstra3D : public RefCounted {
 		}
 	};
 
+	int64_t target_id = -1;
 	int64_t last_free_id = 0;
 	uint64_t pass = 1;
 
 	OAHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
 
-	bool _recalculate(Point *begin_point);
-	bool _solve(Point *begin_point, Point *end_point);
-
+	void _solve(Point *target_point);
 protected:
 	static void _bind_methods();
 
@@ -148,6 +147,10 @@ public:
 	Vector<Vector3> get_point_path(int64_t p_from_id);
 	Vector<int64_t> get_id_path(int64_t p_from_id);
 
+	void set_target(int64_t p_target_id);
+	int64_t get_target();
+	void recalculate();
+
 	Dijkstra3D() {}
 	~Dijkstra3D();
 };
@@ -156,16 +159,13 @@ class Dijkstra2D : public RefCounted {
 	GDCLASS(Dijkstra2D, RefCounted);
 	Dijkstra3D dijkstra;
 
-	bool _solve(Dijkstra3D::Point *begin_point, Dijkstra3D::Point *end_point);
-	bool _recalculate(Dijkstra3D::Point *begin_point);
+	void _solve(Dijkstra3D::Point *target_point);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
-	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
 public:
@@ -197,8 +197,12 @@ public:
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
 	float get_distance(int64_t p_from_id);
-	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector2> get_point_path(int64_t p_from_id);
+	Vector<int64_t> get_id_path(int64_t p_from_id);
+
+	void set_target(int64_t p_target_id);
+	int64_t get_target();
+	void recalculate();
 
 	Dijkstra2D() {}
 	~Dijkstra2D() {}

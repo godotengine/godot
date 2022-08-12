@@ -48,7 +48,6 @@ int64_t Dijkstra3D::get_available_point_id() const {
 void Dijkstra3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
-
 	Point *found_pt;
 	bool p_exists = points.lookup(p_id, found_pt);
 
@@ -58,6 +57,7 @@ void Dijkstra3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_s
 		pt->pos = p_pos;
 		pt->weight_scale = p_weight_scale;
 		pt->prev_point = nullptr;
+		pt->tentative_distance = INFINITY;
 		pt->open_pass = 0;
 		pt->closed_pass = 0;
 		pt->enabled = true;
@@ -318,26 +318,18 @@ Vector3 Dijkstra3D::get_closest_position_in_segment(const Vector3 &p_point) cons
 	return closest_point;
 }
 
-bool Dijkstra3D::_solve(Point *begin_point, Point *end_point) { return true; }
-
-bool Dijkstra3D::_recalculate(Point *begin_point) {
+void Dijkstra3D::_solve(Point *target_point) {
 	pass++;
-
-	if (!begin_point->enabled) {
-		return false;
-	}
 
 	Vector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
 
 
-	begin_point->tentative_distance = 0;
-	open_list.push_back(begin_point);
+	target_point->tentative_distance = 0;
+	open_list.push_back(target_point);
 
 	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point
-
-
 		if (p->tentative_distance == INFINITY) {
 			// No more reachable points
 			break;
@@ -368,7 +360,6 @@ bool Dijkstra3D::_recalculate(Point *begin_point) {
 
 			e->prev_point = p;
 			e->tentative_distance = new_tentative_distance;
-
 			if (new_point) { // The position of the new points is already known.
 				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
 			} else {
@@ -377,7 +368,7 @@ bool Dijkstra3D::_recalculate(Point *begin_point) {
 		}
 	}
 
-	return true;
+	return;
 }
 
 real_t Dijkstra3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
@@ -404,7 +395,7 @@ float Dijkstra3D::get_distance(int64_t p_from_id)
 	ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point with id: %d doesn't exist.", p_from_id));
 
 	if (a->closed_pass != pass || a->tentative_distance == INFINITY) {
-		ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point not visited on last calculation.", p_from_id));
+		return INFINITY; // Point not visited during last _solve() call
 	}
 
 	return a->tentative_distance;
@@ -426,6 +417,31 @@ Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
 
 	// TODO: implement
 	return Vector<int64_t>();
+}
+
+void Dijkstra3D::set_target(int64_t p_target_id)
+{
+	bool from_exists = points.has(p_target_id);
+	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't set target. Point with id: %d doesn't exist.", p_target_id));
+
+	target_id = p_target_id;
+}
+
+int64_t Dijkstra3D::get_target()
+{
+	return target_id;
+}
+
+void Dijkstra3D::recalculate()
+{
+	ERR_FAIL_COND_MSG(target_id == -1, vformat("Can't recalculate Dijsktra2D pathfinding: No target point set."));
+
+	Dijkstra3D::Point *a;
+	bool from_exists = points.lookup(target_id, a);
+	if (!from_exists) return;
+	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't recalculate Dijsktra2D pathfinding: Target point with id: %d doesn't exist.", target_id));
+
+	_solve(a);
 }
 
 void Dijkstra3D::set_point_disabled(int64_t p_id, bool p_disabled) {
@@ -471,8 +487,13 @@ void Dijkstra3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &Dijkstra3D::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &Dijkstra3D::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &Dijkstra3D::get_point_path);
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &Dijkstra3D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id"), &Dijkstra3D::get_point_path);
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id"), &Dijkstra3D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_distance", "from_id"), &Dijkstra3D::get_distance);
+
+	ClassDB::bind_method(D_METHOD("set_target", "target_id"), &Dijkstra3D::set_target);
+	ClassDB::bind_method(D_METHOD("get_target"), &Dijkstra3D::get_target);
+	ClassDB::bind_method(D_METHOD("recalculate", "from_id"), &Dijkstra3D::recalculate);
 
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
@@ -569,23 +590,6 @@ Vector2 Dijkstra2D::get_closest_position_in_segment(const Vector2 &p_point) cons
 	return Vector2(p.x, p.y);
 }
 
-real_t Dijkstra2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
-	real_t scost;
-	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
-		return scost;
-	}
-
-	Dijkstra3D::Point *from_point;
-	bool from_exists = dijkstra.points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
-
-	Dijkstra3D::Point *to_point;
-	bool to_exists = dijkstra.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
-
-	return from_point->pos.distance_to(to_point->pos);
-}
-
 real_t Dijkstra2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
@@ -601,19 +605,6 @@ real_t Dijkstra2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
-}
-
-float Dijkstra2D::get_distance(int64_t p_from_id)
-{
-	Dijkstra3D::Point *a;
-	bool from_exists = dijkstra.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point with id: %d doesn't exist.", p_from_id));
-
-	if (a->closed_pass != dijkstra.pass || a->tentative_distance == INFINITY) {
-		ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point not visited on last calculation.", p_from_id));
-	}
-
-	return a->tentative_distance;
 }
 
 Vector<Vector2> Dijkstra2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
@@ -712,22 +703,55 @@ Vector<int64_t> Dijkstra2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 
 	return path;
 }
-bool Dijkstra2D::_solve(Dijkstra3D::Point *begin_point, Dijkstra3D::Point *end_point) {
-	return true;
+
+float Dijkstra2D::get_distance(int64_t p_from_id)
+{
+	Dijkstra3D::Point *a;
+	bool from_exists = dijkstra.points.lookup(p_from_id, a);
+	ERR_FAIL_COND_V_MSG(!from_exists, -1.0f, vformat("Can't get point distance. Point with id: %d doesn't exist.", p_from_id));
+
+	if (a->closed_pass != dijkstra.pass || a->tentative_distance == INFINITY) {
+		return INFINITY; // Point not visited during last _solve() call
+	}
+	
+	return a->tentative_distance;
 }
 
-bool Dijkstra2D::_recalculate(Dijkstra3D::Point *begin_point) {
+void Dijkstra2D::set_target(int64_t p_target_id) {
+	bool from_exists = dijkstra.points.has(p_target_id);
+	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't set target. Point with id: %d doesn't exist.", p_target_id));
+
+	dijkstra.target_id = p_target_id;
+}
+
+int64_t Dijkstra2D::get_target() {
+	return dijkstra.target_id;
+}
+
+void Dijkstra2D::recalculate()
+{
+	ERR_FAIL_COND_MSG(dijkstra.target_id == -1, vformat("Can't recalculate Dijsktra2D pathfinding: No target point set."));
+
+	Dijkstra3D::Point *a;
+	bool from_exists = dijkstra.points.lookup(dijkstra.target_id, a);
+	if (!from_exists) return;
+	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't recalculate Dijsktra2D pathfinding: Target point with id: %d doesn't exist.", dijkstra.target_id));
+
+	_solve(a);
+}
+
+void Dijkstra2D::_solve(Dijkstra3D::Point *target_point) {
 	dijkstra.pass++;
 
-	if (!begin_point->enabled) {
-		return false;
+	if (!target_point->enabled) {
+		return;
 	}
 
 	Vector<Dijkstra3D::Point *> open_list;
 	SortArray<Dijkstra3D::Point *, Dijkstra3D::SortPoints> sorter;
 
-	begin_point->tentative_distance = 0;
-	open_list.push_back(begin_point);
+	target_point->tentative_distance = 0;
+	open_list.push_back(target_point);
 
 	while (!open_list.is_empty()) {
 		Dijkstra3D::Point *p = open_list[0]; // The currently processed point
@@ -765,13 +789,14 @@ bool Dijkstra2D::_recalculate(Dijkstra3D::Point *begin_point) {
 
 			if (new_point) { // The position of the new points is already known.
 				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
-			} else {
+			}
+			else {
 				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
 			}
 		}
 	}
 
-	return true;
+	return;
 }
 
 void Dijkstra2D::_bind_methods() {
@@ -801,8 +826,13 @@ void Dijkstra2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &Dijkstra2D::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &Dijkstra2D::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &Dijkstra2D::get_point_path);
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &Dijkstra2D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id"), &Dijkstra2D::get_point_path);
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id"), &Dijkstra2D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_distance", "from_id"), &Dijkstra2D::get_distance);
 
+	ClassDB::bind_method(D_METHOD("set_target", "target_id"), &Dijkstra2D::set_target);
+	ClassDB::bind_method(D_METHOD("get_target"), &Dijkstra2D::get_target);
+	ClassDB::bind_method(D_METHOD("recalculate", "from_id"), &Dijkstra2D::recalculate);
+	
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
