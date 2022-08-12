@@ -404,10 +404,46 @@ float Dijkstra3D::get_distance(int64_t p_from_id)
 Vector<Vector3> Dijkstra3D::get_point_path(int64_t p_from_id) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
-	// TODO: implement
-	return Vector<Vector3>();
+	Point *b;
+	bool to_exists = points.lookup(target_id, b);
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector3>(), vformat("Can't get id path. Destination point with id: %d doesn't exist.", target_id));
+
+	Vector<Vector3> path;
+	if (p_from_id == target_id) {
+		path.push_back(a->pos);
+		return path;
+	}
+
+	Point *begin_point = a;
+	Point *end_point = b;
+
+
+	Point *p = begin_point;
+	int64_t pc = 1; // Begin point
+	while (p != end_point) {
+		ERR_FAIL_COND_V_MSG(p->tentative_distance == INFINITY, Vector<Vector3>(), vformat("Can't get id path. Destination point with id: %d unreachable from %d.", target_id, p_from_id));
+		pc++;
+		p = p->prev_point;
+	}
+
+	path.resize(pc);
+
+	{
+		Vector3 *w = path.ptrw();
+
+		Point *p2 = begin_point;
+		int64_t idx = pc - 1;
+		while (p2 != end_point) {
+			w[idx++] = p2->pos;
+			p2 = p2->prev_point;
+		}
+
+		w[pc-1] = p2->pos; // Assign last
+	}
+
+	return path;
 }
 
 Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
@@ -415,8 +451,45 @@ Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
-	// TODO: implement
-	return Vector<int64_t>();
+	Point *b;
+	bool to_exists = points.lookup(target_id, b);
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Destination point with id: %d doesn't exist.", target_id));
+	
+	Vector<int64_t> path;
+	if (p_from_id == target_id) {
+		path.push_back(target_id);
+		return path;
+	}
+
+	Point *begin_point = a;
+	Point *end_point = b;
+
+	
+	Point *p = begin_point;
+	int64_t pc = 1; // Begin point
+	while (p != end_point) {
+		ERR_FAIL_COND_V_MSG(p->tentative_distance == INFINITY, Vector<int64_t>(), vformat("Can't get id path. Destination point with id: %d unreachable from %d.", target_id, p_from_id));
+
+		pc++;
+		p = p->prev_point;
+	}
+
+	path.resize(pc);
+
+	{
+		int64_t *w = path.ptrw();
+
+		p = begin_point;
+		int64_t idx = pc - 1;
+		while (p != end_point) {
+			w[idx++] = p->id;
+			p = p->prev_point;
+		}
+
+		w[pc-1] = p->id; // Assign last
+	}
+
+	return path;
 }
 
 void Dijkstra3D::set_target(int64_t p_target_id)
@@ -493,7 +566,7 @@ void Dijkstra3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target", "target_id"), &Dijkstra3D::set_target);
 	ClassDB::bind_method(D_METHOD("get_target"), &Dijkstra3D::get_target);
-	ClassDB::bind_method(D_METHOD("recalculate", "from_id"), &Dijkstra3D::recalculate);
+	ClassDB::bind_method(D_METHOD("recalculate"), &Dijkstra3D::recalculate);
 
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
@@ -607,98 +680,91 @@ real_t Dijkstra2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector2> Dijkstra2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
+Vector<Vector2> Dijkstra2D::get_point_path(int64_t p_from_id) {
 	Dijkstra3D::Point *a;
 	bool from_exists = dijkstra.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	Dijkstra3D::Point *b;
-	bool to_exists = dijkstra.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
+	bool to_exists = dijkstra.points.lookup(dijkstra.target_id, b);
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector2>(), vformat("Can't get id path. Destination point with id: %d doesn't exist.", dijkstra.target_id));
 
-	if (a == b) {
-		Vector<Vector2> ret = { Vector2(a->pos.x, a->pos.y) };
-		return ret;
+	Vector<Vector2> path;
+	if (p_from_id == dijkstra.target_id) {
+		path.push_back(Vector2(a->pos.x, a->pos.y));
+		return path;
 	}
 
 	Dijkstra3D::Point *begin_point = a;
 	Dijkstra3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
-	if (!found_route) {
-		return Vector<Vector2>();
-	}
-
-	Dijkstra3D::Point *p = end_point;
+	Dijkstra3D::Point *p = begin_point;
 	int64_t pc = 1; // Begin point
-	while (p != begin_point) {
+	while (p != end_point) {
+		ERR_FAIL_COND_V_MSG(p->tentative_distance == INFINITY, Vector<Vector2>(), vformat("Can't get id path. Destination point with id: %d unreachable from %d.", dijkstra.target_id, p_from_id));
+
 		pc++;
 		p = p->prev_point;
 	}
 
-	Vector<Vector2> path;
 	path.resize(pc);
 
 	{
 		Vector2 *w = path.ptrw();
 
-		Dijkstra3D::Point *p2 = end_point;
-		int64_t idx = pc - 1;
-		while (p2 != begin_point) {
-			w[idx--] = Vector2(p2->pos.x, p2->pos.y);
+		Dijkstra3D::Point *p2 = begin_point;
+		int64_t idx = 0;
+		while (p2 != end_point) {
+			w[idx++] = Vector2(p2->pos.x, p2->pos.y);
 			p2 = p2->prev_point;
 		}
 
-		w[0] = Vector2(p2->pos.x, p2->pos.y); // Assign first
+		w[pc-1] = Vector2(p2->pos.x, p2->pos.y); // Assign last
 	}
 
 	return path;
 }
 
-Vector<int64_t> Dijkstra2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
+Vector<int64_t> Dijkstra2D::get_id_path(int64_t p_from_id) {
 	Dijkstra3D::Point *a;
 	bool from_exists = dijkstra.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	Dijkstra3D::Point *b;
-	bool to_exists = dijkstra.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
+	bool to_exists = dijkstra.points.lookup(dijkstra.target_id, b);
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Destination point with id: %d doesn't exist.", dijkstra.target_id));
 
-	if (a == b) {
-		Vector<int64_t> ret;
-		ret.push_back(a->id);
-		return ret;
+	Vector<int64_t> path;
+	if (p_from_id == dijkstra.target_id) {
+		path.push_back(p_from_id);
+		return path;
 	}
 
 	Dijkstra3D::Point *begin_point = a;
 	Dijkstra3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
-	if (!found_route) {
-		return Vector<int64_t>();
-	}
-
-	Dijkstra3D::Point *p = end_point;
+	Dijkstra3D::Point *p = begin_point;
 	int64_t pc = 1; // Begin point
-	while (p != begin_point) {
+	while (p != end_point) {
+		ERR_FAIL_COND_V_MSG(p->tentative_distance == INFINITY, Vector<int64_t>(), vformat("Can't get id path. Destination point with id: %d unreachable from %d.", dijkstra.target_id, p_from_id));
+
 		pc++;
 		p = p->prev_point;
 	}
 
-	Vector<int64_t> path;
 	path.resize(pc);
 
 	{
 		int64_t *w = path.ptrw();
 
-		p = end_point;
-		int64_t idx = pc - 1;
-		while (p != begin_point) {
-			w[idx--] = p->id;
-			p = p->prev_point;
+		Dijkstra3D::Point *p2 = begin_point;
+		int64_t idx = 0;
+		while (p2 != end_point) {
+			w[idx++] = p2->id;
+			p2 = p2->prev_point;
 		}
 
-		w[0] = p->id; // Assign first
+		w[pc - 1] = p2->id; // Assign last
 	}
 
 	return path;
@@ -718,10 +784,7 @@ float Dijkstra2D::get_distance(int64_t p_from_id)
 }
 
 void Dijkstra2D::set_target(int64_t p_target_id) {
-	bool from_exists = dijkstra.points.has(p_target_id);
-	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't set target. Point with id: %d doesn't exist.", p_target_id));
-
-	dijkstra.target_id = p_target_id;
+	dijkstra.set_target(p_target_id);
 }
 
 int64_t Dijkstra2D::get_target() {
@@ -832,7 +895,7 @@ void Dijkstra2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target", "target_id"), &Dijkstra2D::set_target);
 	ClassDB::bind_method(D_METHOD("get_target"), &Dijkstra2D::get_target);
-	ClassDB::bind_method(D_METHOD("recalculate", "from_id"), &Dijkstra2D::recalculate);
+	ClassDB::bind_method(D_METHOD("recalculate"), &Dijkstra2D::recalculate);
 	
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
