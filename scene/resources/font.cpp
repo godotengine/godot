@@ -1817,11 +1817,9 @@ void FontFile::set_data_ptr(const uint8_t *p_data, size_t p_size) {
 	data_ptr = p_data;
 	data_size = p_size;
 
-	if (data_ptr != nullptr) {
-		for (int i = 0; i < cache.size(); i++) {
-			if (cache[i].is_valid()) {
-				TS->font_set_data_ptr(cache[i], data_ptr, data_size);
-			}
+	for (int i = 0; i < cache.size(); i++) {
+		if (cache[i].is_valid()) {
+			TS->font_set_data_ptr(cache[i], data_ptr, data_size);
 		}
 	}
 }
@@ -1831,11 +1829,9 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 	data_ptr = data.ptr();
 	data_size = data.size();
 
-	if (data_ptr != nullptr) {
-		for (int i = 0; i < cache.size(); i++) {
-			if (cache[i].is_valid()) {
-				TS->font_set_data_ptr(cache[i], data_ptr, data_size);
-			}
+	for (int i = 0; i < cache.size(); i++) {
+		if (cache[i].is_valid()) {
+			TS->font_set_data_ptr(cache[i], data_ptr, data_size);
 		}
 	}
 }
