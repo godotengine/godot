@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "openxr_android_extension.h"
+#include "java_godot_wrapper.h"
+#include "os_android.h"
+#include "thread_jandroid.h"
 
+#include <jni.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
@@ -47,14 +51,13 @@ OpenXRAndroidExtension::OpenXRAndroidExtension(OpenXRAPI *p_openxr_api) :
 
 	// Initialize the loader
 	PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR;
-	result = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction *)(&xrInitializeLoaderKHR));
+	XrResult result = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction *)(&xrInitializeLoaderKHR));
 	ERR_FAIL_COND_MSG(XR_FAILED(result), "Failed to retrieve pointer to xrInitializeLoaderKHR");
 
-	// TODO fix this code, this is still code from GDNative!
-	JNIEnv *env = android_api->godot_android_get_env();
+	JNIEnv *env = get_jni_env();
 	JavaVM *vm;
 	env->GetJavaVM(&vm);
-	jobject activity_object = env->NewGlobalRef(android_api->godot_android_get_activity());
+	jobject activity_object = env->NewGlobalRef(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 
 	XrLoaderInitInfoAndroidKHR loader_init_info_android = {
 		.type = XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR,

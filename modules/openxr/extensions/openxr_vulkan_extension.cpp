@@ -47,6 +47,11 @@
 #include <windows.h>
 #endif
 
+#ifdef ANDROID_ENABLED
+// The jobject type from jni.h is used by openxr_platform.h on Android.
+#include <jni.h>
+#endif
+
 // include platform dependent structs
 #include <openxr/openxr_platform.h>
 

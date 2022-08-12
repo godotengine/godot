@@ -171,6 +171,7 @@ opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (for production buids)", "none", ("none", "thin", "full")))
+opts.Add("external_openxr_loader", "Path to an external OpenXR loader library", "")
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -473,6 +474,9 @@ if selected_platform in platform_list:
         'Building for platform "%s", architecture "%s", %s, target "%s".'
         % (selected_platform, env["arch"], "editor" if env["tools"] else "template", env["target"])
     )
+
+    if env["external_openxr_loader"] != "":
+        env.AppendUnique(LIBS=[File(env["external_openxr_loader"])])
 
     # Set our C and C++ standard requirements.
     # C++17 is required as we need guaranteed copy elision as per GH-36436.

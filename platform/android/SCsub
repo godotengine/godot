@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 Import("env")
 
 android_files = [
@@ -74,3 +76,8 @@ if lib_arch_dir != "":
         str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
     )
     env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+
+    if env["external_openxr_loader"] != "":
+        openxr_loader_path = os.path.normpath(env["external_openxr_loader"])
+        openxr_loader_filename = openxr_loader_path.split(os.sep)[-1]
+        env_android.Command(out_dir + "/" + openxr_loader_filename, openxr_loader_path, Copy("$TARGET", "$SOURCE"))
