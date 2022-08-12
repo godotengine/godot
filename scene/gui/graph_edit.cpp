@@ -623,7 +623,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 						//check disconnect
 						for (const Connection &E : connections) {
 							if (E.from == gn->get_name() && E.from_port == j) {
-								Node *to = get_node(String(E.to));
+								Node *to = get_node(NodePath(E.to));
 								if (Object::cast_to<GraphNode>(to)) {
 									connecting_from = E.to;
 									connecting_index = E.to_port;
@@ -637,7 +637,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 										just_disconnected = true;
 
 										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-										to = get_node(String(connecting_from)); //maybe it was erased
+										to = get_node(NodePath(connecting_from)); // Maybe it was erased.
 										if (Object::cast_to<GraphNode>(to)) {
 											connecting = true;
 											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
@@ -673,10 +673,10 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				if (is_in_input_hotzone(gn, j, click_pos, port_size)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
-						//check disconnect
+						// Check disconnect.
 						for (const Connection &E : connections) {
 							if (E.to == gn->get_name() && E.to_port == j) {
-								Node *fr = get_node(String(E.from));
+								Node *fr = get_node(NodePath(E.from));
 								if (Object::cast_to<GraphNode>(fr)) {
 									connecting_from = E.from;
 									connecting_index = E.from_port;
@@ -689,7 +689,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 									if (connecting_type >= 0) {
 										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-										fr = get_node(String(connecting_from)); //maybe it was erased
+										fr = get_node(NodePath(connecting_from)); // Maybe it was erased.
 										if (Object::cast_to<GraphNode>(fr)) {
 											connecting = true;
 											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
@@ -780,26 +780,16 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (connecting_valid) {
 			if (connecting && connecting_target) {
-				String from = connecting_from;
-				int from_port = connecting_index;
-				String to = connecting_target_to;
-				int to_port = connecting_target_index;
-
-				if (!connecting_out) {
-					SWAP(from, to);
-					SWAP(from_port, to_port);
-				}
-				emit_signal(SNAME("connection_request"), from, from_port, to, to_port);
-
-			} else if (!just_disconnected) {
-				String from = connecting_from;
-				int from_port = connecting_index;
-				Vector2 ofs = mb->get_position();
-
-				if (!connecting_out) {
-					emit_signal(SNAME("connection_from_empty"), from, from_port, ofs);
+				if (connecting_out) {
+					emit_signal(SNAME("connection_request"), connecting_from, connecting_index, connecting_target_to, connecting_target_index);
 				} else {
-					emit_signal(SNAME("connection_to_empty"), from, from_port, ofs);
+					emit_signal(SNAME("connection_request"), connecting_target_to, connecting_target_index, connecting_from, connecting_index);
+				}
+			} else if (!just_disconnected) {
+				if (connecting_out) {
+					emit_signal(SNAME("connection_to_empty"), connecting_from, connecting_index, mb->get_position());
+				} else {
+					emit_signal(SNAME("connection_from_empty"), connecting_from, connecting_index, mb->get_position());
 				}
 			}
 		}
@@ -935,17 +925,12 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 
 void GraphEdit::_connections_layer_draw() {
 	Color activity_color = get_theme_color(SNAME("activity"));
-	//draw connections
+	// Draw connections.
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		NodePath fromnp(E->get().from);
+		const Connection &c = E->get();
 
-		Node *from = get_node(fromnp);
-		if (!from) {
-			to_erase.push_back(E);
-			continue;
-		}
-
+		Node *from = get_node(NodePath(c.from));
 		GraphNode *gfrom = Object::cast_to<GraphNode>(from);
 
 		if (!gfrom) {
@@ -953,13 +938,7 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
-		NodePath tonp(E->get().to);
-		Node *to = get_node(tonp);
-		if (!to) {
-			to_erase.push_back(E);
-			continue;
-		}
-
+		Node *to = get_node(NodePath(c.to));
 		GraphNode *gto = Object::cast_to<GraphNode>(to);
 
 		if (!gto) {
@@ -967,21 +946,20 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
-		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_position_offset() * zoom;
-		Color color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_position_offset() * zoom;
-		Color tocolor = gto->get_connection_input_color(E->get().to_port);
+		Vector2 frompos = gfrom->get_connection_output_position(c.from_port) + gfrom->get_position_offset() * zoom;
+		Color color = gfrom->get_connection_output_color(c.from_port);
+		Vector2 topos = gto->get_connection_input_position(c.to_port) + gto->get_position_offset() * zoom;
+		Color tocolor = gto->get_connection_input_color(c.to_port);
 
-		if (E->get().activity > 0) {
-			color = color.lerp(activity_color, E->get().activity);
-			tocolor = tocolor.lerp(activity_color, E->get().activity);
+		if (c.activity > 0) {
+			color = color.lerp(activity_color, c.activity);
+			tocolor = tocolor.lerp(activity_color, c.activity);
 		}
 		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness, zoom);
 	}
 
-	while (to_erase.size()) {
-		connections.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (List<Connection>::Element *&E : to_erase) {
+		connections.erase(E);
 	}
 }
 
@@ -989,7 +967,7 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(connecting_from);
+		Node *fromn = get_node(NodePath(connecting_from));
 		ERR_FAIL_COND(!fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
 		ERR_FAIL_COND(!from);
@@ -1087,22 +1065,13 @@ void GraphEdit::_minimap_draw() {
 	// Draw node connections.
 	Color activity_color = get_theme_color(SNAME("activity"));
 	for (const Connection &E : connections) {
-		NodePath fromnp(E.from);
-
-		Node *from = get_node(fromnp);
-		if (!from) {
-			continue;
-		}
+		Node *from = get_node(NodePath(E.from));
 		GraphNode *gfrom = Object::cast_to<GraphNode>(from);
 		if (!gfrom) {
 			continue;
 		}
 
-		NodePath tonp(E.to);
-		Node *to = get_node(tonp);
-		if (!to) {
-			continue;
-		}
+		Node *to = get_node(NodePath(E.to));
 		GraphNode *gto = Object::cast_to<GraphNode>(to);
 		if (!gto) {
 			continue;
@@ -2428,7 +2397,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);

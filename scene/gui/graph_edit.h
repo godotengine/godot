@@ -136,14 +136,14 @@ private:
 	bool arrange_nodes_button_hidden = false;
 
 	bool connecting = false;
-	String connecting_from;
+	StringName connecting_from;
 	bool connecting_out = false;
 	int connecting_index = 0;
 	int connecting_type = 0;
 	Color connecting_color;
 	bool connecting_target = false;
 	Vector2 connecting_to;
-	String connecting_target_to;
+	StringName connecting_target_to;
 	int connecting_target_index = 0;
 	bool just_disconnected = false;
 	bool connecting_valid = false;
