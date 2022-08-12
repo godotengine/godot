@@ -1436,6 +1436,8 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("textureGrad");
 	texture_functions.insert("textureGather");
 	texture_functions.insert("textureSize");
+	texture_functions.insert("textureQueryLod");
+	texture_functions.insert("textureQueryLevels");
 	texture_functions.insert("texelFetch");
 }
 
