@@ -278,18 +278,29 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		// Sort groups alphabetically.
 		List<UniformProp> props;
+		List<String> group_names;
 		for (HashMap<String, HashMap<String, List<PropertyInfo>>>::Iterator group = groups.begin(); group; ++group) {
-			for (HashMap<String, List<PropertyInfo>>::Iterator subgroup = group->value.begin(); subgroup; ++subgroup) {
-				for (List<PropertyInfo>::Element *item = subgroup->value.front(); item; item = item->next()) {
-					if (subgroup->key == "<None>") {
-						props.push_back({ group->key, item->get() });
+			group_names.push_back(group->key);
+		}
+		group_names.sort();
+		for (const String &group_name : group_names) {
+			List<String> subgroup_names;
+			HashMap<String, List<PropertyInfo>> &subgroups = groups[group_name];
+			for (HashMap<String, List<PropertyInfo>>::Iterator subgroup = subgroups.begin(); subgroup; ++subgroup) {
+				subgroup_names.push_back(subgroup->key);
+			}
+			subgroup_names.sort();
+			for (const String &subgroup_name : subgroup_names) {
+				List<PropertyInfo> &prop_infos = subgroups[subgroup_name];
+				for (List<PropertyInfo>::Element *item = prop_infos.front(); item; item = item->next()) {
+					if (subgroup_name == "<None>") {
+						props.push_back({ group_name, item->get() });
 					} else {
-						props.push_back({ group->key + "::" + subgroup->key, item->get() });
+						props.push_back({ group_name + "::" + subgroup_name, item->get() });
 					}
 				}
 			}
 		}
-		props.sort_custom<UniformPropComparator>();
 
 		for (List<UniformProp>::Element *E = props.front(); E; E = E->next()) {
 			p_list->push_back(E->get().info);
