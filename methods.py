@@ -333,6 +333,7 @@ def use_windows_spawn_fix(self, platform=None):
             startupinfo=startupinfo,
             shell=False,
             env=env,
+            text=True,
         )
         _, err = proc.communicate()
         rv = proc.wait()
