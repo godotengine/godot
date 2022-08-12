@@ -66,6 +66,7 @@ void Dijkstra3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_s
 		found_pt->pos = p_pos;
 		found_pt->weight_scale = p_weight_scale;
 	}
+	pass++;
 }
 
 Vector3 Dijkstra3D::get_point_position(int64_t p_id) const {
@@ -82,6 +83,7 @@ void Dijkstra3D::set_point_position(int64_t p_id, const Vector3 &p_pos) {
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's position. Point with id: %d doesn't exist.", p_id));
 
 	p->pos = p_pos;
+	pass++;
 }
 
 real_t Dijkstra3D::get_point_weight_scale(int64_t p_id) const {
@@ -99,6 +101,8 @@ void Dijkstra3D::set_point_weight_scale(int64_t p_id, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
 
 	p->weight_scale = p_weight_scale;
+
+	pass++;
 }
 
 void Dijkstra3D::remove_point(int64_t p_id) {
@@ -125,6 +129,7 @@ void Dijkstra3D::remove_point(int64_t p_id) {
 	memdelete(p);
 	points.remove(p_id);
 	last_free_id = p_id;
+	pass++;
 }
 
 void Dijkstra3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
@@ -163,6 +168,7 @@ void Dijkstra3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectio
 	}
 
 	segments.insert(s);
+	pass++;
 }
 
 void Dijkstra3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
@@ -203,6 +209,7 @@ void Dijkstra3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirec
 			segments.insert(s);
 		}
 	}
+	pass++;
 }
 
 bool Dijkstra3D::has_point(int64_t p_id) const {
@@ -498,6 +505,7 @@ void Dijkstra3D::set_target(int64_t p_target_id)
 	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't set target. Point with id: %d doesn't exist.", p_target_id));
 
 	target_id = p_target_id;
+	pass++;
 }
 
 int64_t Dijkstra3D::get_target()
@@ -523,6 +531,7 @@ void Dijkstra3D::set_point_disabled(int64_t p_id, bool p_disabled) {
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
 
 	p->enabled = !p_disabled;
+	pass++;
 }
 
 bool Dijkstra3D::is_point_disabled(int64_t p_id) const {
