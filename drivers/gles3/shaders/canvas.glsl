@@ -473,7 +473,13 @@ void main() {
 			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
-
+	} else if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_LCD)) {
+		vec4 lcd_sample = texture(color_texture, uv);
+		if (lcd_sample.a == 1.0) {
+			color.rgb = lcd_sample.rgb * color.a;
+		} else {
+			color = vec4(0.0, 0.0, 0.0, 0.0);
+		}
 	} else {
 #else
 	{

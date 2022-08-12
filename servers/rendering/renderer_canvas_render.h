@@ -46,6 +46,7 @@ public:
 		CANVAS_RECT_CLIP_UV = 32,
 		CANVAS_RECT_IS_GROUP = 64,
 		CANVAS_RECT_MSDF = 128,
+		CANVAS_RECT_LCD = 256,
 	};
 
 	struct Light {
@@ -193,7 +194,7 @@ public:
 			Rect2 rect;
 			Color modulate;
 			Rect2 source;
-			uint8_t flags;
+			uint16_t flags;
 			float outline;
 			float px_range;
 

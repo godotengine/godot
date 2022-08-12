@@ -141,7 +141,7 @@ class FontFile : public Font {
 	size_t data_size = 0;
 	PackedByteArray data;
 
-	bool antialiased = true;
+	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
@@ -192,8 +192,8 @@ public:
 	virtual void set_font_style_name(const String &p_name);
 	virtual void set_font_style(BitField<TextServer::FontStyle> p_style);
 
-	virtual void set_antialiased(bool p_antialiased);
-	virtual bool is_antialiased() const;
+	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
+	virtual TextServer::FontAntialiasing get_antialiasing() const;
 
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;
@@ -398,7 +398,7 @@ class SystemFont : public Font {
 	int ftr_weight = 0;
 	int ftr_italic = 0;
 
-	bool antialiased = true;
+	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
 	bool force_autohinter = false;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
@@ -417,8 +417,8 @@ protected:
 public:
 	virtual Ref<Font> _get_base_font_or_default() const;
 
-	virtual void set_antialiased(bool p_antialiased);
-	virtual bool is_antialiased() const;
+	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
+	virtual TextServer::FontAntialiasing get_antialiasing() const;
 
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;

@@ -449,8 +449,8 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 	// Update font preview.
 
 	if (font_preview.is_valid()) {
-		if (p_edited_property == "antialiased") {
-			font_preview->set_antialiased(import_settings_data->get("antialiased"));
+		if (p_edited_property == "antialiasing") {
+			font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
 		} else if (p_edited_property == "generate_mipmaps") {
 			font_preview->set_generate_mipmaps(import_settings_data->get("generate_mipmaps"));
 		} else if (p_edited_property == "multichannel_signed_distance_field") {
@@ -573,6 +573,12 @@ void DynamicFontImportSettings::_variations_validate() {
 				}
 			}
 		}
+	}
+	if ((TextServer::FontAntialiasing)(int)import_settings_data->get("antialiasing") == TextServer::FONT_ANTIALIASING_LCD) {
+		warn += "\n" + TTR("Note: LCD sub-pixel anti-aliasing is selected, each of the glyphs will be pre-rendered for all supported sub-pixel layouts (5x).");
+	}
+	if ((TextServer::SubpixelPositioning)(int)import_settings_data->get("subpixel_positioning") != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
+		warn += "\n" + TTR("Note: Sub-pixel positioning is selected, each of the glyphs might be pre-rendered for multiple sub-pixel offsets (up to 4x).");
 	}
 	if (warn.is_empty()) {
 		label_warn->set_text("");
@@ -881,7 +887,7 @@ void DynamicFontImportSettings::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
 	main_settings["face_index"] = import_settings_data->get("face_index");
-	main_settings["antialiased"] = import_settings_data->get("antialiased");
+	main_settings["antialiasing"] = import_settings_data->get("antialiasing");
 	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
 	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");
 	main_settings["msdf_pixel_range"] = import_settings_data->get("msdf_pixel_range");
@@ -1079,7 +1085,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	import_settings_data->notify_property_list_changed();
 
 	if (font_preview.is_valid()) {
-		font_preview->set_antialiased(import_settings_data->get("antialiased"));
+		font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
 		font_preview->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
 		font_preview->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
 		font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
@@ -1108,7 +1114,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD sub-pixel"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));

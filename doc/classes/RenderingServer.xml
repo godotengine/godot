@@ -176,6 +176,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="canvas_item_add_lcd_texture_rect_region">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="texture" type="RID" />
+			<param index="3" name="src_rect" type="Rect2" />
+			<param index="4" name="modulate" type="Color" />
+			<description>
+			</description>
+		</method>
 		<method name="canvas_item_add_line">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />

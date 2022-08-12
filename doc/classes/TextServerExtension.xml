@@ -91,6 +91,13 @@
 				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size].
 			</description>
 		</method>
+		<method name="font_get_antialiasing" qualifiers="virtual const">
+			<return type="int" enum="TextServer.FontAntialiasing" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font anti-aliasing mode.
+			</description>
+		</method>
 		<method name="font_get_ascent" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -437,13 +444,6 @@
 				Returns [code]true[/code] if a Unicode [param char] is available in the font.
 			</description>
 		</method>
-		<method name="font_is_antialiased" qualifiers="virtual const">
-			<return type="bool" />
-			<param index="0" name="font_rid" type="RID" />
-			<description>
-				Returns [code]true[/code] if font 8-bit anitialiased glyph rendering is supported and enabled.
-			</description>
-		</method>
 		<method name="font_is_force_autohinter" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -544,12 +544,12 @@
 				Renders the range of characters to the font cache texture.
 			</description>
 		</method>
-		<method name="font_set_antialiased" qualifiers="virtual">
+		<method name="font_set_antialiasing" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="antialiased" type="bool" />
+			<param index="1" name="antialiasing" type="int" enum="TextServer.FontAntialiasing" />
 			<description>
-				If set to [code]true[/code], 8-bit antialiased glyph rendering is used, otherwise 1-bit rendering is used. Used by dynamic fonts only.
+				Sets font anti-aliasing mode.
 			</description>
 		</method>
 		<method name="font_set_ascent" qualifiers="virtual">

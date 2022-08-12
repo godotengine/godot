@@ -494,7 +494,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				}
 
 				//bind pipeline
-				{
+				if (rect->flags & CANVAS_RECT_LCD) {
+					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD_LCD_BLEND].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
+					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+					RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, rect->modulate);
+				} else {
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 				}
@@ -556,6 +560,8 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					push_constant.msdf[1] = rect->outline; // Outline size.
 					push_constant.msdf[2] = 0.f; // Reserved.
 					push_constant.msdf[3] = 0.f; // Reserved.
+				} else if (rect->flags & CANVAS_RECT_LCD) {
+					push_constant.flags |= FLAGS_USE_LCD;
 				}
 
 				push_constant.modulation[0] = rect->modulate.r * base_color.r;
@@ -2113,6 +2119,18 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	RD::PipelineColorBlendState blend_state;
 	blend_state.attachments.push_back(attachment);
 
+	RD::PipelineColorBlendState::Attachment attachment_lcd;
+	attachment_lcd.enable_blend = true;
+	attachment_lcd.alpha_blend_op = RD::BLEND_OP_ADD;
+	attachment_lcd.color_blend_op = RD::BLEND_OP_ADD;
+	attachment_lcd.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
+	attachment_lcd.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+	attachment_lcd.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_lcd.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+	RD::PipelineColorBlendState blend_state_lcd;
+	blend_state_lcd.attachments.push_back(attachment_lcd);
+
 	//update pipelines
 
 	for (int i = 0; i < PIPELINE_LIGHT_MODE_MAX; i++) {
@@ -2128,10 +2146,12 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 				RD::RENDER_PRIMITIVE_LINES,
 				RD::RENDER_PRIMITIVE_LINESTRIPS,
 				RD::RENDER_PRIMITIVE_POINTS,
+				RD::RENDER_PRIMITIVE_TRIANGLES,
 			};
 
 			ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
-				{ //non lit
+				{
+						//non lit
 						SHADER_VARIANT_QUAD,
 						SHADER_VARIANT_NINEPATCH,
 						SHADER_VARIANT_PRIMITIVE,
@@ -2141,8 +2161,11 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_ATTRIBUTES,
 						SHADER_VARIANT_ATTRIBUTES,
 						SHADER_VARIANT_ATTRIBUTES,
-						SHADER_VARIANT_ATTRIBUTES_POINTS },
-				{ //lit
+						SHADER_VARIANT_ATTRIBUTES_POINTS,
+						SHADER_VARIANT_QUAD,
+				},
+				{
+						//lit
 						SHADER_VARIANT_QUAD_LIGHT,
 						SHADER_VARIANT_NINEPATCH_LIGHT,
 						SHADER_VARIANT_PRIMITIVE_LIGHT,
@@ -2152,11 +2175,17 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
-						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
+						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
+						SHADER_VARIANT_QUAD_LIGHT,
+				},
 			};
 
 			RID shader_variant = canvas_singleton->shader.canvas_shader.version_get_shader(version, shader_variants[i][j]);
-			pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+			if (j == PIPELINE_VARIANT_QUAD_LCD_BLEND) {
+				pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_lcd, RD::DYNAMIC_STATE_BLEND_CONSTANTS);
+			} else {
+				pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+			}
 		}
 	}
 
@@ -2363,6 +2392,18 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 
 		blend_state.attachments.push_back(blend_attachment);
 
+		RD::PipelineColorBlendState::Attachment attachment_lcd;
+		attachment_lcd.enable_blend = true;
+		attachment_lcd.alpha_blend_op = RD::BLEND_OP_ADD;
+		attachment_lcd.color_blend_op = RD::BLEND_OP_ADD;
+		attachment_lcd.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
+		attachment_lcd.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+		attachment_lcd.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		attachment_lcd.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		RD::PipelineColorBlendState blend_state_lcd;
+		blend_state_lcd.attachments.push_back(attachment_lcd);
+
 		for (int i = 0; i < PIPELINE_LIGHT_MODE_MAX; i++) {
 			for (int j = 0; j < PIPELINE_VARIANT_MAX; j++) {
 				RD::RenderPrimitive primitive[PIPELINE_VARIANT_MAX] = {
@@ -2376,10 +2417,12 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 					RD::RENDER_PRIMITIVE_LINES,
 					RD::RENDER_PRIMITIVE_LINESTRIPS,
 					RD::RENDER_PRIMITIVE_POINTS,
+					RD::RENDER_PRIMITIVE_TRIANGLES,
 				};
 
 				ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
-					{ //non lit
+					{
+							//non lit
 							SHADER_VARIANT_QUAD,
 							SHADER_VARIANT_NINEPATCH,
 							SHADER_VARIANT_PRIMITIVE,
@@ -2389,8 +2432,11 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 							SHADER_VARIANT_ATTRIBUTES,
 							SHADER_VARIANT_ATTRIBUTES,
 							SHADER_VARIANT_ATTRIBUTES,
-							SHADER_VARIANT_ATTRIBUTES_POINTS },
-					{ //lit
+							SHADER_VARIANT_ATTRIBUTES_POINTS,
+							SHADER_VARIANT_QUAD,
+					},
+					{
+							//lit
 							SHADER_VARIANT_QUAD_LIGHT,
 							SHADER_VARIANT_NINEPATCH_LIGHT,
 							SHADER_VARIANT_PRIMITIVE_LIGHT,
@@ -2400,11 +2446,17 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
-							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
+							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
+							SHADER_VARIANT_QUAD_LIGHT,
+					},
 				};
 
 				RID shader_variant = shader.canvas_shader.version_get_shader(shader.default_version, shader_variants[i][j]);
-				shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+				if (j == PIPELINE_VARIANT_QUAD_LCD_BLEND) {
+					shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_lcd, RD::DYNAMIC_STATE_BLEND_CONSTANTS);
+				} else {
+					shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+				}
 			}
 		}
 	}
