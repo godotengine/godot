@@ -897,7 +897,7 @@ void Node3D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-bool Node3D::property_can_revert(const String &p_name) {
+bool Node3D::_property_can_revert(const StringName &p_name) const {
 	if (p_name == "basis") {
 		return true;
 	} else if (p_name == "scale") {
@@ -912,47 +912,48 @@ bool Node3D::property_can_revert(const String &p_name) {
 	return false;
 }
 
-Variant Node3D::property_get_revert(const String &p_name) {
-	Variant r_ret;
+bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	bool valid = false;
 
 	if (p_name == "basis") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Transform3D(variant).get_basis();
+			r_property = Transform3D(variant).get_basis();
 		} else {
-			r_ret = Basis();
+			r_property = Basis();
 		}
 	} else if (p_name == "scale") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Transform3D(variant).get_basis().get_scale();
+			r_property = Transform3D(variant).get_basis().get_scale();
 		} else {
-			return Vector3(1.0, 1.0, 1.0);
+			r_property = Vector3(1.0, 1.0, 1.0);
 		}
 	} else if (p_name == "quaternion") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Quaternion(Transform3D(variant).get_basis().get_rotation_quaternion());
+			r_property = Quaternion(Transform3D(variant).get_basis().get_rotation_quaternion());
 		} else {
-			return Quaternion();
+			r_property = Quaternion();
 		}
 	} else if (p_name == "rotation") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Transform3D(variant).get_basis().get_euler_normalized(data.euler_rotation_order);
+			r_property = Transform3D(variant).get_basis().get_euler_normalized(data.euler_rotation_order);
 		} else {
-			return Vector3();
+			r_property = Vector3();
 		}
 	} else if (p_name == "position") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid) {
-			r_ret = Transform3D(variant).get_origin();
+			r_property = Transform3D(variant).get_origin();
 		} else {
-			return Vector3();
+			r_property = Vector3();
 		}
+	} else {
+		return false;
 	}
-	return r_ret;
+	return true;
 }
 
 void Node3D::_bind_methods() {
@@ -1031,9 +1032,6 @@ void Node3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);
-
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &Node3D::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &Node3D::property_get_revert);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_WORLD);

@@ -1073,24 +1073,25 @@ Variant _EDITOR_GET(const String &p_setting) {
 	return EditorSettings::get_singleton()->get(p_setting);
 }
 
-bool EditorSettings::property_can_revert(const String &p_setting) {
-	if (!props.has(p_setting)) {
+bool EditorSettings::_property_can_revert(const StringName &p_name) const {
+	if (!props.has(p_name)) {
 		return false;
 	}
 
-	if (!props[p_setting].has_default_value) {
+	if (!props[p_name].has_default_value) {
 		return false;
 	}
 
-	return props[p_setting].initial != props[p_setting].variant;
+	return props[p_name].initial != props[p_name].variant;
 }
 
-Variant EditorSettings::property_get_revert(const String &p_setting) {
-	if (!props.has(p_setting) || !props[p_setting].has_default_value) {
-		return Variant();
+bool EditorSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (!props.has(p_name) || !props[p_name].has_default_value) {
+		return false;
 	}
 
-	return props[p_setting].initial;
+	r_property = props[p_name].initial;
+	return true;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
@@ -1621,8 +1622,6 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);

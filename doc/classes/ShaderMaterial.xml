@@ -17,20 +17,6 @@
 				Returns the current value set for this material of a uniform in the shader.
 			</description>
 		</method>
-		<method name="property_can_revert">
-			<return type="bool" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns [code]true[/code] if the property identified by [param name] can be reverted to a default value.
-			</description>
-		</method>
-		<method name="property_get_revert">
-			<return type="Variant" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns the default value of the material property with given [param name].
-			</description>
-		</method>
 		<method name="set_shader_uniform">
 			<return type="void" />
 			<param index="0" name="param" type="StringName" />

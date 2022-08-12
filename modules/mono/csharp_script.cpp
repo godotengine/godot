@@ -1853,6 +1853,74 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 	return Variant::NIL;
 }
 
+bool CSharpInstance::property_can_revert(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!script.is_valid(), false);
+
+	GD_MONO_SCOPE_THREAD_ATTACH;
+
+	MonoObject *mono_object = get_mono_object();
+	ERR_FAIL_NULL_V(mono_object, false);
+
+	GDMonoClass *top = script->script_class;
+
+	while (top && top != script->native) {
+		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_property_can_revert), 1);
+
+		if (method) {
+			Variant name = p_name;
+			const Variant *args[1] = { &name };
+
+			MonoObject *ret = method->invoke(mono_object, args);
+
+			if (ret) {
+				bool can_revert = GDMonoMarshal::mono_object_to_variant(ret);
+				if (can_revert) {
+					return true;
+				}
+			}
+
+			break;
+		}
+
+		top = top->get_parent_class();
+	}
+
+	return false;
+}
+
+bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const {
+	ERR_FAIL_COND_V(!script.is_valid(), false);
+
+	GD_MONO_SCOPE_THREAD_ATTACH;
+
+	MonoObject *mono_object = get_mono_object();
+	ERR_FAIL_NULL_V(mono_object, false);
+
+	GDMonoClass *top = script->script_class;
+
+	while (top && top != script->native) {
+		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_property_get_revert), 1);
+
+		if (method) {
+			Variant name = p_name;
+			const Variant *args[1] = { &name };
+
+			MonoObject *ret = method->invoke(mono_object, args);
+
+			if (ret) {
+				r_ret = GDMonoMarshal::mono_object_to_variant(ret);
+				return true;
+			}
+
+			break;
+		}
+
+		top = top->get_parent_class();
+	}
+
+	return false;
+}
+
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 	if (!script->is_valid() || !script->script_class) {
 		return;
@@ -3705,6 +3773,8 @@ CSharpLanguage::StringNameCache::StringNameCache() {
 	_set = StaticCString::create("_set");
 	_get = StaticCString::create("_get");
 	_get_property_list = StaticCString::create("_get_property_list");
+	_property_can_revert = StaticCString::create("_property_can_revert");
+	_property_get_revert = StaticCString::create("_property_get_revert");
 	_notification = StaticCString::create("_notification");
 	_script_source = StaticCString::create("script/source");
 	on_before_serialize = StaticCString::create("OnBeforeSerialize");

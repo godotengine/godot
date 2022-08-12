@@ -432,11 +432,11 @@ bool EditorProperty::is_read_only() const {
 }
 
 Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid) {
-	if (p_object->has_method("property_can_revert") && p_object->call("property_can_revert", p_property)) {
+	if (p_object->property_can_revert(p_property)) {
 		if (r_is_valid) {
 			*r_is_valid = true;
 		}
-		return p_object->call("property_get_revert", p_property);
+		return p_object->property_get_revert(p_property);
 	}
 
 	return PropertyUtils::get_property_default_value(p_object, p_property, r_is_valid);

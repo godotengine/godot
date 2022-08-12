@@ -129,20 +129,6 @@
 				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [param path]. See also [method globalize_path].
 			</description>
 		</method>
-		<method name="property_can_revert">
-			<return type="bool" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns [code]true[/code] if the specified property exists and its initial value differs from the current value.
-			</description>
-		</method>
-		<method name="property_get_revert">
-			<return type="Variant" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns the specified property's initial value. Returns [code]null[/code] if the property does not exist.
-			</description>
-		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
 			<description>

@@ -518,6 +518,59 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 void Object::_validate_property(PropertyInfo &property) const {
 }
 
+bool Object::property_can_revert(const String &p_name) const {
+	if (script_instance) {
+		if (script_instance->property_can_revert(p_name)) {
+			return true;
+		}
+	}
+
+// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
+	if (_extension && _extension->property_can_revert) {
+		if (_extension->property_can_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name)) {
+			return true;
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	return _property_can_revertv(p_name);
+}
+
+Variant Object::property_get_revert(const String &p_name) const {
+	Variant ret;
+
+	if (script_instance) {
+		if (script_instance->property_get_revert(p_name, ret)) {
+			return ret;
+		}
+	}
+
+// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
+	if (_extension && _extension->property_get_revert) {
+		if (_extension->property_get_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
+			return ret;
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	if (_property_get_revertv(p_name, ret)) {
+		return ret;
+	}
+	return Variant();
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 	ClassDB::get_method_list(get_class_name(), p_list);
 	if (script_instance) {
@@ -1499,10 +1552,12 @@ void Object::_bind_methods() {
 	miget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_OBJ_CORE_METHOD(miget);
 
-	MethodInfo plget("_get_property_list");
-
-	plget.return_val.type = Variant::ARRAY;
-	BIND_OBJ_CORE_METHOD(plget);
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::ARRAY, "_get_property_list"));
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
+	MethodInfo mipgr("_property_get_revert", PropertyInfo(Variant::STRING_NAME, "property"));
+	mipgr.return_val.name = "Variant";
+	mipgr.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	BIND_OBJ_CORE_METHOD(mipgr);
 
 #endif
 	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));

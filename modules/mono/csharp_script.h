@@ -293,6 +293,9 @@ public:
 	void get_property_list(List<PropertyInfo> *p_properties) const override;
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override;
 
+	bool property_can_revert(const StringName &p_name) const override;
+	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
+
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
@@ -371,6 +374,8 @@ class CSharpLanguage : public ScriptLanguage {
 		StringName _set;
 		StringName _get;
 		StringName _get_property_list;
+		StringName _property_can_revert;
+		StringName _property_get_revert;
 		StringName _notification;
 		StringName _script_source;
 		StringName dotctor; // .ctor
