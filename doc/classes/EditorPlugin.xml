@@ -729,7 +729,7 @@
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="8" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="9" enum="CustomControlContainer">
+		<constant name="CONTAINER_INSPECTOR_BOTTOM" value="9" enum="CustomControlContainer">
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_LEFT" value="10" enum="CustomControlContainer">
 		</constant>
