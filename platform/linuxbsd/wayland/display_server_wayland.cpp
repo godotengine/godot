@@ -312,7 +312,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		if (wls.windows.has(event_from_window->get_window_id())) {
 			Callable callable = wls.windows[event_from_window->get_window_id()].input_event_callback;
 			if (callable.is_valid()) {
-				callable.call((const Variant **)&evp, 1, ret, ce);
+				callable.callp((const Variant **)&evp, 1, ret, ce);
 			}
 		}
 	} else {
@@ -320,7 +320,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call((const Variant **)&evp, 1, ret, ce);
+				callable.callp((const Variant **)&evp, 1, ret, ce);
 			}
 		}
 	}
@@ -488,7 +488,7 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 		Variant ret;
 		Callable::CallError ce;
 
-		wd.window_event_callback.call((const Variant **)&arg, 1, ret, ce);
+		wd.window_event_callback.callp((const Variant **)&arg, 1, ret, ce);
 	}
 }
 
@@ -2309,7 +2309,7 @@ void DisplayServerWayland::process_events() {
 				Variant ret;
 				Callable::CallError ce;
 
-				wd.rect_changed_callback.call((const Variant **)&arg, 1, ret, ce);
+				wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
 			}
 
 			// TODO: It would probably be better to do this Wayland-side.
