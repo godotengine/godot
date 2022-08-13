@@ -126,7 +126,7 @@
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining what navigation layers of navigation regions this agent will use to calculate path. Changing it runtime will clear current navigation path and generate new one, according to new navigation layers.
 		</member>
-		<member name="neighbor_dist" type="float" setter="set_neighbor_dist" getter="get_neighbor_dist" default="500.0">
+		<member name="neighbor_distance" type="float" setter="set_neighbor_distance" getter="get_neighbor_distance" default="500.0">
 			The distance to search for other agents.
 		</member>
 		<member name="path_desired_distance" type="float" setter="set_path_desired_distance" getter="get_path_desired_distance" default="1.0">
@@ -136,7 +136,7 @@
 			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
-			The radius of the avoidance agent. This is the "body" of the avoidance agent and not the avoidance maneuver starting radius (which is controlled by [member neighbor_dist]).
+			The radius of the avoidance agent. This is the "body" of the avoidance agent and not the avoidance maneuver starting radius (which is controlled by [member neighbor_distance]).
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
 		</member>
 		<member name="target_desired_distance" type="float" setter="set_target_desired_distance" getter="get_target_desired_distance" default="1.0">

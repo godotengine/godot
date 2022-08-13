@@ -53,8 +53,8 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_y", "ignore"), &NavigationAgent3D::set_ignore_y);
 	ClassDB::bind_method(D_METHOD("get_ignore_y"), &NavigationAgent3D::get_ignore_y);
 
-	ClassDB::bind_method(D_METHOD("set_neighbor_dist", "neighbor_dist"), &NavigationAgent3D::set_neighbor_dist);
-	ClassDB::bind_method(D_METHOD("get_neighbor_dist"), &NavigationAgent3D::get_neighbor_dist);
+	ClassDB::bind_method(D_METHOD("set_neighbor_distance", "neighbor_distance"), &NavigationAgent3D::set_neighbor_distance);
+	ClassDB::bind_method(D_METHOD("get_neighbor_distance"), &NavigationAgent3D::get_neighbor_distance);
 
 	ClassDB::bind_method(D_METHOD("set_max_neighbors", "max_neighbors"), &NavigationAgent3D::set_max_neighbors);
 	ClassDB::bind_method(D_METHOD("get_max_neighbors"), &NavigationAgent3D::get_max_neighbors);
@@ -101,7 +101,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:m"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_dist", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:m"), "set_neighbor_dist", "get_neighbor_dist");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_distance", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:m"), "set_neighbor_distance", "get_neighbor_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_neighbors", PROPERTY_HINT_RANGE, "1,10000,1"), "set_max_neighbors", "get_max_neighbors");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.01,100,0.01,suffix:s"), "set_time_horizon", "get_time_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:m/s"), "set_max_speed", "get_max_speed");
@@ -179,7 +179,7 @@ void NavigationAgent3D::_notification(int p_what) {
 
 NavigationAgent3D::NavigationAgent3D() {
 	agent = NavigationServer3D::get_singleton()->agent_create();
-	set_neighbor_dist(50.0);
+	set_neighbor_distance(50.0);
 	set_max_neighbors(10);
 	set_time_horizon(5.0);
 	set_radius(1.0);
@@ -291,9 +291,9 @@ void NavigationAgent3D::set_ignore_y(bool p_ignore_y) {
 	NavigationServer3D::get_singleton()->agent_set_ignore_y(agent, ignore_y);
 }
 
-void NavigationAgent3D::set_neighbor_dist(real_t p_dist) {
-	neighbor_dist = p_dist;
-	NavigationServer3D::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
+void NavigationAgent3D::set_neighbor_distance(real_t p_distance) {
+	neighbor_distance = p_distance;
+	NavigationServer3D::get_singleton()->agent_set_neighbor_distance(agent, neighbor_distance);
 }
 
 void NavigationAgent3D::set_max_neighbors(int p_count) {

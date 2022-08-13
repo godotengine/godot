@@ -135,7 +135,7 @@ public:
 	virtual RID agent_create() const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
 	virtual RID agent_get_map(RID p_agent) const override;
-	COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist);
+	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time);
 	COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius);

@@ -147,7 +147,7 @@ public:
 	/// time of the simulation. If the number is too
 	/// low, the simulation will not be safe.
 	/// Must be non-negative.
-	virtual void agent_set_neighbor_dist(RID p_agent, real_t p_dist) const = 0;
+	virtual void agent_set_neighbor_distance(RID p_agent, real_t p_distance) const = 0;
 
 	/// The maximum number of other agents this
 	/// agent takes into account in the navigation.

@@ -72,10 +72,10 @@
 				Sets the maximum speed of the agent. Must be positive.
 			</description>
 		</method>
-		<method name="agent_set_neighbor_dist" qualifiers="const">
+		<method name="agent_set_neighbor_distance" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
-			<param index="1" name="dist" type="float" />
+			<param index="1" name="distance" type="float" />
 			<description>
 				Sets the maximum distance to other agents this agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
 			</description>
