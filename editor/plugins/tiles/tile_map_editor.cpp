@@ -2170,7 +2170,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	split_container_left_side->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	split_container_left_side->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	split_container_left_side->set_stretch_ratio(0.25);
-	split_container_left_side->set_custom_minimum_size(Size2i(70, 0) * EDSCALE);
+	split_container_left_side->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	atlas_sources_split_container->add_child(split_container_left_side);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);
@@ -2190,11 +2190,11 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	sources_bottom_actions->add_child(source_sort_button);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_fixed_icon_size(Size2i(60, 60) * EDSCALE);
+	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_stretch_ratio(0.25);
-	sources_list->set_custom_minimum_size(Size2i(70, 0) * EDSCALE);
+	sources_list->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_fix_selected_and_hovered).unbind(1));
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_source_display).unbind(1));
@@ -3323,7 +3323,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	terrains_tree = memnew(Tree);
 	terrains_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	terrains_tree->set_stretch_ratio(0.25);
-	terrains_tree->set_custom_minimum_size(Size2i(70, 0) * EDSCALE);
+	terrains_tree->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	terrains_tree->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	terrains_tree->set_hide_root(true);
 	terrains_tree->connect("item_selected", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_tiles_list));

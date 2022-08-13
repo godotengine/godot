@@ -1602,7 +1602,7 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 		case OPTION_RESIZE_ARRAY:
 			new_size_spin_box->set_value(count);
 			resize_dialog->get_ok_button()->set_disabled(true);
-			resize_dialog->popup_centered(Size2i(250, 0) * EDSCALE);
+			resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
 			new_size_spin_box->get_line_edit()->grab_focus();
 			new_size_spin_box->get_line_edit()->select_all();
 			break;

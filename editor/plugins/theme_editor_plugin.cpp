@@ -1186,7 +1186,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 void ThemeItemEditorDialog::ok_pressed() {
 	if (import_default_theme_items->has_selected_items() || import_editor_theme_items->has_selected_items() || import_other_theme_items->has_selected_items()) {
 		confirm_closing_dialog->set_text(TTR("Import Items tab has some items selected. Selection will be lost upon closing this window.\nClose anyway?"));
-		confirm_closing_dialog->popup_centered(Size2i(380, 120) * EDSCALE);
+		confirm_closing_dialog->popup_centered(Size2(380, 120) * EDSCALE);
 		return;
 	}
 
