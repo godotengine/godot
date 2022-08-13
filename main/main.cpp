@@ -143,6 +143,7 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
+static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
 static bool cmdline_tool = false;
@@ -153,6 +154,8 @@ static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+
+HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
 
 // Display
@@ -195,6 +198,12 @@ bool profile_gpu = false;
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
 }
+
+#ifdef TOOLS_ENABLED
+const Vector<String> &Main::get_forwardable_cli_arguments(Main::CLIScope p_scope) {
+	return forwardable_cli_arguments[p_scope];
+}
+#endif
 
 static String unescape_cmdline(const String &p_str) {
 	return p_str.replace("%20", " ");
@@ -703,6 +712,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		List<String>::Element *N = I->next();
 
+#ifdef TOOLS_ENABLED
+		if (I->get() == "--debug" ||
+				I->get() == "--verbose" ||
+				I->get() == "--disable-crash-handler") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
+		}
+		if (I->get() == "--single-window" ||
+				I->get() == "--audio-driver" ||
+				I->get() == "--display-driver" ||
+				I->get() == "--rendering-driver") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+		}
+#endif
+
 		if (adding_user_args) {
 			user_args.push_back(I->get());
 		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
@@ -881,7 +905,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--single-window") { // force single window
 
-			OS::get_singleton()->_single_window = true;
+			single_window = true;
 		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -2446,7 +2470,7 @@ bool Main::start() {
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
-		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+		if (single_window || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 			sml->get_root()->set_embedding_subwindows(true);
 		}
 

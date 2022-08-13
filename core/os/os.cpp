@@ -166,10 +166,6 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
-bool OS::is_single_window() const {
-	return _single_window;
-}
-
 bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
