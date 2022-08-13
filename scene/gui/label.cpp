@@ -44,7 +44,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 	autowrap_mode = p_mode;
 	lines_dirty = true;
-	update();
+	queue_redraw();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -63,7 +63,7 @@ void Label::set_uppercase(bool p_uppercase) {
 	uppercase = p_uppercase;
 	dirty = true;
 
-	update();
+	queue_redraw();
 }
 
 bool Label::is_uppercase() const {
@@ -284,11 +284,11 @@ void Label::_notification(int p_what) {
 			}
 			dirty = true;
 
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -544,7 +544,7 @@ void Label::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			font_dirty = true;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -623,7 +623,7 @@ void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	}
 	horizontal_alignment = p_alignment;
 
-	update();
+	queue_redraw();
 }
 
 HorizontalAlignment Label::get_horizontal_alignment() const {
@@ -638,7 +638,7 @@ void Label::set_vertical_alignment(VerticalAlignment p_alignment) {
 	}
 
 	vertical_alignment = p_alignment;
-	update();
+	queue_redraw();
 }
 
 VerticalAlignment Label::get_vertical_alignment() const {
@@ -655,13 +655,13 @@ void Label::set_text(const String &p_string) {
 	if (visible_ratio < 1) {
 		visible_chars = get_total_character_count() * visible_ratio;
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
 void Label::_invalidate() {
 	font_dirty = true;
-	update();
+	queue_redraw();
 }
 
 void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
@@ -686,7 +686,7 @@ void Label::set_text_direction(Control::TextDirection p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		font_dirty = true;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -694,7 +694,7 @@ void Label::set_structured_text_bidi_override(TextServer::StructuredTextParser p
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		dirty = true;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -709,7 +709,7 @@ void Label::set_structured_text_bidi_override_options(Array p_args) {
 
 	st_args = p_args;
 	dirty = true;
-	update();
+	queue_redraw();
 }
 
 Array Label::get_structured_text_bidi_override_options() const {
@@ -724,7 +724,7 @@ void Label::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		dirty = true;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -738,7 +738,7 @@ void Label::set_clip_text(bool p_clip) {
 	}
 
 	clip = p_clip;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -753,7 +753,7 @@ void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 
 	overrun_behavior = p_behavior;
 	lines_dirty = true;
-	update();
+	queue_redraw();
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
@@ -778,7 +778,7 @@ void Label::set_visible_characters(int p_amount) {
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
 		}
-		update();
+		queue_redraw();
 	}
 }
 
@@ -802,7 +802,7 @@ void Label::set_visible_ratio(float p_ratio) {
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
 		}
-		update();
+		queue_redraw();
 	}
 }
 
@@ -818,7 +818,7 @@ void Label::set_visible_characters_behavior(TextServer::VisibleCharactersBehavio
 	if (visible_chars_behavior != p_behavior) {
 		visible_chars_behavior = p_behavior;
 		dirty = true;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -831,7 +831,7 @@ void Label::set_lines_skipped(int p_lines) {
 
 	lines_skipped = p_lines;
 	_update_visible();
-	update();
+	queue_redraw();
 }
 
 int Label::get_lines_skipped() const {
@@ -845,7 +845,7 @@ void Label::set_max_lines_visible(int p_lines) {
 
 	max_lines_visible = p_lines;
 	_update_visible();
-	update();
+	queue_redraw();
 }
 
 int Label::get_max_lines_visible() const {

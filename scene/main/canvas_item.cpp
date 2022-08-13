@@ -88,7 +88,7 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible) {
-		update();
+		queue_redraw();
 	} else {
 		emit_signal(SceneStringNames::get_singleton()->hidden);
 	}
@@ -121,7 +121,7 @@ CanvasItem *CanvasItem::get_current_item_drawn() {
 	return current_item_drawn;
 }
 
-void CanvasItem::_update_callback() {
+void CanvasItem::_redraw_callback() {
 	if (!is_inside_tree()) {
 		pending_update = false;
 		return;
@@ -242,7 +242,7 @@ void CanvasItem::_enter_canvas() {
 	}
 
 	pending_update = false;
-	update();
+	queue_redraw();
 
 	notification(NOTIFICATION_ENTER_CANVAS);
 }
@@ -355,7 +355,7 @@ void CanvasItem::_window_visibility_changed() {
 	}
 }
 
-void CanvasItem::update() {
+void CanvasItem::queue_redraw() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -365,7 +365,7 @@ void CanvasItem::update() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_call(this, SNAME("_update_callback"));
+	MessageQueue::get_singleton()->push_call(this, SNAME("_redraw_callback"));
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
@@ -438,7 +438,7 @@ int CanvasItem::get_light_mask() const {
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 	if (p_size_changed) {
-		update();
+		queue_redraw();
 	}
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
@@ -867,7 +867,7 @@ void CanvasItem::force_update_transform() {
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
-	ClassDB::bind_method(D_METHOD("_update_callback"), &CanvasItem::_update_callback);
+	ClassDB::bind_method(D_METHOD("_redraw_callback"), &CanvasItem::_redraw_callback);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &CanvasItem::_edit_set_state);
@@ -896,7 +896,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("show"), &CanvasItem::show);
 	ClassDB::bind_method(D_METHOD("hide"), &CanvasItem::hide);
 
-	ClassDB::bind_method(D_METHOD("update"), &CanvasItem::update);
+	ClassDB::bind_method(D_METHOD("queue_redraw"), &CanvasItem::queue_redraw);
 
 	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &CanvasItem::set_as_top_level);
 	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &CanvasItem::is_set_as_top_level);
@@ -1100,7 +1100,7 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 		texture_filter_cache = RS::CanvasItemTextureFilter(texture_filter);
 	}
 	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), texture_filter_cache);
-	update();
+	queue_redraw();
 
 	if (p_propagate) {
 		for (CanvasItem *E : children_items) {
@@ -1141,7 +1141,7 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 		texture_repeat_cache = RS::CanvasItemTextureRepeat(texture_repeat);
 	}
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
-	update();
+	queue_redraw();
 	if (p_propagate) {
 		for (CanvasItem *E : children_items) {
 			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {

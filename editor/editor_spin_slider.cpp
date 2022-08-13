@@ -82,7 +82,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					if (grabbing_spinner) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
-						update();
+						queue_redraw();
 					} else {
 						_focus_entered();
 					}
@@ -93,7 +93,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (grabber->is_visible()) {
-				call_deferred(SNAME("update"));
+				call_deferred(SNAME("queue_redraw"));
 			}
 		}
 	}
@@ -137,7 +137,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			bool new_hover = (mm->get_position().x > updown_offset);
 			if (new_hover != hover_updown) {
 				hover_updown = new_hover;
-				update();
+				queue_redraw();
 			}
 		}
 	}
@@ -190,7 +190,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
 		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
-		update();
+		queue_redraw();
 	}
 }
 
@@ -463,12 +463,12 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_over_spin = true;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_over_spin = false;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -498,7 +498,7 @@ Size2 EditorSpinSlider::get_minimum_size() const {
 
 void EditorSpinSlider::set_hide_slider(bool p_hide) {
 	hide_slider = p_hide;
-	update();
+	queue_redraw();
 }
 
 bool EditorSpinSlider::is_hiding_slider() const {
@@ -507,7 +507,7 @@ bool EditorSpinSlider::is_hiding_slider() const {
 
 void EditorSpinSlider::set_label(const String &p_label) {
 	label = p_label;
-	update();
+	queue_redraw();
 }
 
 String EditorSpinSlider::get_label() const {
@@ -516,7 +516,7 @@ String EditorSpinSlider::get_label() const {
 
 void EditorSpinSlider::set_suffix(const String &p_suffix) {
 	suffix = p_suffix;
-	update();
+	queue_redraw();
 }
 
 String EditorSpinSlider::get_suffix() const {
@@ -583,17 +583,17 @@ void EditorSpinSlider::_value_focus_exited() {
 
 void EditorSpinSlider::_grabber_mouse_entered() {
 	mouse_over_grabber = true;
-	update();
+	queue_redraw();
 }
 
 void EditorSpinSlider::_grabber_mouse_exited() {
 	mouse_over_grabber = false;
-	update();
+	queue_redraw();
 }
 
 void EditorSpinSlider::set_read_only(bool p_enable) {
 	read_only = p_enable;
-	update();
+	queue_redraw();
 }
 
 bool EditorSpinSlider::is_read_only() const {
@@ -602,7 +602,7 @@ bool EditorSpinSlider::is_read_only() const {
 
 void EditorSpinSlider::set_flat(bool p_enable) {
 	flat = p_enable;
-	update();
+	queue_redraw();
 }
 
 bool EditorSpinSlider::is_flat() const {

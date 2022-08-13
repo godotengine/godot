@@ -50,7 +50,7 @@ void GradientEditor::_gradient_changed() {
 	Vector<Gradient::Point> points = gradient->get_points();
 	set_points(points);
 	set_interpolation_mode(gradient->get_interpolation_mode());
-	update();
+	queue_redraw();
 	editing = false;
 }
 
@@ -83,7 +83,7 @@ void GradientEditor::reverse_gradient() {
 	gradient->reverse();
 	set_points(gradient->get_points());
 	emit_signal(SNAME("ramp_changed"));
-	update();
+	queue_redraw();
 }
 
 GradientEditor::GradientEditor() {

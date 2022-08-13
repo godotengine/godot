@@ -6263,7 +6263,7 @@ void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Visua
 	type = p_type;
 	port = p_port;
 	node = p_node;
-	update();
+	queue_redraw();
 	_shader_changed();
 }
 

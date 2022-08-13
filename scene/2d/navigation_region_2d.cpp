@@ -374,7 +374,7 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer3D::get_singleton()->get_debug_enabled()) {
-		update();
+		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
 }
@@ -551,7 +551,7 @@ Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
 
 void NavigationRegion2D::_navpoly_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
-		update();
+		queue_redraw();
 	}
 	if (navpoly.is_valid()) {
 		NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
@@ -561,7 +561,7 @@ void NavigationRegion2D::_navpoly_changed() {
 void NavigationRegion2D::_map_changed(RID p_map) {
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && get_world_2d()->get_navigation_map() == p_map) {
-		update();
+		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
 }

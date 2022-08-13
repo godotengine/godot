@@ -303,7 +303,7 @@ void ColorPicker::set_edit_alpha(bool p_show) {
 	}
 
 	_update_color();
-	sample->update();
+	sample->queue_redraw();
 }
 
 bool ColorPicker::is_editing_alpha() const {
@@ -458,15 +458,15 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 
 	_update_text_value();
 
-	sample->update();
-	uv_edit->update();
-	w_edit->update();
+	sample->queue_redraw();
+	uv_edit->queue_redraw();
+	w_edit->queue_redraw();
 	for (int i = 0; i < current_slider_count; i++) {
-		sliders[i]->update();
+		sliders[i]->queue_redraw();
 	}
-	alpha_slider->update();
-	wheel->update();
-	wheel_uv->update();
+	alpha_slider->queue_redraw();
+	wheel->queue_redraw();
+	wheel_uv->queue_redraw();
 	updating = false;
 }
 
@@ -1359,7 +1359,7 @@ void ColorPickerButton::_about_to_popup() {
 
 void ColorPickerButton::_color_changed(const Color &p_color) {
 	color = p_color;
-	update();
+	queue_redraw();
 	emit_signal(SNAME("color_changed"), color);
 }
 
@@ -1439,7 +1439,7 @@ void ColorPickerButton::set_pick_color(const Color &p_color) {
 		picker->set_pick_color(p_color);
 	}
 
-	update();
+	queue_redraw();
 }
 
 Color ColorPickerButton::get_pick_color() const {

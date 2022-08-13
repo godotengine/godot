@@ -775,14 +775,14 @@ void EditorResourcePicker::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (editable && _is_drop_valid(get_viewport()->gui_get_drag_data())) {
 				dropping = true;
-				assign_button->update();
+				assign_button->queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
-				assign_button->update();
+				assign_button->queue_redraw();
 			}
 		} break;
 	}
@@ -1049,7 +1049,7 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 					Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 					if (preview.is_valid()) {
 						if (preview->get_version() != last_preview_version) {
-							stream_preview_rect->update();
+							stream_preview_rect->queue_redraw();
 							last_preview_version = preview->get_version();
 						}
 					}
@@ -1083,10 +1083,10 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 						}
 					}
 
-					stream_preview_rect->update();
+					stream_preview_rect->queue_redraw();
 				} else {
 					if (tagged_frame_offset_count != 0) {
-						stream_preview_rect->update();
+						stream_preview_rect->queue_redraw();
 					}
 					tagged_frame_offset_count = 0;
 				}
@@ -1107,7 +1107,7 @@ void EditorAudioStreamPicker::_update_resource() {
 		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 1.5));
 	}
 
-	stream_preview_rect->update();
+	stream_preview_rect->queue_redraw();
 }
 
 void EditorAudioStreamPicker::_preview_draw() {

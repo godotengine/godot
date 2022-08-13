@@ -128,7 +128,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 					//travel
 					playback->travel(node_rects[i].node_name);
 				}
-				state_machine_draw->update();
+				state_machine_draw->queue_redraw();
 				return;
 			}
 
@@ -168,7 +168,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 				Ref<AnimationNode> anode = state_machine->get_node(selected_node);
 				EditorNode::get_singleton()->push_item(anode.ptr(), "", true);
-				state_machine_draw->update();
+				state_machine_draw->queue_redraw();
 				dragging_selected_attempt = true;
 				dragging_selected = false;
 				drag_from = mb->get_position();
@@ -228,7 +228,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 		}
 
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 		_update_mode();
 	}
 
@@ -259,7 +259,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		dragging_selected_attempt = false;
 		dragging_selected = false;
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 	}
 
 	// Connect nodes
@@ -296,7 +296,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			_open_menu(mb->get_position());
 		}
 		connecting_to_node = StringName();
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 	}
 
 	// Start box selecting
@@ -319,7 +319,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	// End box selecting
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && box_selecting) {
 		box_selecting = false;
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 		_update_mode();
 	}
 
@@ -335,7 +335,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mm.is_valid() && connecting && !read_only) {
 		connecting_to = mm->get_position();
 		connecting_to_node = StringName();
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 
 		for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
 			if (node_rects[i].node_name != connecting_from && node_rects[i].node.has_point(connecting_to)) { //select node since nothing else was selected
@@ -382,7 +382,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 		}
 
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 	}
 
 	// Move mouse while moving box select
@@ -412,7 +412,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 		}
 
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 	}
 
 	if (mm.is_valid()) {
@@ -442,7 +442,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		if (new_over_node != over_node || new_over_node_what != over_node_what) {
 			over_node = new_over_node;
 			over_node_what = new_over_node_what;
-			state_machine_draw->update();
+			state_machine_draw->queue_redraw();
 		}
 
 		// set tooltip for transition
@@ -620,7 +620,7 @@ void AnimationNodeStateMachineEditor::_group_selected_nodes() {
 
 		selected_nodes.clear();
 		selected_nodes.insert(group_name);
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 		accept_event();
 		_update_mode();
 	}
@@ -721,7 +721,7 @@ void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 	if (find) {
 		selected_nodes = new_selected_nodes;
 		selected_node = StringName();
-		state_machine_draw->update();
+		state_machine_draw->queue_redraw();
 		accept_event();
 		_update_mode();
 	}
@@ -909,7 +909,7 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 
 void AnimationNodeStateMachineEditor::_stop_connecting() {
 	connecting = false;
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_delete_selected() {
@@ -1028,7 +1028,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	undo_redo->commit_action();
 	updating = false;
 
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
@@ -1056,7 +1056,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	undo_redo->commit_action();
 	updating = false;
 
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
@@ -1475,7 +1475,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	v_scroll->set_value(state_machine->get_graph_offset().y);
 	updating = false;
 
-	state_machine_play_pos->update();
+	state_machine_play_pos->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
@@ -1537,7 +1537,7 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 
 	updating = true;
 
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 
 	updating = false;
 }
@@ -1609,34 +1609,34 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				}
 
 				if (tidx == -1) { //missing transition, should redraw
-					state_machine_draw->update();
+					state_machine_draw->queue_redraw();
 					break;
 				}
 
 				if (transition_lines[i].disabled != state_machine->get_transition(tidx)->is_disabled()) {
-					state_machine_draw->update();
+					state_machine_draw->queue_redraw();
 					break;
 				}
 
 				if (transition_lines[i].auto_advance != state_machine->get_transition(tidx)->has_auto_advance()) {
-					state_machine_draw->update();
+					state_machine_draw->queue_redraw();
 					break;
 				}
 
 				if (transition_lines[i].advance_condition_name != state_machine->get_transition(tidx)->get_advance_condition_name()) {
-					state_machine_draw->update();
+					state_machine_draw->queue_redraw();
 					break;
 				}
 
 				if (transition_lines[i].mode != state_machine->get_transition(tidx)->get_switch_mode()) {
-					state_machine_draw->update();
+					state_machine_draw->queue_redraw();
 					break;
 				}
 
 				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
 
 				if (transition_lines[i].advance_condition_state != acstate) {
-					state_machine_draw->update();
+					state_machine_draw->queue_redraw();
 					break;
 				}
 			}
@@ -1671,14 +1671,14 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				}
 			}
 
-			//update if travel state changed
+			//redraw if travel state changed
 			if (!same_travel_path || last_active != is_playing || last_current_node != current_node || last_blend_from_node != blend_from_node) {
-				state_machine_draw->update();
+				state_machine_draw->queue_redraw();
 				last_travel_path = tp;
 				last_current_node = current_node;
 				last_active = is_playing;
 				last_blend_from_node = blend_from_node;
-				state_machine_play_pos->update();
+				state_machine_play_pos->queue_redraw();
 			}
 
 			{
@@ -1703,7 +1703,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			if (last_play_pos != play_pos) {
 				last_play_pos = play_pos;
-				state_machine_play_pos->update();
+				state_machine_play_pos->queue_redraw();
 			}
 		} break;
 
@@ -1749,7 +1749,7 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	name_edit_popup->hide();
 	updating = false;
 
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_name_edited_focus_out() {
@@ -1766,7 +1766,7 @@ void AnimationNodeStateMachineEditor::_scroll_changed(double) {
 	}
 
 	state_machine->set_graph_offset(Vector2(h_scroll->get_value(), v_scroll->get_value()));
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action) {
@@ -1857,7 +1857,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		selected_multi_transition = TransitionLine();
 	}
 
-	state_machine_draw->update();
+	state_machine_draw->queue_redraw();
 }
 
 void AnimationNodeStateMachineEditor::_update_mode() {

@@ -213,7 +213,7 @@ void VideoStreamPlayer::set_expand(bool p_expand) {
 	}
 
 	expand = p_expand;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -261,7 +261,7 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 		AudioServer::get_singleton()->unlock();
 	}
 
-	update();
+	queue_redraw();
 
 	if (!expand) {
 		update_minimum_size();

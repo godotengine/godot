@@ -509,7 +509,7 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
 					dropping = true;
-					edit->update();
+					edit->queue_redraw();
 				}
 			}
 		} break;
@@ -517,7 +517,7 @@ void EditorPropertyArray::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
-				edit->update();
+				edit->queue_redraw();
 			}
 		} break;
 	}

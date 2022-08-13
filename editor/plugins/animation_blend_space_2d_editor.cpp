@@ -52,7 +52,7 @@ bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node)
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_changed() {
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
@@ -161,7 +161,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		blend_space_draw->update(); //update anyway
+		blend_space_draw->queue_redraw(); //update anyway
 		//try to see if a point can be selected
 		selected_point = -1;
 		selected_triangle = -1;
@@ -201,7 +201,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_triangle->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		blend_space_draw->update(); //update anyway
+		blend_space_draw->queue_redraw(); //update anyway
 		//try to see if a point can be selected
 		selected_point = -1;
 
@@ -260,7 +260,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 		dragging_selected_attempt = false;
 		dragging_selected = false;
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_blend->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
@@ -271,14 +271,14 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(), blend_pos);
 
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && !blend_space_draw->has_focus()) {
 		blend_space_draw->grab_focus();
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	if (mm.is_valid() && dragging_selected_attempt) {
@@ -286,17 +286,17 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		if (!read_only) {
 			drag_ofs = ((mm->get_position() - drag_from) / blend_space_draw->get_size()) * (blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, -1);
 		}
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 		_update_edited_point_pos();
 	}
 
 	if (mm.is_valid() && tool_triangle->is_pressed() && making_triangle.size()) {
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	if (mm.is_valid() && !tool_triangle->is_pressed() && making_triangle.size()) {
 		making_triangle.clear();
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	if (mm.is_valid() && tool_blend->is_pressed() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -307,7 +307,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(), blend_pos);
 
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 }
 
@@ -359,7 +359,7 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::_add_animation_type(int p_index) {
@@ -377,7 +377,7 @@ void AnimationNodeBlendSpace2DEditor::_add_animation_type(int p_index) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
@@ -424,7 +424,7 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 		tool_erase_sep->hide();
 	}
 	_update_tool_erase();
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
@@ -614,7 +614,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_snap_toggled() {
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_space() {
@@ -647,7 +647,7 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 	snap_x->set_value(blend_space->get_snap().x);
 	snap_y->set_value(blend_space->get_snap().y);
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 
 	updating = false;
 }
@@ -674,7 +674,7 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::_labels_changed(String) {
@@ -716,7 +716,7 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 		undo_redo->commit_action();
 		updating = false;
 
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	} else if (selected_triangle != -1) {
 		updating = true;
 		undo_redo->create_action(TTR("Remove BlendSpace2D Triangle"));
@@ -728,7 +728,7 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 		undo_redo->commit_action();
 		updating = false;
 
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 }
 
@@ -767,7 +767,7 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {

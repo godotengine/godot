@@ -312,7 +312,7 @@ void ScrollContainer::_reposition_children() {
 		fit_child_in_rect(c, r);
 	}
 
-	update();
+	queue_redraw();
 }
 
 void ScrollContainer::_notification(int p_what) {

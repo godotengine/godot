@@ -61,7 +61,7 @@ void MeshInstance2D::_bind_methods() {
 
 void MeshInstance2D::set_mesh(const Ref<Mesh> &p_mesh) {
 	mesh = p_mesh;
-	update();
+	queue_redraw();
 }
 
 Ref<Mesh> MeshInstance2D::get_mesh() const {
@@ -73,13 +73,13 @@ void MeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 	}
 	texture = p_texture;
-	update();
+	queue_redraw();
 	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
 void MeshInstance2D::set_normal_map(const Ref<Texture2D> &p_texture) {
 	normal_map = p_texture;
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> MeshInstance2D::get_normal_map() const {

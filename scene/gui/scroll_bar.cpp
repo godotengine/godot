@@ -82,14 +82,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (ofs < decr_size) {
 				decr_active = true;
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
-				update();
+				queue_redraw();
 				return;
 			}
 
 			if (ofs > total - incr_size) {
 				incr_active = true;
 				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
-				update();
+				queue_redraw();
 				return;
 			}
 
@@ -117,7 +117,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				drag.active = true;
 				drag.pos_at_click = grabber_ofs + ofs;
 				drag.value_at_click = get_as_ratio();
-				update();
+				queue_redraw();
 			} else {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll + get_page(), get_min(), get_max() - get_page());
@@ -137,7 +137,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			incr_active = false;
 			decr_active = false;
 			drag.active = false;
-			update();
+			queue_redraw();
 		}
 	}
 
@@ -177,7 +177,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (new_hilite != highlight) {
 				highlight = new_hilite;
-				update();
+				queue_redraw();
 			}
 		}
 	}
@@ -408,7 +408,7 @@ void ScrollBar::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			highlight = HIGHLIGHT_NONE;
-			update();
+			queue_redraw();
 		} break;
 	}
 }

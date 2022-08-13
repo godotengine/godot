@@ -713,7 +713,7 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 		_size_changed();
 	}
 
-	update();
+	queue_redraw();
 }
 
 real_t Control::get_anchor(Side p_side) const {
@@ -1459,7 +1459,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	if (data.scale.y == 0) {
 		data.scale.y = CMP_EPSILON;
 	}
-	update();
+	queue_redraw();
 	_notify_transform();
 }
 
@@ -1473,7 +1473,7 @@ void Control::set_rotation(real_t p_radians) {
 	}
 
 	data.rotation = p_radians;
-	update();
+	queue_redraw();
 	_notify_transform();
 }
 
@@ -1487,7 +1487,7 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 	}
 
 	data.pivot_offset = p_pivot;
-	update();
+	queue_redraw();
 	_notify_transform();
 }
 
@@ -2240,7 +2240,7 @@ void Control::set_disable_visibility_clip(bool p_ignore) {
 		return;
 	}
 	data.disable_visibility_clip = p_ignore;
-	update();
+	queue_redraw();
 }
 
 bool Control::is_visibility_clip_disabled() const {
@@ -2252,7 +2252,7 @@ void Control::set_clip_contents(bool p_clip) {
 		return;
 	}
 	data.clip_contents = p_clip;
-	update();
+	queue_redraw();
 }
 
 bool Control::is_clipping_contents() {
@@ -3196,9 +3196,9 @@ void Control::_notification(int p_notification) {
 			// some parents need to know the order of the children to draw (like TabContainer)
 			// update if necessary
 			if (data.parent) {
-				data.parent->update();
+				data.parent->queue_redraw();
 			}
-			update();
+			queue_redraw();
 
 			if (data.RI) {
 				get_viewport()->_gui_set_root_order_dirty();
@@ -3225,19 +3225,19 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_FOCUS_ENTER: {
 			emit_signal(SceneStringNames::get_singleton()->focus_entered);
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
 			emit_signal(SceneStringNames::get_singleton()->focus_exited);
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->theme_changed);
 			_invalidate_theme_cache();
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

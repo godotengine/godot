@@ -78,7 +78,7 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	set_slot(idx, si.enable_left, si.type_left, si.color_left, si.enable_right, si.type_right, si.color_right, si.custom_slot_left, si.custom_slot_right, si.draw_stylebox);
-	update();
+	queue_redraw();
 	return true;
 }
 
@@ -288,7 +288,7 @@ void GraphNode::_resort() {
 		idx++;
 	}
 
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 }
 
@@ -416,7 +416,7 @@ void GraphNode::_notification(int p_what) {
 			_shape();
 
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 	}
 }
@@ -475,7 +475,7 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 	s.custom_slot_right = p_custom_right;
 	s.draw_stylebox = p_draw_stylebox;
 	slot_info[p_idx] = s;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -483,13 +483,13 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 
 void GraphNode::clear_slot(int p_idx) {
 	slot_info.erase(p_idx);
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 }
 
 void GraphNode::clear_all_slots() {
 	slot_info.clear();
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 }
 
@@ -508,7 +508,7 @@ void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable_left) {
 	}
 
 	slot_info[p_idx].enable_left = p_enable_left;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -522,7 +522,7 @@ void GraphNode::set_slot_type_left(int p_idx, int p_type_left) {
 	}
 
 	slot_info[p_idx].type_left = p_type_left;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -543,7 +543,7 @@ void GraphNode::set_slot_color_left(int p_idx, const Color &p_color_left) {
 	}
 
 	slot_info[p_idx].color_left = p_color_left;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -571,7 +571,7 @@ void GraphNode::set_slot_enabled_right(int p_idx, bool p_enable_right) {
 	}
 
 	slot_info[p_idx].enable_right = p_enable_right;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -585,7 +585,7 @@ void GraphNode::set_slot_type_right(int p_idx, int p_type_right) {
 	}
 
 	slot_info[p_idx].type_right = p_type_right;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -606,7 +606,7 @@ void GraphNode::set_slot_color_right(int p_idx, const Color &p_color_right) {
 	}
 
 	slot_info[p_idx].color_right = p_color_right;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -630,7 +630,7 @@ void GraphNode::set_slot_draw_stylebox(int p_idx, bool p_enable) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set draw_stylebox for the slot with p_idx (%d) lesser than zero.", p_idx));
 
 	slot_info[p_idx].draw_stylebox = p_enable;
-	update();
+	queue_redraw();
 	connpos_dirty = true;
 
 	emit_signal(SNAME("slot_updated"), p_idx);
@@ -688,7 +688,7 @@ void GraphNode::set_title(const String &p_title) {
 	title = p_title;
 	_shape();
 
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -701,7 +701,7 @@ void GraphNode::set_text_direction(Control::TextDirection p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -713,7 +713,7 @@ void GraphNode::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -728,7 +728,7 @@ void GraphNode::set_position_offset(const Vector2 &p_offset) {
 
 	position_offset = p_offset;
 	emit_signal(SNAME("position_offset_changed"));
-	update();
+	queue_redraw();
 }
 
 Vector2 GraphNode::get_position_offset() const {
@@ -741,7 +741,7 @@ void GraphNode::set_selected(bool p_selected) {
 	}
 
 	selected = p_selected;
-	update();
+	queue_redraw();
 }
 
 bool GraphNode::is_selected() {
@@ -766,7 +766,7 @@ void GraphNode::set_show_close_button(bool p_enable) {
 	}
 
 	show_close = p_enable;
-	update();
+	queue_redraw();
 }
 
 bool GraphNode::is_close_button_visible() const {
@@ -970,7 +970,7 @@ void GraphNode::set_overlay(Overlay p_overlay) {
 	}
 
 	overlay = p_overlay;
-	update();
+	queue_redraw();
 }
 
 GraphNode::Overlay GraphNode::get_overlay() const {
@@ -983,7 +983,7 @@ void GraphNode::set_comment(bool p_enable) {
 	}
 
 	comment = p_enable;
-	update();
+	queue_redraw();
 }
 
 bool GraphNode::is_comment() const {
@@ -996,7 +996,7 @@ void GraphNode::set_resizable(bool p_enable) {
 	}
 
 	resizable = p_enable;
-	update();
+	queue_redraw();
 }
 
 bool GraphNode::is_resizable() const {

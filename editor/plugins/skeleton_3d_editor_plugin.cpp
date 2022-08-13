@@ -182,27 +182,27 @@ void BoneTransformEditor::_update_properties() {
 				if (split[2] == "enabled") {
 					enabled_checkbox->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					enabled_checkbox->update_property();
-					enabled_checkbox->update();
+					enabled_checkbox->queue_redraw();
 				}
 				if (split[2] == "position") {
 					position_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					position_property->update_property();
-					position_property->update();
+					position_property->queue_redraw();
 				}
 				if (split[2] == "rotation") {
 					rotation_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					rotation_property->update_property();
-					rotation_property->update();
+					rotation_property->queue_redraw();
 				}
 				if (split[2] == "scale") {
 					scale_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					scale_property->update_property();
-					scale_property->update();
+					scale_property->queue_redraw();
 				}
 				if (split[2] == "rest") {
 					rest_matrix->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					rest_matrix->update_property();
-					rest_matrix->update();
+					rest_matrix->queue_redraw();
 				}
 			}
 		}

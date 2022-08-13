@@ -54,7 +54,7 @@ void LinkButton::set_text(const String &p_text) {
 	xl_text = atr(text);
 	_shape();
 	update_minimum_size();
-	update();
+	queue_redraw();
 }
 
 String LinkButton::get_text() const {
@@ -65,7 +65,7 @@ void LinkButton::set_structured_text_bidi_override(TextServer::StructuredTextPar
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -76,7 +76,7 @@ TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override()
 void LinkButton::set_structured_text_bidi_override_options(Array p_args) {
 	st_args = p_args;
 	_shape();
-	update();
+	queue_redraw();
 }
 
 Array LinkButton::get_structured_text_bidi_override_options() const {
@@ -88,7 +88,7 @@ void LinkButton::set_text_direction(Control::TextDirection p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -100,7 +100,7 @@ void LinkButton::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -114,7 +114,7 @@ void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 	}
 
 	underline_mode = p_underline_mode;
-	update();
+	queue_redraw();
 }
 
 LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
@@ -131,17 +131,17 @@ void LinkButton::_notification(int p_what) {
 			xl_text = atr(text);
 			_shape();
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {

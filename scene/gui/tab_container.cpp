@@ -98,7 +98,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 		if (pos.y > _get_top_margin()) {
 			if (menu_hovered) {
 				menu_hovered = false;
-				update();
+				queue_redraw();
 			}
 			return;
 		}
@@ -109,23 +109,23 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 				if (pos.x <= menu->get_width()) {
 					if (!menu_hovered) {
 						menu_hovered = true;
-						update();
+						queue_redraw();
 						return;
 					}
 				} else if (menu_hovered) {
 					menu_hovered = false;
-					update();
+					queue_redraw();
 				}
 			} else {
 				if (pos.x >= size.width - menu->get_width()) {
 					if (!menu_hovered) {
 						menu_hovered = true;
-						update();
+						queue_redraw();
 						return;
 					}
 				} else if (menu_hovered) {
 					menu_hovered = false;
-					update();
+					queue_redraw();
 				}
 			}
 
@@ -218,7 +218,7 @@ void TabContainer::_on_theme_changed() {
 	} else {
 		update_minimum_size();
 	}
-	update();
+	queue_redraw();
 
 	theme_changing = false;
 }
@@ -304,7 +304,7 @@ void TabContainer::_update_margins() {
 void TabContainer::_on_mouse_exited() {
 	if (menu_hovered) {
 		menu_hovered = false;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -502,7 +502,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	_update_margins();
 	if (get_tab_count() == 1) {
-		update();
+		queue_redraw();
 	}
 
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
@@ -558,7 +558,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	_update_margins();
 	if (get_tab_count() == 0) {
-		update();
+		queue_redraw();
 	}
 
 	p_child->remove_meta("_tab_name");
@@ -656,7 +656,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 		}
 	}
 
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -838,7 +838,7 @@ void TabContainer::set_popup(Node *p_popup) {
 	popup_obj_id = popup_id;
 
 	if (had_popup != bool(popup)) {
-		update();
+		queue_redraw();
 		_update_margins();
 		if (!get_clip_tabs()) {
 			update_minimum_size();

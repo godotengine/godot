@@ -35,7 +35,7 @@ void ColorRect::set_color(const Color &p_color) {
 		return;
 	}
 	color = p_color;
-	update();
+	queue_redraw();
 }
 
 Color ColorRect::get_color() const {

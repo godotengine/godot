@@ -131,7 +131,7 @@ void Path2D::_curve_changed() {
 		return;
 	}
 
-	update();
+	queue_redraw();
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {

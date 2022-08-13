@@ -240,12 +240,12 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 void GenericTilePolygonEditor::_center_view() {
 	panning = Vector2();
-	base_control->update();
+	base_control->queue_redraw();
 	button_center_view->set_disabled(true);
 }
 
 void GenericTilePolygonEditor::_zoom_changed() {
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
@@ -266,26 +266,26 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 				polygon.write[i] = polygon[i] * tile_set->get_tile_size();
 			}
 			undo_redo->add_do_method(this, "add_polygon", polygon);
-			undo_redo->add_do_method(base_control, "update");
+			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
 			undo_redo->add_undo_method(this, "clear_polygons");
 			for (unsigned int i = 0; i < polygons.size(); i++) {
 				undo_redo->add_undo_method(this, "add_polygon", polygons[i]);
 			}
-			undo_redo->add_undo_method(base_control, "update");
+			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
 			undo_redo->commit_action(true);
 		} break;
 		case CLEAR_TILE: {
 			undo_redo->create_action(TTR("Clear Polygons"));
 			undo_redo->add_do_method(this, "clear_polygons");
-			undo_redo->add_do_method(base_control, "update");
+			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
 			undo_redo->add_undo_method(this, "clear_polygons");
 			for (unsigned int i = 0; i < polygons.size(); i++) {
 				undo_redo->add_undo_method(this, "add_polygon", polygons[i]);
 			}
-			undo_redo->add_undo_method(base_control, "update");
+			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
 			undo_redo->commit_action(true);
 		} break;
@@ -318,12 +318,12 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 				}
 				undo_redo->add_do_method(this, "set_polygon", i, new_polygon);
 			}
-			undo_redo->add_do_method(base_control, "update");
+			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
 			for (unsigned int i = 0; i < polygons.size(); i++) {
 				undo_redo->add_undo_method(this, "set_polygon", polygons[i]);
 			}
-			undo_redo->add_undo_method(base_control, "update");
+			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
 			undo_redo->commit_action(true);
 		} break;
@@ -491,9 +491,9 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 							undo_redo->add_do_method(this, "clear_polygons");
 						}
 						undo_redo->add_do_method(this, "add_polygon", in_creation_polygon);
-						undo_redo->add_do_method(base_control, "update");
+						undo_redo->add_do_method(base_control, "queue_redraw");
 						undo_redo->add_undo_method(this, "remove_polygon", added);
-						undo_redo->add_undo_method(base_control, "update");
+						undo_redo->add_undo_method(base_control, "queue_redraw");
 						undo_redo->commit_action(false);
 						emit_signal(SNAME("polygons_changed"));
 					} else {
@@ -539,8 +539,8 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 							undo_redo->add_do_method(this, "set_polygon", closest_polygon, polygons[closest_polygon]);
 							undo_redo->add_undo_method(this, "set_polygon", closest_polygon, old_polygon);
 						}
-						undo_redo->add_do_method(base_control, "update");
-						undo_redo->add_undo_method(base_control, "update");
+						undo_redo->add_do_method(base_control, "queue_redraw");
+						undo_redo->add_undo_method(base_control, "queue_redraw");
 						undo_redo->commit_action(false);
 						emit_signal(SNAME("polygons_changed"));
 					}
@@ -549,9 +549,9 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 				if (drag_type == DRAG_TYPE_DRAG_POINT) {
 					undo_redo->create_action(TTR("Edit Polygons"));
 					undo_redo->add_do_method(this, "set_polygon", drag_polygon_index, polygons[drag_polygon_index]);
-					undo_redo->add_do_method(base_control, "update");
+					undo_redo->add_do_method(base_control, "queue_redraw");
 					undo_redo->add_undo_method(this, "set_polygon", drag_polygon_index, drag_old_polygon);
-					undo_redo->add_undo_method(base_control, "update");
+					undo_redo->add_undo_method(base_control, "queue_redraw");
 					undo_redo->commit_action(false);
 					emit_signal(SNAME("polygons_changed"));
 				} else if (drag_type == DRAG_TYPE_CREATE_POINT) {
@@ -586,8 +586,8 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 							undo_redo->add_do_method(this, "set_polygon", closest_polygon, polygons[closest_polygon]);
 							undo_redo->add_undo_method(this, "set_polygon", closest_polygon, old_polygon);
 						}
-						undo_redo->add_do_method(base_control, "update");
-						undo_redo->add_undo_method(base_control, "update");
+						undo_redo->add_do_method(base_control, "queue_redraw");
+						undo_redo->add_undo_method(base_control, "queue_redraw");
 						undo_redo->commit_action(false);
 						emit_signal(SNAME("polygons_changed"));
 					} else {
@@ -611,7 +611,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 		}
 	}
 
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 void GenericTilePolygonEditor::set_use_undo_redo(bool p_use_undo_redo) {
@@ -659,7 +659,7 @@ void GenericTilePolygonEditor::set_background(Ref<Texture2D> p_texture, Rect2 p_
 	background_v_flip = p_flip_v;
 	background_transpose = p_transpose;
 	background_modulate = p_modulate;
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 int GenericTilePolygonEditor::get_polygon_count() {
@@ -672,13 +672,13 @@ int GenericTilePolygonEditor::add_polygon(Vector<Point2> p_polygon, int p_index)
 
 	if (p_index < 0) {
 		polygons.push_back(p_polygon);
-		base_control->update();
+		base_control->queue_redraw();
 		button_edit->set_pressed(true);
 		return polygons.size() - 1;
 	} else {
 		polygons.insert(p_index, p_polygon);
 		button_edit->set_pressed(true);
-		base_control->update();
+		base_control->queue_redraw();
 		return p_index;
 	}
 }
@@ -690,12 +690,12 @@ void GenericTilePolygonEditor::remove_polygon(int p_index) {
 	if (polygons.size() == 0) {
 		button_create->set_pressed(true);
 	}
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 void GenericTilePolygonEditor::clear_polygons() {
 	polygons.clear();
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 void GenericTilePolygonEditor::set_polygon(int p_polygon_index, Vector<Point2> p_polygon) {
@@ -703,7 +703,7 @@ void GenericTilePolygonEditor::set_polygon(int p_polygon_index, Vector<Point2> p
 	ERR_FAIL_COND(p_polygon.size() < 3);
 	polygons[p_polygon_index] = p_polygon;
 	button_edit->set_pressed(true);
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 Vector<Point2> GenericTilePolygonEditor::get_polygon(int p_polygon_index) {
@@ -713,7 +713,7 @@ Vector<Point2> GenericTilePolygonEditor::get_polygon(int p_polygon_index) {
 
 void GenericTilePolygonEditor::set_polygons_color(Color p_color) {
 	polygon_color = p_color;
-	base_control->update();
+	base_control->queue_redraw();
 }
 
 void GenericTilePolygonEditor::set_multiple_polygon_mode(bool p_multiple_polygon_mode) {

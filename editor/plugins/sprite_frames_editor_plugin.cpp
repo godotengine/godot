@@ -182,7 +182,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 
 		if (last_frame_selected != idx || idx != -1) {
 			last_frame_selected = idx;
-			split_sheet_preview->update();
+			split_sheet_preview->queue_redraw();
 		}
 	}
 
@@ -208,7 +208,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 			}
 
 			last_frame_selected = idx;
-			split_sheet_preview->update();
+			split_sheet_preview->queue_redraw();
 		}
 	}
 }
@@ -307,7 +307,7 @@ void SpriteFramesEditor::_sheet_select_clear_all_frames() {
 		frames_selected.clear();
 	}
 
-	split_sheet_preview->update();
+	split_sheet_preview->queue_redraw();
 }
 
 void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_param) {
@@ -363,7 +363,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_para
 
 	frames_selected.clear();
 	last_frame_selected = -1;
-	split_sheet_preview->update();
+	split_sheet_preview->queue_redraw();
 }
 
 void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {

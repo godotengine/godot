@@ -118,7 +118,7 @@ void ProgressBar::_notification(int p_what) {
 void ProgressBar::set_fill_mode(int p_fill) {
 	ERR_FAIL_INDEX(p_fill, FILL_MODE_MAX);
 	mode = (FillMode)p_fill;
-	update();
+	queue_redraw();
 }
 
 int ProgressBar::get_fill_mode() {
@@ -131,7 +131,7 @@ void ProgressBar::set_percent_visible(bool p_visible) {
 	}
 	percent_visible = p_visible;
 	update_minimum_size();
-	update();
+	queue_redraw();
 }
 
 bool ProgressBar::is_percent_visible() const {

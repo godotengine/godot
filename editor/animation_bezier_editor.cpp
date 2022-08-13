@@ -648,7 +648,7 @@ void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_a
 	animation = p_animation;
 	read_only = p_read_only;
 	selected_track = p_track;
-	update();
+	queue_redraw();
 }
 
 Size2 AnimationBezierTrackEdit::get_minimum_size() const {
@@ -691,11 +691,11 @@ void AnimationBezierTrackEdit::_play_position_draw() {
 
 void AnimationBezierTrackEdit::set_play_position(real_t p_pos) {
 	play_position_pos = p_pos;
-	play_position->update();
+	play_position->queue_redraw();
 }
 
 void AnimationBezierTrackEdit::update_play_position() {
-	play_position->update();
+	play_position->queue_redraw();
 }
 
 void AnimationBezierTrackEdit::set_root(Node *p_root) {
@@ -734,12 +734,12 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 			}
 		}
 	}
-	update();
+	queue_redraw();
 }
 
 void AnimationBezierTrackEdit::_zoom_changed() {
-	update();
-	play_position->update();
+	queue_redraw();
+	play_position->queue_redraw();
 }
 
 void AnimationBezierTrackEdit::_update_locked_tracks_after(int p_track) {
@@ -787,7 +787,7 @@ String AnimationBezierTrackEdit::get_tooltip(const Point2 &p_pos) const {
 void AnimationBezierTrackEdit::_clear_selection() {
 	selection.clear();
 	emit_signal(SNAME("clear_selection"));
-	update();
+	queue_redraw();
 }
 
 void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto) {
@@ -819,7 +819,7 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 
 	selection.insert(IntPair(p_track, idx));
 	emit_signal(SNAME("select_key"), idx, true, p_track);
-	update();
+	queue_redraw();
 }
 
 void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
@@ -909,7 +909,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			v_scroll = (maximum_value + minimum_value) / 2.0;
 			v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
 
-			update();
+			queue_redraw();
 			accept_event();
 			return;
 		} else if (ED_GET_SHORTCUT("animation_bezier_editor/select_all_keys")->matches_event(p_event)) {
@@ -917,13 +917,13 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.insert(IntPair(edit_points[i].track, edit_points[i].key));
 			}
 
-			update();
+			queue_redraw();
 			accept_event();
 			return;
 		} else if (ED_GET_SHORTCUT("animation_bezier_editor/deselect_all_keys")->matches_event(p_event)) {
 			selection.clear();
 
-			update();
+			queue_redraw();
 			accept_event();
 			return;
 		}
@@ -1024,7 +1024,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 								}
 							}
 						}
-						update();
+						queue_redraw();
 						return;
 					} else if (I.key == VISIBILITY_ICON) {
 						if (hidden_tracks.has(track)) {
@@ -1054,7 +1054,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 							solo_track = -1;
 						}
 
-						update();
+						queue_redraw();
 						return;
 					} else if (I.key == SOLO_ICON) {
 						if (solo_track == track) {
@@ -1076,7 +1076,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 							set_animation_and_track(animation, track, read_only);
 							solo_track = track;
 						}
-						update();
+						queue_redraw();
 						return;
 					}
 					return;
@@ -1098,7 +1098,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 						} else {
 							selection.insert(pair);
 						}
-						update();
+						queue_redraw();
 						select_single_attempt = IntPair(-1, -1);
 					} else if (selection.has(pair)) {
 						moving_selection_attempt = true;
@@ -1110,7 +1110,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 						moving_handle_right = animation->bezier_track_get_key_out_handle(pair.first, pair.second);
 						moving_selection_offset = Vector2();
 						select_single_attempt = pair;
-						update();
+						queue_redraw();
 					} else {
 						moving_selection_attempt = true;
 						moving_selection = true;
@@ -1135,7 +1135,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					moving_handle_track = edit_points[i].track;
 					moving_handle_left = animation->bezier_track_get_key_in_handle(edit_points[i].track, edit_points[i].key);
 					moving_handle_right = animation->bezier_track_get_key_out_handle(edit_points[i].track, edit_points[i].key);
-					update();
+					queue_redraw();
 					return;
 				}
 
@@ -1145,7 +1145,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					moving_handle_track = edit_points[i].track;
 					moving_handle_left = animation->bezier_track_get_key_in_handle(edit_points[i].track, edit_points[i].key);
 					moving_handle_right = animation->bezier_track_get_key_out_handle(edit_points[i].track, edit_points[i].key);
-					update();
+					queue_redraw();
 					return;
 				}
 			}
@@ -1186,7 +1186,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			moving_selection_from_track = selected_track;
 			moving_selection_offset = Vector2();
 			select_single_attempt = IntPair(-1, -1);
-			update();
+			queue_redraw();
 
 			return;
 		}
@@ -1258,7 +1258,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		box_selecting_attempt = false;
 		box_selecting = false;
-		update();
+		queue_redraw();
 	}
 
 	if (moving_selection_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
@@ -1376,7 +1376,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			moving_selection_attempt = false;
-			update();
+			queue_redraw();
 		}
 	}
 
@@ -1397,7 +1397,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		additional_moving_handle_lefts.clear();
 		additional_moving_handle_rights.clear();
 
-		update();
+		queue_redraw();
 	}
 
 	if (box_selecting_attempt && mm.is_valid()) {
@@ -1412,7 +1412,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			//avoid cursor from going too above, so it does not lose focus with viewport
 			warp_mouse(Vector2(get_local_mouse_position().x, 0));
 		}
-		update();
+		queue_redraw();
 	}
 
 	if ((moving_handle == 1 || moving_handle == -1) && mm.is_valid()) {
@@ -1461,7 +1461,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				moving_handle_left = -moving_handle_right;
 			}
 		}
-		update();
+		queue_redraw();
 	}
 
 	if ((moving_handle == -1 || moving_handle == 1) && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
@@ -1478,7 +1478,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			undo_redo->commit_action();
 			moving_handle = 0;
-			update();
+			queue_redraw();
 		}
 	}
 }
@@ -1491,7 +1491,7 @@ void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec) {
 	v_scroll += p_scroll_vec.y * v_zoom;
 	v_scroll = CLAMP(v_scroll, -100000, 100000);
 	timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
-	update();
+	queue_redraw();
 }
 
 void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
@@ -1511,7 +1511,7 @@ void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_or
 		}
 	}
 	v_scroll = v_scroll + (p_origin.y - get_size().y / 2.0) * (v_zoom - v_zoom_orig);
-	update();
+	queue_redraw();
 }
 
 void AnimationBezierTrackEdit::_menu_selected(int p_index) {
@@ -1541,7 +1541,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 				undo_redo->commit_action();
-				update();
+				queue_redraw();
 			}
 		} break;
 		case MENU_KEY_DUPLICATE: {
@@ -1624,7 +1624,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		selection.insert(IntPair(track, existing_idx));
 	}
 
-	update();
+	queue_redraw();
 }
 
 void AnimationBezierTrackEdit::delete_selection() {

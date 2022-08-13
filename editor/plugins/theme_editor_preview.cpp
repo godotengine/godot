@@ -56,7 +56,7 @@ void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 	p_at->notification(NOTIFICATION_THEME_CHANGED);
 	p_at->update_minimum_size();
-	p_at->update();
+	p_at->queue_redraw();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Control *a = Object::cast_to<Control>(p_at->get_child(i));
 		if (a) {
@@ -174,7 +174,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 	if (mm.is_valid()) {
 		Vector2 mp = preview_content->get_local_mouse_position();
 		hovered_control = _find_hovered_control(preview_content, mp);
-		picker_overlay->update();
+		picker_overlay->queue_redraw();
 	}
 
 	// Forward input to the scroll container underneath to allow scrolling.
@@ -183,7 +183,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 
 void ThemeEditorPreview::_reset_picker_overlay() {
 	hovered_control = nullptr;
-	picker_overlay->update();
+	picker_overlay->queue_redraw();
 }
 
 void ThemeEditorPreview::_notification(int p_what) {

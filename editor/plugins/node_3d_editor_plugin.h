@@ -433,7 +433,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_surface() { surface->update(); }
+	void update_surface() { surface->queue_redraw(); }
 	void update_transform_gizmo_view();
 
 	void set_can_preview(Camera3D *p_preview);

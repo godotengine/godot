@@ -63,7 +63,7 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 
 	_shape(items.size() - 1);
 
-	update();
+	queue_redraw();
 	shape_changed = true;
 	notify_property_list_changed();
 	return item_id;
@@ -76,7 +76,7 @@ int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	items.push_back(item);
 	int item_id = items.size() - 1;
 
-	update();
+	queue_redraw();
 	shape_changed = true;
 	notify_property_list_changed();
 	return item_id;
@@ -94,7 +94,7 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 
 	items.write[p_idx].text = p_text;
 	_shape(p_idx);
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -112,7 +112,7 @@ void ItemList::set_item_text_direction(int p_idx, Control::TextDirection p_text_
 	if (items[p_idx].text_direction != p_text_direction) {
 		items.write[p_idx].text_direction = p_text_direction;
 		_shape(p_idx);
-		update();
+		queue_redraw();
 	}
 }
 
@@ -129,7 +129,7 @@ void ItemList::set_item_language(int p_idx, const String &p_language) {
 	if (items[p_idx].language != p_language) {
 		items.write[p_idx].language = p_language;
 		_shape(p_idx);
-		update();
+		queue_redraw();
 	}
 }
 
@@ -162,7 +162,7 @@ void ItemList::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	}
 
 	items.write[p_idx].tooltip = p_tooltip;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -182,7 +182,7 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	}
 
 	items.write[p_idx].icon = p_icon;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -203,7 +203,7 @@ void ItemList::set_item_icon_transposed(int p_idx, const bool p_transposed) {
 	}
 
 	items.write[p_idx].icon_transposed = p_transposed;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -224,7 +224,7 @@ void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
 	}
 
 	items.write[p_idx].icon_region = p_region;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -245,7 +245,7 @@ void ItemList::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
 	}
 
 	items.write[p_idx].icon_modulate = p_modulate;
-	update();
+	queue_redraw();
 }
 
 Color ItemList::get_item_icon_modulate(int p_idx) const {
@@ -265,7 +265,7 @@ void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_colo
 	}
 
 	items.write[p_idx].custom_bg = p_custom_bg_color;
-	update();
+	queue_redraw();
 }
 
 Color ItemList::get_item_custom_bg_color(int p_idx) const {
@@ -285,7 +285,7 @@ void ItemList::set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_colo
 	}
 
 	items.write[p_idx].custom_fg = p_custom_fg_color;
-	update();
+	queue_redraw();
 }
 
 Color ItemList::get_item_custom_fg_color(int p_idx) const {
@@ -305,7 +305,7 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 	}
 
 	items.write[p_idx].tag_icon = p_tag_icon;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -340,7 +340,7 @@ void ItemList::set_item_disabled(int p_idx, bool p_disabled) {
 	}
 
 	items.write[p_idx].disabled = p_disabled;
-	update();
+	queue_redraw();
 }
 
 bool ItemList::is_item_disabled(int p_idx) const {
@@ -359,7 +359,7 @@ void ItemList::set_item_metadata(int p_idx, const Variant &p_metadata) {
 	}
 
 	items.write[p_idx].metadata = p_metadata;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -387,7 +387,7 @@ void ItemList::select(int p_idx, bool p_single) {
 			items.write[p_idx].selected = true;
 		}
 	}
-	update();
+	queue_redraw();
 }
 
 void ItemList::deselect(int p_idx) {
@@ -399,7 +399,7 @@ void ItemList::deselect(int p_idx) {
 	} else {
 		items.write[p_idx].selected = false;
 	}
-	update();
+	queue_redraw();
 }
 
 void ItemList::deselect_all() {
@@ -411,7 +411,7 @@ void ItemList::deselect_all() {
 		items.write[i].selected = false;
 	}
 	current = -1;
-	update();
+	queue_redraw();
 }
 
 bool ItemList::is_selected(int p_idx) const {
@@ -431,7 +431,7 @@ void ItemList::set_current(int p_current) {
 		select(p_current, true);
 	} else {
 		current = p_current;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -451,7 +451,7 @@ void ItemList::move_item(int p_from_idx, int p_to_idx) {
 	items.remove_at(p_from_idx);
 	items.insert(p_to_idx, item);
 
-	update();
+	queue_redraw();
 	shape_changed = true;
 	notify_property_list_changed();
 }
@@ -464,7 +464,7 @@ void ItemList::set_item_count(int p_count) {
 	}
 
 	items.resize(p_count);
-	update();
+	queue_redraw();
 	shape_changed = true;
 	notify_property_list_changed();
 }
@@ -480,7 +480,7 @@ void ItemList::remove_item(int p_idx) {
 	if (current == p_idx) {
 		current = -1;
 	}
-	update();
+	queue_redraw();
 	shape_changed = true;
 	defer_select_single = -1;
 	notify_property_list_changed();
@@ -490,7 +490,7 @@ void ItemList::clear() {
 	items.clear();
 	current = -1;
 	ensure_selected_visible = false;
-	update();
+	queue_redraw();
 	shape_changed = true;
 	defer_select_single = -1;
 	notify_property_list_changed();
@@ -504,7 +504,7 @@ void ItemList::set_fixed_column_width(int p_size) {
 	}
 
 	fixed_column_width = p_size;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -518,7 +518,7 @@ void ItemList::set_same_column_width(bool p_enable) {
 	}
 
 	same_column_width = p_enable;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -539,7 +539,7 @@ void ItemList::set_max_text_lines(int p_lines) {
 			}
 		}
 		shape_changed = true;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -555,7 +555,7 @@ void ItemList::set_max_columns(int p_amount) {
 	}
 
 	max_columns = p_amount;
-	update();
+	queue_redraw();
 	shape_changed = true;
 }
 
@@ -569,7 +569,7 @@ void ItemList::set_select_mode(SelectMode p_mode) {
 	}
 
 	select_mode = p_mode;
-	update();
+	queue_redraw();
 }
 
 ItemList::SelectMode ItemList::get_select_mode() const {
@@ -588,7 +588,7 @@ void ItemList::set_icon_mode(IconMode p_mode) {
 			}
 		}
 		shape_changed = true;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -602,7 +602,7 @@ void ItemList::set_fixed_icon_size(const Size2 &p_size) {
 	}
 
 	fixed_icon_size = p_size;
-	update();
+	queue_redraw();
 }
 
 Size2 ItemList::get_fixed_icon_size() const {
@@ -961,7 +961,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 void ItemList::ensure_current_is_visible() {
 	ensure_selected_visible = true;
-	update();
+	queue_redraw();
 }
 
 static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
@@ -984,7 +984,7 @@ void ItemList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_RESIZED: {
 			shape_changed = true;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -994,7 +994,7 @@ void ItemList::_notification(int p_what) {
 				_shape(i);
 			}
 			shape_changed = true;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1430,7 +1430,7 @@ void ItemList::_notification(int p_what) {
 }
 
 void ItemList::_scroll_changed(double) {
-	update();
+	queue_redraw();
 }
 
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
@@ -1505,7 +1505,7 @@ String ItemList::get_tooltip(const Point2 &p_pos) const {
 
 void ItemList::sort_items_by_text() {
 	items.sort();
-	update();
+	queue_redraw();
 	shape_changed = true;
 
 	if (select_mode == SELECT_SINGLE) {
@@ -1593,7 +1593,7 @@ void ItemList::set_auto_height(bool p_enable) {
 
 	auto_height = p_enable;
 	shape_changed = true;
-	update();
+	queue_redraw();
 }
 
 bool ItemList::has_auto_height() const {
@@ -1607,7 +1607,7 @@ void ItemList::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior)
 			items.write[i].text_buf->set_text_overrun_behavior(p_behavior);
 		}
 		shape_changed = true;
-		update();
+		queue_redraw();
 	}
 }
 

@@ -154,8 +154,8 @@ public:
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	};
 
-	// Update everything.
-	void update();
+	// Redraw everything.
+	void queue_redraw();
 
 	TileAtlasView();
 };

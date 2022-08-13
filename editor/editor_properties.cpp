@@ -951,7 +951,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		bool expand_was_hovered = expand_hovered;
 		expand_hovered = expand_rect.has_point(mm->get_position());
 		if (expand_hovered != expand_was_hovered) {
-			update();
+			queue_redraw();
 		}
 
 		if (!expand_hovered) {
@@ -959,7 +959,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 				if (flag_rects[i].has_point(mm->get_position())) {
 					// Used to highlight the hovered flag in the layers grid.
 					hovered_index = i;
-					update();
+					queue_redraw();
 					return;
 				}
 			}
@@ -968,7 +968,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		// Remove highlight when no square is hovered.
 		if (hovered_index != -1) {
 			hovered_index = -1;
-			update();
+			queue_redraw();
 		}
 
 		return;
@@ -986,11 +986,11 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			emit_signal(SNAME("flag_changed"), value);
-			update();
+			queue_redraw();
 		} else if (expand_hovered) {
 			expanded = !expanded;
 			update_minimum_size();
-			update();
+			queue_redraw();
 		}
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
@@ -1131,11 +1131,11 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (expand_hovered) {
 				expand_hovered = false;
-				update();
+				queue_redraw();
 			}
 			if (hovered_index != -1) {
 				hovered_index = -1;
-				update();
+				queue_redraw();
 			}
 		} break;
 	}
@@ -1143,7 +1143,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 void EditorPropertyLayersGrid::set_flag(uint32_t p_flag) {
 	value = p_flag;
-	update();
+	queue_redraw();
 }
 
 void EditorPropertyLayersGrid::_bind_methods() {
@@ -1276,7 +1276,7 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 	} else {
 		grid->value |= (1 << p_menu);
 	}
-	grid->update();
+	grid->queue_redraw();
 	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
 	_grid_changed(grid->value);
 }
@@ -1523,13 +1523,13 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 			// Ensure the easing doesn't appear as being dragged
 			dragging = false;
-			easing_draw->update();
+			easing_draw->queue_redraw();
 		}
 
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			dragging = mb->is_pressed();
 			// Update to display the correct dragging color
-			easing_draw->update();
+			easing_draw->queue_redraw();
 		}
 	}
 
@@ -1569,7 +1569,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = CLAMP(val, -1'000'000, 1'000'000);
 
 		emit_changed(get_edited_property(), val);
-		easing_draw->update();
+		easing_draw->queue_redraw();
 	}
 }
 
@@ -1621,14 +1621,14 @@ void EditorPropertyEasing::_draw_easing() {
 }
 
 void EditorPropertyEasing::update_property() {
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_set_preset(int p_preset) {
 	static const float preset_value[EASING_MAX] = { 0.0, 1.0, 2.0, 0.5, -2.0, -0.5 };
 
 	emit_changed(get_edited_property(), preset_value[p_preset]);
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_setup_spin() {
@@ -1667,7 +1667,7 @@ void EditorPropertyEasing::_spin_focus_exited() {
 	spin->hide();
 	// Ensure the easing doesn't appear as being dragged
 	dragging = false;
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
@@ -3952,7 +3952,7 @@ void EditorPropertyResource::_update_property_bg() {
 	}
 
 	updating_theme = false;
-	update();
+	queue_redraw();
 }
 
 void EditorPropertyResource::_update_preferred_shader() {

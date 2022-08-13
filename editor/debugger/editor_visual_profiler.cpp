@@ -312,7 +312,7 @@ void EditorVisualProfiler::_update_plot() {
 	graph_texture->update(img);
 
 	graph->set_texture(graph_texture);
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
@@ -489,7 +489,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
 	hover_metric = -1;
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorVisualProfiler::_cursor_metric_changed(double) {
@@ -497,7 +497,7 @@ void EditorVisualProfiler::_cursor_metric_changed(double) {
 		return;
 	}
 
-	graph->update();
+	graph->queue_redraw();
 	_update_frame();
 }
 
@@ -613,7 +613,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		graph->update();
+		graph->queue_redraw();
 	}
 }
 
@@ -637,7 +637,7 @@ int EditorVisualProfiler::_get_cursor_index() const {
 
 void EditorVisualProfiler::disable_seeking() {
 	seeking = false;
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorVisualProfiler::_combo_changed(int) {

@@ -381,8 +381,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 							}
 							undo_redo->add_do_method(this, "_update_rect");
 							undo_redo->add_undo_method(this, "_update_rect");
-							undo_redo->add_do_method(edit_draw, "update");
-							undo_redo->add_undo_method(edit_draw, "update");
+							undo_redo->add_do_method(edit_draw, "queue_redraw");
+							undo_redo->add_undo_method(edit_draw, "queue_redraw");
 							undo_redo->commit_action();
 							break;
 						}
@@ -455,8 +455,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				}
 				undo_redo->add_do_method(this, "_update_rect");
 				undo_redo->add_undo_method(this, "_update_rect");
-				undo_redo->add_do_method(edit_draw, "update");
-				undo_redo->add_undo_method(edit_draw, "update");
+				undo_redo->add_do_method(edit_draw, "queue_redraw");
+				undo_redo->add_undo_method(edit_draw, "queue_redraw");
 				undo_redo->commit_action();
 				drag = false;
 				creating = false;
@@ -477,7 +477,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				} else {
 					apply_rect(rect_prev);
 					rect = rect_prev;
-					edit_draw->update();
+					edit_draw->queue_redraw();
 					drag_index = -1;
 				}
 			}
@@ -546,7 +546,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					rect = Rect2(drag_from, Size2());
 					rect.expand_to(new_pos);
 					apply_rect(rect);
-					edit_draw->update();
+					edit_draw->queue_redraw();
 					return;
 				}
 
@@ -601,7 +601,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					} break;
 				}
 			}
-			edit_draw->update();
+			edit_draw->queue_redraw();
 		}
 	}
 
@@ -642,7 +642,7 @@ void TextureRegionEditor::_scroll_changed(float) {
 
 	draw_ofs.x = hscroll->get_value();
 	draw_ofs.y = vscroll->get_value();
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_mode(int p_mode) {
@@ -658,37 +658,37 @@ void TextureRegionEditor::_set_snap_mode(int p_mode) {
 		_update_autoslice();
 	}
 
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_off_x(float p_val) {
 	snap_offset.x = p_val;
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_off_y(float p_val) {
 	snap_offset.y = p_val;
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_step_x(float p_val) {
 	snap_step.x = p_val;
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_step_y(float p_val) {
 	snap_step.y = p_val;
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_sep_x(float p_val) {
 	snap_separation.x = p_val;
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_set_snap_sep_y(float p_val) {
 	snap_separation.y = p_val;
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
@@ -702,7 +702,7 @@ void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	ofs = ofs / prev_zoom - ofs / draw_zoom;
 	draw_ofs = (draw_ofs + ofs).round();
 
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 void TextureRegionEditor::_zoom_in() {
@@ -933,7 +933,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
-	edit_draw->update();
+	edit_draw->queue_redraw();
 	popup_centered_ratio(0.5);
 	request_center = true;
 }
@@ -963,7 +963,7 @@ void TextureRegionEditor::_edit_region() {
 		_zoom_reset();
 		hscroll->hide();
 		vscroll->hide();
-		edit_draw->update();
+		edit_draw->queue_redraw();
 		return;
 	}
 
@@ -979,7 +979,7 @@ void TextureRegionEditor::_edit_region() {
 	}
 
 	_update_rect();
-	edit_draw->update();
+	edit_draw->queue_redraw();
 }
 
 Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
