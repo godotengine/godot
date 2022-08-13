@@ -36,7 +36,7 @@
 	<methods>
 		<method name="_get" qualifiers="virtual">
 			<return type="Variant" />
-			<argument index="0" name="property" type="StringName" />
+			<param index="0" name="property" type="StringName" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method get].
 				Returns the given property. Returns [code]null[/code] if the [code]property[/code] does not exist.
@@ -59,15 +59,15 @@
 		</method>
 		<method name="_notification" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="what" type="int" />
+			<param index="0" name="what" type="int" />
 			<description>
 				Called whenever the object receives a notification, which is identified in [code]what[/code] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method set].
 				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
@@ -82,15 +82,15 @@
 		</method>
 		<method name="add_user_signal">
 			<return type="void" />
-			<argument index="0" name="signal" type="String" />
-			<argument index="1" name="arguments" type="Array" default="[]" />
+			<param index="0" name="signal" type="String" />
+			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
 				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
 			<return type="Variant" />
-			<argument index="0" name="method" type="StringName" />
+			<param index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
@@ -108,7 +108,7 @@
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
 			<return type="Variant" />
-			<argument index="0" name="method" type="StringName" />
+			<param index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
@@ -126,8 +126,8 @@
 		</method>
 		<method name="callv">
 			<return type="Variant" />
-			<argument index="0" name="method" type="StringName" />
-			<argument index="1" name="arg_array" type="Array" />
+			<param index="0" name="method" type="StringName" />
+			<param index="1" name="arg_array" type="Array" />
 			<description>
 				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
 				[codeblocks]
@@ -150,13 +150,11 @@
 		</method>
 		<method name="connect">
 			<return type="int" enum="Error" />
-			<argument index="0" name="signal" type="StringName" />
-			<argument index="1" name="callable" type="Callable" />
-			<argument index="2" name="binds" type="Array" default="[]" />
-			<argument index="3" name="flags" type="int" default="0" />
+			<param index="0" name="signal" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
+			<param index="2" name="flags" type="int" default="0" />
 			<description>
-				Connects a [code]signal[/code] to a [code]callable[/code]. Pass optional [code]binds[/code] to the call as an [Array] of parameters. These parameters will be passed to the [Callable]'s method after any parameter used in the call to [method emit_signal]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
-				[b]Note:[/b] This method is the legacy implementation for connecting signals. The recommended modern approach is to use [method Signal.connect] and to use [method Callable.bind] to add and validate parameter binds. Both syntaxes are shown below.
+				Connects a [code]signal[/code] to a [code]callable[/code]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
 				A signal can only be connected once to a [Callable]. It will print an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the callable's target is destroyed in the game's lifecycle, the connection will be lost.
 				[b]Examples with recommended syntax:[/b]
@@ -293,8 +291,8 @@
 		</method>
 		<method name="disconnect">
 			<return type="void" />
-			<argument index="0" name="signal" type="StringName" />
-			<argument index="1" name="callable" type="Callable" />
+			<param index="0" name="signal" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
 			<description>
 				Disconnects a [code]signal[/code] from a given [code]callable[/code].
 				If you try to disconnect a connection that does not exist, the method will print an error. Use [method is_connected] to ensure that the connection exists.
@@ -302,7 +300,7 @@
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
 			<return type="int" enum="Error" />
-			<argument index="0" name="signal" type="StringName" />
+			<param index="0" name="signal" type="StringName" />
 			<description>
 				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
@@ -325,7 +323,7 @@
 		</method>
 		<method name="get" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="property" type="StringName" />
+			<param index="0" name="property" type="StringName" />
 			<description>
 				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
@@ -350,7 +348,7 @@
 		</method>
 		<method name="get_indexed" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="property" type="NodePath" />
+			<param index="0" name="property" type="NodePath" />
 			<description>
 				Gets the object's property indexed by the given [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
 				[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't support actual paths to [Node]s in the scene tree, only colon-separated sub-property paths. For the purpose of nodes, use [method Node.get_node_and_resource] instead.
@@ -365,8 +363,8 @@
 		</method>
 		<method name="get_meta" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="default" type="Variant" default="null" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata entry for the given [code]name[/code].
 				Throws error if the entry does not exist, unless [code]default[/code] is not [code]null[/code] (in which case the default value will be returned).
@@ -399,7 +397,7 @@
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="signal" type="StringName" />
+			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [code]signal[/code].
 			</description>
@@ -412,28 +410,28 @@
 		</method>
 		<method name="has_meta" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [code]name[/code].
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="method" type="StringName" />
+			<param index="0" name="method" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the object contains the given [code]method[/code].
 			</description>
 		</method>
 		<method name="has_signal" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="signal" type="StringName" />
+			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [code]signal[/code] exists.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="signal" type="StringName" />
+			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given user-defined [code]signal[/code] exists. Only signals added using [method add_user_signal] are taken into account.
 			</description>
@@ -446,7 +444,7 @@
 		</method>
 		<method name="is_class" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="class" type="String" />
+			<param index="0" name="class" type="String" />
 			<description>
 				Returns [code]true[/code] if the object inherits from the given [code]class[/code]. See also [method get_class].
 				[b]Note:[/b] [method is_class] does not take [code]class_name[/code] declarations into account. If the object has a [code]class_name[/code] defined, [method is_class] will return [code]false[/code] for that name.
@@ -454,8 +452,8 @@
 		</method>
 		<method name="is_connected" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="signal" type="StringName" />
-			<argument index="1" name="callable" type="Callable" />
+			<param index="0" name="signal" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if a connection exists for a given [code]signal[/code] and [code]callable[/code].
 			</description>
@@ -468,8 +466,8 @@
 		</method>
 		<method name="notification">
 			<return type="void" />
-			<argument index="0" name="what" type="int" />
-			<argument index="1" name="reversed" type="bool" default="false" />
+			<param index="0" name="what" type="int" />
+			<param index="1" name="reversed" type="bool" default="false" />
 			<description>
 				Send a given notification to the object, which will also trigger a call to the [method _notification] method of all classes that the object inherits from.
 				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
@@ -483,15 +481,15 @@
 		</method>
 		<method name="remove_meta">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes a given entry from the object's metadata. See also [method set_meta].
 			</description>
 		</method>
 		<method name="set">
 			<return type="void" />
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Assigns a new value to the given property. If the [code]property[/code] does not exist or the given value's type doesn't match, nothing will happen.
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
@@ -499,15 +497,15 @@
 		</method>
 		<method name="set_block_signals">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				If set to [code]true[/code], signal emission is blocked.
 			</description>
 		</method>
 		<method name="set_deferred">
 			<return type="void" />
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Assigns a new value to the given property, after the current frame's physics step. This is equivalent to calling [method set] via [method call_deferred], i.e. [code]call_deferred("set", property, value)[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
@@ -515,8 +513,8 @@
 		</method>
 		<method name="set_indexed">
 			<return type="void" />
-			<argument index="0" name="property" type="NodePath" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="property" type="NodePath" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Assigns a new value to the property identified by the [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Example:
 				[codeblocks]
@@ -537,15 +535,15 @@
 		</method>
 		<method name="set_message_translation">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Defines whether the object can translate strings (with calls to [method tr]). Enabled by default.
 			</description>
 		</method>
 		<method name="set_meta">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Adds, changes or removes a given entry in the object's metadata. Metadata are serialized and can take any [Variant] value.
 				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code].
@@ -553,7 +551,7 @@
 		</method>
 		<method name="set_script">
 			<return type="void" />
-			<argument index="0" name="script" type="Variant" />
+			<param index="0" name="script" type="Variant" />
 			<description>
 				Assigns a script to the object. Each object can have a single script assigned to it, which are used to extend its functionality.
 				If the object already had a script, the previous script instance will be freed and its variables and state will be lost. The new script's [method _init] method will be called.
@@ -568,8 +566,8 @@
 		</method>
 		<method name="tr" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="message" type="StringName" />
-			<argument index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
 				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
@@ -578,10 +576,10 @@
 		</method>
 		<method name="tr_n" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="message" type="StringName" />
-			<argument index="1" name="plural_message" type="StringName" />
-			<argument index="2" name="n" type="int" />
-			<argument index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a message involving plurals using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
 				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].

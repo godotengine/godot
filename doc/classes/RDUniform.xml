@@ -9,7 +9,7 @@
 	<methods>
 		<method name="add_id">
 			<return type="void" />
-			<argument index="0" name="id" type="RID" />
+			<param index="0" name="id" type="RID" />
 			<description>
 			</description>
 		</method>

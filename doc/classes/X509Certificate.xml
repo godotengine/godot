@@ -12,16 +12,16 @@
 	<methods>
 		<method name="load">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Loads a certificate from [code]path[/code] ("*.crt" file).
+				Loads a certificate from [param path] ("*.crt" file).
 			</description>
 		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Saves a certificate to the given [code]path[/code] (should be a "*.crt" file).
+				Saves a certificate to the given [param path] (should be a "*.crt" file).
 			</description>
 		</method>
 	</methods>

@@ -69,8 +69,6 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
-#include "core/multiplayer/multiplayer_api.h"
-#include "core/multiplayer/multiplayer_peer.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
@@ -212,9 +210,6 @@ void register_core_types() {
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
-	GDREGISTER_CLASS(MultiplayerPeerExtension);
-	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
 	GDREGISTER_CLASS(OptimizedTranslation);
@@ -274,6 +269,7 @@ void register_core_types() {
 	_marshalls = memnew(core_bind::Marshalls);
 	_engine_debugger = memnew(core_bind::EngineDebugger);
 
+	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 

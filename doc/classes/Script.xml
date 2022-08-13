@@ -32,7 +32,7 @@
 		</method>
 		<method name="get_property_default_value">
 			<return type="Variant" />
-			<argument index="0" name="property" type="StringName" />
+			<param index="0" name="property" type="StringName" />
 			<description>
 				Returns the default value of the specified property.
 			</description>
@@ -63,7 +63,7 @@
 		</method>
 		<method name="has_script_signal" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="signal_name" type="StringName" />
+			<param index="0" name="signal_name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the script, or a base class, defines a signal with the given name.
 			</description>
@@ -76,9 +76,9 @@
 		</method>
 		<method name="instance_has" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="base_object" type="Object" />
+			<param index="0" name="base_object" type="Object" />
 			<description>
-				Returns [code]true[/code] if [code]base_object[/code] is an instance of this script.
+				Returns [code]true[/code] if [param base_object] is an instance of this script.
 			</description>
 		</method>
 		<method name="is_tool" qualifiers="const">
@@ -89,7 +89,7 @@
 		</method>
 		<method name="reload">
 			<return type="int" enum="Error" />
-			<argument index="0" name="keep_state" type="bool" default="false" />
+			<param index="0" name="keep_state" type="bool" default="false" />
 			<description>
 				Reloads the script's class implementation. Returns an error code.
 			</description>

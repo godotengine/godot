@@ -12,154 +12,154 @@
 	<methods>
 		<method name="add_node">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="node" type="VisualShaderNode" />
-			<argument index="2" name="position" type="Vector2" />
-			<argument index="3" name="id" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="node" type="VisualShaderNode" />
+			<param index="2" name="position" type="Vector2" />
+			<param index="3" name="id" type="int" />
 			<description>
-				Adds the specified node to the shader.
+				Adds the specified [param node] to the shader.
 			</description>
 		</method>
 		<method name="add_varying">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="mode" type="int" enum="VisualShader.VaryingMode" />
-			<argument index="2" name="type" type="int" enum="VisualShader.VaryingType" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="mode" type="int" enum="VisualShader.VaryingMode" />
+			<param index="2" name="type" type="int" enum="VisualShader.VaryingType" />
 			<description>
 			</description>
 		</method>
 		<method name="can_connect_nodes" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="from_node" type="int" />
-			<argument index="2" name="from_port" type="int" />
-			<argument index="3" name="to_node" type="int" />
-			<argument index="4" name="to_port" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="from_node" type="int" />
+			<param index="2" name="from_port" type="int" />
+			<param index="3" name="to_node" type="int" />
+			<param index="4" name="to_port" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified nodes and ports can be connected together.
 			</description>
 		</method>
 		<method name="connect_nodes">
 			<return type="int" enum="Error" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="from_node" type="int" />
-			<argument index="2" name="from_port" type="int" />
-			<argument index="3" name="to_node" type="int" />
-			<argument index="4" name="to_port" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="from_node" type="int" />
+			<param index="2" name="from_port" type="int" />
+			<param index="3" name="to_node" type="int" />
+			<param index="4" name="to_port" type="int" />
 			<description>
 				Connects the specified nodes and ports.
 			</description>
 		</method>
 		<method name="connect_nodes_forced">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="from_node" type="int" />
-			<argument index="2" name="from_port" type="int" />
-			<argument index="3" name="to_node" type="int" />
-			<argument index="4" name="to_port" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="from_node" type="int" />
+			<param index="2" name="from_port" type="int" />
+			<param index="3" name="to_node" type="int" />
+			<param index="4" name="to_port" type="int" />
 			<description>
 				Connects the specified nodes and ports, even if they can't be connected. Such connection is invalid and will not function properly.
 			</description>
 		</method>
 		<method name="disconnect_nodes">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="from_node" type="int" />
-			<argument index="2" name="from_port" type="int" />
-			<argument index="3" name="to_node" type="int" />
-			<argument index="4" name="to_port" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="from_node" type="int" />
+			<param index="2" name="from_port" type="int" />
+			<param index="3" name="to_node" type="int" />
+			<param index="4" name="to_port" type="int" />
 			<description>
 				Connects the specified nodes and ports.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="VisualShaderNode" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="id" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
 			<description>
-				Returns the shader node instance with specified [code]type[/code] and [code]id[/code].
+				Returns the shader node instance with specified [param type] and [param id].
 			</description>
 		</method>
 		<method name="get_node_connections" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Returns the list of connected nodes with the specified type.
 			</description>
 		</method>
 		<method name="get_node_list" qualifiers="const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Returns the list of all nodes in the shader with the specified type.
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="id" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
 			<description>
 				Returns the position of the specified node within the shader graph.
 			</description>
 		</method>
 		<method name="get_valid_node_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 			</description>
 		</method>
 		<method name="has_varying" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="is_node_connection" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="from_node" type="int" />
-			<argument index="2" name="from_port" type="int" />
-			<argument index="3" name="to_node" type="int" />
-			<argument index="4" name="to_port" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="from_node" type="int" />
+			<param index="2" name="from_port" type="int" />
+			<param index="3" name="to_node" type="int" />
+			<param index="4" name="to_port" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified node and port connection exist.
 			</description>
 		</method>
 		<method name="remove_node">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="id" type="int" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
 			<description>
 				Removes the specified node from the shader.
 			</description>
 		</method>
 		<method name="remove_varying">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="replace_node">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="id" type="int" />
-			<argument index="2" name="new_class" type="StringName" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
+			<param index="2" name="new_class" type="StringName" />
 			<description>
 				Replaces the specified node with a node of new class type.
 			</description>
 		</method>
 		<method name="set_mode">
 			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="Shader.Mode" />
+			<param index="0" name="mode" type="int" enum="Shader.Mode" />
 			<description>
 				Sets the mode of this shader.
 			</description>
 		</method>
 		<method name="set_node_position">
 			<return type="void" />
-			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
-			<argument index="1" name="id" type="int" />
-			<argument index="2" name="position" type="Vector2" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
+			<param index="2" name="position" type="Vector2" />
 			<description>
 				Sets the position of the specified node.
 			</description>

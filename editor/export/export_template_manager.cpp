@@ -37,15 +37,17 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
 
 void ExportTemplateManager::_update_template_status() {
 	// Fetch installed templates from the file system.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	const String &templates_dir = EditorSettings::get_singleton()->get_export_templates_dir();
+	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
 
 	Error err = da->change_dir(templates_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
@@ -438,7 +440,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String template_path = EditorSettings::get_singleton()->get_export_templates_dir().plus_file(version);
+	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(version);
 	Error err = d->make_dir_recursive(template_path);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error creating path for extracting templates:") + "\n" + template_path);
@@ -537,7 +539,7 @@ void ExportTemplateManager::_uninstall_template(const String &p_version) {
 
 void ExportTemplateManager::_uninstall_template_confirmed() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	const String &templates_dir = EditorSettings::get_singleton()->get_export_templates_dir();
+	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
 
 	Error err = da->change_dir(templates_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
@@ -615,7 +617,7 @@ void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_co
 }
 
 void ExportTemplateManager::_open_template_folder(const String &p_version) {
-	const String &templates_dir = EditorSettings::get_singleton()->get_export_templates_dir();
+	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
 	OS::get_singleton()->shell_open("file://" + templates_dir.plus_file(p_version));
 }
 
@@ -639,12 +641,12 @@ void ExportTemplateManager::_hide_dialog() {
 }
 
 bool ExportTemplateManager::can_install_android_template() {
-	const String templates_dir = EditorSettings::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
 	return FileAccess::exists(templates_dir.plus_file("android_source.zip"));
 }
 
 Error ExportTemplateManager::install_android_template() {
-	const String &templates_path = EditorSettings::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	const String &templates_path = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
 	const String &source_zip = templates_path.plus_file("android_source.zip");
 	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
 	return install_android_template_from_file(source_zip);
@@ -868,13 +870,13 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_open_button->set_text(TTR("Open Folder"));
 	current_open_button->set_tooltip(TTR("Open the folder containing installed templates for the current version."));
 	current_installed_hb->add_child(current_open_button);
-	current_open_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_open_template_folder), varray(VERSION_FULL_CONFIG));
+	current_open_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_open_template_folder).bind(VERSION_FULL_CONFIG));
 
 	current_uninstall_button = memnew(Button);
 	current_uninstall_button->set_text(TTR("Uninstall"));
 	current_uninstall_button->set_tooltip(TTR("Uninstall templates for the current version."));
 	current_installed_hb->add_child(current_uninstall_button);
-	current_uninstall_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(VERSION_FULL_CONFIG));
+	current_uninstall_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template).bind(VERSION_FULL_CONFIG));
 
 	main_vb->add_child(memnew(HSeparator));
 
@@ -990,7 +992,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	install_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	install_file_dialog->add_filter("*.tpz", TTR("Godot Export Templates"));
-	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected), varray(false));
+	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected).bind(false));
 	add_child(install_file_dialog);
 
 	hide_dialog_accept = memnew(AcceptDialog);

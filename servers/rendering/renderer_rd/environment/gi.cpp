@@ -374,15 +374,15 @@ RID GI::voxel_gi_get_sdf_texture(RID p_voxel_gi) {
 ////////////////////////////////////////////////////////////////////////////////
 // SDFGI
 
-void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
+void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	gi = p_gi;
-	num_cascades = p_env->sdfgi_cascades;
-	min_cell_size = p_env->sdfgi_min_cell_size;
-	uses_occlusion = p_env->sdfgi_use_occlusion;
-	y_scale_mode = p_env->sdfgi_y_scale;
+	num_cascades = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_cascades(p_env);
+	min_cell_size = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_min_cell_size(p_env);
+	uses_occlusion = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_use_occlusion(p_env);
+	y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_y_scale(p_env);
 	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
 	cascades.resize(num_cascades);
@@ -734,7 +734,7 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 				if (j < cascades.size()) {
 					u.append_id(cascades[j].sdf_tex);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
 			}
 			uniforms.push_back(u);
@@ -978,7 +978,7 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 				if (j < cascades.size()) {
 					u.append_id(cascades[j].sdf_tex);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
 			}
 			uniforms.push_back(u);
@@ -991,7 +991,7 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 				if (j < cascades.size()) {
 					u.append_id(cascades[j].light_tex);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
 			}
 			uniforms.push_back(u);
@@ -1004,7 +1004,7 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 				if (j < cascades.size()) {
 					u.append_id(cascades[j].light_aniso_0_tex);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
 			}
 			uniforms.push_back(u);
@@ -1017,7 +1017,7 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 				if (j < cascades.size()) {
 					u.append_id(cascades[j].light_aniso_1_tex);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
 			}
 			uniforms.push_back(u);
@@ -1101,11 +1101,11 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 		cascades[i].integrate_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 0);
 	}
 
-	bounce_feedback = p_env->sdfgi_bounce_feedback;
-	energy = p_env->sdfgi_energy;
-	normal_bias = p_env->sdfgi_normal_bias;
-	probe_bias = p_env->sdfgi_probe_bias;
-	reads_sky = p_env->sdfgi_read_sky_light;
+	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_bounce_feedback(p_env);
+	energy = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_energy(p_env);
+	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_normal_bias(p_env);
+	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_probe_bias(p_env);
+	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_read_sky_light(p_env);
 }
 
 void GI::SDFGI::erase() {
@@ -1140,6 +1140,7 @@ void GI::SDFGI::erase() {
 
 	RD::get_singleton()->free(lightprobe_data);
 	RD::get_singleton()->free(lightprobe_history_scroll);
+	RD::get_singleton()->free(lightprobe_average_scroll);
 	RD::get_singleton()->free(occlusion_data);
 	RD::get_singleton()->free(ambient_texture);
 
@@ -1163,12 +1164,12 @@ void GI::SDFGI::erase() {
 	}
 }
 
-void GI::SDFGI::update(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position) {
-	bounce_feedback = p_env->sdfgi_bounce_feedback;
-	energy = p_env->sdfgi_energy;
-	normal_bias = p_env->sdfgi_normal_bias;
-	probe_bias = p_env->sdfgi_probe_bias;
-	reads_sky = p_env->sdfgi_read_sky_light;
+void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
+	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_bounce_feedback(p_env);
+	energy = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_energy(p_env);
+	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_normal_bias(p_env);
+	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_probe_bias(p_env);
+	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_read_sky_light(p_env);
 
 	int32_t drag_margin = (cascade_size / SDFGI::PROBE_DIVISOR) / 2;
 
@@ -1268,7 +1269,7 @@ void GI::SDFGI::update_light() {
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, SkyRD::Sky *p_sky) {
+void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
 
 	SDFGIShader::IntegratePushConstant push_constant;
@@ -1284,29 +1285,29 @@ void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, SkyRD::Sky *p_s
 	push_constant.ray_bias = probe_bias;
 	push_constant.image_size[0] = probe_axis_count * probe_axis_count;
 	push_constant.image_size[1] = probe_axis_count;
-	push_constant.store_ambient_texture = p_env->volumetric_fog_enabled;
+	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
 
 	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
 	push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
 	push_constant.y_mult = y_mult;
 
-	if (reads_sky && p_env) {
-		push_constant.sky_energy = p_env->bg_energy;
+	if (reads_sky && p_env.is_valid()) {
+		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy(p_env);
 
-		if (p_env->background == RS::ENV_BG_CLEAR_COLOR) {
+		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
 			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
 			push_constant.sky_color[2] = c.b;
-		} else if (p_env->background == RS::ENV_BG_COLOR) {
+		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
 			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
-			Color c = p_env->bg_color;
+			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
 			push_constant.sky_color[2] = c.b;
 
-		} else if (p_env->background == RS::ENV_BG_SKY) {
+		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_SKY) {
 			if (p_sky && p_sky->radiance.is_valid()) {
 				if (integrate_sky_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(integrate_sky_uniform_set)) {
 					Vector<RD::Uniform> uniforms;
@@ -1498,7 +1499,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 					if (i < cascades.size()) {
 						u.append_id(cascades[i].sdf_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -1511,7 +1512,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 					if (i < cascades.size()) {
 						u.append_id(cascades[i].light_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -1524,7 +1525,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 					if (i < cascades.size()) {
 						u.append_id(cascades[i].light_aniso_0_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -1537,7 +1538,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 					if (i < cascades.size()) {
 						u.append_id(cascades[i].light_aniso_1_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -1591,34 +1592,24 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 		push_constant.max_cascades = cascades.size();
 		push_constant.screen_size[0] = p_width;
 		push_constant.screen_size[1] = p_height;
-		push_constant.probe_axis_size = probe_axis_count;
-		push_constant.use_occlusion = uses_occlusion;
 		push_constant.y_mult = y_mult;
 
 		push_constant.z_near = -p_projections[v].get_z_near();
 
-		push_constant.cam_transform[0] = p_transform.basis.rows[0][0];
-		push_constant.cam_transform[1] = p_transform.basis.rows[1][0];
-		push_constant.cam_transform[2] = p_transform.basis.rows[2][0];
-		push_constant.cam_transform[3] = 0;
-		push_constant.cam_transform[4] = p_transform.basis.rows[0][1];
-		push_constant.cam_transform[5] = p_transform.basis.rows[1][1];
-		push_constant.cam_transform[6] = p_transform.basis.rows[2][1];
-		push_constant.cam_transform[7] = 0;
-		push_constant.cam_transform[8] = p_transform.basis.rows[0][2];
-		push_constant.cam_transform[9] = p_transform.basis.rows[1][2];
-		push_constant.cam_transform[10] = p_transform.basis.rows[2][2];
-		push_constant.cam_transform[11] = 0;
-		push_constant.cam_transform[12] = p_transform.origin.x;
-		push_constant.cam_transform[13] = p_transform.origin.y;
-		push_constant.cam_transform[14] = p_transform.origin.z;
-		push_constant.cam_transform[15] = 1;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				push_constant.cam_basis[i][j] = p_transform.basis.rows[j][i];
+			}
+		}
+		push_constant.cam_origin[0] = p_transform.origin[0];
+		push_constant.cam_origin[1] = p_transform.origin[1];
+		push_constant.cam_origin[2] = p_transform.origin[2];
 
 		// need to properly unproject for asymmetric projection matrices in stereo..
 		Projection inv_projection = p_projections[v].inverse();
 		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				push_constant.inv_projection[i * 4 + j] = inv_projection.matrix[i][j];
+			for (int j = 0; j < 3; j++) {
+				push_constant.inv_projection[j][i] = inv_projection.matrix[i][j];
 			}
 		}
 
@@ -2437,18 +2428,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 	if (last_probe_data_version != data_version) {
 		//need to re-create everything
-		if (texture.is_valid()) {
-			RD::get_singleton()->free(texture);
-			RD::get_singleton()->free(write_buffer);
-			mipmaps.clear();
-		}
-
-		for (int i = 0; i < dynamic_maps.size(); i++) {
-			RD::get_singleton()->free(dynamic_maps[i].texture);
-			RD::get_singleton()->free(dynamic_maps[i].depth);
-		}
-
-		dynamic_maps.clear();
+		free_resources();
 
 		Vector3i octree_size = gi->voxel_gi_get_octree_size(probe);
 
@@ -3140,6 +3120,37 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 	last_probe_version = gi->voxel_gi_get_version(probe);
 }
 
+void GI::VoxelGIInstance::free_resources() {
+	if (texture.is_valid()) {
+		RD::get_singleton()->free(texture);
+		RD::get_singleton()->free(write_buffer);
+
+		texture = RID();
+		write_buffer = RID();
+		mipmaps.clear();
+	}
+
+	for (int i = 0; i < dynamic_maps.size(); i++) {
+		RD::get_singleton()->free(dynamic_maps[i].texture);
+		RD::get_singleton()->free(dynamic_maps[i].depth);
+
+		// these only exist on the first level...
+		if (dynamic_maps[i].fb_depth.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].fb_depth);
+		}
+		if (dynamic_maps[i].albedo.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].albedo);
+		}
+		if (dynamic_maps[i].normal.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].normal);
+		}
+		if (dynamic_maps[i].orm.is_valid()) {
+			RD::get_singleton()->free(dynamic_maps[i].orm);
+		}
+	}
+	dynamic_maps.clear();
+}
+
 void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -3353,9 +3364,9 @@ void GI::init(SkyRD *p_sky) {
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
 				if (p_sky->sky_use_cubemap_array) {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE));
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
 				}
 				uniforms.push_back(u);
 			}
@@ -3477,7 +3488,7 @@ void GI::free() {
 	}
 }
 
-GI::SDFGI *GI::create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {
+GI::SDFGI *GI::create_sdfgi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {
 	SDFGI *sdfgi = memnew(SDFGI);
 
 	sdfgi->create(p_env, p_world_position, p_requested_history_size, this);
@@ -3550,7 +3561,7 @@ void GI::setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_tra
 		}
 
 		if (texture == RID()) {
-			texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+			texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 		}
 
 		if (texture != rb->rbgi.voxel_gi_textures[i]) {
@@ -3761,7 +3772,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 					if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 						u.append_id(rb->sdfgi->cascades[j].sdf_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -3774,7 +3785,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 					if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 						u.append_id(rb->sdfgi->cascades[j].light_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -3787,7 +3798,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 					if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 						u.append_id(rb->sdfgi->cascades[j].light_aniso_0_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -3800,7 +3811,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 					if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
 						u.append_id(rb->sdfgi->cascades[j].light_aniso_1_tex);
 					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
 				}
 				uniforms.push_back(u);
@@ -3812,7 +3823,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 				if (rb->sdfgi) {
 					u.append_id(rb->sdfgi->occlusion_texture);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
 				uniforms.push_back(u);
 			}
@@ -3854,7 +3865,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 				if (rb->sdfgi) {
 					u.append_id(rb->sdfgi->lightprobe_texture);
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE));
 				}
 				uniforms.push_back(u);
 			}
@@ -3876,7 +3887,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 14;
-				RID buffer = p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
+				RID buffer = p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 				u.append_id(buffer);
 				uniforms.push_back(u);
 			}
@@ -3914,7 +3925,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 19;
-				RID buffer = p_vrs_slices[v].is_valid() ? p_vrs_slices[v] : texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_VRS);
+				RID buffer = p_vrs_slices[v].is_valid() ? p_vrs_slices[v] : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_VRS);
 				u.append_id(buffer);
 				uniforms.push_back(u);
 			}
@@ -3944,6 +3955,12 @@ RID GI::voxel_gi_instance_create(RID p_base) {
 	voxel_gi.probe = p_base;
 	RID rid = voxel_gi_instance_owner.make_rid(voxel_gi);
 	return rid;
+}
+
+void GI::voxel_gi_instance_free(RID p_rid) {
+	GI::VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_rid);
+	voxel_gi->free_resources();
+	voxel_gi_instance_owner.free(p_rid);
 }
 
 void GI::voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) {

@@ -46,7 +46,7 @@
 		</method>
 		<method name="_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Called when there is an input event. The input event propagates up through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
@@ -57,7 +57,7 @@
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant. [code]delta[/code] is in seconds.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
@@ -67,7 +67,7 @@
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant. [code]delta[/code] is in seconds.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
@@ -86,7 +86,7 @@
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if shortcut processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_shortcut_input].
@@ -97,7 +97,7 @@
 		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
@@ -108,7 +108,7 @@
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
@@ -120,9 +120,9 @@
 		</method>
 		<method name="add_child">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
-			<argument index="1" name="legible_unique_name" type="bool" default="false" />
-			<argument index="2" name="internal" type="int" enum="Node.InternalMode" default="0" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="legible_unique_name" type="bool" default="false" />
+			<param index="2" name="internal" type="int" enum="Node.InternalMode" default="0" />
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
@@ -150,8 +150,8 @@
 		</method>
 		<method name="add_sibling">
 			<return type="void" />
-			<argument index="0" name="sibling" type="Node" />
-			<argument index="1" name="legible_unique_name" type="bool" default="false" />
+			<param index="0" name="sibling" type="Node" />
+			<param index="1" name="legible_unique_name" type="bool" default="false" />
 			<description>
 				Adds a [code]sibling[/code] node to current's node parent, at the same level as that node, right below it.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
@@ -161,8 +161,8 @@
 		</method>
 		<method name="add_to_group">
 			<return type="void" />
-			<argument index="0" name="group" type="StringName" />
-			<argument index="1" name="persistent" type="bool" default="false" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="persistent" type="bool" default="false" />
 			<description>
 				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
 				The [code]persistent[/code] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
@@ -186,7 +186,7 @@
 		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="flags" type="int" default="15" />
+			<param index="0" name="flags" type="int" default="15" />
 			<description>
 				Duplicates the node, returning a new node.
 				You can fine-tune the behavior using the [code]flags[/code] (see [enum DuplicateFlags]).
@@ -195,9 +195,9 @@
 		</method>
 		<method name="find_child" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="pattern" type="String" />
-			<argument index="1" name="recursive" type="bool" default="true" />
-			<argument index="2" name="owned" type="bool" default="true" />
+			<param index="0" name="pattern" type="String" />
+			<param index="1" name="recursive" type="bool" default="true" />
+			<param index="2" name="owned" type="bool" default="true" />
 			<description>
 				Finds the first descendant of this node whose name matches [code]pattern[/code] as in [method String.match].
 				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
@@ -210,10 +210,10 @@
 		</method>
 		<method name="find_children" qualifiers="const">
 			<return type="Node[]" />
-			<argument index="0" name="pattern" type="String" />
-			<argument index="1" name="type" type="String" default="&quot;&quot;" />
-			<argument index="2" name="recursive" type="bool" default="true" />
-			<argument index="3" name="owned" type="bool" default="true" />
+			<param index="0" name="pattern" type="String" />
+			<param index="1" name="type" type="String" default="&quot;&quot;" />
+			<param index="2" name="recursive" type="bool" default="true" />
+			<param index="3" name="owned" type="bool" default="true" />
 			<description>
 				Finds descendants of this node whose name matches [code]pattern[/code] as in [method String.match], and/or type matches [code]type[/code] as in [method Object.is_class].
 				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
@@ -227,7 +227,7 @@
 		</method>
 		<method name="find_parent" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="pattern" type="String" />
+			<param index="0" name="pattern" type="String" />
 			<description>
 				Finds the first parent of the current node whose name matches [code]pattern[/code] as in [method String.match].
 				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
@@ -236,8 +236,8 @@
 		</method>
 		<method name="get_child" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="include_internal" type="bool" default="false" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
 				Negative indices access the children from the last one.
@@ -247,7 +247,7 @@
 		</method>
 		<method name="get_child_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="include_internal" type="bool" default="false" />
+			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the number of child nodes.
 				If [code]include_internal[/code] is [code]false[/code], internal children aren't counted (see [code]internal[/code] parameter in [method add_child]).
@@ -255,7 +255,7 @@
 		</method>
 		<method name="get_children" qualifiers="const">
 			<return type="Node[]" />
-			<argument index="0" name="include_internal" type="bool" default="false" />
+			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns an array of references to node's children.
 				If [code]include_internal[/code] is [code]false[/code], the returned array won't include internal children (see [code]internal[/code] parameter in [method add_child]).
@@ -278,7 +278,7 @@
 		</method>
 		<method name="get_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="include_internal" type="bool" default="false" />
+			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 				If [code]include_internal[/code] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
@@ -292,7 +292,7 @@
 		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="path" type="NodePath" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
 				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, [code]null[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
 				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
@@ -326,7 +326,7 @@
 		</method>
 		<method name="get_node_and_resource">
 			<return type="Array" />
-			<argument index="0" name="path" type="NodePath" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
 				Fetches a node and one of its resources as specified by the [NodePath]'s subname (e.g. [code]Area2D/CollisionShape2D:shape[/code]). If several nested resources are specified in the [NodePath], the last one will be fetched.
 				The return value is an array of size 3: the first index points to the [Node] (or [code]null[/code] if not found), the second index points to the [Resource] (or [code]null[/code] if not found), and the third index is the remaining [NodePath], if any.
@@ -347,7 +347,7 @@
 		</method>
 		<method name="get_node_or_null" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="path" type="NodePath" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
 				Similar to [method get_node], but does not log an error if [code]path[/code] does not point to a valid [Node].
 			</description>
@@ -366,7 +366,7 @@
 		</method>
 		<method name="get_path_to" qualifiers="const">
 			<return type="NodePath" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Returns the relative [NodePath] from this node to the specified [code]node[/code]. Both nodes must be in the same scene or the function will fail.
 			</description>
@@ -403,21 +403,21 @@
 		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="path" type="NodePath" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
 				Returns [code]true[/code] if the node that the [NodePath] points to exists.
 			</description>
 		</method>
 		<method name="has_node_and_resource" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="path" type="NodePath" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
 				Returns [code]true[/code] if the [NodePath] points to a valid node and its subname points to a valid resource, e.g. [code]Area2D/CollisionShape2D:shape[/code]. Properties with a non-[Resource] type (e.g. nodes or primitive math types) are not considered resources.
 			</description>
 		</method>
 		<method name="is_ancestor_of" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Returns [code]true[/code] if the given node is a direct or indirect child of the current node.
 			</description>
@@ -430,21 +430,21 @@
 		</method>
 		<method name="is_editable_instance" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Returns [code]true[/code] if [code]node[/code] has editable children enabled relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="is_greater_than" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Returns [code]true[/code] if the given node occurs later in the scene hierarchy than the current node.
 			</description>
 		</method>
 		<method name="is_in_group" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="group" type="StringName" />
+			<param index="0" name="group" type="StringName" />
 			<description>
 				Returns [code]true[/code] if this node is in the specified group. See notes in the description, and the group methods in [SceneTree].
 			</description>
@@ -511,8 +511,8 @@
 		</method>
 		<method name="move_child">
 			<return type="void" />
-			<argument index="0" name="child_node" type="Node" />
-			<argument index="1" name="to_position" type="int" />
+			<param index="0" name="child_node" type="Node" />
+			<param index="1" name="to_position" type="int" />
 			<description>
 				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
@@ -557,16 +557,16 @@
 		</method>
 		<method name="propagate_call">
 			<return type="void" />
-			<argument index="0" name="method" type="StringName" />
-			<argument index="1" name="args" type="Array" default="[]" />
-			<argument index="2" name="parent_first" type="bool" default="false" />
+			<param index="0" name="method" type="StringName" />
+			<param index="1" name="args" type="Array" default="[]" />
+			<param index="2" name="parent_first" type="bool" default="false" />
 			<description>
 				Calls the given method (if present) with the arguments given in [code]args[/code] on this node and recursively on all its children. If the [code]parent_first[/code] argument is [code]true[/code], the method will be called on the current node first, then on all its children. If [code]parent_first[/code] is [code]false[/code], the children will be called first.
 			</description>
 		</method>
 		<method name="propagate_notification">
 			<return type="void" />
-			<argument index="0" name="what" type="int" />
+			<param index="0" name="what" type="int" />
 			<description>
 				Notifies the current node and all its children recursively by calling [method Object.notification] on all of them.
 			</description>
@@ -591,7 +591,7 @@
 		</method>
 		<method name="remove_child">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Removes a child node. The node is NOT deleted and must be deleted manually.
 				[b]Note:[/b] This function may set the [member owner] of the removed Node (or its descendants) to be [code]null[/code], if that [member owner] is no longer a parent or ancestor.
@@ -599,15 +599,15 @@
 		</method>
 		<method name="remove_from_group">
 			<return type="void" />
-			<argument index="0" name="group" type="StringName" />
+			<param index="0" name="group" type="StringName" />
 			<description>
 				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="replace_by">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
-			<argument index="1" name="keep_groups" type="bool" default="false" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="keep_groups" type="bool" default="false" />
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
 				If [code]keep_groups[/code] is [code]true[/code], the [code]node[/code] is added to the same groups that the replaced node is in.
@@ -622,65 +622,71 @@
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
-			<return type="void" />
-			<argument index="0" name="method" type="StringName" />
+			<return type="int" enum="Error" />
+			<param index="0" name="method" type="StringName" />
 			<description>
 				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
 		<method name="rpc_config">
-			<return type="int" />
-			<argument index="0" name="method" type="StringName" />
-			<argument index="1" name="rpc_mode" type="int" enum="RPCMode" />
-			<argument index="2" name="call_local" type="bool" default="false" />
-			<argument index="3" name="transfer_mode" type="int" enum="TransferMode" default="2" />
-			<argument index="4" name="channel" type="int" default="0" />
+			<return type="void" />
+			<param index="0" name="method" type="StringName" />
+			<param index="1" name="config" type="Variant" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] with the given [code]config[/code] which should be [code]null[/code] (to disable) or a [Dictionary] in the form:
+				[codeblock]
+				{
+				    rpc_mode = MultiplayerAPI.RPCMode,
+				    transfer_mode = MultiplayerPeer.TranferMode,
+				    call_local = false,
+				    channel = 0,
+				}
+				[/codeblock]
+				See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
-			<return type="void" />
-			<argument index="0" name="peer_id" type="int" />
-			<argument index="1" name="method" type="StringName" />
+			<return type="int" enum="Error" />
+			<param index="0" name="peer_id" type="int" />
+			<param index="1" name="method" type="StringName" />
 			<description>
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). Returns [code]null[/code].
 			</description>
 		</method>
 		<method name="set_display_folded">
 			<return type="void" />
-			<argument index="0" name="fold" type="bool" />
+			<param index="0" name="fold" type="bool" />
 			<description>
 				Sets the folded state of the node in the Scene dock. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="set_editable_instance">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
-			<argument index="1" name="is_editable" type="bool" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="is_editable" type="bool" />
 			<description>
 				Sets the editable children state of [code]node[/code] relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="set_multiplayer_authority">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="recursive" type="bool" default="true" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="recursive" type="bool" default="true" />
 			<description>
 				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the authority for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a [constant NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine.physics_ticks_per_second] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_physics_process_internal">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes' behavior.
 				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
@@ -688,21 +694,21 @@
 		</method>
 		<method name="set_process">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disables processing. When a node is being processed, it will receive a [constant NOTIFICATION_PROCESS] on every drawn frame (and the [method _process] callback will be called if exists). Enabled automatically if [method _process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_input">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disables input processing. This is not required for GUI controls! Enabled automatically if [method _input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_internal">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes' behavior.
 				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
@@ -710,28 +716,28 @@
 		</method>
 		<method name="set_process_shortcut_input">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables shortcut processing. Enabled automatically if [method _shortcut_input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables unhandled input processing. This is not required for GUI controls! It enables the node to receive all input that was not previously handled (usually by a [Control]). Enabled automatically if [method _unhandled_input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_unhandled_key_input">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables unhandled key input processing. Enabled automatically if [method _unhandled_key_input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_scene_instance_load_placeholder">
 			<return type="void" />
-			<argument index="0" name="load_placeholder" type="bool" />
+			<param index="0" name="load_placeholder" type="bool" />
 			<description>
 				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
@@ -775,14 +781,14 @@
 	</members>
 	<signals>
 		<signal name="child_entered_tree">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a child node enters the scene tree, either because it entered on its own or because this node entered with it.
 				This signal is emitted [i]after[/i] the child node's own [constant NOTIFICATION_ENTER_TREE] and [signal tree_entered].
 			</description>
 		</signal>
 		<signal name="child_exiting_tree">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a child node is about to exit the scene tree, either because it is being removed or freed directly, or because this node is exiting the tree.
 				When this signal is received, the child [code]node[/code] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].

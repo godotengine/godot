@@ -77,10 +77,10 @@ params;
 
 layout(set = 0, binding = 0) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 layout(set = 0, binding = 2, std140) uniform SceneData {
 	bool volumetric_fog_enabled;

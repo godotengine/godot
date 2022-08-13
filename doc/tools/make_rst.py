@@ -9,14 +9,12 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from typing import List, Dict, TextIO, Tuple, Optional, Any, Union
 
 # Import hardcoded version information from version.py
 root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.append(root_directory)  # Include the root directory
 import version
-
-# Uncomment to do type checks. I have it commented out so it works below Python 3.5
-# from typing import List, Dict, TextIO, Tuple, Iterable, Optional, DefaultDict, Any, Union
 
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
@@ -61,127 +59,20 @@ BASE_STRINGS = [
     "This method doesn't need an instance to be called, so it can be called directly using the class name.",
     "This method describes a valid operator to use with this type as left-hand operand.",
 ]
-strings_l10n = {}
+strings_l10n: Dict[str, str] = {}
 
-STYLES = {}
-
-
-def print_error(error, state):  # type: (str, State) -> None
-    print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
-    state.num_errors += 1
-
-
-class TypeName:
-    def __init__(self, type_name, enum=None):  # type: (str, Optional[str]) -> None
-        self.type_name = type_name
-        self.enum = enum
-
-    def to_rst(self, state):  # type: ("State") -> str
-        if self.enum is not None:
-            return make_enum(self.enum, state)
-        elif self.type_name == "void":
-            return "void"
-        else:
-            return make_type(self.type_name, state)
-
-    @classmethod
-    def from_element(cls, element):  # type: (ET.Element) -> "TypeName"
-        return cls(element.attrib["type"], element.get("enum"))
-
-
-class PropertyDef:
-    def __init__(
-        self, name, type_name, setter, getter, text, default_value, overrides
-    ):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
-        self.name = name
-        self.type_name = type_name
-        self.setter = setter
-        self.getter = getter
-        self.text = text
-        self.default_value = default_value
-        self.overrides = overrides
-
-
-class ParameterDef:
-    def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
-        self.name = name
-        self.type_name = type_name
-        self.default_value = default_value
-
-
-class SignalDef:
-    def __init__(self, name, parameters, description):  # type: (str, List[ParameterDef], Optional[str]) -> None
-        self.name = name
-        self.parameters = parameters
-        self.description = description
-
-
-class MethodDef:
-    def __init__(
-        self, name, return_type, parameters, description, qualifiers
-    ):  # type: (str, TypeName, List[ParameterDef], Optional[str], Optional[str]) -> None
-        self.name = name
-        self.return_type = return_type
-        self.parameters = parameters
-        self.description = description
-        self.qualifiers = qualifiers
-
-
-class ConstantDef:
-    def __init__(self, name, value, text, bitfield):  # type: (str, str, Optional[str], Optional[bool]) -> None
-        self.name = name
-        self.value = value
-        self.text = text
-        self.is_bitfield = bitfield
-
-
-class EnumDef:
-    def __init__(self, name, bitfield):  # type: (str, Optional[bool]) -> None
-        self.name = name
-        self.values = OrderedDict()  # type: OrderedDict[str, ConstantDef]
-        self.is_bitfield = bitfield
-
-
-class ThemeItemDef:
-    def __init__(
-        self, name, type_name, data_name, text, default_value
-    ):  # type: (str, TypeName, str, Optional[str], Optional[str]) -> None
-        self.name = name
-        self.type_name = type_name
-        self.data_name = data_name
-        self.text = text
-        self.default_value = default_value
-
-
-class ClassDef:
-    def __init__(self, name):  # type: (str) -> None
-        self.name = name
-        self.constants = OrderedDict()  # type: OrderedDict[str, ConstantDef]
-        self.enums = OrderedDict()  # type: OrderedDict[str, EnumDef]
-        self.properties = OrderedDict()  # type: OrderedDict[str, PropertyDef]
-        self.constructors = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
-        self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
-        self.operators = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
-        self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
-        self.annotations = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
-        self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
-        self.inherits = None  # type: Optional[str]
-        self.brief_description = None  # type: Optional[str]
-        self.description = None  # type: Optional[str]
-        self.tutorials = []  # type: List[Tuple[str, str]]
-
-        # Used to match the class with XML source for output filtering purposes.
-        self.filepath = ""  # type: str
+STYLES: Dict[str, str] = {}
 
 
 class State:
-    def __init__(self):  # type: () -> None
+    def __init__(self) -> None:
         self.num_errors = 0
-        self.classes = OrderedDict()  # type: OrderedDict[str, ClassDef]
-        self.current_class = ""  # type: str
+        self.classes: OrderedDict[str, ClassDef] = OrderedDict()
+        self.current_class: str = ""
 
-    def parse_class(self, class_root, filepath):  # type: (ET.Element, str) -> None
+    def parse_class(self, class_root: ET.Element, filepath: str) -> None:
         class_name = class_root.attrib["name"]
+        self.current_class = class_name
 
         class_def = ClassDef(class_name)
         self.classes[class_name] = class_def
@@ -233,11 +124,10 @@ class State:
                 return_element = constructor.find("return")
                 if return_element is not None:
                     return_type = TypeName.from_element(return_element)
-
                 else:
                     return_type = TypeName("void")
 
-                params = parse_arguments(constructor)
+                params = self.parse_params(constructor, "constructor")
 
                 desc_element = constructor.find("description")
                 method_desc = None
@@ -245,6 +135,7 @@ class State:
                     method_desc = desc_element.text
 
                 method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                method_def.definition_name = "constructor"
                 if method_name not in class_def.constructors:
                     class_def.constructors[method_name] = []
 
@@ -265,7 +156,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = parse_arguments(method)
+                params = self.parse_params(method, "method")
 
                 desc_element = method.find("description")
                 method_desc = None
@@ -293,7 +184,7 @@ class State:
                 else:
                     return_type = TypeName("void")
 
-                params = parse_arguments(operator)
+                params = self.parse_params(operator, "operator")
 
                 desc_element = operator.find("description")
                 method_desc = None
@@ -301,6 +192,7 @@ class State:
                     method_desc = desc_element.text
 
                 method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                method_def.definition_name = "operator"
                 if method_name not in class_def.operators:
                     class_def.operators[method_name] = []
 
@@ -314,7 +206,7 @@ class State:
                 constant_name = constant.attrib["name"]
                 value = constant.attrib["value"]
                 enum = constant.get("enum")
-                is_bitfield = constant.get("is_bitfield") or False
+                is_bitfield = constant.get("is_bitfield") == "true"
                 constant_def = ConstantDef(constant_name, value, constant.text, is_bitfield)
                 if enum is None:
                     if constant_name in class_def.constants:
@@ -341,14 +233,14 @@ class State:
                 annotation_name = annotation.attrib["name"]
                 qualifiers = annotation.get("qualifiers")
 
-                params = parse_arguments(annotation)
+                params = self.parse_params(annotation, "annotation")
 
                 desc_element = annotation.find("description")
                 annotation_desc = None
                 if desc_element is not None:
                     annotation_desc = desc_element.text
 
-                annotation_def = MethodDef(annotation_name, return_type, params, annotation_desc, qualifiers)
+                annotation_def = AnnotationDef(annotation_name, params, annotation_desc, qualifiers)
                 if annotation_name not in class_def.annotations:
                     class_def.annotations[annotation_name] = []
 
@@ -365,7 +257,7 @@ class State:
                     print_error('{}.xml: Duplicate signal "{}".'.format(class_name, signal_name), self)
                     continue
 
-                params = parse_arguments(signal)
+                params = self.parse_params(signal, "signal")
 
                 desc_element = signal.find("description")
                 signal_desc = None
@@ -413,31 +305,193 @@ class State:
                 if link.text is not None:
                     class_def.tutorials.append((link.text.strip(), link.get("title", "")))
 
-    def sort_classes(self):  # type: () -> None
+        self.current_class = ""
+
+    def parse_params(self, root: ET.Element, context: str) -> List["ParameterDef"]:
+        param_elements = root.findall("param")
+        params: Any = [None] * len(param_elements)
+
+        for param_index, param_element in enumerate(param_elements):
+            param_name = param_element.attrib["name"]
+            index = int(param_element.attrib["index"])
+            type_name = TypeName.from_element(param_element)
+            default = param_element.get("default")
+
+            if param_name.strip() == "" or param_name.startswith("_unnamed_arg"):
+                print_error(
+                    '{}.xml: Empty argument name in {} "{}" at position {}.'.format(
+                        self.current_class, context, root.attrib["name"], param_index
+                    ),
+                    self,
+                )
+
+            params[index] = ParameterDef(param_name, type_name, default)
+
+        cast: List[ParameterDef] = params
+
+        return cast
+
+    def sort_classes(self) -> None:
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0]))
 
 
-def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
-    param_elements = root.findall("argument")
-    params = [None] * len(param_elements)  # type: Any
-    for param_element in param_elements:
-        param_name = param_element.attrib["name"]
-        index = int(param_element.attrib["index"])
-        type_name = TypeName.from_element(param_element)
-        default = param_element.get("default")
+class TypeName:
+    def __init__(self, type_name: str, enum: Optional[str] = None) -> None:
+        self.type_name = type_name
+        self.enum = enum
 
-        params[index] = ParameterDef(param_name, type_name, default)
+    def to_rst(self, state: State) -> str:
+        if self.enum is not None:
+            return make_enum(self.enum, state)
+        elif self.type_name == "void":
+            return "void"
+        else:
+            return make_type(self.type_name, state)
 
-    cast = params  # type: List[ParameterDef]
+    @classmethod
+    def from_element(cls, element: ET.Element) -> "TypeName":
+        return cls(element.attrib["type"], element.get("enum"))
 
-    return cast
+
+class PropertyDef:
+    def __init__(
+        self,
+        name: str,
+        type_name: TypeName,
+        setter: Optional[str],
+        getter: Optional[str],
+        text: Optional[str],
+        default_value: Optional[str],
+        overrides: Optional[str],
+    ) -> None:
+        self.definition_name = "property"
+
+        self.name = name
+        self.type_name = type_name
+        self.setter = setter
+        self.getter = getter
+        self.text = text
+        self.default_value = default_value
+        self.overrides = overrides
 
 
-def main():  # type: () -> None
+class ParameterDef:
+    def __init__(self, name: str, type_name: TypeName, default_value: Optional[str]) -> None:
+        self.definition_name = "parameter"
+
+        self.name = name
+        self.type_name = type_name
+        self.default_value = default_value
+
+
+class SignalDef:
+    def __init__(self, name: str, parameters: List[ParameterDef], description: Optional[str]) -> None:
+        self.definition_name = "signal"
+
+        self.name = name
+        self.parameters = parameters
+        self.description = description
+
+
+class AnnotationDef:
+    def __init__(
+        self,
+        name: str,
+        parameters: List[ParameterDef],
+        description: Optional[str],
+        qualifiers: Optional[str],
+    ) -> None:
+        self.definition_name = "annotation"
+
+        self.name = name
+        self.parameters = parameters
+        self.description = description
+        self.qualifiers = qualifiers
+
+
+class MethodDef:
+    def __init__(
+        self,
+        name: str,
+        return_type: TypeName,
+        parameters: List[ParameterDef],
+        description: Optional[str],
+        qualifiers: Optional[str],
+    ) -> None:
+        self.definition_name = "method"
+
+        self.name = name
+        self.return_type = return_type
+        self.parameters = parameters
+        self.description = description
+        self.qualifiers = qualifiers
+
+
+class ConstantDef:
+    def __init__(self, name: str, value: str, text: Optional[str], bitfield: bool) -> None:
+        self.definition_name = "constant"
+
+        self.name = name
+        self.value = value
+        self.text = text
+        self.is_bitfield = bitfield
+
+
+class EnumDef:
+    def __init__(self, name: str, bitfield: bool) -> None:
+        self.definition_name = "enum"
+
+        self.name = name
+        self.values: OrderedDict[str, ConstantDef] = OrderedDict()
+        self.is_bitfield = bitfield
+
+
+class ThemeItemDef:
+    def __init__(
+        self, name: str, type_name: TypeName, data_name: str, text: Optional[str], default_value: Optional[str]
+    ) -> None:
+        self.definition_name = "theme item"
+
+        self.name = name
+        self.type_name = type_name
+        self.data_name = data_name
+        self.text = text
+        self.default_value = default_value
+
+
+class ClassDef:
+    def __init__(self, name: str) -> None:
+        self.definition_name = "class"
+
+        self.name = name
+        self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
+        self.enums: OrderedDict[str, EnumDef] = OrderedDict()
+        self.properties: OrderedDict[str, PropertyDef] = OrderedDict()
+        self.constructors: OrderedDict[str, List[MethodDef]] = OrderedDict()
+        self.methods: OrderedDict[str, List[MethodDef]] = OrderedDict()
+        self.operators: OrderedDict[str, List[MethodDef]] = OrderedDict()
+        self.signals: OrderedDict[str, SignalDef] = OrderedDict()
+        self.annotations: OrderedDict[str, List[AnnotationDef]] = OrderedDict()
+        self.theme_items: OrderedDict[str, ThemeItemDef] = OrderedDict()
+        self.inherits: Optional[str] = None
+        self.brief_description: Optional[str] = None
+        self.description: Optional[str] = None
+        self.tutorials: List[Tuple[str, str]] = []
+
+        # Used to match the class with XML source for output filtering purposes.
+        self.filepath: str = ""
+
+
+def print_error(error: str, state: State) -> None:
+    print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
+    state.num_errors += 1
+
+
+def main() -> None:
     # Enable ANSI escape code support on Windows 10 and later (for colored console output).
     # <https://bugs.python.org/issue29059>
     if platform.system().lower() == "windows":
-        from ctypes import windll, c_int, byref
+        from ctypes import windll, c_int, byref  # type: ignore
 
         stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
         mode = c_int(0)
@@ -491,7 +545,7 @@ def main():  # type: () -> None
 
     print("Checking for errors in the XML class reference...")
 
-    file_list = []  # type: List[str]
+    file_list: List[str] = []
 
     for path in args.path:
         # Cut off trailing slashes so os.path.basename doesn't choke.
@@ -515,7 +569,7 @@ def main():  # type: () -> None
 
             file_list.append(path)
 
-    classes = {}  # type: Dict[str, ET.Element]
+    classes: Dict[str, Tuple[ET.Element, str]] = {}
     state = State()
 
     for cur_file in file_list:
@@ -576,7 +630,7 @@ def main():  # type: () -> None
         exit(1)
 
 
-def translate(string):  # type: (str) -> str
+def translate(string: str) -> str:
     """Translate a string based on translations sourced from `doc/translations/*.po`
     for a language if defined via the --lang command line argument.
     Returns the original string if no translation exists.
@@ -584,7 +638,7 @@ def translate(string):  # type: (str) -> str
     return strings_l10n.get(string, string)
 
 
-def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, State, bool, str) -> None
+def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str) -> None:
     class_name = class_def.name
 
     if dry_run:
@@ -635,8 +689,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 break
         f.write("\n\n")
 
-    # Descendents
-    inherited = []
+    # Descendants
+    inherited: List[str] = []
     for c in state.classes.values():
         if c.inherits and c.inherits.strip() == class_name:
             inherited.append(c.name)
@@ -651,12 +705,12 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
     # Brief description
     if class_def.brief_description is not None:
-        f.write(rstize_text(class_def.brief_description.strip(), state) + "\n\n")
+        f.write(rstize_text(class_def.brief_description.strip(), class_def, state) + "\n\n")
 
     # Class description
     if class_def.description is not None and class_def.description.strip() != "":
         f.write(make_heading("Description", "-"))
-        f.write(rstize_text(class_def.description.strip(), state) + "\n\n")
+        f.write(rstize_text(class_def.description.strip(), class_def, state) + "\n\n")
 
     # Online tutorials
     if len(class_def.tutorials) > 0:
@@ -667,7 +721,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Properties overview
     if len(class_def.properties) > 0:
         f.write(make_heading("Properties", "-"))
-        ml = []  # type: List[Tuple[str, str, str]]
+        ml: List[Tuple[Optional[str], ...]] = []
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             default = property_def.default_value
@@ -683,7 +737,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Constructors, Methods, Operators overview
     if len(class_def.constructors) > 0:
         f.write(make_heading("Constructors", "-"))
-        ml = []
+        ml: List[Tuple[Optional[str], ...]] = []
         for method_list in class_def.constructors.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "constructor", state))
@@ -691,7 +745,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
     if len(class_def.methods) > 0:
         f.write(make_heading("Methods", "-"))
-        ml = []
+        ml: List[Tuple[Optional[str], ...]] = []
         for method_list in class_def.methods.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "method", state))
@@ -699,7 +753,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
     if len(class_def.operators) > 0:
         f.write(make_heading("Operators", "-"))
-        ml = []
+        ml: List[Tuple[Optional[str], ...]] = []
         for method_list in class_def.operators.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "operator", state))
@@ -708,7 +762,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Theme properties
     if len(class_def.theme_items) > 0:
         f.write(make_heading("Theme Properties", "-"))
-        pl = []
+        pl: List[Tuple[Optional[str], ...]] = []
         for theme_item_def in class_def.theme_items.values():
             ref = ":ref:`{0}<class_{2}_theme_{1}_{0}>`".format(
                 theme_item_def.name, theme_item_def.data_name, class_name
@@ -730,7 +784,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write("- {}\n\n".format(signature))
 
             if signal.description is not None and signal.description.strip() != "":
-                f.write(rstize_text(signal.description.strip(), state) + "\n\n")
+                f.write(rstize_text(signal.description.strip(), signal, state) + "\n\n")
 
             index += 1
 
@@ -760,7 +814,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
                     # If value.text contains a bullet point list, each entry needs additional indentation
-                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), state)))
+                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), value, state)))
 
                 f.write("\n\n")
 
@@ -777,10 +831,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         for constant in class_def.constants.values():
             f.write("- **{}** = **{}**".format(constant.name, constant.value))
             if constant.text is not None and constant.text.strip() != "":
-                f.write(" --- " + rstize_text(constant.text.strip(), state))
+                f.write(" --- " + rstize_text(constant.text.strip(), constant, state))
 
             f.write("\n\n")
 
+    # Annotations
     if len(class_def.annotations) > 0:
         f.write(make_heading("Annotations", "-"))
         index = 0
@@ -793,11 +848,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 if i == 0:
                     f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name.strip("@")))
 
-                ret_type, signature = make_method_signature(class_def, m, "", state)
-                f.write("- {} {}\n\n".format(ret_type, signature))
+                _, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {}\n\n".format(signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -816,7 +871,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write(".. _class_{}_property_{}:\n\n".format(class_name, property_def.name))
             f.write("- {} **{}**\n\n".format(property_def.type_name.to_rst(state), property_def.name))
 
-            info = []
+            info: List[Tuple[Optional[str], ...]] = []
             # Not using translate() for now as it breaks table formatting.
             if property_def.default_value is not None:
                 info.append(("*" + "Default" + "*", property_def.default_value))
@@ -829,7 +884,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 format_table(f, info)
 
             if property_def.text is not None and property_def.text.strip() != "":
-                f.write(rstize_text(property_def.text.strip(), state) + "\n\n")
+                f.write(rstize_text(property_def.text.strip(), property_def, state) + "\n\n")
 
             index += 1
 
@@ -850,7 +905,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -870,7 +925,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -894,7 +949,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
-                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+                    f.write(rstize_text(m.description.strip(), m, state) + "\n\n")
 
                 index += 1
 
@@ -919,14 +974,14 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 format_table(f, info)
 
             if theme_item_def.text is not None and theme_item_def.text.strip() != "":
-                f.write(rstize_text(theme_item_def.text.strip(), state) + "\n\n")
+                f.write(rstize_text(theme_item_def.text.strip(), theme_item_def, state) + "\n\n")
 
             index += 1
 
     f.write(make_footer())
 
 
-def escape_rst(text, until_pos=-1):  # type: (str, int) -> str
+def escape_rst(text: str, until_pos: int = -1) -> str:
     # Escape \ character, otherwise it ends up as an escape character in rst
     pos = 0
     while True:
@@ -960,7 +1015,7 @@ def escape_rst(text, until_pos=-1):  # type: (str, int) -> str
     return text
 
 
-def format_codeblock(code_type, post_text, indent_level, state):  # types: str, str, int, state
+def format_codeblock(code_type: str, post_text: str, indent_level: int, state: State) -> Union[Tuple[str, int], None]:
     end_pos = post_text.find("[/" + code_type + "]")
     if end_pos == -1:
         print_error("{}.xml: [" + code_type + "] without a closing tag.".format(state.current_class), state)
@@ -994,10 +1049,14 @@ def format_codeblock(code_type, post_text, indent_level, state):  # types: str, 
         else:
             code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1 :]
             code_pos += 5 - to_skip
-    return ["\n[" + code_type + "]" + code_text + post_text, len("\n[" + code_type + "]" + code_text)]
+    return ("\n[" + code_type + "]" + code_text + post_text, len("\n[" + code_type + "]" + code_text))
 
 
-def rstize_text(text, state):  # type: (str, State) -> str
+def rstize_text(
+    text: str,
+    context: Union[ClassDef, SignalDef, ConstantDef, AnnotationDef, PropertyDef, MethodDef, ThemeItemDef, None],
+    state: State,
+) -> str:
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
     while True:
@@ -1037,7 +1096,6 @@ def rstize_text(text, state):  # type: (str, State) -> str
     inside_code = False
     pos = 0
     tag_depth = 0
-    previous_pos = 0
     while True:
         pos = text.find("[", pos)
         if pos == -1:
@@ -1065,6 +1123,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(" ")
+
             if cmd == "/codeblock" or cmd == "/gdscript" or cmd == "/csharp":
                 tag_text = ""
                 tag_depth -= 1
@@ -1110,11 +1169,13 @@ def rstize_text(text, state):  # type: (str, State) -> str
                                 '{}.xml: Unresolved constructor "{}".'.format(state.current_class, param), state
                             )
                         ref_type = "_constructor"
-                    if cmd.startswith("method"):
+
+                    elif cmd.startswith("method"):
                         if method_param not in class_def.methods:
                             print_error('{}.xml: Unresolved method "{}".'.format(state.current_class, param), state)
                         ref_type = "_method"
-                    if cmd.startswith("operator"):
+
+                    elif cmd.startswith("operator"):
                         if method_param not in class_def.operators:
                             print_error('{}.xml: Unresolved operator "{}".'.format(state.current_class, param), state)
                         ref_type = "_operator"
@@ -1179,6 +1240,56 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_text = ":ref:`{}<class_{}{}_{}>`".format(repl_text, class_param, ref_type, method_param)
                 escape_pre = True
                 escape_post = True
+            elif cmd.startswith("param"):
+                param_name: str = ""
+                if space_pos >= 0:
+                    param_name = tag_text[space_pos + 1 :].strip()
+
+                if param_name == "":
+                    context_name: str = "unknown context"
+                    if context is not None:
+                        context_name = '{} "{}" description'.format(context.definition_name, context.name)
+
+                    print_error(
+                        "{}.xml: Empty argument reference in {}.".format(state.current_class, context_name),
+                        state,
+                    )
+                else:
+                    valid_context = (
+                        isinstance(context, MethodDef)
+                        or isinstance(context, SignalDef)
+                        or isinstance(context, AnnotationDef)
+                    )
+                    if not valid_context:
+                        context_name: str = "unknown context"
+                        if context is not None:
+                            context_name = '{} "{}" description'.format(context.definition_name, context.name)
+
+                        print_error(
+                            '{}.xml: Argument reference "{}" used outside of method, signal, or annotation context in {}.'.format(
+                                state.current_class, param_name, context_name
+                            ),
+                            state,
+                        )
+                    else:
+                        context_params: List[ParameterDef] = context.parameters
+                        found = False
+                        for param_def in context_params:
+                            if param_def.name == param_name:
+                                found = True
+                                break
+                        if not found:
+                            print_error(
+                                '{}.xml: Unresolved argument reference "{}" in {} "{}" description.'.format(
+                                    state.current_class, param_name, context.definition_name, context.name
+                                ),
+                                state,
+                            )
+
+                if param_name == "":
+                    tag_text = ""
+                else:
+                    tag_text = "``{}``".format(param_name)
             elif cmd.find("image=") == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find("url=") == 0:
@@ -1204,7 +1315,6 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
                 text = pre_text + tag_text + post_text
                 pos = len(pre_text) + len(tag_text)
-                previous_pos = pos
                 continue
             elif cmd == "center":
                 tag_depth += 1
@@ -1310,7 +1420,6 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
-        previous_pos = pos
 
     if tag_depth > 0:
         print_error(
@@ -1320,7 +1429,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
     return text
 
 
-def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]], bool) -> None
+def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:
     if len(data) == 0:
         return
 
@@ -1351,7 +1460,7 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
     f.write("\n")
 
 
-def make_type(klass, state):  # type: (str, State) -> str
+def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
         return klass
     link_type = klass
@@ -1363,7 +1472,7 @@ def make_type(klass, state):  # type: (str, State) -> str
     return klass
 
 
-def make_enum(t, state):  # type: (str, State) -> str
+def make_enum(t: str, state: State) -> str:
     p = t.find(".")
     if p >= 0:
         c = t[0:p]
@@ -1389,31 +1498,36 @@ def make_enum(t, state):  # type: (str, State) -> str
 
 
 def make_method_signature(
-    class_def, method_def, ref_type, state
-):  # type: (ClassDef, Union[MethodDef, SignalDef], str, State) -> Tuple[str, str]
-    ret_type = " "
+    class_def: ClassDef, definition: Union[AnnotationDef, MethodDef, SignalDef], ref_type: str, state: State
+) -> Tuple[str, str]:
+    ret_type = ""
 
-    if isinstance(method_def, MethodDef):
-        ret_type = method_def.return_type.to_rst(state)
+    is_method_def = isinstance(definition, MethodDef)
+    if is_method_def:
+        ret_type = definition.return_type.to_rst(state)
+
+    qualifiers = None
+    if is_method_def or isinstance(definition, AnnotationDef):
+        qualifiers = definition.qualifiers
 
     out = ""
 
-    if ref_type != "":
+    if is_method_def and ref_type != "":
         if ref_type == "operator":
             out += ":ref:`{0}<class_{1}_{2}_{3}_{4}>` ".format(
-                method_def.name,
+                definition.name.replace("<", "\\<"),  # So operator "<" gets correctly displayed.
                 class_def.name,
                 ref_type,
-                sanitize_operator_name(method_def.name, state),
-                method_def.return_type.type_name,
+                sanitize_operator_name(definition.name, state),
+                definition.return_type.type_name,
             )
         else:
-            out += ":ref:`{0}<class_{1}_{2}_{0}>` ".format(method_def.name, class_def.name, ref_type)
+            out += ":ref:`{0}<class_{1}_{2}_{0}>` ".format(definition.name, class_def.name, ref_type)
     else:
-        out += "**{}** ".format(method_def.name)
+        out += "**{}** ".format(definition.name)
 
     out += "**(**"
-    for i, arg in enumerate(method_def.parameters):
+    for i, arg in enumerate(definition.parameters):
         if i > 0:
             out += ", "
         else:
@@ -1424,24 +1538,24 @@ def make_method_signature(
         if arg.default_value is not None:
             out += "=" + arg.default_value
 
-    if isinstance(method_def, MethodDef) and method_def.qualifiers is not None and "vararg" in method_def.qualifiers:
-        if len(method_def.parameters) > 0:
+    if qualifiers is not None and "vararg" in qualifiers:
+        if len(definition.parameters) > 0:
             out += ", ..."
         else:
             out += " ..."
 
     out += " **)**"
 
-    if isinstance(method_def, MethodDef) and method_def.qualifiers is not None:
+    if qualifiers is not None:
         # Use substitutions for abbreviations. This is used to display tooltips on hover.
         # See `make_footer()` for descriptions.
-        for qualifier in method_def.qualifiers.split():
+        for qualifier in qualifiers.split():
             out += " |" + qualifier + "|"
 
     return ret_type, out
 
 
-def make_heading(title, underline, l10n=True):  # type: (str, str, bool) -> str
+def make_heading(title: str, underline: str, l10n: bool = True) -> str:
     if l10n:
         new_title = translate(title)
         if new_title != title:
@@ -1450,7 +1564,7 @@ def make_heading(title, underline, l10n=True):  # type: (str, str, bool) -> str
     return title + "\n" + (underline * len(title)) + "\n\n"
 
 
-def make_footer():  # type: () -> str
+def make_footer() -> str:
     # Generate reusable abbreviation substitutions.
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
     # fmt: off
@@ -1465,7 +1579,7 @@ def make_footer():  # type: () -> str
     # fmt: on
 
 
-def make_link(url, title):  # type: (str, str) -> str
+def make_link(url: str, title: str) -> str:
     match = GODOT_DOCS_PATTERN.search(url)
     if match:
         groups = match.groups()
@@ -1482,15 +1596,15 @@ def make_link(url, title):  # type: (str, str) -> str
             if title != "":
                 return ":doc:`" + title + " <../" + groups[0] + ">`"
             return ":doc:`../" + groups[0] + "`"
-    else:
-        # External link, for example:
-        # `http://enet.bespin.org/usergroup0.html`
-        if title != "":
-            return "`" + title + " <" + url + ">`__"
-        return "`" + url + " <" + url + ">`__"
+
+    # External link, for example:
+    # `http://enet.bespin.org/usergroup0.html`
+    if title != "":
+        return "`" + title + " <" + url + ">`__"
+    return "`" + url + " <" + url + ">`__"
 
 
-def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
+def sanitize_operator_name(dirty_name: str, state: State) -> str:
     clear_name = dirty_name.replace("operator ", "")
 
     if clear_name == "!=":
@@ -1548,7 +1662,7 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
     return clear_name
 
 
-def indent_bullets(text):  # type: (str) -> str
+def indent_bullets(text: str) -> str:
     # Take the text and check each line for a bullet point represented by "-".
     # Where found, indent the given line by a further "\t".
     # Used to properly indent bullet points contained in the description for enum values.

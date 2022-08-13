@@ -17,15 +17,15 @@
 		</method>
 		<method name="get_draw_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
+			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="set_draw_flag">
 			<return type="void" />
-			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the specified flag will be enabled. See [enum Label3D.DrawFlags] for a list of flags.
 			</description>
@@ -53,7 +53,7 @@
 		<member name="font" type="Font" setter="set_font" getter="get_font">
 			Font configuration used to display text.
 		</member>
-		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
+		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="32">
 			Font size of the [Label3D]'s text.
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
@@ -82,10 +82,10 @@
 			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
-		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
+		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="12">
 			Text outline size.
 		</member>
-		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.005">
 			The size of one pixel's width on the label to scale it in 3D.
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">

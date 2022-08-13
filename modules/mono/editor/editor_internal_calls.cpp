@@ -39,7 +39,9 @@
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "main/main.h"
 
@@ -189,7 +191,7 @@ MonoString *godot_icall_Internal_UpdateApiAssembliesFromPrebuilt(MonoString *p_c
 }
 
 MonoString *godot_icall_Internal_FullExportTemplatesDir() {
-	String full_templates_dir = EditorSettings::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
 	return GDMonoMarshal::mono_string_from_godot(full_templates_dir);
 }
 

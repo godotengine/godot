@@ -18,8 +18,8 @@
 		</method>
 		<method name="_generate" qualifiers="virtual const">
 			<return type="Texture2D" />
-			<argument index="0" name="resource" type="Resource" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Generate a preview from a given resource with the specified size. This must always be implemented.
 				Returning an empty texture is an OK way to fail and let another generator take care.
@@ -28,8 +28,8 @@
 		</method>
 		<method name="_generate_from_path" qualifiers="virtual const">
 			<return type="Texture2D" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Generate a preview directly from a path with the specified size. Implementing this is optional, as default code will load and call [method _generate].
 				Returning an empty texture is an OK way to fail and let another generator take care.
@@ -45,7 +45,7 @@
 		</method>
 		<method name="_handles" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="type" type="String" />
+			<param index="0" name="type" type="String" />
 			<description>
 				Returns [code]true[/code] if your generator supports the resource of type [code]type[/code].
 			</description>

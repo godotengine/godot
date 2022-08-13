@@ -12,30 +12,31 @@
 	<methods>
 		<method name="_input_event" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="viewport" type="Viewport" />
-			<argument index="1" name="event" type="InputEvent" />
-			<argument index="2" name="shape_idx" type="int" />
+			<param index="0" name="viewport" type="Viewport" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="shape_idx" type="int" />
 			<description>
-				Accepts unhandled [InputEvent]s. Requires [member input_pickable] to be [code]true[/code]. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				Accepts unhandled [InputEvent]s. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
 		<method name="create_shape_owner">
 			<return type="int" />
-			<argument index="0" name="owner" type="Object" />
+			<param index="0" name="owner" type="Object" />
 			<description>
 				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
 			</description>
 		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -48,7 +49,7 @@
 		</method>
 		<method name="get_shape_owner_one_way_collision_margin" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the [code]one_way_collision_margin[/code] of the shape owner identified by given [code]owner_id[/code].
 			</description>
@@ -61,136 +62,136 @@
 		</method>
 		<method name="is_shape_owner_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				If [code]true[/code], the shape owner and its shapes are disabled.
 			</description>
 		</method>
 		<method name="is_shape_owner_one_way_collision_enabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns [code]true[/code] if collisions for the shape owner originating from this [CollisionObject2D] will not be reported to collided with [CollisionObject2D]s.
 			</description>
 		</method>
 		<method name="remove_shape_owner">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Removes the given shape owner.
 			</description>
 		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="shape_index" type="int" />
+			<param index="0" name="shape_index" type="int" />
 			<description>
 				Returns the [code]owner_id[/code] of the given shape.
 			</description>
 		</method>
 		<method name="shape_owner_add_shape">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape" type="Shape2D" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape" type="Shape2D" />
 			<description>
 				Adds a [Shape2D] to the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_clear_shapes">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Removes all shapes from the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_owner" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the parent object of the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape" qualifiers="const">
 			<return type="Shape2D" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
 			<description>
 				Returns the [Shape2D] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the number of shapes the given shape owner contains.
 			</description>
 		</method>
 		<method name="shape_owner_get_shape_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
 			<description>
 				Returns the child index of the [Shape2D] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">
 			<return type="Transform2D" />
-			<argument index="0" name="owner_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
 			<description>
 				Returns the shape owner's [Transform2D].
 			</description>
 		</method>
 		<method name="shape_owner_remove_shape">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="shape_id" type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
 			<description>
 				Removes a shape from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_disabled">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="disabled" type="bool" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], disables the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_one_way_collision">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]enable[/code] is [code]true[/code], collisions for the shape owner originating from this [CollisionObject2D] will not be reported to collided with [CollisionObject2D]s.
 			</description>
 		</method>
 		<method name="shape_owner_set_one_way_collision_margin">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="margin" type="float" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="margin" type="float" />
 			<description>
 				Sets the [code]one_way_collision_margin[/code] of the shape owner identified by given [code]owner_id[/code] to [code]margin[/code] pixels.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">
 			<return type="void" />
-			<argument index="0" name="owner_id" type="int" />
-			<argument index="1" name="transform" type="Transform2D" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the [Transform2D] of the given shape owner.
 			</description>
@@ -214,31 +215,33 @@
 	</members>
 	<signals>
 		<signal name="input_event">
-			<argument index="0" name="viewport" type="Node" />
-			<argument index="1" name="event" type="InputEvent" />
-			<argument index="2" name="shape_idx" type="int" />
+			<param index="0" name="viewport" type="Node" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="shape_idx" type="int" />
 			<description>
-				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set. See [method _input_event] for details.
+				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
 				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject2D] won't cause this signal to be emitted.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
 				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject2D] won't cause this signal to be emitted.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_shape_entered">
-			<argument index="0" name="shape_idx" type="int" />
+			<param index="0" name="shape_idx" type="int" />
 			<description>
 				Emitted when the mouse pointer enters any of this object's shapes or moves from one shape to another. [code]shape_idx[/code] is the child index of the newly entered [Shape2D]. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</signal>
 		<signal name="mouse_shape_exited">
-			<argument index="0" name="shape_idx" type="int" />
+			<param index="0" name="shape_idx" type="int" />
 			<description>
 				Emitted when the mouse pointer exits any of this object's shapes. [code]shape_idx[/code] is the child index of the exited [Shape2D]. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>

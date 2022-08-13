@@ -103,7 +103,7 @@ Error ResourceImporterBitMap::import(const String &p_source_file, const String &
 		}
 	}
 
-	return ResourceSaver::save(p_save_path + ".res", bitmap);
+	return ResourceSaver::save(bitmap, p_save_path + ".res");
 }
 
 ResourceImporterBitMap::ResourceImporterBitMap() {

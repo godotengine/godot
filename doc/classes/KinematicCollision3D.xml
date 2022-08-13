@@ -12,50 +12,50 @@
 	<methods>
 		<method name="get_angle" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="collision_index" type="int" default="0" />
-			<argument index="1" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<param index="1" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
 				Returns the collision angle according to [code]up_direction[/code], which is [code]Vector3.UP[/code] by default. This value is always positive.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's attached [Object] given a collision index (the deepest collision by default).
 			</description>
 		</method>
 		<method name="get_collider_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the unique instance ID of the colliding body's attached [Object] given a collision index (the deepest collision by default). See [method Object.get_instance_id].
 			</description>
 		</method>
 		<method name="get_collider_rid" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's [RID] used by the [PhysicsServer3D] given a collision index (the deepest collision by default).
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's shape given a collision index (the deepest collision by default).
 			</description>
 		</method>
 		<method name="get_collider_shape_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's shape index given a collision index (the deepest collision by default). See [CollisionObject3D].
 			</description>
 		</method>
 		<method name="get_collider_velocity" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's velocity given a collision index (the deepest collision by default).
 			</description>
@@ -66,23 +66,29 @@
 				Returns the number of detected collisions.
 			</description>
 		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the colliding body's length of overlap along the collision normal.
+			</description>
+		</method>
 		<method name="get_local_shape" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the moving object's colliding shape given a collision index (the deepest collision by default).
 			</description>
 		</method>
 		<method name="get_normal" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the colliding body's shape's normal at the point of collision given a collision index (the deepest collision by default).
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="collision_index" type="int" default="0" />
+			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
 				Returns the point of collision in global coordinates given a collision index (the deepest collision by default).
 			</description>

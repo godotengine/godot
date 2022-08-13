@@ -35,14 +35,14 @@
 		</constructor>
 		<constructor name="NodePath">
 			<return type="NodePath" />
-			<argument index="0" name="from" type="NodePath" />
+			<param index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a [NodePath] as a copy of the given [NodePath]. [code]NodePath("example")[/code] is equivalent to [code]^"example"[/code].
 			</description>
 		</constructor>
 		<constructor name="NodePath">
 			<return type="NodePath" />
-			<argument index="0" name="from" type="String" />
+			<param index="0" name="from" type="String" />
 			<description>
 				Creates a NodePath from a string, e.g. [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code]. A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
 				The "subnames" optionally included after the path to the target node can point to resources or properties, and can also be nested.
@@ -111,7 +111,7 @@
 		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count] - 1).
 				[codeblocks]
@@ -139,7 +139,7 @@
 		</method>
 		<method name="get_subname" qualifiers="const">
 			<return type="StringName" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
 				[codeblocks]
@@ -185,13 +185,13 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="NodePath" />
+			<param index="0" name="right" type="NodePath" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="NodePath" />
+			<param index="0" name="right" type="NodePath" />
 			<description>
 			</description>
 		</operator>

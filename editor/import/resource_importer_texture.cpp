@@ -597,7 +597,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 
 		if (!ok_on_pc) {
-			EditorNode::add_io_error(TTR("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC."));
+			EditorNode::add_io_error(vformat(TTR("%s: No suitable desktop VRAM compression algorithm enabled in Project Settings (S3TC or BPTC). This texture may not display correctly on desktop platforms."), p_source_file));
 		}
 	} else {
 		//import normally

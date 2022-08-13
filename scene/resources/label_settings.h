@@ -39,17 +39,17 @@
 class LabelSettings : public Resource {
 	GDCLASS(LabelSettings, Resource);
 
-	real_t line_spacing = 0;
+	real_t line_spacing = 3;
 
 	Ref<Font> font;
 	int font_size = Font::DEFAULT_FONT_SIZE;
-	Color font_color = Color(0.875, 0.875, 0.875);
+	Color font_color = Color(1, 1, 1);
 
 	int outline_size = 0;
 	Color outline_color = Color(1, 1, 1);
 
-	int shadow_size = 0;
-	Color shadow_color = Color(1, 1, 1);
+	int shadow_size = 1;
+	Color shadow_color = Color(0, 0, 0, 0);
 	Vector2 shadow_offset = Vector2(1, 1);
 
 	void _font_changed();

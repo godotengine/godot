@@ -34,7 +34,7 @@
 
 #include "core/config/project_settings.h"
 
-#include <dbus/dbus.h>
+#include "dbus-so_wrap.h"
 
 #define BUS_OBJECT_NAME "org.freedesktop.ScreenSaver"
 #define BUS_OBJECT_PATH "/org/freedesktop/ScreenSaver"
@@ -124,6 +124,15 @@ void FreeDesktopScreenSaver::uninhibit() {
 	dbus_message_unref(message);
 	dbus_message_unref(reply);
 	dbus_connection_unref(bus);
+}
+
+FreeDesktopScreenSaver::FreeDesktopScreenSaver() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	unsupported = (initialize_dbus(dylibloader_verbose) != 0);
 }
 
 #endif // DBUS_ENABLED

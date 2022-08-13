@@ -36,6 +36,8 @@
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
 class VariantInternal {
+	friend class Variant;
+
 public:
 	// Set type.
 	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) {
@@ -215,23 +217,28 @@ public:
 	}
 
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = memnew(Transform2D);
+		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
+		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = memnew(AABB);
+		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
+		memnew_placement(v->_data._aabb, AABB);
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = memnew(Basis);
+		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
+		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform3d = memnew(Transform3D);
+		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
+		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
-		v->_data._projection = memnew(Projection);
+		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {

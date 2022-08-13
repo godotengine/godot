@@ -340,7 +340,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	source_level_list->set_allow_rmb_select(true);
-	source_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(source_level_list));
+	source_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked).bind(source_level_list));
 	vbox_container->add_child(source_level_list);
 
 	Label *coords_level_label = memnew(Label);
@@ -351,7 +351,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	coords_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	coords_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	coords_level_list->set_allow_rmb_select(true);
-	coords_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(coords_level_list));
+	coords_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked).bind(coords_level_list));
 	vbox_container->add_child(coords_level_list);
 
 	Label *alternative_level_label = memnew(Label);
@@ -362,7 +362,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	alternative_level_list->set_allow_rmb_select(true);
-	alternative_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(alternative_level_list));
+	alternative_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked).bind(alternative_level_list));
 	vbox_container->add_child(alternative_level_list);
 
 	popup_menu = memnew(PopupMenu);

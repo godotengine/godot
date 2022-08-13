@@ -50,6 +50,7 @@
     <Compile Include="Core\NodePath.cs" />
     <Compile Include="Core\Object.base.cs" />
     <Compile Include="Core\Plane.cs" />
+    <Compile Include="Core\Projection.cs" />
     <Compile Include="Core\Quaternion.cs" />
     <Compile Include="Core\Rect2.cs" />
     <Compile Include="Core\Rect2i.cs" />
@@ -65,6 +66,8 @@
     <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />
     <Compile Include="Core\Vector3i.cs" />
+    <Compile Include="Core\Vector4.cs" />
+    <Compile Include="Core\Vector4i.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <!--

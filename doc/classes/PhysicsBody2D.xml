@@ -12,7 +12,7 @@
 	<methods>
 		<method name="add_collision_exception_with">
 			<return type="void" />
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
@@ -25,34 +25,34 @@
 		</method>
 		<method name="move_and_collide">
 			<return type="KinematicCollision2D" />
-			<argument index="0" name="distance" type="Vector2" />
-			<argument index="1" name="test_only" type="bool" default="false" />
-			<argument index="2" name="safe_margin" type="float" default="0.08" />
+			<param index="0" name="distance" type="Vector2" />
+			<param index="1" name="test_only" type="bool" default="false" />
+			<param index="2" name="safe_margin" type="float" default="0.08" />
 			<description>
-				Moves the body along the vector [code]distance[/code]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [code]distance[/code] should be computed using [code]delta[/code].
+				Moves the body along the vector [param distance]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param distance] should be computed using [code]delta[/code].
 				Returns a [KinematicCollision2D], which contains information about the collision when stopped, or when touching another body along the motion.
-				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
-				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody2D.collision/safe_margin] for more details).
+				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody2D.collision/safe_margin] for more details).
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void" />
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="test_move">
 			<return type="bool" />
-			<argument index="0" name="from" type="Transform2D" />
-			<argument index="1" name="distance" type="Vector2" />
-			<argument index="2" name="collision" type="KinematicCollision2D" default="null" />
-			<argument index="3" name="safe_margin" type="float" default="0.08" />
+			<param index="0" name="from" type="Transform2D" />
+			<param index="1" name="distance" type="Vector2" />
+			<param index="2" name="collision" type="KinematicCollision2D" default="null" />
+			<param index="3" name="safe_margin" type="float" default="0.08" />
 			<description>
-				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [code]distance[/code] should be computed using [code]delta[/code].
-				Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]distance[/code]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
-				[code]collision[/code] is an optional object of type [KinematicCollision2D], which contains additional information about the collision when stopped, or when touching another body along the motion.
-				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody2D.collision/safe_margin] for more details).
+				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param distance] should be computed using [code]delta[/code].
+				Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [param distance]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				[param collision] is an optional object of type [KinematicCollision2D], which contains additional information about the collision when stopped, or when touching another body along the motion.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody2D.collision/safe_margin] for more details).
 			</description>
 		</method>
 	</methods>

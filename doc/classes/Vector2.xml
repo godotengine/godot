@@ -25,24 +25,24 @@
 		</constructor>
 		<constructor name="Vector2">
 			<return type="Vector2" />
-			<argument index="0" name="from" type="Vector2" />
+			<param index="0" name="from" type="Vector2" />
 			<description>
 				Constructs a [Vector2] as a copy of the given [Vector2].
 			</description>
 		</constructor>
 		<constructor name="Vector2">
 			<return type="Vector2" />
-			<argument index="0" name="from" type="Vector2i" />
+			<param index="0" name="from" type="Vector2i" />
 			<description>
 				Constructs a new [Vector2] from [Vector2i].
 			</description>
 		</constructor>
 		<constructor name="Vector2">
 			<return type="Vector2" />
-			<argument index="0" name="x" type="float" />
-			<argument index="1" name="y" type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
 			<description>
-				Constructs a new [Vector2] from the given [code]x[/code] and [code]y[/code].
+				Constructs a new [Vector2] from the given [param x] and [param y].
 			</description>
 		</constructor>
 	</constructors>
@@ -64,7 +64,7 @@
 		</method>
 		<method name="angle_to" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
 				Returns the angle to the given vector, in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
@@ -72,7 +72,7 @@
 		</method>
 		<method name="angle_to_point" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
 				Returns the angle between the line connecting the two points and the X axis, in radians.
 				[code]a.angle_to_point(b)[/code] is equivalent of doing [code](b - a).angle()[/code].
@@ -87,17 +87,17 @@
 		</method>
 		<method name="bezier_interpolate" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="control_1" type="Vector2" />
-			<argument index="1" name="control_2" type="Vector2" />
-			<argument index="2" name="end" type="Vector2" />
-			<argument index="3" name="t" type="float" />
+			<param index="0" name="control_1" type="Vector2" />
+			<param index="1" name="control_2" type="Vector2" />
+			<param index="2" name="end" type="Vector2" />
+			<param index="3" name="t" type="float" />
 			<description>
-				Returns the point at the given [code]t[/code] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by this vector and the given [code]control_1[/code], [code]control_2[/code], and [code]end[/code] points.
+				Returns the point at the given [param t] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by this vector and the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
 		<method name="bounce" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="n" type="Vector2" />
+			<param index="0" name="n" type="Vector2" />
 			<description>
 				Returns the vector "bounced off" from a plane defined by the given normal.
 			</description>
@@ -110,58 +110,58 @@
 		</method>
 		<method name="clamp" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="min" type="Vector2" />
-			<argument index="1" name="max" type="Vector2" />
+			<param index="0" name="min" type="Vector2" />
+			<param index="1" name="max" type="Vector2" />
 			<description>
-				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="cross" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="with" type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
 			<description>
-				Returns the 2D analog of the cross product for this vector and [code]with[/code].
+				Returns the 2D analog of the cross product for this vector and [param with].
 				This is the signed area of the parallelogram formed by the two vectors. If the second vector is clockwise from the first vector, then the cross product is the positive area. If counter-clockwise, the cross product is the negative area.
 				[b]Note:[/b] Cross product is not defined in 2D mathematically. This method embeds the 2D vectors in the XY plane of 3D space and uses their cross product's Z component as the analog.
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="b" type="Vector2" />
-			<argument index="1" name="pre_a" type="Vector2" />
-			<argument index="2" name="post_b" type="Vector2" />
-			<argument index="3" name="weight" type="float" />
+			<param index="0" name="b" type="Vector2" />
+			<param index="1" name="pre_a" type="Vector2" />
+			<param index="2" name="post_b" type="Vector2" />
+			<param index="3" name="weight" type="float" />
 			<description>
-				Cubically interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Cubically interpolates between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the normalized vector pointing from this vector to [code]to[/code]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the squared distance between this vector and [code]to[/code].
+				Returns the squared distance between this vector and [param to].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the distance between this vector and [code]to[/code].
+				Returns the distance between this vector and [param to].
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="with" type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
 			<description>
-				Returns the dot product of this vector and [code]with[/code]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
+				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
 				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
@@ -175,9 +175,9 @@
 		</method>
 		<method name="from_angle" qualifiers="static">
 			<return type="Vector2" />
-			<argument index="0" name="angle" type="float" />
+			<param index="0" name="angle" type="float" />
 			<description>
-				Creates a unit [Vector2] rotated to the given [code]angle[/code] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
+				Creates a unit [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
 				[codeblock]
 				print(Vector2.from_angle(0)) # Prints (1, 0).
 				print(Vector2(1, 0).angle()) # Prints 0, which is the angle used above.
@@ -187,7 +187,7 @@
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
@@ -213,17 +213,17 @@
 		</method>
 		<method name="lerp" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="to" type="Vector2" />
-			<argument index="1" name="weight" type="float" />
+			<param index="0" name="to" type="Vector2" />
+			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]to[/code] by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="limit_length" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="length" type="float" default="1.0" />
+			<param index="0" name="length" type="float" default="1.0" />
 			<description>
-				Returns the vector with a maximum length by limiting its length to [code]length[/code].
+				Returns the vector with a maximum length by limiting its length to [param length].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -240,10 +240,10 @@
 		</method>
 		<method name="move_toward" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="to" type="Vector2" />
-			<argument index="1" name="delta" type="float" />
+			<param index="0" name="to" type="Vector2" />
+			<param index="1" name="delta" type="float" />
 			<description>
-				Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
+				Returns a new vector moved toward [param to] by the fixed [param delta] amount. Will not go past the final value.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -260,37 +260,37 @@
 		</method>
 		<method name="posmod" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="mod" type="float" />
+			<param index="0" name="mod" type="float" />
 			<description>
-				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]mod[/code].
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
 			</description>
 		</method>
 		<method name="posmodv" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="modv" type="Vector2" />
+			<param index="0" name="modv" type="Vector2" />
 			<description>
-				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]modv[/code]'s components.
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
 			</description>
 		</method>
 		<method name="project" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="b" type="Vector2" />
+			<param index="0" name="b" type="Vector2" />
 			<description>
 				Returns this vector projected onto the vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="n" type="Vector2" />
+			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns the vector reflected (i.e. mirrored, or symmetric) over a line defined by the given direction vector [code]n[/code].
+				Returns the vector reflected (i.e. mirrored, or symmetric) over a line defined by the given direction vector [param n].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="angle" type="float" />
+			<param index="0" name="angle" type="float" />
 			<description>
-				Returns the vector rotated by [code]angle[/code] (in radians). See also [method @GlobalScope.deg2rad].
+				Returns the vector rotated by [param angle] (in radians). See also [method @GlobalScope.deg2rad].
 			</description>
 		</method>
 		<method name="round" qualifiers="const">
@@ -307,25 +307,25 @@
 		</method>
 		<method name="slerp" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="to" type="Vector2" />
-			<argument index="1" name="weight" type="float" />
+			<param index="0" name="to" type="Vector2" />
+			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the result of spherical linear interpolation between this vector and [code]to[/code], by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Returns the result of spherical linear interpolation between this vector and [param to], by amount [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 				This method also handles interpolating the lengths if the input vectors have different lengths. For the special case of one or both input vectors having zero length, this method behaves like [method lerp].
 			</description>
 		</method>
 		<method name="slide" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="n" type="Vector2" />
+			<param index="0" name="n" type="Vector2" />
 			<description>
 				Returns this vector slid along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="step" type="Vector2" />
+			<param index="0" name="step" type="Vector2" />
 			<description>
-				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
+				Returns this vector with each component snapped to the nearest multiple of [param step]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
@@ -369,7 +369,7 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the vectors are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -377,14 +377,14 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="Transform2D" />
+			<param index="0" name="right" type="Transform2D" />
 			<description>
 				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
 				Multiplies each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
@@ -394,21 +394,21 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="float" />
+			<param index="0" name="right" type="float" />
 			<description>
 				Multiplies each component of the [Vector2] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="int" />
+			<param index="0" name="right" type="int" />
 			<description>
 				Multiplies each component of the [Vector2] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
 				Adds each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
@@ -418,7 +418,7 @@
 		</operator>
 		<operator name="operator -">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
 				Subtracts each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
@@ -428,7 +428,7 @@
 		</operator>
 		<operator name="operator /">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
 				Divides each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
@@ -438,35 +438,35 @@
 		</operator>
 		<operator name="operator /">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="float" />
+			<param index="0" name="right" type="float" />
 			<description>
 				Divides each component of the [Vector2] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Vector2" />
-			<argument index="0" name="right" type="int" />
+			<param index="0" name="right" type="int" />
 			<description>
 				Divides each component of the [Vector2] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
-				Compares two [Vector2] vectors by first checking if the X value of the left vector is less than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
-				Compares two [Vector2] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the vectors are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -474,23 +474,23 @@
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
-				Compares two [Vector2] vectors by first checking if the X value of the left vector is greater than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
 			<description>
-				Compares two [Vector2] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="float" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Access vector components using their index. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
+				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
 			</description>
 		</operator>
 		<operator name="operator unary+">

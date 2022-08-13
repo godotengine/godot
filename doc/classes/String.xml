@@ -18,21 +18,21 @@
 		</constructor>
 		<constructor name="String">
 			<return type="String" />
-			<argument index="0" name="from" type="String" />
+			<param index="0" name="from" type="String" />
 			<description>
 				Constructs a [String] as a copy of the given [String].
 			</description>
 		</constructor>
 		<constructor name="String">
 			<return type="String" />
-			<argument index="0" name="from" type="NodePath" />
+			<param index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a new String from the given [NodePath].
 			</description>
 		</constructor>
 		<constructor name="String">
 			<return type="String" />
-			<argument index="0" name="from" type="StringName" />
+			<param index="0" name="from" type="StringName" />
 			<description>
 				Constructs a new String from the given [StringName].
 			</description>
@@ -41,7 +41,7 @@
 	<methods>
 		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the string begins with the given string.
 			</description>
@@ -92,17 +92,17 @@
 		</method>
 		<method name="casecmp_to" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="to" type="String" />
+			<param index="0" name="to" type="String" />
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
-				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
-				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [param to] string or [code]-1[/code] if the "base" string is shorter than the [param to] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [param to] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="chr" qualifiers="static">
 			<return type="String" />
-			<argument index="0" name="char" type="int" />
+			<param index="0" name="char" type="int" />
 			<description>
 				Directly converts an decimal integer to a unicode character. Tables of these characters can be found in various locations, for example [url=https://unicodelookup.com/]here.[/url]
 				[codeblock]
@@ -113,27 +113,27 @@
 		</method>
 		<method name="contains" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="what" type="String" />
+			<param index="0" name="what" type="String" />
 			<description>
 				Returns [code]true[/code] if the string contains the given string.
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="from" type="int" default="0" />
-			<argument index="2" name="to" type="int" default="0" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
+			<param index="2" name="to" type="int" default="0" />
 			<description>
-				Returns the number of occurrences of substring [code]what[/code] between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
+				Returns the number of occurrences of substring [param what] between [param from] and [param to] positions. If [param from] and [param to] equals 0 the whole string will be used. If only [param to] equals 0 the remained substring will be used.
 			</description>
 		</method>
 		<method name="countn" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="from" type="int" default="0" />
-			<argument index="2" name="to" type="int" default="0" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
+			<param index="2" name="to" type="int" default="0" />
 			<description>
-				Returns the number of occurrences of substring [code]what[/code] (ignoring case) between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
+				Returns the number of occurrences of substring [param what] (ignoring case) between [param from] and [param to] positions. If [param from] and [param to] equals 0 the whole string will be used. If only [param to] equals 0 the remained substring will be used.
 			</description>
 		</method>
 		<method name="dedent" qualifiers="const">
@@ -144,15 +144,15 @@
 		</method>
 		<method name="ends_with" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the string ends with the given string.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="from" type="int" default="0" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
 			<description>
 				Returns the index of the [b]first[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
@@ -169,19 +169,19 @@
 		</method>
 		<method name="findn" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="from" type="int" default="0" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="0" />
 			<description>
 				Returns the index of the [b]first[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 			</description>
 		</method>
 		<method name="format" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="values" type="Variant" />
-			<argument index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
+			<param index="0" name="values" type="Variant" />
+			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
-				Formats the string by replacing all occurrences of [code]placeholder[/code] with the elements of [code]values[/code].
-				[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in [code]placeholder[/code] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
+				[param values] can be a [Dictionary] or an [Array]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
 				[codeblock]
 				# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it.
 				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
@@ -190,7 +190,7 @@
 				# Prints: User 42 is Godot.
 				print("User {id} is {name}.".format({"id": 42, "name": "Godot"}))
 				[/codeblock]
-				Some additional handling is performed when [code]values[/code] is an array. If [code]placeholder[/code] does not contain an underscore, the elements of the array will be used to replace one occurrence of the placeholder in turn; If an array element is another 2-element array, it'll be interpreted as a key-value pair.
+				Some additional handling is performed when [param values] is an array. If [param placeholder] does not contain an underscore, the elements of the array will be used to replace one occurrence of the placeholder in turn; If an array element is another 2-element array, it'll be interpreted as a key-value pair.
 				[codeblock]
 				# Prints: User 42 is Godot.
 				print("User {} is {}.".format([42, "Godot"], "{}"))
@@ -234,10 +234,10 @@
 		</method>
 		<method name="get_slice" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="delimiter" type="String" />
-			<argument index="1" name="slice" type="int" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="slice" type="int" />
 			<description>
-				Splits a string using a [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				Splits a string using a [param delimiter] and returns a substring at index [param slice]. Returns an empty string if the index doesn't exist.
 				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
 				Example:
 				[codeblock]
@@ -247,17 +247,17 @@
 		</method>
 		<method name="get_slice_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="delimiter" type="String" />
+			<param index="0" name="delimiter" type="String" />
 			<description>
-				Splits a string using a [code]delimiter[/code] and returns a number of slices.
+				Splits a string using a [param delimiter] and returns a number of slices.
 			</description>
 		</method>
 		<method name="get_slicec" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="delimiter" type="int" />
-			<argument index="1" name="slice" type="int" />
+			<param index="0" name="delimiter" type="int" />
+			<param index="1" name="slice" type="int" />
 			<description>
-				Splits a string using a Unicode character with code [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				Splits a string using a Unicode character with code [param delimiter] and returns a substring at index [param slice]. Returns an empty string if the index doesn't exist.
 				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
 			</description>
 		</method>
@@ -286,7 +286,7 @@
 		</method>
 		<method name="humanize_size" qualifiers="static">
 			<return type="String" />
-			<argument index="0" name="size" type="int" />
+			<param index="0" name="size" type="int" />
 			<description>
 				Converts an integer representing a number of bytes into a human-readable form.
 				Note that this output is in [url=https://en.wikipedia.org/wiki/Binary_prefix#IEC_prefixes]IEC prefix format[/url], and includes [code]B[/code], [code]KiB[/code], [code]MiB[/code], [code]GiB[/code], [code]TiB[/code], [code]PiB[/code], and [code]EiB[/code].
@@ -294,19 +294,19 @@
 		</method>
 		<method name="indent" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="prefix" type="String" />
+			<param index="0" name="prefix" type="String" />
 			<description>
-				Returns a copy of the string with lines indented with [code]prefix[/code].
+				Returns a copy of the string with lines indented with [param prefix].
 				For example, the string can be indented with two tabs using [code]"\t\t"[/code], or four spaces using [code]"    "[/code]. The prefix can be any string so it can also be used to comment out strings with e.g. [code]"# "[/code]. See also [method dedent] to remove indentation.
 				[b]Note:[/b] Empty lines are kept empty.
 			</description>
 		</method>
 		<method name="insert" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="position" type="int" />
-			<argument index="1" name="what" type="String" />
+			<param index="0" name="position" type="int" />
+			<param index="1" name="what" type="String" />
 			<description>
-				Returns a copy of the string with the substring [code]what[/code] inserted at the given position.
+				Returns a copy of the string with the substring [param what] inserted at the given [param position].
 			</description>
 		</method>
 		<method name="is_absolute_path" qualifiers="const">
@@ -329,14 +329,14 @@
 		</method>
 		<method name="is_subsequence_of" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if this string is a subsequence of the given string.
 			</description>
 		</method>
 		<method name="is_subsequence_ofn" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
 			</description>
@@ -362,9 +362,9 @@
 		</method>
 		<method name="is_valid_hex_number" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="with_prefix" type="bool" default="false" />
+			<param index="0" name="with_prefix" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [param with_prefix] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
 			</description>
 		</method>
 		<method name="is_valid_html_color" qualifiers="const">
@@ -405,9 +405,9 @@
 		</method>
 		<method name="join" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="parts" type="PackedStringArray" />
+			<param index="0" name="parts" type="PackedStringArray" />
 			<description>
-				Returns a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Returns a [String] which is the concatenation of the [param parts]. The separator between elements is the string providing this method.
 				Example:
 				[codeblocks]
 				[gdscript]
@@ -427,9 +427,9 @@
 		</method>
 		<method name="left" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="length" type="int" />
+			<param index="0" name="length" type="int" />
 			<description>
-				Returns a number of characters from the left of the string. If negative [code]length[/code] is used, the characters are counted downwards from [String]'s length.
+				Returns a number of characters from the left of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
 				Examples:
 				[codeblock]
 				print("sample text".left(3)) #prints "sam"
@@ -445,30 +445,30 @@
 		</method>
 		<method name="lpad" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="min_length" type="int" />
-			<argument index="1" name="character" type="String" default="&quot; &quot;" />
+			<param index="0" name="min_length" type="int" />
+			<param index="1" name="character" type="String" default="&quot; &quot;" />
 			<description>
-				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the left of the string.
+				Formats a string to be at least [param min_length] long by adding [param character]s to the left of the string.
 			</description>
 		</method>
 		<method name="lstrip" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="chars" type="String" />
+			<param index="0" name="chars" type="String" />
 			<description>
-				Returns a copy of the string with characters removed from the left. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
-				[b]Note:[/b] The [code]chars[/code] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
+				Returns a copy of the string with characters removed from the left. The [param chars] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [param chars] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="match" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="expr" type="String" />
+			<param index="0" name="expr" type="String" />
 			<description>
 				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="matchn" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="expr" type="String" />
+			<param index="0" name="expr" type="String" />
 			<description>
 				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
@@ -487,32 +487,32 @@
 		</method>
 		<method name="naturalnocasecmp_to" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="to" type="String" />
+			<param index="0" name="to" type="String" />
 			<description>
 				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
-				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
-				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [param to] string or [code]-1[/code] if the "base" string is shorter than the [param to] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [param to] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method casecmp_to].
 			</description>
 		</method>
 		<method name="nocasecmp_to" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="to" type="String" />
+			<param index="0" name="to" type="String" />
 			<description>
 				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
-				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
-				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [param to] string or [code]-1[/code] if the "base" string is shorter than the [param to] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [param to] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="num" qualifiers="static">
 			<return type="String" />
-			<argument index="0" name="number" type="float" />
-			<argument index="1" name="decimals" type="int" default="-1" />
+			<param index="0" name="number" type="float" />
+			<param index="1" name="decimals" type="int" default="-1" />
 			<description>
 				Converts a [float] to a string representation of a decimal number.
-				The number of decimal places can be specified with [code]decimals[/code]. If [code]decimals[/code] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
+				The number of decimal places can be specified with [param decimals]. If [param decimals] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
 				Trailing zeros are not included in the string. The last digit will be rounded and not truncated.
 				Some examples:
 				[codeblock]
@@ -530,93 +530,93 @@
 		</method>
 		<method name="num_int64" qualifiers="static">
 			<return type="String" />
-			<argument index="0" name="number" type="int" />
-			<argument index="1" name="base" type="int" default="10" />
-			<argument index="2" name="capitalize_hex" type="bool" default="false" />
+			<param index="0" name="number" type="int" />
+			<param index="1" name="base" type="int" default="10" />
+			<param index="2" name="capitalize_hex" type="bool" default="false" />
 			<description>
 				Converts a signed [int] to a string representation of a number.
 			</description>
 		</method>
 		<method name="num_scientific" qualifiers="static">
 			<return type="String" />
-			<argument index="0" name="number" type="float" />
+			<param index="0" name="number" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="num_uint64" qualifiers="static">
 			<return type="String" />
-			<argument index="0" name="number" type="int" />
-			<argument index="1" name="base" type="int" default="10" />
-			<argument index="2" name="capitalize_hex" type="bool" default="false" />
+			<param index="0" name="number" type="int" />
+			<param index="1" name="base" type="int" default="10" />
+			<param index="2" name="capitalize_hex" type="bool" default="false" />
 			<description>
 				Converts a unsigned [int] to a string representation of a number.
 			</description>
 		</method>
 		<method name="pad_decimals" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="digits" type="int" />
+			<param index="0" name="digits" type="int" />
 			<description>
-				Formats a number to have an exact number of [code]digits[/code] after the decimal point.
+				Formats a number to have an exact number of [param digits] after the decimal point.
 			</description>
 		</method>
 		<method name="pad_zeros" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="digits" type="int" />
+			<param index="0" name="digits" type="int" />
 			<description>
-				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
+				Formats a number to have an exact number of [param digits] before the decimal point.
 			</description>
 		</method>
 		<method name="plus_file" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="file" type="String" />
+			<param index="0" name="file" type="String" />
 			<description>
-				If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
+				If the string is a path, this concatenates [param file] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="count" type="int" />
+			<param index="0" name="count" type="int" />
 			<description>
 				Returns original string repeated a number of times. The number of repetitions is given by the argument.
 			</description>
 		</method>
 		<method name="replace" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="forwhat" type="String" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="forwhat" type="String" />
 			<description>
 				Replaces occurrences of a case-sensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="replacen" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="forwhat" type="String" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="forwhat" type="String" />
 			<description>
 				Replaces occurrences of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="from" type="int" default="-1" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
 		<method name="rfindn" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="what" type="String" />
-			<argument index="1" name="from" type="int" default="-1" />
+			<param index="0" name="what" type="String" />
+			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
 		<method name="right" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="length" type="int" />
+			<param index="0" name="length" type="int" />
 			<description>
-				Returns a number of characters from the right of the string. If negative [code]length[/code] is used, the characters are counted downwards from [String]'s length.
+				Returns a number of characters from the right of the string. If negative [param length] is used, the characters are counted downwards from [String]'s length.
 				Examples:
 				[codeblock]
 				print("sample text".right(3)) #prints "ext"
@@ -626,21 +626,22 @@
 		</method>
 		<method name="rpad" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="min_length" type="int" />
-			<argument index="1" name="character" type="String" default="&quot; &quot;" />
+			<param index="0" name="min_length" type="int" />
+			<param index="1" name="character" type="String" default="&quot; &quot;" />
 			<description>
-				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the right of the string.
+				Formats a string to be at least [param min_length] long by adding [param character]s to the right of the string.
 			</description>
 		</method>
 		<method name="rsplit" qualifiers="const">
 			<return type="PackedStringArray" />
-			<argument index="0" name="delimiter" type="String" />
-			<argument index="1" name="allow_empty" type="bool" default="true" />
-			<argument index="2" name="maxsplit" type="int" default="0" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
+			<param index="2" name="maxsplit" type="int" default="0" />
 			<description>
-				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings, starting from right.
+				Splits the string by a [param delimiter] string and returns an array of the substrings, starting from right.
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
-				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the right up to [code]maxsplit[/code]. The default value of 0 means that all items are split, thus giving the same result as [method split].
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
+				If [param maxsplit] is specified, it defines the number of splits to do from the right up to [param maxsplit]. The default value of 0 means that all items are split, thus giving the same result as [method split].
 				Example:
 				[codeblocks]
 				[gdscript]
@@ -658,10 +659,10 @@
 		</method>
 		<method name="rstrip" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="chars" type="String" />
+			<param index="0" name="chars" type="String" />
 			<description>
-				Returns a copy of the string with characters removed from the right. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
-				[b]Note:[/b] The [code]chars[/code] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
+				Returns a copy of the string with characters removed from the right. The [param chars] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [param chars] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="sha1_buffer" qualifiers="const">
@@ -690,7 +691,7 @@
 		</method>
 		<method name="similarity" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of 1.0 means totally similar, while 0.0 means totally dissimilar.
 				[codeblock]
@@ -709,12 +710,13 @@
 		</method>
 		<method name="split" qualifiers="const">
 			<return type="PackedStringArray" />
-			<argument index="0" name="delimiter" type="String" />
-			<argument index="1" name="allow_empty" type="bool" default="true" />
-			<argument index="2" name="maxsplit" type="int" default="0" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
+			<param index="2" name="maxsplit" type="int" default="0" />
 			<description>
-				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
-				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
+				Splits the string by a [param delimiter] string and returns an array of the substrings. The [param delimiter] can be of any length.
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
+				If [param maxsplit] is specified, it defines the number of splits to do from the left up to [param maxsplit]. The default value of [code]0[/code] means that all items are split.
 				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
 				Example:
 				[codeblocks]
@@ -737,17 +739,18 @@
 		</method>
 		<method name="split_floats" qualifiers="const">
 			<return type="PackedFloat32Array" />
-			<argument index="0" name="delimiter" type="String" />
-			<argument index="1" name="allow_empty" type="bool" default="true" />
+			<param index="0" name="delimiter" type="String" />
+			<param index="1" name="allow_empty" type="bool" default="true" />
 			<description>
 				Splits the string in floats by using a delimiter string and returns an array of the substrings.
 				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
+				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 			</description>
 		</method>
 		<method name="strip_edges" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="left" type="bool" default="true" />
-			<argument index="1" name="right" type="bool" default="true" />
+			<param index="0" name="left" type="bool" default="true" />
+			<param index="1" name="right" type="bool" default="true" />
 			<description>
 				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
 			</description>
@@ -760,10 +763,10 @@
 		</method>
 		<method name="substr" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="from" type="int" />
-			<argument index="1" name="len" type="int" default="-1" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="len" type="int" default="-1" />
 			<description>
-				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
+				Returns part of the string from the position [param from] with length [param len]. Argument [param len] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii_buffer" qualifiers="const">
@@ -827,23 +830,23 @@
 		</method>
 		<method name="trim_prefix" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="prefix" type="String" />
+			<param index="0" name="prefix" type="String" />
 			<description>
 				Removes a given string from the start if it starts with it or leaves the string unchanged.
 			</description>
 		</method>
 		<method name="trim_suffix" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="suffix" type="String" />
+			<param index="0" name="suffix" type="String" />
 			<description>
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
 			</description>
 		</method>
 		<method name="unicode_at" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="at" type="int" />
+			<param index="0" name="at" type="int" />
 			<description>
-				Returns the character code at position [code]at[/code].
+				Returns the character code at position [param at].
 			</description>
 		</method>
 		<method name="uri_decode" qualifiers="const">
@@ -882,9 +885,9 @@
 		</method>
 		<method name="xml_escape" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="escape_quotes" type="bool" default="false" />
+			<param index="0" name="escape_quotes" type="bool" default="false" />
 			<description>
-				Returns a copy of the string with special characters escaped using the XML standard. If [code]escape_quotes[/code] is [code]true[/code], the single quote ([code]'[/code]) and double quote ([code]"[/code]) characters are also escaped.
+				Returns a copy of the string with special characters escaped using the XML standard. If [param escape_quotes] is [code]true[/code], the single quote ([code]'[/code]) and double quote ([code]"[/code]) characters are also escaped.
 			</description>
 		</method>
 		<method name="xml_unescape" qualifiers="const">
@@ -897,73 +900,73 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
+			<param index="0" name="right" type="StringName" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator %">
 			<return type="String" />
-			<argument index="0" name="right" type="Variant" />
+			<param index="0" name="right" type="Variant" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="String" />
-			<argument index="0" name="right" type="int" />
+			<param index="0" name="right" type="int" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
+			<param index="0" name="right" type="StringName" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
-			<argument index="0" name="right" type="String" />
+			<param index="0" name="right" type="String" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="String" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</operator>

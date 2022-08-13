@@ -85,11 +85,6 @@ private:
 		EditorProgress *ep = nullptr;
 	};
 
-	struct FeatureContainers {
-		HashSet<String> features;
-		Vector<String> features_pv;
-	};
-
 	Vector<ExportMessage> messages;
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
@@ -110,14 +105,14 @@ protected:
 		~ExportNotifier();
 	};
 
-	FeatureContainers get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug);
+	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
 	bool exists_export_template(String template_file_name, String *err) const;
 	String find_export_template(String template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) = 0;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 
 	struct ExportOption {
 		PropertyInfo option;
@@ -211,7 +206,7 @@ public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
 	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
-	virtual void get_platform_features(List<String> *r_features) = 0;
+	virtual void get_platform_features(List<String> *r_features) const = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) = 0;
 	virtual String get_debug_protocol() const { return "tcp://"; }
 

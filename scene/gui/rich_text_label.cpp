@@ -821,17 +821,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			off.y += line_spacing;
 		}
 
-		RID rid = l.text_buf->get_line_rid(line);
 		if (p_ofs.y + off.y >= ctrl_size.height) {
 			break;
 		}
-		if (p_ofs.y + off.y + TS->shaped_text_get_size(rid).y <= 0) {
-			off.y += TS->shaped_text_get_size(rid).y;
+
+		const Size2 line_size = l.text_buf->get_line_size(line);
+		if (p_ofs.y + off.y + line_size.y <= 0) {
+			off.y += line_size.y;
 			continue;
 		}
 
 		float width = l.text_buf->get_width();
-		float length = TS->shaped_text_get_width(rid);
+		float length = line_size.x;
 
 		// Draw line.
 		line_count++;
@@ -874,6 +875,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
+		RID rid = l.text_buf->get_line_rid(line);
 		//draw_rect(Rect2(p_ofs + off, TS->shaped_text_get_size(rid)), Color(1,0,0), false, 2); //DEBUG_RECTS
 
 		off.y += TS->shaped_text_get_ascent(rid);

@@ -83,7 +83,6 @@ private:
 	int light_mask = 1;
 
 	Window *window = nullptr;
-	bool first_draw = false;
 	bool visible = true;
 	bool parent_visible_in_tree = false;
 	bool clip_children = false;

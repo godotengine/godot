@@ -50,6 +50,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
 #import <Foundation/Foundation.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
 
 #undef BitMap
 #undef CursorShape
@@ -170,6 +171,8 @@ private:
 	HashMap<CursorShape, Vector<Variant>> cursors_cache;
 
 	HashMap<WindowID, WindowData> windows;
+
+	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
@@ -299,6 +302,8 @@ public:
 	virtual float screen_get_max_scale() const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual void screen_set_keep_on(bool p_enable) override;
+	virtual bool screen_is_kept_on() const override;
 
 	virtual Vector<int> get_window_list() const override;
 

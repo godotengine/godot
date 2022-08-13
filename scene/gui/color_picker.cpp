@@ -171,6 +171,9 @@ uniform float v = 1.0;
 void fragment() {
 	float x = UV.x - 0.5;
 	float y = UV.y - 0.5;
+	float h = atan(y, x) / (2.0 * M_PI);
+	float s = sqrt(x * x + y * y) * 2.0;
+	vec3 col = okhsl_to_srgb(vec3(h, s, v));
 	x += 0.001;
 	y += 0.001;
 	float b = float(sqrt(x * x + y * y) < 0.5);
@@ -180,9 +183,6 @@ void fragment() {
 	float b3 = float(sqrt(x * x + y * y) < 0.5);
 	x += 0.002;
 	float b4 = float(sqrt(x * x + y * y) < 0.5);
-	float s = sqrt(x * x + y * y);
-	float h = atan(y, x) / (2.0*M_PI);
-	vec3 col = okhsl_to_srgb(vec3(h, s, v));
 	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
 })");
 }
@@ -264,15 +264,7 @@ void ColorPicker::_update_controls() {
 void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
 	color = p_color;
 	if (color != last_color) {
-		if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
-			h = color.get_ok_hsl_h();
-			s = color.get_ok_hsl_s();
-			v = color.get_ok_hsl_l();
-		} else {
-			h = color.get_h();
-			s = color.get_s();
-			v = color.get_v();
-		}
+		_copy_color_to_hsv();
 		last_color = color;
 	}
 
@@ -357,7 +349,7 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 	s->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	s->connect("value_changed", callable_mp(this, &ColorPicker::_value_changed));
-	s->connect("draw", callable_mp(this, &ColorPicker::_slider_draw), make_binds(idx));
+	s->connect("draw", callable_mp(this, &ColorPicker::_slider_draw).bind(idx));
 
 	if (idx < SLIDER_COUNT) {
 		sliders[idx] = s;
@@ -384,6 +376,26 @@ Vector<float> ColorPicker::get_active_slider_values() {
 	}
 	values.push_back(alpha_slider->get_value());
 	return values;
+}
+
+void ColorPicker::_copy_color_to_hsv() {
+	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
+		h = color.get_ok_hsl_h();
+		s = color.get_ok_hsl_s();
+		v = color.get_ok_hsl_l();
+	} else {
+		h = color.get_h();
+		s = color.get_s();
+		v = color.get_v();
+	}
+}
+
+void ColorPicker::_copy_hsv_to_color() {
+	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
+		color.set_ok_hsl(h, s, v, color.a);
+	} else {
+		color.set_hsv(h, s, v, color.a);
+	}
 }
 
 ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
@@ -499,6 +511,8 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	ERR_FAIL_INDEX(p_shape, SHAPE_MAX);
 	current_shape = p_shape;
 
+	_copy_color_to_hsv();
+
 	_update_controls();
 	_update_color();
 }
@@ -515,7 +529,7 @@ void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset = memnew(ColorPresetButton(p_color));
 	btn_preset->set_preset_color(p_color);
 	btn_preset->set_custom_minimum_size(Size2(p_size, p_size));
-	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input), varray(p_color));
+	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input).bind(p_color));
 	btn_preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
 	preset_container->add_child(btn_preset);
 }
@@ -640,8 +654,7 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 		if (rect_old.has_point(mb->get_position())) {
 			// Revert to the old color when left-clicking the old color sample.
-			color = old_color;
-			_update_color();
+			set_pick_color(old_color);
 			emit_signal(SNAME("color_changed"), color);
 		}
 	}
@@ -834,7 +847,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 2) {
 		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
 		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
-			circle_mat->set_shader_param("v", v);
+			circle_mat->set_shader_uniform("v", v);
 		}
 	}
 }
@@ -887,17 +900,14 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 					v = 1.0 - (y - c->get_position().y - corner_y) / real_size.y;
 				}
 			}
+
 			changing_color = true;
-			if (current_picker == SHAPE_OKHSL_CIRCLE) {
-				color.set_ok_hsl(h, s, v, color.a);
-			} else {
-				color.set_hsv(h, s, v, color.a);
-			}
 
+			_copy_hsv_to_color();
 			last_color = color;
-
 			set_pick_color(color);
 			_update_color();
+
 			if (!deferred_mode_enabled) {
 				emit_signal(SNAME("color_changed"), color);
 			}
@@ -940,14 +950,12 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				v = 1.0 - (y - corner_y) / real_size.y;
 			}
 		}
-		if (current_picker != SHAPE_OKHSL_CIRCLE) {
-			color.set_hsv(h, s, v, color.a);
-		} else {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
+
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -970,14 +978,12 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		} else {
 			changing_color = false;
 		}
-		if (actual_shape != SHAPE_OKHSL_CIRCLE) {
-			color.set_hsv(h, s, v, color.a);
-		} else {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
+
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		} else if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
@@ -998,15 +1004,11 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			h = y / w_edit->get_size().height;
 		}
 
-		if (current_mode == MODE_HSV) {
-			color.set_hsv(h, s, v, color.a);
-		} else if (current_mode == MODE_OKHSL) {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
-
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -1019,7 +1021,6 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			set_pick_color(p_color);
-			_update_color();
 			emit_signal(SNAME("color_changed"), p_color);
 		} else if (bev->is_pressed() && bev->get_button_index() == MouseButton::RIGHT && presets_enabled) {
 			erase_preset(p_color);
@@ -1075,7 +1076,7 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
 		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed"), varray(false));
+		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed").bind(false));
 	} else {
 		screen->show();
 	}
@@ -1204,11 +1205,11 @@ ColorPicker::ColorPicker() :
 
 	uv_edit = memnew(Control);
 	hb_edit->add_child(uv_edit);
-	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input), make_binds(uv_edit));
+	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input).bind(uv_edit));
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, uv_edit));
+	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(0, uv_edit));
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
 	add_child(hb_smpl, false, INTERNAL_MODE_FRONT);
@@ -1295,19 +1296,19 @@ ColorPicker::ColorPicker() :
 	wheel = memnew(Control);
 	wheel_margin->add_child(wheel);
 	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
-	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(2, wheel));
+	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(2, wheel));
 
 	wheel_uv = memnew(Control);
 	wheel_margin->add_child(wheel_uv);
-	wheel_uv->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input), make_binds(wheel_uv));
-	wheel_uv->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, wheel_uv));
+	wheel_uv->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input).bind(wheel_uv));
+	wheel_uv->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(0, wheel_uv));
 
 	w_edit = memnew(Control);
 	hb_edit->add_child(w_edit);
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", callable_mp(this, &ColorPicker::_w_input));
-	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(1, w_edit));
+	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(1, w_edit));
 
 	_update_controls();
 	updating = false;

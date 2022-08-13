@@ -19,9 +19,9 @@
 		</method>
 		<method name="start">
 			<return type="void" />
-			<argument index="0" name="time_sec" type="float" default="-1" />
+			<param index="0" name="time_sec" type="float" default="-1" />
 			<description>
-				Starts the timer. Sets [member wait_time] to [code]time_sec[/code] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [member wait_time].
+				Starts the timer. Sets [member wait_time] to [param time_sec] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [member wait_time].
 				[b]Note:[/b] This method will not resume a paused timer. See [member paused].
 			</description>
 		</method>

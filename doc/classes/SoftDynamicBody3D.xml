@@ -13,7 +13,7 @@
 	<methods>
 		<method name="add_collision_exception_with">
 			<return type="void" />
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
@@ -26,16 +26,16 @@
 		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_physics_rid" qualifiers="const">
@@ -45,48 +45,48 @@
 		</method>
 		<method name="get_point_transform">
 			<return type="Vector3" />
-			<argument index="0" name="point_index" type="int" />
+			<param index="0" name="point_index" type="int" />
 			<description>
 				Returns local translation of a vertex in the surface array.
 			</description>
 		</method>
 		<method name="is_point_pinned" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="point_index" type="int" />
+			<param index="0" name="point_index" type="int" />
 			<description>
 				Returns [code]true[/code] if vertex is set to pinned.
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void" />
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_point_pinned">
 			<return type="void" />
-			<argument index="0" name="point_index" type="int" />
-			<argument index="1" name="pinned" type="bool" />
-			<argument index="2" name="attachment_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<param index="0" name="point_index" type="int" />
+			<param index="1" name="pinned" type="bool" />
+			<param index="2" name="attachment_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
-				Sets the pinned state of a surface vertex. When set to [code]true[/code], the optional [code]attachment_path[/code] can define a [Node3D] the pinned vertex will be attached to.
+				Sets the pinned state of a surface vertex. When set to [code]true[/code], the optional [param attachment_path] can define a [Node3D] the pinned vertex will be attached to.
 			</description>
 		</method>
 	</methods>

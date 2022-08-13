@@ -30,9 +30,10 @@
 
 #include "editor_folding.h"
 
+#include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_paths.h"
 
 Vector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 	Vector<String> sections;
@@ -55,7 +56,7 @@ void EditorFolding::save_resource_folding(const Ref<Resource> &p_resource, const
 	config->set_value("folding", "sections_unfolded", unfolds);
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
-	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
+	file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
 }
 
@@ -73,7 +74,7 @@ void EditorFolding::load_resource_folding(Ref<Resource> p_resource, const String
 	config.instantiate();
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
-	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
+	file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(file);
 
 	if (config->load(file) != OK) {
 		return;
@@ -149,7 +150,7 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	config->set_value("folding", "nodes_folded", nodes_folded);
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
-	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
+	file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
 }
 
@@ -157,9 +158,9 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
+	String path = EditorPaths::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
-	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
+	file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(file);
 
 	if (config->load(file) != OK) {
 		return;
@@ -213,7 +214,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 
 bool EditorFolding::has_folding_data(const String &p_path) {
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
-	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
+	file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(file);
 	return FileAccess::exists(file);
 }
 

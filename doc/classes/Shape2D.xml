@@ -12,58 +12,58 @@
 	<methods>
 		<method name="collide">
 			<return type="bool" />
-			<argument index="0" name="local_xform" type="Transform2D" />
-			<argument index="1" name="with_shape" type="Shape2D" />
-			<argument index="2" name="shape_xform" type="Transform2D" />
+			<param index="0" name="local_xform" type="Transform2D" />
+			<param index="1" name="with_shape" type="Shape2D" />
+			<param index="2" name="shape_xform" type="Transform2D" />
 			<description>
 				Returns [code]true[/code] if this shape is colliding with another.
-				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
+				This method needs the transformation matrix for this shape ([param local_xform]), the shape to check collisions with ([param with_shape]), and the transformation matrix of that shape ([param shape_xform]).
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
 			<return type="Array" />
-			<argument index="0" name="local_xform" type="Transform2D" />
-			<argument index="1" name="with_shape" type="Shape2D" />
-			<argument index="2" name="shape_xform" type="Transform2D" />
+			<param index="0" name="local_xform" type="Transform2D" />
+			<param index="1" name="with_shape" type="Shape2D" />
+			<param index="2" name="shape_xform" type="Transform2D" />
 			<description>
 				Returns a list of contact point pairs where this shape touches another.
-				If there are no collisions, the returned list is empty. Otherwise, the returned list contains contact points arranged in pairs, with entries alternating between points on the boundary of this shape and points on the boundary of [code]with_shape[/code].
+				If there are no collisions, the returned list is empty. Otherwise, the returned list contains contact points arranged in pairs, with entries alternating between points on the boundary of this shape and points on the boundary of [param with_shape].
 				A collision pair A, B can be used to calculate the collision normal with [code](B - A).normalized()[/code], and the collision depth with [code](B - A).length()[/code]. This information is typically used to separate shapes, particularly in collision solvers.
-				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
+				This method needs the transformation matrix for this shape ([param local_xform]), the shape to check collisions with ([param with_shape]), and the transformation matrix of that shape ([param shape_xform]).
 			</description>
 		</method>
 		<method name="collide_with_motion">
 			<return type="bool" />
-			<argument index="0" name="local_xform" type="Transform2D" />
-			<argument index="1" name="local_motion" type="Vector2" />
-			<argument index="2" name="with_shape" type="Shape2D" />
-			<argument index="3" name="shape_xform" type="Transform2D" />
-			<argument index="4" name="shape_motion" type="Vector2" />
+			<param index="0" name="local_xform" type="Transform2D" />
+			<param index="1" name="local_motion" type="Vector2" />
+			<param index="2" name="with_shape" type="Shape2D" />
+			<param index="3" name="shape_xform" type="Transform2D" />
+			<param index="4" name="shape_motion" type="Vector2" />
 			<description>
 				Returns whether this shape would collide with another, if a given movement was applied.
-				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+				This method needs the transformation matrix for this shape ([param local_xform]), the movement to test on this shape ([param local_motion]), the shape to check collisions with ([param with_shape]), the transformation matrix of that shape ([param shape_xform]), and the movement to test onto the other object ([param shape_motion]).
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
 			<return type="Array" />
-			<argument index="0" name="local_xform" type="Transform2D" />
-			<argument index="1" name="local_motion" type="Vector2" />
-			<argument index="2" name="with_shape" type="Shape2D" />
-			<argument index="3" name="shape_xform" type="Transform2D" />
-			<argument index="4" name="shape_motion" type="Vector2" />
+			<param index="0" name="local_xform" type="Transform2D" />
+			<param index="1" name="local_motion" type="Vector2" />
+			<param index="2" name="with_shape" type="Shape2D" />
+			<param index="3" name="shape_xform" type="Transform2D" />
+			<param index="4" name="shape_motion" type="Vector2" />
 			<description>
 				Returns a list of contact point pairs where this shape would touch another, if a given movement was applied.
-				If there would be no collisions, the returned list is empty. Otherwise, the returned list contains contact points arranged in pairs, with entries alternating between points on the boundary of this shape and points on the boundary of [code]with_shape[/code].
+				If there would be no collisions, the returned list is empty. Otherwise, the returned list contains contact points arranged in pairs, with entries alternating between points on the boundary of this shape and points on the boundary of [param with_shape].
 				A collision pair A, B can be used to calculate the collision normal with [code](B - A).normalized()[/code], and the collision depth with [code](B - A).length()[/code]. This information is typically used to separate shapes, particularly in collision solvers.
-				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+				This method needs the transformation matrix for this shape ([param local_xform]), the movement to test on this shape ([param local_motion]), the shape to check collisions with ([param with_shape]), the transformation matrix of that shape ([param shape_xform]), and the movement to test onto the other object ([param shape_motion]).
 			</description>
 		</method>
 		<method name="draw">
 			<return type="void" />
-			<argument index="0" name="canvas_item" type="RID" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="color" type="Color" />
 			<description>
-				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [code]color[/code]. The exact drawing method is specific for each shape and cannot be configured.
+				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [param color]. The exact drawing method is specific for each shape and cannot be configured.
 			</description>
 		</method>
 	</methods>

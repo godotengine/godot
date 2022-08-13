@@ -39,6 +39,7 @@
 
 #include "tts_macos.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -334,7 +335,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 				if (windows.has(E->get())) {
 					Callable callable = windows[E->get()].input_event_callback;
 					if (callable.is_valid()) {
-						callable.call((const Variant **)&evp, 1, ret, ce);
+						callable.callp((const Variant **)&evp, 1, ret, ce);
 					}
 				}
 				in_dispatch_input_event = false;
@@ -348,7 +349,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			if (windows.has(event_from_window->get_window_id())) {
 				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.call((const Variant **)&evp, 1, ret, ce);
+					callable.callp((const Variant **)&evp, 1, ret, ce);
 				}
 			}
 		} else {
@@ -356,7 +357,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			for (KeyValue<WindowID, WindowData> &E : windows) {
 				Callable callable = E.value.input_event_callback;
 				if (callable.is_valid()) {
-					callable.call((const Variant **)&evp, 1, ret, ce);
+					callable.callp((const Variant **)&evp, 1, ret, ce);
 				}
 			}
 		}
@@ -555,7 +556,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 			Variant *tagp = &tag;
 			Variant ret;
 			Callable::CallError ce;
-			value->callback.call((const Variant **)&tagp, 1, ret, ce);
+			value->callback.callp((const Variant **)&tagp, 1, ret, ce);
 		}
 	}
 }
@@ -596,7 +597,7 @@ void DisplayServerMacOS::send_window_event(const WindowData &wd, WindowEvent p_e
 		Variant *eventp = &event;
 		Variant ret;
 		Callable::CallError ce;
-		wd.event_callback.call((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	}
 }
 
@@ -1522,7 +1523,7 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 		Variant *buttonp = &button;
 		Variant ret;
 		Callable::CallError ce;
-		p_callback.call((const Variant **)&buttonp, 1, ret, ce);
+		p_callback.callp((const Variant **)&buttonp, 1, ret, ce);
 	}
 
 	return OK;
@@ -1554,7 +1555,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 		Variant *textp = &text;
 		Variant ret;
 		Callable::CallError ce;
-		p_callback.call((const Variant **)&textp, 1, ret, ce);
+		p_callback.callp((const Variant **)&textp, 1, ret, ce);
 	}
 
 	return OK;
@@ -1889,6 +1890,24 @@ float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	}
 	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 	return SCREEN_REFRESH_RATE_FALLBACK;
+}
+
+bool DisplayServerMacOS::screen_is_kept_on() const {
+	return (screen_keep_on_assertion);
+}
+
+void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
+	if (screen_keep_on_assertion) {
+		IOPMAssertionRelease(screen_keep_on_assertion);
+		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
+	if (p_enable) {
+		String app_name_string = ProjectSettings::get_singleton()->get("application/config/name");
+		NSString *name = [NSString stringWithUTF8String:(app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data())];
+		NSString *reason = @"Godot Engine running with display/window/energy_saving/keep_screen_on = true";
+		IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep, (__bridge CFStringRef)name, (__bridge CFStringRef)reason, (__bridge CFStringRef)reason, nullptr, 0, nullptr, &screen_keep_on_assertion);
+	}
 }
 
 Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
@@ -3266,9 +3285,16 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		RendererCompositorRD::make_current();
 	}
 #endif
+
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 }
 
 DisplayServerMacOS::~DisplayServerMacOS() {
+	if (screen_keep_on_assertion) {
+		IOPMAssertionRelease(screen_keep_on_assertion);
+		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
 	// Destroy all windows.
 	for (HashMap<WindowID, WindowData>::Iterator E = windows.begin(); E;) {
 		HashMap<WindowID, WindowData>::Iterator F = E;

@@ -685,7 +685,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Visual editors
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/minimap_opacity", 0.85, "0.0,1.0,0.01")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/lines_curvature", 0.5, "0.0,1.0,0.01")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/visual_editors/visualshader/port_preview_size", 160, "100,400,0.01")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/visual_editors/visual_shader/port_preview_size", 160, "100,400,0.01")
 
 	/* Run */
 
@@ -867,7 +867,6 @@ void EditorSettings::create() {
 		}
 
 		singleton->save_changed_setting = true;
-		singleton->config_file_path = config_file_path;
 
 		print_verbose("EditorSettings: Load OK!");
 
@@ -892,8 +891,8 @@ fail:
 	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
+	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
-	singleton->config_file_path = config_file_path;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
@@ -953,15 +952,10 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path.is_empty()) {
-		ERR_PRINT("Cannot save EditorSettings config, no valid path");
-		return;
-	}
-
-	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
+	Error err = ResourceSaver::save(singleton);
 
 	if (err != OK) {
-		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
+		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {
 		singleton->changed_settings.clear();
 		print_verbose("EditorSettings: Save OK!");
@@ -1057,6 +1051,8 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
+	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), p_default, "EditorSettings not instantiated yet.");
+
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);
@@ -1073,7 +1069,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_setting), Variant());
+	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
 	return EditorSettings::get_singleton()->get(p_setting);
 }
 
@@ -1103,38 +1099,11 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 	hints[p_hint.name] = p_hint;
 }
 
-// Editor data and config directories
-// EditorPaths::create() is responsible for the creation of these directories.
-
-String EditorSettings::get_export_templates_dir() const {
-	return EditorPaths::get_singleton()->get_data_dir().plus_file("export_templates");
-}
-
-String EditorSettings::get_project_settings_dir() const {
-	return EditorPaths::get_singleton()->get_project_data_dir().plus_file("editor");
-}
-
-String EditorSettings::get_text_editor_themes_dir() const {
-	return EditorPaths::get_singleton()->get_config_dir().plus_file("text_editor_themes");
-}
-
-String EditorSettings::get_script_templates_dir() const {
-	return EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates");
-}
-
-String EditorSettings::get_project_script_templates_dir() const {
-	return ProjectSettings::get_singleton()->get("editor/script/templates_search_path");
-}
-
-String EditorSettings::get_feature_profiles_dir() const {
-	return EditorPaths::get_singleton()->get_config_dir().plus_file("feature_profiles");
-}
-
 // Metadata
 
 void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, Variant p_data) {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err;
 	err = cf->load(path);
 	ERR_FAIL_COND_MSG(err != OK && err != ERR_FILE_NOT_FOUND, "Cannot load editor settings from file '" + path + "'.");
@@ -1145,7 +1114,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
 		return p_default;
@@ -1159,7 +1128,7 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
 	} else {
-		favorites_file = get_project_settings_dir().plus_file("favorites");
+		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("favorites");
 	}
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f.is_valid()) {
@@ -1179,7 +1148,7 @@ void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
 	} else {
-		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("recent_dirs");
 	}
 	Ref<FileAccess> f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
 	if (f.is_valid()) {
@@ -1200,8 +1169,8 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
 	} else {
-		favorites_file = get_project_settings_dir().plus_file("favorites");
-		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("favorites");
+		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("recent_dirs");
 	}
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f.is_valid()) {
@@ -1233,7 +1202,7 @@ bool EditorSettings::is_dark_theme() {
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 
-	Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+	Ref<DirAccess> d = DirAccess::open(EditorPaths::get_singleton()->get_text_editor_themes_dir());
 	if (d.is_valid()) {
 		List<String> custom_themes;
 		d->list_dir_begin();
@@ -1264,7 +1233,7 @@ void EditorSettings::load_text_editor_theme() {
 		return; // sorry for "Settings changed" console spam
 	}
 
-	String theme_path = get_text_editor_themes_dir().plus_file(p_file + ".tet");
+	String theme_path = EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(p_file + ".tet");
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error err = cf->load(theme_path);
@@ -1299,9 +1268,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+		Ref<DirAccess> d = DirAccess::open(EditorPaths::get_singleton()->get_text_editor_themes_dir());
 		if (d.is_valid()) {
-			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
+			d->copy(p_file, EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(p_file.get_file()));
 			return true;
 		}
 	}
@@ -1314,7 +1283,7 @@ bool EditorSettings::save_text_editor_theme() {
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
 		return false;
 	}
-	String theme_path = get_text_editor_themes_dir().plus_file(p_file + ".tet");
+	String theme_path = EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(p_file + ".tet");
 	return _save_text_editor_theme(theme_path);
 }
 
@@ -1331,7 +1300,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
 
-		if (p_file.get_base_dir() == get_text_editor_themes_dir()) {
+		if (p_file.get_base_dir() == EditorPaths::get_singleton()->get_text_editor_themes_dir()) {
 			_initial_set("text_editor/theme/color_theme", theme_name);
 			load_text_editor_theme();
 		}
@@ -1347,7 +1316,7 @@ bool EditorSettings::is_default_text_editor_theme() {
 
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
 	Vector<String> templates;
-	String template_dir = get_script_templates_dir();
+	String template_dir = EditorPaths::get_singleton()->get_script_templates_dir();
 	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
@@ -1455,9 +1424,7 @@ void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
 }
 
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
-	if (!EditorSettings::get_singleton()) {
-		return nullptr;
-	}
+	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), nullptr, "EditorSettings not instantiated yet.");
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
@@ -1467,6 +1434,8 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 }
 
 void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode) {
+	ERR_FAIL_NULL_MSG(EditorSettings::get_singleton(), "EditorSettings not instantiated yet.");
+
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
 
@@ -1477,6 +1446,8 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 }
 
 void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes) {
+	ERR_FAIL_NULL_MSG(EditorSettings::get_singleton(), "EditorSettings not instantiated yet.");
+
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE_ARRAY with invalid shortcut: " + p_path + ".");
 
@@ -1653,8 +1624,6 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
-
-	ClassDB::bind_method(D_METHOD("get_project_settings_dir"), &EditorSettings::get_project_settings_dir);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
 	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));

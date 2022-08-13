@@ -14,13 +14,13 @@
 		</method>
 		<method name="get_animation_player">
 			<return type="AnimationPlayer" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_animation_players_count">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -66,7 +66,7 @@
 		</method>
 		<method name="get_scene_node">
 			<return type="Node" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -102,91 +102,91 @@
 		</method>
 		<method name="set_accessors">
 			<return type="void" />
-			<argument index="0" name="accessors" type="Array" />
+			<param index="0" name="accessors" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_animations">
 			<return type="void" />
-			<argument index="0" name="animations" type="Array" />
+			<param index="0" name="animations" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_buffer_views">
 			<return type="void" />
-			<argument index="0" name="buffer_views" type="Array" />
+			<param index="0" name="buffer_views" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_cameras">
 			<return type="void" />
-			<argument index="0" name="cameras" type="Array" />
+			<param index="0" name="cameras" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_images">
 			<return type="void" />
-			<argument index="0" name="images" type="Array" />
+			<param index="0" name="images" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_lights">
 			<return type="void" />
-			<argument index="0" name="lights" type="Array" />
+			<param index="0" name="lights" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_materials">
 			<return type="void" />
-			<argument index="0" name="materials" type="Array" />
+			<param index="0" name="materials" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_meshes">
 			<return type="void" />
-			<argument index="0" name="meshes" type="Array" />
+			<param index="0" name="meshes" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_nodes">
 			<return type="void" />
-			<argument index="0" name="nodes" type="Array" />
+			<param index="0" name="nodes" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_skeleton_to_node">
 			<return type="void" />
-			<argument index="0" name="skeleton_to_node" type="Dictionary" />
+			<param index="0" name="skeleton_to_node" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_skeletons">
 			<return type="void" />
-			<argument index="0" name="skeletons" type="Array" />
+			<param index="0" name="skeletons" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_skins">
 			<return type="void" />
-			<argument index="0" name="skins" type="Array" />
+			<param index="0" name="skins" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_textures">
 			<return type="void" />
-			<argument index="0" name="textures" type="Array" />
+			<param index="0" name="textures" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_unique_animation_names">
 			<return type="void" />
-			<argument index="0" name="unique_animation_names" type="Array" />
+			<param index="0" name="unique_animation_names" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_unique_names">
 			<return type="void" />
-			<argument index="0" name="unique_names" type="Array" />
+			<param index="0" name="unique_names" type="Array" />
 			<description>
 			</description>
 		</method>
@@ -195,6 +195,8 @@
 		<member name="base_path" type="String" setter="set_base_path" getter="get_base_path" default="&quot;&quot;">
 		</member>
 		<member name="buffers" type="Array" setter="set_buffers" getter="get_buffers" default="[]">
+		</member>
+		<member name="create_animations" type="bool" setter="set_create_animations" getter="get_create_animations" default="true">
 		</member>
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
 		</member>

@@ -1901,13 +1901,7 @@ String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader
 			code += "atan(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
 		case OP_REFLECT:
-			if (op_type == OP_TYPE_VECTOR_2D) { // Not supported.
-				code += "vec2(0.0);\n";
-			} else if (op_type == OP_TYPE_VECTOR_4D) { // Not supported.
-				code += "vec4(0.0);\n";
-			} else {
-				code += "reflect(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
-			}
+			code += "reflect(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
 		case OP_STEP:
 			code += "step(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
@@ -1967,7 +1961,7 @@ String VisualShaderNodeVectorOp::get_warning(Shader::Mode p_mode, VisualShader::
 	bool invalid_type = false;
 
 	if (op_type == OP_TYPE_VECTOR_2D || op_type == OP_TYPE_VECTOR_4D) {
-		if (op == OP_CROSS || op == OP_REFLECT) {
+		if (op == OP_CROSS) {
 			invalid_type = true;
 		}
 	}
@@ -4006,14 +4000,6 @@ int VisualShaderNodeVectorRefract::get_input_port_count() const {
 	return 3;
 }
 
-VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_input_port_type(int p_port) const {
-	if (p_port == 2) {
-		return PORT_TYPE_SCALAR;
-	}
-
-	return PORT_TYPE_VECTOR_3D;
-}
-
 String VisualShaderNodeVectorRefract::get_input_port_name(int p_port) const {
 	switch (p_port) {
 		case 0:
@@ -4030,16 +4016,37 @@ int VisualShaderNodeVectorRefract::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR_3D;
-}
-
 String VisualShaderNodeVectorRefract::get_output_port_name(int p_port) const {
 	return "";
 }
 
 String VisualShaderNodeVectorRefract::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "	" + p_output_vars[0] + " = refract(" + p_input_vars[0] + ", " + p_input_vars[1] + ", " + p_input_vars[2] + ");\n";
+}
+
+void VisualShaderNodeVectorRefract::set_op_type(OpType p_op_type) {
+	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	if (op_type == p_op_type) {
+		return;
+	}
+	switch (p_op_type) {
+		case OP_TYPE_VECTOR_2D: {
+			set_input_port_default_value(0, Vector2(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector2(), get_input_port_default_value(1));
+		} break;
+		case OP_TYPE_VECTOR_3D: {
+			set_input_port_default_value(0, Vector3(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector3(), get_input_port_default_value(1));
+		} break;
+		case OP_TYPE_VECTOR_4D: {
+			set_input_port_default_value(0, Quaternion(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Quaternion(), get_input_port_default_value(1));
+		} break;
+		default:
+			break;
+	}
+	op_type = p_op_type;
+	emit_changed();
 }
 
 VisualShaderNodeVectorRefract::VisualShaderNodeVectorRefract() {
@@ -5581,12 +5588,16 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 			case VisualShaderNodeTextureUniform::TYPE_DATA:
 				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
 					type_code = "hint_default_black";
+				} else if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_TRANSPARENT) {
+					type_code = "hint_default_transparent";
 				}
 				break;
 			case VisualShaderNodeTextureUniform::TYPE_COLOR:
 				type_code = "source_color";
 				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
 					type_code += ", hint_default_black";
+				} else if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_TRANSPARENT) {
+					type_code += ", hint_default_transparent";
 				}
 				break;
 			case VisualShaderNodeTextureUniform::TYPE_NORMAL_MAP:
@@ -5812,7 +5823,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureUniform::get_texture_repeat);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black"), "set_color_default", "get_color_default");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
 
@@ -5824,6 +5835,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_BLACK);
+	BIND_ENUM_CONSTANT(COLOR_DEFAULT_TRANSPARENT);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_MAX);
 
 	BIND_ENUM_CONSTANT(FILTER_DEFAULT);

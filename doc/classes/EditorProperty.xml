@@ -17,17 +17,17 @@
 		</method>
 		<method name="add_focusable">
 			<return type="void" />
-			<argument index="0" name="control" type="Control" />
+			<param index="0" name="control" type="Control" />
 			<description>
 				If any of the controls added can gain keyboard focus, add it here. This ensures that focus will be restored if the inspector is refreshed.
 			</description>
 		</method>
 		<method name="emit_changed">
 			<return type="void" />
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
-			<argument index="2" name="field" type="StringName" default="&amp;&quot;&quot;" />
-			<argument index="3" name="changing" type="bool" default="false" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="field" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="3" name="changing" type="bool" default="false" />
 			<description>
 				If one or several properties have changed, this must be called. [code]field[/code] is used in case your editor can modify fields separately (as an example, Vector3.x). The [code]changing[/code] argument avoids the editor requesting this property to be refreshed (leave as [code]false[/code] if unsure).
 			</description>
@@ -52,7 +52,7 @@
 		</method>
 		<method name="set_bottom_editor">
 			<return type="void" />
-			<argument index="0" name="editor" type="Control" />
+			<param index="0" name="editor" type="Control" />
 			<description>
 				Puts the [code]editor[/code] control below the property label. The control must be previously added using [method Node.add_child].
 			</description>
@@ -88,70 +88,77 @@
 	</members>
 	<signals>
 		<signal name="multiple_properties_changed">
-			<argument index="0" name="properties" type="PackedStringArray" />
-			<argument index="1" name="value" type="Array" />
+			<param index="0" name="properties" type="PackedStringArray" />
+			<param index="1" name="value" type="Array" />
 			<description>
 				Emit it if you want multiple properties modified at the same time. Do not use if added via [method EditorInspectorPlugin._parse_property].
 			</description>
 		</signal>
 		<signal name="object_id_selected">
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="id" type="int" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="id" type="int" />
 			<description>
 				Used by sub-inspectors. Emit it if what was selected was an Object ID.
 			</description>
 		</signal>
+		<signal name="property_can_revert_changed">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="can_revert" type="bool" />
+			<description>
+				Emitted when the revertability (i.e., whether it has a non-default value and thus is displayed with a revert icon) of a property has changed.
+			</description>
+		</signal>
 		<signal name="property_changed">
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Do not emit this manually, use the [method emit_changed] method instead.
 			</description>
 		</signal>
 		<signal name="property_checked">
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="checked" type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="checked" type="bool" />
 			<description>
 				Emitted when a property was checked. Used internally.
 			</description>
 		</signal>
 		<signal name="property_deleted">
-			<argument index="0" name="property" type="StringName" />
+			<param index="0" name="property" type="StringName" />
 			<description>
 				Emitted when a property was deleted. Used internally.
 			</description>
 		</signal>
 		<signal name="property_keyed">
-			<argument index="0" name="property" type="StringName" />
+			<param index="0" name="property" type="StringName" />
 			<description>
 				Emit it if you want to add this value as an animation key (check for keying being enabled first).
 			</description>
 		</signal>
 		<signal name="property_keyed_with_value">
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Emit it if you want to key a property with a single value.
 			</description>
 		</signal>
 		<signal name="property_pinned">
-			<argument index="0" name="property" type="StringName" />
-			<argument index="1" name="pinned" type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="pinned" type="bool" />
 			<description>
 				Emit it if you want to mark (or unmark) the value of a property for being saved regardless of being equal to the default value.
 				The default value is the one the property will get when the node is just instantiated and can come from an ancestor scene in the inheritance/instancing chain, a script or a builtin class.
 			</description>
 		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="resource" type="Resource" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="resource" type="Resource" />
 			<description>
 				If you want a sub-resource to be edited, emit this signal with the resource.
 			</description>
 		</signal>
 		<signal name="selected">
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="focusable_idx" type="int" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="focusable_idx" type="int" />
 			<description>
 				Emitted when selected. Used internally.
 			</description>

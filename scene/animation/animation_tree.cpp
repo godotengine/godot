@@ -589,7 +589,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				}
 
 				if (!child->is_connected("tree_exited", callable_mp(this, &AnimationTree::_node_removed))) {
-					child->connect("tree_exited", callable_mp(this, &AnimationTree::_node_removed), varray(child));
+					child->connect("tree_exited", callable_mp(this, &AnimationTree::_node_removed).bind(child));
 				}
 
 				switch (track_type) {

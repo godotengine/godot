@@ -10,34 +10,34 @@
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_shader_param" qualifiers="const">
+		<method name="get_shader_uniform" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="param" type="StringName" />
+			<param index="0" name="param" type="StringName" />
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
 			</description>
 		</method>
 		<method name="property_can_revert">
 			<return type="bool" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
-				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
+				Returns [code]true[/code] if the property identified by [param name] can be reverted to a default value.
 			</description>
 		</method>
 		<method name="property_get_revert">
 			<return type="Variant" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
-				Returns the default value of the material property with given [code]name[/code].
+				Returns the default value of the material property with given [param name].
 			</description>
 		</method>
-		<method name="set_shader_param">
+		<method name="set_shader_uniform">
 			<return type="void" />
-			<argument index="0" name="param" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="param" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Changes the value set for this material of a uniform in the shader.
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] [param param] must match the name of the uniform in the code exactly.
 			</description>
 		</method>
 	</methods>

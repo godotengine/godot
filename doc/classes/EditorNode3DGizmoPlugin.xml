@@ -19,11 +19,11 @@
 		</method>
 		<method name="_commit_handle" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="secondary" type="bool" />
-			<argument index="3" name="restore" type="Variant" />
-			<argument index="4" name="cancel" type="bool" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<param index="3" name="restore" type="Variant" />
+			<param index="4" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a handle being edited (handles must have been previously added by [method EditorNode3DGizmo.add_handles] during [method _redraw]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
 				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
@@ -33,10 +33,10 @@
 		</method>
 		<method name="_commit_subgizmos" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="ids" type="PackedInt32Array" />
-			<argument index="2" name="restores" type="Transform3D[]" />
-			<argument index="3" name="cancel" type="bool" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="ids" type="PackedInt32Array" />
+			<param index="2" name="restores" type="Transform3D[]" />
+			<param index="3" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [code]restore[/code] transforms as "undo".
 				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] transforms should be directly set, without any [UndoRedo] action. As with all subgizmo methods, transforms are given in local space respect to the gizmo's Node3D. Called for this plugin's active gizmos.
@@ -44,7 +44,7 @@
 		</method>
 		<method name="_create_gizmo" qualifiers="virtual const">
 			<return type="EditorNode3DGizmo" />
-			<argument index="0" name="for_node_3d" type="Node3D" />
+			<param index="0" name="for_node_3d" type="Node3D" />
 			<description>
 				Override this method to return a custom [EditorNode3DGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
 			</description>
@@ -57,18 +57,18 @@
 		</method>
 		<method name="_get_handle_name" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="secondary" type="bool" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
 			<description>
 				Override this method to provide gizmo's handle names. The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="secondary" type="bool" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
 			<description>
 				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
 				The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information).
@@ -84,24 +84,24 @@
 		</method>
 		<method name="_get_subgizmo_transform" qualifiers="virtual const">
 			<return type="Transform3D" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="subgizmo_id" type="int" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="subgizmo_id" type="int" />
 			<description>
 				Override this method to return the current transform of a subgizmo. As with all subgizmo methods, the transform should be in local space respect to the gizmo's Node3D. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_has_gizmo" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="for_node_3d" type="Node3D" />
+			<param index="0" name="for_node_3d" type="Node3D" />
 			<description>
 				Override this method to define which Node3D nodes have a gizmo from this plugin. Whenever a [Node3D] node is added to a scene this method is called, if it returns [code]true[/code] the node gets a generic [EditorNode3DGizmo] assigned and is added to this plugin's list of active gizmos.
 			</description>
 		</method>
 		<method name="_is_handle_highlighted" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="secondary" type="bool" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
 			<description>
 				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
 			</description>
@@ -114,18 +114,18 @@
 		</method>
 		<method name="_redraw" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<description>
 				Override this method to add all the gizmo elements whenever a gizmo update is requested. It's common to call [method EditorNode3DGizmo.clear] at the beginning of this method and then add visual elements depending on the node's properties.
 			</description>
 		</method>
 		<method name="_set_handle" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="secondary" type="bool" />
-			<argument index="3" name="camera" type="Camera3D" />
-			<argument index="4" name="screen_pos" type="Vector2" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<param index="3" name="camera" type="Camera3D" />
+			<param index="4" name="screen_pos" type="Vector2" />
 			<description>
 				Override this method to update the node's properties when the user drags a gizmo handle (previously added with [method EditorNode3DGizmo.add_handles]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts.
 				The [code]secondary[/code] argument is [code]true[/code] when the edited handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information).
@@ -134,44 +134,44 @@
 		</method>
 		<method name="_set_subgizmo_transform" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="subgizmo_id" type="int" />
-			<argument index="2" name="transform" type="Transform3D" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="subgizmo_id" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
 			<description>
 				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). The [code]transform[/code] is given in the Node3D's local coordinate system.  Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_subgizmos_intersect_frustum" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="camera" type="Camera3D" />
-			<argument index="2" name="frustum_planes" type="Plane[]" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="camera" type="Camera3D" />
+			<param index="2" name="frustum_planes" type="Plane[]" />
 			<description>
 				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [code]camera[/code] and a [code]frustum[/code], this method should return which subgizmos are contained within the frustum. The [code]frustum[/code] argument consists of an [code]Array[/code] with all the [code]Plane[/code]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, these identifiers can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].  Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_subgizmos_intersect_ray" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
-			<argument index="1" name="camera" type="Camera3D" />
-			<argument index="2" name="screen_pos" type="Vector2" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="camera" type="Camera3D" />
+			<param index="2" name="screen_pos" type="Vector2" />
 			<description>
 				Override this method to allow selecting subgizmos using mouse clicks. Given a [code]camera[/code] and a [code]point[/code] in screen coordinates, this method should return which subgizmo should be selected. The returned value should be a unique subgizmo identifier, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="add_material">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="material" type="StandardMaterial3D" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="material" type="StandardMaterial3D" />
 			<description>
 				Adds a new material to the internal material list for the plugin. It can then be accessed with [method get_material]. Should not be overridden.
 			</description>
 		</method>
 		<method name="create_handle_material">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="billboard" type="bool" default="false" />
-			<argument index="2" name="texture" type="Texture2D" default="null" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="billboard" type="bool" default="false" />
+			<param index="2" name="texture" type="Texture2D" default="null" />
 			<description>
 				Creates a handle material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with [method get_material] and used in [method EditorNode3DGizmo.add_handles]. Should not be overridden.
 				You can optionally provide a texture to use instead of the default icon.
@@ -179,29 +179,29 @@
 		</method>
 		<method name="create_icon_material">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="texture" type="Texture2D" />
-			<argument index="2" name="on_top" type="bool" default="false" />
-			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="texture" type="Texture2D" />
+			<param index="2" name="on_top" type="bool" default="false" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Creates an icon material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with [method get_material] and used in [method EditorNode3DGizmo.add_unscaled_billboard]. Should not be overridden.
 			</description>
 		</method>
 		<method name="create_material">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="color" type="Color" />
-			<argument index="2" name="billboard" type="bool" default="false" />
-			<argument index="3" name="on_top" type="bool" default="false" />
-			<argument index="4" name="use_vertex_color" type="bool" default="false" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="billboard" type="bool" default="false" />
+			<param index="3" name="on_top" type="bool" default="false" />
+			<param index="4" name="use_vertex_color" type="bool" default="false" />
 			<description>
 				Creates an unshaded material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with [method get_material] and used in [method EditorNode3DGizmo.add_mesh] and [method EditorNode3DGizmo.add_lines]. Should not be overridden.
 			</description>
 		</method>
 		<method name="get_material">
 			<return type="StandardMaterial3D" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="gizmo" type="EditorNode3DGizmo" default="null" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="gizmo" type="EditorNode3DGizmo" default="null" />
 			<description>
 				Gets material from the internal list of materials. If an [EditorNode3DGizmo] is provided, it will try to get the corresponding variant (selected and/or editable).
 			</description>

@@ -128,7 +128,7 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	mp3_stream->set_beat_count(beat_count);
 	mp3_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(p_save_path + ".mp3str", mp3_stream);
+	return ResourceSaver::save(mp3_stream, p_save_path + ".mp3str");
 }
 
 ResourceImporterMP3::ResourceImporterMP3() {

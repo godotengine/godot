@@ -11,10 +11,10 @@
 	<methods>
 		<method name="add_color_region">
 			<return type="void" />
-			<argument index="0" name="start_key" type="String" />
-			<argument index="1" name="end_key" type="String" />
-			<argument index="2" name="color" type="Color" />
-			<argument index="3" name="line_only" type="bool" default="false" />
+			<param index="0" name="start_key" type="String" />
+			<param index="1" name="end_key" type="String" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="line_only" type="bool" default="false" />
 			<description>
 				Adds a color region such as comments or strings.
 				Both the start and end keys must be symbols. Only the start key has to be unique.
@@ -23,8 +23,8 @@
 		</method>
 		<method name="add_keyword_color">
 			<return type="void" />
-			<argument index="0" name="keyword" type="String" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="keyword" type="String" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color for a keyword.
 				The keyword cannot contain any symbols except '_'.
@@ -32,8 +32,8 @@
 		</method>
 		<method name="add_member_keyword_color">
 			<return type="void" />
-			<argument index="0" name="member_keyword" type="String" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="member_keyword" type="String" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color for a member keyword.
 				The member keyword cannot contain any symbols except '_'.
@@ -60,56 +60,56 @@
 		</method>
 		<method name="get_keyword_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="keyword" type="String" />
+			<param index="0" name="keyword" type="String" />
 			<description>
 				Returns the color for a keyword.
 			</description>
 		</method>
 		<method name="get_member_keyword_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="member_keyword" type="String" />
+			<param index="0" name="member_keyword" type="String" />
 			<description>
 				Returns the color for a member keyword.
 			</description>
 		</method>
 		<method name="has_color_region" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="start_key" type="String" />
+			<param index="0" name="start_key" type="String" />
 			<description>
 				Returns [code]true[/code] if the start key exists, else [code]false[/code].
 			</description>
 		</method>
 		<method name="has_keyword_color" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="keyword" type="String" />
+			<param index="0" name="keyword" type="String" />
 			<description>
 				Returns [code]true[/code] if the keyword exists, else [code]false[/code].
 			</description>
 		</method>
 		<method name="has_member_keyword_color" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="member_keyword" type="String" />
+			<param index="0" name="member_keyword" type="String" />
 			<description>
 				Returns [code]true[/code] if the member keyword exists, else [code]false[/code].
 			</description>
 		</method>
 		<method name="remove_color_region">
 			<return type="void" />
-			<argument index="0" name="start_key" type="String" />
+			<param index="0" name="start_key" type="String" />
 			<description>
 				Removes the color region that uses that start key.
 			</description>
 		</method>
 		<method name="remove_keyword_color">
 			<return type="void" />
-			<argument index="0" name="keyword" type="String" />
+			<param index="0" name="keyword" type="String" />
 			<description>
 				Removes the keyword.
 			</description>
 		</method>
 		<method name="remove_member_keyword_color">
 			<return type="void" />
-			<argument index="0" name="member_keyword" type="String" />
+			<param index="0" name="member_keyword" type="String" />
 			<description>
 				Removes the member keyword.
 			</description>

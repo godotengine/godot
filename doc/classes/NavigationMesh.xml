@@ -12,7 +12,7 @@
 	<methods>
 		<method name="add_polygon">
 			<return type="void" />
-			<argument index="0" name="polygon" type="PackedInt32Array" />
+			<param index="0" name="polygon" type="PackedInt32Array" />
 			<description>
 				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
 			</description>
@@ -25,21 +25,22 @@
 		</method>
 		<method name="create_from_mesh">
 			<return type="void" />
-			<argument index="0" name="mesh" type="Mesh" />
+			<param index="0" name="mesh" type="Mesh" />
 			<description>
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
+				[b]Note:[/b] The given [code]mesh[/code] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member geometry_collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_polygon">
 			<return type="PackedInt32Array" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns a [PackedInt32Array] containing the indices of the vertices of a created polygon.
 			</description>
@@ -58,15 +59,15 @@
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member geometry_collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_vertices">
 			<return type="void" />
-			<argument index="0" name="vertices" type="PackedVector3Array" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
 			<description>
 				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
 			</description>

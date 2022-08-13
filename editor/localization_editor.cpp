@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_translation_parser.h"
+#include "editor/filesystem_dock.h"
 #include "editor/pot_generator.h"
 #include "scene/gui/control.h"
 
@@ -379,6 +380,95 @@ void LocalizationEditor::_update_pot_file_extensions() {
 	}
 }
 
+void LocalizationEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
+	p_fs_dock->connect("files_moved", callable_mp(this, &LocalizationEditor::_filesystem_files_moved));
+	p_fs_dock->connect("file_removed", callable_mp(this, &LocalizationEditor::_filesystem_file_removed));
+}
+
+void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const String &p_new_file) {
+	// Update remaps if the moved file is a part of them.
+	Dictionary remaps;
+	bool remaps_changed = false;
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
+		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	}
+
+	// Check for the keys.
+	if (remaps.has(p_old_file)) {
+		PackedStringArray remapped_files = remaps[p_old_file];
+		remaps.erase(p_old_file);
+		remaps[p_new_file] = remapped_files;
+		remaps_changed = true;
+		print_verbose(vformat("Changed remap key \"%s\" to \"%s\" due to a moved file.", p_old_file, p_new_file));
+	}
+
+	// Check for the Array elements of the values.
+	Array remap_keys = remaps.keys();
+	for (int i = 0; i < remap_keys.size(); i++) {
+		PackedStringArray remapped_files = remaps[remap_keys[i]];
+		bool remapped_files_updated = false;
+
+		for (int j = 0; j < remapped_files.size(); j++) {
+			int splitter_pos = remapped_files[j].rfind(":");
+			String res_path = remapped_files[j].substr(0, splitter_pos);
+
+			if (res_path == p_old_file) {
+				String locale_name = remapped_files[j].substr(splitter_pos + 1);
+				// Replace the element at that index.
+				remapped_files.insert(j, p_new_file + ":" + locale_name);
+				remapped_files.remove_at(j + 1);
+				remaps_changed = true;
+				remapped_files_updated = true;
+				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_keys[i]));
+			}
+		}
+
+		if (remapped_files_updated) {
+			remaps[remap_keys[i]] = remapped_files;
+		}
+	}
+
+	if (remaps_changed) {
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_remaps", remaps);
+		update_translations();
+		emit_signal("localization_changed");
+	}
+}
+
+void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
+	// Check if the remaps are affected.
+	Dictionary remaps;
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
+		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	}
+
+	bool remaps_changed = remaps.has(p_file);
+
+	if (!remaps_changed) {
+		Array remap_keys = remaps.keys();
+		for (int i = 0; i < remap_keys.size() && !remaps_changed; i++) {
+			PackedStringArray remapped_files = remaps[remap_keys[i]];
+			for (int j = 0; j < remapped_files.size() && !remaps_changed; j++) {
+				int splitter_pos = remapped_files[j].rfind(":");
+				String res_path = remapped_files[j].substr(0, splitter_pos);
+				remaps_changed = p_file == res_path;
+				if (remaps_changed) {
+					print_verbose(vformat("Remap value \"%s\" of key \"%s\" has been removed from the file system.", remapped_files[j], remap_keys[i]));
+				}
+			}
+		}
+	} else {
+		print_verbose(vformat("Remap key \"%s\" has been removed from the file system.", p_file));
+	}
+
+	if (remaps_changed) {
+		update_translations();
+		emit_signal("localization_changed");
+	}
+}
+
 void LocalizationEditor::update_translations() {
 	if (updating_translations) {
 		return;
@@ -432,6 +522,13 @@ void LocalizationEditor::update_translations() {
 			t->set_tooltip(0, keys[i]);
 			t->set_metadata(0, keys[i]);
 			t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
+
+			// Display that it has been removed if this is the case.
+			if (!FileAccess::exists(keys[i])) {
+				t->set_text(0, t->get_text(0) + vformat(" (%s)", TTR("Removed")));
+				t->set_tooltip(0, vformat(TTR("%s cannot be found."), t->get_tooltip(0)));
+			}
+
 			if (keys[i] == remap_selected) {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
@@ -454,6 +551,12 @@ void LocalizationEditor::update_translations() {
 					t2->set_editable(1, true);
 					t2->set_metadata(1, path);
 					t2->set_tooltip(1, locale);
+
+					// Display that it has been removed if this is the case.
+					if (!FileAccess::exists(path)) {
+						t2->set_text(0, t2->get_text(0) + vformat(" (%s)", TTR("Removed")));
+						t2->set_tooltip(0, vformat(TTR("%s cannot be found."), t2->get_tooltip(0)));
+					}
 				}
 			}
 		}

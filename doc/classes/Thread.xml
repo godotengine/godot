@@ -34,12 +34,12 @@
 		</method>
 		<method name="start">
 			<return type="int" enum="Error" />
-			<argument index="0" name="callable" type="Callable" />
-			<argument index="1" name="priority" type="int" enum="Thread.Priority" default="1" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="priority" type="int" enum="Thread.Priority" default="1" />
 			<description>
-				Starts a new [Thread] that calls [code]callable[/code].
+				Starts a new [Thread] that calls [param callable].
 				If the method takes some arguments, you can pass them using [method Callable.bind].
-				The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
+				The [param priority] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
 				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
 			</description>
 		</method>

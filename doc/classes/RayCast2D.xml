@@ -16,14 +16,14 @@
 	<methods>
 		<method name="add_exception">
 			<return type="void" />
-			<argument index="0" name="node" type="CollisionObject2D" />
+			<param index="0" name="node" type="CollisionObject2D" />
 			<description>
 				Adds a collision exception so the ray does not report collisions with the specified [CollisionObject2D] node.
 			</description>
 		</method>
 		<method name="add_exception_rid">
 			<return type="void" />
-			<argument index="0" name="rid" type="RID" />
+			<param index="0" name="rid" type="RID" />
 			<description>
 				Adds a collision exception so the ray does not report collisions with the specified [RID].
 			</description>
@@ -55,9 +55,9 @@
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
@@ -81,24 +81,24 @@
 		</method>
 		<method name="remove_exception">
 			<return type="void" />
-			<argument index="0" name="node" type="CollisionObject2D" />
+			<param index="0" name="node" type="CollisionObject2D" />
 			<description>
 				Removes a collision exception so the ray does report collisions with the specified [CollisionObject2D] node.
 			</description>
 		</method>
 		<method name="remove_exception_rid">
 			<return type="void" />
-			<argument index="0" name="rid" type="RID" />
+			<param index="0" name="rid" type="RID" />
 			<description>
 				Removes a collision exception so the ray does report collisions with the specified [RID].
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 	</methods>

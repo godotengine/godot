@@ -33,16 +33,16 @@
 		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the button icon from the tab at index [code]tab_idx[/code].
+				Returns the button icon from the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="get_tab_control" qualifiers="const">
 			<return type="Control" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Control] node from the tab at index [code]tab_idx[/code].
+				Returns the [Control] node from the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
@@ -53,91 +53,91 @@
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
+				Returns the [Texture2D] for the tab at index [param tab_idx] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_idx_at_point" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="point" type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the index of the tab at local coordinates [code]point[/code]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
+				Returns the index of the tab at local coordinates [param point]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
 			</description>
 		</method>
 		<method name="get_tab_idx_from_control" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="control" type="Control" />
+			<param index="0" name="control" type="Control" />
 			<description>
-				Returns the index of the tab tied to the given [code]control[/code]. The control must be a child of the [TabContainer].
+				Returns the index of the tab tied to the given [param control]. The control must be a child of the [TabContainer].
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
+				Returns the title of the tab at index [param tab_idx]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
+				Returns [code]true[/code] if the tab at index [param tab_idx] is disabled.
 			</description>
 		</method>
 		<method name="is_tab_hidden" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
+				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
 			</description>
 		</method>
 		<method name="set_popup">
 			<return type="void" />
-			<argument index="0" name="popup" type="Node" />
+			<param index="0" name="popup" type="Node" />
 			<description>
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="icon" type="Texture2D" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
 			<description>
-				Sets the button icon from the tab at index [code]tab_idx[/code].
+				Sets the button icon from the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_disabled">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="disabled" type="bool" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="disabled" type="bool" />
 			<description>
-				If [code]disabled[/code] is [code]true[/code], disables the tab at index [code]tab_idx[/code], making it non-interactable.
+				If [param disabled] is [code]true[/code], disables the tab at index [param tab_idx], making it non-interactable.
 			</description>
 		</method>
 		<method name="set_tab_hidden">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="hidden" type="bool" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="hidden" type="bool" />
 			<description>
-				If [code]hidden[/code] is [code]true[/code], hides the tab at index [code]tab_idx[/code], making it disappear from the tab area.
+				If [param hidden] is [code]true[/code], hides the tab at index [param tab_idx], making it disappear from the tab area.
 			</description>
 		</method>
 		<method name="set_tab_icon">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="icon" type="Texture2D" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
 			<description>
-				Sets an icon for the tab at index [code]tab_idx[/code].
+				Sets an icon for the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_title">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="title" type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="title" type="String" />
 			<description>
-				Sets a custom title for the tab at index [code]tab_idx[/code] (tab titles default to the name of the indexed child node). Set it back to the child's name to make the tab default to it again.
+				Sets a custom title for the tab at index [param tab_idx] (tab titles default to the name of the indexed child node). Set it back to the child's name to make the tab default to it again.
 			</description>
 		</method>
 	</methods>
@@ -175,19 +175,19 @@
 			</description>
 		</signal>
 		<signal name="tab_button_pressed">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when the user clicks on the button icon on this tab.
 			</description>
 		</signal>
 		<signal name="tab_changed">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_selected">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is selected, even if it is the current tab.
 			</description>

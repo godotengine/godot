@@ -83,7 +83,7 @@ void DisplayServerJavaScript::drop_files_js_callback(char **p_filev, int p_filec
 	Variant *vp = &v;
 	Variant ret;
 	Callable::CallError ce;
-	ds->drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+	ds->drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
 }
 
 // JavaScript quit request callback.
@@ -94,7 +94,7 @@ void DisplayServerJavaScript::request_quit_callback() {
 		Variant *eventp = &event;
 		Variant ret;
 		Callable::CallError ce;
-		ds->window_event_callback.call((const Variant **)&eventp, 1, ret, ce);
+		ds->window_event_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	}
 }
 
@@ -586,7 +586,7 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 	Variant *eventp = &event;
 	Variant ret;
 	Callable::CallError ce;
-	ds->input_text_callback.call((const Variant **)&eventp, 1, ret, ce);
+	ds->input_text_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	// Insert key right to reach position.
 	Input *input = Input::get_singleton();
 	Ref<InputEventKey> k;
@@ -604,8 +604,8 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 	}
 }
 
-void DisplayServerJavaScript::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
-	godot_js_display_vk_show(p_existing_text.utf8().get_data(), p_multiline, p_cursor_start, p_cursor_end);
+void DisplayServerJavaScript::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	godot_js_display_vk_show(p_existing_text.utf8().get_data(), p_type, p_cursor_start, p_cursor_end);
 }
 
 void DisplayServerJavaScript::virtual_keyboard_hide() {
@@ -691,7 +691,7 @@ void DisplayServerJavaScript::send_window_event_callback(int p_notification) {
 		Variant *eventp = &event;
 		Variant ret;
 		Callable::CallError ce;
-		ds->window_event_callback.call((const Variant **)&eventp, 1, ret, ce);
+		ds->window_event_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	}
 }
 
@@ -734,7 +734,7 @@ void DisplayServerJavaScript::_dispatch_input_event(const Ref<InputEvent> &p_eve
 		Variant *evp = &ev;
 		Variant ret;
 		Callable::CallError ce;
-		cb.call((const Variant **)&evp, 1, ret, ce);
+		cb.callp((const Variant **)&evp, 1, ret, ce);
 	}
 }
 

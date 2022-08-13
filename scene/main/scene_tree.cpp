@@ -37,7 +37,6 @@
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
-#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -45,6 +44,7 @@
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/font.h"
 #include "scene/resources/material.h"
@@ -1213,19 +1213,17 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 	if (p_root_path.is_empty()) {
 		ERR_FAIL_COND(!p_multiplayer.is_valid());
 		if (multiplayer.is_valid()) {
-			multiplayer->set_root_path(NodePath());
+			multiplayer->object_configuration_remove(nullptr, NodePath("/" + root->get_name()));
 		}
 		multiplayer = p_multiplayer;
-		multiplayer->set_root_path("/" + root->get_name());
+		multiplayer->object_configuration_add(nullptr, NodePath("/" + root->get_name()));
 	} else {
+		if (custom_multiplayers.has(p_root_path)) {
+			custom_multiplayers[p_root_path]->object_configuration_remove(nullptr, p_root_path);
+		}
 		if (p_multiplayer.is_valid()) {
 			custom_multiplayers[p_root_path] = p_multiplayer;
-			p_multiplayer->set_root_path(p_root_path);
-		} else {
-			if (custom_multiplayers.has(p_root_path)) {
-				custom_multiplayers[p_root_path]->set_root_path(NodePath());
-				custom_multiplayers.erase(p_root_path);
-			}
+			p_multiplayer->object_configuration_add(nullptr, p_root_path);
 		}
 	}
 }
@@ -1415,7 +1413,7 @@ SceneTree::SceneTree() {
 #endif // _3D_DISABLED
 
 	// Initialize network state.
-	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
+	set_multiplayer(MultiplayerAPI::create_default_interface());
 
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;

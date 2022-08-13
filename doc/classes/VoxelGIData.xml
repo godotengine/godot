@@ -13,13 +13,13 @@
 	<methods>
 		<method name="allocate">
 			<return type="void" />
-			<argument index="0" name="to_cell_xform" type="Transform3D" />
-			<argument index="1" name="aabb" type="AABB" />
-			<argument index="2" name="octree_size" type="Vector3" />
-			<argument index="3" name="octree_cells" type="PackedByteArray" />
-			<argument index="4" name="data_cells" type="PackedByteArray" />
-			<argument index="5" name="distance_field" type="PackedByteArray" />
-			<argument index="6" name="level_counts" type="PackedInt32Array" />
+			<param index="0" name="to_cell_xform" type="Transform3D" />
+			<param index="1" name="aabb" type="AABB" />
+			<param index="2" name="octree_size" type="Vector3" />
+			<param index="3" name="octree_cells" type="PackedByteArray" />
+			<param index="4" name="data_cells" type="PackedByteArray" />
+			<param index="5" name="distance_field" type="PackedByteArray" />
+			<param index="6" name="level_counts" type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>
@@ -72,10 +72,10 @@
 		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" default="0.0">
 			The normal bias to use for indirect lighting and reflections. Higher values reduce self-reflections visible in non-rough materials, at the cost of more visible light leaking and flatter-looking indirect lighting. See also [member bias]. To prioritize hiding self-reflections over lighting quality, set [member bias] to [code]0.0[/code] and [member normal_bias] to a value between [code]1.0[/code] and [code]2.0[/code].
 		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="0.7">
-			If indirect lighting looks too flat, try decreasing [member propagation] while increasing [member energy] at the same time. See also [member use_two_bounces] which influences the indirect lighting's effective brightness.
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="0.5">
+			The multiplier to use when light bounces off a surface. Higher values result in brighter indirect lighting. If indirect lighting looks too flat, try decreasing [member propagation] while increasing [member energy] at the same time. See also [member use_two_bounces] which influences the indirect lighting's effective brightness.
 		</member>
-		<member name="use_two_bounces" type="bool" setter="set_use_two_bounces" getter="is_using_two_bounces" default="false">
+		<member name="use_two_bounces" type="bool" setter="set_use_two_bounces" getter="is_using_two_bounces" default="true">
 			If [code]true[/code], performs two bounces of indirect lighting instead of one. This makes indirect lighting look more natural and brighter at a small performance cost. The second bounce is also visible in reflections. If the scene appears too bright after enabling [member use_two_bounces], adjust [member propagation] and [member energy].
 		</member>
 	</members>

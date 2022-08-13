@@ -1563,33 +1563,35 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 	return -1;
 }
 
-void Animation::track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition) {
-	ERR_FAIL_INDEX(p_track, tracks.size());
+int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition) {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
+
+	int ret = -1;
 
 	switch (t->type) {
 		case TYPE_POSITION_3D: {
-			ERR_FAIL_COND((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I));
-			int idx = position_track_insert_key(p_track, p_time, p_key);
-			track_set_key_transition(p_track, idx, p_transition);
+			ERR_FAIL_COND_V((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I), -1);
+			ret = position_track_insert_key(p_track, p_time, p_key);
+			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_ROTATION_3D: {
-			ERR_FAIL_COND((p_key.get_type() != Variant::QUATERNION) && (p_key.get_type() != Variant::BASIS));
-			int idx = rotation_track_insert_key(p_track, p_time, p_key);
-			track_set_key_transition(p_track, idx, p_transition);
+			ERR_FAIL_COND_V((p_key.get_type() != Variant::QUATERNION) && (p_key.get_type() != Variant::BASIS), -1);
+			ret = rotation_track_insert_key(p_track, p_time, p_key);
+			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_SCALE_3D: {
-			ERR_FAIL_COND((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I));
-			int idx = scale_track_insert_key(p_track, p_time, p_key);
-			track_set_key_transition(p_track, idx, p_transition);
+			ERR_FAIL_COND_V((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I), -1);
+			ret = scale_track_insert_key(p_track, p_time, p_key);
+			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_BLEND_SHAPE: {
-			ERR_FAIL_COND((p_key.get_type() != Variant::FLOAT) && (p_key.get_type() != Variant::INT));
-			int idx = blend_shape_track_insert_key(p_track, p_time, p_key);
-			track_set_key_transition(p_track, idx, p_transition);
+			ERR_FAIL_COND_V((p_key.get_type() != Variant::FLOAT) && (p_key.get_type() != Variant::INT), -1);
+			ret = blend_shape_track_insert_key(p_track, p_time, p_key);
+			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_VALUE: {
@@ -1599,17 +1601,17 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 			k.time = p_time;
 			k.transition = p_transition;
 			k.value = p_key;
-			_insert(p_time, vt->values, k);
+			ret = _insert(p_time, vt->values, k);
 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 
-			ERR_FAIL_COND(p_key.get_type() != Variant::DICTIONARY);
+			ERR_FAIL_COND_V(p_key.get_type() != Variant::DICTIONARY, -1);
 
 			Dictionary d = p_key;
-			ERR_FAIL_COND(!d.has("method") || (d["method"].get_type() != Variant::STRING_NAME && d["method"].get_type() != Variant::STRING));
-			ERR_FAIL_COND(!d.has("args") || !d["args"].is_array());
+			ERR_FAIL_COND_V(!d.has("method") || (d["method"].get_type() != Variant::STRING_NAME && d["method"].get_type() != Variant::STRING), -1);
+			ERR_FAIL_COND_V(!d.has("args") || !d["args"].is_array(), -1);
 
 			MethodKey k;
 
@@ -1618,14 +1620,14 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 			k.method = d["method"];
 			k.params = d["args"];
 
-			_insert(p_time, mt->methods, k);
+			ret = _insert(p_time, mt->methods, k);
 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 
 			Array arr = p_key;
-			ERR_FAIL_COND(arr.size() != 6);
+			ERR_FAIL_COND_V(arr.size() != 6, -1);
 
 			TKey<BezierKey> k;
 			k.time = p_time;
@@ -1635,23 +1637,23 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 			k.value.out_handle.x = arr[3];
 			k.value.out_handle.y = arr[4];
 			k.value.handle_mode = static_cast<HandleMode>((int)arr[5]);
-			_insert(p_time, bt->values, k);
+			ret = _insert(p_time, bt->values, k);
 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *at = static_cast<AudioTrack *>(t);
 
 			Dictionary k = p_key;
-			ERR_FAIL_COND(!k.has("start_offset"));
-			ERR_FAIL_COND(!k.has("end_offset"));
-			ERR_FAIL_COND(!k.has("stream"));
+			ERR_FAIL_COND_V(!k.has("start_offset"), -1);
+			ERR_FAIL_COND_V(!k.has("end_offset"), -1);
+			ERR_FAIL_COND_V(!k.has("stream"), -1);
 
 			TKey<AudioKey> ak;
 			ak.time = p_time;
 			ak.value.start_offset = k["start_offset"];
 			ak.value.end_offset = k["end_offset"];
 			ak.value.stream = k["stream"];
-			_insert(p_time, at->values, ak);
+			ret = _insert(p_time, at->values, ak);
 
 		} break;
 		case TYPE_ANIMATION: {
@@ -1661,12 +1663,14 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 			ak.time = p_time;
 			ak.value = p_key;
 
-			_insert(p_time, at->values, ak);
+			ret = _insert(p_time, at->values, ak);
 
 		} break;
 	}
 
 	emit_changed();
+
+	return ret;
 }
 
 int Animation::track_get_key_count(int p_track) const {
@@ -2302,7 +2306,7 @@ Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a
 }
 
 Quaternion Animation::_cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c) const {
-	return p_a.cubic_slerp(p_b, p_pre_a, p_post_b, p_c);
+	return p_a.spherical_cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
 }
 
 Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c) const {
@@ -2363,7 +2367,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Quaternion pa = p_pre_a;
 			Quaternion pb = p_post_b;
 
-			return a.cubic_slerp(b, pa, pb, p_c);
+			return a.spherical_cubic_interpolate(b, pa, pb, p_c);
 		}
 		case Variant::AABB: {
 			AABB a = p_a;

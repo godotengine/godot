@@ -103,11 +103,11 @@ String Shader::get_code() const {
 	return code;
 }
 
-void Shader::get_param_list(List<PropertyInfo> *p_params, bool p_get_groups) const {
+void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_groups) const {
 	_update_shader();
 
 	List<PropertyInfo> local;
-	RenderingServer::get_singleton()->shader_get_param_list(shader, &local);
+	RenderingServer::get_singleton()->shader_get_shader_uniform_list(shader, &local);
 	params_cache.clear();
 	params_cache_dirty = false;
 
@@ -176,8 +176,8 @@ bool Shader::is_text_shader() const {
 	return true;
 }
 
-bool Shader::has_param(const StringName &p_param) const {
-	return params_cache.has("shader_param/" + p_param);
+bool Shader::has_uniform(const StringName &p_param) const {
+	return params_cache.has("shader_uniform/" + p_param);
 }
 
 void Shader::_update_shader() const {
@@ -192,7 +192,7 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture", "index"), &Shader::set_default_texture_param, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param", "index"), &Shader::get_default_texture_param, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
+	ClassDB::bind_method(D_METHOD("has_uniform", "name"), &Shader::has_uniform);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 
@@ -251,7 +251,7 @@ String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverShader::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<Shader> shader = p_resource;
 	ERR_FAIL_COND_V(shader.is_null(), ERR_INVALID_PARAMETER);
 

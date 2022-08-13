@@ -52,6 +52,18 @@ public class GodotEditText extends EditText {
 	private final static int HANDLER_OPEN_IME_KEYBOARD = 2;
 	private final static int HANDLER_CLOSE_IME_KEYBOARD = 3;
 
+	// Enum must be kept up-to-date with DisplayServer::VirtualKeyboardType
+	public enum VirtualKeyboardType {
+		KEYBOARD_TYPE_DEFAULT,
+		KEYBOARD_TYPE_MULTILINE,
+		KEYBOARD_TYPE_NUMBER,
+		KEYBOARD_TYPE_NUMBER_DECIMAL,
+		KEYBOARD_TYPE_PHONE,
+		KEYBOARD_TYPE_EMAIL_ADDRESS,
+		KEYBOARD_TYPE_PASSWORD,
+		KEYBOARD_TYPE_URL
+	}
+
 	// ===========================================================
 	// Fields
 	// ===========================================================
@@ -60,7 +72,7 @@ public class GodotEditText extends EditText {
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
 	private int mMaxInputLength = Integer.MAX_VALUE;
-	private boolean mMultiline = false;
+	private VirtualKeyboardType mKeyboardType = VirtualKeyboardType.KEYBOARD_TYPE_DEFAULT;
 
 	private static class EditHandler extends Handler {
 		private final WeakReference<GodotEditText> mEdit;
@@ -100,8 +112,8 @@ public class GodotEditText extends EditText {
 		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
 	}
 
-	public boolean isMultiline() {
-		return mMultiline;
+	public VirtualKeyboardType getKeyboardType() {
+		return mKeyboardType;
 	}
 
 	private void handleMessage(final Message msg) {
@@ -122,8 +134,31 @@ public class GodotEditText extends EditText {
 					}
 
 					int inputType = InputType.TYPE_CLASS_TEXT;
-					if (edit.isMultiline()) {
-						inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+					switch (edit.getKeyboardType()) {
+						case KEYBOARD_TYPE_DEFAULT:
+							inputType = InputType.TYPE_CLASS_TEXT;
+							break;
+						case KEYBOARD_TYPE_MULTILINE:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+							break;
+						case KEYBOARD_TYPE_NUMBER:
+							inputType = InputType.TYPE_CLASS_NUMBER;
+							break;
+						case KEYBOARD_TYPE_NUMBER_DECIMAL:
+							inputType = InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+							break;
+						case KEYBOARD_TYPE_PHONE:
+							inputType = InputType.TYPE_CLASS_PHONE;
+							break;
+						case KEYBOARD_TYPE_EMAIL_ADDRESS:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+							break;
+						case KEYBOARD_TYPE_PASSWORD:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
+							break;
+						case KEYBOARD_TYPE_URL:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI;
+							break;
 					}
 					edit.setInputType(inputType);
 
@@ -201,7 +236,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Methods
 	// ===========================================================
-	public void showKeyboard(String p_existing_text, boolean p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	public void showKeyboard(String p_existing_text, VirtualKeyboardType p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
 		if (p_cursor_start == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
@@ -214,7 +249,7 @@ public class GodotEditText extends EditText {
 			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
 		}
 
-		this.mMultiline = p_multiline;
+		this.mKeyboardType = p_type;
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;

@@ -416,8 +416,8 @@ int Image::get_height() const {
 	return height;
 }
 
-Vector2 Image::get_size() const {
-	return Vector2(width, height);
+Vector2i Image::get_size() const {
+	return Vector2i(width, height);
 }
 
 bool Image::has_mipmaps() const {

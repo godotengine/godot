@@ -57,6 +57,7 @@
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
+#include "scene/3d/shape_cast_3d.h"
 #include "scene/3d/soft_dynamic_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
@@ -74,6 +75,7 @@
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/world_boundary_shape_3d.h"
+#include "servers/navigation_server_3d.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -2540,6 +2542,44 @@ void RayCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 /////
 
+ShapeCast3DGizmoPlugin::ShapeCast3DGizmoPlugin() {
+	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	create_material("shape_material", gizmo_color);
+	const float gizmo_value = gizmo_color.get_v();
+	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
+	create_material("shape_material_disabled", gizmo_color_disabled);
+}
+
+bool ShapeCast3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<ShapeCast3D>(p_spatial) != nullptr;
+}
+
+String ShapeCast3DGizmoPlugin::get_gizmo_name() const {
+	return "ShapeCast3D";
+}
+
+int ShapeCast3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void ShapeCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	ShapeCast3D *shapecast = Object::cast_to<ShapeCast3D>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	const Ref<StandardMaterial3D> material = shapecast->is_enabled() ? shapecast->get_debug_material() : get_material("shape_material_disabled");
+
+	p_gizmo->add_lines(shapecast->get_debug_line_vertices(), material);
+
+	if (shapecast->get_shape().is_valid()) {
+		p_gizmo->add_lines(shapecast->get_debug_shape_vertices(), material);
+	}
+
+	p_gizmo->add_collision_segments(shapecast->get_debug_line_vertices());
+}
+
+/////
+
 void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	SpringArm3D *spring_arm = Object::cast_to<SpringArm3D>(p_gizmo->get_spatial_node());
 
@@ -4799,10 +4839,10 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
-	create_material("navigation_edge_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
-	create_material("navigation_edge_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
-	create_material("navigation_solid_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
-	create_material("navigation_solid_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
+	create_material("face_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color(), false, false, true);
+	create_material("face_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color(), false, false, true);
+	create_material("edge_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color());
+	create_material("edge_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color());
 }
 
 bool NavigationRegion3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -4818,24 +4858,19 @@ int NavigationRegion3DGizmoPlugin::get_priority() const {
 }
 
 void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	NavigationRegion3D *navmesh = Object::cast_to<NavigationRegion3D>(p_gizmo->get_spatial_node());
-
-	Ref<Material> edge_material = get_material("navigation_edge_material", p_gizmo);
-	Ref<Material> edge_material_disabled = get_material("navigation_edge_material_disabled", p_gizmo);
-	Ref<Material> solid_material = get_material("navigation_solid_material", p_gizmo);
-	Ref<Material> solid_material_disabled = get_material("navigation_solid_material_disabled", p_gizmo);
+	NavigationRegion3D *navigationregion = Object::cast_to<NavigationRegion3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
-	Ref<NavigationMesh> navmeshie = navmesh->get_navigation_mesh();
-	if (navmeshie.is_null()) {
+	Ref<NavigationMesh> navigationmesh = navigationregion->get_navigation_mesh();
+	if (navigationmesh.is_null()) {
 		return;
 	}
 
-	Vector<Vector3> vertices = navmeshie->get_vertices();
+	Vector<Vector3> vertices = navigationmesh->get_vertices();
 	const Vector3 *vr = vertices.ptr();
 	List<Face3> faces;
-	for (int i = 0; i < navmeshie->get_polygon_count(); i++) {
-		Vector<int> p = navmeshie->get_polygon(i);
+	for (int i = 0; i < navigationmesh->get_polygon_count(); i++) {
+		Vector<int> p = navigationmesh->get_polygon(i);
 
 		for (int j = 2; j < p.size(); j++) {
 			Face3 f;
@@ -4892,18 +4927,74 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<TriangleMesh> tmesh = memnew(TriangleMesh);
 	tmesh->create(tmeshfaces);
 
-	if (lines.size()) {
-		p_gizmo->add_lines(lines, navmesh->is_enabled() ? edge_material : edge_material_disabled);
-	}
 	p_gizmo->add_collision_triangles(tmesh);
-	Ref<ArrayMesh> m = memnew(ArrayMesh);
-	Array a;
-	a.resize(Mesh::ARRAY_MAX);
-	a[0] = tmeshfaces;
-	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
-	m->surface_set_material(0, navmesh->is_enabled() ? solid_material : solid_material_disabled);
-	p_gizmo->add_mesh(m);
 	p_gizmo->add_collision_segments(lines);
+
+	Ref<ArrayMesh> debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	int polygon_count = navigationmesh->get_polygon_count();
+
+	// build geometry face surface
+	Vector<Vector3> face_vertex_array;
+	face_vertex_array.resize(polygon_count * 3);
+
+	for (int i = 0; i < polygon_count; i++) {
+		Vector<int> polygon = navigationmesh->get_polygon(i);
+
+		face_vertex_array.push_back(vertices[polygon[0]]);
+		face_vertex_array.push_back(vertices[polygon[1]]);
+		face_vertex_array.push_back(vertices[polygon[2]]);
+	}
+
+	Array face_mesh_array;
+	face_mesh_array.resize(Mesh::ARRAY_MAX);
+	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
+
+	// if enabled add vertex colors to colorize each face individually
+	RandomPCG rand;
+	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	if (enabled_geometry_face_random_color) {
+		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color polygon_color = debug_navigation_geometry_face_color;
+
+		Vector<Color> face_color_array;
+		face_color_array.resize(polygon_count * 3);
+
+		for (int i = 0; i < polygon_count; i++) {
+			// Generate the polygon color, slightly randomly modified from the settings one.
+			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_navigation_geometry_face_color.a;
+
+			Vector<int> polygon = navigationmesh->get_polygon(i);
+
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+		}
+		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+	}
+
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
+	p_gizmo->add_mesh(debug_mesh, navigationregion->is_enabled() ? get_material("face_material", p_gizmo) : get_material("face_material_disabled", p_gizmo));
+
+	// if enabled build geometry edge line surface
+	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
+	if (enabled_edge_lines) {
+		Vector<Vector3> line_vertex_array;
+		line_vertex_array.resize(polygon_count * 6);
+
+		for (int i = 0; i < polygon_count; i++) {
+			Vector<int> polygon = navigationmesh->get_polygon(i);
+
+			line_vertex_array.push_back(vertices[polygon[0]]);
+			line_vertex_array.push_back(vertices[polygon[1]]);
+			line_vertex_array.push_back(vertices[polygon[1]]);
+			line_vertex_array.push_back(vertices[polygon[2]]);
+			line_vertex_array.push_back(vertices[polygon[2]]);
+			line_vertex_array.push_back(vertices[polygon[0]]);
+		}
+
+		p_gizmo->add_lines(line_vertex_array, navigationregion->is_enabled() ? get_material("edge_material", p_gizmo) : get_material("edge_material_disabled", p_gizmo));
+	}
 }
 
 //////
@@ -5044,8 +5135,8 @@ Basis JointGizmosDrawer::look_body_toward_z(const Transform3D &p_joint_transform
 
 void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform3D &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse) {
 	if (p_limit_lower == p_limit_upper) {
-		r_points.push_back(p_offset.translated(Vector3()).origin);
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(0.5, 0, 0))).origin);
+		r_points.push_back(p_offset.translated_local(Vector3()).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(0.5, 0, 0))).origin);
 
 	} else {
 		if (p_limit_lower > p_limit_upper) {
@@ -5087,20 +5178,20 @@ void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const
 			}
 
 			if (i == points - 1) {
-				r_points.push_back(p_offset.translated(to).origin);
-				r_points.push_back(p_offset.translated(Vector3()).origin);
+				r_points.push_back(p_offset.translated_local(to).origin);
+				r_points.push_back(p_offset.translated_local(Vector3()).origin);
 			}
 			if (i == 0) {
-				r_points.push_back(p_offset.translated(from).origin);
-				r_points.push_back(p_offset.translated(Vector3()).origin);
+				r_points.push_back(p_offset.translated_local(from).origin);
+				r_points.push_back(p_offset.translated_local(Vector3()).origin);
 			}
 
-			r_points.push_back(p_offset.translated(from).origin);
-			r_points.push_back(p_offset.translated(to).origin);
+			r_points.push_back(p_offset.translated_local(from).origin);
+			r_points.push_back(p_offset.translated_local(to).origin);
 		}
 
-		r_points.push_back(p_offset.translated(Vector3(0, p_radius * 1.5, 0)).origin);
-		r_points.push_back(p_offset.translated(Vector3()).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(0, p_radius * 1.5, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3()).origin);
 	}
 }
 
@@ -5116,17 +5207,17 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, a.x, a.y))).origin);
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, b.x, b.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(d, a.x, a.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(d, b.x, b.y))).origin);
 
 		if (i % 90 == 0) {
-			r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, a.x, a.y))).origin);
-			r_points.push_back(p_offset.translated(p_base.xform(Vector3())).origin);
+			r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(d, a.x, a.y))).origin);
+			r_points.push_back(p_offset.translated_local(p_base.xform(Vector3())).origin);
 		}
 	}
 
-	r_points.push_back(p_offset.translated(p_base.xform(Vector3())).origin);
-	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, 0))).origin);
+	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3())).origin);
+	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(1, 0, 0))).origin);
 
 	/// Twist
 	float ts = Math::rad2deg(p_twist);
@@ -5140,8 +5231,8 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w * cn;
 
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(c, a.x, a.y))).origin);
-		r_points.push_back(p_offset.translated(p_base.xform(Vector3(cn, b.x, b.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(c, a.x, a.y))).origin);
+		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(cn, b.x, b.y))).origin);
 	}
 }
 
@@ -5325,17 +5416,17 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform3D &p_offset, Vector<Vector3> &r_cursor_points) {
 	float cs = 0.25;
 
-	r_cursor_points.push_back(p_offset.translated(Vector3(+cs, 0, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(-cs, 0, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, +cs, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, -cs, 0)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, +cs)).origin);
-	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, -cs)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(+cs, 0, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(-cs, 0, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, +cs, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, -cs, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, 0, +cs)).origin);
+	r_cursor_points.push_back(p_offset.translated_local(Vector3(0, 0, -cs)).origin);
 }
 
 void Joint3DGizmoPlugin::CreateHingeJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
-	r_common_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
-	r_common_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
+	r_common_points.push_back(p_offset.translated_local(Vector3(0, 0, 0.5)).origin);
+	r_common_points.push_back(p_offset.translated_local(Vector3(0, 0, -0.5)).origin);
 
 	if (!p_use_limit) {
 		p_limit_upper = -1;
@@ -5368,34 +5459,34 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform3D &p_offset, con
 	p_linear_limit_upper = -p_linear_limit_upper;
 
 	float cs = 0.25;
-	r_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
-	r_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
+	r_points.push_back(p_offset.translated_local(Vector3(0, 0, 0.5)).origin);
+	r_points.push_back(p_offset.translated_local(Vector3(0, 0, -0.5)).origin);
 
 	if (p_linear_limit_lower >= p_linear_limit_upper) {
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, 0, 0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, 0, 0)).origin);
 
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
 
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, -cs)).origin);
-		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
 
 	} else {
-		r_points.push_back(p_offset.translated(Vector3(+cs * 2, 0, 0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(-cs * 2, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(+cs * 2, 0, 0)).origin);
+		r_points.push_back(p_offset.translated_local(Vector3(-cs * 2, 0, 0)).origin);
 	}
 
 	if (r_body_a_points) {
@@ -5518,13 +5609,13 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 				break;
 		}
 
-#define ADD_VTX(x, y, z)                                   \
-	{                                                      \
-		Vector3 v;                                         \
-		v[a1] = (x);                                       \
-		v[a2] = (y);                                       \
-		v[a3] = (z);                                       \
-		r_points.push_back(p_offset.translated(v).origin); \
+#define ADD_VTX(x, y, z)                                         \
+	{                                                            \
+		Vector3 v;                                               \
+		v[a1] = (x);                                             \
+		v[a2] = (y);                                             \
+		v[a3] = (z);                                             \
+		r_points.push_back(p_offset.translated_local(v).origin); \
 	}
 
 		if (enable_lin && lll >= lul) {

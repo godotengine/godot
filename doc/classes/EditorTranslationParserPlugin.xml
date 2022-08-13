@@ -111,9 +111,9 @@
 		</method>
 		<method name="_parse_file" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="msgids" type="Array" />
-			<argument index="2" name="msgids_context_plural" type="Array" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="msgids" type="Array" />
+			<param index="2" name="msgids_context_plural" type="Array" />
 			<description>
 				Override this method to define a custom parsing logic to extract the translatable strings.
 			</description>

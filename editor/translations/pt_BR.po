@@ -149,7 +149,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2022-07-27 13:26+0000\n"
+"PO-Revision-Date: 2022-08-04 06:38+0000\n"
 "Last-Translator: Felipe Kinoshita <kinofhek@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -2868,7 +2868,8 @@ msgid "Project export for platform:"
 msgstr "Exportação do projeto para plataforma:"
 
 #: editor/editor_export.cpp
-msgid "Completed with errors."
+#, fuzzy
+msgid "Completed with warnings."
 msgstr "Concluído com erros."
 
 #: editor/editor_export.cpp
@@ -5495,7 +5496,7 @@ msgstr "Tamanho da Miniatura"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr "Docas"
+msgstr "Docks"
 
 #: editor/editor_settings.cpp
 msgid "Scene Tree"
@@ -16364,7 +16365,7 @@ msgstr "stdout"
 
 #: main/main.cpp
 msgid "Print FPS"
-msgstr ""
+msgstr "Mostrar FPS"
 
 #: main/main.cpp
 msgid "Verbose stdout"
@@ -20360,15 +20361,15 @@ msgstr "O keystore não foi encontrado, não foi possível exportar."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Extensão inválida."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20391,15 +20392,15 @@ msgstr "Nome Inválido."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Extensão inválida."
 
 #: platform/windows/export/export.cpp
 msgid "Failed to remove temporary file \"%s\"."
@@ -24458,7 +24459,7 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Caret"
-msgstr ""
+msgstr "Circunflexo"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Blink"

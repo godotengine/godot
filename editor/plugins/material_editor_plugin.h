@@ -32,7 +32,7 @@
 #define MATERIAL_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "editor/property_editor.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"

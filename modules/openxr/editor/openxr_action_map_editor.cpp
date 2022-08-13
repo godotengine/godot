@@ -258,7 +258,7 @@ void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_
 }
 
 void OpenXRActionMapEditor::_on_save_action_map() {
-	Error err = ResourceSaver::save(edited_path, action_map);
+	Error err = ResourceSaver::save(action_map, edited_path);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), edited_path));
 		return;

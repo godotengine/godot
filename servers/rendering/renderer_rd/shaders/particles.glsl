@@ -25,10 +25,10 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 /* Set 1: FRAME AND PARTICLE DATA */
 
@@ -458,11 +458,11 @@ void main() {
 
 				} break;
 				case ATTRACTOR_TYPE_VECTOR_FIELD: {
-					vec3 uvw_pos = (local_pos / FRAME.attractors[i].extents) * 2.0 - 1.0;
+					vec3 uvw_pos = (local_pos / FRAME.attractors[i].extents + 1.0) * 0.5;
 					if (any(lessThan(uvw_pos, vec3(0.0))) || any(greaterThan(uvw_pos, vec3(1.0)))) {
 						continue;
 					}
-					vec3 s = texture(sampler3D(sdf_vec_textures[FRAME.attractors[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).xyz;
+					vec3 s = texture(sampler3D(sdf_vec_textures[FRAME.attractors[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).xyz * 2.0 - 1.0;
 					dir = mat3(FRAME.attractors[i].transform) * safe_normalize(s); //revert direction
 					amount = length(s);
 

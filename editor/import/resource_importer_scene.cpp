@@ -1224,7 +1224,7 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 		}
 	}
 	anim->set_path(p_save_to_path, true); // Set path to save externally.
-	Error err = ResourceSaver::save(p_save_to_path, anim, ResourceSaver::FLAG_CHANGE_PATH);
+	Error err = ResourceSaver::save(anim, p_save_to_path, ResourceSaver::FLAG_CHANGE_PATH);
 	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + p_save_to_path);
 	return anim;
 }
@@ -1842,7 +1842,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					}
 					mesh = src_mesh_node->get_mesh()->get_mesh(existing);
 
-					ResourceSaver::save(save_to_file, mesh); //override
+					ResourceSaver::save(mesh, save_to_file); //override
 
 					mesh->set_path(save_to_file, true); //takeover existing, if needed
 
@@ -2310,14 +2310,14 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 
 		print_verbose("Saving animation to: " + p_save_path + ".scn");
-		err = ResourceSaver::save(p_save_path + ".res", library); //do not take over, let the changed files reload themselves
+		err = ResourceSaver::save(library, p_save_path + ".res"); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save animation to file '" + p_save_path + ".res'.");
 
 	} else {
 		Ref<PackedScene> packer = memnew(PackedScene);
 		packer->pack(scene);
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
-		err = ResourceSaver::save(p_save_path + ".scn", packer); //do not take over, let the changed files reload themselves
+		err = ResourceSaver::save(packer, p_save_path + ".scn"); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
 	}
 

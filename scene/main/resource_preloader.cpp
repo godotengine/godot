@@ -138,7 +138,7 @@ void ResourcePreloader::get_resource_list(List<StringName> *p_list) {
 }
 
 void ResourcePreloader::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_set_resources"), &ResourcePreloader::_set_resources);
+	ClassDB::bind_method(D_METHOD("_set_resources", "resources"), &ResourcePreloader::_set_resources);
 	ClassDB::bind_method(D_METHOD("_get_resources"), &ResourcePreloader::_get_resources);
 
 	ClassDB::bind_method(D_METHOD("add_resource", "name", "resource"), &ResourcePreloader::add_resource);

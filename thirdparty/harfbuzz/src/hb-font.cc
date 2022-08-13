@@ -781,8 +781,8 @@ hb_font_funcs_set_user_data (hb_font_funcs_t    *ffuncs,
  * Since: 0.9.2
  **/
 void *
-hb_font_funcs_get_user_data (hb_font_funcs_t    *ffuncs,
-			     hb_user_data_key_t *key)
+hb_font_funcs_get_user_data (const hb_font_funcs_t *ffuncs,
+			     hb_user_data_key_t    *key)
 {
   return hb_object_get_user_data (ffuncs, key);
 }
@@ -1897,7 +1897,7 @@ hb_font_set_user_data (hb_font_t          *font,
  * Since: 0.9.2
  **/
 void *
-hb_font_get_user_data (hb_font_t          *font,
+hb_font_get_user_data (const hb_font_t    *font,
 		       hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (font, key);

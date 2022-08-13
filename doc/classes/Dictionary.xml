@@ -190,7 +190,7 @@
 		</constructor>
 		<constructor name="Dictionary">
 			<return type="Dictionary" />
-			<argument index="0" name="from" type="Dictionary" />
+			<param index="0" name="from" type="Dictionary" />
 			<description>
 				Constructs a [Dictionary] as a copy of the given [Dictionary].
 			</description>
@@ -205,14 +205,14 @@
 		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Dictionary" />
-			<argument index="0" name="deep" type="bool" default="false" />
+			<param index="0" name="deep" type="bool" default="false" />
 			<description>
 				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
 		<method name="erase">
 			<return type="bool" />
-			<argument index="0" name="key" type="Variant" />
+			<param index="0" name="key" type="Variant" />
 			<description>
 				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise.
 				[b]Note:[/b] Don't erase elements while iterating over the dictionary. You can iterate over the [method keys] array instead.
@@ -220,15 +220,15 @@
 		</method>
 		<method name="get" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="key" type="Variant" />
-			<argument index="1" name="default" type="Variant" default="null" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="key" type="Variant" />
+			<param index="0" name="key" type="Variant" />
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
@@ -251,7 +251,7 @@
 		</method>
 		<method name="has_all" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="keys" type="Array" />
+			<param index="0" name="keys" type="Array" />
 			<description>
 				Returns [code]true[/code] if the dictionary has all the keys in the given array.
 			</description>
@@ -293,8 +293,8 @@
 		</method>
 		<method name="merge">
 			<return type="void" />
-			<argument index="0" name="dictionary" type="Dictionary" />
-			<argument index="1" name="overwrite" type="bool" default="false" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="overwrite" type="bool" default="false" />
 			<description>
 				Adds elements from [code]dictionary[/code] to this [Dictionary]. By default, duplicate keys will not be copied over, unless [code]overwrite[/code] is [code]true[/code].
 			</description>
@@ -315,19 +315,19 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Dictionary" />
+			<param index="0" name="right" type="Dictionary" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Dictionary" />
+			<param index="0" name="right" type="Dictionary" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="Variant" />
-			<argument index="0" name="key" type="Variant" />
+			<param index="0" name="key" type="Variant" />
 			<description>
 			</description>
 		</operator>

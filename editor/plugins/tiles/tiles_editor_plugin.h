@@ -53,9 +53,12 @@ public:
 	};
 
 private:
+	bool is_visible = false;
+
 	bool tile_map_changed_needs_update = false;
 	ObjectID tile_map_id;
 	Ref<TileSet> tile_set;
+	bool is_editing_tile_set = false;
 
 	Button *tilemap_editor_button = nullptr;
 	TileMapEditor *tilemap_editor = nullptr;

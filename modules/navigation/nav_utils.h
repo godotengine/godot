@@ -34,7 +34,7 @@
 #include "core/math/vector3.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/vector.h"
+#include "core/templates/local_vector.h"
 #include <vector>
 
 class NavRegion;
@@ -96,13 +96,13 @@ struct Polygon {
 	NavRegion *owner = nullptr;
 
 	/// The points of this `Polygon`
-	std::vector<Point> points;
+	LocalVector<Point> points;
 
 	/// Are the points clockwise ?
 	bool clockwise;
 
 	/// The edges of this `Polygon`
-	std::vector<Edge> edges;
+	LocalVector<Edge> edges;
 
 	/// The center of this `Polygon`
 	Vector3 center;
@@ -123,6 +123,8 @@ struct NavigationPoly {
 	Vector3 entry;
 	/// The distance to the destination.
 	float traveled_distance = 0.0;
+
+	NavigationPoly() { poly = nullptr; }
 
 	NavigationPoly(const Polygon *p_poly) :
 			poly(p_poly) {}

@@ -14,9 +14,9 @@
 	<methods>
 		<method name="ensure_control_visible">
 			<return type="void" />
-			<argument index="0" name="control" type="Control" />
+			<param index="0" name="control" type="Control" />
 			<description>
-				Ensures the given [code]control[/code] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
+				Ensures the given [param control] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
 				[b]Note:[/b] This will not work on a node that was just added during the same frame. If you want to scroll to a newly added child, you must wait until the next frame using [signal SceneTree.process_frame]:
 				[codeblock]
 				add_child(child_node)

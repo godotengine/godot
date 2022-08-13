@@ -5,28 +5,29 @@
 	</brief_description>
 	<description>
 		Given a set of colors, this resource will interpolate them in order. This means that if you have color 1, color 2 and color 3, the gradient will interpolate from color 1 to color 2 and from color 2 to color 3. The gradient will initially have 2 colors (black and white), one (black) at gradient lower offset 0 and the other (white) at the gradient higher offset 1.
+		See also [Curve] which supports more complex easing methods, but does not support colors.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="add_point">
 			<return type="void" />
-			<argument index="0" name="offset" type="float" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="offset" type="float" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Adds the specified color to the end of the gradient, with the specified offset.
 			</description>
 		</method>
 		<method name="get_color">
 			<return type="Color" />
-			<argument index="0" name="point" type="int" />
+			<param index="0" name="point" type="int" />
 			<description>
 				Returns the color of the gradient color at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_offset">
 			<return type="float" />
-			<argument index="0" name="point" type="int" />
+			<param index="0" name="point" type="int" />
 			<description>
 				Returns the offset of the gradient color at index [code]point[/code].
 			</description>
@@ -39,14 +40,14 @@
 		</method>
 		<method name="interpolate">
 			<return type="Color" />
-			<argument index="0" name="offset" type="float" />
+			<param index="0" name="offset" type="float" />
 			<description>
 				Returns the interpolated color specified by [code]offset[/code].
 			</description>
 		</method>
 		<method name="remove_point">
 			<return type="void" />
-			<argument index="0" name="point" type="int" />
+			<param index="0" name="point" type="int" />
 			<description>
 				Removes the color at the index [code]point[/code].
 			</description>
@@ -59,16 +60,16 @@
 		</method>
 		<method name="set_color">
 			<return type="void" />
-			<argument index="0" name="point" type="int" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color of the gradient color at index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_offset">
 			<return type="void" />
-			<argument index="0" name="point" type="int" />
-			<argument index="1" name="offset" type="float" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="offset" type="float" />
 			<description>
 				Sets the offset for the gradient color at index [code]point[/code].
 			</description>

@@ -1656,7 +1656,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 	return ret;
 }
 
-Error String::parse_utf8(const char *p_utf8, int p_len) {
+Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
@@ -1689,6 +1689,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len) {
 			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
 			if (skip == 0) {
+				if (p_skip_cr && c == '\r') {
+					ptrtmp++;
+					continue;
+				}
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0) {
 					skip = 0;
@@ -1753,6 +1757,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len) {
 		uint8_t c = *p_utf8 >= 0 ? *p_utf8 : uint8_t(256 + *p_utf8);
 
 		if (skip == 0) {
+			if (p_skip_cr && c == '\r') {
+				p_utf8++;
+				continue;
+			}
 			/* Determine the number of characters in sequence */
 			if ((c & 0x80) == 0) {
 				*(dst++) = c;

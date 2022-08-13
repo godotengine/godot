@@ -12,7 +12,7 @@
 	<methods>
 		<method name="get_angle" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="up_direction" type="Vector2" default="Vector2(0, -1)" />
+			<param index="0" name="up_direction" type="Vector2" default="Vector2(0, -1)" />
 			<description>
 				Returns the collision angle according to [code]up_direction[/code], which is [code]Vector2.UP[/code] by default. This value is always positive.
 			</description>
@@ -51,6 +51,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns the colliding body's velocity.
+			</description>
+		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the colliding body's length of overlap along the collision normal.
 			</description>
 		</method>
 		<method name="get_local_shape" qualifiers="const">

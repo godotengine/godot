@@ -12,8 +12,8 @@
 	<methods>
 		<method name="close">
 			<return type="void" />
-			<argument index="0" name="code" type="int" default="1000" />
-			<argument index="1" name="reason" type="String" default="&quot;&quot;" />
+			<param index="0" name="code" type="int" default="1000" />
+			<param index="1" name="reason" type="String" default="&quot;&quot;" />
 			<description>
 				Closes this WebSocket connection. [code]code[/code] is the status code for the closure (see RFC 6455 section 7.4 for a list of valid status codes). [code]reason[/code] is the human readable reason for closing the connection (can be any UTF-8 string that's smaller than 123 bytes).
 				[b]Note:[/b] To achieve a clean close, you will need to keep polling until either [signal WebSocketClient.connection_closed] or [signal WebSocketServer.client_disconnected] is received.
@@ -54,7 +54,7 @@
 		</method>
 		<method name="set_no_delay">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
 				Disable Nagle's algorithm on the underling TCP socket (default). See [method StreamPeerTCP.set_no_delay] for more information.
 				[b]Note:[/b] Not available in the HTML5 export.
@@ -62,7 +62,7 @@
 		</method>
 		<method name="set_write_mode">
 			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="WebSocketPeer.WriteMode" />
+			<param index="0" name="mode" type="int" enum="WebSocketPeer.WriteMode" />
 			<description>
 				Sets the socket to use the given [enum WriteMode].
 			</description>

@@ -116,8 +116,8 @@
 	<methods>
 		<method name="_get_import_options" qualifiers="virtual const">
 			<return type="Array" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="preset_index" type="int" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="preset_index" type="int" />
 			<description>
 				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
 			</description>
@@ -136,9 +136,9 @@
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="option_name" type="StringName" />
-			<argument index="2" name="options" type="Dictionary" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="option_name" type="StringName" />
+			<param index="2" name="options" type="Dictionary" />
 			<description>
 				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
 				[codeblocks]
@@ -174,7 +174,7 @@
 		</method>
 		<method name="_get_preset_name" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="preset_index" type="int" />
+			<param index="0" name="preset_index" type="int" />
 			<description>
 				Gets the name of the options preset at this index.
 			</description>
@@ -211,11 +211,11 @@
 		</method>
 		<method name="_import" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="source_file" type="String" />
-			<argument index="1" name="save_path" type="String" />
-			<argument index="2" name="options" type="Dictionary" />
-			<argument index="3" name="platform_variants" type="Array" />
-			<argument index="4" name="gen_files" type="Array" />
+			<param index="0" name="source_file" type="String" />
+			<param index="1" name="save_path" type="String" />
+			<param index="2" name="options" type="Dictionary" />
+			<param index="3" name="platform_variants" type="Array" />
+			<param index="4" name="gen_files" type="Array" />
 			<description>
 				Imports [code]source_file[/code] into [code]save_path[/code] with the import [code]options[/code] specified. The [code]platform_variants[/code] and [code]gen_files[/code] arrays will be modified by this function.
 				This method must be overridden to do the actual importing work. See this class' description for an example of overriding this method.

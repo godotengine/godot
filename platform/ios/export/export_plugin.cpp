@@ -30,9 +30,10 @@
 
 #include "export_plugin.h"
 
+#include "core/string/translation.h"
 #include "editor/editor_node.h"
 
-void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
 	r_features->push_back("etc2");
@@ -43,7 +44,7 @@ void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> 
 	}
 }
 
-Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_get_supported_architectures() {
+Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_get_supported_architectures() const {
 	Vector<ExportArchitecture> archs;
 	archs.push_back(ExportArchitecture("arm64", true));
 	return archs;
@@ -412,6 +413,35 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
+		} else if (lines[i].find("$swift_runtime_migration") != -1) {
+			String value = !p_config.use_swift_runtime ? "" : "LastSwiftMigration = 1250;";
+			strnew += lines[i].replace("$swift_runtime_migration", value) + "\n";
+		} else if (lines[i].find("$swift_runtime_build_settings") != -1) {
+			String value = !p_config.use_swift_runtime ? "" : R"(
+                     CLANG_ENABLE_MODULES = YES;
+                     SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
+                     SWIFT_VERSION = 5.0;
+                     )";
+			value = value.replace("$binary", p_config.binary_name);
+			strnew += lines[i].replace("$swift_runtime_build_settings", value) + "\n";
+		} else if (lines[i].find("$swift_runtime_fileref") != -1) {
+			String value = !p_config.use_swift_runtime ? "" : R"(
+                     90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
+                     90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
+                     )";
+			strnew += lines[i].replace("$swift_runtime_fileref", value) + "\n";
+		} else if (lines[i].find("$swift_runtime_binary_files") != -1) {
+			String value = !p_config.use_swift_runtime ? "" : R"(
+                     90B4C2AA2680BC560039117A /* dummy.h */,
+                     90B4C2B52680C7E90039117A /* dummy.swift */,
+                     )";
+			strnew += lines[i].replace("$swift_runtime_binary_files", value) + "\n";
+		} else if (lines[i].find("$swift_runtime_buildfile") != -1) {
+			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };";
+			strnew += lines[i].replace("$swift_runtime_buildfile", value) + "\n";
+		} else if (lines[i].find("$swift_runtime_build_phase") != -1) {
+			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift */,";
+			strnew += lines[i].replace("$swift_runtime_build_phase", value) + "\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -1155,7 +1185,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 	return OK;
 }
 
-Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<EditorExportPreset> &p_preset) {
+Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<EditorExportPreset> &p_preset) const {
 	Vector<ExportArchitecture> all_archs = _get_supported_architectures();
 	Vector<String> enabled_archs;
 	for (int i = 0; i < all_archs.size(); ++i) {
@@ -1297,6 +1327,10 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 
 		plugin_initialization_cpp_code += "\t" + initialization_method;
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
+
+		if (plugin.use_swift_runtime) {
+			p_config_data.use_swift_runtime = true;
+		}
 	}
 
 	// Updating `Info.plist`
@@ -1478,7 +1512,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		"",
 		"",
 		"",
-		Vector<String>()
+		Vector<String>(),
+		false
 	};
 
 	Vector<IOSExportAsset> assets;
@@ -1526,8 +1561,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		unzCloseCurrentFile(src_pkg_zip);
 
 		//write
-
-		file = file.replace_first("ios/", "");
 
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);

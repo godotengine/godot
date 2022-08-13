@@ -18,14 +18,14 @@
 		</constructor>
 		<constructor name="PackedVector2Array">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="from" type="PackedVector2Array" />
+			<param index="0" name="from" type="PackedVector2Array" />
 			<description>
 				Constructs a [PackedVector2Array] as a copy of the given [PackedVector2Array].
 			</description>
 		</constructor>
 		<constructor name="PackedVector2Array">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="from" type="Array" />
+			<param index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedVector2Array]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
@@ -34,30 +34,36 @@
 	<methods>
 		<method name="append">
 			<return type="bool" />
-			<argument index="0" name="value" type="Vector2" />
+			<param index="0" name="value" type="Vector2" />
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
 			<return type="void" />
-			<argument index="0" name="array" type="PackedVector2Array" />
+			<param index="0" name="array" type="PackedVector2Array" />
 			<description>
 				Appends a [PackedVector2Array] at the end of this array.
 			</description>
 		</method>
 		<method name="bsearch">
 			<return type="int" />
-			<argument index="0" name="value" type="Vector2" />
-			<argument index="1" name="before" type="bool" default="true" />
+			<param index="0" name="value" type="Vector2" />
+			<param index="1" name="before" type="bool" default="true" />
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="value" type="Vector2" />
+			<param index="0" name="value" type="Vector2" />
 			<description>
 				Returns the number of times an element is in the array.
 			</description>
@@ -70,30 +76,30 @@
 		</method>
 		<method name="fill">
 			<return type="void" />
-			<argument index="0" name="value" type="Vector2" />
+			<param index="0" name="value" type="Vector2" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="value" type="Vector2" />
-			<argument index="1" name="from" type="int" default="0" />
+			<param index="0" name="value" type="Vector2" />
+			<param index="1" name="from" type="int" default="0" />
 			<description>
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="value" type="Vector2" />
+			<param index="0" name="value" type="Vector2" />
 			<description>
-				Returns [code]true[/code] if the array contains [code]value[/code].
+				Returns [code]true[/code] if the array contains [param value].
 			</description>
 		</method>
 		<method name="insert">
 			<return type="int" />
-			<argument index="0" name="at_index" type="int" />
-			<argument index="1" name="value" type="Vector2" />
+			<param index="0" name="at_index" type="int" />
+			<param index="1" name="value" type="Vector2" />
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
@@ -106,21 +112,21 @@
 		</method>
 		<method name="push_back">
 			<return type="bool" />
-			<argument index="0" name="value" type="Vector2" />
+			<param index="0" name="value" type="Vector2" />
 			<description>
 				Inserts a [Vector2] at the end.
 			</description>
 		</method>
 		<method name="remove_at">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
 			<return type="int" />
-			<argument index="0" name="new_size" type="int" />
+			<param index="0" name="new_size" type="int" />
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
@@ -133,16 +139,16 @@
 		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="value" type="Vector2" />
-			<argument index="1" name="from" type="int" default="-1" />
+			<param index="0" name="value" type="Vector2" />
+			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
 		<method name="set">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="value" type="Vector2" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="Vector2" />
 			<description>
 				Changes the [Vector2] at the given index.
 			</description>
@@ -155,12 +161,12 @@
 		</method>
 		<method name="slice" qualifiers="const">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="begin" type="int" />
-			<argument index="1" name="end" type="int" default="2147483647" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
 			<description>
-				Returns the slice of the [PackedVector2Array], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [PackedVector2Array].
-				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
-				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+				Returns the slice of the [PackedVector2Array], from [param begin] (inclusive) to [param end] (exclusive), as a new [PackedVector2Array].
+				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 			</description>
 		</method>
 		<method name="sort">
@@ -178,31 +184,31 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="PackedVector2Array" />
+			<param index="0" name="right" type="PackedVector2Array" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="right" type="Transform2D" />
+			<param index="0" name="right" type="Transform2D" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="right" type="PackedVector2Array" />
+			<param index="0" name="right" type="PackedVector2Array" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="PackedVector2Array" />
+			<param index="0" name="right" type="PackedVector2Array" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="Vector2" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 			</description>
 		</operator>

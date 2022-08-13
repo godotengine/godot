@@ -31,6 +31,7 @@
 #include "main.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
@@ -285,6 +286,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
+	OS::get_singleton()->print("  --                                           Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                                 Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager                        Start the project manager, even if a project is auto-detected.\n");
@@ -429,6 +431,7 @@ Error Main::test_setup() {
 
 	/** INITIALIZE SERVERS **/
 	register_server_types();
+	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
@@ -623,6 +626,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> user_args;
+	bool adding_user_args = false;
 	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
 	// Add command line arguments.
@@ -695,9 +700,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
+
 		List<String>::Element *N = I->next();
 
-		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
+		if (adding_user_args) {
+			user_args.push_back(I->get());
+		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
@@ -1200,7 +1208,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-
+		} else if (I->get() == "--") {
+			adding_user_args = true;
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1368,16 +1377,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		quiet_stdout = true;
 	}
 	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
-		_print_error_enabled = false;
+		CoreGlobals::print_error_enabled = false;
 	};
 
 	if (quiet_stdout) {
-		_print_line_enabled = false;
+		CoreGlobals::print_line_enabled = false;
 	}
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
-	OS::get_singleton()->set_cmdline(execpath, main_args);
+	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
@@ -1472,7 +1481,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_layered = false;
 	}
 
-	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
@@ -1670,6 +1678,7 @@ error:
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 
 	if (message_queue) {
 		memdelete(message_queue);
@@ -2098,7 +2107,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// able to load resources, load the global shader variables.
 		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
-		rendering_server->global_variables_load_settings(!editor);
+		rendering_server->global_shader_uniforms_load_settings(!editor);
 	}
 
 	_start_success = true;
@@ -2430,6 +2439,8 @@ bool Main::start() {
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+			NavigationServer3D::get_singleton()->set_active(true);
+			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
 		}
 #endif
 
@@ -2999,6 +3010,7 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->delete_main_loop();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
 
@@ -3011,7 +3023,7 @@ void Main::cleanup(bool p_force) {
 	RenderingServer::get_singleton()->sync();
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_variables_clear();
+	rendering_server->global_shader_uniforms_clear();
 
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer

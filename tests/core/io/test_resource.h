@@ -76,8 +76,8 @@ TEST_CASE("[Resource] Saving and loading") {
 	resource->set_meta("other_resource", child_resource);
 	const String save_path_binary = OS::get_singleton()->get_cache_path().plus_file("resource.res");
 	const String save_path_text = OS::get_singleton()->get_cache_path().plus_file("resource.tres");
-	ResourceSaver::save(save_path_binary, resource);
-	ResourceSaver::save(save_path_text, resource);
+	ResourceSaver::save(resource, save_path_binary);
+	ResourceSaver::save(resource, save_path_text);
 
 	const Ref<Resource> &loaded_resource_binary = ResourceLoader::load(save_path_binary);
 	CHECK_MESSAGE(

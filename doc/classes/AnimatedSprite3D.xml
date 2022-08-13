@@ -18,7 +18,7 @@
 		</method>
 		<method name="play">
 			<return type="void" />
-			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played.
 			</description>

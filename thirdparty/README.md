@@ -44,7 +44,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (8b263a18fca98ea371e54227837321c5cdaa1ba7, 2021)
+- Version: git (7f33e7eb8472dbcf31fdcf50cd216c89a282825d, 2022)
 - License: MPL 2.0
 
 
@@ -213,7 +213,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 5.0.1 (cbccadba8d1e51d6cc03a891b7c3a17f598e774c, 2022)
+- Version: 5.1.0 (f1f2be776bcd994fa9262622e1a7098a066e5cf7, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -231,6 +231,8 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - the `common` folder
+- `scriptset.*`, `ucln_in.*`, `uspoof.cpp"` and `uspoof_impl.cpp` from the `i18n` folder
+- `uspoof.h` from the `i18n/unicode` folder
 - `LICENSE`
 
 Files generated from upstream source:
@@ -597,7 +599,7 @@ Godot. See the patch in the `patches` folder for details.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (1aceb6af56e74b92a00378842dda5c5a73f49a4b, 2022)
+- Version: git (1ef99b09fa7ce5aee2c5cf70c61a4f7458d27e09, 2022)
 - License: Apache 2.0
 
 Does not track Vulkan SDK releases closely, but try to package a commit newer

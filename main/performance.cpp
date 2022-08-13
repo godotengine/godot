@@ -283,7 +283,7 @@ Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
 	int argc = _arguments.size();
 	Variant return_value;
 	Callable::CallError error;
-	_callable.call(args, argc, return_value, error);
+	_callable.callp(args, argc, return_value, error);
 	r_error = (error.error != Callable::CallError::CALL_OK);
 	if (r_error) {
 		r_error_message = Variant::get_callable_error_text(_callable, args, argc, error);

@@ -12,25 +12,25 @@
 	<methods>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				Returns the list of extensions available for saving the resource object, provided it is recognized (see [method _recognize]).
 			</description>
 		</method>
 		<method name="_recognize" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				Returns whether the given resource object can be saved by this saver.
 			</description>
 		</method>
 		<method name="_save" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="resource" type="Resource" />
-			<argument index="2" name="flags" type="int" />
+			<param index="0" name="path" type="Resource" />
+			<param index="1" name="resource" type="String" />
+			<param index="2" name="flags" type="int" />
 			<description>
-				Saves the given resource object to a file at the target [code]path[/code]. [code]flags[/code] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
+				Saves the given resource object to a file at the target [param path]. [param flags] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
 				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
 			</description>
 		</method>

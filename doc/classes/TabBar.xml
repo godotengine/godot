@@ -11,15 +11,15 @@
 	<methods>
 		<method name="add_tab">
 			<return type="void" />
-			<argument index="0" name="title" type="String" default="&quot;&quot;" />
-			<argument index="1" name="icon" type="Texture2D" default="null" />
+			<param index="0" name="title" type="String" default="&quot;&quot;" />
+			<param index="1" name="icon" type="Texture2D" default="null" />
 			<description>
 				Adds a new tab.
 			</description>
 		</method>
 		<method name="ensure_tab_visible">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Moves the scroll view to make the tab visible.
 			</description>
@@ -38,28 +38,28 @@
 		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the right button of the tab at index [code]tab_idx[/code] or [code]null[/code] if the button has no [Texture2D].
+				Returns the [Texture2D] for the right button of the tab at index [param tab_idx] or [code]null[/code] if the button has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
+				Returns the [Texture2D] for the tab at index [param tab_idx] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_idx_at_point" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="point" type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the index of the tab at local coordinates [code]point[/code]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
+				Returns the index of the tab at local coordinates [param point]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
 			</description>
 		</method>
 		<method name="get_tab_language" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns tab title language code.
 			</description>
@@ -72,108 +72,108 @@
 		</method>
 		<method name="get_tab_rect" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns tab [Rect2] with local position and size.
 			</description>
 		</method>
 		<method name="get_tab_text_direction" qualifiers="const">
 			<return type="int" enum="Control.TextDirection" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns tab title text base writing direction.
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the title of the tab at index [code]tab_idx[/code].
+				Returns the title of the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
+				Returns [code]true[/code] if the tab at index [param tab_idx] is disabled.
 			</description>
 		</method>
 		<method name="is_tab_hidden" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
+				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
 			</description>
 		</method>
 		<method name="move_tab">
 			<return type="void" />
-			<argument index="0" name="from" type="int" />
-			<argument index="1" name="to" type="int" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="to" type="int" />
 			<description>
-				Moves a tab from [code]from[/code] to [code]to[/code].
+				Moves a tab from [param from] to [param to].
 			</description>
 		</method>
 		<method name="remove_tab">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
+			<param index="0" name="tab_idx" type="int" />
 			<description>
-				Removes the tab at index [code]tab_idx[/code].
+				Removes the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="icon" type="Texture2D" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
 			<description>
-				Sets an [code]icon[/code] for the button of the tab at index [code]tab_idx[/code] (located to the right, before the close button), making it visible and clickable (See [signal tab_button_pressed]). Giving it a [code]null[/code] value will hide the button.
+				Sets an [param icon] for the button of the tab at index [param tab_idx] (located to the right, before the close button), making it visible and clickable (See [signal tab_button_pressed]). Giving it a [code]null[/code] value will hide the button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="disabled" type="bool" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="disabled" type="bool" />
 			<description>
-				If [code]disabled[/code] is [code]true[/code], disables the tab at index [code]tab_idx[/code], making it non-interactable.
+				If [param disabled] is [code]true[/code], disables the tab at index [param tab_idx], making it non-interactable.
 			</description>
 		</method>
 		<method name="set_tab_hidden">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="hidden" type="bool" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="hidden" type="bool" />
 			<description>
-				If [code]hidden[/code] is [code]true[/code], hides the tab at index [code]tab_idx[/code], making it disappear from the tab area.
+				If [param hidden] is [code]true[/code], hides the tab at index [param tab_idx], making it disappear from the tab area.
 			</description>
 		</method>
 		<method name="set_tab_icon">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="icon" type="Texture2D" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
 			<description>
-				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
+				Sets an [param icon] for the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="set_tab_language">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="language" type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="language" type="String" />
 			<description>
 				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
 		<method name="set_tab_text_direction">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="direction" type="int" enum="Control.TextDirection" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets tab title base writing direction.
 			</description>
 		</method>
 		<method name="set_tab_title">
 			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="title" type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="title" type="String" />
 			<description>
-				Sets a [code]title[/code] for the tab at index [code]tab_idx[/code].
+				Sets a [param title] for the tab at index [param tab_idx].
 			</description>
 		</method>
 	</methods>
@@ -215,31 +215,31 @@
 	</members>
 	<signals>
 		<signal name="active_tab_rearranged">
-			<argument index="0" name="idx_to" type="int" />
+			<param index="0" name="idx_to" type="int" />
 			<description>
 				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
 			</description>
 		</signal>
 		<signal name="tab_button_pressed">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab's right button is pressed. See [method set_tab_button_icon].
 			</description>
 		</signal>
 		<signal name="tab_changed">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_clicked">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is clicked, even if it is the current tab.
 			</description>
 		</signal>
 		<signal name="tab_close_pressed">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab's close button is pressed.
 				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behavior needs to be programmed manually. For example:
@@ -254,19 +254,19 @@
 			</description>
 		</signal>
 		<signal name="tab_hovered">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is hovered by the mouse.
 			</description>
 		</signal>
 		<signal name="tab_rmb_clicked">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is right-clicked. [member select_with_rmb] must be enabled.
 			</description>
 		</signal>
 		<signal name="tab_selected">
-			<argument index="0" name="tab" type="int" />
+			<param index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab is selected via click or script, even if it is the current tab.
 			</description>

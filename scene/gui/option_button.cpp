@@ -35,7 +35,12 @@
 static const int NONE_SELECTED = -1;
 
 Size2 OptionButton::get_minimum_size() const {
-	Size2 minsize = Button::get_minimum_size();
+	Size2 minsize;
+	if (fit_to_longest_item) {
+		minsize = _cached_size;
+	} else {
+		minsize = Button::get_minimum_size();
+	}
 
 	if (has_theme_icon(SNAME("arrow"))) {
 		const Size2 padding = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
@@ -68,6 +73,9 @@ void OptionButton::_notification(int p_what) {
 						break;
 					case DRAW_HOVER:
 						clr = get_theme_color(SNAME("font_hover_color"));
+						break;
+					case DRAW_HOVER_PRESSED:
+						clr = get_theme_color(SNAME("font_hover_pressed_color"));
 						break;
 					case DRAW_DISABLED:
 						clr = get_theme_color(SNAME("font_disabled_color"));
@@ -107,6 +115,7 @@ void OptionButton::_notification(int p_what) {
 					_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon(SNAME("arrow"))->get_width());
 				}
 			}
+			_refresh_size_cache();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -133,6 +142,10 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 			// Force refreshing currently displayed item.
 			current = NONE_SELECTED;
 			_select(idx, false);
+		}
+
+		if (property == "text" || property == "icon") {
+			_queue_refresh_cache();
 		}
 
 		return valid;
@@ -208,6 +221,7 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 	if (first_selectable) {
 		select(get_item_count() - 1);
 	}
+	_queue_refresh_cache();
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
@@ -216,6 +230,7 @@ void OptionButton::add_item(const String &p_label, int p_id) {
 	if (first_selectable) {
 		select(get_item_count() - 1);
 	}
+	_queue_refresh_cache();
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
@@ -224,6 +239,7 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	if (current == p_idx) {
 		set_text(p_text);
 	}
+	_queue_refresh_cache();
 }
 
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
@@ -232,6 +248,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	if (current == p_idx) {
 		set_icon(p_icon);
 	}
+	_queue_refresh_cache();
 }
 
 void OptionButton::set_item_id(int p_idx, int p_id) {
@@ -301,6 +318,7 @@ void OptionButton::set_item_count(int p_count) {
 		}
 	}
 
+	_refresh_size_cache();
 	notify_property_list_changed();
 }
 
@@ -333,6 +351,19 @@ int OptionButton::get_item_count() const {
 	return popup->get_item_count();
 }
 
+void OptionButton::set_fit_to_longest_item(bool p_fit) {
+	if (p_fit == fit_to_longest_item) {
+		return;
+	}
+	fit_to_longest_item = p_fit;
+
+	_refresh_size_cache();
+}
+
+bool OptionButton::is_fit_to_longest_item() const {
+	return fit_to_longest_item;
+}
+
 void OptionButton::add_separator(const String &p_text) {
 	popup->add_separator(p_text);
 }
@@ -341,6 +372,7 @@ void OptionButton::clear() {
 	popup->clear();
 	set_text("");
 	current = NONE_SELECTED;
+	_refresh_size_cache();
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
@@ -380,6 +412,29 @@ void OptionButton::_select_int(int p_which) {
 	_select(p_which, false);
 }
 
+void OptionButton::_refresh_size_cache() {
+	cache_refresh_pending = false;
+
+	if (!fit_to_longest_item) {
+		return;
+	}
+
+	_cached_size = Vector2();
+	for (int i = 0; i < get_item_count(); i++) {
+		_cached_size = _cached_size.max(get_minimum_size_for_text_and_icon(get_item_text(i), get_item_icon(i)));
+	}
+	update_minimum_size();
+}
+
+void OptionButton::_queue_refresh_cache() {
+	if (cache_refresh_pending) {
+		return;
+	}
+	cache_refresh_pending = true;
+
+	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferredp(nullptr, 0);
+}
+
 void OptionButton::select(int p_idx) {
 	_select(p_idx, false);
 }
@@ -405,6 +460,7 @@ void OptionButton::remove_item(int p_idx) {
 	if (current == p_idx) {
 		_select(NONE_SELECTED);
 	}
+	_queue_refresh_cache();
 }
 
 PopupMenu *OptionButton::get_popup() const {
@@ -445,7 +501,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_id"), &OptionButton::get_selected_id);
 	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &OptionButton::get_selected_metadata);
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &OptionButton::remove_item);
-	ClassDB::bind_method(D_METHOD("_select_int"), &OptionButton::_select_int);
+	ClassDB::bind_method(D_METHOD("_select_int", "idx"), &OptionButton::_select_int);
 
 	ClassDB::bind_method(D_METHOD("get_popup"), &OptionButton::get_popup);
 
@@ -453,10 +509,13 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 	ClassDB::bind_method(D_METHOD("has_selectable_items"), &OptionButton::has_selectable_items);
 	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &OptionButton::get_selectable_item, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_fit_to_longest_item", "fit"), &OptionButton::set_fit_to_longest_item);
+	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &OptionButton::is_fit_to_longest_item);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
@@ -481,7 +540,8 @@ OptionButton::OptionButton(const String &p_text) :
 	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
-	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
+	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
+	_refresh_size_cache();
 }
 
 OptionButton::~OptionButton() {

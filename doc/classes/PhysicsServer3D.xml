@@ -11,25 +11,25 @@
 	<methods>
 		<method name="area_add_shape">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape" type="RID" />
-			<argument index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
-			<argument index="3" name="disabled" type="bool" default="false" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape" type="RID" />
+			<param index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
+			<param index="3" name="disabled" type="bool" default="false" />
 			<description>
 				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="area_attach_object_instance_id">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="id" type="int" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="id" type="int" />
 			<description>
 				Assigns the area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="area_clear_shapes">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
+			<param index="0" name="area" type="RID" />
 			<description>
 				Removes all shapes from an area. It does not delete the shapes, so they can be reassigned later.
 			</description>
@@ -42,91 +42,91 @@
 		</method>
 		<method name="area_get_object_instance_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="area" type="RID" />
+			<param index="0" name="area" type="RID" />
 			<description>
 				Gets the instance ID of the object the area is assigned to.
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
 			<description>
 				Returns an area parameter value. A list of available parameters is on the [enum AreaParameter] constants.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the [RID] of the nth shape of an area.
 			</description>
 		</method>
 		<method name="area_get_shape_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="area" type="RID" />
+			<param index="0" name="area" type="RID" />
 			<description>
 				Returns the number of shapes assigned to an area.
 			</description>
 		</method>
 		<method name="area_get_shape_transform" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the transform matrix of a shape within an area.
 			</description>
 		</method>
 		<method name="area_get_space" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="area" type="RID" />
+			<param index="0" name="area" type="RID" />
 			<description>
 				Returns the space assigned to the area.
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="area" type="RID" />
+			<param index="0" name="area" type="RID" />
 			<description>
 				Returns the transform matrix for an area.
 			</description>
 		</method>
 		<method name="area_remove_shape">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
 			<description>
 				Removes a shape from an area. It does not delete the shape, so it can be reassigned later.
 			</description>
 		</method>
 		<method name="area_set_area_monitor_callback">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="callback" type="Callable" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="layer" type="int" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="layer" type="int" />
 			<description>
 				Assigns the area to one or many physics layers.
 			</description>
 		</method>
 		<method name="area_set_collision_mask">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="mask" type="int" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="mask" type="int" />
 			<description>
 				Sets which physics layers the area will monitor.
 			</description>
 		</method>
 		<method name="area_set_monitor_callback">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="callback" type="Callable" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="callback" type="Callable" />
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
 				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.
@@ -138,82 +138,82 @@
 		</method>
 		<method name="area_set_monitorable">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="monitorable" type="bool" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="monitorable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="area_set_param">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
-			<argument index="2" name="value" type="Variant" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
+			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets the value for an area parameter. A list of available parameters is on the [enum AreaParameter] constants.
 			</description>
 		</method>
 		<method name="area_set_ray_pickable">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Sets object pickable with rays.
 			</description>
 		</method>
 		<method name="area_set_shape">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="shape" type="RID" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="shape" type="RID" />
 			<description>
 				Substitutes a given area shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
 		<method name="area_set_shape_disabled">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="disabled" type="bool" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="disabled" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="transform" type="Transform3D" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
 			<description>
 				Sets the transform matrix for an area shape.
 			</description>
 		</method>
 		<method name="area_set_space">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="space" type="RID" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="space" type="RID" />
 			<description>
 				Assigns a space to the area.
 			</description>
 		</method>
 		<method name="area_set_transform">
 			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="transform" type="Transform3D" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
 			<description>
 				Sets the transform matrix for an area.
 			</description>
 		</method>
 		<method name="body_add_collision_exception">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="excepted_body" type="RID" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="excepted_body" type="RID" />
 			<description>
 				Adds a body to the list of bodies exempt from collisions.
 			</description>
 		</method>
 		<method name="body_add_constant_central_force">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
 			<description>
 				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]body_set_constant_force(body, Vector3(0, 0, 0))[/code].
 				This is equivalent to using [method body_add_constant_force] at the body's center of mass.
@@ -221,36 +221,36 @@
 		</method>
 		<method name="body_add_constant_force">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector3" />
-			<argument index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<param index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]body_set_constant_force(body, Vector3(0, 0, 0))[/code].
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="body_add_constant_torque">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="torque" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="torque" type="Vector3" />
 			<description>
 				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]body_set_constant_torque(body, Vector3(0, 0, 0))[/code].
 			</description>
 		</method>
 		<method name="body_add_shape">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape" type="RID" />
-			<argument index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
-			<argument index="3" name="disabled" type="bool" default="false" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape" type="RID" />
+			<param index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
+			<param index="3" name="disabled" type="bool" default="false" />
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="body_apply_central_force">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
 			<description>
 				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
 				This is equivalent to using [method body_apply_force] at the body's center of mass.
@@ -258,8 +258,8 @@
 		</method>
 		<method name="body_apply_central_impulse">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="impulse" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
 			<description>
 				Applies a directional impulse without affecting rotation.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
@@ -268,37 +268,37 @@
 		</method>
 		<method name="body_apply_force">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector3" />
-			<argument index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<param index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="body_apply_impulse">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="impulse" type="Vector3" />
-			<argument index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<param index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Applies a positioned impulse to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="body_apply_torque">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="torque" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="torque" type="Vector3" />
 			<description>
 				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="body_apply_torque_impulse">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="impulse" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
 			<description>
 				Applies a rotational impulse to the body without affecting the position.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
@@ -306,15 +306,15 @@
 		</method>
 		<method name="body_attach_object_instance_id">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="id" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="id" type="int" />
 			<description>
 				Assigns the area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="body_clear_shapes">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Removes all shapes from a body.
 			</description>
@@ -326,21 +326,21 @@
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body belongs to.
 			</description>
 		</method>
 		<method name="body_get_collision_mask" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body can collide with.
 			</description>
 		</method>
 		<method name="body_get_constant_force" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the body's total constant positional forces applied during each physics update.
 				See [method body_add_constant_force] and [method body_add_constant_central_force].
@@ -348,7 +348,7 @@
 		</method>
 		<method name="body_get_constant_torque" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the body's total constant rotational forces applied during each physics update.
 				See [method body_add_constant_torque].
@@ -356,103 +356,103 @@
 		</method>
 		<method name="body_get_direct_state">
 			<return type="PhysicsDirectBodyState3D" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the [PhysicsDirectBodyState3D] of the body. Returns [code]null[/code] if the body is destroyed or removed from the physics space.
 			</description>
 		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the maximum contacts that can be reported. See [method body_set_max_contacts_reported].
 			</description>
 		</method>
 		<method name="body_get_mode" qualifiers="const">
 			<return type="int" enum="PhysicsServer3D.BodyMode" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the body mode.
 			</description>
 		</method>
 		<method name="body_get_object_instance_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Gets the instance ID of the object the area is assigned to.
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
 			<description>
 				Returns the value of a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the [RID] of the nth shape of a body.
 			</description>
 		</method>
 		<method name="body_get_shape_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the number of shapes assigned to a body.
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the transform matrix of a body shape.
 			</description>
 		</method>
 		<method name="body_get_space" qualifiers="const">
 			<return type="RID" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the [RID] of the space assigned to a body.
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
 			<description>
 				Returns a body state.
 			</description>
 		</method>
 		<method name="body_is_axis_locked" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
 			<description>
 			</description>
 		</method>
 		<method name="body_is_continuous_collision_detection_enabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				If [code]true[/code], the continuous collision detection mode is enabled.
 			</description>
 		</method>
 		<method name="body_is_omitting_force_integration" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="excepted_body" type="RID" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="excepted_body" type="RID" />
 			<description>
 				Removes a body from the list of bodies exempt from collisions.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
@@ -460,55 +460,55 @@
 		</method>
 		<method name="body_remove_shape">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
 			<description>
 				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
 		<method name="body_reset_mass_properties">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 				Restores the default inertia and center of mass based on shapes to cancel any custom values previously set using [method body_set_param].
 			</description>
 		</method>
 		<method name="body_set_axis_lock">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
-			<argument index="2" name="lock" type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<param index="2" name="lock" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="body_set_axis_velocity">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="axis_velocity" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="axis_velocity" type="Vector3" />
 			<description>
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="body_set_collision_layer">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="layer" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="layer" type="int" />
 			<description>
 				Sets the physics layer or layers a body belongs to.
 			</description>
 		</method>
 		<method name="body_set_collision_mask">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="mask" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mask" type="int" />
 			<description>
 				Sets the physics layer or layers a body can collide with.
 			</description>
 		</method>
 		<method name="body_set_constant_force">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
 			<description>
 				Sets the body's total constant positional forces applied during each physics update.
 				See [method body_add_constant_force] and [method body_add_constant_central_force].
@@ -516,8 +516,8 @@
 		</method>
 		<method name="body_set_constant_torque">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="torque" type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="torque" type="Vector3" />
 			<description>
 				Sets the body's total constant rotational forces applied during each physics update.
 				See [method body_add_constant_torque].
@@ -525,8 +525,8 @@
 		</method>
 		<method name="body_set_enable_continuous_collision_detection">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the continuous collision detection mode is enabled.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
@@ -534,9 +534,9 @@
 		</method>
 		<method name="body_set_force_integration_callback">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="callable" type="Callable" />
-			<argument index="2" name="userdata" type="Variant" default="null" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
 				The force integration function takes 2 arguments:
@@ -546,93 +546,93 @@
 		</method>
 		<method name="body_set_max_contacts_reported">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="amount" type="int" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="amount" type="int" />
 			<description>
 				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="body_set_mode">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="mode" type="int" enum="PhysicsServer3D.BodyMode" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mode" type="int" enum="PhysicsServer3D.BodyMode" />
 			<description>
 				Sets the body mode, from one of the [enum BodyMode] constants.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_set_param">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
-			<argument index="2" name="value" type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
+			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
 		</method>
 		<method name="body_set_ray_pickable">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets the body pickable with rays if [code]enabled[/code] is set.
+				Sets the body pickable with rays if [param enable] is set.
 			</description>
 		</method>
 		<method name="body_set_shape">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="shape" type="RID" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="shape" type="RID" />
 			<description>
 				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="disabled" type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="disabled" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="body_set_shape_transform">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="transform" type="Transform3D" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
 			<description>
 				Sets the transform matrix for a body shape.
 			</description>
 		</method>
 		<method name="body_set_space">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="space" type="RID" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="space" type="RID" />
 			<description>
 				Assigns a space to the body (see [method space_create]).
 			</description>
 		</method>
 		<method name="body_set_state">
 			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
-			<argument index="2" name="value" type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets a body state (see [enum BodyState] constants).
 			</description>
 		</method>
 		<method name="body_test_motion">
 			<return type="bool" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="parameters" type="PhysicsTestMotionParameters3D" />
-			<argument index="2" name="result" type="PhysicsTestMotionResult3D" default="null" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="parameters" type="PhysicsTestMotionParameters3D" />
+			<param index="2" name="result" type="PhysicsTestMotionResult3D" default="null" />
 			<description>
 				Returns [code]true[/code] if a collision would result from moving along a motion vector from a given point in space. [PhysicsTestMotionParameters3D] is passed to set motion parameters. [PhysicsTestMotionResult3D] can be passed to return additional information.
 			</description>
@@ -654,17 +654,17 @@
 		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
 			<description>
 				Gets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
 			</description>
 		</method>
 		<method name="cone_twist_joint_set_param">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
-			<argument index="2" name="value" type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
+			<param index="2" name="value" type="float" />
 			<description>
 				Sets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
 			</description>
@@ -686,52 +686,52 @@
 		</method>
 		<method name="free_rid">
 			<return type="void" />
-			<argument index="0" name="rid" type="RID" />
+			<param index="0" name="rid" type="RID" />
 			<description>
 				Destroys any of the objects created by PhysicsServer3D. If the [RID] passed is not one of the objects that can be created by PhysicsServer3D, an error will be sent to the console.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="axis" type="int" enum="Vector3.Axis" />
-			<argument index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<description>
 				Gets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="axis" type="int" enum="Vector3.Axis" />
-			<argument index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<description>
 				Gets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_flag">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="axis" type="int" enum="Vector3.Axis" />
-			<argument index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
-			<argument index="3" name="enable" type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
+			<param index="3" name="enable" type="bool" />
 			<description>
 				Sets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_param">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="axis" type="int" enum="Vector3.Axis" />
-			<argument index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
-			<argument index="3" name="value" type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
+			<param index="3" name="value" type="float" />
 			<description>
 				Sets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
 			</description>
 		</method>
 		<method name="get_process_info">
 			<return type="int" />
-			<argument index="0" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
+			<param index="0" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
 			<description>
 				Returns information about the current state of the 3D physics engine. See [enum ProcessInfo] for a list of available states.
 			</description>
@@ -743,41 +743,41 @@
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
 			<description>
 				Gets a hinge_joint flag (see [enum HingeJointFlag] constants).
 			</description>
 		</method>
 		<method name="hinge_joint_get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
 			<description>
 				Gets a hinge_joint parameter (see [enum HingeJointParam]).
 			</description>
 		</method>
 		<method name="hinge_joint_set_flag">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
-			<argument index="2" name="enabled" type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
+			<param index="2" name="enabled" type="bool" />
 			<description>
 				Sets a hinge_joint flag (see [enum HingeJointFlag] constants).
 			</description>
 		</method>
 		<method name="hinge_joint_set_param">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
-			<argument index="2" name="value" type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
+			<param index="2" name="value" type="float" />
 			<description>
 				Sets a hinge_joint parameter (see [enum HingeJointParam] constants).
 			</description>
 		</method>
 		<method name="joint_clear">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -788,119 +788,119 @@
 		</method>
 		<method name="joint_get_solver_priority" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="joint" type="RID" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 				Gets the priority value of the Joint3D.
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
 			<return type="int" enum="PhysicsServer3D.JointType" />
-			<argument index="0" name="joint" type="RID" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the type of the Joint3D.
 			</description>
 		</method>
 		<method name="joint_make_cone_twist">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="body_A" type="RID" />
-			<argument index="2" name="local_ref_A" type="Transform3D" />
-			<argument index="3" name="body_B" type="RID" />
-			<argument index="4" name="local_ref_B" type="Transform3D" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_ref_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_ref_B" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_make_generic_6dof">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="body_A" type="RID" />
-			<argument index="2" name="local_ref_A" type="Transform3D" />
-			<argument index="3" name="body_B" type="RID" />
-			<argument index="4" name="local_ref_B" type="Transform3D" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_ref_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_ref_B" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_make_hinge">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="body_A" type="RID" />
-			<argument index="2" name="hinge_A" type="Transform3D" />
-			<argument index="3" name="body_B" type="RID" />
-			<argument index="4" name="hinge_B" type="Transform3D" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="hinge_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="hinge_B" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_make_pin">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="body_A" type="RID" />
-			<argument index="2" name="local_A" type="Vector3" />
-			<argument index="3" name="body_B" type="RID" />
-			<argument index="4" name="local_B" type="Vector3" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_A" type="Vector3" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_B" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_make_slider">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="body_A" type="RID" />
-			<argument index="2" name="local_ref_A" type="Transform3D" />
-			<argument index="3" name="body_B" type="RID" />
-			<argument index="4" name="local_ref_B" type="Transform3D" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_ref_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_ref_B" type="Transform3D" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_set_solver_priority">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="priority" type="int" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="priority" type="int" />
 			<description>
 				Sets the priority value of the Joint3D.
 			</description>
 		</method>
 		<method name="pin_joint_get_local_a" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="joint" type="RID" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns position of the joint in the local space of body a of the joint.
 			</description>
 		</method>
 		<method name="pin_joint_get_local_b" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="joint" type="RID" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns position of the joint in the local space of body b of the joint.
 			</description>
 		</method>
 		<method name="pin_joint_get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
 			<description>
 				Gets a pin_joint parameter (see [enum PinJointParam] constants).
 			</description>
 		</method>
 		<method name="pin_joint_set_local_a">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="local_A" type="Vector3" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="local_A" type="Vector3" />
 			<description>
 				Sets position of the joint in the local space of body a of the joint.
 			</description>
 		</method>
 		<method name="pin_joint_set_local_b">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="local_B" type="Vector3" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="local_B" type="Vector3" />
 			<description>
 				Sets position of the joint in the local space of body b of the joint.
 			</description>
 		</method>
 		<method name="pin_joint_set_param">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
-			<argument index="2" name="value" type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
+			<param index="2" name="value" type="float" />
 			<description>
 				Sets a pin_joint parameter (see [enum PinJointParam] constants).
 			</description>
@@ -912,53 +912,53 @@
 		</method>
 		<method name="set_active">
 			<return type="void" />
-			<argument index="0" name="active" type="bool" />
+			<param index="0" name="active" type="bool" />
 			<description>
 				Activates or deactivates the 3D physics engine.
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="shape" type="RID" />
+			<param index="0" name="shape" type="RID" />
 			<description>
 				Returns the shape data.
 			</description>
 		</method>
 		<method name="shape_get_type" qualifiers="const">
 			<return type="int" enum="PhysicsServer3D.ShapeType" />
-			<argument index="0" name="shape" type="RID" />
+			<param index="0" name="shape" type="RID" />
 			<description>
 				Returns the type of shape (see [enum ShapeType] constants).
 			</description>
 		</method>
 		<method name="shape_set_data">
 			<return type="void" />
-			<argument index="0" name="shape" type="RID" />
-			<argument index="1" name="data" type="Variant" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
 			</description>
 		</method>
 		<method name="slider_joint_get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
 			<description>
 				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
 			</description>
 		</method>
 		<method name="slider_joint_set_param">
 			<return type="void" />
-			<argument index="0" name="joint" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
-			<argument index="2" name="value" type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
+			<param index="2" name="value" type="float" />
 			<description>
 				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
 			</description>
 		</method>
 		<method name="soft_body_get_bounds" qualifiers="const">
 			<return type="AABB" />
-			<argument index="0" name="body" type="RID" />
+			<param index="0" name="body" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -970,39 +970,39 @@
 		</method>
 		<method name="space_get_direct_state">
 			<return type="PhysicsDirectSpaceState3D" />
-			<argument index="0" name="space" type="RID" />
+			<param index="0" name="space" type="RID" />
 			<description>
 				Returns the state of a space, a [PhysicsDirectSpaceState3D]. This object can be used to make collision/intersection queries.
 			</description>
 		</method>
 		<method name="space_get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="space" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
 			<description>
 				Returns the value of a space parameter.
 			</description>
 		</method>
 		<method name="space_is_active" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="space" type="RID" />
+			<param index="0" name="space" type="RID" />
 			<description>
 				Returns whether the space is active.
 			</description>
 		</method>
 		<method name="space_set_active">
 			<return type="void" />
-			<argument index="0" name="space" type="RID" />
-			<argument index="1" name="active" type="bool" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="active" type="bool" />
 			<description>
 				Marks a space as active. It will not have an effect, unless it is assigned to an area or body.
 			</description>
 		</method>
 		<method name="space_set_param">
 			<return type="void" />
-			<argument index="0" name="space" type="RID" />
-			<argument index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
-			<argument index="2" name="value" type="float" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
+			<param index="2" name="value" type="float" />
 			<description>
 				Sets the value for a space parameter. A list of available parameters is on the [enum SpaceParameter] constants.
 			</description>

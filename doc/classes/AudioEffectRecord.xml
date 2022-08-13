@@ -14,7 +14,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_recording" qualifiers="const">
-			<return type="AudioStreamSample" />
+			<return type="AudioStreamWAV" />
 			<description>
 				Returns the recorded sample.
 			</description>
@@ -27,15 +27,15 @@
 		</method>
 		<method name="set_recording_active">
 			<return type="void" />
-			<argument index="0" name="record" type="bool" />
+			<param index="0" name="record" type="bool" />
 			<description>
 				If [code]true[/code], the sound will be recorded. Note that restarting the recording will remove the previously recorded sample.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="1">
-			Specifies the format in which the sample will be recorded. See [enum AudioStreamSample.Format] for available formats.
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="1">
+			Specifies the format in which the sample will be recorded. See [enum AudioStreamWAV.Format] for available formats.
 		</member>
 	</members>
 </class>

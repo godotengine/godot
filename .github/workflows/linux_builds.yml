@@ -19,30 +19,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-# Temporarily disabled until Mono is fixed
-#
-#          - name: Editor w Mono (target=release_debug, tools=yes, tests=yes)
-#            cache-name: linux-editor-mono
-#            target: release_debug
-#            tools: true
-#            tests: false # Disabled due freeze caused by mix Mono build and CI
-#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
-#            doc-test: true
-#            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
-#            build-mono: true
-#            proj-conv: true
-#            artifact: true
-
-# Temporary replacement:
-
-          - name: Editor w/o Mono (target=release_debug, tools=yes, tests=yes)
+          - name: Editor w Mono (target=release_debug, tools=yes, tests=yes)
             cache-name: linux-editor-mono
             target: release_debug
             tools: true
             tests: false # Disabled due freeze caused by mix Mono build and CI
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
             doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.64"
-            build-mono: false
+            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+            build-mono: true
             proj-conv: true
             artifact: true
 
@@ -72,24 +57,12 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-# Temporarily disabled:
-#
-#          - name: Template w/ Mono (target=release, tools=no)
-#            cache-name: linux-template-mono
-#            target: release
-#            tools: false
-#            tests: false
-#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
-#            build-mono: false
-#            artifact: true
-
-# Temporary replacement:
-
-          - name: Template w/o Mono (target=release, tools=no)
+          - name: Template w/ Mono (target=release, tools=no)
             cache-name: linux-template-mono
             target: release
             tools: false
             tests: false
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
             build-mono: false
             artifact: true
 
@@ -198,10 +171,16 @@ jobs:
           mv "regression-test-project-4.0" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
-      - name: Open and close editor
+      - name: Open and close editor (Vulkan)
         if: ${{ matrix.proj-test }}
         run: |
           VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      - name: Open and close editor (GLES3)
+        if: ${{ matrix.proj-test }}
+        run: |
+          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --rendering-driver opengl3 --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
       # Run test project
@@ -247,6 +226,7 @@ jobs:
         if: ${{ matrix.artifact }}
         run: |
           strip bin/godot.*
+          chmod +x bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact

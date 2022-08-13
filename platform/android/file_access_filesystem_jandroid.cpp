@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "file_access_filesystem_jandroid.h"
+
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "thread_jandroid.h"
+
 #include <unistd.h>
 
 jobject FileAccessFilesystemJAndroid::file_access_handler = nullptr;
@@ -198,7 +200,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 			if (elem == '\n' || elem == '\0') {
 				// Found the end of the line
 				const_cast<FileAccessFilesystemJAndroid *>(this)->seek(start_position + line_buffer_position + 1);
-				if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position)) {
+				if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
 					return String();
 				}
 				return result;
@@ -206,7 +208,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 		}
 	}
 
-	if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position)) {
+	if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
 		return String();
 	}
 	return result;

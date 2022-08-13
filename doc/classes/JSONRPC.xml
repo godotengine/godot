@@ -11,8 +11,8 @@
 	<methods>
 		<method name="make_notification">
 			<return type="Dictionary" />
-			<argument index="0" name="method" type="String" />
-			<argument index="1" name="params" type="Variant" />
+			<param index="0" name="method" type="String" />
+			<param index="1" name="params" type="Variant" />
 			<description>
 				Returns a dictionary in the form of a JSON-RPC notification. Notifications are one-shot messages which do not expect a response.
 				- [code]method[/code]: Name of the method being called.
@@ -21,9 +21,9 @@
 		</method>
 		<method name="make_request">
 			<return type="Dictionary" />
-			<argument index="0" name="method" type="String" />
-			<argument index="1" name="params" type="Variant" />
-			<argument index="2" name="id" type="Variant" />
+			<param index="0" name="method" type="String" />
+			<param index="1" name="params" type="Variant" />
+			<param index="2" name="id" type="Variant" />
 			<description>
 				Returns a dictionary in the form of a JSON-RPC request. Requests are sent to a server with the expectation of a response. The ID field is used for the server to specify which exact request it is responding to.
 				- [code]method[/code]: Name of the method being called.
@@ -33,8 +33,8 @@
 		</method>
 		<method name="make_response">
 			<return type="Dictionary" />
-			<argument index="0" name="result" type="Variant" />
-			<argument index="1" name="id" type="Variant" />
+			<param index="0" name="result" type="Variant" />
+			<param index="1" name="id" type="Variant" />
 			<description>
 				When a server has received and processed a request, it is expected to send a response. If you did not want a response then you need to have sent a Notification instead.
 				- [code]result[/code]: The return value of the function which was called.
@@ -43,9 +43,9 @@
 		</method>
 		<method name="make_response_error" qualifiers="const">
 			<return type="Dictionary" />
-			<argument index="0" name="code" type="int" />
-			<argument index="1" name="message" type="String" />
-			<argument index="2" name="id" type="Variant" default="null" />
+			<param index="0" name="code" type="int" />
+			<param index="1" name="message" type="String" />
+			<param index="2" name="id" type="Variant" default="null" />
 			<description>
 				Creates a response which indicates a previous reply has failed in some way.
 				- [code]code[/code]: The error code corresponding to what kind of error this is. See the [enum ErrorCode] constants.
@@ -55,8 +55,8 @@
 		</method>
 		<method name="process_action">
 			<return type="Variant" />
-			<argument index="0" name="action" type="Variant" />
-			<argument index="1" name="recurse" type="bool" default="false" />
+			<param index="0" name="action" type="Variant" />
+			<param index="1" name="recurse" type="bool" default="false" />
 			<description>
 				Given a Dictionary which takes the form of a JSON-RPC request: unpack the request and run it. Methods are resolved by looking at the field called "method" and looking for an equivalently named function in the JSONRPC object. If one is found that method is called.
 				To add new supported methods extend the JSONRPC class and call [method process_action] on your subclass.
@@ -65,14 +65,14 @@
 		</method>
 		<method name="process_string">
 			<return type="String" />
-			<argument index="0" name="action" type="String" />
+			<param index="0" name="action" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="set_scope">
 			<return type="void" />
-			<argument index="0" name="scope" type="String" />
-			<argument index="1" name="target" type="Object" />
+			<param index="0" name="scope" type="String" />
+			<param index="1" name="target" type="Object" />
 			<description>
 			</description>
 		</method>

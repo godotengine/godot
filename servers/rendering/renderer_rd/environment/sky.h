@@ -34,7 +34,6 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sky.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
@@ -108,7 +107,7 @@ private:
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
-	struct SkyShaderData : public RendererRD::ShaderData {
+	struct SkyShaderData : public RendererRD::MaterialStorage::ShaderData {
 		bool valid = false;
 		RID version;
 
@@ -132,7 +131,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_path_hint(const String &p_hint);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -232,7 +231,7 @@ public:
 		RID default_shader_rd;
 	} sky_shader;
 
-	struct SkyMaterialData : public RendererRD::MaterialData {
+	struct SkyMaterialData : public RendererRD::MaterialStorage::MaterialData {
 		SkyShaderData *shader_data = nullptr;
 		RID uniform_set;
 		bool uniform_set_updated;
@@ -286,22 +285,22 @@ public:
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
 
-	RendererRD::ShaderData *_create_sky_shader_func();
-	static RendererRD::ShaderData *_create_sky_shader_funcs();
+	RendererRD::MaterialStorage::ShaderData *_create_sky_shader_func();
+	static RendererRD::MaterialStorage::ShaderData *_create_sky_shader_funcs();
 
-	RendererRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
-	static RendererRD::MaterialData *_create_sky_material_funcs(RendererRD::ShaderData *p_shader);
+	RendererRD::MaterialStorage::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
+	static RendererRD::MaterialStorage::MaterialData *_create_sky_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader);
 
 	SkyRD();
 	void init();
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
-	void update(RendererSceneEnvironmentRD *p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time); // only called by clustered renderer
-	void update_res_buffers(RendererSceneEnvironmentRD *p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RD::DrawListID p_draw_list, RendererSceneEnvironmentRD *p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
+	void setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
+	void update(RID p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
+	void draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time); // only called by clustered renderer
+	void update_res_buffers(RID p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
+	void draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();

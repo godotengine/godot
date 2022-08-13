@@ -13,14 +13,14 @@
 	<methods>
 		<method name="add_action_set">
 			<return type="void" />
-			<argument index="0" name="action_set" type="OpenXRActionSet" />
+			<param index="0" name="action_set" type="OpenXRActionSet" />
 			<description>
 				Add an action set.
 			</description>
 		</method>
 		<method name="add_interaction_profile">
 			<return type="void" />
-			<argument index="0" name="interaction_profile" type="OpenXRInteractionProfile" />
+			<param index="0" name="interaction_profile" type="OpenXRInteractionProfile" />
 			<description>
 				Add an interaction profile.
 			</description>
@@ -33,21 +33,21 @@
 		</method>
 		<method name="find_action_set" qualifiers="const">
 			<return type="OpenXRActionSet" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Retrieve an action set by name.
 			</description>
 		</method>
 		<method name="find_interaction_profile" qualifiers="const">
 			<return type="OpenXRInteractionProfile" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Find an interaction profile by its name (path).
 			</description>
 		</method>
 		<method name="get_action_set" qualifiers="const">
 			<return type="OpenXRActionSet" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Retrieve the action set at this index.
 			</description>
@@ -60,7 +60,7 @@
 		</method>
 		<method name="get_interaction_profile" qualifiers="const">
 			<return type="OpenXRInteractionProfile" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Get the interaction profile at this index.
 			</description>
@@ -73,14 +73,14 @@
 		</method>
 		<method name="remove_action_set">
 			<return type="void" />
-			<argument index="0" name="action_set" type="OpenXRActionSet" />
+			<param index="0" name="action_set" type="OpenXRActionSet" />
 			<description>
 				Remove an action set.
 			</description>
 		</method>
 		<method name="remove_interaction_profile">
 			<return type="void" />
-			<argument index="0" name="interaction_profile" type="OpenXRInteractionProfile" />
+			<param index="0" name="interaction_profile" type="OpenXRInteractionProfile" />
 			<description>
 				Remove an interaction profile.
 			</description>

@@ -101,6 +101,7 @@ using namespace godot;
 #include <unicode/uloc.h>
 #include <unicode/unorm2.h>
 #include <unicode/uscript.h>
+#include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
 
@@ -112,7 +113,10 @@ using namespace godot;
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
-
+#include FT_CONFIG_OPTIONS_H
+#if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
+#warning FreeType is configured without Brotli support, built-in fonts will not be available.
+#endif
 #include <hb-ft.h>
 #include <hb-ot.h>
 #endif
@@ -701,7 +705,11 @@ public:
 
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
 
+	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
+	virtual bool spoof_check(const String &p_string) const override;
+
 	virtual String strip_diacritics(const String &p_string) const override;
+	virtual bool is_valid_identifier(const String &p_string) const override;
 
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;

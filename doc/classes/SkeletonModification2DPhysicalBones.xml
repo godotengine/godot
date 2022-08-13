@@ -17,23 +17,23 @@
 		</method>
 		<method name="get_physical_bone_node" qualifiers="const">
 			<return type="NodePath" />
-			<argument index="0" name="joint_idx" type="int" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns the [PhysicalBone2D] node at [code]joint_idx[/code].
+				Returns the [PhysicalBone2D] node at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_physical_bone_node">
 			<return type="void" />
-			<argument index="0" name="joint_idx" type="int" />
-			<argument index="1" name="physicalbone2d_node" type="NodePath" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="physicalbone2d_node" type="NodePath" />
 			<description>
-				Sets the [PhysicalBone2D] node at [code]joint_idx[/code].
+				Sets the [PhysicalBone2D] node at [param joint_idx].
 				[b]Note:[/b] This is just the index used for this modification, not the bone index used in the [Skeleton2D].
 			</description>
 		</method>
 		<method name="start_simulation">
 			<return type="void" />
-			<argument index="0" name="bones" type="StringName[]" default="[]" />
+			<param index="0" name="bones" type="StringName[]" default="[]" />
 			<description>
 				Tell the [PhysicalBone2D] nodes to start simulating and interacting with the physics world.
 				Optionally, an array of bone names can be passed to this function, and that will cause only [PhysicalBone2D] nodes with those names to start simulating.
@@ -41,7 +41,7 @@
 		</method>
 		<method name="stop_simulation">
 			<return type="void" />
-			<argument index="0" name="bones" type="StringName[]" default="[]" />
+			<param index="0" name="bones" type="StringName[]" default="[]" />
 			<description>
 				Tell the [PhysicalBone2D] nodes to stop simulating and interacting with the physics world.
 				Optionally, an array of bone names can be passed to this function, and that will cause only [PhysicalBone2D] nodes with those names to stop simulating.

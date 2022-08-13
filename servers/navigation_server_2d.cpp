@@ -158,6 +158,47 @@ void NavigationServer2D::_emit_map_changed(RID p_map) {
 	emit_signal(SNAME("map_changed"), p_map);
 }
 
+#ifdef DEBUG_ENABLED
+void NavigationServer2D::set_debug_enabled(bool p_enabled) {
+	NavigationServer3D::get_singleton_mut()->set_debug_enabled(p_enabled);
+}
+bool NavigationServer2D::get_debug_enabled() const {
+	return NavigationServer3D::get_singleton()->get_debug_enabled();
+}
+
+void NavigationServer2D::set_debug_navigation_edge_connection_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_edge_connection_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_edge_connection_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_edge_connection_color();
+}
+
+void NavigationServer2D::set_debug_navigation_geometry_face_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_geometry_face_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+}
+
+void NavigationServer2D::set_debug_navigation_geometry_face_disabled_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_disabled_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
+}
+
+void NavigationServer2D::set_debug_navigation_enable_edge_connections(const bool p_value) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_edge_connections(p_value);
+}
+
+bool NavigationServer2D::get_debug_navigation_enable_edge_connections() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_connections();
+}
+#endif // DEBUG_ENABLED
+
 void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer2D::get_maps);
 

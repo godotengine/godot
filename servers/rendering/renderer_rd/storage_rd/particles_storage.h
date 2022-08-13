@@ -43,231 +43,203 @@
 
 namespace RendererRD {
 
-/* PARTICLES */
-
-struct ParticleData {
-	float xform[16];
-	float velocity[3];
-	uint32_t active;
-	float color[4];
-	float custom[3];
-	float lifetime;
-};
-
-struct ParticlesFrameParams {
-	enum {
-		MAX_ATTRACTORS = 32,
-		MAX_COLLIDERS = 32,
-		MAX_3D_TEXTURES = 7
-	};
-
-	enum AttractorType {
-		ATTRACTOR_TYPE_SPHERE,
-		ATTRACTOR_TYPE_BOX,
-		ATTRACTOR_TYPE_VECTOR_FIELD,
-	};
-
-	struct Attractor {
-		float transform[16];
-		float extents[3]; //exents or radius
-		uint32_t type;
-
-		uint32_t texture_index; //texture index for vector field
-		float strength;
-		float attenuation;
-		float directionality;
-	};
-
-	enum CollisionType {
-		COLLISION_TYPE_SPHERE,
-		COLLISION_TYPE_BOX,
-		COLLISION_TYPE_SDF,
-		COLLISION_TYPE_HEIGHT_FIELD,
-		COLLISION_TYPE_2D_SDF,
-
-	};
-
-	struct Collider {
-		float transform[16];
-		float extents[3]; //exents or radius
-		uint32_t type;
-
-		uint32_t texture_index; //texture index for vector field
-		real_t scale;
-		uint32_t pad[2];
-	};
-
-	uint32_t emitting;
-	float system_phase;
-	float prev_system_phase;
-	uint32_t cycle;
-
-	real_t explosiveness;
-	real_t randomness;
-	float time;
-	float delta;
-
-	uint32_t frame;
-	uint32_t pad0;
-	uint32_t pad1;
-	uint32_t pad2;
-
-	uint32_t random_seed;
-	uint32_t attractor_count;
-	uint32_t collider_count;
-	float particle_size;
-
-	float emission_transform[16];
-
-	Attractor attractors[MAX_ATTRACTORS];
-	Collider colliders[MAX_COLLIDERS];
-};
-
-struct ParticleEmissionBufferData {
-};
-
-struct ParticleEmissionBuffer {
-	struct Data {
-		float xform[16];
-		float velocity[3];
-		uint32_t flags;
-		float color[4];
-		float custom[4];
-	};
-
-	int32_t particle_count;
-	int32_t particle_max;
-	uint32_t pad1;
-	uint32_t pad2;
-	Data data[1]; //its 2020 and empty arrays are still non standard in C++
-};
-
-struct Particles {
-	RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
-	bool inactive = true;
-	double inactive_time = 0.0;
-	bool emitting = false;
-	bool one_shot = false;
-	int amount = 0;
-	double lifetime = 1.0;
-	double pre_process_time = 0.0;
-	real_t explosiveness = 0.0;
-	real_t randomness = 0.0;
-	bool restart_request = false;
-	AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
-	bool use_local_coords = true;
-	bool has_collision_cache = false;
-
-	bool has_sdf_collision = false;
-	Transform2D sdf_collision_transform;
-	Rect2 sdf_collision_to_screen;
-	RID sdf_collision_texture;
-
-	RID process_material;
-	uint32_t frame_counter = 0;
-	RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
-
-	RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
-
-	Vector<RID> draw_passes;
-	Vector<Transform3D> trail_bind_poses;
-	bool trail_bind_poses_dirty = false;
-	RID trail_bind_pose_buffer;
-	RID trail_bind_pose_uniform_set;
-
-	RID particle_buffer;
-	RID particle_instance_buffer;
-	RID frame_params_buffer;
-
-	uint32_t userdata_count = 0;
-
-	RID particles_material_uniform_set;
-	RID particles_copy_uniform_set;
-	RID particles_transforms_buffer_uniform_set;
-	RID collision_textures_uniform_set;
-
-	RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
-	uint32_t collision_3d_textures_used = 0;
-	RID collision_heightmap_texture;
-
-	RID particles_sort_buffer;
-	RID particles_sort_uniform_set;
-
-	bool dirty = false;
-	Particles *update_list = nullptr;
-
-	RID sub_emitter;
-
-	double phase = 0.0;
-	double prev_phase = 0.0;
-	uint64_t prev_ticks = 0;
-	uint32_t random_seed = 0;
-
-	uint32_t cycle_number = 0;
-
-	double speed_scale = 1.0;
-
-	int fixed_fps = 30;
-	bool interpolate = true;
-	bool fractional_delta = false;
-	double frame_remainder = 0;
-	real_t collision_base_size = 0.01;
-
-	bool clear = true;
-
-	bool force_sub_emit = false;
-
-	Transform3D emission_transform;
-
-	Vector<uint8_t> emission_buffer_data;
-
-	ParticleEmissionBuffer *emission_buffer = nullptr;
-	RID emission_storage_buffer;
-
-	HashSet<RID> collisions;
-
-	Dependency dependency;
-
-	double trail_length = 1.0;
-	bool trails_enabled = false;
-	LocalVector<ParticlesFrameParams> frame_history;
-	LocalVector<ParticlesFrameParams> trail_params;
-
-	Particles() {
-	}
-};
-
-/* Particles Collision */
-
-struct ParticlesCollision {
-	RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
-	uint32_t cull_mask = 0xFFFFFFFF;
-	float radius = 1.0;
-	Vector3 extents = Vector3(1, 1, 1);
-	float attractor_strength = 1.0;
-	float attractor_attenuation = 1.0;
-	float attractor_directionality = 0.0;
-	RID field_texture;
-	RID heightfield_texture;
-	RID heightfield_fb;
-	Size2i heightfield_fb_size;
-
-	RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
-
-	Dependency dependency;
-};
-
-struct ParticlesCollisionInstance {
-	RID collision;
-	Transform3D transform;
-	bool active = false;
-};
-
 class ParticlesStorage : public RendererParticlesStorage {
 private:
 	static ParticlesStorage *singleton;
 
 	/* PARTICLES */
+
+	struct ParticleData {
+		float xform[16];
+		float velocity[3];
+		uint32_t active;
+		float color[4];
+		float custom[3];
+		float lifetime;
+	};
+
+	struct ParticlesFrameParams {
+		enum {
+			MAX_ATTRACTORS = 32,
+			MAX_COLLIDERS = 32,
+			MAX_3D_TEXTURES = 7
+		};
+
+		enum AttractorType {
+			ATTRACTOR_TYPE_SPHERE,
+			ATTRACTOR_TYPE_BOX,
+			ATTRACTOR_TYPE_VECTOR_FIELD,
+		};
+
+		struct Attractor {
+			float transform[16];
+			float extents[3]; //exents or radius
+			uint32_t type;
+
+			uint32_t texture_index; //texture index for vector field
+			float strength;
+			float attenuation;
+			float directionality;
+		};
+
+		enum CollisionType {
+			COLLISION_TYPE_SPHERE,
+			COLLISION_TYPE_BOX,
+			COLLISION_TYPE_SDF,
+			COLLISION_TYPE_HEIGHT_FIELD,
+			COLLISION_TYPE_2D_SDF,
+
+		};
+
+		struct Collider {
+			float transform[16];
+			float extents[3]; //exents or radius
+			uint32_t type;
+
+			uint32_t texture_index; //texture index for vector field
+			real_t scale;
+			uint32_t pad[2];
+		};
+
+		uint32_t emitting;
+		float system_phase;
+		float prev_system_phase;
+		uint32_t cycle;
+
+		real_t explosiveness;
+		real_t randomness;
+		float time;
+		float delta;
+
+		uint32_t frame;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
+
+		uint32_t random_seed;
+		uint32_t attractor_count;
+		uint32_t collider_count;
+		float particle_size;
+
+		float emission_transform[16];
+
+		Attractor attractors[MAX_ATTRACTORS];
+		Collider colliders[MAX_COLLIDERS];
+	};
+
+	struct ParticleEmissionBufferData {
+	};
+
+	struct ParticleEmissionBuffer {
+		struct Data {
+			float xform[16];
+			float velocity[3];
+			uint32_t flags;
+			float color[4];
+			float custom[4];
+		};
+
+		int32_t particle_count;
+		int32_t particle_max;
+		uint32_t pad1;
+		uint32_t pad2;
+		Data data[1]; //its 2020 and empty arrays are still non standard in C++
+	};
+
+	struct Particles {
+		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
+		bool inactive = true;
+		double inactive_time = 0.0;
+		bool emitting = false;
+		bool one_shot = false;
+		int amount = 0;
+		double lifetime = 1.0;
+		double pre_process_time = 0.0;
+		real_t explosiveness = 0.0;
+		real_t randomness = 0.0;
+		bool restart_request = false;
+		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
+		bool use_local_coords = false;
+		bool has_collision_cache = false;
+
+		bool has_sdf_collision = false;
+		Transform2D sdf_collision_transform;
+		Rect2 sdf_collision_to_screen;
+		RID sdf_collision_texture;
+
+		RID process_material;
+		uint32_t frame_counter = 0;
+		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
+
+		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
+
+		Vector<RID> draw_passes;
+		Vector<Transform3D> trail_bind_poses;
+		bool trail_bind_poses_dirty = false;
+		RID trail_bind_pose_buffer;
+		RID trail_bind_pose_uniform_set;
+
+		RID particle_buffer;
+		RID particle_instance_buffer;
+		RID frame_params_buffer;
+
+		uint32_t userdata_count = 0;
+
+		RID particles_material_uniform_set;
+		RID particles_copy_uniform_set;
+		RID particles_transforms_buffer_uniform_set;
+		RID collision_textures_uniform_set;
+
+		RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
+		uint32_t collision_3d_textures_used = 0;
+		RID collision_heightmap_texture;
+
+		RID particles_sort_buffer;
+		RID particles_sort_uniform_set;
+
+		bool dirty = false;
+		Particles *update_list = nullptr;
+
+		RID sub_emitter;
+
+		double phase = 0.0;
+		double prev_phase = 0.0;
+		uint64_t prev_ticks = 0;
+		uint32_t random_seed = 0;
+
+		uint32_t cycle_number = 0;
+
+		double speed_scale = 1.0;
+
+		int fixed_fps = 30;
+		bool interpolate = true;
+		bool fractional_delta = false;
+		double frame_remainder = 0;
+		real_t collision_base_size = 0.01;
+
+		bool clear = true;
+
+		bool force_sub_emit = false;
+
+		Transform3D emission_transform;
+
+		Vector<uint8_t> emission_buffer_data;
+
+		ParticleEmissionBuffer *emission_buffer = nullptr;
+		RID emission_storage_buffer;
+
+		HashSet<RID> collisions;
+
+		Dependency dependency;
+
+		double trail_length = 1.0;
+		bool trails_enabled = false;
+		LocalVector<ParticlesFrameParams> frame_history;
+		LocalVector<ParticlesFrameParams> trail_params;
+
+		Particles() {
+		}
+	};
 
 	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
@@ -340,7 +312,7 @@ private:
 
 	/* Particle Shader */
 
-	struct ParticlesShaderData : public ShaderData {
+	struct ParticlesShaderData : public MaterialStorage::ShaderData {
 		bool valid = false;
 		RID version;
 		bool uses_collision = false;
@@ -365,7 +337,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_path_hint(const String &p_hint);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -377,12 +349,12 @@ private:
 		virtual ~ParticlesShaderData();
 	};
 
-	ShaderData *_create_particles_shader_func();
-	static ShaderData *_create_particles_shader_funcs() {
+	MaterialStorage::ShaderData *_create_particles_shader_func();
+	static MaterialStorage::ShaderData *_create_particles_shader_funcs() {
 		return ParticlesStorage::get_singleton()->_create_particles_shader_func();
 	}
 
-	struct ParticlesMaterialData : public MaterialData {
+	struct ParticlesMaterialData : public MaterialStorage::MaterialData {
 		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
 
@@ -392,12 +364,36 @@ private:
 		virtual ~ParticlesMaterialData();
 	};
 
-	MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
-	static MaterialData *_create_particles_material_funcs(ShaderData *p_shader) {
+	MaterialStorage::MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
+	static MaterialStorage::MaterialData *_create_particles_material_funcs(MaterialStorage::ShaderData *p_shader) {
 		return ParticlesStorage::get_singleton()->_create_particles_material_func(static_cast<ParticlesShaderData *>(p_shader));
 	}
 
 	/* Particles Collision */
+
+	struct ParticlesCollision {
+		RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
+		uint32_t cull_mask = 0xFFFFFFFF;
+		float radius = 1.0;
+		Vector3 extents = Vector3(1, 1, 1);
+		float attractor_strength = 1.0;
+		float attractor_attenuation = 1.0;
+		float attractor_directionality = 0.0;
+		RID field_texture;
+		RID heightfield_texture;
+		RID heightfield_fb;
+		Size2i heightfield_fb_size;
+
+		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
+
+		Dependency dependency;
+	};
+
+	struct ParticlesCollisionInstance {
+		RID collision;
+		Transform3D transform;
+		bool active = false;
+	};
 
 	mutable RID_Owner<ParticlesCollision, true> particles_collision_owner;
 
@@ -411,7 +407,6 @@ public:
 
 	/* PARTICLES */
 
-	Particles *get_particles(RID p_rid) { return particles_owner.get_or_null(p_rid); }
 	bool owns_particles(RID p_rid) { return particles_owner.owns(p_rid); }
 
 	virtual RID particles_allocate() override;
@@ -526,9 +521,10 @@ public:
 
 	virtual void update_particles() override;
 
+	Dependency *particles_get_dependency(RID p_particles) const;
+
 	/* Particles Collision */
 
-	ParticlesCollision *get_particles_collision(RID p_rid) { return particles_collision_owner.get_or_null(p_rid); }
 	bool owns_particles_collision(RID p_rid) { return particles_collision_owner.owns(p_rid); }
 
 	virtual RID particles_collision_allocate() override;
@@ -550,8 +546,9 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override;
 
+	Dependency *particles_collision_get_dependency(RID p_particles) const;
+
 	//used from 2D and 3D
-	ParticlesCollisionInstance *get_particles_collision_instance(RID p_rid) { return particles_collision_instance_owner.get_or_null(p_rid); }
 	bool owns_particles_collision_instance(RID p_rid) { return particles_collision_instance_owner.owns(p_rid); }
 
 	virtual RID particles_collision_instance_create(RID p_collision) override;

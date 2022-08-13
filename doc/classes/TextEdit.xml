@@ -30,9 +30,9 @@
 		</method>
 		<method name="_handle_unicode_input" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="unicode_char" type="int" />
+			<param index="0" name="unicode_char" type="int" />
 			<description>
-				Override this method to define what happens when the types in the provided key [code]unicode[/code].
+				Override this method to define what happens when the user types in the provided key [param unicode_char].
 			</description>
 		</method>
 		<method name="_paste" qualifiers="virtual">
@@ -50,9 +50,9 @@
 		</method>
 		<method name="add_gutter">
 			<return type="void" />
-			<argument index="0" name="at" type="int" default="-1" />
+			<param index="0" name="at" type="int" default="-1" />
 			<description>
-				Register a new gutter to this [TextEdit]. Use [code]at[/code] to have a specific gutter order. A value of [code]-1[/code] appends the gutter to the right.
+				Register a new gutter to this [TextEdit]. Use [param at] to have a specific gutter order. A value of [code]-1[/code] appends the gutter to the right.
 			</description>
 		</method>
 		<method name="adjust_viewport_to_caret">
@@ -147,7 +147,7 @@
 		</method>
 		<method name="get_first_non_whitespace_column" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns the first column containing a non-whitespace character.
 			</description>
@@ -166,28 +166,28 @@
 		</method>
 		<method name="get_gutter_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Returns the name of the gutter at the given index.
 			</description>
 		</method>
 		<method name="get_gutter_type" qualifiers="const">
 			<return type="int" enum="TextEdit.GutterType" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Returns the type of the gutter at the given index.
 			</description>
 		</method>
 		<method name="get_gutter_width" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Returns the width of the gutter at the given index.
 			</description>
 		</method>
 		<method name="get_indent_level" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns the amount of spaces and [code]tab * tab_size[/code] before the first char.
 			</description>
@@ -212,24 +212,24 @@
 		</method>
 		<method name="get_line" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns the text of a specific line.
 			</description>
 		</method>
 		<method name="get_line_background_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns the current background color of the line. [code]Color(0, 0, 0, 0)[/code] is returned if no color is set.
 			</description>
 		</method>
 		<method name="get_line_column_at_pos" qualifiers="const">
 			<return type="Vector2i" />
-			<argument index="0" name="position" type="Vector2i" />
-			<argument index="1" name="allow_out_of_bounds" type="bool" default="true" />
+			<param index="0" name="position" type="Vector2i" />
+			<param index="1" name="allow_out_of_bounds" type="bool" default="true" />
 			<description>
-				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If [code]allow_out_of_bounds[/code] is [code]false[/code] and the position is not over the text, both vector values will be set to [code]-1[/code].
+				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If [param allow_out_of_bounds] is [code]false[/code] and the position is not over the text, both vector values will be set to [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -240,34 +240,34 @@
 		</method>
 		<method name="get_line_gutter_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the icon currently in [code]gutter[/code] at [code]line[/code].
+				Returns the icon currently in [param gutter] at [param line].
 			</description>
 		</method>
 		<method name="get_line_gutter_item_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the color currently in [code]gutter[/code] at [code]line[/code].
+				Returns the color currently in [param gutter] at [param line].
 			</description>
 		</method>
 		<method name="get_line_gutter_metadata" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the metadata currently in [code]gutter[/code] at [code]line[/code].
+				Returns the metadata currently in [param gutter] at [param line].
 			</description>
 		</method>
 		<method name="get_line_gutter_text" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the text currently in [code]gutter[/code] at [code]line[/code].
+				Returns the text currently in [param gutter] at [param line].
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
@@ -278,30 +278,30 @@
 		</method>
 		<method name="get_line_width" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="wrap_index" type="int" default="-1" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="wrap_index" type="int" default="-1" />
 			<description>
-				Returns the width in pixels of the [code]wrap_index[/code] on [code]line[/code].
+				Returns the width in pixels of the [param wrap_index] on [param line].
 			</description>
 		</method>
 		<method name="get_line_wrap_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns the number of times the given line is wrapped.
 			</description>
 		</method>
 		<method name="get_line_wrap_index_at_column" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="column" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
 				Returns the wrap index of the given line column.
 			</description>
 		</method>
 		<method name="get_line_wrapped_text" qualifiers="const">
 			<return type="PackedStringArray" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns an array of [String]s representing each wrapped index.
 			</description>
@@ -321,9 +321,9 @@
 		</method>
 		<method name="get_minimap_line_at_pos" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="position" type="Vector2i" />
+			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Returns the equivalent minimap line at [code]position[/code]
+				Returns the equivalent minimap line at [param position]
 			</description>
 		</method>
 		<method name="get_minimap_visible_lines" qualifiers="const">
@@ -334,36 +334,36 @@
 		</method>
 		<method name="get_next_visible_line_index_offset_from" qualifiers="const">
 			<return type="Vector2i" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="wrap_index" type="int" />
-			<argument index="2" name="visible_amount" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="wrap_index" type="int" />
+			<param index="2" name="visible_amount" type="int" />
 			<description>
 				Similar to [method get_next_visible_line_offset_from], but takes into account the line wrap indexes. In the returned vector, [code]x[/code] is the line, [code]y[/code] is the wrap index.
 			</description>
 		</method>
 		<method name="get_next_visible_line_offset_from" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="visible_amount" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="visible_amount" type="int" />
 			<description>
-				Returns the count to the next visible line from [code]line[/code] to [code]line + visible_amount[/code]. Can also count backwards. For example if a [TextEdit] has 5 lines with lines 2 and 3 hidden, calling this with [code]line = 1, visible_amount = 1[/code] would return 3.
+				Returns the count to the next visible line from [param line] to [code]line + visible_amount[/code]. Can also count backwards. For example if a [TextEdit] has 5 lines with lines 2 and 3 hidden, calling this with [code]line = 1, visible_amount = 1[/code] would return 3.
 			</description>
 		</method>
 		<method name="get_pos_at_line_column" qualifiers="const">
 			<return type="Vector2i" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="column" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
-				Returns the local position for the given [code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
+				Returns the local position for the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
 				[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use [method get_rect_at_line_column] to get the top side position.
 			</description>
 		</method>
 		<method name="get_rect_at_line_column" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="column" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
-				Returns the local position and size for the grapheme at the given [code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/code] position of the returned rect equal [code]-1[/code], the position is outside of the viewable area of the control.
+				Returns the local position and size for the grapheme at the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] position of the returned rect equal [code]-1[/code], the position is outside of the viewable area of the control.
 				[b]Note:[/b] The Y position of the returned rect corresponds to the top side of the line, unlike [method get_pos_at_line_column] which returns the bottom side.
 			</description>
 		</method>
@@ -375,10 +375,10 @@
 		</method>
 		<method name="get_scroll_pos_for_line" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="wrap_index" type="int" default="0" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="wrap_index" type="int" default="0" />
 			<description>
-				Returns the scroll position for [code]wrap_index[/code] of [code]line[/code].
+				Returns the scroll position for [param wrap_index] of [param line].
 			</description>
 		</method>
 		<method name="get_selected_text" qualifiers="const">
@@ -461,17 +461,17 @@
 		</method>
 		<method name="get_visible_line_count_in_range" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="from_line" type="int" />
-			<argument index="1" name="to_line" type="int" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="to_line" type="int" />
 			<description>
 				Returns the total number of visible + wrapped lines between the two lines.
 			</description>
 		</method>
 		<method name="get_word_at_pos" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="position" type="Vector2" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
-				Returns the word at [code]position[/code].
+				Returns the word at [param position].
 			</description>
 		</method>
 		<method name="get_word_under_caret" qualifiers="const">
@@ -506,15 +506,15 @@
 		</method>
 		<method name="insert_line_at">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="text" type="String" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="text" type="String" />
 			<description>
-				Inserts a new line with [code]text[/code] at [code]line[/code].
+				Inserts a new line with [param text] at [param line].
 			</description>
 		</method>
 		<method name="insert_text_at_caret">
 			<return type="void" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Insert the specified text at the caret position.
 			</description>
@@ -533,36 +533,36 @@
 		</method>
 		<method name="is_gutter_clickable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Returns whether the gutter is clickable.
 			</description>
 		</method>
 		<method name="is_gutter_drawn" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Returns whether the gutter is currently drawn.
 			</description>
 		</method>
 		<method name="is_gutter_overwritable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Returns whether the gutter is overwritable.
 			</description>
 		</method>
 		<method name="is_line_gutter_clickable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
 			<description>
 				Returns whether the gutter on the given line is clickable.
 			</description>
 		</method>
 		<method name="is_line_wrapped" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns if the given line is wrapped.
 			</description>
@@ -575,9 +575,9 @@
 		</method>
 		<method name="is_mouse_over_selection" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="edges" type="bool" />
+			<param index="0" name="edges" type="bool" />
 			<description>
-				Returns whether the mouse is over selection. If [code]edges[/code] is [code]true[/code], the edges are considered part of the selection.
+				Returns whether the mouse is over selection. If [param edges] is [code]true[/code], the edges are considered part of the selection.
 			</description>
 		</method>
 		<method name="is_overtype_mode_enabled" qualifiers="const">
@@ -588,17 +588,17 @@
 		</method>
 		<method name="menu_option">
 			<return type="void" />
-			<argument index="0" name="option" type="int" />
+			<param index="0" name="option" type="int" />
 			<description>
 				Triggers a right-click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
 			</description>
 		</method>
 		<method name="merge_gutters">
 			<return type="void" />
-			<argument index="0" name="from_line" type="int" />
-			<argument index="1" name="to_line" type="int" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="to_line" type="int" />
 			<description>
-				Merge the gutters from [code]from_line[/code] into [code]to_line[/code]. Only overwritable gutters will be copied.
+				Merge the gutters from [param from_line] into [param to_line]. Only overwritable gutters will be copied.
 			</description>
 		</method>
 		<method name="paste">
@@ -615,17 +615,17 @@
 		</method>
 		<method name="remove_gutter">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
+			<param index="0" name="gutter" type="int" />
 			<description>
 				Removes the gutter from this [TextEdit].
 			</description>
 		</method>
 		<method name="remove_text">
 			<return type="void" />
-			<argument index="0" name="from_line" type="int" />
-			<argument index="1" name="from_column" type="int" />
-			<argument index="2" name="to_line" type="int" />
-			<argument index="3" name="to_column" type="int" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="from_column" type="int" />
+			<param index="2" name="to_line" type="int" />
+			<param index="3" name="to_column" type="int" />
 			<description>
 				Removes text between the given positions.
 				[b]Note:[/b] This does not adjust the caret or selection, which as a result it can end up in an invalid position.
@@ -633,10 +633,10 @@
 		</method>
 		<method name="search" qualifiers="const">
 			<return type="Vector2i" />
-			<argument index="0" name="text" type="String" />
-			<argument index="1" name="flags" type="int" />
-			<argument index="2" name="from_line" type="int" />
-			<argument index="3" name="from_colum" type="int" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="flags" type="int" />
+			<param index="2" name="from_line" type="int" />
+			<param index="3" name="from_colum" type="int" />
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If no results are found, both are equal to [code]-1[/code].
@@ -662,10 +662,10 @@
 		</method>
 		<method name="select">
 			<return type="void" />
-			<argument index="0" name="from_line" type="int" />
-			<argument index="1" name="from_column" type="int" />
-			<argument index="2" name="to_line" type="int" />
-			<argument index="3" name="to_column" type="int" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="from_column" type="int" />
+			<param index="2" name="to_line" type="int" />
+			<param index="3" name="to_column" type="int" />
 			<description>
 				Perform selection, from line/column to line/column.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
@@ -686,214 +686,214 @@
 		</method>
 		<method name="set_caret_column">
 			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="adjust_viewport" type="bool" default="true" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="adjust_viewport" type="bool" default="true" />
 			<description>
-				Moves the caret to the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is [code]true[/code], the viewport will center at the caret position after the move occurs.
+				Moves the caret to the specified [param column] index.
+				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
 			</description>
 		</method>
 		<method name="set_caret_line">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="adjust_viewport" type="bool" default="true" />
-			<argument index="2" name="can_be_hidden" type="bool" default="true" />
-			<argument index="3" name="wrap_index" type="int" default="0" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="adjust_viewport" type="bool" default="true" />
+			<param index="2" name="can_be_hidden" type="bool" default="true" />
+			<param index="3" name="wrap_index" type="int" default="0" />
 			<description>
-				Moves the caret to the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is [code]true[/code], the viewport will center at the caret position after the move occurs.
-				If [code]can_be_hidden[/code] is [code]true[/code], the specified [code]line[/code] can be hidden.
+				Moves the caret to the specified [param line] index.
+				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
+				If [param can_be_hidden] is [code]true[/code], the specified [code]line[/code] can be hidden.
 			</description>
 		</method>
 		<method name="set_gutter_clickable">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
-			<argument index="1" name="clickable" type="bool" />
+			<param index="0" name="gutter" type="int" />
+			<param index="1" name="clickable" type="bool" />
 			<description>
 				Sets the gutter as clickable. This will change the mouse cursor to a pointing hand when hovering over the gutter.
 			</description>
 		</method>
 		<method name="set_gutter_custom_draw">
 			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="draw_callback" type="Callable" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="draw_callback" type="Callable" />
 			<description>
 				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code].
 			</description>
 		</method>
 		<method name="set_gutter_draw">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
-			<argument index="1" name="draw" type="bool" />
+			<param index="0" name="gutter" type="int" />
+			<param index="1" name="draw" type="bool" />
 			<description>
 				Sets whether the gutter should be drawn.
 			</description>
 		</method>
 		<method name="set_gutter_name">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
-			<argument index="1" name="name" type="String" />
+			<param index="0" name="gutter" type="int" />
+			<param index="1" name="name" type="String" />
 			<description>
 				Sets the name of the gutter.
 			</description>
 		</method>
 		<method name="set_gutter_overwritable">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
-			<argument index="1" name="overwritable" type="bool" />
+			<param index="0" name="gutter" type="int" />
+			<param index="1" name="overwritable" type="bool" />
 			<description>
 				Sets the gutter to overwritable. See [method merge_gutters].
 			</description>
 		</method>
 		<method name="set_gutter_type">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
-			<argument index="1" name="type" type="int" enum="TextEdit.GutterType" />
+			<param index="0" name="gutter" type="int" />
+			<param index="1" name="type" type="int" enum="TextEdit.GutterType" />
 			<description>
 				Sets the type of gutter.
 			</description>
 		</method>
 		<method name="set_gutter_width">
 			<return type="void" />
-			<argument index="0" name="gutter" type="int" />
-			<argument index="1" name="width" type="int" />
+			<param index="0" name="gutter" type="int" />
+			<param index="1" name="width" type="int" />
 			<description>
 				Set the width of the gutter.
 			</description>
 		</method>
 		<method name="set_line">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="new_text" type="String" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="new_text" type="String" />
 			<description>
 				Sets the text for a specific line.
 			</description>
 		</method>
 		<method name="set_line_as_center_visible">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="wrap_index" type="int" default="0" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="wrap_index" type="int" default="0" />
 			<description>
-				Positions the [code]wrap_index[/code] of [code]line[/code] at the center of the viewport.
+				Positions the [param wrap_index] of [param line] at the center of the viewport.
 			</description>
 		</method>
 		<method name="set_line_as_first_visible">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="wrap_index" type="int" default="0" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="wrap_index" type="int" default="0" />
 			<description>
-				Positions the [code]wrap_index[/code] of [code]line[/code] at the top of the viewport.
+				Positions the [param wrap_index] of [param line] at the top of the viewport.
 			</description>
 		</method>
 		<method name="set_line_as_last_visible">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="wrap_index" type="int" default="0" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="wrap_index" type="int" default="0" />
 			<description>
-				Positions the [code]wrap_index[/code] of [code]line[/code] at the bottom of the viewport.
+				Positions the [param wrap_index] of [param line] at the bottom of the viewport.
 			</description>
 		</method>
 		<method name="set_line_background_color">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the current background color of the line. Set to [code]Color(0, 0, 0, 0)[/code] for no color.
 			</description>
 		</method>
 		<method name="set_line_gutter_clickable">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
-			<argument index="2" name="clickable" type="bool" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
+			<param index="2" name="clickable" type="bool" />
 			<description>
-				Sets the [code]gutter[/code] on [code]line[/code] as clickable.
+				If [param clickable] is [code]true[/code], makes the [param gutter] on [param line] clickable. See [signal gutter_clicked].
 			</description>
 		</method>
 		<method name="set_line_gutter_icon">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
-			<argument index="2" name="icon" type="Texture2D" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
+			<param index="2" name="icon" type="Texture2D" />
 			<description>
-				Sets the icon for [code]gutter[/code] on [code]line[/code].
+				Sets the icon for [param gutter] on [param line] to [param icon].
 			</description>
 		</method>
 		<method name="set_line_gutter_item_color">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
-			<argument index="2" name="color" type="Color" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
+			<param index="2" name="color" type="Color" />
 			<description>
-				Sets the color for [code]gutter[/code] on [code]line[/code].
+				Sets the color for [param gutter] on [param line] to [param color].
 			</description>
 		</method>
 		<method name="set_line_gutter_metadata">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
-			<argument index="2" name="metadata" type="Variant" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
+			<param index="2" name="metadata" type="Variant" />
 			<description>
-				Sets the metadata for [code]gutter[/code] on [code]line[/code].
+				Sets the metadata for [param gutter] on [param line] to [param metadata].
 			</description>
 		</method>
 		<method name="set_line_gutter_text">
 			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
-			<argument index="2" name="text" type="String" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
+			<param index="2" name="text" type="String" />
 			<description>
-				Sets the text for [code]gutter[/code] on [code]line[/code].
+				Sets the text for [param gutter] on [param line] to [param text].
 			</description>
 		</method>
 		<method name="set_overtype_mode_enabled">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], sets the user into overtype mode. When the user types in this mode, it will override existing text.
 			</description>
 		</method>
 		<method name="set_search_flags">
 			<return type="void" />
-			<argument index="0" name="flags" type="int" />
+			<param index="0" name="flags" type="int" />
 			<description>
-				Sets the search flags. This is used with [method set_search_text] to highlight occurrences of the searched text. Search flags can be specified from the [enum SearchFlags] enum.
+				Sets the search [param flags]. This is used with [method set_search_text] to highlight occurrences of the searched text. Search flags can be specified from the [enum SearchFlags] enum.
 			</description>
 		</method>
 		<method name="set_search_text">
 			<return type="void" />
-			<argument index="0" name="search_text" type="String" />
+			<param index="0" name="search_text" type="String" />
 			<description>
 				Sets the search text. See [method set_search_flags].
 			</description>
 		</method>
 		<method name="set_selection_mode">
 			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="TextEdit.SelectionMode" />
-			<argument index="1" name="line" type="int" default="-1" />
-			<argument index="2" name="column" type="int" default="-1" />
+			<param index="0" name="mode" type="int" enum="TextEdit.SelectionMode" />
+			<param index="1" name="line" type="int" default="-1" />
+			<param index="2" name="column" type="int" default="-1" />
 			<description>
 				Sets the current selection mode.
 			</description>
 		</method>
 		<method name="set_tab_size">
 			<return type="void" />
-			<argument index="0" name="size" type="int" />
+			<param index="0" name="size" type="int" />
 			<description>
 				Sets the tab size for the [TextEdit] to use.
 			</description>
 		</method>
 		<method name="set_tooltip_request_func">
 			<return type="void" />
-			<argument index="0" name="callback" type="Callable" />
+			<param index="0" name="callback" type="Callable" />
 			<description>
 				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code]
 			</description>
 		</method>
 		<method name="swap_lines">
 			<return type="void" />
-			<argument index="0" name="from_line" type="int" />
-			<argument index="1" name="to_line" type="int" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="to_line" type="int" />
 			<description>
 				Swaps the two lines.
 			</description>
@@ -1036,8 +1036,8 @@
 			</description>
 		</signal>
 		<signal name="gutter_clicked">
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="gutter" type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="gutter" type="int" />
 			<description>
 				Emitted when a gutter is clicked.
 			</description>
@@ -1048,11 +1048,11 @@
 			</description>
 		</signal>
 		<signal name="lines_edited_from">
-			<argument index="0" name="from_line" type="int" />
-			<argument index="1" name="to_line" type="int" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="to_line" type="int" />
 			<description>
 				Emitted immediately when the text changes.
-				When text is added [code]from_line[/code] will be less then [code]to_line[/code]. On a remove [code]to_line[/code] will be less then [code]from_line[/code].
+				When text is added [param from_line] will be less then [param to_line]. On a remove [param to_line] will be less then [param from_line].
 			</description>
 		</signal>
 		<signal name="text_changed">

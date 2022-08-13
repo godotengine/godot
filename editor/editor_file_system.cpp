@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 
@@ -218,7 +219,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
 
@@ -288,7 +289,7 @@ void EditorFileSystem::_scan_filesystem() {
 		}
 	}
 
-	String update_cache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
+	String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 
 	if (FileAccess::exists(update_cache)) {
 		{
@@ -331,7 +332,7 @@ void EditorFileSystem::_scan_filesystem() {
 void EditorFileSystem::_save_filesystem_cache() {
 	group_file_cache.clear();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
 
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
@@ -1456,7 +1457,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
-	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 	for (const String &E : late_update_files) {

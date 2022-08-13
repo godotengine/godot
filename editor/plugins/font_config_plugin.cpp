@@ -307,7 +307,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			Button *remove = memnew(Button);
 			remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			hbox->add_child(remove);
-			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove), varray(remove, name));
+			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
 
 			prop->update_property();
 		}
@@ -783,7 +783,7 @@ void EditorPropertyOTFeatures::update_property() {
 				Button *remove = memnew(Button);
 				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 				hbox->add_child(remove);
-				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove), varray(remove, name_tag));
+				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
 
 				prop->update_property();
 			}
@@ -926,7 +926,7 @@ void FontPreview::_notification(int p_what) {
 					if (sample.is_empty()) {
 						prev_ok = false;
 					} else {
-						prev_font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + prev_font->get_height(50)), sample, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, 50, text_color);
+						prev_font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + prev_font->get_height(25 * EDSCALE)), sample, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, 25 * EDSCALE, text_color);
 					}
 				}
 			}

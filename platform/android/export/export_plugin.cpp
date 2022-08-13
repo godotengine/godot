@@ -1671,7 +1671,7 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 	return enabled_abis;
 }
 
-void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	if (driver == "opengl3") {
 		r_features->push_back("etc");
@@ -1705,6 +1705,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	}
 	plugins_changed.clear();
 
+	// Android supports multiple architectures in an app bundle, so
+	// we expose each option as a checkbox in the export dialog.
 	const Vector<String> abis = get_abis();
 	for (int i = 0; i < abis.size(); ++i) {
 		const String abi = abis[i];
@@ -3109,7 +3111,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	CLEANUP_AND_RETURN(OK);
 }
 
-void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features) {
+void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("mobile");
 	r_features->push_back("android");
 }

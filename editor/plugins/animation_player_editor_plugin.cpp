@@ -55,7 +55,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 
 		set_process(false);
 
-		track_editor->set_animation(Ref<Animation>());
+		track_editor->set_animation(Ref<Animation>(), true);
 		track_editor->set_root(nullptr);
 		track_editor->show_select_node_warning(true);
 		_update_player();
@@ -283,7 +283,28 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 		Ref<Animation> anim = player->get_animation(current);
 		{
-			track_editor->set_animation(anim);
+			bool animation_library_is_foreign = false;
+			if (!anim->get_path().is_resource_file()) {
+				int srpos = anim->get_path().find("::");
+				if (srpos != -1) {
+					String base = anim->get_path().substr(0, srpos);
+					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							animation_library_is_foreign = true;
+						}
+					} else {
+						if (FileAccess::exists(base + ".import")) {
+							animation_library_is_foreign = true;
+						}
+					}
+				}
+			} else {
+				if (FileAccess::exists(anim->get_path() + ".import")) {
+					animation_library_is_foreign = true;
+				}
+			}
+
+			track_editor->set_animation(anim, animation_library_is_foreign);
 			Node *root = player->get_node(player->get_root());
 			if (root) {
 				track_editor->set_root(root);
@@ -292,7 +313,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		frame->set_max((double)anim->get_length());
 
 	} else {
-		track_editor->set_animation(Ref<Animation>());
+		track_editor->set_animation(Ref<Animation>(), true);
 		track_editor->set_root(nullptr);
 	}
 
@@ -751,14 +772,36 @@ void AnimationPlayerEditor::_animation_edit() {
 	String current = _get_current();
 	if (current != String()) {
 		Ref<Animation> anim = player->get_animation(current);
-		track_editor->set_animation(anim);
+
+		bool animation_library_is_foreign = false;
+		if (!anim->get_path().is_resource_file()) {
+			int srpos = anim->get_path().find("::");
+			if (srpos != -1) {
+				String base = anim->get_path().substr(0, srpos);
+				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+						animation_library_is_foreign = true;
+					}
+				} else {
+					if (FileAccess::exists(base + ".import")) {
+						animation_library_is_foreign = true;
+					}
+				}
+			}
+		} else {
+			if (FileAccess::exists(anim->get_path() + ".import")) {
+				animation_library_is_foreign = true;
+			}
+		}
+
+		track_editor->set_animation(anim, animation_library_is_foreign);
 
 		Node *root = player->get_node(player->get_root());
 		if (root) {
 			track_editor->set_root(root);
 		}
 	} else {
-		track_editor->set_animation(Ref<Animation>());
+		track_editor->set_animation(Ref<Animation>(), true);
 		track_editor->set_root(nullptr);
 	}
 }
@@ -812,13 +855,37 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	bool no_anims_found = true;
+	bool foreign_global_anim_lib = false;
 
 	for (const StringName &K : libraries) {
 		if (K != StringName()) {
 			animation->add_separator(K);
 		}
 
+		// Check if the global library is foreign since we want to disable options for adding/remove/renaming animations if it is.
 		Ref<AnimationLibrary> library = player->get_animation_library(K);
+		if (K == "") {
+			if (!library->get_path().is_resource_file()) {
+				int srpos = library->get_path().find("::");
+				if (srpos != -1) {
+					String base = library->get_path().substr(0, srpos);
+					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							foreign_global_anim_lib = true;
+						}
+					} else {
+						if (FileAccess::exists(base + ".import")) {
+							foreign_global_anim_lib = true;
+						}
+					}
+				}
+			} else {
+				if (FileAccess::exists(library->get_path() + ".import")) {
+					foreign_global_anim_lib = true;
+				}
+			}
+		}
+
 		List<StringName> animlist;
 		library->get_animation_list(&animlist);
 
@@ -835,7 +902,13 @@ void AnimationPlayerEditor::_update_player() {
 			no_anims_found = false;
 		}
 	}
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), no_anims_found)
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), foreign_global_anim_lib)
+
+	ITEM_CHECK_DISABLED(TOOL_NEW_ANIM);
+
+#undef ITEM_CHECK_DISABLED
+
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), no_anims_found || foreign_global_anim_lib)
 
 	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
 	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
@@ -877,7 +950,29 @@ void AnimationPlayerEditor::_update_player() {
 	if (!no_anims_found) {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
-		track_editor->set_animation(anim);
+
+		bool animation_library_is_foreign = false;
+		if (!anim->get_path().is_resource_file()) {
+			int srpos = anim->get_path().find("::");
+			if (srpos != -1) {
+				String base = anim->get_path().substr(0, srpos);
+				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+						animation_library_is_foreign = true;
+					}
+				} else {
+					if (FileAccess::exists(base + ".import")) {
+						animation_library_is_foreign = true;
+					}
+				}
+			}
+		} else {
+			if (FileAccess::exists(anim->get_path() + ".import")) {
+				animation_library_is_foreign = true;
+			}
+		}
+
+		track_editor->set_animation(anim, animation_library_is_foreign);
 		Node *root = player->get_node(player->get_root());
 		if (root) {
 			track_editor->set_root(root);
@@ -1426,19 +1521,19 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// Render every past/future step with the capture shader.
 
 	RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
-	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
-	onion.capture.material->set_shader_param("differences_only", onion.differences_only);
-	onion.capture.material->set_shader_param("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
+	onion.capture.material->set_shader_uniform("bkg_color", GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+	onion.capture.material->set_shader_uniform("differences_only", onion.differences_only);
+	onion.capture.material->set_shader_uniform("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
 
 	int step_off_a = onion.past ? -onion.steps : 0;
 	int step_off_b = onion.future ? onion.steps : 0;
 	int cidx = 0;
-	onion.capture.material->set_shader_param("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
+	onion.capture.material->set_shader_uniform("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
 	for (int step_off = step_off_a; step_off <= step_off_b; step_off++) {
 		if (step_off == 0) {
 			// Skip present step and switch to the color of future.
 			if (!onion.force_white_modulate) {
-				onion.capture.material->set_shader_param("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
+				onion.capture.material->set_shader_uniform("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
 			}
 			continue;
 		}
@@ -1633,7 +1728,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle->set_flat(true);
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip(TTR("Enable Onion Skinning"));
-	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu), varray(ONION_SKINNING_ENABLE));
+	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
@@ -1720,7 +1815,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
+	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(true, false));
 	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	last_active = false;

@@ -12,17 +12,17 @@
 	<methods>
 		<method name="_get_connection_line" qualifiers="virtual const">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="from" type="Vector2" />
-			<argument index="1" name="to" type="Vector2" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
 			<description>
 				Virtual method which can be overridden to customize how connections are drawn.
 			</description>
 		</method>
 		<method name="_is_in_input_hotzone" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="graph_node" type="Object" />
-			<argument index="1" name="slot_index" type="int" />
-			<argument index="2" name="mouse_position" type="Vector2" />
+			<param index="0" name="graph_node" type="Object" />
+			<param index="1" name="slot_index" type="int" />
+			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
 				Returns whether the [code]mouse_position[/code] is in the input hot zone.
 				By default, a hot zone is a [Rect2] positioned such that its center is at [code]graph_node[/code].[method GraphNode.get_connection_input_position]([code]slot_index[/code]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
@@ -39,9 +39,9 @@
 		</method>
 		<method name="_is_in_output_hotzone" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="graph_node" type="Object" />
-			<argument index="1" name="slot_index" type="int" />
-			<argument index="2" name="mouse_position" type="Vector2" />
+			<param index="0" name="graph_node" type="Object" />
+			<param index="1" name="slot_index" type="int" />
+			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
 				Returns whether the [code]mouse_position[/code] is in the output hot zone. For more information on hot zones, see [method _is_in_input_hotzone].
 				Below is a sample code to help get started:
@@ -55,24 +55,47 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_is_node_hover_valid" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_slot" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_slot" type="int" />
+			<description>
+				This virtual method can be used to insert additional error detection while the user is dragging a connection over a valid port.
+				Return [code]true[/code] if the connection is indeed valid or return [code]false[/code] if the connection is impossible. If the connection is impossible, no snapping to the port and thus no connection request to that port will happen.
+				In this example a connection to same node is suppressed:
+				[codeblocks]
+				[gdscript]
+				func _is_node_hover_valid(from, from_slot, to, to_slot):
+				    return from != to
+				[/gdscript]
+				[csharp]
+				public override bool _IsNodeHoverValid(String from, int fromSlot, String to, int toSlot) {
+				    return from != to;
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void" />
-			<argument index="0" name="from_type" type="int" />
-			<argument index="1" name="to_type" type="int" />
+			<param index="0" name="from_type" type="int" />
+			<param index="1" name="to_type" type="int" />
 			<description>
 				Makes possible the connection between two different slot types. The type is defined with the [method GraphNode.set_slot] method.
 			</description>
 		</method>
 		<method name="add_valid_left_disconnect_type">
 			<return type="void" />
-			<argument index="0" name="type" type="int" />
+			<param index="0" name="type" type="int" />
 			<description>
 				Makes possible to disconnect nodes when dragging from the slot at the left if it has the specified type.
 			</description>
 		</method>
 		<method name="add_valid_right_disconnect_type">
 			<return type="void" />
-			<argument index="0" name="type" type="int" />
+			<param index="0" name="type" type="int" />
 			<description>
 				Makes possible to disconnect nodes when dragging from the slot at the right if it has the specified type.
 			</description>
@@ -91,20 +114,20 @@
 		</method>
 		<method name="connect_node">
 			<return type="int" enum="Error" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to" type="StringName" />
-			<argument index="3" name="to_port" type="int" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_port" type="int" />
 			<description>
 				Create a connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="disconnect_node">
 			<return type="void" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to" type="StringName" />
-			<argument index="3" name="to_port" type="int" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_port" type="int" />
 			<description>
 				Removes the connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
 			</description>
@@ -119,8 +142,8 @@
 		</method>
 		<method name="get_connection_line">
 			<return type="PackedVector2Array" />
-			<argument index="0" name="from" type="Vector2" />
-			<argument index="1" name="to" type="Vector2" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
 			<description>
 				Returns the points which would make up a connection between [code]from[/code] and [code]to[/code].
 			</description>
@@ -140,58 +163,58 @@
 		</method>
 		<method name="is_node_connected">
 			<return type="bool" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to" type="StringName" />
-			<argument index="3" name="to_port" type="int" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_port" type="int" />
 			<description>
 				Returns [code]true[/code] if the [code]from_port[/code] slot of the [code]from[/code] GraphNode is connected to the [code]to_port[/code] slot of the [code]to[/code] GraphNode.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="from_type" type="int" />
-			<argument index="1" name="to_type" type="int" />
+			<param index="0" name="from_type" type="int" />
+			<param index="1" name="to_type" type="int" />
 			<description>
 				Returns whether it's possible to connect slots of the specified types.
 			</description>
 		</method>
 		<method name="remove_valid_connection_type">
 			<return type="void" />
-			<argument index="0" name="from_type" type="int" />
-			<argument index="1" name="to_type" type="int" />
+			<param index="0" name="from_type" type="int" />
+			<param index="1" name="to_type" type="int" />
 			<description>
 				Makes it not possible to connect between two different slot types. The type is defined with the [method GraphNode.set_slot] method.
 			</description>
 		</method>
 		<method name="remove_valid_left_disconnect_type">
 			<return type="void" />
-			<argument index="0" name="type" type="int" />
+			<param index="0" name="type" type="int" />
 			<description>
 				Removes the possibility to disconnect nodes when dragging from the slot at the left if it has the specified type.
 			</description>
 		</method>
 		<method name="remove_valid_right_disconnect_type">
 			<return type="void" />
-			<argument index="0" name="type" type="int" />
+			<param index="0" name="type" type="int" />
 			<description>
 				Removes the possibility to disconnect nodes when dragging from the slot at the right if it has the specified type.
 			</description>
 		</method>
 		<method name="set_connection_activity">
 			<return type="void" />
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_port" type="int" />
-			<argument index="2" name="to" type="StringName" />
-			<argument index="3" name="to_port" type="int" />
-			<argument index="4" name="amount" type="float" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_port" type="int" />
+			<param index="4" name="amount" type="float" />
 			<description>
 				Sets the coloration of the connection between [code]from[/code]'s [code]from_port[/code] and [code]to[/code]'s [code]to_port[/code] with the color provided in the [theme_item activity] theme property.
 			</description>
 		</method>
 		<method name="set_selected">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Sets the specified [code]node[/code] as the one selected.
 			</description>
@@ -261,34 +284,34 @@
 			</description>
 		</signal>
 		<signal name="connection_drag_started">
-			<argument index="0" name="from" type="String" />
-			<argument index="1" name="slot" type="String" />
-			<argument index="2" name="is_output" type="bool" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="slot" type="String" />
+			<param index="2" name="is_output" type="bool" />
 			<description>
 				Emitted at the beginning of a connection drag.
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
-			<argument index="0" name="to" type="StringName" />
-			<argument index="1" name="to_slot" type="int" />
-			<argument index="2" name="release_position" type="Vector2" />
+			<param index="0" name="to" type="StringName" />
+			<param index="1" name="to_slot" type="int" />
+			<param index="2" name="release_position" type="Vector2" />
 			<description>
 				Emitted when user dragging connection from input port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="connection_request">
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_slot" type="int" />
-			<argument index="2" name="to" type="StringName" />
-			<argument index="3" name="to_slot" type="int" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_slot" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_slot" type="int" />
 			<description>
 				Emitted to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_slot" type="int" />
-			<argument index="2" name="release_position" type="Vector2" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_slot" type="int" />
+			<param index="2" name="release_position" type="Vector2" />
 			<description>
 				Emitted when user dragging connection from output port into empty space of the graph.
 			</description>
@@ -299,16 +322,16 @@
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
-			<argument index="0" name="nodes" type="StringName[]" />
+			<param index="0" name="nodes" type="StringName[]" />
 			<description>
 				Emitted when a GraphNode is attempted to be removed from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="disconnection_request">
-			<argument index="0" name="from" type="StringName" />
-			<argument index="1" name="from_slot" type="int" />
-			<argument index="2" name="to" type="StringName" />
-			<argument index="3" name="to_slot" type="int" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="from_slot" type="int" />
+			<param index="2" name="to" type="StringName" />
+			<param index="3" name="to_slot" type="int" />
 			<description>
 				Emitted to the GraphEdit when the connection between [code]from_slot[/code] slot of [code]from[/code] GraphNode and [code]to_slot[/code] slot of [code]to[/code] GraphNode is attempted to be removed.
 			</description>
@@ -324,12 +347,12 @@
 			</description>
 		</signal>
 		<signal name="node_deselected">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 			</description>
 		</signal>
 		<signal name="node_selected">
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a GraphNode is selected.
 			</description>
@@ -340,13 +363,13 @@
 			</description>
 		</signal>
 		<signal name="popup_request">
-			<argument index="0" name="position" type="Vector2" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
 				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [code]position[/code] is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">
-			<argument index="0" name="offset" type="Vector2" />
+			<param index="0" name="offset" type="Vector2" />
 			<description>
 				Emitted when the scroll offset is changed by the user. It will not be emitted when changed in code.
 			</description>
