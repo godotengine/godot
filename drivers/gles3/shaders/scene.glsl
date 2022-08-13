@@ -35,8 +35,8 @@ USE_RADIANCE_MAP = true
 /*
 from RenderingServer:
 ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
-ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored.
-ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal.
+ARRAY_NORMAL = 1, // RG16 octahedral compression
+ARRAY_TANGENT = 2, // RG16 octahedral compression, sign stored in sign of G
 ARRAY_COLOR = 3, // RGBA8
 ARRAY_TEX_UV = 4, // RG32F
 ARRAY_TEX_UV2 = 5, // RG32F
@@ -54,11 +54,11 @@ layout(location = 0) in highp vec3 vertex_attrib;
 /* clang-format on */
 
 #ifdef NORMAL_USED
-layout(location = 1) in vec3 normal_attrib;
+layout(location = 1) in vec2 normal_attrib;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 2) in vec4 tangent_attrib;
+layout(location = 2) in vec2 tangent_attrib;
 #endif
 
 #if defined(COLOR_USED)
@@ -96,6 +96,13 @@ layout(location = 10) in uvec4 bone_attrib;
 #if defined(WEIGHTS_USED)
 layout(location = 11) in vec4 weight_attrib;
 #endif
+
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return v;
+}
 
 #ifdef USE_INSTANCING
 layout(location = 12) in highp vec4 instance_xform0;
@@ -209,13 +216,14 @@ void main() {
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normal_attrib * 2.0 - 1.0;
+	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
 #endif
 	highp mat3 model_normal_matrix = mat3(model_matrix);
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 tangent = tangent_attrib.xyz * 2.0 - 1.0;
-	float binormalf = tangent_attrib.a * 2.0 - 1.0;
+	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
+	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
+	float binormalf = sign(signed_tangent_attrib.y);
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
