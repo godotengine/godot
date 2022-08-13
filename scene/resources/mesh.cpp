@@ -644,6 +644,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 void Mesh::set_lightmap_size_hint(const Size2i &p_size) {
 	lightmap_size_hint = p_size;
+	RS::get_singleton()->mesh_set_lightmap_size_hint(get_rid(), p_size);
 }
 
 Size2i Mesh::get_lightmap_size_hint() const {

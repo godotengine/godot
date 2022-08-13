@@ -360,6 +360,8 @@ public:
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
 
+	virtual void mesh_set_lightmap_size_hint(RID p_mesh, const Size2 &p_size) = 0;
+
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	/* MULTIMESH API */
@@ -930,6 +932,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO,
 		VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING,
 		VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION,
+		VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY,
 		VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS,
 		VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
@@ -1252,6 +1255,7 @@ public:
 	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material) = 0;
 	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, VisibilityRangeFadeMode p_fade_mode) = 0;
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
+	virtual void instance_geometry_set_lightmap_scale(RID p_instance, float p_lightmap_scale) = 0;
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 

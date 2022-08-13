@@ -80,6 +80,12 @@ void MeshStorage::mesh_free(RID p_rid) {
 	mesh_owner.free(p_rid);
 }
 
+void MeshStorage::mesh_set_lightmap_size_hint(RID p_mesh, const Size2 &p_size) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	mesh->lightmap_size_hint = p_size;
+}
+
 void MeshStorage::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) {
 	ERR_FAIL_COND(p_blend_shape_count < 0);
 

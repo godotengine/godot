@@ -125,6 +125,9 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::_mark_dirty() {
 void RasterizerSceneGLES3::GeometryInstanceGLES3::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
 }
 
+void RasterizerSceneGLES3::GeometryInstanceGLES3::set_lightmap_scale(float p_lightmap_scale) {
+}
+
 void RasterizerSceneGLES3::GeometryInstanceGLES3::set_lightmap_capture(const Color *p_sh9) {
 }
 

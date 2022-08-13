@@ -293,6 +293,7 @@ private:
 
 		virtual void _mark_dirty() override;
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
+		virtual void set_lightmap_scale(float p_lightmap_scale) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
 		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override;

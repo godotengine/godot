@@ -115,6 +115,9 @@ public:
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override { return AABB(); }
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
+
+	virtual void mesh_set_lightmap_size_hint(RID p_mesh, const Size2 &p_size) override {}
+
 	virtual void mesh_clear(RID p_mesh) override {}
 
 	/* MESH INSTANCE */

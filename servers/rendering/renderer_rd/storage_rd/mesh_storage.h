@@ -152,6 +152,8 @@ private:
 		RID shadow_mesh;
 		HashSet<Mesh *> shadow_owners;
 
+		Size2 lightmap_size_hint;
+
 		Dependency dependency;
 	};
 
@@ -338,6 +340,8 @@ public:
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override;
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
 
+	virtual void mesh_set_lightmap_size_hint(RID p_mesh, const Size2 &p_size) override;
+
 	virtual void mesh_clear(RID p_mesh) override;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override;
@@ -372,6 +376,13 @@ public:
 		ERR_FAIL_COND_V(!mesh, RID());
 
 		return mesh->shadow_mesh;
+	}
+
+	_FORCE_INLINE_ Size2 mesh_get_lightmap_size_hint(RID p_mesh) {
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_COND_V(!mesh, Size2());
+
+		return mesh->lightmap_size_hint;
 	}
 
 	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {

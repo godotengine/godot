@@ -650,6 +650,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				geom->geometry_instance->set_use_baked_light(instance->baked_light);
 				geom->geometry_instance->set_use_dynamic_gi(instance->dynamic_gi);
 				geom->geometry_instance->set_use_lightmap(RID(), instance->lightmap_uv_scale, instance->lightmap_slice_index);
+				geom->geometry_instance->set_lightmap_scale(instance->lightmap_scale);
 				geom->geometry_instance->set_cast_double_sided_shadows(instance->cast_shadows == RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 				if (instance->lightmap_sh.size() == 9) {
 					geom->geometry_instance->set_lightmap_capture(instance->lightmap_sh.ptr());
@@ -1420,6 +1421,18 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 		geom->geometry_instance->set_use_lightmap(lightmap_instance_rid, p_lightmap_uv_scale, p_slice_index);
+	}
+}
+
+void RendererSceneCull::instance_geometry_set_lightmap_scale(RID p_instance, float p_lightmap_scale) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->lightmap_scale = p_lightmap_scale;
+
+	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+		geom->geometry_instance->set_lightmap_scale(p_lightmap_scale);
 	}
 }
 

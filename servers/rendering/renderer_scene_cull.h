@@ -415,6 +415,8 @@ public:
 		uint32_t lightmap_cull_index;
 		Vector<Color> lightmap_sh; //spherical harmonic
 
+		float lightmap_scale = 1.0;
+
 		AABB aabb;
 		AABB transformed_aabb;
 		AABB prev_transformed_aabb;
@@ -966,6 +968,7 @@ public:
 	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode);
 
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
+	virtual void instance_geometry_set_lightmap_scale(RID p_instance, float p_lightmap_scale);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
 	void _update_instance_shader_uniforms_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
