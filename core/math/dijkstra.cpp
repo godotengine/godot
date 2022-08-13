@@ -430,7 +430,7 @@ Vector<Vector3> Dijkstra3D::get_point_path(int64_t p_from_id) {
 	Point *p = begin_point;
 	int64_t pc = 1; // Begin point
 	while (p != end_point) {
-		if (p->tentative_distance == INFINITY || !p->enabled) {
+		if (p->tentative_distance == INFINITY || !p->enabled || p->closed_pass != pass) {
 			// Path not found
 			return Vector<Vector3>();
 		}
@@ -478,7 +478,7 @@ Vector<int64_t> Dijkstra3D::get_id_path(int64_t p_from_id) {
 	Point *p = begin_point;
 	int64_t pc = 1; // Begin point
 	while (p != end_point) {
-		if (p->tentative_distance == INFINITY || !p->enabled) {
+		if (p->tentative_distance == INFINITY || !p->enabled || p->closed_pass != pass) {
 			// Path not found
 			return Vector<int64_t>();
 		}
@@ -715,7 +715,7 @@ Vector<Vector2> Dijkstra2D::get_point_path(int64_t p_from_id) {
 	Dijkstra3D::Point *p = begin_point;
 	int64_t pc = 1; // Begin point
 	while (p != end_point) {
-		if (p->tentative_distance == INFINITY || !p->enabled) {
+		if (p->tentative_distance == INFINITY || !p->enabled || p->closed_pass != dijkstra.pass) {
 			// Path not found
 			return Vector<Vector2>();
 		}
@@ -762,7 +762,7 @@ Vector<int64_t> Dijkstra2D::get_id_path(int64_t p_from_id) {
 	Dijkstra3D::Point *p = begin_point;
 	int64_t pc = 1; // Begin point
 	while (p != end_point) {
-		if (p->tentative_distance == INFINITY || !p->enabled) {
+		if (p->tentative_distance == INFINITY || !p->enabled || p->closed_pass != dijkstra.pass) {
 			// Path not found
 			return Vector<int64_t>();
 		}
