@@ -114,8 +114,7 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 
 	switch (dwCtrlType) {
 		case CTRL_C_EVENT:
-			EngineDebugger::get_script_debugger()->set_depth(-1);
-			EngineDebugger::get_script_debugger()->set_lines_left(1);
+			EngineDebugger::get_script_debugger()->debug_request_break();
 			return TRUE;
 		default:
 			return FALSE;

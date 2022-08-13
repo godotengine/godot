@@ -30,6 +30,113 @@
 
 #include "script_language_extension.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
+#include "core/object/script_language_internals.h"
+
+class ThreadContextExtensionRef : public ThreadContextRefBase {
+	Ref<ScriptLanguageThreadContext> _context;
+
+public:
+	bool is_valid() const {
+		return _context.is_valid();
+	}
+
+	ScriptLanguageThreadContext &context() {
+		return *_context.ptr();
+	}
+
+	// To be called by main thread on language exit; because thread local storage for the
+	// main thread is not cleared until after Godot checks for memory leaks.
+	void free_context() {
+		_context.unref();
+	}
+
+	void set_context(ScriptLanguageThreadContext *p_context) {
+		if (_detect_infinite_loop()) {
+			// We cannot continue, so just leave _context uninitialized to force a crash.
+			_context.unref();
+			return;
+		}
+		_context = Ref<ScriptLanguageThreadContext>(p_context);
+		_end_detect_infinite_loop();
+	}
+};
+
+// These get initialized for each thread.  If debugging is enabled, the entry for
+// the current script language extension (by language_index from ScriptServer) will
+// hold a thread local storage context for that thread.
+thread_local ThreadContextExtensionRef t_script_extension_current_thread[ScriptServer::MAX_LANGUAGES];
+
+// Dummy context to use if the extension declined to create a context for some or all threads.
+class EmptyThreadContext : public ScriptLanguageThreadContext {
+	ScriptLanguage *language;
+	DebugThreadID debug_thread_id;
+
+public:
+	ScriptLanguage *get_language() const override {
+		return language;
+	}
+
+	DebugThreadID debug_get_thread_id() const override {
+		return debug_thread_id;
+	}
+
+	String debug_get_error() const override {
+		return "";
+	}
+
+	Severity debug_get_error_severity() const override {
+		return SEVERITY_NONE;
+	}
+
+	int debug_get_stack_level_count() const override {
+		return 0;
+	}
+
+	int debug_get_stack_level_line(int) const override {
+		return 0;
+	}
+
+	String debug_get_stack_level_function(int) const override {
+		return "";
+	}
+
+	String debug_get_stack_level_source(int) const override {
+		return "";
+	}
+
+	void debug_get_stack_level_locals(int, List<String> *, List<Variant> *, int, int) const override {
+		// No code.
+	}
+
+	void debug_get_stack_level_members(int, List<String> *, List<Variant> *, int, int) const override {
+		// No code.
+	}
+
+	String debug_parse_stack_level_expression(int, const String &, int, int) const override {
+		return "";
+	}
+
+	bool is_main_thread() const override {
+		return false;
+	}
+
+	EmptyThreadContext(ScriptLanguage *p_language, const DebugThreadID &p_debug_thread_id) :
+			language(p_language),
+			debug_thread_id(p_debug_thread_id) {
+		// No code.
+	}
+};
+
+ScriptLanguageThreadContext &ScriptLanguageExtension::current_thread() {
+	ThreadContextExtensionRef &ref = t_script_extension_current_thread[language_index];
+	if (unlikely(!ref.is_valid())) {
+		ref.set_context(create_thread_context());
+	}
+	return ref.context();
+}
+
 void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_editor_can_reload_from_file);
 	GDVIRTUAL_BIND(_placeholder_erased, "placeholder");
@@ -78,7 +185,117 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_rpc_config);
 }
 
+void ScriptLanguageThreadContextExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_parent"), &ScriptLanguageThreadContextExtension::get_parent);
+
+	GDVIRTUAL_BIND(_debug_get_error);
+	GDVIRTUAL_BIND(_debug_get_stack_level_count);
+
+	GDVIRTUAL_BIND(_debug_get_stack_level_line, "level");
+	GDVIRTUAL_BIND(_debug_get_stack_level_function, "level");
+	GDVIRTUAL_BIND(_debug_get_stack_level_locals, "level", "max_subitems", "max_depth");
+	GDVIRTUAL_BIND(_debug_get_stack_level_members, "level", "max_subitems", "max_depth");
+	GDVIRTUAL_BIND(_debug_get_stack_level_instance, "level");
+	GDVIRTUAL_BIND(_debug_parse_stack_level_expression, "level", "expression", "max_subitems", "max_depth");
+	GDVIRTUAL_BIND(_debug_get_current_stack_info);
+}
+
+// virtual
+ScriptLanguage *ScriptLanguageThreadContextExtension::get_language() const {
+	return parent;
+}
+
+void ScriptLanguageThreadContextExtension::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) const {
+	Dictionary ret;
+	GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
+	if (ret.size() == 0) {
+		return;
+	}
+	if (p_locals != nullptr && ret.has("locals")) {
+		PackedStringArray strings = ret["locals"];
+		for (int i = 0; i < strings.size(); i++) {
+			p_locals->push_back(strings[i]);
+		}
+	}
+	if (p_values != nullptr && ret.has("values")) {
+		Array values = ret["values"];
+		for (int i = 0; i < values.size(); i++) {
+			p_values->push_back(values[i]);
+		}
+	}
+}
+
+void ScriptLanguageThreadContextExtension::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) const {
+	Dictionary ret;
+	GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
+	if (ret.size() == 0) {
+		return;
+	}
+	if (p_members != nullptr && ret.has("members")) {
+		PackedStringArray strings = ret["members"];
+		for (int i = 0; i < strings.size(); i++) {
+			p_members->push_back(strings[i]);
+		}
+	}
+	if (p_values != nullptr && ret.has("values")) {
+		Array values = ret["values"];
+		for (int i = 0; i < values.size(); i++) {
+			p_values->push_back(values[i]);
+		}
+	}
+}
+
+ScriptInstance *ScriptLanguageThreadContextExtension::debug_get_stack_level_instance(int p_level) const {
+	GDNativePtr<void> ret = nullptr;
+	GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_instance, p_level, ret);
+	return reinterpret_cast<ScriptInstance *>(ret.operator void *());
+}
+
+Vector<ScriptLanguageThreadContext::StackInfo> ScriptLanguageThreadContextExtension::debug_get_current_stack_info() const {
+	TypedArray<Dictionary> ret;
+	GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
+	Vector<StackInfo> sret;
+	for (int i = 0; i < ret.size(); i++) {
+		StackInfo si;
+		Dictionary d = ret[i];
+		ERR_CONTINUE(!d.has("file"));
+		ERR_CONTINUE(!d.has("func"));
+		ERR_CONTINUE(!d.has("line"));
+		si.file = d["file"];
+		si.func = d["func"];
+		si.line = d["line"];
+		sret.push_back(si);
+	}
+	return sret;
+}
+
+ScriptLanguageThreadContext::DebugThreadID ScriptLanguageThreadContextExtension::debug_get_thread_id() const {
+	PackedByteArray ret;
+	GDVIRTUAL_REQUIRED_CALL(_debug_get_thread_id, ret);
+	return ret;
+}
+
+ScriptLanguageThreadContext::Severity ScriptLanguageThreadContextExtension::debug_get_error_severity() const {
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_debug_get_error_severity, ret);
+	ERR_FAIL_COND_V_MSG(ret < SEVERITY_NONE, SEVERITY_NONE, vformat("severity code must be at least %d", SEVERITY_NONE));
+	ERR_FAIL_COND_V_MSG(ret >= SEVERITY_NUM_VALUES, static_cast<Severity>(SEVERITY_NUM_VALUES - 1), vformat("severity code must be at most %d", SEVERITY_NUM_VALUES - 1));
+	return static_cast<Severity>(ret);
+}
+
+bool ScriptLanguageThreadContextExtension::is_main_thread() const {
+	bool ret = false;
+	GDVIRTUAL_REQUIRED_CALL(_is_main_thread, ret);
+	return ret;
+}
+
 void ScriptLanguageExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("debug_break"), &ScriptLanguageExtension::debug_break);
+	ClassDB::bind_method(D_METHOD("debug_step"), &ScriptLanguageExtension::debug_step);
+	ClassDB::bind_method(D_METHOD("debug_request_break"), &ScriptLanguageExtension::debug_request_break);
+	ClassDB::bind_method(D_METHOD("create_unique_debug_thread_id"), &ScriptLanguageExtension::create_unique_debug_thread_id);
+
+	GDVIRTUAL_BIND(_create_thread_context);
 	GDVIRTUAL_BIND(_get_name);
 	GDVIRTUAL_BIND(_init);
 	GDVIRTUAL_BIND(_get_type);
@@ -116,18 +333,8 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_thread_enter);
 	GDVIRTUAL_BIND(_thread_exit);
-	GDVIRTUAL_BIND(_debug_get_error);
-	GDVIRTUAL_BIND(_debug_get_stack_level_count);
 
-	GDVIRTUAL_BIND(_debug_get_stack_level_line, "level");
-	GDVIRTUAL_BIND(_debug_get_stack_level_function, "level");
-	GDVIRTUAL_BIND(_debug_get_stack_level_locals, "level", "max_subitems", "max_depth");
-	GDVIRTUAL_BIND(_debug_get_stack_level_members, "level", "max_subitems", "max_depth");
-	GDVIRTUAL_BIND(_debug_get_stack_level_instance, "level");
 	GDVIRTUAL_BIND(_debug_get_globals, "max_subitems", "max_depth");
-	GDVIRTUAL_BIND(_debug_parse_stack_level_expression, "level", "expression", "max_subitems", "max_depth");
-
-	GDVIRTUAL_BIND(_debug_get_current_stack_info);
 
 	GDVIRTUAL_BIND(_reload_all_scripts);
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
@@ -181,4 +388,52 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_FILE_PATH);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_PLAIN_TEXT);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_MAX);
+}
+
+// virtual
+void ScriptLanguageExtension::init(int p_language_index) {
+	ScriptLanguage::init(p_language_index);
+	GDVIRTUAL_REQUIRED_CALL(_init);
+}
+
+// virtual
+void ScriptLanguageExtension::finish() {
+	GDVIRTUAL_REQUIRED_CALL(_finish);
+
+	// Free main thread context so that it does not trigger ObjectDB leak detection.
+	t_script_extension_current_thread[language_index].free_context();
+}
+
+PackedByteArray ScriptLanguageExtension::create_unique_debug_thread_id() const {
+	return ScriptLanguageInternals::create_thread_id(*this, Thread::get_caller_id());
+}
+
+void ScriptLanguageExtension::debug_break() {
+	if (EngineDebugger::is_active()) {
+		EngineDebugger::get_script_debugger()->debug(current_thread());
+	}
+}
+
+void ScriptLanguageExtension::debug_step() {
+	if (EngineDebugger::is_active()) {
+		EngineDebugger::get_script_debugger()->step(current_thread());
+	}
+}
+
+void ScriptLanguageExtension::debug_request_break() {
+	if (EngineDebugger::is_active()) {
+		EngineDebugger::get_script_debugger()->debug_request_break();
+	}
+}
+
+ScriptLanguageThreadContext *ScriptLanguageExtension::create_thread_context() {
+	if (GDVIRTUAL_IS_OVERRIDDEN(_create_thread_context)) {
+		ScriptLanguageThreadContextExtension *ret = nullptr;
+		GDVIRTUAL_CALL(_create_thread_context, ret);
+		if (ret != nullptr) {
+			ret->parent = this;
+			return ret;
+		}
+	}
+	return memnew(EmptyThreadContext(this, create_unique_debug_thread_id()));
 }

@@ -40,6 +40,7 @@
 #include "core/variant/variant.h"
 #include "gdscript_utility_functions.h"
 
+class GDScriptThreadContext;
 class GDScriptInstance;
 class GDScript;
 
@@ -557,7 +558,7 @@ public:
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 
-	const int *get_code() const; //used for debug
+	const int *get_code() const; // used for debug
 	int get_code_size() const;
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;

@@ -38,6 +38,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
+#include "core/object/script_language_internals.h"
 #include "core/os/os.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
@@ -54,7 +55,23 @@
 #include "editor/editor_paths.h"
 #endif
 
-///////////////////////////
+// This gets initialized for each thread.  If debugging is enabled, it will be
+// accessed and will lazy create a thread local storage context for that thread.
+thread_local ThreadContextRef<GDScriptLanguage, GDScriptThreadContext> t_gdscript_current_thread;
+
+// static
+GDScriptThreadContext &GDScriptThreadContext::current() {
+	return t_gdscript_current_thread.context();
+}
+
+// virtual
+ScriptLanguageThreadContext &GDScriptLanguage::current_thread() {
+	return t_gdscript_current_thread.context();
+}
+
+bool GDScriptThreadContext::is_main_thread() const {
+	return _is_main;
+}
 
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 	name = p_name;
@@ -142,7 +159,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instance->owner = p_owner;
 	instance->owner_id = p_owner->get_instance_id();
 #ifdef DEBUG_ENABLED
-	//needed for hot reloading
+	// needed for hot reloading
 	for (const KeyValue<StringName, MemberInfo> &E : member_indices) {
 		instance->member_indices_cache[E.key] = E.value.index;
 	}
@@ -208,7 +225,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instantiate();
 	} else {
-		owner = memnew(RefCounted); //by default, no base means use reference
+		owner = memnew(RefCounted); // by default, no base means use reference
 	}
 	ERR_FAIL_COND_V_MSG(!owner, Variant(), "Can't inherit from a virtual class.");
 
@@ -220,7 +237,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error);
 	if (!instance) {
 		if (ref.is_null()) {
-			memdelete(owner); //no owner, sorry
+			memdelete(owner); // no owner, sorry
 		}
 		return Variant();
 	}
@@ -396,7 +413,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	if (top->native.is_valid()) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
 			if (EngineDebugger::is_active()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
+				GDScriptThreadContext::current().debug_break_parse(_get_debug_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 			}
 			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type '" + p_this->get_class() + "'" + ".");
 		}
@@ -779,7 +796,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 		}
 	}
 
-	if ((changed || p_instance_to_update) && placeholders.size()) { //hm :(
+	if ((changed || p_instance_to_update) && placeholders.size()) { // hm :(
 
 		// update placeholders if any
 		HashMap<StringName, Variant> values;
@@ -811,7 +828,7 @@ void GDScript::update_exports() {
 		return;
 	}
 
-	HashSet<ObjectID> copy = inheriters_cache; //might get modified
+	HashSet<ObjectID> copy = inheriters_cache; // might get modified
 
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
@@ -885,7 +902,7 @@ Error GDScript::reload(bool p_keep_state) {
 	Error err = parser.parse(source, path, false);
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptThreadContext::current().debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 		// TODO: Show all error messages.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
@@ -897,7 +914,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptThreadContext::current().debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
@@ -920,7 +937,7 @@ Error GDScript::reload(bool p_keep_state) {
 	if (err) {
 		if (can_run) {
 			if (EngineDebugger::is_active()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
+				GDScriptThreadContext::current().debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			return ERR_COMPILATION_FAILED;
@@ -931,8 +948,7 @@ Error GDScript::reload(bool p_keep_state) {
 #ifdef DEBUG_ENABLED
 	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		if (EngineDebugger::is_active()) {
-			Vector<ScriptLanguage::StackInfo> si;
-			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), false, ERR_HANDLER_WARNING, si);
+			EngineDebugger::get_singleton()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), false, ERR_HANDLER_WARNING);
 		}
 	}
 #endif
@@ -984,7 +1000,7 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		top = top->_base;
 	}
 
-	//none found, regular
+	// none found, regular
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);
 }
@@ -1200,7 +1216,7 @@ void GDScript::_save_orphaned_subclasses() {
 	Vector<ClassRefWithName> weak_subclasses;
 	// collect subclasses ObjectID and name
 	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
-		E.value->_owner = nullptr; //bye, you are no longer owned cause I died
+		E.value->_owner = nullptr; // bye, you are no longer owned cause I died
 		ClassRefWithName subclass;
 		subclass.id = E.value->get_instance_id();
 		subclass.fully_qualified_name = E.value->fully_qualified_name;
@@ -1305,7 +1321,7 @@ GDScript::~GDScript() {
 //////////////////////////////
 
 bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
-	//member
+	// member
 	{
 		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
@@ -1315,7 +1331,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				Callable::CallError err;
 				callp(member->setter, &val, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {
-					return true; //function exists, call was successful
+					return true; // function exists, call was successful
 				} else {
 					return false;
 				}
@@ -1381,7 +1397,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 					}
 				}
 				r_ret = members[E->value.index];
-				return true; //index found
+				return true; // index found
 			}
 		}
 
@@ -1391,7 +1407,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				HashMap<StringName, Variant>::ConstIterator E = sl->constants.find(p_name);
 				if (E) {
 					r_ret = E->value;
-					return true; //index found
+					return true; // index found
 				}
 				sl = sl->_base;
 			}
@@ -1404,7 +1420,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				HashMap<StringName, Vector<StringName>>::ConstIterator E = sl->_signals.find(p_name);
 				if (E) {
 					r_ret = Signal(this->owner, E->key);
-					return true; //index found
+					return true; // index found
 				}
 				sl = sl->_base;
 			}
@@ -1421,7 +1437,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 					} else {
 						r_ret = Callable(this->owner, E->key);
 					}
-					return true; //index found
+					return true; // index found
 				}
 				sl = sl->_base;
 			}
@@ -1507,7 +1523,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 			}
 		}
 
-		//instance a fake script for editing the values
+		// instance a fake script for editing the values
 
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, PropertyInfo> &F : sptr->member_info) {
@@ -1633,7 +1649,7 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 }
 
 void GDScriptInstance::notification(int p_notification) {
-	//notification is not virtual, it gets called at ALL levels just like in C.
+	// notification is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 
@@ -1644,7 +1660,7 @@ void GDScriptInstance::notification(int p_notification) {
 			Callable::CallError err;
 			E->value->call(this, args, 1, err);
 			if (err.error != Callable::CallError::CALL_OK) {
-				//print error about notification call
+				// print error about notification call
 			}
 		}
 		sptr = sptr->_base;
@@ -1692,7 +1708,7 @@ void GDScriptInstance::reload_members() {
 	Vector<Variant> new_members;
 	new_members.resize(script->member_indices.size());
 
-	//pass the values to the new indices
+	// pass the values to the new indices
 	for (KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
 		if (member_indices_cache.has(E.key)) {
 			Variant value = members[member_indices_cache[E.key]];
@@ -1700,12 +1716,12 @@ void GDScriptInstance::reload_members() {
 		}
 	}
 
-	members.resize(new_members.size()); //resize
+	members.resize(new_members.size()); // resize
 
 	//apply
 	members = new_members;
 
-	//pass the values to the new indices
+	// pass the values to the new indices
 	member_indices_cache.clear();
 	for (const KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
 		member_indices_cache[E.key] = E.value.index;
@@ -1746,7 +1762,7 @@ String GDScriptLanguage::get_name() const {
 
 void GDScriptLanguage::_add_global(const StringName &p_name, const Variant &p_value) {
 	if (globals.has(p_name)) {
-		//overwrite existing
+		// overwrite existing
 		global_array.write[globals[p_name]] = p_value;
 		return;
 	}
@@ -1768,8 +1784,10 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	named_globals.erase(p_name);
 }
 
-void GDScriptLanguage::init() {
-	//populate global constants
+void GDScriptLanguage::init(int p_language_index) {
+	ScriptLanguage::init(p_language_index);
+
+	// populate global constants
 	int gcc = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < gcc; i++) {
 		_add_global(StaticCString::create(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
@@ -1780,7 +1798,7 @@ void GDScriptLanguage::init() {
 	_add_global(StaticCString::create("INF"), INFINITY);
 	_add_global(StaticCString::create("NAN"), NAN);
 
-	//populate native classes
+	// populate native classes
 
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
@@ -1792,7 +1810,7 @@ void GDScriptLanguage::init() {
 		_add_global(n, nc);
 	}
 
-	//populate singletons
+	// populate singletons
 
 	List<Engine::Singleton> singletons;
 	Engine::get_singleton()->get_singletons(&singletons);
@@ -1819,6 +1837,8 @@ Error GDScriptLanguage::execute_file(const String &p_path) {
 }
 
 void GDScriptLanguage::finish() {
+	// Free main thread context so that it does not trigger ObjectDB leak detection.
+	t_gdscript_current_thread.free_context();
 }
 
 void GDScriptLanguage::profiling_start() {
@@ -1900,10 +1920,10 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 }
 
 struct GDScriptDepSort {
-	//must support sorting so inheritance works properly (parent must be reloaded first)
+	// must support sorting so inheritance works properly (parent must be reloaded first)
 	bool operator()(const Ref<GDScript> &A, const Ref<GDScript> &B) const {
 		if (A == B) {
-			return false; //shouldn't happen but..
+			return false; // shouldn't happen but..
 		}
 		const GDScript *I = B->get_base().ptr();
 		while (I) {
@@ -1915,7 +1935,7 @@ struct GDScriptDepSort {
 			I = I->get_base().ptr();
 		}
 
-		return false; //not a base
+		return false; // not a base
 	}
 };
 
@@ -1930,15 +1950,15 @@ void GDScriptLanguage::reload_all_scripts() {
 		while (elem) {
 			if (elem->self()->get_path().is_resource_file()) {
 				print_verbose("GDScript: Found: " + elem->self()->get_path());
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+				scripts.push_back(Ref<GDScript>(elem->self())); // cast to gdscript to avoid being erased by accident
 			}
 			elem = elem->next();
 		}
 	}
 
-	//as scripts are going to be reloaded, must proceed without locking here
+	// as scripts are going to be reloaded, must proceed without locking here
 
-	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
+	scripts.sort_custom<GDScriptDepSort>(); // update in inheritance dependency order
 
 	for (Ref<GDScript> &script : scripts) {
 		print_verbose("GDScript: Reloading: " + script->get_path());
@@ -1958,19 +1978,19 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
 			if (elem->self()->get_path().is_resource_file()) {
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+				scripts.push_back(Ref<GDScript>(elem->self())); // cast to gdscript to avoid being erased by accident
 			}
 			elem = elem->next();
 		}
 	}
 
-	//when someone asks you why dynamically typed languages are easier to write....
+	// when someone asks you why dynamically typed languages are easier to write....
 
 	HashMap<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> to_reload;
 
-	//as scripts are going to be reloaded, must proceed without locking here
+	// as scripts are going to be reloaded, must proceed without locking here
 
-	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
+	scripts.sort_custom<GDScriptDepSort>(); // update in inheritance dependency order
 
 	for (Ref<GDScript> &script : scripts) {
 		bool reload = script == p_script || to_reload.has(script->get_base());
@@ -1982,12 +2002,12 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 		to_reload.insert(script, HashMap<ObjectID, List<Pair<StringName, Variant>>>());
 
 		if (!p_soft_reload) {
-			//save state and remove script from instances
+			// save state and remove script from instances
 			HashMap<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[script];
 
 			while (script->instances.front()) {
 				Object *obj = script->instances.front()->get();
-				//save instance info
+				// save instance info
 				List<Pair<StringName, Variant>> state;
 				if (obj->get_script_instance()) {
 					obj->get_script_instance()->get_property_state(state);
@@ -1996,13 +2016,13 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				}
 			}
 
-//same thing for placeholders
+// same thing for placeholders
 #ifdef TOOLS_ENABLED
 
 			while (script->placeholders.size()) {
 				Object *obj = (*script->placeholders.begin())->get_owner();
 
-				//save instance info
+				// save instance info
 				if (obj->get_script_instance()) {
 					map.insert(obj->get_instance_id(), List<Pair<StringName, Variant>>());
 					List<Pair<StringName, Variant>> &state = map[obj->get_instance_id()];
@@ -2017,7 +2037,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 #endif
 
 			for (const KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : script->pending_reload_state) {
-				map[F.key] = F.value; //pending to reload, use this one instead
+				map[F.key] = F.value; // pending to reload, use this one instead
 			}
 		}
 	}
@@ -2026,7 +2046,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 		Ref<GDScript> scr = E.key;
 		scr->reload(p_soft_reload);
 
-		//restore state if saved
+		// restore state if saved
 		for (KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : E.value) {
 			List<Pair<StringName, Variant>> &saved_state = F.value;
 
@@ -2036,7 +2056,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 			}
 
 			if (!p_soft_reload) {
-				//clear it just in case (may be a pending reload state)
+				// clear it just in case (may be a pending reload state)
 				obj->set_script(Variant());
 			}
 			obj->set_script(scr);
@@ -2044,7 +2064,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 			ScriptInstance *script_instance = obj->get_script_instance();
 
 			if (!script_instance) {
-				//failed, save reload state for next time if not saved
+				// failed, save reload state for next time if not saved
 				if (!scr->pending_reload_state.has(obj->get_instance_id())) {
 					scr->pending_reload_state[obj->get_instance_id()] = saved_state;
 				}
@@ -2062,10 +2082,10 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				}
 			}
 
-			scr->pending_reload_state.erase(obj->get_instance_id()); //as it reloaded, remove pending state
+			scr->pending_reload_state.erase(obj->get_instance_id()); // as it reloaded, remove pending state
 		}
 
-		//if instance states were saved, set them!
+		// if instance states were saved, set them!
 	}
 
 #endif
@@ -2280,6 +2300,33 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	return String();
 }
 
+ScriptLanguageThreadContext::DebugThreadID GDScriptThreadContext::debug_get_thread_id() const {
+	return _debug_thread_id;
+}
+
+GDScriptThreadContext::GDScriptThreadContext(GDScriptLanguage &p_parent, Thread::ID p_thread_id) :
+		_parent(p_parent) {
+	_debug_thread_id = ScriptLanguageInternals::create_thread_id(p_parent, p_thread_id);
+	_is_main = p_thread_id == Thread::get_main_id();
+	_debug_parse_err_line = -1;
+	_debug_parse_err_file = "";
+	_debug_call_stack_pos = 0;
+
+	if (EngineDebugger::is_active()) {
+		_debug_max_call_stack = GDScriptLanguage::get_singleton()->max_call_stack.get();
+		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
+	} else {
+		_debug_max_call_stack = 0;
+		_call_stack = nullptr;
+	}
+}
+
+GDScriptThreadContext::~GDScriptThreadContext() {
+	if (_call_stack) {
+		memdelete_arr(_call_stack);
+	}
+}
+
 GDScriptLanguage::GDScriptLanguage() {
 	calls = 0;
 	ERR_FAIL_COND(singleton);
@@ -2292,26 +2339,12 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._property_can_revert = StaticCString::create("_property_can_revert");
 	strings._property_get_revert = StaticCString::create("_property_get_revert");
 	strings._script_source = StaticCString::create("script/source");
-	_debug_parse_err_line = -1;
-	_debug_parse_err_file = "";
 
 	profiling = false;
 	script_frame_time = 0;
 
-	_debug_call_stack_pos = 0;
-	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
-
-	if (EngineDebugger::is_active()) {
-		//debugging enabled!
-
-		_debug_max_call_stack = dmcs;
-		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
-
-	} else {
-		_debug_max_call_stack = 0;
-		_call_stack = nullptr;
-	}
+	max_call_stack.set(GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024));
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); // minimum is 1024
 
 #ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
@@ -2330,10 +2363,6 @@ GDScriptLanguage::GDScriptLanguage() {
 }
 
 GDScriptLanguage::~GDScriptLanguage() {
-	if (_call_stack) {
-		memdelete_arr(_call_stack);
-	}
-
 	// Clear dependencies between scripts, to ensure cyclic references are broken (to avoid leaks at exit).
 	SelfList<GDScript> *s = script_list.first();
 	while (s) {
@@ -2378,6 +2407,23 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 		return Ref<GDScript>();
 	}
 	return Ref<GDScript>(Object::cast_to<GDScript>(obj));
+}
+
+GDScriptThreadContext *GDScriptLanguage::create_thread_context() {
+	return memnew(GDScriptThreadContext(*get_singleton(), Thread::get_caller_id()));
+}
+
+Vector<ScriptLanguageThreadContext::StackInfo> GDScriptThreadContext::debug_get_current_stack_info() const {
+	Vector<StackInfo> csi;
+	csi.resize(_debug_call_stack_pos);
+	for (int i = 0; i < _debug_call_stack_pos; i++) {
+		csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
+		if (_call_stack[i].function) {
+			csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
+			csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+		}
+	}
+	return csi;
 }
 
 /*************** RESOURCE ***************/

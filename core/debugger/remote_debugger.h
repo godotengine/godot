@@ -48,7 +48,10 @@ public:
 	};
 
 private:
-	typedef DebuggerMarshalls::OutputError ErrorMessage;
+	using Peer = RemoteDebuggerPeer;
+	using DebugThreadID = ScriptLanguageThreadContext::DebugThreadID;
+	using StackInfo = ScriptLanguageThreadContext::StackInfo;
+	using ErrorMessage = DebuggerMarshalls::OutputError;
 
 	class MultiplayerProfiler;
 	class PerformanceProfiler;
@@ -98,18 +101,27 @@ private:
 	Error _profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
 	Error _core_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
 
-	template <typename T>
-	void _bind_profiler(const String &p_name, T *p_prof);
-	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
+	Error _try_capture(const String &p_msg, const Array &p_data, bool &r_captured);
+
+	void _send_debug_enter_thread(ScriptLanguageThreadContext &p_focused_thread);
+	void _service_channel(int p_channel);
+	bool _get_next_message(ScriptLanguageThreadContext &p_focused_thread, Array &r_cmd);
+	void _send_debug_exit_thread(ScriptLanguageThreadContext &p_focused_thread);
 
 public:
 	// Overrides
-	void poll_events(bool p_is_idle);
-	void send_message(const String &p_message, const Array &p_args);
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
-	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
+	void poll_events(bool p_is_idle) override;
+	void send_message(const String &p_message, const Array &p_args) override;
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) override;
+	void debug(ScriptLanguageThreadContext &p_focused_thread) override;
+	void request_debug(const ScriptLanguageThreadContext &p_any_thread) override;
+	void thread_paused(const ScriptLanguageThreadContext &p_any_thread) override;
 
-	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);
+	// Callbacks
+	void send_stack_frame_variables(const ScriptLanguageThreadContext &p_any_thread, int p_level);
+	void send_empty_stack_frame(const DebugThreadID &p_tid);
+
+	explicit RemoteDebugger(Ref<Peer> p_peer);
 	~RemoteDebugger();
 };
 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptLanguageThreadContextExtension" inherits="ScriptLanguageThreadContext" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_debug_get_current_stack_info" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_error" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_stack_level_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_stack_level_function" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="level" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_stack_level_instance" qualifiers="virtual const">
+			<return type="void*" />
+			<param index="0" name="level" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_stack_level_line" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="level" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_stack_level_locals" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="level" type="int" />
+			<param index="1" name="max_subitems" type="int" />
+			<param index="2" name="max_depth" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_get_stack_level_members" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="level" type="int" />
+			<param index="1" name="max_subitems" type="int" />
+			<param index="2" name="max_depth" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_debug_parse_stack_level_expression" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="level" type="int" />
+			<param index="1" name="expression" type="String" />
+			<param index="2" name="max_subitems" type="int" />
+			<param index="3" name="max_depth" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_parent" qualifiers="const">
+			<return type="ScriptLanguageExtension" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

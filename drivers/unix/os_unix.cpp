@@ -113,8 +113,7 @@ static void handle_interrupt(int sig) {
 		return;
 	}
 
-	EngineDebugger::get_script_debugger()->set_depth(-1);
-	EngineDebugger::get_script_debugger()->set_lines_left(1);
+	EngineDebugger::get_script_debugger()->debug_request_break();
 }
 
 void OS_Unix::initialize_debugging() {

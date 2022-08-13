@@ -53,68 +53,15 @@
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_current_stack_info" qualifiers="virtual">
-			<return type="Dictionary[]" />
+		<method name="_create_thread_context" qualifiers="virtual const">
+			<return type="ScriptLanguageThreadContextExtension" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_error" qualifiers="virtual const">
-			<return type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_globals" qualifiers="virtual">
+		<method name="_debug_get_globals" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="max_subitems" type="int" />
 			<param index="1" name="max_depth" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_stack_level_count" qualifiers="virtual const">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_stack_level_function" qualifiers="virtual const">
-			<return type="String" />
-			<param index="0" name="level" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_stack_level_instance" qualifiers="virtual">
-			<return type="void*" />
-			<param index="0" name="level" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_stack_level_line" qualifiers="virtual const">
-			<return type="int" />
-			<param index="0" name="level" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_stack_level_locals" qualifiers="virtual">
-			<return type="Dictionary" />
-			<param index="0" name="level" type="int" />
-			<param index="1" name="max_subitems" type="int" />
-			<param index="2" name="max_depth" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_get_stack_level_members" qualifiers="virtual">
-			<return type="Dictionary" />
-			<param index="0" name="level" type="int" />
-			<param index="1" name="max_subitems" type="int" />
-			<param index="2" name="max_depth" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_debug_parse_stack_level_expression" qualifiers="virtual">
-			<return type="String" />
-			<param index="0" name="level" type="int" />
-			<param index="1" name="expression" type="String" />
-			<param index="2" name="max_subitems" type="int" />
-			<param index="3" name="max_depth" type="int" />
 			<description>
 			</description>
 		</method>
@@ -362,6 +309,26 @@
 		<method name="_validate_path" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="create_unique_debug_thread_id" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_break">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_request_break">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_step">
+			<return type="void" />
 			<description>
 			</description>
 		</method>

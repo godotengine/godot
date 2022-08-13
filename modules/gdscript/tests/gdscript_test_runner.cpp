@@ -110,7 +110,7 @@ void init_language(const String &p_base_path) {
 	}
 
 	// Initialize the language for the test routine.
-	GDScriptLanguage::get_singleton()->init();
+	GDScriptLanguage::get_singleton()->init(0);
 	init_autoloads();
 }
 

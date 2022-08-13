@@ -36,10 +36,10 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
-#include "core/variant/variant.h"
 
 class RemoteDebuggerPeer;
 class ScriptDebugger;
+class ScriptLanguageThreadContext;
 
 class EngineDebugger {
 public:
@@ -61,7 +61,8 @@ public:
 		bool active = false;
 
 	public:
-		Profiler() {}
+		Profiler() = default;
+
 		Profiler(void *p_data, ProfilingToggle p_toggle, ProfilingAdd p_add, ProfilingTick p_tick) {
 			data = p_data;
 			toggle = p_toggle;
@@ -77,7 +78,8 @@ public:
 		void *data = nullptr;
 
 	public:
-		Capture() {}
+		Capture() = default;
+
 		Capture(void *p_data, CaptureFunc p_capture) {
 			data = p_data;
 			capture = p_capture;
@@ -110,7 +112,7 @@ public:
 
 	static void initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)());
 	static void deinitialize();
-	static void register_profiler(const StringName &p_name, const Profiler &p_profiler);
+	static void register_profiler(const StringName &p_name, const Profiler &p_func);
 	static void unregister_profiler(const StringName &p_name);
 	static bool is_profiling(const StringName &p_name);
 	static bool has_profiler(const StringName &p_name);
@@ -128,10 +130,19 @@ public:
 
 	void line_poll();
 
-	virtual void poll_events(bool p_is_idle) {}
+	virtual void poll_events(bool) {}
 	virtual void send_message(const String &p_msg, const Array &p_data) = 0;
 	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) = 0;
-	virtual void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
+
+	// Initiate new debugging session on the caller thread and block the caller for the duration.
+	virtual void debug(ScriptLanguageThreadContext &p_focused_thread) = 0;
+
+	// Notify that the caller thread would like to be selected for debugging,
+	// but debugger is busy with another thread.
+	virtual void request_debug(const ScriptLanguageThreadContext &p_any_thread) = 0;
+
+	// Notify that the specified thread is held and can be inquired for stack info, but don't block.
+	virtual void thread_paused(const ScriptLanguageThreadContext &p_any_thread) = 0;
 
 	virtual ~EngineDebugger();
 };

@@ -115,7 +115,7 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
-	//consistency check
+	// consistency check
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
@@ -147,9 +147,11 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
+	GDREGISTER_ABSTRACT_CLASS(ScriptLanguageThreadContext);
 
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
+	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageThreadContextExtension);
 
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);

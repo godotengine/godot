@@ -35,6 +35,7 @@
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
+#include "editor_profiler.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
@@ -57,6 +58,10 @@ class EditorDebuggerPlugin;
 class DebugAdapterProtocol;
 class DebugAdapterParser;
 
+namespace editor::dbg::sd {
+class StackDump;
+}
+
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
@@ -64,7 +69,9 @@ class ScriptEditorDebugger : public MarginContainer {
 	friend class DebugAdapterProtocol;
 	friend class DebugAdapterParser;
 
-private:
+public:
+	typedef ScriptLanguageThreadContext::DebugThreadID DebugThreadID;
+
 	enum MessageType {
 		MESSAGE_ERROR,
 		MESSAGE_WARNING,
@@ -105,11 +112,13 @@ private:
 	PopupMenu *breakpoints_menu = nullptr;
 
 	EditorFileDialog *file_dialog = nullptr;
+
 	enum FileDialogPurpose {
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
 	};
-	FileDialogPurpose file_dialog_purpose;
+
+	FileDialogPurpose file_dialog_purpose = SAVE_MONITORS_CSV;
 
 	int error_count;
 	int warning_count;
@@ -138,10 +147,10 @@ private:
 	Button *vmem_export = nullptr;
 	LineEdit *vmem_total = nullptr;
 
-	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
 	EditorDebuggerInspector *inspector = nullptr;
 	SceneDebuggerTree *scene_tree = nullptr;
+	editor::dbg::sd::StackDump *stack_dump = nullptr;
 
 	Ref<RemoteDebuggerPeer> peer;
 
@@ -156,6 +165,7 @@ private:
 
 	OS::ProcessID remote_pid = 0;
 	bool breaked = false;
+	DebugThreadID focused_thread;
 	bool can_debug = false;
 	bool move_to_foreground = true;
 
@@ -167,15 +177,19 @@ private:
 
 	HashMap<StringName, Callable> captures;
 
-	void _stack_dump_frame_selected();
+	Dictionary script_frame_info;
+
+	void _thread_frame_selected(const PackedByteArray &p_thread_id, int p_frame, const Dictionary &p_frame_info);
+	void _thread_nodebug_frame_selected(const PackedByteArray &p_thread_id, int p_frame, const Dictionary &p_frame_info);
 
 	void _file_selected(const String &p_file);
+	static bool _validate_message(const String &p_name, Array p_data, std::initializer_list<Variant::Type> p_types, Vector<const Variant *> *p_out_validated = nullptr, bool p_allow_extra_data = true);
 	void _parse_message(const String &p_msg, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
 	void _update_buttons_state();
-	void _remote_object_selected(ObjectID p_object);
+	void _remote_object_selected(ObjectID p_obj_id);
 	void _remote_object_edited(ObjectID, const String &p_prop, const Variant &p_value);
-	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
+	void _remote_object_property_updated(ObjectID p_obj_id, const String &p_property);
 
 	void _video_mem_request();
 	void _video_mem_export();
@@ -206,7 +220,7 @@ private:
 	void _item_menu_id_pressed(int p_option);
 	void _tab_changed(int p_tab);
 
-	void _put_msg(String p_message, Array p_data);
+	void _put_msg(int p_channel, String p_message, Array p_data);
 	void _export_csv();
 
 	void _clear_execution();
@@ -219,12 +233,13 @@ private:
 
 protected:
 	void _notification(int p_what);
+
 	static void _bind_methods();
 
 public:
 	void request_remote_object(ObjectID p_obj_id);
 	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value);
-	Object *get_remote_object(ObjectID p_id);
+	Object *get_remote_object(ObjectID p_obj_id);
 
 	// Needed by _live_edit_set, buttons state.
 	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
@@ -256,7 +271,10 @@ public:
 	int get_stack_script_line() const;
 	int get_stack_script_frame() const;
 
-	bool request_stack_dump(const int &p_frame);
+	// FIXME Legacy function that always requests main thread info.  Remove once DAP is thread-aware.
+	bool request_stack_frame_variables(const int &p_frame);
+	bool request_stack_frame_variables(const DebugThreadID &p_thread_id, const int &p_frame);
+	void request_stack_dump(const Variant &p_tid);
 
 	void update_tabs();
 	void clear_style();
@@ -286,14 +304,30 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
+	void _handle_debug_enter(const Array &p_data, DebugThreadID *p_tid = nullptr, bool p_is_main = true, int p_severity_code = 1);
+	void _handle_debug_exit(DebugThreadID *p_tid = nullptr);
+	void _handle_servers_memory_usage(const Array &p_data) const;
+	void _handle_stack_dump(const Array &p_data);
+	void _handle_stack_frame_vars(const Array &p_data);
+	void _handle_output(const Array &p_data);
+	void _handle_peformance_profile_frame(const Array &p_data) const;
+	void _handle_visual_profile_frame(const Array &p_data) const;
+	void _handle_error(const Array &p_data);
+	void _handle_servers_function_signature(const Array &p_data);
+	void _handle_servers_profile_requests(const Array &p_data, EditorProfiler::Metric &metric);
+
 	void add_debugger_plugin(const Ref<Script> &p_script);
 	void remove_debugger_plugin(const Ref<Script> &p_script);
 
-	void send_message(const String &p_message, const Array &p_args);
+	void send_message(int p_channel, const String &p_message, const Array &p_args);
+
+	// Version of send_message(p_channel) for clients that don't know which messages go in which channel.
+	void send_message_auto(const String &p_message, const Array &p_args);
 
 	void register_message_capture(const StringName &p_name, const Callable &p_callable);
 	void unregister_message_capture(const StringName &p_name);
 	bool has_capture(const StringName &p_name);
+	void _build_thread_list(Node *parent);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();

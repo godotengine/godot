@@ -160,7 +160,9 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 	const int line = p_debugger->get_stack_script_line() - 1;
 	emit_signal(SNAME("goto_script_line"), stack_script, line);
 	emit_signal(SNAME("set_execution"), stack_script, line);
-	stack_script.unref(); // Why?!?
+
+	// Release our reference so the resource can unload/reload.
+	stack_script.unref();
 }
 
 void EditorDebuggerNode::_bind_methods() {
@@ -175,7 +177,7 @@ void EditorDebuggerNode::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
+	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 }

@@ -50,6 +50,8 @@
 extern "C" {
 #endif
 
+using StackInfo = ScriptLanguageThreadContext::StackInfo;
+
 // For ArrayPrivate and DictionaryPrivate
 static_assert(sizeof(SafeRefCount) == sizeof(uint32_t));
 
@@ -72,20 +74,29 @@ Object *godotsharp_engine_get_singleton(const String *p_name) {
 }
 
 int32_t godotsharp_stack_info_vector_resize(
-		Vector<ScriptLanguage::StackInfo> *p_stack_info_vector, int p_size) {
+		Vector<StackInfo> *p_stack_info_vector, int p_size) {
 	return (int32_t)p_stack_info_vector->resize(p_size);
 }
 
 void godotsharp_stack_info_vector_destroy(
-		Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
+		Vector<StackInfo> *p_stack_info_vector) {
 	p_stack_info_vector->~Vector();
 }
 
 void godotsharp_internal_script_debugger_send_error(const String *p_func,
 		const String *p_file, int32_t p_line, const String *p_err, const String *p_descr,
-		bool p_warning, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
-	EngineDebugger::get_script_debugger()->send_error(*p_func, *p_file, p_line, *p_err, *p_descr,
-			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, *p_stack_info_vector);
+		bool p_warning, const Vector<StackInfo> *p_stack_info_vector) {
+#ifdef DEBUG_ENABLED
+	if (!EngineDebugger::is_active()) {
+		return;
+	}
+	// Set the current thread's context to have the specified stack temporarily, so debugger will send it.
+	CSharpLanguage::current_thread_implementation().debug_set_stack_trace_override(*p_stack_info_vector, *p_err);
+	// Engine debugger will query our thread context via ScriptDebugger
+	EngineDebugger::get_singleton()->send_error(*p_func, *p_file, p_line, *p_err, *p_descr,
+			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR);
+	CSharpLanguage::current_thread_implementation().debug_clear_stack_trace_override();
+#endif
 }
 
 bool godotsharp_internal_script_debugger_is_active() {

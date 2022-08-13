@@ -69,6 +69,7 @@ class GDScript : public Script {
 		GDScriptDataType data_type;
 	};
 
+	friend class GDScriptThreadContext;
 	friend class GDScriptInstance;
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
@@ -78,13 +79,13 @@ class GDScript : public Script {
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
-	GDScript *_base = nullptr; //fast pointer access
-	GDScript *_owner = nullptr; //for subclasses
+	GDScript *_base = nullptr; // fast pointer access
+	GDScript *_owner = nullptr; // for subclasses
 
-	HashSet<StringName> members; //members are just indices to the instantiated script.
+	HashSet<StringName> members; // members are just indices to the instantiated script.
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
-	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
+	HashMap<StringName, MemberInfo> member_indices; // members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, Vector<StringName>> _signals;
 	Dictionary rpc_config;
@@ -119,12 +120,12 @@ class GDScript : public Script {
 	HashMap<StringName, PropertyInfo> member_info;
 
 	GDScriptFunction *implicit_initializer = nullptr;
-	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
+	GDScriptFunction *initializer = nullptr; // direct pointer to new , faster to locate
 	GDScriptFunction *implicit_ready = nullptr;
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
-	//exported members
+	// exported members
 	String source;
 	String path;
 	String name;
@@ -142,7 +143,7 @@ class GDScript : public Script {
 
 #ifdef TOOLS_ENABLED
 	HashSet<PlaceHolderScriptInstance *> placeholders;
-	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
@@ -196,7 +197,7 @@ public:
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
-	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
+	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; // this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -222,7 +223,7 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
-	void set_script_path(const String &p_path) { path = p_path; } //because subclasses need a path too...
+	void set_script_path(const String &p_path) { path = p_path; } // because subclasses need a path too...
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 
@@ -272,7 +273,7 @@ class GDScriptInstance : public ScriptInstance {
 	Object *owner = nullptr;
 	Ref<GDScript> script;
 #ifdef DEBUG_ENABLED
-	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
+	HashMap<StringName, int> member_indices_cache; // used only for hot script reloading
 #endif
 	Vector<Variant> members;
 	bool base_ref_counted;
@@ -313,7 +314,7 @@ public:
 	~GDScriptInstance();
 };
 
-class GDScriptLanguage : public ScriptLanguage {
+class GDScriptLanguage final : public ScriptLanguage {
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;
@@ -322,21 +323,6 @@ class GDScriptLanguage : public ScriptLanguage {
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;
 	HashMap<StringName, Variant> named_globals;
-
-	struct CallLevel {
-		Variant *stack = nullptr;
-		GDScriptFunction *function = nullptr;
-		GDScriptInstance *instance = nullptr;
-		int *ip = nullptr;
-		int *line = nullptr;
-	};
-
-	int _debug_parse_err_line;
-	String _debug_parse_err_file;
-	String _debug_error;
-	int _debug_call_stack_pos;
-	int _debug_max_call_stack;
-	CallLevel *_call_stack = nullptr;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 
@@ -358,67 +344,8 @@ class GDScriptLanguage : public ScriptLanguage {
 public:
 	int calls;
 
-	bool debug_break(const String &p_error, bool p_allow_continue = true);
-	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
-
-	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-		if (Thread::get_main_id() != Thread::get_caller_id()) {
-			return; //no support for other threads than main for now
-		}
-
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
-			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
-		}
-
-		if (_debug_call_stack_pos >= _debug_max_call_stack) {
-			//stack overflow
-			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
-			EngineDebugger::get_script_debugger()->debug(this);
-			return;
-		}
-
-		_call_stack[_debug_call_stack_pos].stack = p_stack;
-		_call_stack[_debug_call_stack_pos].instance = p_instance;
-		_call_stack[_debug_call_stack_pos].function = p_function;
-		_call_stack[_debug_call_stack_pos].ip = p_ip;
-		_call_stack[_debug_call_stack_pos].line = p_line;
-		_debug_call_stack_pos++;
-	}
-
-	_FORCE_INLINE_ void exit_function() {
-		if (Thread::get_main_id() != Thread::get_caller_id()) {
-			return; //no support for other threads than main for now
-		}
-
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
-			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
-		}
-
-		if (_debug_call_stack_pos == 0) {
-			_debug_error = "Stack Underflow (Engine Bug)";
-			EngineDebugger::get_script_debugger()->debug(this);
-			return;
-		}
-
-		_debug_call_stack_pos--;
-	}
-
-	virtual Vector<StackInfo> debug_get_current_stack_info() override {
-		if (Thread::get_main_id() != Thread::get_caller_id()) {
-			return Vector<StackInfo>();
-		}
-
-		Vector<StackInfo> csi;
-		csi.resize(_debug_call_stack_pos);
-		for (int i = 0; i < _debug_call_stack_pos; i++) {
-			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
-			if (_call_stack[i].function) {
-				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
-			}
-		}
-		return csi;
-	}
+	// configuration only consulted once when singleton is created, then directly accessed by created threads
+	SafeNumeric<int> max_call_stack;
 
 	struct {
 		StringName _init;
@@ -429,7 +356,6 @@ public:
 		StringName _property_can_revert;
 		StringName _property_get_revert;
 		StringName _script_source;
-
 	} strings;
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
@@ -442,7 +368,7 @@ public:
 	virtual String get_name() const override;
 
 	/* LANGUAGE FUNCTIONS */
-	virtual void init() override;
+	virtual void init(int p_language_index) override;
 	virtual String get_type() const override;
 	virtual String get_extension() const override;
 	virtual Error execute_file(const String &p_path) override;
@@ -474,19 +400,6 @@ public:
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;
 
-	/* DEBUGGER FUNCTIONS */
-
-	virtual String debug_get_error() const override;
-	virtual int debug_get_stack_level_count() const override;
-	virtual int debug_get_stack_level_line(int p_level) const override;
-	virtual String debug_get_stack_level_function(int p_level) const override;
-	virtual String debug_get_stack_level_source(int p_level) const override;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override;
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
-
 	virtual void reload_all_scripts() override;
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
@@ -514,8 +427,110 @@ public:
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
 
+	/* DEBUG FUNCTIONS */
+
+	void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) const override;
+	ScriptLanguageThreadContext &current_thread() override;
+
+	/* THREAD CONTEXT FACTORY */
+
+	static GDScriptThreadContext *create_thread_context();
+
 	GDScriptLanguage();
 	~GDScriptLanguage();
+};
+
+class GDScriptThreadContext : public ScriptLanguageThreadContext {
+	friend class GDScriptLanguage;
+
+	struct CallLevel {
+		Variant *stack = nullptr;
+		GDScriptFunction *function = nullptr;
+		GDScriptInstance *instance = nullptr;
+		int *ip = nullptr;
+		int *line = nullptr;
+	};
+
+	GDScriptLanguage &_parent;
+	DebugThreadID _debug_thread_id;
+	bool _is_main;
+
+	int _debug_parse_err_line;
+	String _debug_parse_err_file;
+	String _debug_error;
+	Severity _debug_error_severity = SEVERITY_NONE;
+	int _debug_call_stack_pos;
+	int _debug_max_call_stack;
+	CallLevel *_call_stack = nullptr;
+
+public:
+	void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
+		debug_record_enter_frame();
+
+		if (_debug_call_stack_pos >= _debug_max_call_stack) {
+			// stack overflow
+			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
+			_debug_error_severity = SEVERITY_FATAL;
+			EngineDebugger::get_script_debugger()->debug(*this);
+			return;
+		}
+
+		_call_stack[_debug_call_stack_pos].stack = p_stack;
+		_call_stack[_debug_call_stack_pos].instance = p_instance;
+		_call_stack[_debug_call_stack_pos].function = p_function;
+		_call_stack[_debug_call_stack_pos].ip = p_ip;
+		_call_stack[_debug_call_stack_pos].line = p_line;
+		_debug_call_stack_pos++;
+	}
+
+	void exit_function() {
+		debug_record_exit_frame();
+
+		if (_debug_call_stack_pos == 0) {
+			_debug_error = "Stack Underflow (Engine Bug)";
+			_debug_error_severity = SEVERITY_FATAL;
+			EngineDebugger::get_script_debugger()->debug(*this);
+			return;
+		}
+
+		_debug_call_stack_pos--;
+	}
+
+	// for indirect access by classes that can't see our thread
+	// local storage object
+	static GDScriptThreadContext &current();
+
+	GDScriptLanguage *get_language() const override {
+		return &_parent;
+	}
+
+	bool is_main_thread() const override;
+
+	bool debug_break(const String &p_error, Severity p_severity);
+	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
+
+	DebugThreadID debug_get_thread_id() const override;
+	Vector<StackInfo> debug_get_current_stack_info() const override;
+	String debug_get_error() const override;
+	Severity debug_get_error_severity() const override;
+	int debug_get_stack_level_count() const override;
+	int debug_get_stack_level_line(int p_level) const override;
+	String debug_get_stack_level_function(int p_level) const override;
+	String debug_get_stack_level_source(int p_level) const override;
+	void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) const override;
+	void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) const override;
+	ScriptInstance *debug_get_stack_level_instance(int p_level) const override;
+	String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) const override;
+
+	~GDScriptThreadContext();
+
+	GDScriptThreadContext(const GDScriptThreadContext &) = delete;
+	GDScriptThreadContext(const GDScriptThreadContext &&) = delete;
+	GDScriptThreadContext &operator=(const GDScriptThreadContext &) = delete;
+	GDScriptThreadContext &operator=(const GDScriptThreadContext &&) = delete;
+
+private:
+	GDScriptThreadContext(GDScriptLanguage &p_parent, Thread::ID p_thread_id);
 };
 
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {

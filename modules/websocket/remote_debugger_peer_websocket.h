@@ -53,12 +53,12 @@ public:
 	Error connect_to_host(const String &p_uri);
 	bool is_peer_connected() override;
 	int get_max_message_size() const override;
-	bool has_message() override;
-	Error put_message(const Array &p_arr) override;
-	Array get_message() override;
+	bool has_message(int p_channel) override;
+	Error put_message(int p_channel, const Array &p_arr) override;
+	Array get_message(int p_channel) override;
 	void close() override;
-	void poll() override;
-	bool can_block() const override;
+	void poll(int p_channel) override;
+	bool can_block(int p_channel) const override;
 
 	RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer = Ref<WebSocketPeer>());
 };

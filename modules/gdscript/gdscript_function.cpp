@@ -172,7 +172,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		r_error.argument = 1;
 		return Variant();
 	} else if (p_argcount == 1) {
-		//noooneee
+		// noooneee
 	} else if (p_argcount == 2) {
 		arg = *p_args[0];
 	} else {
@@ -256,7 +256,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		}
 	}
 
-	function = nullptr; //cleaned up;
+	function = nullptr; // cleaned up;
 	state.result = Variant();
 
 	if (completed) {
@@ -268,7 +268,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->exit_function();
+			GDScriptThreadContext::current().exit_function();
 		}
 
 		_clear_stack();

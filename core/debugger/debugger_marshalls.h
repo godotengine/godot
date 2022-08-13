@@ -34,21 +34,29 @@
 #include "core/object/script_language.h"
 
 struct DebuggerMarshalls {
+	using DebugThreadID = ScriptLanguageThreadContext::DebugThreadID;
+	using StackInfo = ScriptLanguageThreadContext::StackInfo;
+
 	struct ScriptStackVariable {
 		String name;
 		Variant value;
 		int type = -1;
 
-		Array serialize(int max_size = 1 << 20); // 1 MiB default.
+		Array serialize(int max_size = 1 << 20) const; // 1 MiB default.
 		bool deserialize(const Array &p_arr);
 	};
 
 	struct ScriptStackDump {
-		List<ScriptLanguage::StackInfo> frames;
-		ScriptStackDump() {}
+		DebugThreadID tid;
+		List<StackInfo> frames;
 
-		Array serialize();
+		ScriptStackDump() = default;
+
+		Array serialize() const;
 		bool deserialize(const Array &p_arr);
+
+		void populate(const ScriptLanguageThreadContext &p_context);
+		void clear();
 	};
 
 	struct OutputError {
@@ -62,9 +70,9 @@ struct DebuggerMarshalls {
 		String error;
 		String error_descr;
 		bool warning = false;
-		Vector<ScriptLanguage::StackInfo> callstack;
+		Vector<StackInfo> callstack;
 
-		Array serialize();
+		Array serialize() const;
 		bool deserialize(const Array &p_arr);
 	};
 };

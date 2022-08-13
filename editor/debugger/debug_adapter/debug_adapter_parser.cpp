@@ -406,7 +406,8 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 		}
 	}
 
-	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_stack_dump(frame_id);
+	// FIXME need thread ID to call the thread-aware version. Implement threaded DAP.
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_stack_frame_variables(frame_id);
 	DebugAdapterProtocol::get_singleton()->_current_frame = frame_id;
 
 	body["scopes"] = scope_list;
@@ -473,7 +474,7 @@ Dictionary DebugAdapterParser::req_godot_put_msg(const Dictionary &p_params) con
 	String msg = args["message"];
 	Array data = args["data"];
 
-	EditorDebuggerNode::get_singleton()->get_default_debugger()->_put_msg(msg, data);
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->send_message_auto(msg, data);
 
 	return prepare_success_response(p_params);
 }

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  local_debugger.h                                                     */
+/*  stack_dump.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LOCAL_DEBUGGER_H
-#define LOCAL_DEBUGGER_H
+#ifndef STACK_DUMP_H
+#define STACK_DUMP_H
 
-#include "core/debugger/engine_debugger.h"
-#include "core/object/script_language.h"
-#include "core/templates/list.h"
+#include "core/error/error_list.h"
+#include "scene/main/node.h"
 
-class LocalDebugger : public EngineDebugger {
-	struct ScriptsProfiler;
+namespace editor::dbg::sd {
 
-	ScriptsProfiler *scripts_profiler = nullptr;
+class View;
+class ThreadList;
 
-	String target_function;
-	HashMap<String, String> options;
-
-	Pair<String, int> to_breakpoint(const String &p_line);
-	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
-
-	void _print_stack_header(ScriptLanguageThreadContext &p_focused_thread);
-	void _print_status(ScriptLanguageThreadContext &p_focused_thread, int current_frame);
-	void _print_frame(ScriptLanguageThreadContext &p_focused_thread, int printed_frame, int current_frame);
+class StackDump {
+	ThreadList *_thread_list = nullptr;
+	View *_thread_list_view = nullptr;
 
 public:
-	void debug(ScriptLanguageThreadContext &p_focused_thread) override;
-	void request_debug(const ScriptLanguageThreadContext &p_context) override;
-	void thread_paused(const ScriptLanguageThreadContext &p_context) override;
-	void send_message(const String &p_message, const Array &p_args) override;
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) override;
+	Error connect(Object &p_debugger) const;
+	void disconnect(Object &p_debugger) const;
 
-	LocalDebugger();
-	~LocalDebugger();
+	Node *detach_thread_list_view();
+
+	StackDump();
+	~StackDump();
 };
 
-#endif // LOCAL_DEBUGGER_H
+} // namespace editor::dbg::sd
+
+#endif // STACK_DUMP_H

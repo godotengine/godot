@@ -32,10 +32,10 @@
 
 #include "core/io/marshalls.h"
 
-#define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() < (uint32_t)(expected), false, String("Malformed ") + what + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
-#define CHECK_END(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() > (uint32_t)expected, false, String("Malformed ") + what + " message from script debugger, message too long. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
+#define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)(arr).size() < (uint32_t)(expected), false, String("Malformed ") + (what) + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos((arr).size()))
+#define CHECK_END(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)(arr).size() > (uint32_t)(expected), false, String("Malformed ") + (what) + " message from script debugger, message too long. Expected size: " + itos(expected) + ", actual size: " + itos((arr).size()))
 
-Array DebuggerMarshalls::ScriptStackDump::serialize() {
+Array DebuggerMarshalls::ScriptStackDump::serialize() const {
 	Array arr;
 	arr.push_back(frames.size() * 3);
 	for (int i = 0; i < frames.size(); i++) {
@@ -43,27 +43,54 @@ Array DebuggerMarshalls::ScriptStackDump::serialize() {
 		arr.push_back(frames[i].line);
 		arr.push_back(frames[i].func);
 	}
+	if (!tid.is_zero()) {
+		arr.push_back(tid);
+	}
 	return arr;
 }
 
 bool DebuggerMarshalls::ScriptStackDump::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, 1, "ScriptStackDump");
-	uint32_t size = p_arr[0];
+	const uint32_t size = p_arr[0];
 	CHECK_SIZE(p_arr, size, "ScriptStackDump");
 	int idx = 1;
 	for (uint32_t i = 0; i < size / 3; i++) {
-		ScriptLanguage::StackInfo sf;
+		StackInfo sf;
 		sf.file = p_arr[idx];
 		sf.line = p_arr[idx + 1];
 		sf.func = p_arr[idx + 2];
 		frames.push_back(sf);
 		idx += 3;
 	}
+	if (idx == p_arr.size() - 1) {
+		// one extra data item is optional TID
+		tid = p_arr[idx];
+		++idx;
+	} else {
+		tid.zero();
+	}
 	CHECK_END(p_arr, idx, "ScriptStackDump");
 	return true;
 }
 
-Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
+void DebuggerMarshalls::ScriptStackDump::populate(const ScriptLanguageThreadContext &p_context) {
+	tid = p_context.debug_get_thread_id();
+	const int slc = p_context.debug_get_stack_level_count();
+	for (int i = 0; i < slc; i++) {
+		StackInfo frame;
+		frame.file = p_context.debug_get_stack_level_source(i);
+		frame.line = p_context.debug_get_stack_level_line(i);
+		frame.func = p_context.debug_get_stack_level_function(i);
+		frames.push_back(frame);
+	}
+}
+
+void DebuggerMarshalls::ScriptStackDump::clear() {
+	tid = DebugThreadID();
+	frames.clear();
+}
+
+Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) const {
 	Array arr;
 	arr.push_back(name);
 	arr.push_back(type);
@@ -74,7 +101,7 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 	}
 
 	int len = 0;
-	Error err = encode_variant(var, nullptr, len, true);
+	const Error err = encode_variant(var, nullptr, len, true);
 	if (err != OK) {
 		ERR_PRINT("Failed to encode variant.");
 	}
@@ -96,7 +123,7 @@ bool DebuggerMarshalls::ScriptStackVariable::deserialize(const Array &p_arr) {
 	return true;
 }
 
-Array DebuggerMarshalls::OutputError::serialize() {
+Array DebuggerMarshalls::OutputError::serialize() const {
 	Array arr;
 	arr.push_back(hr);
 	arr.push_back(min);
@@ -108,8 +135,8 @@ Array DebuggerMarshalls::OutputError::serialize() {
 	arr.push_back(error);
 	arr.push_back(error_descr);
 	arr.push_back(warning);
-	unsigned int size = callstack.size();
-	const ScriptLanguage::StackInfo *r = callstack.ptr();
+	const unsigned int size = callstack.size();
+	const StackInfo *r = callstack.ptr();
 	arr.push_back(size * 3);
 	for (int i = 0; i < callstack.size(); i++) {
 		arr.push_back(r[i].file);
@@ -131,11 +158,11 @@ bool DebuggerMarshalls::OutputError::deserialize(const Array &p_arr) {
 	error = p_arr[7];
 	error_descr = p_arr[8];
 	warning = p_arr[9];
-	unsigned int stack_size = p_arr[10];
+	const unsigned int stack_size = p_arr[10];
 	CHECK_SIZE(p_arr, stack_size, "OutputError");
 	int idx = 11;
-	callstack.resize(stack_size / 3);
-	ScriptLanguage::StackInfo *w = callstack.ptrw();
+	callstack.resize(static_cast<int>(stack_size) / 3);
+	StackInfo *w = callstack.ptrw();
 	for (unsigned int i = 0; i < stack_size / 3; i++) {
 		w[i].file = p_arr[idx];
 		w[i].func = p_arr[idx + 1];

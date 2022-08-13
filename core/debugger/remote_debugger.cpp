@@ -39,6 +39,8 @@
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 
+using Severity = ScriptLanguageThreadContext;
+
 class RemoteDebugger::MultiplayerProfiler : public EngineProfiler {
 	struct BandwidthFrame {
 		uint32_t timestamp;
@@ -178,7 +180,8 @@ Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 	Array msg;
 	msg.push_back(p_message);
 	msg.push_back(p_data);
-	Error err = peer->put_message(msg);
+	const int channel = Thread::get_caller_id() == Thread::get_main_id() ? Peer::CHANNEL_MAIN_THREAD : Peer::CHANNEL_OTHER;
+	const Error err = peer->put_message(channel, msg);
 	if (err != OK) {
 		n_messages_dropped++;
 	}
@@ -187,7 +190,7 @@ Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
 	if (p_type == ERR_HANDLER_SCRIPT) {
-		return; //ignore script errors, those go through debugger
+		return; // ignore script errors, those go through debugger
 	}
 
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
@@ -195,17 +198,8 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 		return;
 	}
 
-	Vector<ScriptLanguage::StackInfo> si;
-
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
-		if (si.size()) {
-			break;
-		}
-	}
-
 	// send_error will lock internally.
-	rd->script_debugger->send_error(String::utf8(p_func), String::utf8(p_file), p_line, String::utf8(p_err), String::utf8(p_descr), p_editor_notify, p_type, si);
+	rd->send_error(String::utf8(p_func), String::utf8(p_file), p_line, String::utf8(p_err), String::utf8(p_descr), p_editor_notify, p_type);
 }
 
 void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
@@ -287,8 +281,7 @@ void RemoteDebugger::flush_output() {
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
 		Vector<int> types;
-		for (int i = 0; i < output_strings.size(); i++) {
-			const OutputString &output_string = output_strings[i];
+		for (const OutputString &output_string : output_strings) {
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
 				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
@@ -350,6 +343,11 @@ void RemoteDebugger::send_message(const String &p_message, const Array &p_args) 
 }
 
 void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
+	if (flushing && Thread::get_caller_id() == flush_thread) {
+		// Can't handle recursive errors during flush.
+		return;
+	}
+
 	ErrorMessage oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;
@@ -357,16 +355,27 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.source_line = p_line;
 	oe.source_func = p_func;
 	oe.warning = p_type == ERR_HANDLER_WARNING;
-	uint64_t time = OS::get_singleton()->get_ticks_msec();
-	oe.hr = time / 3600000;
-	oe.min = (time / 60000) % 60;
-	oe.sec = (time / 1000) % 60;
-	oe.msec = time % 1000;
-	oe.callstack.append_array(script_debugger->get_error_stack_info());
+	const uint64_t time = OS::get_singleton()->get_ticks_msec();
+	oe.hr = static_cast<int>(time / 3600000ULL);
+	oe.min = static_cast<int>(time / 60000ULL) % 60;
+	oe.sec = static_cast<int>(time / 1000ULL) % 60;
+	oe.msec = static_cast<int>(time % 1000ULL);
 
-	if (flushing && Thread::get_caller_id() == flush_thread) { // Can't handle recursive errors during flush.
-		return;
+	Vector<StackInfo> si;
+	// Right now this is always true, but if we were ever in a "switched off" state, we don't want to create thread contexts.
+	// In all other places, is_active() is checked before any debugging is done.
+	if (is_active()) {
+		// No mutex required since we are only accessing stable collection of languages and thread-local storage.
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			si = ScriptServer::get_language(i)->current_thread().debug_get_current_stack_info();
+			// FIXME This isn't technically correct if we have languages calling into each other,
+			// there could be multiple, so we should have a flag in the context to see if we are on the stack.
+			if (si.size()) {
+				break;
+			}
+		}
 	}
+	oe.callstack.append_array(si);
 
 	MutexLock lock(mutex);
 
@@ -381,8 +390,8 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 			if (warn_count > max_warnings_per_second) {
 				n_warnings_dropped++;
 				if (n_warnings_dropped == 1) {
-					// Only print one message about dropping per second
-					ErrorMessage overflow = _create_overflow_error("TOO_MANY_WARNINGS", "Too many warnings! Ignoring warnings for up to 1 second.");
+					// Only print one message about dropping per second.
+					const ErrorMessage overflow = _create_overflow_error("TOO_MANY_WARNINGS", "Too many warnings! Ignoring warnings for up to 1 second.");
 					errors.push_back(overflow);
 				}
 			} else {
@@ -393,7 +402,7 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 				n_errors_dropped++;
 				if (n_errors_dropped == 1) {
 					// Only print one message about dropping per second
-					ErrorMessage overflow = _create_overflow_error("TOO_MANY_ERRORS", "Too many errors! Ignoring errors for up to 1 second.");
+					const ErrorMessage overflow = _create_overflow_error("TOO_MANY_ERRORS", "Too many errors! Ignoring errors for up to 1 second.");
 					errors.push_back(overflow);
 				}
 			} else {
@@ -401,6 +410,44 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 			}
 		}
 	}
+}
+
+// May be called back under lock by the script debugger.
+void RemoteDebugger::send_stack_frame_variables(const ScriptLanguageThreadContext &p_any_thread, int p_level) {
+	List<String> members;
+	List<Variant> member_vals;
+	if (ScriptInstance *inst = p_any_thread.debug_get_stack_level_instance(p_level)) {
+		members.push_back("self");
+		member_vals.push_back(inst->get_owner());
+	}
+	p_any_thread.debug_get_stack_level_members(p_level, &members, &member_vals);
+	ERR_FAIL_COND(members.size() != member_vals.size());
+
+	List<String> locals;
+	List<Variant> local_vals;
+	p_any_thread.debug_get_stack_level_locals(p_level, &locals, &local_vals);
+	ERR_FAIL_COND(locals.size() != local_vals.size());
+
+	List<String> globals;
+	List<Variant> globals_vals;
+	p_any_thread.get_language()->debug_get_globals(&globals, &globals_vals);
+	ERR_FAIL_COND(globals.size() != globals_vals.size());
+
+	Array data;
+	data.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
+	data.push_back(p_any_thread.debug_get_thread_id());
+	send_message("stack_frame_vars", data);
+	_send_stack_vars(locals, local_vals, 0);
+	_send_stack_vars(members, member_vals, 1);
+	_send_stack_vars(globals, globals_vals, 2);
+}
+
+// May be called back under lock by the script debugger.
+void RemoteDebugger::send_empty_stack_frame(const DebugThreadID &p_tid) {
+	Array data;
+	data.push_back(0);
+	data.push_back(p_tid);
+	send_message("stack_frame_vars", data);
 }
 
 void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type) {
@@ -431,125 +478,154 @@ Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, boo
 	return capture_parse(cap, msg, p_data, r_captured);
 }
 
-void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
-	//this function is called when there is a debugger break (bug on script)
-	//or when execution is paused from editor
+inline ScriptLanguageThreadContext::DebugThreadID _get_optional_thread_id(ScriptLanguageThreadContext &p_focused_thread, const Array &p_data, const int p_index) {
+	if (p_data.size() > p_index) {
+		return static_cast<ScriptLanguageThreadContext::DebugThreadID>(p_data[p_index]);
+	}
+	return p_focused_thread.debug_get_thread_id();
+}
 
-	if (script_debugger->is_skipping_breakpoints() && !p_is_error_breakpoint) {
+void RemoteDebugger::_send_debug_enter_thread(ScriptLanguageThreadContext &p_focused_thread) {
+	Array msg;
+	msg.push_back(p_focused_thread.debug_get_error_severity() < Severity::SEVERITY_FATAL);
+	msg.push_back(p_focused_thread.debug_get_error());
+	msg.push_back(p_focused_thread.debug_get_stack_level_count() > 0);
+	msg.push_back(p_focused_thread.debug_get_thread_id());
+	msg.push_back(p_focused_thread.is_main_thread());
+	msg.push_back(p_focused_thread.debug_get_error_severity());
+	send_message("debug_enter_thread", msg);
+}
+
+void RemoteDebugger::_send_debug_exit_thread(ScriptLanguageThreadContext &p_focused_thread) {
+	Array msg;
+	msg.push_back(p_focused_thread.debug_get_thread_id());
+	send_message("debug_exit_thread", msg);
+}
+
+bool RemoteDebugger::_get_next_message(ScriptLanguageThreadContext &p_focused_thread, Array &r_cmd) {
+	bool has_message = false;
+	if (p_focused_thread.is_main_thread()) {
+		// Also service captures while we sit here.  In NO_THREADS compilations this will block, but OTHER won't.
+		peer->poll(Peer::CHANNEL_MAIN_THREAD);
+		has_message = peer->has_message(Peer::CHANNEL_MAIN_THREAD);
+		if (has_message) {
+			r_cmd = peer->get_message(Peer::CHANNEL_MAIN_THREAD);
+		} else {
+			// Also service discardable messages only on Main thread.
+			peer->poll(Peer::CHANNEL_DISCARDABLE);
+			has_message = peer->has_message(Peer::CHANNEL_DISCARDABLE);
+			if (has_message) {
+				r_cmd = peer->get_message(Peer::CHANNEL_DISCARDABLE);
+			}
+		}
+	}
+	if (!has_message) {
+		peer->poll(Peer::CHANNEL_OTHER);
+		has_message = peer->has_message(Peer::CHANNEL_OTHER);
+		if (has_message) {
+			r_cmd = peer->get_message(Peer::CHANNEL_OTHER);
+		}
+	}
+	return has_message;
+}
+
+void RemoteDebugger::debug(ScriptLanguageThreadContext &p_focused_thread) {
+	// This function is called when there is a debugger break (error on script)
+	// or when execution is paused from editor.  The caller is the thread being debugged
+	// and we block them here while data is being interrogated.
+
+	if (script_debugger->is_skipping_breakpoints() && p_focused_thread.debug_get_error_severity() <= Severity::SEVERITY_BREAKPOINT) {
 		return;
 	}
 
 	ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
 
-	if (!peer->can_block()) {
-		return; // Peer does not support blocking IO. We could at least send the error though.
+	if (!peer->can_block(Peer::CHANNEL_OTHER)) {
+		// Peer does not support blocking IO.
+		// REVISIT We could at least send the error though.
+		return;
 	}
 
-	ScriptLanguage *script_lang = script_debugger->get_break_language();
-	const String error_str = script_lang ? script_lang->debug_get_error() : "";
-	Array msg;
-	msg.push_back(p_can_continue);
-	msg.push_back(error_str);
-	ERR_FAIL_COND(!script_lang);
-	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
-	if (allow_focus_steal_fn) {
+	if (allow_focus_steal_fn && p_focused_thread.is_main_thread()) {
 		allow_focus_steal_fn();
 	}
-	send_message("debug_enter", msg);
 
-	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
+	_send_debug_enter_thread(p_focused_thread);
+
+	const Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
 	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	}
 
 	while (is_peer_connected()) {
 		flush_output();
-		peer->poll();
-
-		if (peer->has_message()) {
-			Array cmd = peer->get_message();
-
+		Array cmd;
+		if (_get_next_message(p_focused_thread, cmd)) {
 			ERR_CONTINUE(cmd.size() != 2);
 			ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
 			ERR_CONTINUE(cmd[1].get_type() != Variant::ARRAY);
 
-			String command = cmd[0];
-			Array data = cmd[1];
+			const String command = cmd[0];
+			const Array data = cmd[1];
 
+			// REVISIT implement commands to free other threads or step execute all?
+			if (command == "thread") {
+				// TODO thread safe tell script debugger to switch to that thread (if suspended or when it does suspend)
+				// then end debugging this thread
+			}
 			if (command == "step") {
-				script_debugger->set_depth(-1);
-				script_debugger->set_lines_left(1);
+				p_focused_thread.debug_step();
 				break;
-
-			} else if (command == "next") {
-				script_debugger->set_depth(0);
-				script_debugger->set_lines_left(1);
+			}
+			if (command == "next") {
+				p_focused_thread.debug_next();
 				break;
-
-			} else if (command == "continue") {
-				script_debugger->set_depth(-1);
-				script_debugger->set_lines_left(-1);
+			}
+			if (command == "continue") {
+				p_focused_thread.debug_continue();
 				break;
-
-			} else if (command == "break") {
-				ERR_PRINT("Got break when already broke!");
+			}
+			if (command == "break") {
+				ERR_PRINT("Received break request when already debugging.");
 				break;
-
-			} else if (command == "get_stack_dump") {
+			}
+			if (command == "get_stack_dump") {
 				DebuggerMarshalls::ScriptStackDump dump;
-				int slc = script_lang->debug_get_stack_level_count();
-				for (int i = 0; i < slc; i++) {
-					ScriptLanguage::StackInfo frame;
-					frame.file = script_lang->debug_get_stack_level_source(i);
-					frame.line = script_lang->debug_get_stack_level_line(i);
-					frame.func = script_lang->debug_get_stack_level_function(i);
-					dump.frames.push_back(frame);
+				const DebugThreadID tid = _get_optional_thread_id(p_focused_thread, data, 0);
+				if (p_focused_thread.is_main_thread() && p_focused_thread.debug_get_thread_id() == tid) {
+					dump.populate(p_focused_thread);
+				} else {
+					// Get data or send empty if not paused.
+					// The UI would know if thread has paused from notifications.
+					script_debugger->try_get_stack_dump(tid, dump);
 				}
-				send_message("stack_dump", dump.serialize());
-
+				Array send_data = dump.serialize();
+				send_message("stack_dump", send_data);
 			} else if (command == "get_stack_frame_vars") {
-				ERR_FAIL_COND(data.size() != 1);
-				ERR_FAIL_COND(!script_lang);
-				int lv = data[0];
-
-				List<String> members;
-				List<Variant> member_vals;
-				if (ScriptInstance *inst = script_lang->debug_get_stack_level_instance(lv)) {
-					members.push_back("self");
-					member_vals.push_back(inst->get_owner());
+				ERR_FAIL_COND(data.size() < 1);
+				const int lv = data[0];
+				const DebugThreadID tid = _get_optional_thread_id(p_focused_thread, data, 1);
+				if (p_focused_thread.is_main_thread() && p_focused_thread.debug_get_thread_id() == tid) {
+					send_stack_frame_variables(p_focused_thread, lv);
+				} else {
+					// Get data or send empty if not paused.
+					// The UI would know if thread has paused from notifications.
+					script_debugger->try_send_stack_frame_variables(tid, lv, *this);
 				}
-				script_lang->debug_get_stack_level_members(lv, &members, &member_vals);
-				ERR_FAIL_COND(members.size() != member_vals.size());
-
-				List<String> locals;
-				List<Variant> local_vals;
-				script_lang->debug_get_stack_level_locals(lv, &locals, &local_vals);
-				ERR_FAIL_COND(locals.size() != local_vals.size());
-
-				List<String> globals;
-				List<Variant> globals_vals;
-				script_lang->debug_get_globals(&globals, &globals_vals);
-				ERR_FAIL_COND(globals.size() != globals_vals.size());
-
-				Array var_size;
-				var_size.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
-				send_message("stack_frame_vars", var_size);
-				_send_stack_vars(locals, local_vals, 0);
-				_send_stack_vars(members, member_vals, 1);
-				_send_stack_vars(globals, globals_vals, 2);
-
+			} else if (!p_focused_thread.is_main_thread()) {
+				// The remaining messages should have been sent on the main thread channel and can't
+				// be dispatched if we are debugging another thread.
+				WARN_PRINT(vformat("Disallowed message received on debugged thread channel: %s", command));
 			} else if (command == "reload_scripts") {
 				reload_all_scripts = true;
-
 			} else if (command == "breakpoint") {
 				ERR_FAIL_COND(data.size() < 3);
-				bool set = data[2];
+				const bool set = data[2];
 				if (set) {
 					script_debugger->insert_breakpoint(data[1], data[0]);
 				} else {
 					script_debugger->remove_breakpoint(data[1], data[0]);
 				}
-
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.size() < 1);
 				script_debugger->set_skip_breakpoints(data[0]);
@@ -566,22 +642,40 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		}
 	}
 
-	send_message("debug_exit", Array());
+	_send_debug_exit_thread(p_focused_thread);
 
 	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(mouse_mode);
 	}
 }
 
-void RemoteDebugger::poll_events(bool p_is_idle) {
-	if (peer.is_null()) {
-		return;
-	}
+void RemoteDebugger::request_debug(const ScriptLanguageThreadContext &p_any_thread) {
+	Array msg;
+	msg.push_back(p_any_thread.debug_get_thread_id());
+	msg.push_back(p_any_thread.is_main_thread());
+	msg.push_back(p_any_thread.debug_get_error());
+	msg.push_back(p_any_thread.debug_get_error_severity());
+	msg.push_back(p_any_thread.debug_get_error_severity() < Severity::SEVERITY_FATAL);
+	msg.push_back(p_any_thread.debug_get_stack_level_count() > 0);
+	send_message("thread_alert", msg);
+}
 
-	flush_output();
-	peer->poll();
-	while (peer->has_message()) {
-		Array arr = peer->get_message();
+void RemoteDebugger::thread_paused(const ScriptLanguageThreadContext &p_any_thread) {
+	Array msg;
+	msg.append(p_any_thread.debug_get_thread_id());
+	msg.append(p_any_thread.is_main_thread());
+	send_message("thread_paused", msg);
+}
+
+void RemoteDebugger::_service_channel(int p_channel) {
+	// Special handling: only fire a single servers:draw even if we just read many of them
+	// REVISIT: We should handle the entire DISCARDABLE channel this way and only fire the latest of
+	// each unique capture:msg.
+	bool servers_draw = false;
+	Variant servers_draw_args;
+	peer->poll(p_channel);
+	while (peer->has_message(p_channel)) {
+		Array arr = peer->get_message(p_channel);
 
 		ERR_CONTINUE(arr.size() != 2);
 		ERR_CONTINUE(arr[0].get_type() != Variant::STRING);
@@ -600,9 +694,30 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			continue; // Unknown message...
 		}
 
+		if (cmd == "servers:draw") {
+			servers_draw = true;
+			// Will always be an empty array for now, but save it anyway.
+			servers_draw_args = arr[1];
+		}
 		const String msg = cmd.substr(idx + 1);
 		capture_parse(cap, msg, arr[1], parsed);
 	}
+	if (servers_draw) {
+		bool captured = false;
+		capture_parse(SNAME("servers"), "draw", servers_draw_args, captured);
+		(void)captured;
+	}
+}
+
+void RemoteDebugger::poll_events(bool p_is_idle) {
+	ERR_FAIL_COND_MSG(Thread::get_caller_id() != Thread::get_main_id(), "Dispatching of debugger captures can only run on Main thread. Please report broken implementation.");
+	if (peer.is_null()) {
+		return;
+	}
+
+	flush_output();
+	_service_channel(Peer::CHANNEL_MAIN_THREAD);
+	_service_channel(Peer::CHANNEL_DISCARDABLE);
 
 	// Reload scripts during idle poll only.
 	if (p_is_idle && reload_all_scripts) {
@@ -631,7 +746,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "break") {
-		script_debugger->debug(script_debugger->get_break_language());
+		script_debugger->debug_request_break();
 	} else {
 		r_captured = false;
 	}
@@ -653,7 +768,7 @@ Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data
 	return OK;
 }
 
-RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
+RemoteDebugger::RemoteDebugger(Ref<Peer> p_peer) {
 	peer = p_peer;
 	max_chars_per_second = GLOBAL_GET("network/limits/debugger/max_chars_per_second");
 	max_errors_per_second = GLOBAL_GET("network/limits/debugger/max_errors_per_second");

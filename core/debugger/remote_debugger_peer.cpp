@@ -38,44 +38,52 @@ bool RemoteDebuggerPeerTCP::is_peer_connected() {
 	return connected;
 }
 
-bool RemoteDebuggerPeerTCP::has_message() {
-	return in_queue.size() > 0;
+bool RemoteDebuggerPeerTCP::has_message(int p_channel) {
+	MutexLock<Mutex> lock(channels[p_channel].shared.mutex);
+	return channels[p_channel].shared.in_queue.size() > 0;
 }
 
-Array RemoteDebuggerPeerTCP::get_message() {
-	MutexLock lock(mutex);
-	ERR_FAIL_COND_V(!has_message(), Array());
-	Array out = in_queue[0];
-	in_queue.pop_front();
+Array RemoteDebuggerPeerTCP::get_message(int p_channel) {
+	MutexLock<Mutex> lock(channels[p_channel].shared.mutex);
+	ERR_FAIL_COND_V(!has_message(p_channel), Array());
+	Array out = channels[p_channel].shared.in_queue[0];
+	channels[p_channel].shared.in_queue.pop_front();
 	return out;
 }
 
-Error RemoteDebuggerPeerTCP::put_message(const Array &p_arr) {
-	MutexLock lock(mutex);
-	if (out_queue.size() >= max_queued_messages) {
+Error RemoteDebuggerPeerTCP::put_message(int p_channel, const Array &p_arr) {
+	MutexLock lock(channels[p_channel].shared.mutex);
+	if (channels[p_channel].shared.out_queue.size() >= max_queued_messages) {
 		return ERR_OUT_OF_MEMORY;
 	}
-
-	out_queue.push_back(p_arr);
+	channels[p_channel].shared.out_queue.push_back(p_arr);
 	return OK;
 }
 
 int RemoteDebuggerPeerTCP::get_max_message_size() const {
-	return 8 << 20; // 8 MiB
+	return MAX_MESSAGE_SIZE; // 8 MiB
 }
 
-void RemoteDebuggerPeerTCP::close() {
+void RemoteDebuggerPeerTCP::_close() {
+	// FIXME non volatile bool may never be delivered
 	running = false;
 	thread.wait_to_finish();
 	tcp_client->disconnect_from_host();
-	out_buf.clear();
-	in_buf.clear();
+	for (Channel &channel : channels) {
+		channel.out_buf.clear();
+		channel.in_buf.clear();
+	}
+}
+
+void RemoteDebuggerPeerTCP::close() {
+	_close();
 }
 
 RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
-	// This means remote debugger takes 16 MiB just because it exists...
-	in_buf.resize((8 << 20) + 4); // 8 MiB should be way more than enough (need 4 extra bytes for encoding packet size).
-	out_buf.resize(8 << 20); // 8 MiB should be way more than enough
+	for (Channel &channel : channels) {
+		channel.in_buf.resize(MAX_MESSAGE_SIZE + 4); // Plus packet size | channel ID combo.
+		channel.out_buf.resize(MAX_MESSAGE_SIZE + 4); // Plus packet size | channel ID combo.
+	}
 	tcp_client = p_tcp;
 	if (tcp_client.is_valid()) { // Attaching to an already connected stream.
 		connected = true;
@@ -89,64 +97,121 @@ RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
 }
 
 RemoteDebuggerPeerTCP::~RemoteDebuggerPeerTCP() {
-	close();
+	_close();
 }
 
 void RemoteDebuggerPeerTCP::_write_out() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
-		uint8_t *buf = out_buf.ptrw();
-		if (out_left <= 0) {
-			if (out_queue.size() == 0) {
-				break; // Nothing left to send
+		if (current_write_channel < 0) {
+			// check in priority order
+			for (int channel_index : { CHANNEL_OTHER, CHANNEL_MAIN_THREAD, CHANNEL_DISCARDABLE }) {
+				MutexLock<Mutex> lock(channels[channel_index].shared.mutex);
+				if (channels[channel_index].shared.out_queue.size() == 0) {
+					continue;
+				}
+				current_write_channel = channel_index;
+				break;
 			}
-			mutex.lock();
-			Variant var = out_queue[0];
-			out_queue.pop_front();
-			mutex.unlock();
-			int size = 0;
-			Error err = encode_variant(var, nullptr, size);
-			ERR_CONTINUE(err != OK || size > out_buf.size() - 4); // 4 bytes separator.
-			encode_uint32(size, buf);
-			encode_variant(var, buf + 4, size);
-			out_left = size + 4;
-			out_pos = 0;
 		}
+		if (current_write_channel < 0) {
+			// Nothing to do.
+			return;
+		}
+
+		uint8_t *buf = channels[current_write_channel].out_buf.ptrw();
+
+		if (channels[current_write_channel].out_left <= 0) {
+			// Need to start next buffer
+			channels[current_write_channel].shared.mutex.lock();
+			Variant var = channels[current_write_channel].shared.out_queue[0];
+			channels[current_write_channel].shared.out_queue.pop_front();
+			channels[current_write_channel].shared.mutex.unlock();
+			int size = 0;
+			const int OVERHEAD = 4;
+			Error err = encode_variant(var, nullptr, size);
+			if (err != OK || size > channels[current_write_channel].out_buf.size() - OVERHEAD) {
+				// Can't send, but we did service this item.
+				WARN_PRINT(vformat("Failed to send debugger message to channel %d; error %d.", current_write_channel, err));
+				current_write_channel = -1;
+				continue;
+			}
+			static_assert(NUM_CHANNELS < 256);
+			static_assert(MAX_MESSAGE_SIZE < (1 << 24));
+			encode_uint32(size | (current_write_channel << 24), buf);
+			encode_variant(var, buf + OVERHEAD, size);
+			channels[current_write_channel].out_left = size + OVERHEAD;
+			channels[current_write_channel].out_pos = 0;
+		}
+
 		int sent = 0;
-		tcp_client->put_partial_data(buf + out_pos, out_left, sent);
-		out_left -= sent;
-		out_pos += sent;
+		tcp_client->put_partial_data(buf + channels[current_write_channel].out_pos, channels[current_write_channel].out_left, sent);
+		channels[current_write_channel].out_left -= sent;
+		channels[current_write_channel].out_pos += sent;
+
+		if (channels[current_write_channel].out_left <= 0) {
+			// Done with the current transmission.
+			current_write_channel = -1;
+		}
 	}
 }
 
 void RemoteDebuggerPeerTCP::_read_in() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_IN) == OK) {
-		uint8_t *buf = in_buf.ptrw();
-		if (in_left <= 0) {
-			if (in_queue.size() > max_queued_messages) {
-				break; // Too many messages already in queue.
-			}
-			if (tcp_client->get_available_bytes() < 4) {
-				break; // Need 4 more bytes.
+		if (current_read_channel < 0) {
+			// Could be reading any channel, so don't do it if any of them are blocked.
+			// REVISIT: this isn't completely correct.  If Main is blocked on thread.join, it will never respond to any
+			// requests and we need to give up, so we do need per-channel flow control, i.e. multiple sockets or our
+			// own flow control (e.g. enet) or just conceptually tear down the Main connection and discard all Main
+			// messages.
+			int index = 0;
+			for (Channel &channel : channels) {
+				MutexLock<Mutex> lock(channel.shared.mutex);
+				if (channel.in_left <= 0) {
+					if (channel.shared.in_queue.size() > max_queued_messages) {
+						if (index == CHANNEL_DISCARDABLE) {
+							// Drop oldest message, since it is the most stale.
+							channel.shared.in_queue.pop_front();
+						} else {
+							return; // Too many messages already in queue.
+						}
+					}
+					if (tcp_client->get_available_bytes() < 4) {
+						return; // Need 4 more bytes.
+					}
+				}
+				++index;
 			}
 			uint32_t size = 0;
 			int read = 0;
-			Error err = tcp_client->get_partial_data((uint8_t *)&size, 4, read);
-			ERR_CONTINUE(read != 4 || err != OK || size > (uint32_t)in_buf.size());
-			in_left = size;
-			in_pos = 0;
+			const Error err = tcp_client->get_partial_data(reinterpret_cast<uint8_t *>(&size), 4, read);
+			ERR_CONTINUE(read != 4 || err != OK);
+			current_read_channel = static_cast<int>(size >> 24U & 0xffU);
+			size = size & 0xffffffU;
+			if (current_read_channel < 0 || current_read_channel >= NUM_CHANNELS) {
+				WARN_PRINT(vformat("Ignored message with invalid channel ID: %d out of 0..%d", current_read_channel, NUM_CHANNELS - 1));
+				current_read_channel = -1;
+				continue;
+			}
+			ERR_CONTINUE(size > static_cast<uint32_t>(channels[current_read_channel].in_buf.size()));
+			channels[current_read_channel].in_left = size;
+			channels[current_read_channel].in_pos = 0;
 		}
+		uint8_t *buf = channels[current_read_channel].in_buf.ptrw();
 		int read = 0;
-		tcp_client->get_partial_data(buf + in_pos, in_left, read);
-		in_left -= read;
-		in_pos += read;
-		if (in_left == 0) {
+		tcp_client->get_partial_data(buf + channels[current_read_channel].in_pos, channels[current_read_channel].in_left, read);
+		channels[current_read_channel].in_left -= read;
+		channels[current_read_channel].in_pos += read;
+		if (channels[current_read_channel].in_left == 0) {
+			// Restart with size marker, even if we error out below.
+			const int was_reading_channel = current_read_channel;
+			current_read_channel = -1;
+
 			Variant var;
-			Error err = decode_variant(var, buf, in_pos, &read);
-			ERR_CONTINUE(read != in_pos || err != OK);
+			const Error err = decode_variant(var, buf, channels[was_reading_channel].in_pos, &read);
+			ERR_CONTINUE(read != channels[was_reading_channel].in_pos || err != OK);
 			ERR_CONTINUE_MSG(var.get_type() != Variant::ARRAY, "Malformed packet received, not an Array.");
-			mutex.lock();
-			in_queue.push_back(var);
-			mutex.unlock();
+			MutexLock<Mutex> lock(channels[was_reading_channel].shared.mutex);
+			channels[was_reading_channel].shared.in_queue.push_back(var);
 		}
 	}
 }
@@ -159,7 +224,7 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 		ip = IP::get_singleton()->resolve_hostname(p_host);
 	}
 
-	int port = p_port;
+	const int port = p_port;
 
 	const int tries = 6;
 	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
@@ -192,11 +257,14 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 	// Update in time for 144hz monitors
+	// FIXME that precision is nonsense, we don't have that kind of resolution from sleeping (ms on Windows, scheduling intervals, etc.)
 	const uint64_t min_tick = 6900;
 	RemoteDebuggerPeerTCP *peer = static_cast<RemoteDebuggerPeerTCP *>(p_ud);
 	while (peer->running && peer->is_peer_connected()) {
 		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
-		peer->_poll();
+		for (int channel_index = 0; channel_index < NUM_CHANNELS; ++channel_index) {
+			peer->_poll(channel_index);
+		}
 		if (!peer->is_peer_connected()) {
 			break;
 		}
@@ -207,17 +275,27 @@ void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 	}
 }
 
-void RemoteDebuggerPeerTCP::poll() {
+void RemoteDebuggerPeerTCP::poll(int p_channel) {
 #ifdef NO_THREADS
-	_poll();
+	if (p_channel == CHANNEL_MAIN_THREAD) {
+		// Block only for the first channel, because they are actually all the same socket.
+		_poll(p_channel);
+	}
+#else
+	(void)p_channel;
 #endif
 }
 
-void RemoteDebuggerPeerTCP::_poll() {
+void RemoteDebuggerPeerTCP::_poll(const int p_channel) {
 	tcp_client->poll();
 	if (connected) {
-		_write_out();
-		_read_in();
+		// In this implementation, we only have one connection on the wire, so
+		// we can't send from multiple channels fragmented.  So we have to
+		// actually process all channels together.
+		if (p_channel == CHANNEL_MAIN_THREAD) {
+			_read_in();
+			_write_out();
+		}
 		connected = tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED;
 	}
 }
@@ -229,13 +307,13 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 	uint16_t debug_port = 6007;
 
 	if (debug_host.contains(":")) {
-		int sep_pos = debug_host.rfind(":");
+		const int sep_pos = debug_host.rfind(":");
 		debug_port = debug_host.substr(sep_pos + 1).to_int();
 		debug_host = debug_host.substr(0, sep_pos);
 	}
 
 	RemoteDebuggerPeerTCP *peer = memnew(RemoteDebuggerPeerTCP);
-	Error err = peer->connect_to_host(debug_host, debug_port);
+	const Error err = peer->connect_to_host(debug_host, debug_port);
 	if (err != OK) {
 		memdelete(peer);
 		return nullptr;

@@ -284,6 +284,7 @@ Generated\ Files/
 *.pidb
 *.svclog
 *.scc
+*.obj.enc
 
 # Visual C++ cache files
 ipch/

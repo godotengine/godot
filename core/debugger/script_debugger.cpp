@@ -32,22 +32,6 @@
 
 #include "core/debugger/engine_debugger.h"
 
-void ScriptDebugger::set_lines_left(int p_left) {
-	lines_left = p_left;
-}
-
-int ScriptDebugger::get_lines_left() const {
-	return lines_left;
-}
-
-void ScriptDebugger::set_depth(int p_depth) {
-	depth = p_depth;
-}
-
-int ScriptDebugger::get_depth() const {
-	return depth;
-}
-
 void ScriptDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
 	if (!breakpoints.has(p_line)) {
 		breakpoints[p_line] = HashSet<StringName>();
@@ -93,24 +77,131 @@ bool ScriptDebugger::is_skipping_breakpoints() {
 	return skip_breakpoints;
 }
 
-void ScriptDebugger::debug(ScriptLanguage *p_lang, bool p_can_continue, bool p_is_error_breakpoint) {
-	ScriptLanguage *prev = break_lang;
-	break_lang = p_lang;
-	EngineDebugger::get_singleton()->debug(p_can_continue, p_is_error_breakpoint);
-	break_lang = prev;
+bool ScriptDebugger::_try_claim_debugger(const ScriptLanguageThreadContext &p_any_thread) {
+	MutexLock<BinaryMutex> lock(_mutex_thread_transfer);
+	if (_focused_thread.is_valid() && !_focused_thread->is_dead()) {
+		return false;
+	}
+	_focused_thread = Ref<ScriptLanguageThreadContext>(&p_any_thread);
+	return true;
 }
 
-void ScriptDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, const Vector<StackInfo> &p_stack_info) {
-	// Store stack info, this is ugly, but allows us to separate EngineDebugger and ScriptDebugger. There might be a better way.
-	error_stack_info.append_array(p_stack_info);
-	EngineDebugger::get_singleton()->send_error(p_func, p_file, p_line, p_err, p_descr, p_editor_notify, p_type);
-	error_stack_info.clear();
+void ScriptDebugger::step(ScriptLanguageThreadContext &p_any_thread) {
+	if (p_any_thread.is_main_thread()) {
+		EngineDebugger::get_singleton()->poll_events(false);
+	}
+
+	if (_break_requested.is_set()) {
+		// Warning: there is a race condition here: Multiple threads
+		// may get this far, but that can be safely ignored. Those threads
+		// will simply compete for debug(...) normally, just like multiple threads
+		// hitting breakpoints.
+		_break_requested.clear();
+		debug(p_any_thread);
+		// We may have failed to debug, continue below like a secondary thread.
+	}
+
+	if (!_hold_threads.is_set()) {
+		// Only pause if requested.  This is also where we return after successful debugging.
+		return;
+	}
+
+	// Check in this context (now conceptually owned by debugger.)
+	const DebugThreadID tid = p_any_thread.debug_get_thread_id();
+	{
+		MutexLock<BinaryMutex> lock(_mutex_thread_transfer);
+		// Check again because we could have just been resumed and we
+		// were blocked while the previous batch was cleaning out.
+		if (!_hold_threads.is_set()) {
+			return;
+		}
+		_held_threads[tid] = Ref<ScriptLanguageThreadContext>(&p_any_thread);
+	}
+
+	EngineDebugger::get_singleton()->thread_paused(p_any_thread);
+	if (p_any_thread.is_main_thread()) {
+		// Keep servicing non-core debug messages while waiting to resume.
+		while (!p_any_thread.wait_resume_ms(1)) {
+			EngineDebugger::get_singleton()->poll_events(false);
+		}
+	} else {
+		p_any_thread.wait_resume();
+	}
+
+	// Reclaim our context to resume running.
+	MutexLock<BinaryMutex> lock(_mutex_thread_transfer);
+	_held_threads.erase(tid);
 }
 
-Vector<ScriptLanguage::StackInfo> ScriptDebugger::get_error_stack_info() const {
-	return error_stack_info;
+void ScriptDebugger::debug_request_break() {
+	_break_requested.set();
 }
 
-ScriptLanguage *ScriptDebugger::get_break_language() const {
-	return break_lang;
+void ScriptDebugger::debug(ScriptLanguageThreadContext &p_any_thread) {
+	const bool is_first = _try_claim_debugger(p_any_thread);
+
+	if (!is_first) {
+		// A thread is already being debugged, just indicate that this thread has also hit a breakpoint or error.
+		EngineDebugger::get_singleton()->request_debug(p_any_thread);
+
+		// Suspend on step() like all the other extra threads.
+		return;
+	}
+
+	if (_hold_other_threads_on_debug_start) {
+		_hold_threads.set();
+	} else {
+		_hold_threads.clear();
+	}
+
+	// This thread is also available for interrogation, so check it in,
+	// now conceptually owned by debugger.
+	// Not using smart lock here because of smart lock on same mutex
+	// below (in case of very poor optimizing compiler.)
+	const DebugThreadID tid = p_any_thread.debug_get_thread_id();
+	_mutex_thread_transfer.lock();
+	_held_threads[tid] = Ref<ScriptLanguageThreadContext>(&p_any_thread);
+	_mutex_thread_transfer.unlock();
+
+	// Run the "OTHER" channel of debugging protocol on this thread, since it is the only thread that is
+	// guaranteed not to block.  If Main gets blocked, then secondary debug captures won't get replies.
+	EngineDebugger::get_singleton()->debug(p_any_thread);
+
+	{
+		MutexLock<BinaryMutex> lock(_mutex_thread_transfer);
+
+		// We don't need to be resumed.
+		_held_threads.erase(tid);
+
+		// Release the debugger, so others can claim it.
+		const bool wrong_thread_released = _focused_thread.ptr() != &p_any_thread;
+		_focused_thread.unref();
+
+		// Resume everyone.
+		_hold_threads.clear();
+		for (const KeyValue<DebugThreadID, Ref<ScriptLanguageThreadContext>> &thread : _held_threads) {
+			// Thread will remove itself.
+			thread.value->resume();
+		}
+
+		ERR_FAIL_COND_MSG(wrong_thread_released, "Debugged thread reference was corrupted during debugging; please report broken implementation.");
+	}
+}
+
+void ScriptDebugger::try_get_stack_dump(const DebugThreadID &p_tid, DebuggerMarshalls::ScriptStackDump &p_dump) {
+	MutexLock<BinaryMutex> lock(_mutex_thread_transfer);
+	const ConstHeldThreadsIterator it = _held_threads.find(p_tid);
+	if (it != _held_threads.end()) {
+		p_dump.populate(**(it->value));
+	}
+}
+
+void ScriptDebugger::try_send_stack_frame_variables(const DebugThreadID &p_tid, int p_level, RemoteDebugger &p_remote_debugger) {
+	MutexLock<BinaryMutex> lock(_mutex_thread_transfer);
+	const ConstHeldThreadsIterator it = _held_threads.find(p_tid);
+	if (it != _held_threads.end()) {
+		p_remote_debugger.send_stack_frame_variables(**(it->value), p_level);
+	} else {
+		p_remote_debugger.send_empty_stack_frame(p_tid);
+	}
 }

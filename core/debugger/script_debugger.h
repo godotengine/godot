@@ -34,31 +34,41 @@
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/templates/hash_set.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
+#include "debugger_marshalls.h"
+#include "remote_debugger.h"
 
 class ScriptDebugger {
-	typedef ScriptLanguage::StackInfo StackInfo;
+	using DebugThreadID = ScriptLanguageThreadContext::DebugThreadID;
+	using StackInfo = ScriptLanguageThreadContext::StackInfo;
 
-	int lines_left = -1;
-	int depth = -1;
 	bool skip_breakpoints = false;
 
 	HashMap<int, HashSet<StringName>> breakpoints;
 
-	ScriptLanguage *break_lang = nullptr;
-	Vector<StackInfo> error_stack_info;
+	// TODO remote configuration?
+	bool _hold_other_threads_on_debug_start = true;
+
+	// If true, all non-focused threads hold on step execute also.
+	SafeFlag _hold_threads;
+
+	// If true, there is a pending async request for break on any thread (usually from ctrl-c or similar.)
+	SafeFlag _break_requested;
+
+	// Ownership of the thread context of a paused thread is temporarily granted to
+	// the debugger by storing it into _focused_thread or _held_threads under lock
+	// of _mutex_thread_transfer.
+	BinaryMutex _mutex_thread_transfer;
+	Ref<ScriptLanguageThreadContext> _focused_thread;
+	HashMap<DebugThreadID, Ref<ScriptLanguageThreadContext>, VariantHasher, VariantComparator> _held_threads;
+	typedef HashMap<DebugThreadID, Ref<ScriptLanguageThreadContext>, VariantHasher, VariantComparator>::ConstIterator ConstHeldThreadsIterator;
+
+	bool _try_claim_debugger(const ScriptLanguageThreadContext &p_any_thread);
 
 public:
-	void set_lines_left(int p_left);
-	int get_lines_left() const;
-
-	void set_depth(int p_depth);
-	int get_depth() const;
+	/* BREAKPOINTS */
 
 	String breakpoint_find_source(const String &p_source) const;
-	void set_break_language(ScriptLanguage *p_lang) { break_lang = p_lang; }
-	ScriptLanguage *get_break_language() { return break_lang; }
 	void set_skip_breakpoints(bool p_skip_breakpoints);
 	bool is_skipping_breakpoints();
 	void insert_breakpoint(int p_line, const StringName &p_source);
@@ -68,12 +78,25 @@ public:
 	void clear_breakpoints();
 	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
 
-	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
-	ScriptLanguage *get_break_language() const;
+	/* DEBUGGING */
 
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, const Vector<StackInfo> &p_stack_info);
-	Vector<StackInfo> get_error_stack_info() const;
-	ScriptDebugger() {}
+	// Start new debugging session, from breakpoint or error, expected to block the caller being debugged.
+	void debug(ScriptLanguageThreadContext &p_any_thread);
+
+	// Called from all threads that are not the thread currently being debugged ("focused thread")
+	// for every opcode while debugger is active, may block the caller.
+	void step(ScriptLanguageThreadContext &p_any_thread);
+
+	// Asynchronously request break by the next script language to execute something.
+	void debug_request_break();
+
+	// TODO can LocalDebugger use this or does this need a callback as below?
+	void try_get_stack_dump(const DebugThreadID &p_tid, DebuggerMarshalls::ScriptStackDump &p_dump);
+
+	// FIXME make this not depend on RemoteDebugger
+	void try_send_stack_frame_variables(const DebugThreadID &p_tid, int p_level, RemoteDebugger &p_remote_debugger);
+
+	ScriptDebugger() = default;
 };
 
 #endif // SCRIPT_DEBUGGER_H

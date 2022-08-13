@@ -86,7 +86,7 @@ void EditorDebuggerPlugin::detach_debugger(bool p_call_debugger) {
 
 void EditorDebuggerPlugin::send_message(const String &p_message, const Array &p_args) {
 	ERR_FAIL_COND_MSG(!debugger, "Plugin is not attached to debugger");
-	debugger->send_message(p_message, p_args);
+	debugger->send_message_auto(p_message, p_args);
 }
 
 void EditorDebuggerPlugin::register_message_capture(const StringName &p_name, const Callable &p_callable) {

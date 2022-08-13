@@ -53,7 +53,6 @@ void initialize_mono_module(ModuleInitializationLevel p_level) {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSharp", mono_bind::GodotSharp::get_singleton()));
 
 	script_language_cs = memnew(CSharpLanguage);
-	script_language_cs->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(script_language_cs);
 
 	resource_loader_cs.instantiate();

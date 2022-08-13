@@ -46,16 +46,6 @@ bool ScriptServer::reload_scripts_on_save = false;
 bool ScriptServer::languages_finished = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
-void Script::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE: {
-			if (EngineDebugger::is_active()) {
-				EngineDebugger::get_script_debugger()->set_break_language(get_language());
-			}
-		} break;
-	}
-}
-
 Variant Script::_get_property_default_value(const StringName &p_property) {
 	Variant ret;
 	get_property_default_value(p_property, ret);
@@ -129,7 +119,7 @@ PropertyInfo Script::get_class_category() const {
 
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
-	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
+	// ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
 	ClassDB::bind_method(D_METHOD("instance_has", "base_object"), &Script::instance_has);
 	ClassDB::bind_method(D_METHOD("has_source_code"), &Script::has_source_code);
 	ClassDB::bind_method(D_METHOD("get_source_code"), &Script::get_source_code);
@@ -183,7 +173,7 @@ void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 }
 
 void ScriptServer::init_languages() {
-	{ //load global classes
+	{ // load global classes
 		global_classes_clear();
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
@@ -199,7 +189,7 @@ void ScriptServer::init_languages() {
 	}
 
 	for (int i = 0; i < _language_count; i++) {
-		_languages[i]->init();
+		_languages[i]->init(i);
 	}
 }
 
@@ -353,12 +343,92 @@ Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid)
 	return Variant();
 }
 
-ScriptInstance::~ScriptInstance() {
-}
+ScriptInstance::~ScriptInstance() = default;
 
 ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
 ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
+}
+
+bool ScriptLanguageThreadContext::debug_record_step_taken() {
+	if (steps_left > 0) {
+		if (frames_left <= 0) {
+			--steps_left;
+		}
+		if (steps_left <= 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void ScriptLanguageThreadContext::debug_record_enter_frame() {
+	if (steps_left > 0 && frames_left >= 0) {
+		// Need to exit from this frame before steps count again.
+		++frames_left;
+	}
+}
+
+void ScriptLanguageThreadContext::debug_record_exit_frame() {
+	if (steps_left > 0 && frames_left >= 0) {
+		// Pop out until we start consuming steps again.
+		--frames_left;
+	}
+}
+
+void ScriptLanguageThreadContext::wait_resume() const {
+	resumption.wait();
+}
+
+bool ScriptLanguageThreadContext::wait_resume_ms(int p_milliseconds) const {
+	// REVISIT: Godot Semaphore does not expose std::condition_variable::wait_for,
+	// so we just fake it by sleeping.  The downside is that we will wait up to
+	// max(p_milliseconds, minimum OS timer interval) too long after the
+	// semaphore is set.
+	if (resumption.try_wait()) {
+		return true;
+	}
+	OS::get_singleton()->delay_usec(p_milliseconds * 1000);
+	return false;
+}
+
+void ScriptLanguageThreadContext::resume() const {
+	resumption.post();
+}
+
+bool ScriptLanguageThreadContext::is_dead() const {
+	// TODO implement: associated thread may have died without removing this from all collections
+	return false;
+}
+
+void ScriptLanguageThreadContext::debug_step() {
+	frames_left = -1;
+	steps_left = 1;
+}
+
+void ScriptLanguageThreadContext::debug_next() {
+	// REVISIT: how does this work?
+	frames_left = 0;
+	steps_left = 1;
+}
+
+void ScriptLanguageThreadContext::debug_step_out() {
+	// REVISIT: how does this work? why is it used for stepping out of frames and not 1,0?
+	frames_left = 0;
+	steps_left = 1;
+}
+
+void ScriptLanguageThreadContext::debug_continue() {
+	frames_left = -1;
+	steps_left = -1;
+}
+
+void ScriptLanguage::init(int p_language_index) {
+	language_index = p_language_index;
+}
+
+int ScriptLanguage::get_language_index() const {
+	return language_index;
 }
 
 void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
@@ -531,7 +601,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 		Variant defval;
 		if (script->get_property_default_value(E.key, defval)) {
-			//remove because it's the same as the default value
+			// remove because it's the same as the default value
 			if (defval == E.value) {
 				to_remove.push_back(E.key);
 			}
@@ -546,7 +616,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	if (owner && owner->get_script_instance() == this) {
 		owner->notify_property_list_changed();
 	}
-	//change notify
+	// change notify
 
 	constants.clear();
 	script->get_constants(&constants);

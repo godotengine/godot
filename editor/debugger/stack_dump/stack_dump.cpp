@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  local_debugger.h                                                     */
+/*  stack_dump.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LOCAL_DEBUGGER_H
-#define LOCAL_DEBUGGER_H
+#include "stack_dump.h"
 
-#include "core/debugger/engine_debugger.h"
-#include "core/object/script_language.h"
-#include "core/templates/list.h"
+#include "thread_list.h"
+#include "thread_list_tree.h"
 
-class LocalDebugger : public EngineDebugger {
-	struct ScriptsProfiler;
+namespace editor::dbg::sd {
 
-	ScriptsProfiler *scripts_profiler = nullptr;
+Error StackDump::connect(Object &p_debugger) const {
+	Error ret = _thread_list->connect(p_debugger);
+	ERR_FAIL_COND_V_MSG(ret != OK, ret, "failed to connect required signals debugger");
 
-	String target_function;
-	HashMap<String, String> options;
+	return OK;
+}
 
-	Pair<String, int> to_breakpoint(const String &p_line);
-	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
+void StackDump::disconnect(Object &p_debugger) const {
+	_thread_list->disconnect(p_debugger);
+}
 
-	void _print_stack_header(ScriptLanguageThreadContext &p_focused_thread);
-	void _print_status(ScriptLanguageThreadContext &p_focused_thread, int current_frame);
-	void _print_frame(ScriptLanguageThreadContext &p_focused_thread, int printed_frame, int current_frame);
+Node *StackDump::detach_thread_list_view() {
+	Node *result = _thread_list_view;
+	// Ownership transfer to Scene tree.
+	_thread_list_view = nullptr;
+	return result;
+}
 
-public:
-	void debug(ScriptLanguageThreadContext &p_focused_thread) override;
-	void request_debug(const ScriptLanguageThreadContext &p_context) override;
-	void thread_paused(const ScriptLanguageThreadContext &p_context) override;
-	void send_message(const String &p_message, const Array &p_args) override;
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) override;
+StackDump::StackDump() {
+	_thread_list = memnew(ThreadList);
+	_thread_list_view = memnew(View);
+	_thread_list->set_view(_thread_list_view);
+}
 
-	LocalDebugger();
-	~LocalDebugger();
-};
+StackDump::~StackDump() {
+	if (_thread_list != nullptr) {
+		memdelete(_thread_list);
+		_thread_list = nullptr;
+	}
+	if (_thread_list_view != nullptr) {
+		memdelete(_thread_list_view);
+		_thread_list_view = nullptr;
+	}
+}
 
-#endif // LOCAL_DEBUGGER_H
+} // namespace editor::dbg::sd

@@ -83,7 +83,7 @@ public:
 
 		Vector<DocData::ClassDoc> class_doc;
 #ifndef _MSC_VER
-#warning missing conversion from documentation to ClassDoc
+#warning unimplemented conversion from documentation to ClassDoc
 #endif
 		return class_doc;
 	}
@@ -119,6 +119,7 @@ public:
 
 	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override {
 		bool has_dv = false;
+
 		if (!GDVIRTUAL_REQUIRED_CALL(_has_property_default_value, p_property, has_dv) || !has_dv) {
 			return false;
 		}
@@ -188,6 +189,60 @@ typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;
 
 GDVIRTUAL_NATIVE_PTR(ScriptLanguageExtensionProfilingInfo)
 
+class ScriptLanguageExtension;
+
+class ScriptLanguageThreadContextExtension : public ScriptLanguageThreadContext {
+	GDCLASS(ScriptLanguageThreadContextExtension, ScriptLanguageThreadContext)
+	friend class ScriptLanguageExtension;
+
+protected:
+	static void _bind_methods();
+	ScriptLanguageExtension *parent = nullptr;
+
+public:
+	ScriptLanguage *get_language() const override;
+
+	ScriptLanguageExtension *get_parent() const {
+		// valid as least the lifetime of this object
+		return parent;
+	}
+
+	EXBIND0RC(String, debug_get_error)
+	EXBIND0RC(int, debug_get_stack_level_count)
+	EXBIND1RC(int, debug_get_stack_level_line, int)
+	EXBIND1RC(String, debug_get_stack_level_function, int)
+	EXBIND1RC(String, debug_get_stack_level_source, int)
+	EXBIND4RC(String, debug_parse_stack_level_expression, int, const String &, int, int)
+
+	GDVIRTUAL3RC(Dictionary, _debug_get_stack_level_locals, int, int, int)
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) const override;
+
+	GDVIRTUAL3RC(Dictionary, _debug_get_stack_level_members, int, int, int)
+	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) const override;
+
+	GDVIRTUAL1RC(GDNativePtr<void>, _debug_get_stack_level_instance, int)
+	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) const override;
+
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _debug_get_current_stack_info)
+	virtual Vector<StackInfo> debug_get_current_stack_info() const override;
+
+	GDVIRTUAL0RC(PackedByteArray, _debug_get_thread_id)
+	DebugThreadID debug_get_thread_id() const override;
+
+	GDVIRTUAL0RC(int, _debug_get_error_severity)
+	Severity debug_get_error_severity() const override;
+
+	GDVIRTUAL0RC(bool, _is_main_thread)
+	bool is_main_thread() const override;
+
+	ScriptLanguageThreadContextExtension() = default;
+	~ScriptLanguageThreadContextExtension() = default;
+
+	ScriptLanguageThreadContextExtension(const ScriptLanguageThreadContextExtension &) = delete;
+	ScriptLanguageThreadContextExtension(const ScriptLanguageThreadContextExtension &&) = delete;
+	ScriptLanguageThreadContextExtension &operator=(const ScriptLanguageThreadContextExtension &&) = delete;
+};
+
 class ScriptLanguageExtension : public ScriptLanguage {
 	GDCLASS(ScriptLanguageExtension, ScriptLanguage)
 protected:
@@ -196,11 +251,14 @@ protected:
 public:
 	EXBIND0RC(String, get_name)
 
-	EXBIND0(init)
+	GDVIRTUAL0(_init)
+	void init(int p_language_index) override;
 	EXBIND0RC(String, get_type)
 	EXBIND0RC(String, get_extension)
 	EXBIND1R(Error, execute_file, const String &)
-	EXBIND0(finish)
+	GDVIRTUAL0(_finish)
+
+	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
 
@@ -431,65 +489,14 @@ public:
 
 	/* MULTITHREAD FUNCTIONS */
 
-	//some VMs need to be notified of thread creation/exiting to allocate a stack
+	// some VMs need to be notified of thread creation/exiting to allocate a stack
 	EXBIND0(thread_enter)
 	EXBIND0(thread_exit)
 
-	EXBIND0RC(String, debug_get_error)
-	EXBIND0RC(int, debug_get_stack_level_count)
-	EXBIND1RC(int, debug_get_stack_level_line, int)
-	EXBIND1RC(String, debug_get_stack_level_function, int)
-	EXBIND1RC(String, debug_get_stack_level_source, int)
+	/* DEBUG FUNCTIONS */
 
-	GDVIRTUAL3R(Dictionary, _debug_get_stack_level_locals, int, int, int)
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
-		Dictionary ret;
-		GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
-			return;
-		}
-		if (p_locals != nullptr && ret.has("locals")) {
-			PackedStringArray strings = ret["locals"];
-			for (int i = 0; i < strings.size(); i++) {
-				p_locals->push_back(strings[i]);
-			}
-		}
-		if (p_values != nullptr && ret.has("values")) {
-			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
-			}
-		}
-	}
-	GDVIRTUAL3R(Dictionary, _debug_get_stack_level_members, int, int, int)
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
-		Dictionary ret;
-		GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
-			return;
-		}
-		if (p_members != nullptr && ret.has("members")) {
-			PackedStringArray strings = ret["members"];
-			for (int i = 0; i < strings.size(); i++) {
-				p_members->push_back(strings[i]);
-			}
-		}
-		if (p_values != nullptr && ret.has("values")) {
-			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
-			}
-		}
-	}
-	GDVIRTUAL1R(GDNativePtr<void>, _debug_get_stack_level_instance, int)
-
-	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override {
-		GDNativePtr<void> ret = nullptr;
-		GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_instance, p_level, ret);
-		return reinterpret_cast<ScriptInstance *>(ret.operator void *());
-	}
-	GDVIRTUAL2R(Dictionary, _debug_get_globals, int, int)
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
+	GDVIRTUAL2RC(Dictionary, _debug_get_globals, int, int)
+	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) const override {
 		Dictionary ret;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_globals, p_max_subitems, p_max_depth, ret);
 		if (ret.size() == 0) {
@@ -509,29 +516,31 @@ public:
 		}
 	}
 
-	EXBIND4R(String, debug_parse_stack_level_expression, int, const String &, int, int)
+	// Create a Debug Thread ID for the current thread.  This ID is unique across all thread/language combinations.
+	PackedByteArray create_unique_debug_thread_id() const;
 
-	GDVIRTUAL0R(TypedArray<Dictionary>, _debug_get_current_stack_info)
-	virtual Vector<StackInfo> debug_get_current_stack_info() override {
-		TypedArray<Dictionary> ret;
-		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
-		Vector<StackInfo> sret;
-		for (int i = 0; i < ret.size(); i++) {
-			StackInfo si;
-			Dictionary d = ret[i];
-			ERR_CONTINUE(!d.has("file"));
-			ERR_CONTINUE(!d.has("func"));
-			ERR_CONTINUE(!d.has("line"));
-			si.file = d["file"];
-			si.func = d["func"];
-			si.line = d["line"];
-			sret.push_back(si);
-		}
-		return sret;
-	}
+	// Start new debugging session for the caller thread, from breakpoint or error, expected to
+	// block the caller while it is being debugged.
+	void debug_break();
+
+	// Called from all threads that are not the thread currently being debugged ("focused thread")
+	// for every opcode while debugger is active, may block the caller.
+	void debug_step();
+
+	// Asynchronously request break by the next script language to execute something.
+	void debug_request_break();
+
+	GDVIRTUAL0RC(ScriptLanguageThreadContextExtension *, _create_thread_context)
+
+	ScriptLanguageThreadContext *create_thread_context();
+
+	ScriptLanguageThreadContext &current_thread() override;
+
+	/* SCRIPTS */
 
 	EXBIND0(reload_all_scripts)
 	EXBIND2(reload_tool_script, const Ref<Script> &, bool)
+
 	/* LOADER FUNCTIONS */
 
 	GDVIRTUAL0RC(PackedStringArray, _get_recognized_extensions)
@@ -574,6 +583,8 @@ public:
 		}
 	}
 
+	/* PROFILING FUNCTIONS */
+
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)
 
@@ -592,6 +603,8 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
 		return ret;
 	}
+
+	/* OTHER FUNCTIONS */
 
 	GDVIRTUAL1R(GDNativePtr<void>, _alloc_instance_binding_data, Object *)
 

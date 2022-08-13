@@ -212,40 +212,40 @@ Script *GDScriptLanguage::create_script() const {
 	return memnew(GDScript);
 }
 
-/* DEBUGGER FUNCTIONS */
-
-bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
+bool GDScriptThreadContext::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	// break because of parse error
-
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = p_line;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		EngineDebugger::get_script_debugger()->debug(this, false, true);
+		_debug_error_severity = SEVERITY_FATAL;
+		EngineDebugger::get_script_debugger()->debug(*this);
 		return true;
-	} else {
-		return false;
 	}
+	return false;
 }
 
-bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue) {
-	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
+bool GDScriptThreadContext::debug_break(const String &p_error, Severity p_severity) {
+	if (EngineDebugger::is_active()) {
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		bool is_error_breakpoint = p_error != "Breakpoint";
-		EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, is_error_breakpoint);
+		_debug_error_severity = p_severity;
+		EngineDebugger::get_script_debugger()->debug(*this);
 		return true;
-	} else {
-		return false;
 	}
+	return false;
 }
 
-String GDScriptLanguage::debug_get_error() const {
+String GDScriptThreadContext::debug_get_error() const {
 	return _debug_error;
 }
 
-int GDScriptLanguage::debug_get_stack_level_count() const {
+ScriptLanguageThreadContext::Severity GDScriptThreadContext::debug_get_error_severity() const {
+	return _debug_error_severity;
+}
+
+int GDScriptThreadContext::debug_get_stack_level_count() const {
 	if (_debug_parse_err_line >= 0) {
 		return 1;
 	}
@@ -253,7 +253,7 @@ int GDScriptLanguage::debug_get_stack_level_count() const {
 	return _debug_call_stack_pos;
 }
 
-int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
+int GDScriptThreadContext::debug_get_stack_level_line(int p_level) const {
 	if (_debug_parse_err_line >= 0) {
 		return _debug_parse_err_line;
 	}
@@ -265,7 +265,7 @@ int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	return *(_call_stack[l].line);
 }
 
-String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
+String GDScriptThreadContext::debug_get_stack_level_function(int p_level) const {
 	if (_debug_parse_err_line >= 0) {
 		return "";
 	}
@@ -275,7 +275,7 @@ String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	return _call_stack[l].function->get_name();
 }
 
-String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
+String GDScriptThreadContext::debug_get_stack_level_source(int p_level) const {
 	if (_debug_parse_err_line >= 0) {
 		return _debug_parse_err_file;
 	}
@@ -285,7 +285,7 @@ String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	return _call_stack[l].function->get_source();
 }
 
-void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
+void GDScriptThreadContext::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) const {
 	if (_debug_parse_err_line >= 0) {
 		return;
 	}
@@ -304,7 +304,7 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 	}
 }
 
-void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
+void GDScriptThreadContext::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) const {
 	if (_debug_parse_err_line >= 0) {
 		return;
 	}
@@ -329,7 +329,7 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 	}
 }
 
-ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
+ScriptInstance *GDScriptThreadContext::debug_get_stack_level_instance(int p_level) const {
 	if (_debug_parse_err_line >= 0) {
 		return nullptr;
 	}
@@ -342,7 +342,7 @@ ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 	return instance;
 }
 
-void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
+void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) const {
 	const HashMap<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
 	const Variant *globals = GDScriptLanguage::get_singleton()->get_global_array();
 
@@ -388,7 +388,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 	}
 }
 
-String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
+String GDScriptThreadContext::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) const {
 	return "";
 }
 
@@ -2995,7 +2995,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 
 		String st = l.substr(tc, l.length()).strip_edges();
 		if (st.is_empty() || st.begins_with("#")) {
-			continue; //ignore!
+			continue; // ignore!
 		}
 
 		int ilevel = 0;

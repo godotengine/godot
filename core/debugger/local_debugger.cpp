@@ -68,7 +68,7 @@ struct LocalDebugger::ScriptsProfiler {
 	void _print_frame_data(bool p_accumulated) {
 		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
 
-		if (!p_accumulated && diff < 1000000) { //show every one second
+		if (!p_accumulated && diff < 1000000) { // show every one second
 			return;
 		}
 
@@ -113,24 +113,43 @@ struct LocalDebugger::ScriptsProfiler {
 	}
 };
 
-void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
-	ScriptLanguage *script_lang = script_debugger->get_break_language();
+void LocalDebugger::_print_stack_header(ScriptLanguageThreadContext &p_focused_thread) {
+	const PackedByteArray tid = p_focused_thread.debug_get_thread_id();
+	print_line(vformat("#Thread %s", String::hex_encode_buffer(tid.ptr(), tid.size())));
+}
 
+void LocalDebugger::_print_status(ScriptLanguageThreadContext &p_focused_thread, int current_frame) {
+	print_line("\nDebugger Break, Reason: '" + p_focused_thread.debug_get_error() + "'");
+	_print_stack_header(p_focused_thread);
+	_print_frame(p_focused_thread, 0, 0);
+}
+
+void LocalDebugger::_print_frame(ScriptLanguageThreadContext &p_focused_thread, int printed_frame, int current_frame) {
+	String cfi = (current_frame == printed_frame) ? "*" : " "; // current frame indicator
+	print_line(cfi + "Frame " + itos(printed_frame) + " - " + p_focused_thread.debug_get_stack_level_source(printed_frame) + ":" +
+			itos(p_focused_thread.debug_get_stack_level_line(printed_frame)) + " in function '" +
+			p_focused_thread.debug_get_stack_level_function(printed_frame) + "'");
+}
+
+void LocalDebugger::debug(ScriptLanguageThreadContext &p_focused_thread) {
+	if (!p_focused_thread.is_main_thread()) {
+		// REVISIT: Thread debugging is not (yet) supported for LocalDebugger, so just let the thread
+		// run and refuse to debug it.
+		return;
+	}
 	if (!target_function.is_empty()) {
-		String current_function = script_lang->debug_get_stack_level_function(0);
+		String current_function = p_focused_thread.debug_get_stack_level_function(0);
 		if (current_function != target_function) {
-			script_debugger->set_depth(0);
-			script_debugger->set_lines_left(1);
+			p_focused_thread.debug_step();
 			return;
 		}
 		target_function = "";
 	}
 
-	print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
-	print_line("*Frame " + itos(0) + " - " + script_lang->debug_get_stack_level_source(0) + ":" + itos(script_lang->debug_get_stack_level_line(0)) + " in function '" + script_lang->debug_get_stack_level_function(0) + "'");
+	_print_status(p_focused_thread, 0);
 	print_line("Enter \"help\" for assistance.");
 	int current_frame = 0;
-	int total_frames = script_lang->debug_get_stack_level_count();
+	int total_frames = p_focused_thread.debug_get_stack_level_count();
 	while (true) {
 		OS::get_singleton()->print("debug> ");
 		String line = OS::get_singleton()->get_stdin_string().strip_edges();
@@ -139,27 +158,28 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		String variable_prefix = options["variable_prefix"];
 
 		if (line.is_empty()) {
-			print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
-			print_line("*Frame " + itos(current_frame) + " - " + script_lang->debug_get_stack_level_source(current_frame) + ":" + itos(script_lang->debug_get_stack_level_line(current_frame)) + " in function '" + script_lang->debug_get_stack_level_function(current_frame) + "'");
+			_print_status(p_focused_thread, current_frame);
 			print_line("Enter \"help\" for assistance.");
+
 		} else if (line == "c" || line == "continue") {
 			break;
-		} else if (line == "bt" || line == "breakpoint") {
+
+		} else if (line == "bt" || line == "backtrace") {
+			_print_stack_header(p_focused_thread);
 			for (int i = 0; i < total_frames; i++) {
-				String cfi = (current_frame == i) ? "*" : " "; //current frame indicator
-				print_line(cfi + "Frame " + itos(i) + " - " + script_lang->debug_get_stack_level_source(i) + ":" + itos(script_lang->debug_get_stack_level_line(i)) + " in function '" + script_lang->debug_get_stack_level_function(i) + "'");
+				_print_frame(p_focused_thread, i, current_frame);
 			}
 
 		} else if (line.begins_with("fr") || line.begins_with("frame")) {
 			if (line.get_slice_count(" ") == 1) {
-				print_line("*Frame " + itos(current_frame) + " - " + script_lang->debug_get_stack_level_source(current_frame) + ":" + itos(script_lang->debug_get_stack_level_line(current_frame)) + " in function '" + script_lang->debug_get_stack_level_function(current_frame) + "'");
+				_print_frame(p_focused_thread, current_frame, current_frame);
 			} else {
 				int frame = line.get_slicec(' ', 1).to_int();
 				if (frame < 0 || frame >= total_frames) {
 					print_line("Error: Invalid frame.");
 				} else {
 					current_frame = frame;
-					print_line("*Frame " + itos(frame) + " - " + script_lang->debug_get_stack_level_source(frame) + ":" + itos(script_lang->debug_get_stack_level_line(frame)) + " in function '" + script_lang->debug_get_stack_level_function(frame) + "'");
+					_print_frame(p_focused_thread, current_frame, current_frame);
 				}
 			}
 
@@ -192,19 +212,19 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		} else if (line == "lv" || line == "locals") {
 			List<String> locals;
 			List<Variant> values;
-			script_lang->debug_get_stack_level_locals(current_frame, &locals, &values);
+			p_focused_thread.debug_get_stack_level_locals(current_frame, &locals, &values);
 			print_variables(locals, values, variable_prefix);
 
 		} else if (line == "gv" || line == "globals") {
 			List<String> globals;
 			List<Variant> values;
-			script_lang->debug_get_globals(&globals, &values);
+			p_focused_thread.get_language()->debug_get_globals(&globals, &values);
 			print_variables(globals, values, variable_prefix);
 
 		} else if (line == "mv" || line == "members") {
 			List<String> members;
 			List<Variant> values;
-			script_lang->debug_get_stack_level_members(current_frame, &members, &values);
+			p_focused_thread.debug_get_stack_level_members(current_frame, &members, &values);
 			print_variables(members, values, variable_prefix);
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
@@ -212,26 +232,23 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				print_line("Usage: print <expre>");
 			} else {
 				String expr = line.get_slicec(' ', 2);
-				String res = script_lang->debug_parse_stack_level_expression(current_frame, expr);
+				String res = p_focused_thread.debug_parse_stack_level_expression(current_frame, expr);
 				print_line(res);
 			}
 
 		} else if (line == "s" || line == "step") {
-			script_debugger->set_depth(-1);
-			script_debugger->set_lines_left(1);
+			p_focused_thread.debug_step();
 			break;
 		} else if (line == "n" || line == "next") {
-			script_debugger->set_depth(0);
-			script_debugger->set_lines_left(1);
+			p_focused_thread.debug_next();
 			break;
 		} else if (line == "fin" || line == "finish") {
-			String current_function = script_lang->debug_get_stack_level_function(0);
+			String current_function = p_focused_thread.debug_get_stack_level_function(0);
 
 			for (int i = 0; i < total_frames; i++) {
-				target_function = script_lang->debug_get_stack_level_function(i);
+				target_function = p_focused_thread.debug_get_stack_level_function(i);
 				if (target_function != current_function) {
-					script_debugger->set_depth(0);
-					script_debugger->set_lines_left(1);
+					p_focused_thread.debug_step_out();
 					return;
 				}
 			}
@@ -270,8 +287,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		} else if (line == "q" || line == "quit") {
 			// Do not stop again on quit
 			script_debugger->clear_breakpoints();
-			script_debugger->set_depth(-1);
-			script_debugger->set_lines_left(-1);
+			p_focused_thread.debug_continue();
 
 			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
 			if (main_loop->get_class() == "SceneTree") {
@@ -316,6 +332,16 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			print_line("Error: Invalid command, enter \"help\" for assistance.");
 		}
 	}
+}
+
+void LocalDebugger::request_debug(const ScriptLanguageThreadContext &p_context) {
+	// REVISIT: Thread debugging is not (yet) supported for LocalDebugger.
+	(void)p_context;
+}
+
+void LocalDebugger::thread_paused(const ScriptLanguageThreadContext &p_context) {
+	// REVISIT: Thread debugging is not (yet) supported for LocalDebugger.
+	(void)p_context;
 }
 
 void LocalDebugger::print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix) {

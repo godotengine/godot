@@ -53,7 +53,10 @@ bool RemoteDebuggerPeerWebSocket::is_peer_connected() {
 	return ws_peer.is_valid() && ws_peer->is_connected_to_host();
 }
 
-void RemoteDebuggerPeerWebSocket::poll() {
+void RemoteDebuggerPeerWebSocket::poll(int p_channel) {
+	if (p_channel != CHANNEL_MAIN_THREAD) {
+		return;
+	}
 	ws_client->poll();
 
 	while (ws_peer->is_connected_to_host() && ws_peer->get_available_packet_count() > 0 && in_queue.size() < max_queued_messages) {
@@ -76,18 +79,24 @@ int RemoteDebuggerPeerWebSocket::get_max_message_size() const {
 	return 8 << 20; // 8 Mib
 }
 
-bool RemoteDebuggerPeerWebSocket::has_message() {
+bool RemoteDebuggerPeerWebSocket::has_message(int p_channel) {
+	if (p_channel != CHANNEL_MAIN_THREAD) {
+		return false;
+	}
 	return in_queue.size() > 0;
 }
 
-Array RemoteDebuggerPeerWebSocket::get_message() {
+Array RemoteDebuggerPeerWebSocket::get_message(int p_channel) {
+	if (p_channel != CHANNEL_MAIN_THREAD) {
+		return Array();
+	}
 	ERR_FAIL_COND_V(in_queue.size() < 1, Array());
 	Array msg = in_queue[0];
 	in_queue.pop_front();
 	return msg;
 }
 
-Error RemoteDebuggerPeerWebSocket::put_message(const Array &p_arr) {
+Error RemoteDebuggerPeerWebSocket::put_message(int, const Array &p_arr) {
 	if (out_queue.size() >= max_queued_messages) {
 		return ERR_OUT_OF_MEMORY;
 	}
@@ -102,7 +111,8 @@ void RemoteDebuggerPeerWebSocket::close() {
 	ws_client->disconnect_from_host();
 }
 
-bool RemoteDebuggerPeerWebSocket::can_block() const {
+bool RemoteDebuggerPeerWebSocket::can_block(int p_channel) const {
+	(void)p_channel;
 #ifdef WEB_ENABLED
 	return false;
 #else

@@ -950,16 +950,34 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	variable.type = Variant::get_type_name(stack_var.value.get_type());
 	variable.variablesReference = parse_variant(stack_var.value);
 
-	variable_list.find(variable_id)->value.push_back(variable.to_json());
+	HashMap<int, Array>::Iterator it = variable_list.find(variable_id);
+	ERR_FAIL_COND(it == variable_list.end());
+	it->value.push_back(variable.to_json());
 	_remaining_vars--;
 }
 
+static const HashSet<String> s_handled_messages = [] {
+	HashSet<String> temp;
+	for (const String &value : {
+				 "debug_enter",
+				 "debug_exit",
+				 "debug_enter_thread",
+				 "debug_exit_thread",
+				 "stack_dump",
+				 "stack_frame_vars",
+				 "stack_frame_var",
+				 "output",
+				 "request_quit" }) {
+		temp.insert(value);
+	}
+	return temp;
+}();
+
 void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_data) {
 	// Ignore data that is already handled by DAP
-	if (p_msg == "debug_enter" || p_msg == "debug_exit" || p_msg == "stack_dump" || p_msg == "stack_frame_vars" || p_msg == "stack_frame_var" || p_msg == "output" || p_msg == "request_quit") {
+	if (s_handled_messages.has(p_msg)) {
 		return;
 	}
-
 	notify_custom_data(p_msg, p_data);
 }
 

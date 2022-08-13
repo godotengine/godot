@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  local_debugger.h                                                     */
+/*  thread_info.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LOCAL_DEBUGGER_H
-#define LOCAL_DEBUGGER_H
+#include "thread_info.h"
 
-#include "core/debugger/engine_debugger.h"
-#include "core/object/script_language.h"
-#include "core/templates/list.h"
+#include "scene/gui/tree.h"
 
-class LocalDebugger : public EngineDebugger {
-	struct ScriptsProfiler;
+namespace editor::dbg::sd {
 
-	ScriptsProfiler *scripts_profiler = nullptr;
+const ThreadInfo::DebugThreadID &ThreadInfo::get_debug_thread_id() const {
+	return debug_thread_id;
+}
 
-	String target_function;
-	HashMap<String, String> options;
+const String &ThreadInfo::get_debug_thread_id_hex() const {
+	// Lazy update the hex string and cache it.
+	if (debug_thread_id.size() > 0) {
+		if (debug_thread_id_hex.size() < 1) {
+			debug_thread_id_hex = String::hex_encode_buffer(debug_thread_id.ptr(), debug_thread_id.size());
+		}
+	} else {
+		if (debug_thread_id_hex.size() > 0) {
+			debug_thread_id_hex.clear();
+		}
+	}
+	return debug_thread_id_hex;
+}
 
-	Pair<String, int> to_breakpoint(const String &p_line);
-	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
+void ThreadInfo::free_tree_item() {
+	if (nullptr == tree_item) {
+		return;
+	}
+	memdelete(tree_item);
+	tree_item = nullptr;
+}
 
-	void _print_stack_header(ScriptLanguageThreadContext &p_focused_thread);
-	void _print_status(ScriptLanguageThreadContext &p_focused_thread, int current_frame);
-	void _print_frame(ScriptLanguageThreadContext &p_focused_thread, int printed_frame, int current_frame);
+ThreadInfo::ThreadInfo(int p_thread_number, const DebugThreadID &p_debug_thread_id, bool p_is_main_thread) {
+	thread_number = p_thread_number;
+	debug_thread_id = p_debug_thread_id;
+	is_main_thread = p_is_main_thread;
+}
 
-public:
-	void debug(ScriptLanguageThreadContext &p_focused_thread) override;
-	void request_debug(const ScriptLanguageThreadContext &p_context) override;
-	void thread_paused(const ScriptLanguageThreadContext &p_context) override;
-	void send_message(const String &p_message, const Array &p_args) override;
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) override;
+ThreadInfo::~ThreadInfo() = default;
 
-	LocalDebugger();
-	~LocalDebugger();
-};
-
-#endif // LOCAL_DEBUGGER_H
+} // namespace editor::dbg::sd
