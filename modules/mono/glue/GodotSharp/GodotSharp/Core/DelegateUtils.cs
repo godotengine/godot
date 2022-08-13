@@ -181,9 +181,9 @@ namespace Godot
                                 if (variantType == Variant.Type.Nil)
                                     return false;
 
-                                static byte[] Var2Bytes(in godot_variant var)
+                                static byte[] VarToBytes(in godot_variant var)
                                 {
-                                    NativeFuncs.godotsharp_var2bytes(var, false.ToGodotBool(), out var varBytes);
+                                    NativeFuncs.godotsharp_var_to_bytes(var, false.ToGodotBool(), out var varBytes);
                                     using (varBytes)
                                         return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
                                 }
@@ -192,7 +192,7 @@ namespace Godot
 
                                 var fieldValue = field.GetValue(target);
                                 using var fieldValueVariant = Marshaling.ConvertManagedObjectToVariant(fieldValue);
-                                byte[] valueBuffer = Var2Bytes(fieldValueVariant);
+                                byte[] valueBuffer = VarToBytes(fieldValueVariant);
                                 writer.Write(valueBuffer.Length);
                                 writer.Write(valueBuffer);
                             }
@@ -448,7 +448,7 @@ namespace Godot
 
                             FieldInfo? fieldInfo = targetType.GetField(name,
                                 BindingFlags.Instance | BindingFlags.Public);
-                            fieldInfo?.SetValue(recreatedTarget, GD.Bytes2Var(valueBuffer));
+                            fieldInfo?.SetValue(recreatedTarget, GD.BytesToVar(valueBuffer));
                         }
 
                         @delegate = Delegate.CreateDelegate(delegateType, recreatedTarget, methodInfo,

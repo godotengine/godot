@@ -396,20 +396,20 @@ struct VariantUtilityFunctions {
 		return Math::move_toward(from, to, delta);
 	}
 
-	static inline double deg2rad(double angle_deg) {
-		return Math::deg2rad(angle_deg);
+	static inline double deg_to_rad(double angle_deg) {
+		return Math::deg_to_rad(angle_deg);
 	}
 
-	static inline double rad2deg(double angle_rad) {
-		return Math::rad2deg(angle_rad);
+	static inline double rad_to_deg(double angle_rad) {
+		return Math::rad_to_deg(angle_rad);
 	}
 
-	static inline double linear2db(double linear) {
-		return Math::linear2db(linear);
+	static inline double linear_to_db(double linear) {
+		return Math::linear_to_db(linear);
 	}
 
-	static inline double db2linear(double db) {
-		return Math::db2linear(db);
+	static inline double db_to_linear(double db) {
+		return Math::db_to_linear(db);
 	}
 
 	static inline Variant wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
@@ -837,13 +837,13 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline String var2str(const Variant &p_var) {
+	static inline String var_to_str(const Variant &p_var) {
 		String vars;
 		VariantWriter::write_to_string(p_var, vars);
 		return vars;
 	}
 
-	static inline Variant str2var(const String &p_var) {
+	static inline Variant str_to_var(const String &p_var) {
 		VariantParser::StreamString ss;
 		ss.s = p_var;
 
@@ -855,7 +855,7 @@ struct VariantUtilityFunctions {
 		return ret;
 	}
 
-	static inline PackedByteArray var2bytes(const Variant &p_var) {
+	static inline PackedByteArray var_to_bytes(const Variant &p_var) {
 		int len;
 		Error err = encode_variant(p_var, nullptr, len, false);
 		if (err != OK) {
@@ -875,7 +875,7 @@ struct VariantUtilityFunctions {
 		return barr;
 	}
 
-	static inline PackedByteArray var2bytes_with_objects(const Variant &p_var) {
+	static inline PackedByteArray var_to_bytes_with_objects(const Variant &p_var) {
 		int len;
 		Error err = encode_variant(p_var, nullptr, len, true);
 		if (err != OK) {
@@ -895,7 +895,7 @@ struct VariantUtilityFunctions {
 		return barr;
 	}
 
-	static inline Variant bytes2var(const PackedByteArray &p_arr) {
+	static inline Variant bytes_to_var(const PackedByteArray &p_arr) {
 		Variant ret;
 		{
 			const uint8_t *r = p_arr.ptr();
@@ -907,7 +907,7 @@ struct VariantUtilityFunctions {
 		return ret;
 	}
 
-	static inline Variant bytes2var_with_objects(const PackedByteArray &p_arr) {
+	static inline Variant bytes_to_var_with_objects(const PackedByteArray &p_arr) {
 		Variant ret;
 		{
 			const uint8_t *r = p_arr.ptr();
@@ -1428,10 +1428,10 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(deg2rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(rad2deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(deg_to_rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(rad_to_deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(linear_to_db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(db_to_linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR3(wrap, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1479,14 +1479,14 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(var2str, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDR(str2var, sarray("string"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(var_to_str, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(str_to_var, sarray("string"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(var2bytes, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDR(bytes2var, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(var_to_bytes, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(bytes_to_var, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(var2bytes_with_objects, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDR(bytes2var_with_objects, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(var_to_bytes_with_objects, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(bytes_to_var_with_objects, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(hash, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 

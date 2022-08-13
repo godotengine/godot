@@ -41,15 +41,15 @@ bool SkeletonModification2DLookAt::_set(const StringName &p_path, const Variant 
 	if (path.begins_with("enable_constraint")) {
 		set_enable_constraint(p_value);
 	} else if (path.begins_with("constraint_angle_min")) {
-		set_constraint_angle_min(Math::deg2rad(float(p_value)));
+		set_constraint_angle_min(Math::deg_to_rad(float(p_value)));
 	} else if (path.begins_with("constraint_angle_max")) {
-		set_constraint_angle_max(Math::deg2rad(float(p_value)));
+		set_constraint_angle_max(Math::deg_to_rad(float(p_value)));
 	} else if (path.begins_with("constraint_angle_invert")) {
 		set_constraint_angle_invert(p_value);
 	} else if (path.begins_with("constraint_in_localspace")) {
 		set_constraint_in_localspace(p_value);
 	} else if (path.begins_with("additional_rotation")) {
-		set_additional_rotation(Math::deg2rad(float(p_value)));
+		set_additional_rotation(Math::deg_to_rad(float(p_value)));
 	}
 
 #ifdef TOOLS_ENABLED
@@ -67,15 +67,15 @@ bool SkeletonModification2DLookAt::_get(const StringName &p_path, Variant &r_ret
 	if (path.begins_with("enable_constraint")) {
 		r_ret = get_enable_constraint();
 	} else if (path.begins_with("constraint_angle_min")) {
-		r_ret = Math::rad2deg(get_constraint_angle_min());
+		r_ret = Math::rad_to_deg(get_constraint_angle_min());
 	} else if (path.begins_with("constraint_angle_max")) {
-		r_ret = Math::rad2deg(get_constraint_angle_max());
+		r_ret = Math::rad_to_deg(get_constraint_angle_max());
 	} else if (path.begins_with("constraint_angle_invert")) {
 		r_ret = get_constraint_angle_invert();
 	} else if (path.begins_with("constraint_in_localspace")) {
 		r_ret = get_constraint_in_localspace();
 	} else if (path.begins_with("additional_rotation")) {
-		r_ret = Math::rad2deg(get_additional_rotation());
+		r_ret = Math::rad_to_deg(get_additional_rotation());
 	}
 
 #ifdef TOOLS_ENABLED

@@ -2284,13 +2284,13 @@ bool PhysicalBone3D::ConeJointData::_set(const StringName &p_name, const Variant
 	}
 
 	if ("joint_constraints/swing_span" == p_name) {
-		swing_span = Math::deg2rad(real_t(p_value));
+		swing_span = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN, swing_span);
 		}
 
 	} else if ("joint_constraints/twist_span" == p_name) {
-		twist_span = Math::deg2rad(real_t(p_value));
+		twist_span = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN, twist_span);
 		}
@@ -2326,9 +2326,9 @@ bool PhysicalBone3D::ConeJointData::_get(const StringName &p_name, Variant &r_re
 	}
 
 	if ("joint_constraints/swing_span" == p_name) {
-		r_ret = Math::rad2deg(swing_span);
+		r_ret = Math::rad_to_deg(swing_span);
 	} else if ("joint_constraints/twist_span" == p_name) {
-		r_ret = Math::rad2deg(twist_span);
+		r_ret = Math::rad_to_deg(twist_span);
 	} else if ("joint_constraints/bias" == p_name) {
 		r_ret = bias;
 	} else if ("joint_constraints/softness" == p_name) {
@@ -2364,13 +2364,13 @@ bool PhysicalBone3D::HingeJointData::_set(const StringName &p_name, const Varian
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		angular_limit_upper = Math::deg2rad(real_t(p_value));
+		angular_limit_upper = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER, angular_limit_upper);
 		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		angular_limit_lower = Math::deg2rad(real_t(p_value));
+		angular_limit_lower = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER, angular_limit_lower);
 		}
@@ -2408,9 +2408,9 @@ bool PhysicalBone3D::HingeJointData::_get(const StringName &p_name, Variant &r_r
 	if ("joint_constraints/angular_limit_enabled" == p_name) {
 		r_ret = angular_limit_enabled;
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_upper);
+		r_ret = Math::rad_to_deg(angular_limit_upper);
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_lower);
+		r_ret = Math::rad_to_deg(angular_limit_lower);
 	} else if ("joint_constraints/angular_limit_bias" == p_name) {
 		r_ret = angular_limit_bias;
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
@@ -2471,13 +2471,13 @@ bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Varia
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		angular_limit_upper = Math::deg2rad(real_t(p_value));
+		angular_limit_upper = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_UPPER, angular_limit_upper);
 		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		angular_limit_lower = Math::deg2rad(real_t(p_value));
+		angular_limit_lower = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_LOWER, angular_limit_lower);
 		}
@@ -2523,9 +2523,9 @@ bool PhysicalBone3D::SliderJointData::_get(const StringName &p_name, Variant &r_
 	} else if ("joint_constraints/linear_limit_damping" == p_name) {
 		r_ret = linear_limit_damping;
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_upper);
+		r_ret = Math::rad_to_deg(angular_limit_upper);
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_lower);
+		r_ret = Math::rad_to_deg(angular_limit_lower);
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
 		r_ret = angular_limit_softness;
 	} else if ("joint_constraints/angular_limit_restitution" == p_name) {
@@ -2649,13 +2649,13 @@ bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Varia
 		}
 
 	} else if ("angular_limit_upper" == var_name) {
-		axis_data[axis].angular_limit_upper = Math::deg2rad(real_t(p_value));
+		axis_data[axis].angular_limit_upper = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_UPPER_LIMIT, axis_data[axis].angular_limit_upper);
 		}
 
 	} else if ("angular_limit_lower" == var_name) {
-		axis_data[axis].angular_limit_lower = Math::deg2rad(real_t(p_value));
+		axis_data[axis].angular_limit_lower = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_LOWER_LIMIT, axis_data[axis].angular_limit_lower);
 		}
@@ -2765,9 +2765,9 @@ bool PhysicalBone3D::SixDOFJointData::_get(const StringName &p_name, Variant &r_
 	} else if ("angular_limit_enabled" == var_name) {
 		r_ret = axis_data[axis].angular_limit_enabled;
 	} else if ("angular_limit_upper" == var_name) {
-		r_ret = Math::rad2deg(axis_data[axis].angular_limit_upper);
+		r_ret = Math::rad_to_deg(axis_data[axis].angular_limit_upper);
 	} else if ("angular_limit_lower" == var_name) {
-		r_ret = Math::rad2deg(axis_data[axis].angular_limit_lower);
+		r_ret = Math::rad_to_deg(axis_data[axis].angular_limit_lower);
 	} else if ("angular_limit_softness" == var_name) {
 		r_ret = axis_data[axis].angular_limit_softness;
 	} else if ("angular_restitution" == var_name) {

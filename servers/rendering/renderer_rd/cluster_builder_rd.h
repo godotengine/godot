@@ -269,7 +269,7 @@ public:
 			//spot
 			radius *= shared->cone_overfit; // overfit icosphere
 
-			real_t len = Math::tan(Math::deg2rad(p_spot_aperture)) * radius;
+			real_t len = Math::tan(Math::deg_to_rad(p_spot_aperture)) * radius;
 			//approximate, probably better to use a cone support function
 			float max_d = -1e20;
 			float min_d = 1e20;
@@ -293,7 +293,7 @@ public:
 				float dist = base_plane.distance_to(Vector3());
 				if (dist >= 0 && dist < radius) {
 					//inside, check angle
-					float angle = Math::rad2deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_column(Vector3::AXIS_Z))));
+					float angle = Math::rad_to_deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_column(Vector3::AXIS_Z))));
 					e.touches_near = angle < p_spot_aperture * 1.05; //overfit aperture a little due to cone overfit
 				} else {
 					e.touches_near = false;

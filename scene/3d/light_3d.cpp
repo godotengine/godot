@@ -149,7 +149,7 @@ AABB Light3D::get_aabb() const {
 
 	} else if (type == RenderingServer::LIGHT_SPOT) {
 		real_t len = param[PARAM_RANGE];
-		real_t size = Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE])) * len;
+		real_t size = Math::tan(Math::deg_to_rad(param[PARAM_SPOT_ANGLE])) * len;
 		return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 	}
 

@@ -1528,7 +1528,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						}
 
-						real_t db = Math::linear2db(MAX(blend, 0.00001));
+						real_t db = Math::linear_to_db(MAX(blend, 0.00001));
 						if (t->object->has_method(SNAME("set_unit_db"))) {
 							t->object->call(SNAME("set_unit_db"), db);
 						} else {

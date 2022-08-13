@@ -1295,7 +1295,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 
 	//min_p = p_arc_xform.affine_inverse().xform(min_p);
 	float a = (Math_PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
-	return Math::rad2deg(a);
+	return Math::rad_to_deg(a);
 }
 
 void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -1421,8 +1421,8 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 120; i++) {
 			// Create a circle
-			const float ra = Math::deg2rad((float)(i * 3));
-			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const float ra = Math::deg_to_rad((float)(i * 3));
+			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
 			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -1458,13 +1458,13 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		SpotLight3D *sl = Object::cast_to<SpotLight3D>(light);
 
 		float r = sl->get_param(Light3D::PARAM_RANGE);
-		float w = r * Math::sin(Math::deg2rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
-		float d = r * Math::cos(Math::deg2rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
+		float w = r * Math::sin(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
+		float d = r * Math::cos(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
 
 		for (int i = 0; i < 120; i++) {
 			// Draw a circle
-			const float ra = Math::deg2rad((float)(i * 3));
-			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const float ra = Math::deg_to_rad((float)(i * 3));
+			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
 			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
@@ -1545,8 +1545,8 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo
 	float closest_angle = 1e20;
 
 	for (int i = 0; i < 180; i++) {
-		float a = Math::deg2rad((float)i);
-		float an = Math::deg2rad((float)(i + 1));
+		float a = Math::deg_to_rad((float)i);
+		float an = Math::deg_to_rad((float)(i + 1));
 
 		Vector3 from(Math::sin(a), 0, -Math::cos(a));
 		Vector3 to(Math::sin(an), 0, -Math::cos(an));
@@ -1628,8 +1628,8 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 120; i++) {
 			// Create a circle.
-			const float ra = Math::deg2rad((float)(i * 3));
-			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const float ra = Math::deg_to_rad((float)(i * 3));
+			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
 			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -1671,8 +1671,8 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (player->is_emission_angle_enabled()) {
 		const float pc = player->get_emission_angle();
-		const float ofs = -Math::cos(Math::deg2rad(pc));
-		const float radius = Math::sin(Math::deg2rad(pc));
+		const float ofs = -Math::cos(Math::deg_to_rad(pc));
+		const float radius = Math::sin(Math::deg_to_rad(pc));
 
 		Vector<Vector3> points_primary;
 		points_primary.resize(200);
@@ -1707,7 +1707,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points_secondary, material_secondary);
 
 		Vector<Vector3> handles;
-		const float ha = Math::deg2rad(player->get_emission_angle());
+		const float ha = Math::deg_to_rad(player->get_emission_angle());
 		handles.push_back(Vector3(Math::sin(ha), 0, -Math::cos(ha)));
 		p_gizmo->add_handles(handles, get_material("handles"));
 	}
@@ -1872,7 +1872,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			// The real FOV is halved for accurate representation
 			float fov = camera->get_fov() / 2.0;
 
-			Vector3 side = Vector3(Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)));
+			Vector3 side = Vector3(Math::sin(Math::deg_to_rad(fov)), 0, -Math::cos(Math::deg_to_rad(fov)));
 			Vector3 nside = side;
 			nside.x = -nside.x;
 			Vector3 up = Vector3(0, side.x, 0);
@@ -2643,8 +2643,8 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	float r = car_wheel->get_radius();
 	const int skip = 10;
 	for (int i = 0; i <= 360; i += skip) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + skip);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + skip);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -3272,8 +3272,8 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> points;
 
 		for (int i = 0; i <= 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -4517,8 +4517,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> points;
 
 		for (int i = 0; i <= 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -4589,8 +4589,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Vector3 d(0, height * 0.5 - radius, 0);
 		for (int i = 0; i < 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
@@ -4660,8 +4660,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Vector3 d(0, height * 0.5, 0);
 		for (int i = 0; i < 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
@@ -5203,8 +5203,8 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 
 	//swing
 	for (int i = 0; i < 360; i += 10) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 10);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + 10);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
@@ -5221,12 +5221,12 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(1, 0, 0))).origin);
 
 	/// Twist
-	float ts = Math::rad2deg(p_twist);
+	float ts = Math::rad_to_deg(p_twist);
 	ts = MIN(ts, 720);
 
 	for (int i = 0; i < int(ts); i += 5) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 5);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + 5);
 		float c = i / 720.0;
 		float cn = (i + 5) / 720.0;
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;

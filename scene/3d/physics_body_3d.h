@@ -414,8 +414,8 @@ private:
 	uint32_t platform_floor_layers = UINT32_MAX;
 	uint32_t platform_wall_layers = 0;
 	real_t floor_snap_length = 0.1;
-	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
-	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
+	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
+	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
 	Vector3 velocity;
 	Vector3 floor_normal;

@@ -745,12 +745,12 @@ void CPUParticles2D::_particles_process(double p_delta) {
 				p.start_color_rand = Color(1, 1, 1, 1);
 			}
 
-			real_t angle1_rad = direction.angle() + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
+			real_t angle1_rad = direction.angle() + Math::deg_to_rad((Math::randf() * 2.0 - 1.0) * spread);
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
 			p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], (real_t)Math::randf());
 
 			real_t base_angle = tex_angle * Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
-			p.rotation = Math::deg2rad(base_angle);
+			p.rotation = Math::deg_to_rad(base_angle);
 
 			p.custom[0] = 0.0; // unused
 			p.custom[1] = 0.0; // phase [0..1]
@@ -912,7 +912,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			}
 			real_t base_angle = (tex_angle)*Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
 			base_angle += p.custom[1] * lifetime * tex_angular_velocity * Math::lerp(parameters_min[PARAM_ANGULAR_VELOCITY], parameters_max[PARAM_ANGULAR_VELOCITY], rand_from_seed(alt_seed));
-			p.rotation = Math::deg2rad(base_angle); //angle
+			p.rotation = Math::deg_to_rad(base_angle); //angle
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand) + tv * tex_anim_speed * Math::lerp(parameters_min[PARAM_ANIM_SPEED], parameters_max[PARAM_ANIM_SPEED], rand_from_seed(alt_seed));
 		}
 		//apply color

@@ -766,13 +766,13 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			}
 
 			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-				real_t angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
+				real_t angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg_to_rad((Math::randf() * 2.0 - 1.0) * spread);
 				Vector3 rot = Vector3(Math::cos(angle1_rad), Math::sin(angle1_rad), 0.0);
 				p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], (real_t)Math::randf());
 			} else {
 				//initiate velocity spread in 3D
-				real_t angle1_rad = Math::deg2rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * spread);
-				real_t angle2_rad = Math::deg2rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * ((real_t)1.0 - flatness) * spread);
+				real_t angle1_rad = Math::deg_to_rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * spread);
+				real_t angle2_rad = Math::deg_to_rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * ((real_t)1.0 - flatness) * spread);
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
@@ -796,7 +796,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			}
 
 			real_t base_angle = tex_angle * Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
-			p.custom[0] = Math::deg2rad(base_angle); //angle
+			p.custom[0] = Math::deg_to_rad(base_angle); //angle
 			p.custom[1] = 0.0; //phase
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand); //animation offset (0-1)
 			p.transform = Transform3D();
@@ -1007,7 +1007,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			}
 			real_t base_angle = (tex_angle)*Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
 			base_angle += p.custom[1] * lifetime * tex_angular_velocity * Math::lerp(parameters_min[PARAM_ANGULAR_VELOCITY], parameters_max[PARAM_ANGULAR_VELOCITY], rand_from_seed(alt_seed));
-			p.custom[0] = Math::deg2rad(base_angle); //angle
+			p.custom[0] = Math::deg_to_rad(base_angle); //angle
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand) + tv * tex_anim_speed * Math::lerp(parameters_min[PARAM_ANIM_SPEED], parameters_max[PARAM_ANIM_SPEED], rand_from_seed(alt_seed)); //angle
 		}
 		//apply color

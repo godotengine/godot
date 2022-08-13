@@ -229,11 +229,11 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ double deg_to_rad(double p_y) { return p_y * (Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ float deg_to_rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
 
-	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ double rad_to_deg(double p_y) { return p_y * (180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ float rad_to_deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
@@ -331,11 +331,11 @@ public:
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 
-	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ float linear_to_db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
 
-	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ double db_to_linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ float db_to_linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
 
 	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }

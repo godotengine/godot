@@ -223,8 +223,8 @@ public:
 		grid_step_x->set_value(p_grid_step.x);
 		grid_step_y->set_value(p_grid_step.y);
 		primary_grid_steps->set_value(p_primary_grid_steps);
-		rotation_offset->set_value(Math::rad2deg(p_rotation_offset));
-		rotation_step->set_value(Math::rad2deg(p_rotation_step));
+		rotation_offset->set_value(Math::rad_to_deg(p_rotation_offset));
+		rotation_step->set_value(Math::rad_to_deg(p_rotation_step));
 		scale_step->set_value(p_scale_step);
 	}
 
@@ -232,8 +232,8 @@ public:
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
 		p_primary_grid_steps = int(primary_grid_steps->get_value());
-		p_rotation_offset = Math::deg2rad(rotation_offset->get_value());
-		p_rotation_step = Math::deg2rad(rotation_step->get_value());
+		p_rotation_offset = Math::deg_to_rad(rotation_offset->get_value());
+		p_rotation_step = Math::deg_to_rad(rotation_step->get_value());
 		p_scale_step = scale_step->get_value();
 	}
 };
@@ -1447,7 +1447,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 						drag_selection,
 						vformat(TTR("Rotate CanvasItem \"%s\" to %d degrees"),
 								drag_selection[0]->get_name(),
-								Math::rad2deg(drag_selection[0]->_edit_get_rotation())),
+								Math::rad_to_deg(drag_selection[0]->_edit_get_rotation())),
 						true);
 			}
 
@@ -3676,7 +3676,7 @@ void CanvasItemEditor::_draw_transform_message() {
 		} break;
 
 		case DRAG_ROTATE: {
-			real_t delta = Math::rad2deg(current_transform.get_rotation() - original_transform.get_rotation());
+			real_t delta = Math::rad_to_deg(current_transform.get_rotation() - original_transform.get_rotation());
 			transform_message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
 		} break;
 

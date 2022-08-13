@@ -5176,7 +5176,7 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, const GLTFNodeIndex 
 		SpotLight3D *light = memnew(SpotLight3D);
 		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
 		light->set_param(SpotLight3D::PARAM_RANGE, range);
-		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
+		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(l->outer_cone_angle));
 		light->set_color(l->color);
 
 		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
@@ -5200,7 +5200,7 @@ Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, const GLTFNodeInd
 	Ref<GLTFCamera> c = state->cameras[gltf_node->camera];
 	camera->set_projection(c->get_perspective() ? Camera3D::PROJECTION_PERSPECTIVE : Camera3D::PROJECTION_ORTHOGONAL);
 	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
-	camera->set_fov(Math::rad2deg(c->get_fov()));
+	camera->set_fov(Math::rad_to_deg(c->get_fov()));
 	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
 	camera->set_size(c->get_size_mag() * 2.0f);
 	camera->set_near(c->get_depth_near());
@@ -5215,7 +5215,7 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 	c.instantiate();
 	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
 	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
-	c->set_fov(Math::deg2rad(p_camera->get_fov()));
+	c->set_fov(Math::deg_to_rad(p_camera->get_fov()));
 	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
 	c->set_size_mag(p_camera->get_size() * 0.5f);
 	c->set_depth_far(p_camera->get_far());
@@ -5246,7 +5246,7 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 		SpotLight3D *light = cast_to<SpotLight3D>(p_light);
 		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
 		l->intensity = light->get_param(SpotLight3D::PARAM_ENERGY);
-		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
+		l->outer_cone_angle = Math::deg_to_rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
 
 		// This equation is the inverse of the import equation (which has a desmos link).
 		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight3D::PARAM_SPOT_ATTENUATION)));

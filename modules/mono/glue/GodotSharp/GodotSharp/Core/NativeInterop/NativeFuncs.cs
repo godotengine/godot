@@ -461,7 +461,7 @@ namespace Godot.NativeInterop
 
         // GD, etc
 
-        internal static partial void godotsharp_bytes2var(in godot_packed_byte_array p_bytes,
+        internal static partial void godotsharp_bytes_to_var(in godot_packed_byte_array p_bytes,
             godot_bool p_allow_objects,
             out godot_variant r_ret);
 
@@ -504,12 +504,12 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_str(in godot_array p_what, out godot_string r_ret);
 
-        internal static partial void godotsharp_str2var(in godot_string p_str, out godot_variant r_ret);
+        internal static partial void godotsharp_str_to_var(in godot_string p_str, out godot_variant r_ret);
 
-        internal static partial void godotsharp_var2bytes(in godot_variant p_what, godot_bool p_full_objects,
+        internal static partial void godotsharp_var_to_bytes(in godot_variant p_what, godot_bool p_full_objects,
             out godot_packed_byte_array r_bytes);
 
-        internal static partial void godotsharp_var2str(in godot_variant p_var, out godot_string r_ret);
+        internal static partial void godotsharp_var_to_str(in godot_variant p_var, out godot_string r_ret);
 
         internal static partial void godotsharp_pusherror(in godot_string p_str);
 

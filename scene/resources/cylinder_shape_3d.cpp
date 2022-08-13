@@ -40,8 +40,8 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 
 	Vector3 d(0, height * 0.5, 0);
 	for (int i = 0; i < 360; i++) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 1);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + 1);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 

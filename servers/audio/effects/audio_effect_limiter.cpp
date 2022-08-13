@@ -32,11 +32,11 @@
 
 void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float threshdb = base->threshold;
-	float ceiling = Math::db2linear(base->ceiling);
+	float ceiling = Math::db_to_linear(base->ceiling);
 	float ceildb = base->ceiling;
-	float makeup = Math::db2linear(ceildb - threshdb);
+	float makeup = Math::db_to_linear(ceildb - threshdb);
 	float sc = -base->soft_clip;
-	float scv = Math::db2linear(sc);
+	float scv = Math::db_to_linear(sc);
 	float peakdb = ceildb + 25;
 	float scmult = Math::abs((ceildb - sc) / (peakdb - sc));
 
@@ -49,14 +49,14 @@ void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFr
 		float sign1 = (spl1 < 0.0 ? -1.0 : 1.0);
 		float abs0 = Math::abs(spl0);
 		float abs1 = Math::abs(spl1);
-		float overdb0 = Math::linear2db(abs0) - ceildb;
-		float overdb1 = Math::linear2db(abs1) - ceildb;
+		float overdb0 = Math::linear_to_db(abs0) - ceildb;
+		float overdb1 = Math::linear_to_db(abs1) - ceildb;
 
 		if (abs0 > scv) {
-			spl0 = sign0 * (scv + Math::db2linear(overdb0 * scmult));
+			spl0 = sign0 * (scv + Math::db_to_linear(overdb0 * scmult));
 		}
 		if (abs1 > scv) {
-			spl1 = sign1 * (scv + Math::db2linear(overdb1 * scmult));
+			spl1 = sign1 * (scv + Math::db_to_linear(overdb1 * scmult));
 		}
 
 		spl0 = MIN(ceiling, Math::abs(spl0)) * (spl0 < 0.0 ? -1.0 : 1.0);

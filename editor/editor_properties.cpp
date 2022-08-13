@@ -1458,7 +1458,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 	}
 
 	if (angle_in_radians) {
-		val = Math::deg2rad(val);
+		val = Math::deg_to_rad(val);
 	}
 	emit_changed(get_edited_property(), val);
 }
@@ -1466,7 +1466,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 void EditorPropertyFloat::update_property() {
 	double val = get_edited_object()->get(get_edited_property());
 	if (angle_in_radians) {
-		val = Math::rad2deg(val);
+		val = Math::rad_to_deg(val);
 	}
 	setting = true;
 	spin->set_value(val);
@@ -1988,9 +1988,9 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
 	if (angle_in_radians) {
-		v3.x = Math::deg2rad(v3.x);
-		v3.y = Math::deg2rad(v3.y);
-		v3.z = Math::deg2rad(v3.z);
+		v3.x = Math::deg_to_rad(v3.x);
+		v3.y = Math::deg_to_rad(v3.y);
+		v3.z = Math::deg_to_rad(v3.z);
 	}
 	emit_changed(get_edited_property(), v3, p_name);
 }
@@ -2022,9 +2022,9 @@ void EditorPropertyVector3::_update_ratio() {
 
 void EditorPropertyVector3::update_using_vector(Vector3 p_vector) {
 	if (angle_in_radians) {
-		p_vector.x = Math::rad2deg(p_vector.x);
-		p_vector.y = Math::rad2deg(p_vector.y);
-		p_vector.z = Math::rad2deg(p_vector.z);
+		p_vector.x = Math::rad_to_deg(p_vector.x);
+		p_vector.y = Math::rad_to_deg(p_vector.y);
+		p_vector.z = Math::rad_to_deg(p_vector.z);
 	}
 	setting = true;
 	spin[0]->set_value(p_vector.x);
@@ -2039,9 +2039,9 @@ Vector3 EditorPropertyVector3::get_vector() {
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
 	if (angle_in_radians) {
-		v3.x = Math::deg2rad(v3.x);
-		v3.y = Math::deg2rad(v3.y);
-		v3.z = Math::deg2rad(v3.z);
+		v3.x = Math::deg_to_rad(v3.x);
+		v3.y = Math::deg_to_rad(v3.y);
+		v3.z = Math::deg_to_rad(v3.z);
 	}
 
 	return v3;
@@ -2643,9 +2643,9 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	edit_euler.z = euler[2]->get_value();
 
 	Vector3 v;
-	v.x = Math::deg2rad(edit_euler.x);
-	v.y = Math::deg2rad(edit_euler.y);
-	v.z = Math::deg2rad(edit_euler.z);
+	v.x = Math::deg_to_rad(edit_euler.x);
+	v.y = Math::deg_to_rad(edit_euler.y);
+	v.z = Math::deg_to_rad(edit_euler.z);
 
 	Quaternion temp_q = Quaternion(v);
 	spin[0]->set_value(temp_q.x);
@@ -2685,9 +2685,9 @@ void EditorPropertyQuaternion::update_property() {
 	spin[3]->set_value(val.w);
 	if (!is_grabbing_euler()) {
 		Vector3 v = val.normalized().get_euler_yxz();
-		edit_euler.x = Math::rad2deg(v.x);
-		edit_euler.y = Math::rad2deg(v.y);
-		edit_euler.z = Math::rad2deg(v.z);
+		edit_euler.x = Math::rad_to_deg(v.x);
+		edit_euler.y = Math::rad_to_deg(v.y);
+		edit_euler.z = Math::rad_to_deg(v.z);
 		euler[0]->set_value(edit_euler.x);
 		euler[1]->set_value(edit_euler.y);
 		euler[2]->set_value(edit_euler.z);

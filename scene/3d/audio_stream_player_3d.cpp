@@ -149,7 +149,7 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 
 	if (uniformity > 0.0) {
 		float distance = listener_area_pos.length();
-		float attenuation = Math::db2linear(_get_attenuation_db(distance));
+		float attenuation = Math::db_to_linear(_get_attenuation_db(distance));
 
 		// Determine the fraction of sound that would come from each speaker if they were all driven uniformly.
 		float center_val[3] = { 0.5f, 0.25f, 0.16666f };
@@ -213,12 +213,12 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	float att = 0;
 	switch (attenuation_model) {
 		case ATTENUATION_INVERSE_DISTANCE: {
-			att = Math::linear2db(1.0 / ((p_distance / unit_size) + CMP_EPSILON));
+			att = Math::linear_to_db(1.0 / ((p_distance / unit_size) + CMP_EPSILON));
 		} break;
 		case ATTENUATION_INVERSE_SQUARE_DISTANCE: {
 			float d = (p_distance / unit_size);
 			d *= d;
-			att = Math::linear2db(1.0 / (d + CMP_EPSILON));
+			att = Math::linear_to_db(1.0 / (d + CMP_EPSILON));
 		} break;
 		case ATTENUATION_LOGARITHMIC: {
 			att = -20 * Math::log(p_distance / unit_size + CMP_EPSILON);
@@ -443,7 +443,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 		}
 
-		float multiplier = Math::db2linear(_get_attenuation_db(dist));
+		float multiplier = Math::db_to_linear(_get_attenuation_db(dist));
 		if (max_distance > 0) {
 			multiplier *= MAX(0, 1.0 - (dist / max_distance));
 		}
@@ -453,13 +453,13 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		if (emission_angle_enabled) {
 			Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
 			float c = listenertopos.normalized().dot(get_global_transform().basis.get_column(2).normalized()); //it's z negative
-			float angle = Math::rad2deg(Math::acos(c));
+			float angle = Math::rad_to_deg(Math::acos(c));
 			if (angle > emission_angle) {
 				db_att -= -emission_angle_filter_attenuation_db;
 			}
 		}
 
-		linear_attenuation = Math::db2linear(db_att);
+		linear_attenuation = Math::db_to_linear(db_att);
 		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 		}
