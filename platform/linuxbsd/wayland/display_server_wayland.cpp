@@ -773,12 +773,13 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	PointerData &pd = ss->pointer_data_buffer;
+	// Restore the cursor with our own cursor surface.
 	struct wl_cursor_image *cursor_image = wls->cursor_images[wls->cursor_shape];
+	if (cursor_image) {
+		wl_pointer_set_cursor(wl_pointer, serial, ss->cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+	}
 
-	wl_pointer_set_cursor(ss->wl_pointer, serial, ss->cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
-
-	wl_surface_commit(ss->cursor_surface);
+	PointerData &pd = ss->pointer_data_buffer;
 
 	pd.pointed_window_id = INVALID_WINDOW_ID;
 
