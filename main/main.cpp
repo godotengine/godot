@@ -1997,10 +1997,16 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
-		if (i > 0) {
+		const String driver_name = TextServerManager::get_singleton()->get_interface(i)->get_name();
+		if (driver_name == "Dummy") {
+			// Dummy text driver cannot draw any text, making the editor unusable if selected.
+			continue;
+		}
+		if (!text_driver_options.is_empty() && text_driver_options.find(",") == -1) {
+			// Not the first option; add a comma before it as a separator for the property hint.
 			text_driver_options += ",";
 		}
-		text_driver_options += TextServerManager::get_singleton()->get_interface(i)->get_name();
+		text_driver_options += driver_name;
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 
