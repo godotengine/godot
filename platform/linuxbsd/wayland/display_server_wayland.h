@@ -66,6 +66,12 @@
 
 #undef CursorShape
 
+// Fix the wl_array_for_each macro to work with C++. This is based on the
+// original from `wayland-util.h` in the Wayland client library.
+#undef wl_array_for_each
+#define wl_array_for_each(pos, array) \
+	for (pos = (decltype(pos))(array)->data; (const char *)pos < ((const char *)(array)->data + (array)->size); (pos)++)
+
 class DisplayServerWayland : public DisplayServer {
 	// Wayland stuff.
 

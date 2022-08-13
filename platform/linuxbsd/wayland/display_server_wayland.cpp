@@ -1310,12 +1310,9 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 	// the compositor reports otherwise.
 	wd->mode = WINDOW_MODE_WINDOWED;
 
-	// There _is_ a macro made to iterate `wl_array`s, but it's broken on C++
-	// since it's meant for C and nobody bothered to fix it yet, so we'll have to
-	// do it manually (which is kinda ugly).
-	// See also: https://gitlab.freedesktop.org/wayland/wayland/-/issues/34
-	for (int i = 0; i < ((int)states->size); i++) {
-		switch (((int *)states->data)[i]) {
+	uint32_t *state = nullptr;
+	wl_array_for_each(state, states) {
+		switch (*state) {
 			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
 				wd->mode = WINDOW_MODE_MAXIMIZED;
 			} break;
