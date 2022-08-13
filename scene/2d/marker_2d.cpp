@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  position_2d.cpp                                                      */
+/*  marker_2d.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "position_2d.h"
+#include "marker_2d.h"
 
-void Position2D::_draw_cross() {
+void Marker2D::_draw_cross() {
 	const real_t extents = get_gizmo_extents();
 
 	// Add more points to create a "hard stop" in the color gradient.
@@ -50,7 +50,7 @@ void Position2D::_draw_cross() {
 
 	// Use the axis color which is brighter for the positive axis.
 	// Use a darkened axis color for the negative axis.
-	// This makes it possible to see in which direction the Position3D node is rotated
+	// This makes it possible to see in which direction the Marker3D node is rotated
 	// (which can be important depending on how it's used).
 	// Axis colors are taken from `axis_x_color` and `axis_y_color` (defined in `editor/editor_themes.cpp`).
 	const Color color_x = Color(0.96, 0.20, 0.32);
@@ -73,17 +73,17 @@ void Position2D::_draw_cross() {
 }
 
 #ifdef TOOLS_ENABLED
-Rect2 Position2D::_edit_get_rect() const {
+Rect2 Marker2D::_edit_get_rect() const {
 	real_t extents = get_gizmo_extents();
 	return Rect2(Point2(-extents, -extents), Size2(extents * 2, extents * 2));
 }
 
-bool Position2D::_edit_use_rect() const {
+bool Marker2D::_edit_use_rect() const {
 	return false;
 }
 #endif
 
-void Position2D::_notification(int p_what) {
+void Marker2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			update();
@@ -100,21 +100,21 @@ void Position2D::_notification(int p_what) {
 	}
 }
 
-void Position2D::set_gizmo_extents(real_t p_extents) {
+void Marker2D::set_gizmo_extents(real_t p_extents) {
 	gizmo_extents = p_extents;
 	update();
 }
 
-real_t Position2D::get_gizmo_extents() const {
+real_t Marker2D::get_gizmo_extents() const {
 	return gizmo_extents;
 }
 
-void Position2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_gizmo_extents", "extents"), &Position2D::set_gizmo_extents);
-	ClassDB::bind_method(D_METHOD("get_gizmo_extents"), &Position2D::get_gizmo_extents);
+void Marker2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_gizmo_extents", "extents"), &Marker2D::set_gizmo_extents);
+	ClassDB::bind_method(D_METHOD("get_gizmo_extents"), &Marker2D::get_gizmo_extents);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,1000,0.1,or_greater,suffix:px"), "set_gizmo_extents", "get_gizmo_extents");
 }
 
-Position2D::Position2D() {
+Marker2D::Marker2D() {
 }
