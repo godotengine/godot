@@ -192,7 +192,31 @@ namespace Godot.SourceGenerators
                 location?.SourceTree?.FilePath));
         }
 
-        public static void ReportSignalDelegateSignatureNotSupported(
+        public static void ReportSignalParameterTypeNotSupported(
+            GeneratorExecutionContext context,
+            IParameterSymbol parameterSymbol)
+        {
+            var locations = parameterSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            string message = "The parameter of the delegate signature of the signal " +
+                             $"is not supported: '{parameterSymbol.ToDisplayString()}'";
+
+            string description = $"{message}. Use supported types only or remove the '[Signal]' attribute.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GODOT-G0202",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
+        public static void ReportSignalDelegateSignatureMustReturnVoid(
             GeneratorExecutionContext context,
             INamedTypeSymbol delegateSymbol)
         {
@@ -200,12 +224,12 @@ namespace Godot.SourceGenerators
             var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
 
             string message = "The delegate signature of the signal " +
-                             $"is not supported: '{delegateSymbol.ToDisplayString()}'";
+                             $"must return void: '{delegateSymbol.ToDisplayString()}'";
 
-            string description = $"{message}. Use supported types only or remove the '[Signal]' attribute.";
+            string description = $"{message}. Return void or remove the '[Signal]' attribute.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0202",
+                new DiagnosticDescriptor(id: "GODOT-G0203",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
