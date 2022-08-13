@@ -351,10 +351,11 @@
 				Emitted when [method TreeItem.propagate_check] is called. Connect to this signal to process the items that are affected when [method TreeItem.propagate_check] is invoked. The order that the items affected will be processed is as follows: the item that invoked the method, children of that item, and finally parents of that item.
 			</description>
 		</signal>
-		<signal name="column_title_pressed">
+		<signal name="column_title_clicked">
 			<param index="0" name="column" type="int" />
+			<param index="1" name="mouse_button_index" type="int" />
 			<description>
-				Emitted when a column's title is pressed.
+				Emitted when a column's title is clicked with either [constant MOUSE_BUTTON_LEFT] or [constant MOUSE_BUTTON_RIGHT].
 			</description>
 		</signal>
 		<signal name="custom_item_clicked">

@@ -3340,7 +3340,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		bool rtl = is_layout_rtl();
 
 		if (!mb->is_pressed()) {
-			if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT ||
+					mb->get_button_index() == MouseButton::RIGHT) {
 				Point2 pos = mb->get_position();
 				if (rtl) {
 					pos.x = get_size().width - pos.x;
@@ -3354,14 +3355,16 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 						int len = 0;
 						for (int i = 0; i < columns.size(); i++) {
 							len += get_column_width(i);
-							if (pos.x < len) {
-								emit_signal(SNAME("column_title_pressed"), i);
+							if (pos.x < static_cast<real_t>(len)) {
+								emit_signal(SNAME("column_title_clicked"), i, mb->get_button_index());
 								break;
 							}
 						}
 					}
 				}
+			}
 
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (single_select_defer) {
 					select_single_item(single_select_defer, root, single_select_defer_column);
 					single_select_defer = nullptr;
@@ -3449,18 +3452,15 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					pos.y -= _get_title_button_height();
 
 					if (pos.y < 0) {
-						if (mb->get_button_index() == MouseButton::LEFT) {
-							pos.x += cache.offset.x;
-							int len = 0;
-							for (int i = 0; i < columns.size(); i++) {
-								len += get_column_width(i);
-								if (pos.x < len) {
-									cache.click_type = Cache::CLICK_TITLE;
-									cache.click_index = i;
-									//cache.click_id=;
-									update();
-									break;
-								}
+						pos.x += cache.offset.x;
+						int len = 0;
+						for (int i = 0; i < columns.size(); i++) {
+							len += get_column_width(i);
+							if (pos.x < static_cast<real_t>(len)) {
+								cache.click_type = Cache::CLICK_TITLE;
+								cache.click_index = i;
+								update();
+								break;
 							}
 						}
 						break;
@@ -5027,7 +5027,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_clicked", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
 	ADD_SIGNAL(MethodInfo("item_activated"));
-	ADD_SIGNAL(MethodInfo("column_title_pressed", PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("column_title_clicked", PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
