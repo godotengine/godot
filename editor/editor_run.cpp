@@ -30,11 +30,11 @@
 
 #include "editor_run.h"
 
-#include "plugins/script_editor_plugin.h"
-#include "script_editor_debugger.h"
-
 #include "core/project_settings.h"
 #include "editor_settings.h"
+#include "main/main.h"
+#include "plugins/script_editor_plugin.h"
+#include "script_editor_debugger.h"
 
 EditorRun::Status EditorRun::get_status() const {
 	return status;
@@ -46,6 +46,11 @@ String EditorRun::get_running_scene() const {
 
 Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 	List<String> args;
+
+	const Vector<String> &forwardable_args = Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_PROJECT);
+	for (int i = 0; i < forwardable_args.size(); i++) {
+		args.push_back(forwardable_args[i]);
+	}
 
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 
@@ -99,10 +104,6 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		// Fixed monitor ID
 		// There are 3 special options, so decrement the option ID by 3 to get the monitor ID
 		screen -= 3;
-	}
-
-	if (OS::get_singleton()->is_disable_crash_handler()) {
-		args.push_back("--disable-crash-handler");
 	}
 
 	Rect2 screen_rect;

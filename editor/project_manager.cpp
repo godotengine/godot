@@ -43,6 +43,7 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
+#include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -2015,22 +2016,15 @@ void ProjectManager::_open_selected_projects() {
 
 		List<String> args;
 
+		const Vector<String> &forwardable_args = Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL);
+		for (int i = 0; i < forwardable_args.size(); i++) {
+			args.push_back(forwardable_args[i]);
+		}
+
 		args.push_back("--path");
 		args.push_back(path);
 
 		args.push_back("--editor");
-
-		if (OS::get_singleton()->is_stdout_debug_enabled()) {
-			args.push_back("--debug");
-		}
-
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			args.push_back("--verbose");
-		}
-
-		if (OS::get_singleton()->is_disable_crash_handler()) {
-			args.push_back("--disable-crash-handler");
-		}
 
 		String exec = OS::get_singleton()->get_executable_path();
 
@@ -2115,12 +2109,13 @@ void ProjectManager::_run_project_confirm() {
 
 		List<String> args;
 
+		const Vector<String> &forwardable_args = Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_PROJECT);
+		for (int j = 0; j < forwardable_args.size(); j++) {
+			args.push_back(forwardable_args[j]);
+		}
+
 		args.push_back("--path");
 		args.push_back(path);
-
-		if (OS::get_singleton()->is_disable_crash_handler()) {
-			args.push_back("--disable-crash-handler");
-		}
 
 		String exec = OS::get_singleton()->get_executable_path();
 
