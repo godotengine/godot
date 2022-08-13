@@ -154,6 +154,8 @@ static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+static int converter_max_kb_file = 4 * 1024; // 4MB
+static int converter_max_line_length = 100000;
 
 HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
@@ -391,8 +393,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>                Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
-	OS::get_singleton()->print("  --convert-3to4                               Converts project from Godot 3.x to Godot 4.x.\n");
-	OS::get_singleton()->print("  --validate-conversion-3to4                   Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
+	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]              Converts project from Godot 3.x to Godot 4.x.\n");
+	OS::get_singleton()->print("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]  Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --doctool [<path>]                           Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
@@ -1071,10 +1073,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
+
+			if (I->next() && !I->next()->get().begins_with("-")) {
+				if (itos(I->next()->get().to_int()) == I->next()->get()) {
+					converter_max_kb_file = I->next()->get().to_int();
+				}
+				if (I->next()->next() && !I->next()->next()->get().begins_with("-")) {
+					if (itos(I->next()->next()->get().to_int()) == I->next()->next()->get()) {
+						converter_max_line_length = I->next()->next()->get().to_int();
+					}
+				}
+			}
 		} else if (I->get() == "--validate-conversion-3to4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
+
+			if (I->next() && !I->next()->get().begins_with("-")) {
+				if (itos(I->next()->get().to_int()) == I->next()->get()) {
+					converter_max_kb_file = I->next()->get().to_int();
+				}
+				if (I->next()->next() && !I->next()->next()->get().begins_with("-")) {
+					if (itos(I->next()->next()->get().to_int()) == I->next()->next()->get()) {
+						converter_max_line_length = I->next()->next()->get().to_int();
+					}
+				}
+			}
 		} else if (I->get() == "--doctool") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
@@ -2378,12 +2402,12 @@ bool Main::start() {
 	}
 
 	if (converting_project) {
-		int exit_code = ProjectConverter3To4().convert();
+		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).convert();
 		OS::get_singleton()->set_exit_code(exit_code);
 		return false;
 	}
 	if (validating_converting_project) {
-		int exit_code = ProjectConverter3To4().validate_conversion();
+		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).validate_conversion();
 		OS::get_singleton()->set_exit_code(exit_code);
 		return false;
 	}
