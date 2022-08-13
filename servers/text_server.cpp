@@ -1627,7 +1627,7 @@ Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, cons
 					ret.push_back(Vector2i(prev, i));
 					ret.push_back(Vector2i(i, i + 1));
 					prev = i + 1;
-				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
+				} else if (!local && (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
 					if (prev != i) {
 						ret.push_back(Vector2i(prev, i));
 					}
