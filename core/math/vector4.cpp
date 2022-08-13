@@ -91,6 +91,10 @@ real_t Vector4::distance_to(const Vector4 &p_to) const {
 	return (p_to - *this).length();
 }
 
+real_t Vector4::distance_squared_to(const Vector4 &p_to) const {
+	return (p_to - *this).length_squared();
+}
+
 Vector4 Vector4::direction_to(const Vector4 &p_to) const {
 	Vector4 ret(p_to.x - x, p_to.y - y, p_to.z - z, p_to.w - w);
 	ret.normalize();

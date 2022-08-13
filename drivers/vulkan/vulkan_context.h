@@ -70,9 +70,9 @@ public:
 	};
 
 	struct VRSCapabilities {
-		bool pipeline_vrs_supported; // We can specify our fragment rate on a pipeline level
-		bool primitive_vrs_supported; // We can specify our fragment rate on each drawcall
-		bool attachment_vrs_supported; // We can provide a density map attachment on our framebuffer
+		bool pipeline_vrs_supported; // We can specify our fragment rate on a pipeline level.
+		bool primitive_vrs_supported; // We can specify our fragment rate on each drawcall.
+		bool attachment_vrs_supported; // We can provide a density map attachment on our framebuffer.
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
@@ -107,7 +107,7 @@ private:
 	bool device_initialized = false;
 	bool inst_initialized = false;
 
-	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise
+	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise.
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
 	uint32_t vulkan_patch = 0;
@@ -267,7 +267,7 @@ protected:
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
 public:
-	// Extension calls
+	// Extension calls.
 	VkResult vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
 
 	uint32_t get_vulkan_major() const { return vulkan_major; };

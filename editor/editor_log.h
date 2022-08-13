@@ -67,6 +67,16 @@ private:
 		}
 	};
 
+	struct {
+		Color error_color;
+		Ref<Texture2D> error_icon;
+
+		Color warning_color;
+		Ref<Texture2D> warning_icon;
+
+		Color message_color;
+	} theme_cache;
+
 	// Encapsulates all data and functionality regarding filters.
 	struct LogFilter {
 	private:

@@ -101,7 +101,7 @@
 			<param index="0" name="anim" type="StringName" />
 			<param index="1" name="newname" type="StringName" />
 			<description>
-				Changes the animation's name to [code]newname[/code].
+				Changes the animation's name to [param newname].
 			</description>
 		</method>
 		<method name="set_animation_loop">

@@ -36,7 +36,7 @@
 			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="add_constant_torque">
@@ -69,7 +69,7 @@
 			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -79,7 +79,7 @@
 			<description>
 				Applies a positioned impulse to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_torque">
@@ -206,14 +206,14 @@
 			<param index="0" name="body" type="Node" />
 			<description>
 				Emitted when a collision with another [PhysicsBody3D] or [GridMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<param index="0" name="body" type="Node" />
 			<description>
 				Emitted when the collision with another [PhysicsBody3D] or [GridMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -223,10 +223,10 @@
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of this RigidDynamicBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -236,10 +236,10 @@
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when the collision between one of this RigidDynamicBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

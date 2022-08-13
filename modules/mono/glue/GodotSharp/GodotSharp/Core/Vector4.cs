@@ -140,7 +140,6 @@ namespace Godot
             }
         }
 
-
         /// <summary>
         /// Returns a new vector with all components in absolute values (i.e. positive).
         /// </summary>
@@ -178,16 +177,59 @@ namespace Godot
             );
         }
 
-
         /// <summary>
-        /// Returns a new vector with all components rounded down (towards negative infinity).
+        /// Performs a cubic interpolation between vectors <paramref name="preA"/>, this vector,
+        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
         /// </summary>
-        /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
-        public Vector4 Floor()
+        /// <param name="b">The destination vector.</param>
+        /// <param name="preA">A vector before this vector.</param>
+        /// <param name="postB">A vector after <paramref name="b"/>.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The interpolated vector.</returns>
+        public Vector4 CubicInterpolate(Vector4 b, Vector4 preA, Vector4 postB, real_t weight)
         {
-            return new Vector4(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z), Mathf.Floor(w));
+            return new Vector4
+            (
+                Mathf.CubicInterpolate(x, b.x, preA.x, postB.x, weight),
+                Mathf.CubicInterpolate(y, b.y, preA.y, postB.y, weight),
+                Mathf.CubicInterpolate(y, b.z, preA.z, postB.z, weight),
+                Mathf.CubicInterpolate(w, b.w, preA.w, postB.w, weight)
+            );
         }
 
+        /// <summary>
+        /// Returns the normalized vector pointing from this vector to <paramref name="to"/>.
+        /// </summary>
+        /// <param name="to">The other vector to point towards.</param>
+        /// <returns>The direction from this vector to <paramref name="to"/>.</returns>
+        public Vector4 DirectionTo(Vector4 to)
+        {
+            Vector4 ret = new Vector4(to.x - x, to.y - y, to.z - z, to.w - w);
+            ret.Normalize();
+            return ret;
+        }
+
+        /// <summary>
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
+        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
+        /// you need to compare vectors or need the squared distance for some formula.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The squared distance between the two vectors.</returns>
+        public real_t DistanceSquaredTo(Vector4 to)
+        {
+            return (to - this).LengthSquared();
+        }
+
+        /// <summary>
+        /// Returns the distance between this vector and <paramref name="to"/>.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The distance between the two vectors.</returns>
+        public real_t DistanceTo(Vector4 to)
+        {
+            return (to - this).Length();
+        }
 
         /// <summary>
         /// Returns the dot product of this vector and <paramref name="with"/>.
@@ -197,6 +239,15 @@ namespace Godot
         public real_t Dot(Vector4 with)
         {
             return (x * with.x) + (y * with.y) + (z * with.z) + (w + with.w);
+        }
+
+        /// <summary>
+        /// Returns a new vector with all components rounded down (towards negative infinity).
+        /// </summary>
+        /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
+        public Vector4 Floor()
+        {
+            return new Vector4(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z), Mathf.Floor(w));
         }
 
         /// <summary>
@@ -318,6 +369,42 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components
+        /// and <paramref name="mod"/>.
+        /// </summary>
+        /// <param name="mod">A value representing the divisor of the operation.</param>
+        /// <returns>
+        /// A vector with each component <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="mod"/>.
+        /// </returns>
+        public Vector4 PosMod(real_t mod)
+        {
+            return new Vector4(
+                Mathf.PosMod(x, mod),
+                Mathf.PosMod(y, mod),
+                Mathf.PosMod(z, mod),
+                Mathf.PosMod(w, mod)
+            );
+        }
+
+        /// <summary>
+        /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components
+        /// and <paramref name="modv"/>'s components.
+        /// </summary>
+        /// <param name="modv">A vector representing the divisors of the operation.</param>
+        /// <returns>
+        /// A vector with each component <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="modv"/>'s components.
+        /// </returns>
+        public Vector4 PosMod(Vector4 modv)
+        {
+            return new Vector4(
+                Mathf.PosMod(x, modv.x),
+                Mathf.PosMod(y, modv.y),
+                Mathf.PosMod(z, modv.z),
+                Mathf.PosMod(w, modv.w)
+            );
+        }
+
+        /// <summary>
         /// Returns this vector with all components rounded to the nearest integer,
         /// with halfway cases rounded towards the nearest multiple of two.
         /// </summary>
@@ -341,6 +428,21 @@ namespace Godot
             v.z = Mathf.Sign(z);
             v.w = Mathf.Sign(w);
             return v;
+        }
+
+        /// <summary>
+        /// Returns this vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// This can also be used to round to an arbitrary number of decimals.
+        /// </summary>
+        /// <param name="step">A vector value representing the step size to snap to.</param>
+        public Vector4 Snapped(Vector4 step)
+        {
+            return new Vector4(
+                Mathf.Snapped(x, step.x),
+                Mathf.Snapped(y, step.y),
+                Mathf.Snapped(z, step.z),
+                Mathf.Snapped(w, step.w)
+            );
         }
 
         // Constants

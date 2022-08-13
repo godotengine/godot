@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Dijkstra2D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+    <brief_description>
+        Dijkstra class representation that uses 2D vectors as edges.
+    </brief_description>
+    <description>
+        This is a wrapper for the [Dijkstra3D] class which uses 2D vectors instead of 3D vectors.
+    </description>
+    <tutorials>
+    </tutorials>
+    <methods>
+    </methods>
+</class>

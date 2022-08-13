@@ -17,7 +17,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Adds a bone, with name [code]name[/code]. [method get_bone_count] will become the bone index.
+				Adds a bone, with name [param name]. [method get_bone_count] will become the bone index.
 			</description>
 		</method>
 		<method name="add_bone_child">
@@ -64,7 +64,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the bone index that matches [code]name[/code] as its name.
+				Returns the bone index that matches [param name] as its name.
 			</description>
 		</method>
 		<method name="force_update_all_bone_transforms">
@@ -77,14 +77,14 @@
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Force updates the bone transform for the bone at [code]bone_idx[/code] and all of its children.
+				Force updates the bone transform for the bone at [param bone_idx] and all of its children.
 			</description>
 		</method>
 		<method name="get_bone_children">
 			<return type="PackedInt32Array" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns an array containing the bone indexes of all the children node of the passed in bone, [code]bone_idx[/code].
+				Returns an array containing the bone indexes of all the children node of the passed in bone, [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
@@ -111,36 +111,36 @@
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the global pose override transform for [code]bone_idx[/code].
+				Returns the global pose override transform for [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_global_rest" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the global rest transform for [code]bone_idx[/code].
+				Returns the global rest transform for [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the local pose override transform for [code]bone_idx[/code].
+				Returns the local pose override transform for [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the name of the bone at index [code]index[/code].
+				Returns the name of the bone at index [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_parent" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the bone index which is the parent of the bone at [code]bone_idx[/code]. If -1, then bone has no parent.
-				[b]Note:[/b] The parent bone returned will always be less than [code]bone_idx[/code].
+				Returns the bone index which is the parent of the bone at [param bone_idx]. If -1, then bone has no parent.
+				[b]Note:[/b] The parent bone returned will always be less than [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_pose" qualifiers="const">
@@ -172,7 +172,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the rest transform for a bone [code]bone_idx[/code].
+				Returns the rest transform for a bone [param bone_idx].
 			</description>
 		</method>
 		<method name="get_modification_stack">
@@ -209,7 +209,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="basis" type="Basis" />
 			<description>
-				Rotates the given [Basis] so that the forward axis of the Basis is facing in the forward direction of the bone at [code]bone_idx[/code].
+				Rotates the given [Basis] so that the forward axis of the Basis is facing in the forward direction of the bone at [param bone_idx].
 				This is helper function to make using [method Transform3D.looking_at] easier with bone poses.
 			</description>
 		</method>
@@ -217,7 +217,7 @@
 			<return type="bool" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns whether the bone pose for the bone at [code]bone_idx[/code] is enabled.
+				Returns whether the bone pose for the bone at [param bone_idx] is enabled.
 			</description>
 		</method>
 		<method name="local_pose_to_global_pose">
@@ -225,7 +225,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="local_pose" type="Transform3D" />
 			<description>
-				Converts the passed-in local pose to a global pose relative to the inputted bone, [code]bone_idx[/code].
+				Converts the passed-in local pose to a global pose relative to the inputted bone, [param bone_idx].
 				This could be used to convert [method get_bone_pose] for use with the [method set_bone_global_pose_override] function.
 			</description>
 		</method>
@@ -277,7 +277,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="child_bone_idx" type="int" />
 			<description>
-				Removes the passed in child bone index, [code]child_bone_idx[/code], from the passed-in bone, [code]bone_idx[/code], if it exists.
+				Removes the passed in child bone index, [param child_bone_idx], from the passed-in bone, [param bone_idx], if it exists.
 				[b]Note:[/b] This does not remove the child bone, but instead it removes the connection it has to the parent bone.
 			</description>
 		</method>
@@ -286,7 +286,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="bone_children" type="PackedInt32Array" />
 			<description>
-				Sets the children for the passed in bone, [code]bone_idx[/code], to the passed-in array of bone indexes, [code]bone_children[/code].
+				Sets the children for the passed in bone, [param bone_idx], to the passed-in array of bone indexes, [param bone_children].
 			</description>
 		</method>
 		<method name="set_bone_enabled">
@@ -294,7 +294,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="enabled" type="bool" default="true" />
 			<description>
-				Disables the pose for the bone at [code]bone_idx[/code] if [code]false[/code], enables the bone pose if [code]true[/code].
+				Disables the pose for the bone at [param bone_idx] if [code]false[/code], enables the bone pose if [code]true[/code].
 			</description>
 		</method>
 		<method name="set_bone_global_pose_override">
@@ -304,8 +304,8 @@
 			<param index="2" name="amount" type="float" />
 			<param index="3" name="persistent" type="bool" default="false" />
 			<description>
-				Sets the global pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
+				[param amount] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a global pose! Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to a global pose.
 			</description>
 		</method>
@@ -316,8 +316,8 @@
 			<param index="2" name="amount" type="float" />
 			<param index="3" name="persistent" type="bool" default="false" />
 			<description>
-				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				Sets the local pose transform, [param pose], for the bone at [param bone_idx].
+				[param amount] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
 			</description>
 		</method>
@@ -333,8 +333,8 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="parent_idx" type="int" />
 			<description>
-				Sets the bone index [code]parent_idx[/code] as the parent of the bone at [code]bone_idx[/code]. If -1, then bone has no parent.
-				[b]Note:[/b] [code]parent_idx[/code] must be less than [code]bone_idx[/code].
+				Sets the bone index [param parent_idx] as the parent of the bone at [param bone_idx]. If -1, then bone has no parent.
+				[b]Note:[/b] [param parent_idx] must be less than [param bone_idx].
 			</description>
 		</method>
 		<method name="set_bone_pose_position">
@@ -363,21 +363,21 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="rest" type="Transform3D" />
 			<description>
-				Sets the rest transform for bone [code]bone_idx[/code].
+				Sets the rest transform for bone [param bone_idx].
 			</description>
 		</method>
 		<method name="set_modification_stack">
 			<return type="void" />
 			<param index="0" name="modification_stack" type="SkeletonModificationStack3D" />
 			<description>
-				Sets the modification stack for this skeleton to the passed-in modification stack, [code]modification_stack[/code].
+				Sets the modification stack for this skeleton to the passed-in modification stack, [param modification_stack].
 			</description>
 		</method>
 		<method name="unparent_bone_and_rest">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Unparents the bone at [code]bone_idx[/code] and sets its rest position to that of its parent prior to being reset.
+				Unparents the bone at [param bone_idx] and sets its rest position to that of its parent prior to being reset.
 			</description>
 		</method>
 		<method name="world_transform_to_global_pose">

@@ -16,7 +16,7 @@
 			<param index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<param index="3" name="length" type="int" default="1" />
 			<description>
-				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
+				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
 			</description>
 		</method>
 		<method name="add_string">
@@ -49,7 +49,7 @@
 			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="3" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draw all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="draw_dropcap" qualifiers="const">
@@ -58,7 +58,7 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draw drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="draw_dropcap_outline" qualifiers="const">
@@ -68,7 +68,7 @@
 			<param index="2" name="outline_size" type="int" default="1" />
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draw drop cap outline into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw drop cap outline into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="draw_line" qualifiers="const">
@@ -78,7 +78,7 @@
 			<param index="2" name="line" type="int" />
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draw single line of text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="draw_line_outline" qualifiers="const">
@@ -89,7 +89,7 @@
 			<param index="3" name="outline_size" type="int" default="1" />
 			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draw outline of the single line of text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw outline of the single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="draw_outline" qualifiers="const">
@@ -100,7 +100,7 @@
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="get_dropcap_lines" qualifiers="const">

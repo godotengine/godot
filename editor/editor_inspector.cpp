@@ -2662,7 +2662,7 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, nullptr, ped);
 	}
 
-	StringName type_name;
+	StringName doc_name;
 
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
@@ -2735,7 +2735,7 @@ void EditorInspector::update_tree() {
 
 			String type = p.name;
 			String label = p.name;
-			type_name = p.name;
+			doc_name = p.name;
 
 			// Set the category icon.
 			if (!ClassDB::class_exists(type) && !ScriptServer::is_global_class(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
@@ -2746,6 +2746,10 @@ void EditorInspector::update_tree() {
 				if (script.is_valid()) {
 					base_type = script->get_instance_base_type();
 					name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+					Vector<DocData::ClassDoc> docs = script->get_documentation();
+					if (!docs.is_empty()) {
+						doc_name = docs[0].name;
+					}
 					if (name != StringName() && label != name) {
 						label = name;
 					}
@@ -2774,17 +2778,17 @@ void EditorInspector::update_tree() {
 
 			if (use_doc_hints) {
 				// Sets the category tooltip to show documentation.
-				if (!class_descr_cache.has(type_name)) {
+				if (!class_descr_cache.has(doc_name)) {
 					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
-					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(type_name);
+					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
 					if (E) {
 						descr = DTR(E->value.brief_description);
 					}
-					class_descr_cache[type_name] = descr;
+					class_descr_cache[doc_name] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type_name].is_empty() ? "" : class_descr_cache[type_name]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
 			}
 
 			// Add editors at the start of a category.
@@ -3082,7 +3086,7 @@ void EditorInspector::update_tree() {
 			// Build the doc hint, to use as tooltip.
 
 			// Get the class name.
-			StringName classname = type_name == "" ? object->get_class_name() : type_name;
+			StringName classname = doc_name == "" ? object->get_class_name() : doc_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
 			}

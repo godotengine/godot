@@ -101,14 +101,14 @@
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Sets the bone index, [code]bone_index[/code], of the first bone. When possible, this will also update the [code]bone_name[/code] of the first bone based on data provided by the [Skeleton3D].
+				Sets the bone index, [param bone_idx], of the first bone. When possible, this will also update the [code]bone_name[/code] of the first bone based on data provided by the [Skeleton3D].
 			</description>
 		</method>
 		<method name="set_joint_one_bone_name">
 			<return type="void" />
 			<param index="0" name="bone_name" type="String" />
 			<description>
-				Sets the bone name, [code]bone_name[/code], of the first bone. When possible, this will also update the [code]bone_index[/code] of the first bone based on data provided by the [Skeleton3D].
+				Sets the bone name, [param bone_name], of the first bone. When possible, this will also update the [code]bone_index[/code] of the first bone based on data provided by the [Skeleton3D].
 			</description>
 		</method>
 		<method name="set_joint_one_length">
@@ -129,14 +129,14 @@
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Sets the bone index, [code]bone_index[/code], of the second bone. When possible, this will also update the [code]bone_name[/code] of the second bone based on data provided by the [Skeleton3D].
+				Sets the bone index, [param bone_idx], of the second bone. When possible, this will also update the [code]bone_name[/code] of the second bone based on data provided by the [Skeleton3D].
 			</description>
 		</method>
 		<method name="set_joint_two_bone_name">
 			<return type="void" />
 			<param index="0" name="bone_name" type="String" />
 			<description>
-				Sets the bone name, [code]bone_name[/code], of the second bone. When possible, this will also update the [code]bone_index[/code] of the second bone based on data provided by the [Skeleton3D].
+				Sets the bone name, [param bone_name], of the second bone. When possible, this will also update the [code]bone_index[/code] of the second bone based on data provided by the [Skeleton3D].
 			</description>
 		</method>
 		<method name="set_joint_two_length">

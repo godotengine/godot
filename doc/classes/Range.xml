@@ -72,7 +72,7 @@
 			<param index="0" name="value" type="float" />
 			<description>
 				Emitted when [member value] changes. When used on a [Slider], this is called continuously while dragging (potentially every frame). If you are performing an expensive operation in a function connected to [signal value_changed], consider using a [i]debouncing[/i] [Timer] to call the function less often.
-				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [code]value[/code] is set directly via code.
+				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [param value] is set directly via code.
 			</description>
 		</signal>
 	</signals>

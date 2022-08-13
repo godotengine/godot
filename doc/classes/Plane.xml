@@ -30,7 +30,7 @@
 			<param index="2" name="c" type="float" />
 			<param index="3" name="d" type="float" />
 			<description>
-				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [code]a[/code], [code]b[/code] and [code]c[/code], and the plane has a distance of [code]d[/code] from the origin.
+				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [param a], [param b] and [param c], and the plane has a distance of [param d] from the origin.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -77,7 +77,7 @@
 			<return type="float" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
-				Returns the shortest distance from the plane to the position [code]point[/code]. If the point is above the plane, the distance will be positive. If below, the distance will be negative.
+				Returns the shortest distance from the plane to the position [param point]. If the point is above the plane, the distance will be positive. If below, the distance will be negative.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -85,7 +85,7 @@
 			<param index="0" name="point" type="Vector3" />
 			<param index="1" name="tolerance" type="float" default="1e-05" />
 			<description>
-				Returns [code]true[/code] if [code]point[/code] is inside the plane. Comparison uses a custom minimum [code]tolerance[/code] threshold.
+				Returns [code]true[/code] if [param point] is inside the plane. Comparison uses a custom minimum [param tolerance] threshold.
 			</description>
 		</method>
 		<method name="intersect_3" qualifiers="const">
@@ -93,7 +93,7 @@
 			<param index="0" name="b" type="Plane" />
 			<param index="1" name="c" type="Plane" />
 			<description>
-				Returns the intersection point of the three planes [code]b[/code], [code]c[/code] and this plane. If no intersection is found, [code]null[/code] is returned.
+				Returns the intersection point of the three planes [param b], [param c] and this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="intersects_ray" qualifiers="const">
@@ -101,7 +101,7 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<description>
-				Returns the intersection point of a ray consisting of the position [code]from[/code] and the direction normal [code]dir[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
+				Returns the intersection point of a ray consisting of the position [param from] and the direction normal [param dir] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">
@@ -109,21 +109,21 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
 			<description>
-				Returns the intersection point of a segment from position [code]from[/code] to position [code]to[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
+				Returns the intersection point of a segment from position [param from] to position [param to] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="to_plane" type="Plane" />
 			<description>
-				Returns [code]true[/code] if this plane and [code]plane[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this plane and [param to_plane] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_point_over" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if [code]point[/code] is located above the plane.
+				Returns [code]true[/code] if [param point] is located above the plane.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -136,7 +136,7 @@
 			<return type="Vector3" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
-				Returns the orthogonal projection of [code]point[/code] into a point in the plane.
+				Returns the orthogonal projection of [param point] into a point in the plane.
 			</description>
 		</method>
 	</methods>

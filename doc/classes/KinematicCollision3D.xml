@@ -66,6 +66,12 @@
 				Returns the number of detected collisions.
 			</description>
 		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the colliding body's length of overlap along the collision normal.
+			</description>
+		</method>
 		<method name="get_local_shape" qualifiers="const">
 			<return type="Object" />
 			<param index="0" name="collision_index" type="int" default="0" />

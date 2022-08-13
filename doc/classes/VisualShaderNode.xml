@@ -26,14 +26,14 @@
 			<return type="Variant" />
 			<param index="0" name="port" type="int" />
 			<description>
-				Returns the default value of the input [code]port[/code].
+				Returns the default value of the input [param port].
 			</description>
 		</method>
 		<method name="remove_input_port_default_value">
 			<return type="void" />
 			<param index="0" name="port" type="int" />
 			<description>
-				Removes the default value of the input [code]port[/code].
+				Removes the default value of the input [param port].
 			</description>
 		</method>
 		<method name="set_default_input_values">
@@ -49,7 +49,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="prev_value" type="Variant" default="null" />
 			<description>
-				Sets the default value for the selected input [code]port[/code].
+				Sets the default [param value] for the selected input [param port].
 			</description>
 		</method>
 	</methods>

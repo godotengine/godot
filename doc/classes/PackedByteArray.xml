@@ -50,8 +50,14 @@
 			<param index="0" name="value" type="int" />
 			<param index="1" name="before" type="bool" default="true" />
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
 		<method name="compress" qualifiers="const">
@@ -153,7 +159,7 @@
 			<param index="0" name="buffer_size" type="int" />
 			<param index="1" name="compression_mode" type="int" default="0" />
 			<description>
-				Returns a new [PackedByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PackedByteArray] with the data decompressed. Set [param buffer_size] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
 		<method name="decompress_dynamic" qualifiers="const">
@@ -163,7 +169,7 @@
 			<description>
 				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum File.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
 				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [code]decompress[/code] knows it's output buffer size from the beginning.
-				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
+				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [param max_output_size]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
 		<method name="duplicate">
@@ -300,7 +306,7 @@
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Returns [code]true[/code] if the array contains [code]value[/code].
+				Returns [code]true[/code] if the array contains [param value].
 			</description>
 		</method>
 		<method name="has_encoded_var" qualifiers="const">
@@ -394,9 +400,9 @@
 			<param index="0" name="begin" type="int" />
 			<param index="1" name="end" type="int" default="2147483647" />
 			<description>
-				Returns the slice of the [PackedByteArray], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [PackedByteArray].
-				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
-				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+				Returns the slice of the [PackedByteArray], from [param begin] (inclusive) to [param end] (exclusive), as a new [PackedByteArray].
+				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 			</description>
 		</method>
 		<method name="sort">

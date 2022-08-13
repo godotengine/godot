@@ -13,14 +13,14 @@
 			<return type="int" />
 			<param index="0" name="bone_name" type="StringName" />
 			<description>
-				Returns the bone index that matches [code]bone_name[/code] as its name.
+				Returns the bone index that matches [param bone_name] as its name.
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the name of the bone at [code]bone_idx[/code] that will be the key name in the [BoneMap].
+				Returns the name of the bone at [param bone_idx] that will be the key name in the [BoneMap].
 				In the retargeting process, the returned bone name is the bone name of the target skeleton.
 			</description>
 		</method>
@@ -28,35 +28,35 @@
 			<return type="StringName" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the name of the bone which is the parent to the bone at [code]bone_idx[/code]. The result is empty if the bone has no parent.
+				Returns the name of the bone which is the parent to the bone at [param bone_idx]. The result is empty if the bone has no parent.
 			</description>
 		</method>
 		<method name="get_bone_tail" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the name of the bone which is the tail of the bone at [code]bone_idx[/code].
+				Returns the name of the bone which is the tail of the bone at [param bone_idx].
 			</description>
 		</method>
 		<method name="get_group" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the group of the bone at [code]bone_idx[/code].
+				Returns the group of the bone at [param bone_idx].
 			</description>
 		</method>
 		<method name="get_group_name" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="group_idx" type="int" />
 			<description>
-				Returns the name of the group at [code]group_idx[/code] that will be the drawing group in the [BoneMap] editor.
+				Returns the name of the group at [param group_idx] that will be the drawing group in the [BoneMap] editor.
 			</description>
 		</method>
 		<method name="get_handle_offset" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the offset of the bone at [code]bone_idx[/code] that will be the button position in the [BoneMap] editor.
+				Returns the offset of the bone at [param bone_idx] that will be the button position in the [BoneMap] editor.
 				This is the offset with origin at the top left corner of the square.
 			</description>
 		</method>
@@ -64,21 +64,21 @@
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the reference pose transform for bone [code]bone_idx[/code].
+				Returns the reference pose transform for bone [param bone_idx].
 			</description>
 		</method>
 		<method name="get_tail_direction" qualifiers="const">
 			<return type="int" enum="SkeletonProfile.TailDirection" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the tail direction of the bone at [code]bone_idx[/code].
+				Returns the tail direction of the bone at [param bone_idx].
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="group_idx" type="int" />
 			<description>
-				Returns the texture of the group at [code]group_idx[/code] that will be the drawing group background image in the [BoneMap] editor.
+				Returns the texture of the group at [param group_idx] that will be the drawing group background image in the [BoneMap] editor.
 			</description>
 		</method>
 		<method name="set_bone_name">
@@ -86,7 +86,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="bone_name" type="StringName" />
 			<description>
-				Sets the name of the bone at [code]bone_idx[/code] that will be the key name in the [BoneMap].
+				Sets the name of the bone at [param bone_idx] that will be the key name in the [BoneMap].
 				In the retargeting process, the setting bone name is the bone name of the target skeleton.
 			</description>
 		</method>
@@ -95,7 +95,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="bone_parent" type="StringName" />
 			<description>
-				Sets the bone with name [code]bone_parent[/code] as the parent of the bone at [code]bone_idx[/code]. If an empty string is passed, then the bone has no parent.
+				Sets the bone with name [param bone_parent] as the parent of the bone at [param bone_idx]. If an empty string is passed, then the bone has no parent.
 			</description>
 		</method>
 		<method name="set_bone_tail">
@@ -103,7 +103,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="bone_tail" type="StringName" />
 			<description>
-				Sets the bone with name [code]bone_tail[/code] as the tail of the bone at [code]bone_idx[/code].
+				Sets the bone with name [param bone_tail] as the tail of the bone at [param bone_idx].
 			</description>
 		</method>
 		<method name="set_group">
@@ -111,7 +111,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="group" type="StringName" />
 			<description>
-				Sets the group of the bone at [code]bone_idx[/code].
+				Sets the group of the bone at [param bone_idx].
 			</description>
 		</method>
 		<method name="set_group_name">
@@ -119,7 +119,7 @@
 			<param index="0" name="group_idx" type="int" />
 			<param index="1" name="group_name" type="StringName" />
 			<description>
-				Sets the name of the group at [code]group_idx[/code] that will be the drawing group in the [BoneMap] editor.
+				Sets the name of the group at [param group_idx] that will be the drawing group in the [BoneMap] editor.
 			</description>
 		</method>
 		<method name="set_handle_offset">
@@ -127,7 +127,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="handle_offset" type="Vector2" />
 			<description>
-				Sets the offset of the bone at [code]bone_idx[/code] that will be the button position in the [BoneMap] editor.
+				Sets the offset of the bone at [param bone_idx] that will be the button position in the [BoneMap] editor.
 				This is the offset with origin at the top left corner of the square.
 			</description>
 		</method>
@@ -136,7 +136,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="bone_name" type="Transform3D" />
 			<description>
-				Sets the reference pose transform for bone [code]bone_idx[/code].
+				Sets the reference pose transform for bone [param bone_idx].
 			</description>
 		</method>
 		<method name="set_tail_direction">
@@ -144,7 +144,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="tail_direction" type="int" enum="SkeletonProfile.TailDirection" />
 			<description>
-				Sets the tail direction of the bone at [code]bone_idx[/code].
+				Sets the tail direction of the bone at [param bone_idx].
 				[b]Note:[/b] This only specifies the method of calculation. The actual coordinates required should be stored in an external skeleton, so the calculation itself needs to be done externally.
 			</description>
 		</method>
@@ -153,7 +153,7 @@
 			<param index="0" name="group_idx" type="int" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the texture of the group at [code]group_idx[/code] that will be the drawing group background image in the [BoneMap] editor.
+				Sets the texture of the group at [param group_idx] that will be the drawing group background image in the [BoneMap] editor.
 			</description>
 		</method>
 	</methods>

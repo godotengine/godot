@@ -30,7 +30,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns a pseudo-random float between [code]from[/code] and [code]to[/code] (inclusive).
+				Returns a pseudo-random float between [param from] and [param to] (inclusive).
 			</description>
 		</method>
 		<method name="randfn">
@@ -38,7 +38,7 @@
 			<param index="0" name="mean" type="float" default="0.0" />
 			<param index="1" name="deviation" type="float" default="1.0" />
 			<description>
-				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
 			</description>
 		</method>
 		<method name="randi">
@@ -52,7 +52,7 @@
 			<param index="0" name="from" type="int" />
 			<param index="1" name="to" type="int" />
 			<description>
-				Returns a pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
+				Returns a pseudo-random 32-bit signed integer between [param from] and [param to] (inclusive).
 			</description>
 		</method>
 		<method name="randomize">

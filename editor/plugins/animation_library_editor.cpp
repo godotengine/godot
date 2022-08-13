@@ -149,13 +149,35 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 	}
 	switch (p_id) {
 		case FILE_MENU_SAVE_LIBRARY: {
-			if (al->get_path().is_resource_file()) {
+			if (al->get_path().is_resource_file() && !FileAccess::exists(al->get_path() + ".import")) {
 				EditorNode::get_singleton()->save_resource(al);
 				break;
 			}
 			[[fallthrough]];
 		}
 		case FILE_MENU_SAVE_AS_LIBRARY: {
+			// Check if we're allowed to save this
+			{
+				String al_path = al->get_path();
+				if (!al_path.is_resource_file()) {
+					int srpos = al_path.find("::");
+					if (srpos != -1) {
+						String base = al_path.substr(0, srpos);
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							error_dialog->set_text(TTR("This animation library can't be saved because it does not belong to the edited scene. Make it unique first."));
+							error_dialog->popup_centered();
+							return;
+						}
+					}
+				} else {
+					if (FileAccess::exists(al_path + ".import")) {
+						error_dialog->set_text(TTR("This animation library can't be saved because it was imported from another file. Make it unique first."));
+						error_dialog->popup_centered();
+						return;
+					}
+				}
+			}
+
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 			file_dialog->set_title(TTR("Save Library"));
 			if (al->get_path().is_resource_file()) {
@@ -178,6 +200,9 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 
 			Ref<AnimationLibrary> ald = al->duplicate();
 
+			// TODO: should probably make all foreign animations assigned to this library
+			// unique too.
+
 			UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 			undo_redo->create_action(vformat(TTR("Make Animation Library Unique: %s"), lib_name));
 			undo_redo->add_do_method(player, "remove_animation_library", lib_name);
@@ -188,19 +213,43 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			undo_redo->add_undo_method(this, "_update_editor", player);
 			undo_redo->commit_action();
 
+			update_tree();
+
 		} break;
 		case FILE_MENU_EDIT_LIBRARY: {
 			EditorNode::get_singleton()->push_item(al.ptr());
 		} break;
 
 		case FILE_MENU_SAVE_ANIMATION: {
-			if (anim->get_path().is_resource_file()) {
+			if (anim->get_path().is_resource_file() && !FileAccess::exists(anim->get_path() + ".import")) {
 				EditorNode::get_singleton()->save_resource(anim);
 				break;
 			}
 			[[fallthrough]];
 		}
 		case FILE_MENU_SAVE_AS_ANIMATION: {
+			// Check if we're allowed to save this
+			{
+				String anim_path = al->get_path();
+				if (!anim_path.is_resource_file()) {
+					int srpos = anim_path.find("::");
+					if (srpos != -1) {
+						String base = anim_path.substr(0, srpos);
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							error_dialog->set_text(TTR("This animation can't be saved because it does not belong to the edited scene. Make it unique first."));
+							error_dialog->popup_centered();
+							return;
+						}
+					}
+				} else {
+					if (FileAccess::exists(anim_path + ".import")) {
+						error_dialog->set_text(TTR("This animation can't be saved because it was imported from another file. Make it unique first."));
+						error_dialog->popup_centered();
+						return;
+					}
+				}
+			}
+
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 			file_dialog->set_title(TTR("Save Animation"));
 			if (anim->get_path().is_resource_file()) {
@@ -232,6 +281,8 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			undo_redo->add_do_method(this, "_update_editor", player);
 			undo_redo->add_undo_method(this, "_update_editor", player);
 			undo_redo->commit_action();
+
+			update_tree();
 		} break;
 		case FILE_MENU_EDIT_ANIMATION: {
 			EditorNode::get_singleton()->push_item(anim.ptr());
@@ -577,19 +628,45 @@ void AnimationLibraryEditor::update_tree() {
 		} else {
 			libitem->set_suffix(0, "");
 		}
-		libitem->set_editable(0, true);
+
+		Ref<AnimationLibrary> al = player->call("get_animation_library", K);
+		bool animation_library_is_foreign = false;
+		String al_path = al->get_path();
+		if (!al_path.is_resource_file()) {
+			libitem->set_text(1, TTR("[built-in]"));
+			libitem->set_tooltip(1, al_path);
+			int srpos = al_path.find("::");
+			if (srpos != -1) {
+				String base = al_path.substr(0, srpos);
+				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+						animation_library_is_foreign = true;
+						libitem->set_text(1, TTR("[foreign]"));
+					}
+				} else {
+					if (FileAccess::exists(base + ".import")) {
+						animation_library_is_foreign = true;
+						libitem->set_text(1, TTR("[imported]"));
+					}
+				}
+			}
+		} else {
+			if (FileAccess::exists(al_path + ".import")) {
+				animation_library_is_foreign = true;
+				libitem->set_text(1, TTR("[imported]"));
+			} else {
+				libitem->set_text(1, al_path.get_file());
+			}
+		}
+
+		libitem->set_editable(0, !animation_library_is_foreign);
 		libitem->set_metadata(0, K);
 		libitem->set_icon(0, get_theme_icon("AnimationLibrary", "EditorIcons"));
-		libitem->add_button(0, get_theme_icon("Add", "EditorIcons"), LIB_BUTTON_ADD, false, TTR("Add Animation to Library"));
-		libitem->add_button(0, get_theme_icon("Load", "EditorIcons"), LIB_BUTTON_LOAD, false, TTR("Load animation from file and add to library"));
-		libitem->add_button(0, get_theme_icon("ActionPaste", "EditorIcons"), LIB_BUTTON_PASTE, false, TTR("Paste Animation to Library from clipboard"));
-		Ref<AnimationLibrary> al = player->call("get_animation_library", K);
-		if (al->get_path().is_resource_file()) {
-			libitem->set_text(1, al->get_path().get_file());
-			libitem->set_tooltip(1, al->get_path());
-		} else {
-			libitem->set_text(1, TTR("[built-in]"));
-		}
+
+		libitem->add_button(0, get_theme_icon("Add", "EditorIcons"), LIB_BUTTON_ADD, animation_library_is_foreign, TTR("Add Animation to Library"));
+		libitem->add_button(0, get_theme_icon("Load", "EditorIcons"), LIB_BUTTON_LOAD, animation_library_is_foreign, TTR("Load animation from file and add to library"));
+		libitem->add_button(0, get_theme_icon("ActionPaste", "EditorIcons"), LIB_BUTTON_PASTE, animation_library_is_foreign, TTR("Paste Animation to Library from clipboard"));
+
 		libitem->add_button(1, get_theme_icon("Save", "EditorIcons"), LIB_BUTTON_FILE, false, TTR("Save animation library to resource on disk"));
 		libitem->add_button(1, get_theme_icon("Remove", "EditorIcons"), LIB_BUTTON_DELETE, false, TTR("Remove animation library"));
 
@@ -600,20 +677,38 @@ void AnimationLibraryEditor::update_tree() {
 		for (const StringName &L : animations) {
 			TreeItem *anitem = tree->create_item(libitem);
 			anitem->set_text(0, L);
-			anitem->set_editable(0, true);
+			anitem->set_editable(0, !animation_library_is_foreign);
 			anitem->set_metadata(0, L);
 			anitem->set_icon(0, get_theme_icon("Animation", "EditorIcons"));
-			anitem->add_button(0, get_theme_icon("ActionCopy", "EditorIcons"), ANIM_BUTTON_COPY, false, TTR("Copy animation to clipboard"));
-			Ref<Animation> anim = al->get_animation(L);
+			anitem->add_button(0, get_theme_icon("ActionCopy", "EditorIcons"), ANIM_BUTTON_COPY, animation_library_is_foreign, TTR("Copy animation to clipboard"));
 
-			if (anim->get_path().is_resource_file()) {
-				anitem->set_text(1, anim->get_path().get_file());
-				anitem->set_tooltip(1, anim->get_path());
-			} else {
+			Ref<Animation> anim = al->get_animation(L);
+			String anim_path = anim->get_path();
+			if (!anim_path.is_resource_file()) {
 				anitem->set_text(1, TTR("[built-in]"));
+				anitem->set_tooltip(1, anim_path);
+				int srpos = anim_path.find("::");
+				if (srpos != -1) {
+					String base = anim_path.substr(0, srpos);
+					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							anitem->set_text(1, TTR("[foreign]"));
+						}
+					} else {
+						if (FileAccess::exists(base + ".import")) {
+							anitem->set_text(1, TTR("[imported]"));
+						}
+					}
+				}
+			} else {
+				if (FileAccess::exists(anim_path + ".import")) {
+					anitem->set_text(1, TTR("[imported]"));
+				} else {
+					anitem->set_text(1, anim_path.get_file());
+				}
 			}
-			anitem->add_button(1, get_theme_icon("Save", "EditorIcons"), ANIM_BUTTON_FILE, false, TTR("Save animation to resource on disk"));
-			anitem->add_button(1, get_theme_icon("Remove", "EditorIcons"), ANIM_BUTTON_DELETE, false, TTR("Remove animation from Library"));
+			anitem->add_button(1, get_theme_icon("Save", "EditorIcons"), ANIM_BUTTON_FILE, animation_library_is_foreign, TTR("Save animation to resource on disk"));
+			anitem->add_button(1, get_theme_icon("Remove", "EditorIcons"), ANIM_BUTTON_DELETE, animation_library_is_foreign, TTR("Remove animation from Library"));
 		}
 	}
 }

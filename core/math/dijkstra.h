@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dijkstra.h                                                             */
+/*  dijkstra.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -108,6 +108,7 @@ class Dijkstra3D : public RefCounted {
 	HashSet<Segment, Segment> segments;
 
 	void _solve(Point *target_point);
+
 protected:
 	static void _bind_methods();
 
@@ -208,4 +209,4 @@ public:
 	~Dijkstra2D() {}
 };
 
-#endif // A_STAR_H
+#endif // DIJKSTRA_H

@@ -44,7 +44,7 @@
 			<return type="Array" />
 			<param index="0" name="bytes" type="int" />
 			<description>
-				Returns a chunk data with the received bytes. The amount of bytes to be received can be requested in the [code]bytes[/code] argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an [enum @GlobalScope.Error] code and a data array.
+				Returns a chunk data with the received bytes. The amount of bytes to be received can be requested in the [param bytes] argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an [enum @GlobalScope.Error] code and a data array.
 			</description>
 		</method>
 		<method name="get_double">
@@ -70,7 +70,7 @@
 			<return type="String" />
 			<param index="0" name="bytes" type="int" default="-1" />
 			<description>
-				Gets an ASCII string with byte-length [code]bytes[/code] from the stream. If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
+				Gets an ASCII string with byte-length [param bytes] from the stream. If [param bytes] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
 			</description>
 		</method>
 		<method name="get_u16">
@@ -101,14 +101,14 @@
 			<return type="String" />
 			<param index="0" name="bytes" type="int" default="-1" />
 			<description>
-				Gets an UTF-8 string with byte-length [code]bytes[/code] from the stream (this decodes the string sent as UTF-8). If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_utf8_string].
+				Gets an UTF-8 string with byte-length [param bytes] from the stream (this decodes the string sent as UTF-8). If [param bytes] is negative (default) the length will be read from the stream using the reverse process of [method put_utf8_string].
 			</description>
 		</method>
 		<method name="get_var">
 			<return type="Variant" />
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
-				Gets a Variant from the stream. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
+				Gets a Variant from the stream. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
@@ -233,7 +233,7 @@
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
-				Puts a Variant into the stream. If [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
+				Puts a Variant into the stream. If [param full_objects] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

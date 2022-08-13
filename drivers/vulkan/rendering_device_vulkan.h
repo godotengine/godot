@@ -96,13 +96,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		ID_TYPE_SPLIT_DRAW_LIST,
 		ID_TYPE_COMPUTE_LIST,
 		ID_TYPE_MAX,
-		ID_BASE_SHIFT = 58 //5 bits for ID types
+		ID_BASE_SHIFT = 58 // 5 bits for ID types.
 	};
 
 	VkDevice device = VK_NULL_HANDLE;
 
-	HashMap<RID, HashSet<RID>> dependency_map; //IDs to IDs that depend on it
-	HashMap<RID, HashSet<RID>> reverse_dependency_map; //same as above, but in reverse
+	HashMap<RID, HashSet<RID>> dependency_map; // IDs to IDs that depend on it.
+	HashMap<RID, HashSet<RID>> reverse_dependency_map; // Same as above, but in reverse.
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
@@ -152,7 +152,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		uint32_t read_aspect_mask = 0;
 		uint32_t barrier_aspect_mask = 0;
-		bool bound = false; //bound to framebffer
+		bool bound = false; // Bound to framebffer.
 		RID owner;
 	};
 
@@ -214,7 +214,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t usage = 0;
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VmaAllocation allocation = nullptr;
-		VkDescriptorBufferInfo buffer_info; //used for binding
+		VkDescriptorBufferInfo buffer_info; // Used for binding.
 		Buffer() {
 		}
 	};
@@ -256,7 +256,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			const FramebufferPass *key_pass_ptr = p_key.passes.ptr();
 
 			for (uint32_t i = 0; i < pass_size; i++) {
-				{ //compare color attachments
+				{ // Compare color attachments.
 					uint32_t attachment_size = pass_ptr[i].color_attachments.size();
 					uint32_t key_attachment_size = key_pass_ptr[i].color_attachments.size();
 					if (attachment_size != key_attachment_size) {
@@ -271,7 +271,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 						}
 					}
 				}
-				{ //compare input attachments
+				{ // Compare input attachments.
 					uint32_t attachment_size = pass_ptr[i].input_attachments.size();
 					uint32_t key_attachment_size = key_pass_ptr[i].input_attachments.size();
 					if (attachment_size != key_attachment_size) {
@@ -286,7 +286,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 						}
 					}
 				}
-				{ //compare resolve attachments
+				{ // Compare resolve attachments.
 					uint32_t attachment_size = pass_ptr[i].resolve_attachments.size();
 					uint32_t key_attachment_size = key_pass_ptr[i].resolve_attachments.size();
 					if (attachment_size != key_attachment_size) {
@@ -301,7 +301,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 						}
 					}
 				}
-				{ //compare preserve attachments
+				{ // Compare preserve attachments.
 					uint32_t attachment_size = pass_ptr[i].preserve_attachments.size();
 					uint32_t key_attachment_size = key_pass_ptr[i].preserve_attachments.size();
 					if (attachment_size != key_attachment_size) {
@@ -343,7 +343,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				}
 			}
 
-			return false; //equal
+			return false; // Equal.
 		}
 	};
 
@@ -353,9 +353,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RBMap<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
 	struct FramebufferFormat {
 		const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E;
-		VkRenderPass render_pass = VK_NULL_HANDLE; //here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec)
+		VkRenderPass render_pass = VK_NULL_HANDLE; // Here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec).
 		Vector<TextureSamples> pass_samples;
-		uint32_t view_count = 1; // number of views
+		uint32_t view_count = 1; // Number of views.
 	};
 
 	HashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
@@ -397,7 +397,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		struct Version {
 			VkFramebuffer framebuffer = VK_NULL_HANDLE;
-			VkRenderPass render_pass = VK_NULL_HANDLE; //this one is owned
+			VkRenderPass render_pass = VK_NULL_HANDLE; // This one is owned.
 			uint32_t subpass_count = 1;
 		};
 
@@ -454,7 +454,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 						return false;
 					}
 				}
-				return true; //they are equal
+				return true; // They are equal.
 			}
 		}
 
@@ -499,14 +499,14 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		int vertex_count = 0;
 		uint32_t max_instances_allowed = 0;
 
-		Vector<VkBuffer> buffers; //not owned, just referenced
+		Vector<VkBuffer> buffers; // Not owned, just referenced.
 		Vector<VkDeviceSize> offsets;
 	};
 
 	RID_Owner<VertexArray, true> vertex_array_owner;
 
 	struct IndexBuffer : public Buffer {
-		uint32_t max_index = 0; //used for validation
+		uint32_t max_index = 0; // Used for validation.
 		uint32_t index_count = 0;
 		VkIndexType index_type = VK_INDEX_TYPE_NONE_NV;
 		bool supports_restart_indices = false;
@@ -515,8 +515,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<IndexBuffer, true> index_buffer_owner;
 
 	struct IndexArray {
-		uint32_t max_index = 0; //remember the maximum index here too, for validation
-		VkBuffer buffer; //not owned, inherited from index buffer
+		uint32_t max_index = 0; // Remember the maximum index here too, for validation.
+		VkBuffer buffer; // Not owned, inherited from index buffer.
 		uint32_t offset = 0;
 		uint32_t indices = 0;
 		VkIndexType index_type = VK_INDEX_TYPE_NONE_NV;
@@ -550,7 +550,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		bool writable = false;
 		int binding = 0;
 		uint32_t stages = 0;
-		int length = 0; //size of arrays (in total elements), or ubos (in bytes * total elements)
+		int length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
 
 		bool operator!=(const UniformInfo &p_info) const {
 			return (binding != p_info.binding || type != p_info.type || writable != p_info.writable || stages != p_info.stages || length != p_info.length);
@@ -622,7 +622,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			VkDescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
 		};
 
-		uint32_t vertex_input_mask = 0; //inputs used, this is mostly for validation
+		uint32_t vertex_input_mask = 0; // Inputs used, this is mostly for validation.
 		uint32_t fragment_output_mask = 0;
 
 		struct PushConstant {
@@ -645,7 +645,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
 		Vector<SpecializationConstant> specialization_constants;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
-		String name; //used for debug
+		String name; // Used for debug.
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
@@ -717,7 +717,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<Buffer, true> uniform_buffer_owner;
 	RID_Owner<Buffer, true> storage_buffer_owner;
 
-	//texture buffer needs a view
+	// Texture buffer needs a view.
 	struct TextureBuffer {
 		Buffer buffer;
 		VkBufferView view = VK_NULL_HANDLE;
@@ -740,15 +740,15 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		DescriptorPool *pool = nullptr;
 		DescriptorPoolKey pool_key;
 		VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
-		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
+		//VkPipelineLayout pipeline_layout; // Not owned, inherited from shader.
 		struct AttachableTexture {
 			uint32_t bind;
 			RID texture;
 		};
 
-		LocalVector<AttachableTexture> attachable_textures; //used for validation
-		Vector<Texture *> mutable_sampled_textures; //used for layout change
-		Vector<Texture *> mutable_storage_textures; //used for layout change
+		LocalVector<AttachableTexture> attachable_textures; // Used for validation.
+		Vector<Texture *> mutable_sampled_textures; // Used for layout change.
+		Vector<Texture *> mutable_storage_textures; // Used for layout change.
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
@@ -771,7 +771,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// was not supplied as intended.
 
 	struct RenderPipeline {
-		//Cached values for validation
+		// Cached values for validation.
 #ifdef DEBUG_ENABLED
 		struct Validation {
 			FramebufferFormatID framebuffer_format = 0;
@@ -783,10 +783,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t primitive_divisor = 0;
 		} validation;
 #endif
-		//Actual pipeline
+		// Actual pipeline.
 		RID shader;
 		Vector<uint32_t> set_formats;
-		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // not owned, needed for push constants
+		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages = 0;
@@ -797,7 +797,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct ComputePipeline {
 		RID shader;
 		Vector<uint32_t> set_formats;
-		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // not owned, needed for push constants
+		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages = 0;
@@ -823,7 +823,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct SplitDrawListAllocator {
 		VkCommandPool command_pool = VK_NULL_HANDLE;
-		Vector<VkCommandBuffer> command_buffers; //one for each frame
+		Vector<VkCommandBuffer> command_buffers; // One for each frame.
 	};
 
 	Vector<SplitDrawListAllocator> split_draw_list_allocators;
@@ -975,7 +975,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// when the frame is cycled.
 
 	struct Frame {
-		//list in usage order, from last to free to first to free
+		// List in usage order, from last to free to first to free.
 		List<Buffer> buffers_to_dispose_of;
 		List<Texture> textures_to_dispose_of;
 		List<Framebuffer> framebuffers_to_dispose_of;
@@ -987,8 +987,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		VkCommandPool command_pool = VK_NULL_HANDLE;
-		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE; //used at the beginning of every frame for set-up
-		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE; //used at the beginning of every frame for set-up
+		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
+		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
 
 		struct Timestamp {
 			String description;
@@ -1009,9 +1009,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	uint32_t max_timestamp_query_elements = 0;
 
-	TightLocalVector<Frame> frames; //frames available, for main device they are cycled (usually 3), for local devices only 1
-	int frame = 0; //current frame
-	int frame_count = 0; //total amount of frames
+	TightLocalVector<Frame> frames; // Frames available, for main device they are cycled (usually 3), for local devices only 1.
+	int frame = 0; // Current frame.
+	int frame_count = 0; // Total amount of frames.
 	uint64_t frames_drawn = 0;
 	RID local_device;
 	bool local_device_processing = false;
@@ -1037,6 +1037,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	void _finalize_command_bufers();
 	void _begin_frame();
+
+#ifdef DEV_ENABLED
+	HashMap<RID, String> resource_names;
+#endif
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
@@ -1085,7 +1089,7 @@ public:
 
 	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false);
 
-	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
+	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated.
 	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats);
 	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers);
 
@@ -1116,7 +1120,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL); //works for any buffer
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL); // Works for any buffer.
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
 
@@ -1214,10 +1218,10 @@ public:
 	void initialize(VulkanContext *p_context, bool p_local_device = false);
 	void finalize();
 
-	virtual void swap_buffers(); //for main device
+	virtual void swap_buffers(); // For main device.
 
-	virtual void submit(); //for local device
-	virtual void sync(); //for local device
+	virtual void submit(); // For local device.
+	virtual void sync(); // For local device.
 
 	virtual uint32_t get_frame_delay() const;
 
