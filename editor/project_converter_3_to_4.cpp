@@ -419,6 +419,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "is_normalmap", "is_normal_map" }, // NoiseTexture
 	{ "is_refusing_new_network_connections", "is_refusing_new_connections" }, // Multiplayer API
 	{ "is_region", "is_region_enabled" }, // Sprite2D
+	{ "is_rotating", "is_ignoring_rotation" }, // Camera2D
 	{ "is_scancode_unicode", "is_keycode_unicode" }, // OS
 	{ "is_selectable_when_hidden", "_is_selectable_when_hidden" }, // EditorNode3DGizmoPlugin
 	{ "is_set_as_toplevel", "is_set_as_top_level" }, // CanvasItem
@@ -841,6 +842,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "IsNormalmap", "IsNormalMap" }, // NoiseTexture
 	{ "IsRefusingNewNetworkConnections", "IsRefusingNewConnections" }, // Multiplayer API
 	{ "IsRegion", "IsRegionEnabled" }, // Sprite2D
+	{ "IsRotating", "IsIgnoringRotation" }, // Camera2D
 	{ "IsScancodeUnicode", "IsKeycodeUnicode" }, // OS
 	{ "IsSelectableWhenHidden", "_IsSelectableWhenHidden" }, // EditorNode3DGizmoPlugin
 	{ "IsSetAsToplevel", "IsSetAsTopLevel" }, // CanvasItem
@@ -3492,6 +3494,20 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 			}
 		}
 	}
+
+	//  set_rotating(true)  ->   set_ignore_rotation(false)
+	if (line.contains("set_rotating(")) {
+		int start = line.find("set_rotating(");
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 1) {
+				String opposite = parts[0] == "true" ? "false" : "true";
+				line = line.substr(0, start) + "set_ignore_rotation(" + opposite + ")";
+			}
+		}
+	}
+
 	//  OS.get_window_safe_area()  ->   DisplayServer.get_display_safe_area()
 	if (line.contains("OS.get_window_safe_area(")) {
 		int start = line.find("OS.get_window_safe_area(");
@@ -3536,6 +3552,29 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 		if (foundNextEqual) {
 			line = line.substr(0, start) + ".button_pressed" + line.substr(start + String(".pressed").length());
+		}
+	}
+
+	// rotating = true  ->   ignore_rotation = false # reversed "rotating" for Camera2D
+	if (line.contains("rotating")) {
+		int start = line.find("rotating");
+		bool foundNextEqual = false;
+		String line_to_check = line.substr(start + String("rotating").length());
+		String assigned_value;
+		for (int current_index = 0; line_to_check.length() > current_index; current_index++) {
+			char32_t chr = line_to_check.get(current_index);
+			if (chr == '\t' || chr == ' ') {
+				continue;
+			} else if (chr == '=') {
+				foundNextEqual = true;
+				assigned_value = line.right(current_index).strip_edges();
+				assigned_value = assigned_value == "true" ? "false" : "true";
+			} else {
+				break;
+			}
+		}
+		if (foundNextEqual) {
+			line = line.substr(0, start) + "ignore_rotation =" + assigned_value + " # reversed \"rotating\" for Camera2D";
 		}
 	}
 
