@@ -4556,27 +4556,7 @@ Error GLTFDocument::_serialize_cameras(Ref<GLTFState> state) {
 	Array cameras;
 	cameras.resize(state->cameras.size());
 	for (GLTFCameraIndex i = 0; i < state->cameras.size(); i++) {
-		Dictionary d;
-
-		Ref<GLTFCamera> camera = state->cameras[i];
-
-		if (camera->get_perspective()) {
-			Dictionary persp;
-			persp["yfov"] = camera->get_fov();
-			persp["zfar"] = camera->get_depth_far();
-			persp["znear"] = camera->get_depth_near();
-			d["perspective"] = persp;
-			d["type"] = "perspective";
-		} else {
-			Dictionary ortho;
-			ortho["ymag"] = camera->get_size_mag();
-			ortho["xmag"] = camera->get_size_mag();
-			ortho["zfar"] = camera->get_depth_far();
-			ortho["znear"] = camera->get_depth_near();
-			d["orthographic"] = ortho;
-			d["type"] = "orthographic";
-		}
-		cameras[i] = d;
+		cameras[i] = state->cameras[i]->to_dictionary();
 	}
 
 	if (!state->cameras.size()) {
@@ -4626,35 +4606,7 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> state) {
 	const Array cameras = state->json["cameras"];
 
 	for (GLTFCameraIndex i = 0; i < cameras.size(); i++) {
-		const Dictionary &d = cameras[i];
-
-		Ref<GLTFCamera> camera;
-		camera.instantiate();
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		const String &type = d["type"];
-		if (type == "perspective") {
-			camera->set_perspective(true);
-			if (d.has("perspective")) {
-				const Dictionary &persp = d["perspective"];
-				camera->set_fov(persp["yfov"]);
-				if (persp.has("zfar")) {
-					camera->set_depth_far(persp["zfar"]);
-				}
-				camera->set_depth_near(persp["znear"]);
-			}
-		} else if (type == "orthographic") {
-			camera->set_perspective(false);
-			if (d.has("orthographic")) {
-				const Dictionary &ortho = d["orthographic"];
-				camera->set_size_mag(ortho["ymag"]);
-				camera->set_depth_far(ortho["zfar"]);
-				camera->set_depth_near(ortho["znear"]);
-			}
-		} else {
-			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Camera3D should be in 'orthographic' or 'perspective'");
-		}
-
-		state->cameras.push_back(camera);
+		state->cameras.push_back(GLTFCamera::from_dictionary(cameras[i]));
 	}
 
 	print_verbose("glTF: Total cameras: " + itos(state->cameras.size()));
@@ -5110,32 +5062,16 @@ Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, const GLTFNodeInd
 
 	ERR_FAIL_INDEX_V(gltf_node->camera, state->cameras.size(), nullptr);
 
-	Camera3D *camera = memnew(Camera3D);
 	print_verbose("glTF: Creating camera for: " + gltf_node->get_name());
 
 	Ref<GLTFCamera> c = state->cameras[gltf_node->camera];
-	camera->set_projection(c->get_perspective() ? Camera3D::PROJECTION_PERSPECTIVE : Camera3D::PROJECTION_ORTHOGONAL);
-	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
-	camera->set_fov(Math::rad_to_deg(c->get_fov()));
-	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
-	camera->set_size(c->get_size_mag() * 2.0f);
-	camera->set_near(c->get_depth_near());
-	camera->set_far(c->get_depth_far());
-	return camera;
+	return c->to_node();
 }
 
 GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_camera) {
 	print_verbose("glTF: Converting camera: " + p_camera->get_name());
 
-	Ref<GLTFCamera> c;
-	c.instantiate();
-	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
-	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
-	c->set_fov(Math::deg_to_rad(p_camera->get_fov()));
-	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
-	c->set_size_mag(p_camera->get_size() * 0.5f);
-	c->set_depth_far(p_camera->get_far());
-	c->set_depth_near(p_camera->get_near());
+	Ref<GLTFCamera> c = GLTFCamera::from_node(p_camera);
 	GLTFCameraIndex camera_index = state->cameras.size();
 	state->cameras.push_back(c);
 	return camera_index;

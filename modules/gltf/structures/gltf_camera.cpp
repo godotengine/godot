@@ -31,6 +31,12 @@
 #include "gltf_camera.h"
 
 void GLTFCamera::_bind_methods() {
+	ClassDB::bind_static_method("GLTFCamera", D_METHOD("from_node", "camera_node"), &GLTFCamera::from_node);
+	ClassDB::bind_method(D_METHOD("to_node"), &GLTFCamera::to_node);
+
+	ClassDB::bind_static_method("GLTFCamera", D_METHOD("from_dictionary", "dictionary"), &GLTFCamera::from_dictionary);
+	ClassDB::bind_method(D_METHOD("to_dictionary"), &GLTFCamera::to_dictionary);
+
 	ClassDB::bind_method(D_METHOD("get_perspective"), &GLTFCamera::get_perspective);
 	ClassDB::bind_method(D_METHOD("set_perspective", "perspective"), &GLTFCamera::set_perspective);
 	ClassDB::bind_method(D_METHOD("get_fov"), &GLTFCamera::get_fov);
@@ -47,4 +53,79 @@ void GLTFCamera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_mag"), "set_size_mag", "get_size_mag");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_far"), "set_depth_far", "get_depth_far");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near");
+}
+
+Ref<GLTFCamera> GLTFCamera::from_node(const Camera3D *p_camera) {
+	Ref<GLTFCamera> c;
+	c.instantiate();
+	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
+	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	c->set_fov(Math::deg_to_rad(p_camera->get_fov()));
+	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	c->set_size_mag(p_camera->get_size() * 0.5f);
+	c->set_depth_far(p_camera->get_far());
+	c->set_depth_near(p_camera->get_near());
+	return c;
+}
+
+Camera3D *GLTFCamera::to_node() const {
+	Camera3D *camera = memnew(Camera3D);
+	camera->set_projection(perspective ? Camera3D::PROJECTION_PERSPECTIVE : Camera3D::PROJECTION_ORTHOGONAL);
+	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	camera->set_fov(Math::rad_to_deg(fov));
+	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	camera->set_size(size_mag * 2.0f);
+	camera->set_near(depth_near);
+	camera->set_far(depth_far);
+	return camera;
+}
+
+Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary p_dictionary) {
+	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse GLTF camera, missing required field 'type'.");
+	Ref<GLTFCamera> camera;
+	camera.instantiate();
+	const String &type = p_dictionary["type"];
+	if (type == "perspective") {
+		camera->set_perspective(true);
+		if (p_dictionary.has("perspective")) {
+			const Dictionary &persp = p_dictionary["perspective"];
+			camera->set_fov(persp["yfov"]);
+			if (persp.has("zfar")) {
+				camera->set_depth_far(persp["zfar"]);
+			}
+			camera->set_depth_near(persp["znear"]);
+		}
+	} else if (type == "orthographic") {
+		camera->set_perspective(false);
+		if (p_dictionary.has("orthographic")) {
+			const Dictionary &ortho = p_dictionary["orthographic"];
+			camera->set_size_mag(ortho["ymag"]);
+			camera->set_depth_far(ortho["zfar"]);
+			camera->set_depth_near(ortho["znear"]);
+		}
+	} else {
+		ERR_PRINT("Error parsing GLTF camera: Camera type '" + type + "' is unknown, should be perspective or orthographic.");
+	}
+	return camera;
+}
+
+Dictionary GLTFCamera::to_dictionary() const {
+	Dictionary d;
+	if (perspective) {
+		Dictionary persp;
+		persp["yfov"] = fov;
+		persp["zfar"] = depth_far;
+		persp["znear"] = depth_near;
+		d["perspective"] = persp;
+		d["type"] = "perspective";
+	} else {
+		Dictionary ortho;
+		ortho["ymag"] = size_mag;
+		ortho["xmag"] = size_mag;
+		ortho["zfar"] = depth_far;
+		ortho["znear"] = depth_near;
+		d["orthographic"] = ortho;
+		d["type"] = "orthographic";
+	}
+	return d;
 }

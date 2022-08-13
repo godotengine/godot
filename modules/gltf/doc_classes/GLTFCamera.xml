@@ -10,6 +10,34 @@
 		<link title="GLTF camera detailed specification">https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-camera</link>
 		<link title="GLTF camera spec and example file">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md</link>
 	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFCamera" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFCamera instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="from_node" qualifiers="static">
+			<return type="GLTFCamera" />
+			<param index="0" name="camera_node" type="Camera3D" />
+			<description>
+				Create a new GLTFCamera instance from the given Godot [Camera3D] node.
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFCamera instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node" qualifiers="const">
+			<return type="Camera3D" />
+			<description>
+				Converts this GLTFCamera instance into a Godot [Camera3D] node.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="depth_far" type="float" setter="set_depth_far" getter="get_depth_far" default="4000.0">
 			The distance to the far culling boundary for this camera relative to its local Z axis, in meters. This maps to GLTF's [code]zfar[/code] property.
