@@ -266,7 +266,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::VECTOR2I, "x", 0, 0, 0, 0 },
 			{ Variant::VECTOR2I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
 			{ Variant::RECT2, "position", 0, 0, 0, 0 },
-			{ Variant::RECT2, "size", 2 * sizeof(Vector2), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ Variant::RECT2, "size", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
 			{ Variant::RECT2I, "position", 0, 0, 0, 0 },
 			{ Variant::RECT2I, "size", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
 			{ Variant::VECTOR3, "x", 0, 0, 0, 0 },
