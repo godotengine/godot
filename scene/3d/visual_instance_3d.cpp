@@ -457,6 +457,9 @@ AABB GeometryInstance3D::get_custom_aabb() const {
 void GeometryInstance3D::set_lightmap_scale(LightmapScale p_scale) {
 	ERR_FAIL_INDEX(p_scale, LIGHTMAP_SCALE_MAX);
 	lightmap_scale = p_scale;
+
+	static const float lightmap_scales[LIGHTMAP_SCALE_MAX] = { 1.0, 2.0, 4.0, 8.0 };
+	RS::get_singleton()->instance_geometry_set_lightmap_scale(get_instance(), lightmap_scales[p_scale]);
 }
 
 GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const {

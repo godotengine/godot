@@ -233,6 +233,8 @@ public:
 	RID overdraw_material;
 	RID debug_shadow_splits_material_shader;
 	RID debug_shadow_splits_material;
+	RID uv2_texel_density_material_shader;
+	RID uv2_texel_density_material;
 	RID default_shader_rd;
 	RID default_shader_sdfgi_rd;
 
@@ -249,6 +251,8 @@ public:
 
 	RID debug_shadow_splits_material_uniform_set;
 	ShaderData *debug_shadow_splits_material_shader_ptr = nullptr;
+	RID uv2_texel_density_material_uniform_set;
+	ShaderData *uv2_texel_density_material_shader_ptr = nullptr;
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
 	bool valid_color_pass_pipelines[PIPELINE_COLOR_PASS_FLAG_COUNT];

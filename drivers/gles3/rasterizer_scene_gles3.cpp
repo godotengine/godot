@@ -145,6 +145,9 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::set_use_lightmap(RID p_lightma
 	_mark_dirty();
 }
 
+void RasterizerSceneGLES3::GeometryInstanceGLES3::set_lightmap_scale(float p_lightmap_scale) {
+}
+
 void RasterizerSceneGLES3::GeometryInstanceGLES3::set_lightmap_capture(const Color *p_sh9) {
 	if (p_sh9) {
 		if (lightmap_sh == nullptr) {
