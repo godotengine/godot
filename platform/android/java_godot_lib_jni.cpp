@@ -120,7 +120,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion, jobject p_godot_tts) {
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
@@ -137,7 +137,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
 	NetSocketAndroid::setup(p_net_utils);
-	TTS_Android::setup(godot_java->get_member_object("tts", "Lorg/godotengine/godot/tts/GodotTTS;", env));
+	TTS_Android::setup(p_godot_tts);
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
 

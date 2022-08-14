@@ -587,7 +587,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-		GodotLib.initialize(activity, this, activity.getAssets(), io, netUtils, directoryAccessHandler, fileAccessHandler, use_apk_expansion);
+		GodotLib.initialize(activity, this, activity.getAssets(), io, netUtils, directoryAccessHandler, fileAccessHandler, use_apk_expansion, tts);
 
 		result_callback = null;
 
