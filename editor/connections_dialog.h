@@ -177,7 +177,8 @@ class ConnectionsDock : public VBoxContainer {
 	//Right-click Pop-up Menu Options.
 	enum SignalMenuOption {
 		CONNECT,
-		DISCONNECT_ALL
+		DISCONNECT_ALL,
+		OPEN_DOCUMENTATION,
 	};
 
 	enum SlotMenuOption {

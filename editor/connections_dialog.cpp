@@ -839,6 +839,10 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 			disconnect_all_dialog->set_text(vformat(TTR("Are you sure you want to remove all connections from the \"%s\" signal?"), signal_name));
 			disconnect_all_dialog->popup_centered();
 		} break;
+		case OPEN_DOCUMENTATION: {
+			String doc_path = item->get_metadata(0).operator Dictionary()["doc_path"];
+			ScriptEditor::get_singleton()->goto_help(doc_path);
+		}
 	}
 }
 
@@ -912,6 +916,7 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(OPEN_DOCUMENTATION), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -949,6 +954,9 @@ void ConnectionsDock::update_tree() {
 		List<MethodInfo> node_signals2;
 		Ref<Texture2D> icon;
 		String name;
+		// This determines whether to add quotes to the doc path
+		// for the "Open Documentation" context menu button.
+		bool name_is_script_file = false;
 
 		if (!did_script) {
 			// Get script signals (including signals from any base scripts).
@@ -957,6 +965,7 @@ void ConnectionsDock::update_tree() {
 				scr->get_script_signal_list(&node_signals2);
 				if (scr->get_path().is_resource_file()) {
 					name = scr->get_path().get_file();
+					name_is_script_file = true;
 				} else {
 					name = scr->get_class();
 				}
@@ -1022,11 +1031,18 @@ void ConnectionsDock::update_tree() {
 			// Create the children of the subsection - the actual list of signals.
 			TreeItem *signal_item = tree->create_item(section_item);
 			signal_item->set_text(0, String(signal_name) + signaldesc);
+			signal_item->set_icon(0, get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")));
+
+			// Add metadata to signal item.
 			Dictionary sinfo;
+			String doc_path_name = name;
+			if (name_is_script_file) {
+				doc_path_name = "\"" + name + "\"";
+			}
+			sinfo["doc_path"] = "class_signal:" + doc_path_name + ":" + signal_name;
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
-			signal_item->set_icon(0, get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")));
 
 			// Set tooltip with the signal's documentation.
 			{
@@ -1159,6 +1175,8 @@ ConnectionsDock::ConnectionsDock() {
 	signal_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
 	signal_menu->add_item(TTR("Connect..."), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
+	signal_menu->add_separator();
+	signal_menu->add_item("Open Documentation", OPEN_DOCUMENTATION);
 
 	slot_menu = memnew(PopupMenu);
 	add_child(slot_menu);
