@@ -604,6 +604,10 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
 			subtype = Variant::Type(subtype_string.to_int());
+		} else { // subType
+			subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+			subtype = Variant::OBJECT;
+			subtype_hint_string = p_hint_string;
 		}
 	}
 }
