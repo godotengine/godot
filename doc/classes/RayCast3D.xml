@@ -48,6 +48,12 @@
 				Returns the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the first object that the ray intersects, or an empty [RID] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
+			</description>
+		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int" />
 			<description>
