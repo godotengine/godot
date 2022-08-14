@@ -817,48 +817,78 @@ GodotCylinderShape3D::GodotCylinderShape3D() {}
 /********** CONVEX POLYGON *************/
 
 void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
-	int vertex_count = mesh.vertices.size();
+	uint32_t vertex_count = mesh.vertices.size();
 	if (vertex_count == 0) {
 		return;
 	}
 
 	const Vector3 *vrts = &mesh.vertices[0];
 
-	for (int i = 0; i < vertex_count; i++) {
-		real_t d = p_normal.dot(p_transform.xform(vrts[i]));
+	if (vertex_count > 3 * extreme_vertices.size()) {
+		// For a large mesh, two calls to get_support() is faster than a full
+		// scan over all vertices.
 
-		if (i == 0 || d > r_max) {
-			r_max = d;
-		}
-		if (i == 0 || d < r_min) {
-			r_min = d;
+		Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
+		r_min = p_normal.dot(p_transform.xform(get_support(-n)));
+		r_max = p_normal.dot(p_transform.xform(get_support(n)));
+	} else {
+		for (uint32_t i = 0; i < vertex_count; i++) {
+			real_t d = p_normal.dot(p_transform.xform(vrts[i]));
+
+			if (i == 0 || d > r_max) {
+				r_max = d;
+			}
+			if (i == 0 || d < r_min) {
+				r_min = d;
+			}
 		}
 	}
 }
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
-	Vector3 n = p_normal;
-
-	int vert_support_idx = -1;
-	real_t support_max = 0;
-
-	int vertex_count = mesh.vertices.size();
-	if (vertex_count == 0) {
+	if (mesh.vertices.size() == 0) {
 		return Vector3();
 	}
 
-	const Vector3 *vrts = &mesh.vertices[0];
+	// Find an initial guess for the support vertex by checking the ones we
+	// found in _setup().
 
-	for (int i = 0; i < vertex_count; i++) {
-		real_t d = n.dot(vrts[i]);
-
-		if (i == 0 || d > support_max) {
-			support_max = d;
-			vert_support_idx = i;
+	int best_vertex = -1;
+	real_t max_support = 0.0;
+	for (uint32_t i = 0; i < extreme_vertices.size(); i++) {
+		real_t s = p_normal.dot(mesh.vertices[extreme_vertices[i]]);
+		if (best_vertex == -1 || s > max_support) {
+			best_vertex = extreme_vertices[i];
+			max_support = s;
 		}
 	}
+	if (extreme_vertices.size() == mesh.vertices.size()) {
+		// We've already checked every vertex, so we can return now.
+		return mesh.vertices[best_vertex];
+	}
 
-	return vrts[vert_support_idx];
+	// Move along the surface until we reach the true support vertex.
+
+	int last_vertex = -1;
+	while (true) {
+		int next_vertex = -1;
+		for (uint32_t i = 0; i < vertex_neighbors[best_vertex].size(); i++) {
+			int vert = vertex_neighbors[best_vertex][i];
+			if (vert != last_vertex) {
+				real_t s = p_normal.dot(mesh.vertices[vert]);
+				if (s > max_support) {
+					next_vertex = vert;
+					max_support = s;
+					break;
+				}
+			}
+		}
+		if (next_vertex == -1) {
+			return mesh.vertices[best_vertex];
+		}
+		last_vertex = best_vertex;
+		best_vertex = next_vertex;
+	}
 }
 
 void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
@@ -1067,6 +1097,43 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 	}
 
 	configure(_aabb);
+
+	// Pre-compute the extreme vertices in 26 directions.  This will be used
+	// to speed up get_support() by letting us quickly get a good guess for
+	// the support vertex.
+
+	for (int x = -1; x < 2; x++) {
+		for (int y = -1; y < 2; y++) {
+			for (int z = -1; z < 2; z++) {
+				if (x != 0 || y != 0 || z != 0) {
+					Vector3 dir(x, y, z);
+					dir.normalize();
+					real_t max_support = 0.0;
+					int best_vertex = -1;
+					for (uint32_t i = 0; i < mesh.vertices.size(); i++) {
+						real_t s = dir.dot(mesh.vertices[i]);
+						if (best_vertex == -1 || s > max_support) {
+							best_vertex = i;
+							max_support = s;
+						}
+					}
+					if (extreme_vertices.find(best_vertex) == -1)
+						extreme_vertices.push_back(best_vertex);
+				}
+			}
+		}
+	}
+
+	// Record all the neighbors of each vertex.  This is used in get_support().
+
+	if (extreme_vertices.size() < mesh.vertices.size()) {
+		vertex_neighbors.resize(mesh.vertices.size());
+		for (uint32_t i = 0; i < mesh.edges.size(); i++) {
+			Geometry3D::MeshData::Edge &edge = mesh.edges[i];
+			vertex_neighbors[edge.vertex_a].push_back(edge.vertex_b);
+			vertex_neighbors[edge.vertex_b].push_back(edge.vertex_a);
+		}
+	}
 }
 
 void GodotConvexPolygonShape3D::set_data(const Variant &p_data) {
