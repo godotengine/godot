@@ -98,7 +98,7 @@
 		<signal name="toggled">
 			<param index="0" name="button_pressed" type="bool" />
 			<description>
-				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [code]button_pressed[/code] argument.
+				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [param button_pressed] argument.
 			</description>
 		</signal>
 	</signals>

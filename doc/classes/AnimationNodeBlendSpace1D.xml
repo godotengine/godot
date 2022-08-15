@@ -19,7 +19,7 @@
 			<param index="1" name="pos" type="float" />
 			<param index="2" name="at_index" type="int" default="-1" />
 			<description>
-				Adds a new point that represents a [code]node[/code] on the virtual axis at a given position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
+				Adds a new point that represents a [param node] on the virtual axis at a given position set by [param pos]. You can insert it at a specific index using the [param at_index] argument. If you use the default value for [param at_index], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
@@ -32,21 +32,21 @@
 			<return type="AnimationRootNode" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Returns the [AnimationNode] referenced by the point at index [code]point[/code].
+				Returns the [AnimationNode] referenced by the point at index [param point].
 			</description>
 		</method>
 		<method name="get_blend_point_position" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Returns the position of the point at index [code]point[/code].
+				Returns the position of the point at index [param point].
 			</description>
 		</method>
 		<method name="remove_blend_point">
 			<return type="void" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Removes the point at index [code]point[/code] from the blend axis.
+				Removes the point at index [param point] from the blend axis.
 			</description>
 		</method>
 		<method name="set_blend_point_node">
@@ -54,7 +54,7 @@
 			<param index="0" name="point" type="int" />
 			<param index="1" name="node" type="AnimationRootNode" />
 			<description>
-				Changes the [AnimationNode] referenced by the point at index [code]point[/code].
+				Changes the [AnimationNode] referenced by the point at index [param point].
 			</description>
 		</method>
 		<method name="set_blend_point_position">
@@ -62,7 +62,7 @@
 			<param index="0" name="point" type="int" />
 			<param index="1" name="pos" type="float" />
 			<description>
-				Updates the position of the point at index [code]point[/code] on the blend axis.
+				Updates the position of the point at index [param point] on the blend axis.
 			</description>
 		</method>
 	</methods>

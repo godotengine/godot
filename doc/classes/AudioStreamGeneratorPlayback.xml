@@ -15,7 +15,7 @@
 			<return type="bool" />
 			<param index="0" name="amount" type="int" />
 			<description>
-				Returns [code]true[/code] if a buffer of the size [code]amount[/code] can be pushed to the audio sample data buffer without overflowing it, [code]false[/code] otherwise.
+				Returns [code]true[/code] if a buffer of the size [param amount] can be pushed to the audio sample data buffer without overflowing it, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="clear_buffer">

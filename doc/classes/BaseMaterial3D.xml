@@ -52,7 +52,7 @@
 			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots.
+				Sets the texture for the slot specified by [param param]. See [enum TextureParam] for available slots.
 			</description>
 		</method>
 	</methods>
