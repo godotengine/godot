@@ -52,6 +52,9 @@ static String get_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_BITFIELD))) {
 		return String("bitfield::") + String(p_info.class_name);
 	}
+	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_ARRAY)) {
+		return "int";
+	}
 	if (p_info.class_name != StringName()) {
 		return p_info.class_name;
 	}
@@ -840,11 +843,15 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
 				for (const PropertyInfo &F : property_list) {
-					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP) {
+					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP || (F.type == Variant::NIL && F.usage & PROPERTY_USAGE_ARRAY)) {
 						continue; //not real properties
 					}
 					if (F.name.begins_with("_")) {
 						continue; //hidden property
+					}
+					if (F.name.find("/") >= 0) {
+						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
+						continue;
 					}
 					StringName property_name = F.name;
 					Dictionary d2;
