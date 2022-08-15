@@ -2262,6 +2262,15 @@ void Control::_notify_theme_changed() {
 	}
 }
 
+void Control::_invalidate_theme_cache() {
+	data.theme_icon_cache.clear();
+	data.theme_style_cache.clear();
+	data.theme_font_cache.clear();
+	data.theme_font_size_cache.clear();
+	data.theme_color_cache.clear();
+	data.theme_constant_cache.clear();
+}
+
 void Control::set_theme(const Ref<Theme> &p_theme) {
 	if (data.theme == p_theme) {
 		return;
@@ -2443,9 +2452,15 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 		}
 	}
 
+	if (data.theme_icon_cache.has(p_theme_type) && data.theme_icon_cache[p_theme_type].has(p_name)) {
+		return data.theme_icon_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<Texture2D>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_ICON, p_name, theme_types);
+	Ref<Texture2D> icon = get_theme_item_in_types<Ref<Texture2D>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_ICON, p_name, theme_types);
+	data.theme_icon_cache[p_theme_type][p_name] = icon;
+	return icon;
 }
 
 Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2456,9 +2471,15 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 		}
 	}
 
+	if (data.theme_style_cache.has(p_theme_type) && data.theme_style_cache[p_theme_type].has(p_name)) {
+		return data.theme_style_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
+	Ref<StyleBox> style = get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
+	data.theme_style_cache[p_theme_type][p_name] = style;
+	return style;
 }
 
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2469,9 +2490,15 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 		}
 	}
 
+	if (data.theme_font_cache.has(p_theme_type) && data.theme_font_cache[p_theme_type].has(p_name)) {
+		return data.theme_font_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<Font>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+	Ref<Font> font = get_theme_item_in_types<Ref<Font>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+	data.theme_font_cache[p_theme_type][p_name] = font;
+	return font;
 }
 
 int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2482,9 +2509,15 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 		}
 	}
 
+	if (data.theme_font_size_cache.has(p_theme_type) && data.theme_font_size_cache[p_theme_type].has(p_name)) {
+		return data.theme_font_size_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	int font_size = get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	data.theme_font_size_cache[p_theme_type][p_name] = font_size;
+	return font_size;
 }
 
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2495,9 +2528,15 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 		}
 	}
 
+	if (data.theme_color_cache.has(p_theme_type) && data.theme_color_cache[p_theme_type].has(p_name)) {
+		return data.theme_color_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Color>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_COLOR, p_name, theme_types);
+	Color color = get_theme_item_in_types<Color>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_COLOR, p_name, theme_types);
+	data.theme_color_cache[p_theme_type][p_name] = color;
+	return color;
 }
 
 int Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2508,9 +2547,15 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 		}
 	}
 
+	if (data.theme_constant_cache.has(p_theme_type) && data.theme_constant_cache[p_theme_type].has(p_name)) {
+		return data.theme_constant_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	int constant = get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	data.theme_constant_cache[p_theme_type][p_name] = constant;
+	return constant;
 }
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
@@ -3007,6 +3052,10 @@ void Control::remove_child_notify(Node *p_child) {
 
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			_invalidate_theme_cache();
+		} break;
+
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.minimum_size_valid = false;
 			data.is_rtl_dirty = true;
@@ -3144,6 +3193,7 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			_invalidate_theme_cache();
 			update_minimum_size();
 			update();
 		} break;
@@ -3164,6 +3214,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_inside_tree()) {
 				data.is_rtl_dirty = true;
+				_invalidate_theme_cache();
 				_size_changed();
 			}
 		} break;

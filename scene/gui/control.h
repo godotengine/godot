@@ -229,6 +229,13 @@ private:
 		Theme::ThemeColorMap color_override;
 		Theme::ThemeConstantMap constant_override;
 
+		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
+		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
+		mutable HashMap<StringName, Theme::ThemeFontMap> theme_font_cache;
+		mutable HashMap<StringName, Theme::ThemeFontSizeMap> theme_font_size_cache;
+		mutable HashMap<StringName, Theme::ThemeColorMap> theme_color_cache;
+		mutable HashMap<StringName, Theme::ThemeConstantMap> theme_constant_cache;
+
 		// Internationalization.
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
@@ -291,6 +298,7 @@ private:
 	void _theme_changed();
 	void _theme_property_override_changed();
 	void _notify_theme_changed();
+	void _invalidate_theme_cache();
 
 	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
 
