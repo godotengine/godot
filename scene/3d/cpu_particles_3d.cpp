@@ -1656,6 +1656,10 @@ CPUParticles3D::CPUParticles3D() {
 
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
+
+	// Disable shadow casting by default to improve performance.
+	set_cast_shadows_setting(SHADOW_CASTING_SETTING_OFF);
+
 	set_base(multimesh);
 
 	set_emitting(true);

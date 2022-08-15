@@ -617,6 +617,10 @@ void GPUParticles3D::_bind_methods() {
 GPUParticles3D::GPUParticles3D() {
 	particles = RS::get_singleton()->particles_create();
 	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_3D);
+
+	// Disable shadow casting by default to improve performance.
+	set_cast_shadows_setting(SHADOW_CASTING_SETTING_OFF);
+
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
