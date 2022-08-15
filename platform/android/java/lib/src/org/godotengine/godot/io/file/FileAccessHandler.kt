@@ -194,6 +194,11 @@ class FileAccessHandler(val context: Context) {
 		return files[fileId].endOfFile
 	}
 
+	fun setFileEof(fileId: Int, eof: Boolean) {
+		val file = files[fileId] ?: return
+		file.endOfFile = eof
+	}
+
 	fun fileClose(fileId: Int) {
 		if (hasFileId(fileId)) {
 			files[fileId].close()
