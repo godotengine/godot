@@ -66,7 +66,7 @@ void VisualServerRaster::_draw_margins() {
 
 void VisualServerRaster::free(RID p_rid) {
 	if (!p_rid.is_valid()) {
-		ERR_FAIL_MSG("Invalid RID.");
+		ERR_FAIL_MSG("VisualServer attempted to free a NULL RID.");
 		return;
 	}
 
@@ -86,7 +86,7 @@ void VisualServerRaster::free(RID p_rid) {
 		return;
 	}
 
-	ERR_FAIL_MSG("Invalid RID.");
+	ERR_FAIL_MSG("RID not found by VisualServer.");
 }
 
 /* EVENT QUEUING */
