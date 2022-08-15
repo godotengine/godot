@@ -102,6 +102,7 @@ protected:
 	Color _get_color_accum();
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 	virtual void _draw() = 0;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
@@ -193,7 +194,7 @@ protected:
 	virtual void _draw() override;
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &p_property) const;
+	void _validate_property(PropertyInfo &p_property) const override;
 
 public:
 	void set_texture(const Ref<Texture2D> &p_texture);
@@ -253,7 +254,7 @@ protected:
 	virtual void _draw() override;
 	static void _bind_methods();
 	void _notification(int p_what);
-	void _validate_property(PropertyInfo &p_property) const;
+	void _validate_property(PropertyInfo &p_property) const override;
 
 public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);

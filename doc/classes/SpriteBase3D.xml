@@ -122,7 +122,7 @@
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
-			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping.
+			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping. [member GeometryInstance3D.cast_shadow] has no effect when this transparency mode is used; the [SpriteBase3D] will never cast shadows.
 		</constant>
 		<constant name="ALPHA_CUT_DISCARD" value="1" enum="AlphaCutMode">
 			This mode only allows fully transparent or fully opaque pixels. Harsh edges will be visible unless some form of screen-space antialiasing is enabled (see [member ProjectSettings.rendering/anti_aliasing/quality/screen_space_aa]). On the bright side, this mode doesn't suffer from transparency sorting issues when multiple transparent materials are overlapping. This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].
