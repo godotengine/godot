@@ -128,7 +128,6 @@ public:
 	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
 	Error get_classes_used(HashSet<StringName> *r_classes);
 
-	Error save_as_binary(const String &p_path);
 	ResourceLoaderText();
 };
 
@@ -145,8 +144,6 @@ public:
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
-
-	static Error convert_file_to_binary(const String &p_src_path, const String &p_dst_path);
 
 	ResourceFormatLoaderText() { singleton = this; }
 };
