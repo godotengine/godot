@@ -275,5 +275,13 @@ namespace Godot.SourceGenerators
                 yield return new GodotFieldData(field, marshalType.Value);
             }
         }
+
+        public static string Path(this Location location)
+            => location.SourceTree?.GetLineSpan(location.SourceSpan).Path
+            ?? location.GetLineSpan().Path;
+
+        public static int StartLine(this Location location)
+            => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
+            ?? location.GetLineSpan().StartLinePosition.Line;
     }
 }
