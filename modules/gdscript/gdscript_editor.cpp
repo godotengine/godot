@@ -2031,8 +2031,13 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		r_type.type.kind = GDScriptParser::DataType::NATIVE;
 		r_type.type.native_type = p_identifier;
 		r_type.type.is_constant = true;
-		r_type.type.is_meta_type = !Engine::get_singleton()->has_singleton(p_identifier);
-		r_type.value = Variant();
+		if (Engine::get_singleton()->has_singleton(p_identifier)) {
+			r_type.type.is_meta_type = false;
+			r_type.value = Engine::get_singleton()->get_singleton_object(p_identifier);
+		} else {
+			r_type.type.is_meta_type = true;
+			r_type.value = Variant();
+		}
 	}
 
 	return false;
