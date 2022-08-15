@@ -98,10 +98,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
+#ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
 
 	static void _check_for_changes_poll_thread(void *ud);
+#endif
 
 	String get_project_name(const String &p_name) const;
 
