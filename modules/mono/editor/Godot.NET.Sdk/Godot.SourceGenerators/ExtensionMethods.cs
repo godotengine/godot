@@ -177,6 +177,9 @@ namespace Godot.SourceGenerators
         public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.SignalAttr;
 
+        public static bool IsGodotMustBeVariantAttribute(this INamedTypeSymbol symbol)
+            => symbol.ToString() == GodotClasses.MustBeVariantAttr;
+
         public static bool IsGodotClassNameAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.GodotClassNameAttr;
 

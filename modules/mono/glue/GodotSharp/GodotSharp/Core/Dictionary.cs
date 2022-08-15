@@ -352,7 +352,7 @@ namespace Godot.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
-    public class Dictionary<TKey, TValue> :
+    public class Dictionary<[MustBeVariant] TKey, [MustBeVariant] TValue> :
         IDictionary<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue>
     {
