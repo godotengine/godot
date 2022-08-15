@@ -1172,7 +1172,7 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vecto
 			TypedArray<Vector2i> to_check;
 			if (source_cell.source_id == TileSet::INVALID_SOURCE) {
 				Rect2i rect = tile_map->get_used_rect();
-				if (rect.has_no_area()) {
+				if (!rect.has_area()) {
 					rect = Rect2i(p_coords, Vector2i(1, 1));
 				}
 				for (int x = boundaries.position.x; x < boundaries.get_end().x; x++) {
@@ -2558,7 +2558,7 @@ RBSet<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i
 		TypedArray<Vector2i> to_check;
 		if (source_cell.source_id == TileSet::INVALID_SOURCE) {
 			Rect2i rect = tile_map->get_used_rect();
-			if (rect.has_no_area()) {
+			if (!rect.has_area()) {
 				rect = Rect2i(p_coords, Vector2i(1, 1));
 			}
 			for (int x = boundaries.position.x; x < boundaries.get_end().x; x++) {

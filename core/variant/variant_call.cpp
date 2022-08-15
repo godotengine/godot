@@ -1650,7 +1650,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(Rect2, get_center, sarray(), varray());
 	bind_method(Rect2, get_area, sarray(), varray());
-	bind_method(Rect2, has_no_area, sarray(), varray());
+	bind_method(Rect2, has_area, sarray(), varray());
 	bind_method(Rect2, has_point, sarray("point"), varray());
 	bind_method(Rect2, is_equal_approx, sarray("rect"), varray());
 	bind_method(Rect2, intersects, sarray("b", "include_borders"), varray(false));
@@ -1667,7 +1667,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(Rect2i, get_center, sarray(), varray());
 	bind_method(Rect2i, get_area, sarray(), varray());
-	bind_method(Rect2i, has_no_area, sarray(), varray());
+	bind_method(Rect2i, has_area, sarray(), varray());
 	bind_method(Rect2i, has_point, sarray("point"), varray());
 	bind_method(Rect2i, intersects, sarray("b"), varray());
 	bind_method(Rect2i, encloses, sarray("b"), varray());

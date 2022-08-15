@@ -140,8 +140,8 @@ struct _NO_DISCARD_ Rect2 {
 				((p_rect.position.y + p_rect.size.y) <= (position.y + size.y));
 	}
 
-	_FORCE_INLINE_ bool has_no_area() const {
-		return (size.x <= 0 || size.y <= 0);
+	_FORCE_INLINE_ bool has_area() const {
+		return size.x > 0.0f && size.y > 0.0f;
 	}
 
 	// Returns the instersection between two Rect2s or an empty Rect2 if there is no intersection

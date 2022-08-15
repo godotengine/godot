@@ -1015,7 +1015,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i left_rect(pos.x, pos.y + left_start_y, left, left_end_y - left_start_y);
 								if (left_rect.size.x > 0) {
 									Rect2i intersection = rect.intersection(left_rect);
-									if (!intersection.has_no_area() && intersection.size.x < rect.size.x) {
+									if (intersection.has_area() && intersection.size.x < rect.size.x) {
 										rect.position.x = left_rect.size.x;
 										rect.size.x = rect.size.x - intersection.size.x;
 									}
@@ -1024,7 +1024,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i right_rect(pos.x + size.x - right, pos.y + right_start_y, right, right_end_y - right_start_y);
 								if (right_rect.size.x > 0) {
 									Rect2i intersection = rect.intersection(right_rect);
-									if (!intersection.has_no_area() && right_rect.size.x < rect.size.x) {
+									if (intersection.has_area() && right_rect.size.x < rect.size.x) {
 										rect.size.x = intersection.position.x - rect.position.x;
 									}
 								}
@@ -1032,7 +1032,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i top_rect(pos.x + top_start_x, pos.y, top_end_x - top_start_x, top);
 								if (top_rect.size.y > 0) {
 									Rect2i intersection = rect.intersection(top_rect);
-									if (!intersection.has_no_area() && intersection.size.y < rect.size.y) {
+									if (intersection.has_area() && intersection.size.y < rect.size.y) {
 										rect.position.y = top_rect.size.y;
 										rect.size.y = rect.size.y - intersection.size.y;
 									}
@@ -1041,7 +1041,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i bottom_rect(pos.x + bottom_start_x, pos.y + size.y - bottom, bottom_end_x - bottom_start_x, bottom);
 								if (bottom_rect.size.y > 0) {
 									Rect2i intersection = rect.intersection(bottom_rect);
-									if (!intersection.has_no_area() && right_rect.size.y < rect.size.y) {
+									if (intersection.has_area() && right_rect.size.y < rect.size.y) {
 										rect.size.y = intersection.position.y - rect.position.y;
 									}
 								}
