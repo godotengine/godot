@@ -742,7 +742,7 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		wl_keyboard_add_listener(ss->wl_keyboard, &wl_keyboard_listener, ss);
 	} else {
 		if (ss->xkb_context) {
-			free(ss->xkb_context);
+			xkb_context_unref(ss->xkb_context);
 			ss->xkb_context = nullptr;
 		}
 
@@ -773,13 +773,12 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	// Restore the cursor with our own cursor surface.
-	struct wl_cursor_image *cursor_image = wls->cursor_images[wls->cursor_shape];
-	if (cursor_image) {
-		wl_pointer_set_cursor(wl_pointer, serial, ss->cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
-	}
-
 	PointerData &pd = ss->pointer_data_buffer;
+	struct wl_cursor_image *cursor_image = wls->cursor_images[wls->cursor_shape];
+
+	wl_pointer_set_cursor(ss->wl_pointer, serial, ss->cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+
+	wl_surface_commit(ss->cursor_surface);
 
 	pd.pointed_window_id = INVALID_WINDOW_ID;
 
@@ -2565,7 +2564,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 DisplayServerWayland::~DisplayServerWayland() {
 	wls.events_thread_done.set();
 
-	// Wait for any Wayland events to be handled and unblock the polling thread.
+	// Wait for any Wayland event to be handled and unblock the polling thread.
 	wl_display_roundtrip(wls.display);
 
 	events_thread.wait_to_finish();
@@ -2599,22 +2598,112 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 
 	for (SeatState &seat : wls.seats) {
-		munmap((void *)seat.keymap_buffer, seat.keymap_buffer_size);
+		wl_seat_destroy(seat.wl_seat);
+
+		xkb_context_unref(seat.xkb_context);
+		xkb_state_unref(seat.xkb_state);
+		xkb_keymap_unref(seat.xkb_keymap);
+
+		if (seat.wl_keyboard) {
+			wl_keyboard_destroy(seat.wl_keyboard);
+		}
+
+		if (seat.keymap_buffer) {
+			munmap((void *)seat.keymap_buffer, seat.keymap_buffer_size);
+		}
+
+		if (seat.wl_pointer) {
+			wl_pointer_destroy(seat.wl_pointer);
+		}
+
+		if (seat.cursor_surface) {
+			wl_surface_destroy(seat.cursor_surface);
+		}
+
+		if (seat.wp_relative_pointer) {
+			zwp_relative_pointer_v1_destroy(seat.wp_relative_pointer);
+		}
+
+		if (seat.wp_locked_pointer) {
+			zwp_locked_pointer_v1_destroy(seat.wp_locked_pointer);
+		}
+
+		if (seat.wp_confined_pointer) {
+			zwp_confined_pointer_v1_destroy(seat.wp_confined_pointer);
+		}
+
+		if (seat.wlr_data_control_device) {
+			zwlr_data_control_device_v1_destroy(seat.wlr_data_control_device);
+		}
+
+		if (seat.selection_data_control_offer) {
+			zwlr_data_control_offer_v1_destroy(seat.selection_data_control_offer);
+		}
+
+		if (seat.selection_data_control_source) {
+			zwlr_data_control_source_v1_destroy(seat.selection_data_control_source);
+		}
+
+		if (seat.primary_data_control_offer) {
+			zwlr_data_control_offer_v1_destroy(seat.primary_data_control_offer);
+		}
+
+		if (seat.primary_data_control_source) {
+			zwlr_data_control_source_v1_destroy(seat.primary_data_control_source);
+		}
 	}
 
-	wl_display_disconnect(wls.display);
+	for (ScreenData &screen : wls.screens) {
+		if (screen.wl_output) {
+			wl_output_destroy(screen.wl_output);
+		}
+	}
+
+	if (wls.wl_cursor_theme) {
+		wl_cursor_theme_destroy(wls.wl_cursor_theme);
+	}
+
+	if (wls.globals.wlr_data_control_manager) {
+		zwlr_data_control_manager_v1_destroy(wls.globals.wlr_data_control_manager);
+	}
+
+	if (wls.globals.wp_pointer_constraints) {
+		zwp_pointer_constraints_v1_destroy(wls.globals.wp_pointer_constraints);
+	}
+
+	if (wls.globals.wp_relative_pointer_manager) {
+		zwp_relative_pointer_manager_v1_destroy(wls.globals.wp_relative_pointer_manager);
+	}
+
+	if (wls.globals.xdg_wm_base) {
+		xdg_wm_base_destroy(wls.globals.xdg_wm_base);
+	}
+
+	if (wls.globals.wl_shm) {
+		wl_shm_destroy(wls.globals.wl_shm);
+	}
+
+	if (wls.globals.wl_compositor) {
+		wl_compositor_destroy(wls.globals.wl_compositor);
+	}
+
+	if (wls.registry) {
+		wl_registry_destroy(wls.registry);
+	}
+
+	if (wls.display) {
+		wl_display_disconnect(wls.display);
+	}
 
 	// Destroy all drivers.
 #ifdef VULKAN_ENABLED
 	if (wls.rendering_device_vulkan) {
 		wls.rendering_device_vulkan->finalize();
 		memdelete(wls.rendering_device_vulkan);
-		wls.rendering_device_vulkan = nullptr;
 	}
 
 	if (wls.context_vulkan) {
 		memdelete(wls.context_vulkan);
-		wls.context_vulkan = nullptr;
 	}
 #endif
 }
