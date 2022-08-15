@@ -1884,10 +1884,14 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	logo = ImageTexture::create_from_image(memnew(Image(_ios_logo)));
 	plugins_changed.set();
+#ifndef ANDROID_ENABLED
 	check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+#endif
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+#ifndef ANDROID_ENABLED
 	quit_request.set();
 	check_for_changes_thread.wait_to_finish();
+#endif
 }
