@@ -204,7 +204,7 @@ public:
 	enum AfterGUIInput {
 		AFTER_GUI_INPUT_PASS,
 		AFTER_GUI_INPUT_STOP,
-		AFTER_GUI_INPUT_DESELECT
+		AFTER_GUI_INPUT_CUSTOM
 	};
 
 	//TODO: send a resource for editing to the editor node?
@@ -312,6 +312,7 @@ public:
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
 VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
+VARIANT_ENUM_CAST(EditorPlugin::AfterGUIInput);
 
 typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
