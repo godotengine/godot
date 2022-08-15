@@ -42,7 +42,7 @@
 			<return type="int" />
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
-				Creates a new instance of Godot that runs independently. The [code]arguments[/code] are used in the given order and separated by a space.
+				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
@@ -53,8 +53,8 @@
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="open_console" type="bool" default="false" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [code]path[/code] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
-				On Windows, if [code]open_console[/code] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
+				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [param path] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space.
+				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
 				For example, running another instance of the project:
 				[codeblocks]
@@ -74,7 +74,7 @@
 			<return type="void" />
 			<param index="0" name="msec" type="int" />
 			<description>
-				Delays execution of the current thread by [code]msec[/code] milliseconds. [code]msec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
+				Delays execution of the current thread by [param msec] milliseconds. [param msec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
 				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
 				[b]Note:[/b] When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
@@ -83,7 +83,7 @@
 			<return type="void" />
 			<param index="0" name="usec" type="int" />
 			<description>
-				Delays execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
+				Delays execution of the current thread by [param usec] microseconds. [param usec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
 				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
 				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
@@ -113,8 +113,8 @@
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
-				Executes a command. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space. If an [code]output[/code] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [code]output[/code]. If [code]read_stderr[/code] is [code]true[/code], the output to the standard error stream will be included too.
-				On Windows, if [code]open_console[/code] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
+				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
+				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
 				For example, to retrieve a list of the working directory's contents:
@@ -140,9 +140,9 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
-				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [code]path[/code], [code]/c[/code] as the first argument, and the desired command as the second argument.
-				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [code]path[/code], [code]-Command[/code] as the first argument, and the desired command as the second argument.
-				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [code]path[/code], [code]-c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
 			</description>
 		</method>
@@ -238,7 +238,7 @@
 			<param index="0" name="variable" type="String" />
 			<description>
 				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
-				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
+				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -408,7 +408,7 @@
 			<param index="1" name="bold" type="bool" default="false" />
 			<param index="2" name="italic" type="bool" default="false" />
 			<description>
-				Returns path to the system font file with [code]font_name[/code] and style. Return empty string if no matching fonts found.
+				Returns path to the system font file with [param font_name] and style. Return empty string if no matching fonts found.
 				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
 			</description>
 		</method>
@@ -451,8 +451,8 @@
 			<return type="bool" />
 			<param index="0" name="variable" type="String" />
 			<description>
-				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
-				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
+				Returns [code]true[/code] if the environment variable with the name [param variable] exists.
+				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -482,7 +482,7 @@
 			<return type="bool" />
 			<param index="0" name="pid" type="int" />
 			<description>
-				Returns [code]true[/code] if the child process ID ([code]pid[/code]) is still running or [code]false[/code] if it has terminated.
+				Returns [code]true[/code] if the child process ID ([param pid]) is still running or [code]false[/code] if it has terminated.
 				Must be a valid ID generated from [method create_process].
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
@@ -509,7 +509,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="pid" type="int" />
 			<description>
-				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
+				Kill (terminate) the process identified by the given process ID ([param pid]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
@@ -538,7 +538,7 @@
 			<return type="void" />
 			<param index="0" name="tofile" type="String" default="&quot;&quot;" />
 			<description>
-				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [code]tofile[/code].
+				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [param tofile].
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
@@ -580,8 +580,8 @@
 			<param index="0" name="variable" type="String" />
 			<param index="1" name="value" type="String" />
 			<description>
-				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
+				Sets the value of the environment variable [param variable] to [param value]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="set_restart_on_exit">
@@ -589,7 +589,7 @@
 			<param index="0" name="restart" type="bool" />
 			<param index="1" name="arguments" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
-				If [code]restart[/code] is [code]true[/code], restarts the project automatically when it is exited with [method SceneTree.quit] or [constant Node.NOTIFICATION_WM_CLOSE_REQUEST]. Command line [code]arguments[/code] can be supplied. To restart the project with the same command line arguments as originally used to run the project, pass [method get_cmdline_args] as the value for [code]arguments[/code].
+				If [param restart] is [code]true[/code], restarts the project automatically when it is exited with [method SceneTree.quit] or [constant Node.NOTIFICATION_WM_CLOSE_REQUEST]. Command line [param arguments] can be supplied. To restart the project with the same command line arguments as originally used to run the project, pass [method get_cmdline_args] as the value for [param arguments].
 				[method set_restart_on_exit] can be used to apply setting changes that require a restart. See also [method is_restart_on_exit_set] and [method get_restart_on_exit_arguments].
 				[b]Note:[/b] This method is only effective on desktop platforms, and only when the project isn't started from the editor. It will have no effect on mobile and Web platforms, or when the project is started from the editor.
 				[b]Note:[/b] If the project process crashes or is [i]killed[/i] by the user (by sending [code]SIGKILL[/code] instead of the usual [code]SIGTERM[/code]), the project won't restart automatically.
@@ -606,7 +606,7 @@
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
-				Enables backup saves if [code]enabled[/code] is [code]true[/code].
+				Enables backup saves if [param enabled] is [code]true[/code].
 			</description>
 		</method>
 		<method name="shell_open">

@@ -21,9 +21,9 @@
 			<return type="int" />
 			<param index="0" name="line" type="int" default="-1" />
 			<description>
-				Returns the height of the line [code]line[/code].
-				If [code]line[/code] is set to [code]-1[/code], returns the biggest line height.
-				If there're no lines returns font size in pixels.
+				Returns the height of the line [param line].
+				If [param line] is set to [code]-1[/code], returns the biggest line height.
+				If there are no lines, returns font size in pixels.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">

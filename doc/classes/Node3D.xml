@@ -113,9 +113,9 @@
 			<param index="0" name="target" type="Vector3" />
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
-				Rotates the node so that the local forward axis (-Z) points toward the [code]target[/code] position.
-				The local up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the local forward axis. The resulting transform is orthogonal, and the scale is preserved. Non-uniform scaling may not work correctly.
-				The [code]target[/code] position cannot be the same as the node's position, the [code]up[/code] vector cannot be zero, and the direction from the node's position to the [code]target[/code] vector cannot be parallel to the [code]up[/code] vector.
+				Rotates the node so that the local forward axis (-Z) points toward the [param target] position.
+				The local up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the local forward axis. The resulting transform is orthogonal, and the scale is preserved. Non-uniform scaling may not work correctly.
+				The [param target] position cannot be the same as the node's position, the [param up] vector cannot be zero, and the direction from the node's position to the [param target] vector cannot be parallel to the [param up] vector.
 				Operations take place in global space.
 			</description>
 		</method>
@@ -125,7 +125,7 @@
 			<param index="1" name="target" type="Vector3" />
 			<param index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
-				Moves the node to the specified [code]position[/code], and then rotates the node to point toward the [code]target[/code] as per [method look_at]. Operations take place in global space.
+				Moves the node to the specified [param position], and then rotates the node to point toward the [param target] as per [method look_at]. Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalize">
@@ -138,14 +138,14 @@
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
+				Returns [code]true[/code] if the property identified by [param name] can be reverted to a default value.
 			</description>
 		</method>
 		<method name="property_get_revert">
 			<return type="Variant" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the default value of the Node3D property with given [code]name[/code].
+				Returns the default value of the Node3D property with given [param name].
 			</description>
 		</method>
 		<method name="rotate">
@@ -245,14 +245,14 @@
 			<return type="Vector3" />
 			<param index="0" name="local_point" type="Vector3" />
 			<description>
-				Transforms [code]local_point[/code] from this node's local space to world space.
+				Transforms [param local_point] from this node's local space to world space.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="global_point" type="Vector3" />
 			<description>
-				Transforms [code]global_point[/code] from world space to this node's local space.
+				Transforms [param global_point] from world space to this node's local space.
 			</description>
 		</method>
 		<method name="translate">
@@ -260,7 +260,7 @@
 			<param index="0" name="offset" type="Vector3" />
 			<description>
 				Changes the node's position by the given offset [Vector3].
-				Note that the translation [code]offset[/code] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
+				Note that the translation [param offset] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
 			</description>
 		</method>
 		<method name="translate_object_local">

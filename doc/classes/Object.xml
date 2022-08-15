@@ -39,7 +39,7 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method get].
-				Returns the given property. Returns [code]null[/code] if the [code]property[/code] does not exist.
+				Returns the given property. Returns [code]null[/code] if the [param property] does not exist.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
@@ -61,7 +61,7 @@
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<description>
-				Called whenever the object receives a notification, which is identified in [code]what[/code] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
+				Called whenever the object receives a notification, which is identified in [param what] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -70,7 +70,7 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method set].
-				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
+				Sets a property. Returns [code]true[/code] if the [param property] exists.
 			</description>
 		</method>
 		<method name="_to_string" qualifiers="virtual">
@@ -85,14 +85,14 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
+				Adds a user-defined [param signal]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [code]method[/code] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [param method] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -110,7 +110,7 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [param method] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -129,7 +129,7 @@
 			<param index="0" name="method" type="StringName" />
 			<param index="1" name="arg_array" type="Array" />
 			<description>
-				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
+				Calls the [param method] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -154,7 +154,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="flags" type="int" default="0" />
 			<description>
-				Connects a [code]signal[/code] to a [code]callable[/code]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
+				Connects a [param signal] to a [param callable]. Use [param flags] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
 				A signal can only be connected once to a [Callable]. It will print an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the callable's target is destroyed in the game's lifecycle, the connection will be lost.
 				[b]Examples with recommended syntax:[/b]
@@ -294,7 +294,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Disconnects a [code]signal[/code] from a given [code]callable[/code].
+				Disconnects a [param signal] from a given [param callable].
 				If you try to disconnect a connection that does not exist, the method will print an error. Use [method is_connected] to ensure that the connection exists.
 			</description>
 		</method>
@@ -302,7 +302,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Emits the given [param signal]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
 				emit_signal("hit", "sword", 100)
@@ -325,7 +325,7 @@
 			<return type="Variant" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
+				Returns the [Variant] value of the given [param property]. If the [param property] doesn't exist, this will return [code]null[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
@@ -366,8 +366,8 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
-				Returns the object's metadata entry for the given [code]name[/code].
-				Throws error if the entry does not exist, unless [code]default[/code] is not [code]null[/code] (in which case the default value will be returned).
+				Returns the object's metadata entry for the given [param name].
+				Throws error if the entry does not exist, unless [param default] is not [code]null[/code] (in which case the default value will be returned).
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -399,7 +399,7 @@
 			<return type="Array" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns an [Array] of connections for the given [code]signal[/code].
+				Returns an [Array] of connections for the given [param signal].
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">
@@ -412,28 +412,28 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if a metadata entry is found with the given [code]name[/code].
+				Returns [code]true[/code] if a metadata entry is found with the given [param name].
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the object contains the given [code]method[/code].
+				Returns [code]true[/code] if the object contains the given [param method].
 			</description>
 		</method>
 		<method name="has_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given [code]signal[/code] exists.
+				Returns [code]true[/code] if the given [param signal] exists.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given user-defined [code]signal[/code] exists. Only signals added using [method add_user_signal] are taken into account.
+				Returns [code]true[/code] if the given user-defined [param signal] exists. Only signals added using [method add_user_signal] are taken into account.
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">
@@ -446,7 +446,7 @@
 			<return type="bool" />
 			<param index="0" name="class" type="String" />
 			<description>
-				Returns [code]true[/code] if the object inherits from the given [code]class[/code]. See also [method get_class].
+				Returns [code]true[/code] if the object inherits from the given [param class]. See also [method get_class].
 				[b]Note:[/b] [method is_class] does not take [code]class_name[/code] declarations into account. If the object has a [code]class_name[/code] defined, [method is_class] will return [code]false[/code] for that name.
 			</description>
 		</method>
@@ -455,7 +455,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Returns [code]true[/code] if a connection exists for a given [code]signal[/code] and [code]callable[/code].
+				Returns [code]true[/code] if a connection exists for a given [param signal] and [param callable].
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
@@ -470,7 +470,7 @@
 			<param index="1" name="reversed" type="bool" default="false" />
 			<description>
 				Send a given notification to the object, which will also trigger a call to the [method _notification] method of all classes that the object inherits from.
-				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
+				If [param reversed] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [param reversed] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
 			</description>
 		</method>
 		<method name="notify_property_list_changed">
@@ -491,7 +491,7 @@
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Assigns a new value to the given property. If the [code]property[/code] does not exist or the given value's type doesn't match, nothing will happen.
+				Assigns a new value to the given property. If the [param property] does not exist or the given value's type doesn't match, nothing will happen.
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
@@ -570,7 +570,7 @@
 			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
-				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [param message] unchanged. See [method set_message_translation].
 				See [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url] for examples of the usage of this method.
 			</description>
 		</method>
@@ -582,8 +582,8 @@
 			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a message involving plurals using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
-				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].
-				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [param message] or [param plural_message] unchanged. See [method set_message_translation].
+				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. In such cases, use [method tr].
 				See [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url] for examples of the usage of this method.
 			</description>

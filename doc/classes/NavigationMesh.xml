@@ -28,14 +28,14 @@
 			<param index="0" name="mesh" type="Mesh" />
 			<description>
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
-				[b]Note:[/b] The given [code]mesh[/code] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
+				[b]Note:[/b] The given [param mesh] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member geometry_collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member geometry_collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_polygon">
@@ -62,7 +62,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member geometry_collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member geometry_collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_vertices">

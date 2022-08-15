@@ -59,7 +59,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant. [code]delta[/code] is in seconds.
+				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] variable should be constant. [param delta] is in seconds.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
@@ -69,7 +69,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant. [code]delta[/code] is in seconds.
+				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
@@ -125,8 +125,8 @@
 			<param index="2" name="internal" type="int" enum="Node.InternalMode" default="0" />
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
-				If [code]internal[/code] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code].The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
+				If [param legible_unique_name] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
+				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code].The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblocks]
 				[gdscript]
@@ -153,8 +153,8 @@
 			<param index="0" name="sibling" type="Node" />
 			<param index="1" name="legible_unique_name" type="bool" default="false" />
 			<description>
-				Adds a [code]sibling[/code] node to current's node parent, at the same level as that node, right below it.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
+				Adds a [param sibling] node to current's node parent, at the same level as that node, right below it.
+				If [param legible_unique_name] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 				[b]Note:[/b] If this node is internal, the new sibling will be internal too (see [code]internal[/code] parameter in [method add_child]).
 			</description>
@@ -165,7 +165,7 @@
 			<param index="1" name="persistent" type="bool" default="false" />
 			<description>
 				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
-				The [code]persistent[/code] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
+				The [param persistent] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
 			</description>
 		</method>
@@ -189,7 +189,7 @@
 			<param index="0" name="flags" type="int" default="15" />
 			<description>
 				Duplicates the node, returning a new node.
-				You can fine-tune the behavior using the [code]flags[/code] (see [enum DuplicateFlags]).
+				You can fine-tune the behavior using the [param flags] (see [enum DuplicateFlags]).
 				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
 			</description>
 		</method>
@@ -199,10 +199,10 @@
 			<param index="1" name="recursive" type="bool" default="true" />
 			<param index="2" name="owned" type="bool" default="true" />
 			<description>
-				Finds the first descendant of this node whose name matches [code]pattern[/code] as in [method String.match].
-				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
-				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
-				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				Finds the first descendant of this node whose name matches [param pattern] as in [method String.match].
+				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
+				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
 				Returns [code]null[/code] if no matching [Node] is found.
 				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
@@ -215,11 +215,11 @@
 			<param index="2" name="recursive" type="bool" default="true" />
 			<param index="3" name="owned" type="bool" default="true" />
 			<description>
-				Finds descendants of this node whose name matches [code]pattern[/code] as in [method String.match], and/or type matches [code]type[/code] as in [method Object.is_class].
-				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
-				[code]type[/code] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
-				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
-				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				Finds descendants of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class].
+				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[param type] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
+				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
+				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
 				Returns an empty array if no matching nodes are found.
 				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.
 				[b]Note:[/b] If you only want to find the first descendant node that matches a pattern, see [method find_child].
@@ -229,8 +229,8 @@
 			<return type="Node" />
 			<param index="0" name="pattern" type="String" />
 			<description>
-				Finds the first parent of the current node whose name matches [code]pattern[/code] as in [method String.match].
-				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				Finds the first parent of the current node whose name matches [param pattern] as in [method String.match].
+				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
 				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 			</description>
 		</method>
@@ -241,7 +241,7 @@
 			<description>
 				Returns a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
 				Negative indices access the children from the last one.
-				If [code]include_internal[/code] is [code]true[/code], internal children are skipped (see [code]internal[/code] parameter in [method add_child]).
+				If [param include_internal] is [code]true[/code], internal children are skipped (see [code]internal[/code] parameter in [method add_child]).
 				To access a child node via its name, use [method get_node].
 			</description>
 		</method>
@@ -250,7 +250,7 @@
 			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the number of child nodes.
-				If [code]include_internal[/code] is [code]false[/code], internal children aren't counted (see [code]internal[/code] parameter in [method add_child]).
+				If [param include_internal] is [code]false[/code], internal children aren't counted (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
@@ -258,7 +258,7 @@
 			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns an array of references to node's children.
-				If [code]include_internal[/code] is [code]false[/code], the returned array won't include internal children (see [code]internal[/code] parameter in [method add_child]).
+				If [param include_internal] is [code]false[/code], the returned array won't include internal children (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
@@ -281,7 +281,7 @@
 			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
 				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
-				If [code]include_internal[/code] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
+				If [param include_internal] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="get_multiplayer_authority" qualifiers="const">
@@ -349,7 +349,7 @@
 			<return type="Node" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Similar to [method get_node], but does not log an error if [code]path[/code] does not point to a valid [Node].
+				Similar to [method get_node], but does not log an error if [param path] does not point to a valid [Node].
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
@@ -368,7 +368,7 @@
 			<return type="NodePath" />
 			<param index="0" name="node" type="Node" />
 			<description>
-				Returns the relative [NodePath] from this node to the specified [code]node[/code]. Both nodes must be in the same scene or the function will fail.
+				Returns the relative [NodePath] from this node to the specified [param node]. Both nodes must be in the same scene or the function will fail.
 			</description>
 		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
@@ -432,7 +432,7 @@
 			<return type="bool" />
 			<param index="0" name="node" type="Node" />
 			<description>
-				Returns [code]true[/code] if [code]node[/code] has editable children enabled relative to this node. This method is only intended for use with editor tooling.
+				Returns [code]true[/code] if [param node] has editable children enabled relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="is_greater_than" qualifiers="const">
@@ -561,7 +561,7 @@
 			<param index="1" name="args" type="Array" default="[]" />
 			<param index="2" name="parent_first" type="bool" default="false" />
 			<description>
-				Calls the given method (if present) with the arguments given in [code]args[/code] on this node and recursively on all its children. If the [code]parent_first[/code] argument is [code]true[/code], the method will be called on the current node first, then on all its children. If [code]parent_first[/code] is [code]false[/code], the children will be called first.
+				Calls the given method (if present) with the arguments given in [param args] on this node and recursively on all its children. If the [param parent_first] argument is [code]true[/code], the method will be called on the current node first, then on all its children. If [param parent_first] is [code]false[/code], the children will be called first.
 			</description>
 		</method>
 		<method name="propagate_notification">
@@ -610,7 +610,7 @@
 			<param index="1" name="keep_groups" type="bool" default="false" />
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
-				If [code]keep_groups[/code] is [code]true[/code], the [code]node[/code] is added to the same groups that the replaced node is in.
+				If [param keep_groups] is [code]true[/code], the [param node] is added to the same groups that the replaced node is in.
 				[b]Note:[/b] The given node will become the new parent of any child nodes that the replaced node had.
 				[b]Note:[/b] The replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].
 			</description>
@@ -625,7 +625,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
+				Sends a remote procedure call request for the given [param method] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
@@ -634,7 +634,7 @@
 			<param index="0" name="method" type="StringName" />
 			<param index="1" name="config" type="Variant" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] with the given [code]config[/code] which should be [code]null[/code] (to disable) or a [Dictionary] in the form:
+				Changes the RPC mode for the given [param method] with the given [param config] which should be [code]null[/code] (to disable) or a [Dictionary] in the form:
 				[codeblock]
 				{
 				    rpc_mode = MultiplayerAPI.RPCMode,
@@ -651,7 +651,7 @@
 			<param index="0" name="peer_id" type="int" />
 			<param index="1" name="method" type="StringName" />
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). Returns [code]null[/code].
+				Sends a [method rpc] to a specific peer identified by [param peer_id] (see [method MultiplayerPeer.set_target_peer]). Returns [code]null[/code].
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -666,7 +666,7 @@
 			<param index="0" name="node" type="Node" />
 			<param index="1" name="is_editable" type="bool" />
 			<description>
-				Sets the editable children state of [code]node[/code] relative to this node. This method is only intended for use with editor tooling.
+				Sets the editable children state of [param node] relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
 		<method name="set_multiplayer_authority">
@@ -674,7 +674,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="recursive" type="bool" default="true" />
 			<description>
-				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the authority for all children of this node.
+				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [param recursive], the given peer is recursively set as the authority for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -791,7 +791,7 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when a child node is about to exit the scene tree, either because it is being removed or freed directly, or because this node is exiting the tree.
-				When this signal is received, the child [code]node[/code] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].
+				When this signal is received, the child [param node] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].
 			</description>
 		</signal>
 		<signal name="ready">

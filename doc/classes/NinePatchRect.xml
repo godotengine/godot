@@ -21,7 +21,7 @@
 			<param index="0" name="margin" type="int" enum="Side" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Sets the size of the margin on the specified [enum Side] to [code]value[/code] pixels.
+				Sets the size of the margin on the specified [enum Side] to [param value] pixels.
 			</description>
 		</method>
 	</methods>

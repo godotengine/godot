@@ -17,7 +17,7 @@
 			<param index="1" name="label" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
-				Adds an item, with a [code]texture[/code] icon, text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, the item index will be used as the item's ID. New items are appended at the end.
+				Adds an item, with a [param texture] icon, text [param label] and (optionally) [param id]. If no [param id] is passed, the item index will be used as the item's ID. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_item">
@@ -25,14 +25,14 @@
 			<param index="0" name="label" type="String" />
 			<param index="1" name="id" type="int" default="-1" />
 			<description>
-				Adds an item, with text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, the item index will be used as the item's ID. New items are appended at the end.
+				Adds an item, with text [param label] and (optionally) [param id]. If no [param id] is passed, the item index will be used as the item's ID. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_separator">
 			<return type="void" />
 			<param index="0" name="text" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a separator to the list of items. Separators help to group items, and can optionally be given a [code]text[/code] header. A separator also gets an index assigned, and is appended at the end of the item list.
+				Adds a separator to the list of items. Separators help to group items, and can optionally be given a [param text] header. A separator also gets an index assigned, and is appended at the end of the item list.
 			</description>
 		</method>
 		<method name="clear">
@@ -45,21 +45,21 @@
 			<return type="Texture2D" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the icon of the item at index [code]idx[/code].
+				Returns the icon of the item at index [param idx].
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the ID of the item at index [code]idx[/code].
+				Returns the ID of the item at index [param idx].
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Returns the index of the item with the given [code]id[/code].
+				Returns the index of the item with the given [param id].
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
@@ -73,14 +73,14 @@
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the text of the item at index [code]idx[/code].
+				Returns the text of the item at index [param idx].
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the tooltip of the item at index [code]idx[/code].
+				Returns the tooltip of the item at index [param idx].
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
@@ -117,7 +117,7 @@
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled.
+				Returns [code]true[/code] if the item at index [param idx] is disabled.
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -130,7 +130,7 @@
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Removes the item at index [code]idx[/code].
+				Removes the item at index [param idx].
 			</description>
 		</method>
 		<method name="select">
@@ -146,7 +146,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="disabled" type="bool" />
 			<description>
-				Sets whether the item at index [code]idx[/code] is disabled.
+				Sets whether the item at index [param idx] is disabled.
 				Disabled items are drawn differently in the dropdown and are not selectable by the user. If the current selected item is set as disabled, it will remain selected.
 			</description>
 		</method>
@@ -155,7 +155,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the icon of the item at index [code]idx[/code].
+				Sets the icon of the item at index [param idx].
 			</description>
 		</method>
 		<method name="set_item_id">
@@ -163,7 +163,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="id" type="int" />
 			<description>
-				Sets the ID of the item at index [code]idx[/code].
+				Sets the ID of the item at index [param idx].
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -179,7 +179,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="text" type="String" />
 			<description>
-				Sets the text of the item at index [code]idx[/code].
+				Sets the text of the item at index [param idx].
 			</description>
 		</method>
 		<method name="set_item_tooltip">
@@ -187,7 +187,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="tooltip" type="String" />
 			<description>
-				Sets the tooltip of the item at index [code]idx[/code].
+				Sets the tooltip of the item at index [param idx].
 			</description>
 		</method>
 	</methods>
