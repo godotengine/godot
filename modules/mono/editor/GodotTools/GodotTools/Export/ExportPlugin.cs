@@ -167,7 +167,7 @@ namespace GodotTools.Export
 
             var assemblies = new Godot.Collections.Dictionary<string, string>();
 
-            string projectDllName = GodotSharpEditor.ProjectAssemblyName;
+            string projectDllName = GodotSharpDirs.ProjectAssemblyName;
             string projectDllSrcDir = Path.Combine(GodotSharpDirs.ResTempAssembliesBaseDir, buildConfig);
             string projectDllSrcPath = Path.Combine(projectDllSrcDir, $"{projectDllName}.dll");
 
