@@ -8,6 +8,7 @@
 		For the list of the global functions and constants see [@GlobalScope].
 	</description>
 	<tutorials>
+		<link title = "GDScript Exports">https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_exports.html
 	</tutorials>
 	<methods>
 		<method name="Color8">
@@ -267,6 +268,31 @@
 		<annotation name="@export">
 			<return type="void" />
 			<description>
+				The keyword [b]export[/b] in Godot 3.x.
+				Used to make the variable after the [annotation @export] displayed and editable on property list in the editor
+				E.g.
+				[codeblock]
+				@export var what:int = 0
+				@export var me:String = "Hello World!"
+				@export var arr:Array[int] = [0,1,2,3]
+				@export var dic:Dictionary = {"a":0}
+				[/codeblock]
+				It's the same as
+				[codeblock]
+				export(int) var what = 0
+				export(String) var me = "Hello World!"
+				export(Array,int) var arr:Array = [0,1,2,3]
+				export(Dictionary) var dic = {"a":0}
+				[/codeblock]
+				in Godot 3.x
+				Then on the right of the editor (strictly speaking, its your property list), you will see and be able to edit these variables with [annotation @export]:
+				[codeblock]
+				# What | 0
+				# Me | Hello World!
+				# Arr | [Array(size 4)]
+				# Dic | [Dic(size 1)]
+				[/codeblock]
+				Please see [b]GDScript Exports[/b] to get more details about @export
 			</description>
 		</annotation>
 		<annotation name="@export_category">
@@ -398,6 +424,21 @@
 		<annotation name="@onready">
 			<return type="void" />
 			<description>
+				The keyword [b]onready[/b] in Godot 3.x
+				If you want to get some variables initialized when the node attaching with the script gets ready, please add @onready before that variable
+				This is awesomely useful when you want to import nodes and resources into the script
+				E.g.
+				[codeblock]
+				@onready var ready:int = 1
+				@onready var position:Position2D = $"../Position2D"
+				@onready var scene:PackedScene = preload("res://resource.tscn")
+				[/codeblock]
+				It's the same as
+				[codeblock]
+				onready var ready:int = 1
+				onready var position:Position2D = $"../Position2D"
+				onready var scene:PackedScene = preload("res://resource.tscn")
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@rpc" qualifiers="vararg">
@@ -412,6 +453,30 @@
 		<annotation name="@tool">
 			<return type="void" />
 			<description>
+				The keyword [b]tool[/b] in Godot 3.x
+				This is extremely useful that when you place [annotation @tool] at the top of the script, your script [b]can be run in editor mode[/b].
+				E.g
+				[codeblock]
+				@tool
+				extends Node2D
+				
+				func _physic_process(delta):
+					position.x += 400 * delta
+				[/codeblock]
+				After saving the script and back to the editor, you will see that the Node2D moves rightward
+				To avoid the code running in editor mode with [annotation @tool], please use [member Engine.editor_hint]
+				[codeblock]
+				@tool
+				extends Node2D
+				
+				func _physic_process(delta):
+					if Engine.editor_hint:
+						position.x += 400 * delta
+					else:
+						rotation_degrees += 8
+				[/codeblock]
+				You will see that in the editor mode, the Node2D moves rightward and, in the debugger mode(running your project), the Node2D rotates
+				[b]Warning:[/b] Please take good use of [annotation @tool] and [member Engine.editor_hint]; otherwise, your project might suffer from a big loss!
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
