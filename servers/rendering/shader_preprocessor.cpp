@@ -416,22 +416,32 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 }
 
 void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
+	const int line = p_tokenizer->get_line();
+
 	if (state->skip_stack_else.is_empty()) {
-		set_error(RTR("Unmatched else."), p_tokenizer->get_line());
+		set_error(RTR("Unmatched else."), line);
 		return;
 	}
+	if (state->previous_region != nullptr) {
+		state->previous_region->to_line = line - 1;
+	}
+
 	p_tokenizer->advance('\n');
 
 	bool skip = state->skip_stack_else[state->skip_stack_else.size() - 1];
 	state->skip_stack_else.remove_at(state->skip_stack_else.size() - 1);
 
-	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_include];
+	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_filename];
 	int index = vec.size() - 1;
 	if (index >= 0) {
 		SkippedCondition *cond = vec[index];
 		if (cond->end_line == -1) {
 			cond->end_line = p_tokenizer->get_line();
 		}
+	}
+
+	if (state->save_regions) {
+		add_region(line + 1, !skip, state->previous_region->parent);
 	}
 
 	if (skip) {
@@ -447,8 +457,12 @@ void ShaderPreprocessor::process_endif(Tokenizer *p_tokenizer) {
 		set_error(RTR("Unmatched endif."), p_tokenizer->get_line());
 		return;
 	}
+	if (state->previous_region != nullptr) {
+		state->previous_region->to_line = p_tokenizer->get_line() - 1;
+		state->previous_region = state->previous_region->parent;
+	}
 
-	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_include];
+	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_filename];
 	int index = vec.size() - 1;
 	if (index >= 0) {
 		SkippedCondition *cond = vec[index];
@@ -461,7 +475,7 @@ void ShaderPreprocessor::process_endif(Tokenizer *p_tokenizer) {
 }
 
 void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
-	int line = p_tokenizer->get_line();
+	const int line = p_tokenizer->get_line();
 
 	String body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
 	if (body.is_empty()) {
@@ -490,6 +504,10 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 
 	bool success = v.booleanize();
 	start_branch_condition(p_tokenizer, success);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region);
+	}
 }
 
 void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
@@ -510,6 +528,10 @@ void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
 
 	bool success = state->defines.has(label);
 	start_branch_condition(p_tokenizer, success);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region);
+	}
 }
 
 void ShaderPreprocessor::process_ifndef(Tokenizer *p_tokenizer) {
@@ -530,6 +552,10 @@ void ShaderPreprocessor::process_ifndef(Tokenizer *p_tokenizer) {
 
 	bool success = !state->defines.has(label);
 	start_branch_condition(p_tokenizer, success);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region);
+	}
 }
 
 void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
@@ -594,15 +620,15 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	String old_include = state->current_include;
-	state->current_include = real_path;
+	String old_filename = state->current_filename;
+	state->current_filename = real_path;
 	ShaderPreprocessor processor;
 
 	int prev_condition_depth = state->condition_depth;
 	state->condition_depth = 0;
 
 	FilePosition fp;
-	fp.file = state->current_include;
+	fp.file = state->current_filename;
 	fp.line = line;
 	state->include_positions.push_back(fp);
 
@@ -614,7 +640,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 
 	// Reset to last include if there are no errors. We want to use this as context.
 	if (state->error.is_empty()) {
-		state->current_include = old_include;
+		state->current_filename = old_filename;
 		state->include_positions.pop_back();
 	} else {
 		return;
@@ -668,6 +694,15 @@ void ShaderPreprocessor::process_undef(Tokenizer *p_tokenizer) {
 	state->defines.erase(label);
 }
 
+void ShaderPreprocessor::add_region(int p_line, bool p_enabled, Region *p_parent_region) {
+	Region region;
+	region.file = state->current_filename;
+	region.enabled = p_enabled;
+	region.from_line = p_line;
+	region.parent = p_parent_region;
+	state->previous_region = &state->regions[region.file].push_back(region)->get();
+}
+
 void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_success) {
 	state->condition_depth++;
 
@@ -676,7 +711,7 @@ void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_s
 	} else {
 		SkippedCondition *cond = memnew(SkippedCondition());
 		cond->start_line = p_tokenizer->get_line();
-		state->skipped_conditions[state->current_include].push_back(cond);
+		state->skipped_conditions[state->current_filename].push_back(cond);
 
 		Vector<String> ends;
 		ends.push_back("else");
@@ -969,8 +1004,12 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
+Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
 	State pp_state;
+	if (!p_filename.is_empty()) {
+		pp_state.current_filename = p_filename;
+		pp_state.save_regions = r_regions != nullptr;
+	}
 	Error err = preprocess(&pp_state, p_code, r_result);
 	if (err != OK) {
 		if (r_error_text) {
@@ -979,6 +1018,9 @@ Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, Str
 		if (r_error_position) {
 			*r_error_position = pp_state.include_positions;
 		}
+	}
+	if (r_regions) {
+		*r_regions = pp_state.regions[p_filename];
 	}
 	if (r_includes) {
 		*r_includes = pp_state.shader_includes;

@@ -48,6 +48,21 @@ class VisualShaderEditor;
 class HSplitContainer;
 class ShaderCreateDialog;
 
+class GDShaderSyntaxHighlighter : public CodeHighlighter {
+	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
+
+private:
+	Vector<Point2i> disabled_branch_regions;
+	Color disabled_branch_color;
+
+public:
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
+
+	void add_disabled_branch_region(const Point2i &p_region);
+	void clear_disabled_branch_regions();
+	void set_disabled_branch_color(const Color &p_color);
+};
+
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
@@ -57,7 +72,7 @@ class ShaderTextEditor : public CodeTextEditor {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
 	};
 
-	Ref<CodeHighlighter> syntax_highlighter;
+	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
 	Ref<ShaderInclude> shader_inc;
