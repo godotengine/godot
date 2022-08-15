@@ -416,5 +416,7 @@ Particles::Particles() {
 }
 
 Particles::~Particles() {
-	VS::get_singleton()->free(particles);
+	if (particles.is_valid()) {
+		VS::get_singleton()->free(particles);
+	}
 }
