@@ -44,6 +44,11 @@ public:
 		Point2 pos;
 	};
 
+	struct MouseEventInfo {
+		bool valid = false;
+		Point2 pos;
+	};
+
 	enum {
 		JOY_EVENT_BUTTON = 0,
 		JOY_EVENT_AXIS = 1,
@@ -61,6 +66,7 @@ public:
 
 private:
 	Vector<TouchPos> touch;
+	MouseEventInfo mouse_event_info;
 	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
 
 	bool alt_mem = false;
@@ -80,14 +86,21 @@ private:
 
 	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
 
+	void _parse_mouse_event_info(int buttons_mask, bool p_pressed, bool p_double_click);
+
+	void _release_mouse_event_info();
+
+	void _parse_all_touch(bool p_pressed);
+
+	void _release_all_touch();
+
 public:
-	void process_event(Ref<InputEvent> &p_event);
 	void process_joy_event(const JoypadEvent &p_event);
 	void process_key_event(int p_scancode, int p_physical_scancode, int p_unicode, bool p_pressed);
-	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
-	void process_hover(int p_type, Point2 p_pos);
-	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor);
-	void process_double_tap(int event_android_button_mask, Point2 p_pos);
+	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click);
+	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_magnify(Point2 p_pos, float p_factor);
+	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 };
 
