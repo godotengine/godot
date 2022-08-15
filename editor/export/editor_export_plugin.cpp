@@ -181,12 +181,26 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	if (!convert) {
 		return;
 	}
+
+	int flg = 0;
+	if (GLOBAL_GET("filesystem/on_save/compress_binary_resources")) {
+		flg |= ResourceSaver::FLAG_COMPRESS;
+	}
+
 	String tmp_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
-	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
+	Error err;
+	Ref<Resource> res = ResourceFormatLoaderText::singleton->load(p_path, p_path, &err);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmp_path);
-		ERR_FAIL();
+		ERR_FAIL_MSG("Cannot load text resource from path '" + p_path + "'.");
 	}
+
+	err = ResourceSaver::save(res, tmp_path, flg);
+	if (err != OK) {
+		DirAccess::remove_file_or_error(tmp_path);
+		ERR_FAIL_MSG("Cannot save resource to file '" + tmp_path);
+	}
+
 	Vector<uint8_t> data = FileAccess::get_file_as_array(tmp_path);
 	if (data.size() == 0) {
 		DirAccess::remove_file_or_error(tmp_path);
