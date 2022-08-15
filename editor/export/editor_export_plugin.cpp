@@ -207,7 +207,11 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 		ERR_FAIL();
 	}
 	DirAccess::remove_file_or_error(tmp_path);
-	add_file(p_path + ".converted.res", data, true);
+	if (extension == "tscn") {
+		add_file(p_path + ".converted.scn", data, true);
+	} else {
+		add_file(p_path + ".converted.res", data, true);
+	}
 }
 
 EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
