@@ -328,7 +328,8 @@ public:
 	virtual String get_os_name() const;
 	virtual Ref<Texture> get_logo() const;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
@@ -687,7 +688,7 @@ Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {
 	return logo;
 }
 
-bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformJavaScript::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
 	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
@@ -712,7 +713,18 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
-	// Validate the rest of the configuration.
+	if (!err.empty()) {
+		r_error = err;
+	}
+
+	return valid;
+}
+
+bool EditorExportPlatformJavaScript::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
+	String err;
+	bool valid = true;
+
+	// Validate the project configuration.
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String etc_error = test_etc2();

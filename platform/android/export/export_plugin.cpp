@@ -2059,7 +2059,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	return apksigner_path;
 }
 
-bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
 	const bool custom_build_enabled = p_preset->get("custom_build/use_custom_build");
@@ -2107,7 +2107,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		valid = installed_android_build_template && !r_missing_templates;
 	}
 
-	// Validate the rest of the configuration.
+	// Validate the rest of the export configuration.
 
 	String dk = p_preset->get("keystore/debug");
 	String dk_user = p_preset->get("keystore/debug_user");
@@ -2183,6 +2183,19 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		}
 	}
 
+	if (!err.empty()) {
+		r_error = err;
+	}
+
+	return valid;
+}
+
+bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
+	String err;
+	bool valid = true;
+	const bool custom_build_enabled = p_preset->get("custom_build/use_custom_build");
+
+	// Validate the project configuration.
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
 
 	if (apk_expansion) {
@@ -2249,8 +2262,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		}
 	}
 
-	if (int(p_preset->get("custom_build/export_format")) == EXPORT_FORMAT_AAB &&
-			!custom_build_enabled) {
+	if (int(p_preset->get("custom_build/export_format")) == EXPORT_FORMAT_AAB && !custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
 		err += "\n";
@@ -2308,7 +2320,9 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		err += "\n";
 	}
 
-	r_error = err;
+	if (!err.empty()) {
+		r_error = err;
+	}
 	return valid;
 }
 
