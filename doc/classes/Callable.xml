@@ -54,7 +54,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="method" type="StringName" />
 			<description>
-				Creates a new [Callable] for the method called [code]method[/code] in the specified [code]object[/code].
+				Creates a new [Callable] for the method called [param method] in the specified [param object].
 			</description>
 		</constructor>
 	</constructors>

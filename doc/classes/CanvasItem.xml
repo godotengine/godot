@@ -44,7 +44,7 @@
 			<param index="6" name="width" type="float" default="1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a unfilled arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve. See also [method draw_circle].
+				Draws a unfilled arc between the given angles. The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
@@ -137,8 +137,8 @@
 			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<description>
 				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
-				If [code]outline[/code] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [code]outline[/code] radius.
-				Value of the [code]pixel_range[/code] should the same that was used during distance field texture generation.
+				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
+				Value of the [param pixel_range] should the same that was used during distance field texture generation.
 			</description>
 		</method>
 		<method name="draw_multiline">
@@ -147,7 +147,7 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="width" type="float" default="1.0" />
 			<description>
-				Draws multiple disconnected lines with a uniform [code]color[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
+				Draws multiple disconnected lines with a uniform [param color]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -156,7 +156,7 @@
 			<param index="1" name="colors" type="PackedColorArray" />
 			<param index="2" name="width" type="float" default="1.0" />
 			<description>
-				Draws multiple disconnected lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
+				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
@@ -174,7 +174,7 @@
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Breaks [code]text[/code] to the lines and draws it using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
@@ -193,7 +193,7 @@
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Breaks [code]text[/code] to the lines and draws text outline using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -221,7 +221,7 @@
 			<param index="2" name="width" type="float" default="1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -231,7 +231,7 @@
 			<param index="2" name="width" type="float" default="1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [param width] and segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -252,8 +252,8 @@
 			<param index="2" name="filled" type="bool" default="true" />
 			<param index="3" name="width" type="float" default="1.0" />
 			<description>
-				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified.
-				[b]Note:[/b] [code]width[/code] is only effective if [code]filled[/code] is [code]false[/code].
+				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified.
+				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="draw_set_transform">
@@ -285,7 +285,7 @@
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 				[b]Example using the default project font:[/b]
 				[codeblocks]
 				[gdscript]
@@ -322,7 +322,7 @@
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Draws [code]text[/code] outline using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -350,7 +350,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
-				Draws a textured rectangle at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -362,7 +362,7 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle region at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a textured rectangle region at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
 			</description>
 		</method>
 		<method name="force_update_transform">
@@ -472,28 +472,28 @@
 			<return type="Vector2" />
 			<param index="0" name="screen_point" type="Vector2" />
 			<description>
-				Assigns [code]screen_point[/code] as this node's new local transform.
+				Assigns [param screen_point] as this node's new local transform.
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
 			<return type="InputEvent" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Transformations issued by [code]event[/code]'s inputs are applied in local space instead of global space.
+				Transformations issued by [param event]'s inputs are applied in local space instead of global space.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
+				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
 			</description>
 		</method>
 		<method name="set_notify_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
+				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
 			</description>
 		</method>
 		<method name="show">

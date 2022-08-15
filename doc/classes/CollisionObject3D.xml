@@ -17,7 +17,7 @@
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Receives unhandled [InputEvent]s. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				Receives unhandled [InputEvent]s. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
 				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
@@ -32,14 +32,14 @@
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -73,7 +73,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
@@ -81,7 +81,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
@@ -195,7 +195,7 @@
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Emitted when the object receives an unhandled [InputEvent]. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point.
+				Emitted when the object receives an unhandled [InputEvent]. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
 			</description>
 		</signal>
 		<signal name="mouse_entered">

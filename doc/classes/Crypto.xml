@@ -86,7 +86,7 @@
 			<param index="0" name="key" type="CryptoKey" />
 			<param index="1" name="ciphertext" type="PackedByteArray" />
 			<description>
-				Decrypt the given [code]ciphertext[/code] with the provided private [code]key[/code].
+				Decrypt the given [param ciphertext] with the provided private [param key].
 				[b]Note:[/b] The maximum size of accepted ciphertext is limited by the key size.
 			</description>
 		</method>
@@ -95,7 +95,7 @@
 			<param index="0" name="key" type="CryptoKey" />
 			<param index="1" name="plaintext" type="PackedByteArray" />
 			<description>
-				Encrypt the given [code]plaintext[/code] with the provided public [code]key[/code].
+				Encrypt the given [param plaintext] with the provided public [param key].
 				[b]Note:[/b] The maximum size of accepted plaintext is limited by the key size.
 			</description>
 		</method>
@@ -103,7 +103,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="size" type="int" />
 			<description>
-				Generates a [PackedByteArray] of cryptographically secure random bytes with given [code]size[/code].
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [param size].
 			</description>
 		</method>
 		<method name="generate_rsa">
@@ -120,7 +120,7 @@
 			<param index="2" name="not_before" type="String" default="&quot;20140101000000&quot;" />
 			<param index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
 			<description>
-				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [code]issuer_name[/code]. The certificate validity will be defined by [code]not_before[/code] and [code]not_after[/code] (first valid date and last valid date). The [code]issuer_name[/code] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
+				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [param issuer_name]. The certificate validity will be defined by [param not_before] and [param not_after] (first valid date and last valid date). The [param issuer_name] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
 				A small example to generate an RSA key and a X509 self-signed certificate.
 				[codeblocks]
 				[gdscript]
@@ -146,7 +146,7 @@
 			<param index="1" name="key" type="PackedByteArray" />
 			<param index="2" name="msg" type="PackedByteArray" />
 			<description>
-				Generates an [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] digest of [code]msg[/code] using [code]key[/code]. The [code]hash_type[/code] parameter is the hashing algorithm that is used for the inner and outer hashes.
+				Generates an [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] digest of [param msg] using [param key]. The [param hash_type] parameter is the hashing algorithm that is used for the inner and outer hashes.
 				Currently, only [constant HashingContext.HASH_SHA256] and [constant HashingContext.HASH_SHA1] are supported.
 			</description>
 		</method>
@@ -156,7 +156,7 @@
 			<param index="1" name="hash" type="PackedByteArray" />
 			<param index="2" name="key" type="CryptoKey" />
 			<description>
-				Sign a given [code]hash[/code] of type [code]hash_type[/code] with the provided private [code]key[/code].
+				Sign a given [param hash] of type [param hash_type] with the provided private [param key].
 			</description>
 		</method>
 		<method name="verify">
@@ -166,7 +166,7 @@
 			<param index="2" name="signature" type="PackedByteArray" />
 			<param index="3" name="key" type="CryptoKey" />
 			<description>
-				Verify that a given [code]signature[/code] for [code]hash[/code] of type [code]hash_type[/code] against the provided public [code]key[/code].
+				Verify that a given [param signature] for [param hash] of type [param hash_type] against the provided public [param key].
 			</description>
 		</method>
 	</methods>

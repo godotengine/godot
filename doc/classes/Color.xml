@@ -57,7 +57,7 @@
 			<param index="0" name="code" type="String" />
 			<param index="1" name="alpha" type="float" />
 			<description>
-				Constructs a [Color] either from an HTML color code or from a standardized color name, with [code]alpha[/code] on the range of 0 to 1. Supported color names are the same as the constants.
+				Constructs a [Color] either from an HTML color code or from a standardized color name, with [param alpha] on the range of 0 to 1. Supported color names are the same as the constants.
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -121,7 +121,7 @@
 			<param index="0" name="min" type="Color" default="Color(0, 0, 0, 0)" />
 			<param index="1" name="max" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Returns a new color with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+				Returns a new color with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="darkened" qualifiers="const">
@@ -154,7 +154,7 @@
 			<param index="2" name="v" type="float" />
 			<param index="3" name="alpha" type="float" default="1.0" />
 			<description>
-				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. [code]h[/code] (hue), [code]s[/code] (saturation), and [code]v[/code] (value) are typically between 0 and 1.
+				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. [param h] (hue), [param s] (saturation), and [param v] (value) are typically between 0 and 1.
 				[codeblocks]
 				[gdscript]
 				var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8)
@@ -172,7 +172,7 @@
 			<param index="2" name="l" type="float" />
 			<param index="3" name="alpha" type="float" default="1.0" />
 			<description>
-				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSL profile[/url]. [code]h[/code] (hue), [code]s[/code] (saturation), and [code]v[/code] (value) are typically between 0 and 1.
+				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSL profile[/url]. [param h] (hue), [param s] (saturation), and [param l] (lightness) are typically between 0 and 1.
 				[codeblocks]
 				[gdscript]
 				var color = Color.from_ok_hsl(0.58, 0.5, 0.79, 0.8)
@@ -237,9 +237,9 @@
 			<return type="Color" />
 			<param index="0" name="rgba" type="String" />
 			<description>
-				Returns a new color from [code]rgba[/code], an HTML hexadecimal color string. [code]rgba[/code] is not case sensitive, and may be prefixed with a '#' character.
-				[code]rgba[/code] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [code]rgba[/code] does not contain an alpha channel value, an alpha channel value of 1.0 is applied.
-				If [code]rgba[/code] is invalid a Color(0.0, 0.0, 0.0, 1.0) is returned.
+				Returns a new color from [param rgba], an HTML hexadecimal color string. [param rgba] is not case sensitive, and may be prefixed with a '#' character.
+				[param rgba] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [param rgba] does not contain an alpha channel value, an alpha channel value of 1.0 is applied.
+				If [param rgba] is invalid a Color(0.0, 0.0, 0.0, 1.0) is returned.
 				[b]Note:[/b] This method is not implemented in C#, but the same functionality is provided in the class constructor.
 				[codeblocks]
 				[gdscript]
@@ -257,7 +257,7 @@
 			<return type="bool" />
 			<param index="0" name="color" type="String" />
 			<description>
-				Returns [code]true[/code] if [code]color[/code] is a valid HTML hexadecimal color string. [code]color[/code] is not case sensitive, and may be prefixed with a '#' character.
+				Returns [code]true[/code] if [param color] is a valid HTML hexadecimal color string. [param color] is not case sensitive, and may be prefixed with a '#' character.
 				For a string to be valid it must be three-digit or six-digit hexadecimal, and may contain an alpha channel value.
 				[codeblocks]
 				[gdscript]
@@ -299,7 +299,7 @@
 			<return type="bool" />
 			<param index="0" name="to" type="Color" />
 			<description>
-				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this color and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="lerp" qualifiers="const">
@@ -307,7 +307,7 @@
 			<param index="0" name="to" type="Color" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns the linear interpolation with another color. The interpolation factor [code]weight[/code] is between 0 and 1.
+				Returns the linear interpolation with another color. The interpolation factor [param weight] is between 0 and 1.
 				[codeblocks]
 				[gdscript]
 				var c1 = Color(1.0, 0.0, 0.0)
@@ -420,7 +420,7 @@
 			<param index="0" name="with_alpha" type="bool" default="true" />
 			<description>
 				Returns the color converted to an HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
-				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
+				Setting [param with_alpha] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 1, 1, 0.5)

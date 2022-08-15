@@ -132,7 +132,7 @@
 			<param index="1" name="key" type="String" />
 			<param index="2" name="default" type="Variant" default="null" />
 			<description>
-				Returns the current value for the specified section and key. If either the section or the key do not exist, the method returns the fallback [code]default[/code] value. If [code]default[/code] is not specified or set to [code]null[/code], an error is also raised.
+				Returns the current value for the specified section and key. If either the section or the key do not exist, the method returns the fallback [param default] value. If [param default] is not specified or set to [code]null[/code], an error is also raised.
 			</description>
 		</method>
 		<method name="has_section" qualifiers="const">
@@ -165,7 +165,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="key" type="PackedByteArray" />
 			<description>
-				Loads the encrypted config file specified as a parameter, using the provided [code]key[/code] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Loads the encrypted config file specified as a parameter, using the provided [param key] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
@@ -174,7 +174,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="password" type="String" />
 			<description>
-				Loads the encrypted config file specified as a parameter, using the provided [code]password[/code] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Loads the encrypted config file specified as a parameter, using the provided [param password] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
@@ -199,7 +199,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="key" type="PackedByteArray" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [code]key[/code] to encrypt it. The output file uses an INI-style structure.
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
@@ -208,7 +208,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="password" type="String" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [code]password[/code] to encrypt it. The output file uses an INI-style structure.
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
