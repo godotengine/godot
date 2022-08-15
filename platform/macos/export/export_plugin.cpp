@@ -1550,7 +1550,7 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 	da->list_dir_end();
 }
 
-bool EditorExportPlatformMacOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
 
@@ -1579,6 +1579,17 @@ bool EditorExportPlatformMacOS::can_export(const Ref<EditorExportPreset> &p_pres
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	if (!err.is_empty()) {
+		r_error = err;
+	}
+
+	return valid;
+}
+
+bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
+	String err;
+	bool valid = true;
 
 	String identifier = p_preset->get("application/bundle_identifier");
 	String pn_err;
