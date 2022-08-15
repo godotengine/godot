@@ -1655,18 +1655,18 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 
 	// TODO, to avoid stalls, should rotate between 3 buffers based on frame index.
 	// TODO, consider mapping the buffer as in 2D
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_OMNILIGHT_UNIFORM_LOCATION, scene_state.omni_light_buffer);
 	if (r_omni_light_count) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_OMNILIGHT_UNIFORM_LOCATION, scene_state.omni_light_buffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData) * r_omni_light_count, scene_state.omni_lights);
 	}
 
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_SPOTLIGHT_UNIFORM_LOCATION, scene_state.spot_light_buffer);
 	if (r_spot_light_count) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_SPOTLIGHT_UNIFORM_LOCATION, scene_state.spot_light_buffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData) * r_spot_light_count, scene_state.spot_lights);
 	}
 
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, scene_state.directional_light_buffer);
 	if (r_directional_light_count) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, scene_state.directional_light_buffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirectionalLightData) * r_directional_light_count, scene_state.directional_lights);
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
