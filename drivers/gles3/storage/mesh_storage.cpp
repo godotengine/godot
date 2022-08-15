@@ -260,7 +260,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		}
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
-			if (!bone.has_no_volume()) {
+			if (bone.has_volume()) {
 				mesh->bone_aabbs.write[i].merge_with(bone);
 			}
 		}
