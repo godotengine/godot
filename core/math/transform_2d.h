@@ -110,6 +110,7 @@ struct _NO_DISCARD_ Transform2D {
 	Transform2D operator*(const real_t p_val) const;
 
 	Transform2D interpolate_with(const Transform2D &p_transform, const real_t p_c) const;
+	_FORCE_INLINE_ real_t lerp_angle(real_t p_a, real_t p_b, real_t p_weight) const;
 
 	_FORCE_INLINE_ Vector2 basis_xform(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Vector2 basis_xform_inv(const Vector2 &p_vec) const;
@@ -242,6 +243,16 @@ Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
 		w[i] = xform_inv(r[i]);
 	}
 	return array;
+}
+
+real_t Transform2D::lerp_angle(real_t p_a, real_t p_b, real_t p_weight) const {
+	real_t delta = p_b - p_a;
+	if (delta > Math_PI) {
+		delta -= Math_PI * 2;
+	} else if (delta < -Math_PI) {
+		delta += Math_PI * 2;
+	}
+	return p_a + delta * p_weight;
 }
 
 #endif // TRANSFORM_2D_H
