@@ -871,9 +871,18 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["type"] = get_property_info_type_name(F);
 					d2["name"] = String(property_name);
-					d2["setter"] = ClassDB::get_property_setter(class_name, F.name);
-					d2["getter"] = ClassDB::get_property_getter(class_name, F.name);
-					d2["index"] = ClassDB::get_property_index(class_name, F.name);
+					StringName setter = ClassDB::get_property_setter(class_name, F.name);
+					if (!(setter == "")) {
+						d2["setter"] = setter;
+					}
+					StringName getter = ClassDB::get_property_getter(class_name, F.name);
+					if (!(getter == "")) {
+						d2["getter"] = getter;
+					}
+					int index = ClassDB::get_property_index(class_name, F.name);
+					if (index != -1) {
+						d2["index"] = index;
+					}
 					properties.push_back(d2);
 				}
 
