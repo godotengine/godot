@@ -651,7 +651,10 @@
 		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
 			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
+		<constant name="RENDERING_DRIVER_D3D12" value="1" enum="RenderingDriver">
+			The Direct3D 12 rendering driver.
+		</constant>
+		<constant name="RENDERING_DRIVER_OPENGL3" value="2" enum="RenderingDriver">
 			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">

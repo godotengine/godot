@@ -34,7 +34,8 @@ layout(push_constant, std430) uniform Params {
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
-	uint pad2[2];
+	uint pad2_0;
+	uint pad2_1;
 
 	vec4 set_color;
 }

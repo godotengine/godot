@@ -25,7 +25,8 @@ layout(push_constant, std430) uniform Params {
 
 	bool orthogonal;
 	bool filtered;
-	uint pad[2];
+	uint pad_0;
+	uint pad_1;
 }
 params;
 

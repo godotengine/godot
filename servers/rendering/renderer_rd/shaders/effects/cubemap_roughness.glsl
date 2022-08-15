@@ -10,7 +10,13 @@ layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) i
 
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube dest_cubemap;
+#if !defined(RENDER_DRIVER_D3D12)
+#define WRITABLE_CUBEMAP imageCube
+#else
+#define WRITABLE_CUBEMAP image2DArray
+#endif
+
+layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap;
 
 #include "cubemap_roughness_inc.glsl"
 

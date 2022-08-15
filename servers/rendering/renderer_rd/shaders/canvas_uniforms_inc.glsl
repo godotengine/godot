@@ -42,6 +42,9 @@
 
 // Push Constant
 
+// Using some hacks to workaround HLSL sparse array packing
+// while keeping the same layout and size for Vulkan.
+// Hope this is honored at some point: https://github.com/KhronosGroup/SPIRV-Cross/issues/1876
 layout(push_constant, std430) uniform DrawData {
 	vec2 world_x;
 	vec2 world_y;
@@ -49,9 +52,18 @@ layout(push_constant, std430) uniform DrawData {
 	uint flags;
 	uint specular_shininess;
 #ifdef USE_PRIMITIVE
-	vec2 points[3];
-	vec2 uvs[3];
-	uint colors[6];
+	vec2 points_0;
+	vec2 points_1;
+	vec2 points_2;
+	vec2 uvs_0;
+	vec2 uvs_1;
+	vec2 uvs_2;
+	uint colors_0;
+	uint colors_1;
+	uint colors_2;
+	uint colors_3;
+	uint colors_4;
+	uint colors_5;
 #else
 	vec4 modulation;
 	vec4 ninepatch_margins;
@@ -61,7 +73,10 @@ layout(push_constant, std430) uniform DrawData {
 
 #endif
 	vec2 color_texture_pixel_size;
-	uint lights[4];
+	uint lights_0;
+	uint lights_1;
+	uint lights_2;
+	uint lights_3;
 }
 draw_data;
 

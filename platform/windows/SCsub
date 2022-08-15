@@ -27,7 +27,9 @@ res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+sources = common_win + res_obj
+
+prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
@@ -54,6 +56,21 @@ if env["vsproj"]:
     if env["windows_subsystem"] == "gui":
         for x in common_win_wrap:
             env.vs_srcs += ["platform/windows/" + str(x)]
+
+if env["d3d12"]:
+    arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
+    # DXC
+    dxc_dlls = ["dxcompiler.dll", "dxil.dll"]
+    for dll in dxc_dlls:
+        env.Command("#bin/" + dll, env["DXC_PATH"] + "/bin/" + arch_subdir + "/" + dll, Copy("$TARGET", "$SOURCE"))
+
+    # PIX
+    if env["PIX_PATH"] != "" and env["target"] != "release":
+        pix_dll = "WinPixEventRuntime.dll"
+        env.Command(
+            "#bin/" + pix_dll, env["PIX_PATH"] + "/bin/" + arch_subdir + "/" + pix_dll, Copy("$TARGET", "$SOURCE")
+        )
 
 if not os.getenv("VCINSTALLDIR"):
     if env["debug_symbols"] and env["separate_debug_symbols"]:

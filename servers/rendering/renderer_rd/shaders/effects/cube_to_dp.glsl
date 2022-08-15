@@ -57,24 +57,24 @@ void main() {
 	float depth = texture(source_cube, normal).r;
 
 	// absolute values for direction cosines, bigger value equals closer to basis axis
-	vec3 unorm = abs(normal);
+	vec3 absnorm = abs(normal);
 
-	if ((unorm.x >= unorm.y) && (unorm.x >= unorm.z)) {
+	if ((absnorm.x >= absnorm.y) && (absnorm.x >= absnorm.z)) {
 		// x code
-		unorm = normal.x > 0.0 ? vec3(1.0, 0.0, 0.0) : vec3(-1.0, 0.0, 0.0);
-	} else if ((unorm.y > unorm.x) && (unorm.y >= unorm.z)) {
+		absnorm = normal.x > 0.0 ? vec3(1.0, 0.0, 0.0) : vec3(-1.0, 0.0, 0.0);
+	} else if ((absnorm.y > absnorm.x) && (absnorm.y >= absnorm.z)) {
 		// y code
-		unorm = normal.y > 0.0 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, -1.0, 0.0);
-	} else if ((unorm.z > unorm.x) && (unorm.z > unorm.y)) {
+		absnorm = normal.y > 0.0 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, -1.0, 0.0);
+	} else if ((absnorm.z > absnorm.x) && (absnorm.z > absnorm.y)) {
 		// z code
-		unorm = normal.z > 0.0 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
+		absnorm = normal.z > 0.0 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
 	} else {
 		// oh-no we messed up code
 		// has to be
-		unorm = vec3(1.0, 0.0, 0.0);
+		absnorm = vec3(1.0, 0.0, 0.0);
 	}
 
-	float depth_fix = 1.0 / dot(normal, unorm);
+	float depth_fix = 1.0 / dot(normal, absnorm);
 
 	depth = 2.0 * depth - 1.0;
 	float linear_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));

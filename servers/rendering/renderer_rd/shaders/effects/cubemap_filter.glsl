@@ -29,13 +29,20 @@
 layout(local_size_x = GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
-layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly imageCube dest_cubemap0;
-layout(rgba16f, set = 2, binding = 1) uniform restrict writeonly imageCube dest_cubemap1;
-layout(rgba16f, set = 2, binding = 2) uniform restrict writeonly imageCube dest_cubemap2;
-layout(rgba16f, set = 2, binding = 3) uniform restrict writeonly imageCube dest_cubemap3;
-layout(rgba16f, set = 2, binding = 4) uniform restrict writeonly imageCube dest_cubemap4;
-layout(rgba16f, set = 2, binding = 5) uniform restrict writeonly imageCube dest_cubemap5;
-layout(rgba16f, set = 2, binding = 6) uniform restrict writeonly imageCube dest_cubemap6;
+
+#if !defined(RENDER_DRIVER_D3D12)
+#define WRITABLE_CUBEMAP imageCube
+#else
+#define WRITABLE_CUBEMAP image2DArray
+#endif
+
+layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap0;
+layout(rgba16f, set = 2, binding = 1) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap1;
+layout(rgba16f, set = 2, binding = 2) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap2;
+layout(rgba16f, set = 2, binding = 3) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap3;
+layout(rgba16f, set = 2, binding = 4) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap4;
+layout(rgba16f, set = 2, binding = 5) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap5;
+layout(rgba16f, set = 2, binding = 6) uniform restrict writeonly WRITABLE_CUBEMAP dest_cubemap6;
 
 #ifdef USE_HIGH_QUALITY
 #define NUM_TAPS 32

@@ -71,7 +71,13 @@ layout(push_constant, std430) uniform Params {
 	float glow_map_strength;
 
 	uint glow_mode;
-	float glow_levels[7];
+	float glow_levels_0;
+	float glow_levels_1;
+	float glow_levels_2;
+	float glow_levels_3;
+	float glow_levels_4;
+	float glow_levels_5;
+	float glow_levels_6;
 
 	float exposure;
 	float white;
@@ -277,32 +283,32 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #endif // defined(MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
-	if (params.glow_levels[0] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levels[0];
+	if (params.glow_levels_0 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levels_0;
 	}
 
-	if (params.glow_levels[1] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levels[1];
+	if (params.glow_levels_1 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levels_1;
 	}
 
-	if (params.glow_levels[2] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levels[2];
+	if (params.glow_levels_2 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levels_2;
 	}
 
-	if (params.glow_levels[3] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levels[3];
+	if (params.glow_levels_3 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levels_3;
 	}
 
-	if (params.glow_levels[4] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levels[4];
+	if (params.glow_levels_4 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levels_4;
 	}
 
-	if (params.glow_levels[5] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levels[5];
+	if (params.glow_levels_5 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levels_5;
 	}
 
-	if (params.glow_levels[6] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels[6];
+	if (params.glow_levels_6 > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels_6;
 	}
 
 	return glow;

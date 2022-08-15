@@ -50,6 +50,10 @@
 #include "platform/windows/vulkan_context_win.h"
 #endif
 
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_device_d3d12.h"
+#endif
+
 #include <io.h>
 #include <shellapi.h>
 #include <stdio.h>

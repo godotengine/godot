@@ -102,7 +102,7 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 	features.append(VERSION_FULL_CONFIG);
 	features.append(VERSION_FULL_BUILD);
 
-#ifdef VULKAN_ENABLED
+#if defined(VULKAN_ENABLED) || defined(D3D12_ENABLED)
 	features.append("Forward Plus");
 	features.append("Mobile");
 #endif
@@ -1307,7 +1307,15 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
+	// Vulkan-specific.
 	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
+	// D3D12-specific.
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", 16384);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", PROPERTY_HINT_RANGE, "512,262144"));
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", PROPERTY_HINT_RANGE, "256,2048"));
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PROPERTY_HINT_RANGE, "32,4096"));
 
 	// These properties will not show up in the dialog nor in the documentation. If you want to exclude whole groups, see _get_property_list() method.
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

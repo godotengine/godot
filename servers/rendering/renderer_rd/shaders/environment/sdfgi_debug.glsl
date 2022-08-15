@@ -44,8 +44,18 @@ layout(push_constant, std430) uniform Params {
 
 	mat3x4 inv_projection;
 	// We pack these more tightly than mat3 and vec3, which will require some reconstruction trickery.
-	float cam_basis[3][3];
-	float cam_origin[3];
+	float cam_basis_0_0;
+	float cam_basis_0_1;
+	float cam_basis_0_2;
+	float cam_basis_1_0;
+	float cam_basis_1_1;
+	float cam_basis_1_2;
+	float cam_basis_2_0;
+	float cam_basis_2_1;
+	float cam_basis_2_2;
+	float cam_origin_0;
+	float cam_origin_1;
+	float cam_origin_2;
 }
 params;
 
@@ -81,20 +91,17 @@ void main() {
 	vec3 ray_pos;
 	vec3 ray_dir;
 	{
-		ray_pos = vec3(params.cam_origin[0], params.cam_origin[1], params.cam_origin[2]);
+		ray_pos = vec3(params.cam_origin_0, params.cam_origin_1, params.cam_origin_2);
 
 		ray_dir.xy = ((vec2(screen_pos) / vec2(params.screen_size)) * 2.0 - 1.0);
 		ray_dir.z = params.z_near;
 
 		ray_dir = (vec4(ray_dir, 1.0) * mat4(params.inv_projection)).xyz;
 
-		mat3 cam_basis;
-		{
-			vec3 c0 = vec3(params.cam_basis[0][0], params.cam_basis[0][1], params.cam_basis[0][2]);
-			vec3 c1 = vec3(params.cam_basis[1][0], params.cam_basis[1][1], params.cam_basis[1][2]);
-			vec3 c2 = vec3(params.cam_basis[2][0], params.cam_basis[2][1], params.cam_basis[2][2]);
-			cam_basis = mat3(c0, c1, c2);
-		}
+		mat3 cam_basis = mat3(
+				params.cam_basis_0_0, params.cam_basis_0_1, params.cam_basis_0_2,
+				params.cam_basis_1_0, params.cam_basis_1_1, params.cam_basis_1_2,
+				params.cam_basis_2_0, params.cam_basis_2_1, params.cam_basis_2_2);
 		ray_dir = normalize(cam_basis * ray_dir);
 	}
 

@@ -65,7 +65,8 @@ struct Collider {
 
 	uint texture_index; //texture index for vector field
 	float scale;
-	uint pad[2];
+	uint pad_0;
+	uint pad_1;
 };
 
 struct FrameParams {

@@ -33,7 +33,9 @@ layout(push_constant, std430) uniform Params {
 	float max_luminance;
 	float min_luminance;
 	float exposure_adjust;
-	float pad[3];
+	float pad_0;
+	float pad_1;
+	float pad_2;
 }
 params;
 

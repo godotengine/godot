@@ -76,7 +76,9 @@ layout(push_constant, std430) uniform Params {
 	float y_mult;
 
 	bool store_ambient_texture;
-	uint pad[3];
+	uint pad_0;
+	uint pad_1;
+	uint pad_2;
 }
 params;
 

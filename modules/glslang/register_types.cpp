@@ -68,6 +68,9 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		} else {
 			// use defaults
 		}
+	} else if (capabilities->device_family == RenderingDevice::DeviceFamily::DEVICE_DIRECTX) {
+		ClientVersion = glslang::EShTargetVulkan_1_3; // Assume D3D12 is like almost a subset of VK 1.3
+		TargetVersion = glslang::EShTargetSpv_1_6; // SPIRV-Cross supports this one
 	} else {
 		// once we support other backends we'll need to do something here
 		if (r_error) {

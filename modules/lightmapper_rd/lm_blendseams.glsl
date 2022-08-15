@@ -17,7 +17,8 @@ layout(push_constant, std430) uniform Params {
 	vec2 uv_offset;
 	bool debug;
 	float blend;
-	uint pad[2];
+	uint pad_0;
+	uint pad_1;
 }
 params;
 
@@ -84,7 +85,8 @@ layout(push_constant, std430) uniform Params {
 	vec2 uv_offset;
 	bool debug;
 	float blend;
-	uint pad[2];
+	uint pad_0;
+	uint pad_1;
 }
 params;
 

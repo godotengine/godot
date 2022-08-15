@@ -53,7 +53,8 @@ struct Light {
 
 	float shadow_blur;
 	bool static_bake;
-	uint pad[2];
+	uint pad_0;
+	uint pad_1;
 };
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer Lights {

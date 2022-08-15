@@ -126,7 +126,9 @@ layout(push_constant, std430) uniform Params {
 	float dynamic_range;
 	bool on_mipmap;
 	float propagation;
-	float pad[3];
+	float pad_0;
+	float pad_1;
+	float pad_2;
 }
 params;
 
@@ -230,24 +232,24 @@ bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 
 
 float get_normal_advance(vec3 p_normal) {
 	vec3 normal = p_normal;
-	vec3 unorm = abs(normal);
+	vec3 absnorm = abs(normal);
 
-	if ((unorm.x >= unorm.y) && (unorm.x >= unorm.z)) {
+	if ((absnorm.x >= absnorm.y) && (absnorm.x >= absnorm.z)) {
 		// x code
-		unorm = normal.x > 0.0 ? vec3(1.0, 0.0, 0.0) : vec3(-1.0, 0.0, 0.0);
-	} else if ((unorm.y > unorm.x) && (unorm.y >= unorm.z)) {
+		absnorm = normal.x > 0.0 ? vec3(1.0, 0.0, 0.0) : vec3(-1.0, 0.0, 0.0);
+	} else if ((absnorm.y > absnorm.x) && (absnorm.y >= absnorm.z)) {
 		// y code
-		unorm = normal.y > 0.0 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, -1.0, 0.0);
-	} else if ((unorm.z > unorm.x) && (unorm.z > unorm.y)) {
+		absnorm = normal.y > 0.0 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, -1.0, 0.0);
+	} else if ((absnorm.z > absnorm.x) && (absnorm.z > absnorm.y)) {
 		// z code
-		unorm = normal.z > 0.0 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
+		absnorm = normal.z > 0.0 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
 	} else {
 		// oh-no we messed up code
 		// has to be
-		unorm = vec3(1.0, 0.0, 0.0);
+		absnorm = vec3(1.0, 0.0, 0.0);
 	}
 
-	return 1.0 / dot(normal, unorm);
+	return 1.0 / dot(normal, absnorm);
 }
 
 void clip_segment(vec4 plane, vec3 begin, inout vec3 end) {
