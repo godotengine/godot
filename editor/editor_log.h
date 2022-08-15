@@ -46,6 +46,16 @@
 class EditorLog : public VBoxContainer {
 	GDCLASS(EditorLog, VBoxContainer);
 
+	struct {
+		Color error_color;
+		Ref<Texture> error_icon;
+
+		Color warning_color;
+		Ref<Texture> warning_icon;
+
+		Color message_color;
+	} theme_cache;
+
 	Button *clearbutton;
 	Button *copybutton;
 	Label *title;
