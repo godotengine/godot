@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
+#include "core/variant/typed_array.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
@@ -65,6 +66,18 @@ static String get_type_name(const PropertyInfo &p_info) {
 		return "void";
 	}
 	return Variant::get_type_name(p_info.type);
+}
+
+static TypedArray<Dictionary> get_generic_type_args(const PropertyInfo &p_info) {
+	TypedArray<Dictionary> type_args;
+	if (p_info.type == Variant::ARRAY && p_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
+		// The format of p_hint_string is:
+		// subType/subTypeHint:nextSubtype ... etc
+		Dictionary d;
+		d["type"] = p_info.hint_string.get_slice(":", 1);
+		type_args.append(d);
+	}
+	return type_args;
 }
 
 Dictionary NativeExtensionAPIDump::generate_extension_api() {
@@ -731,6 +744,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							}
 
 							d3["type"] = get_type_name(pinfo);
+							TypedArray<Dictionary> type_args = get_generic_type_args(pinfo);
+							if (!type_args.is_empty()) {
+								d3["generic_type_args"] = type_args;
+							}
 
 							if (i == -1) {
 								d2["return_value"] = d3;
@@ -774,6 +791,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 								d3["name"] = pinfo.name;
 							}
 							d3["type"] = get_type_name(pinfo);
+							TypedArray<Dictionary> type_args = get_generic_type_args(pinfo);
+							if (!type_args.is_empty()) {
+								d3["generic_type_args"] = type_args;
+							}
 
 							if (method->get_argument_meta(i) > 0) {
 								static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
@@ -817,10 +838,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 					Array arguments;
 
-					for (int i = 0; i < F.arguments.size(); i++) {
+					for (const PropertyInfo &pinfo : F.arguments) {
 						Dictionary d3;
-						d3["name"] = F.arguments[i].name;
-						d3["type"] = get_type_name(F.arguments[i]);
+						d3["name"] = pinfo.name;
+						d3["type"] = get_type_name(pinfo);
+						TypedArray<Dictionary> type_args = get_generic_type_args(pinfo);
+						if (!type_args.is_empty()) {
+							d3["generic_type_args"] = type_args;
+						}
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
@@ -839,20 +864,24 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array properties;
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
-				for (const PropertyInfo &F : property_list) {
-					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP) {
+				for (const PropertyInfo &pinfo : property_list) {
+					if (pinfo.usage & PROPERTY_USAGE_CATEGORY || pinfo.usage & PROPERTY_USAGE_GROUP || pinfo.usage & PROPERTY_USAGE_SUBGROUP) {
 						continue; //not real properties
 					}
-					if (F.name.begins_with("_")) {
+					if (pinfo.name.begins_with("_")) {
 						continue; //hidden property
 					}
-					StringName property_name = F.name;
+					StringName property_name = pinfo.name;
 					Dictionary d2;
-					d2["type"] = get_type_name(F);
+					d2["type"] = get_type_name(pinfo);
+					TypedArray<Dictionary> type_args = get_generic_type_args(pinfo);
+					if (!type_args.is_empty()) {
+						d2["generic_type_args"] = type_args;
+					}
 					d2["name"] = String(property_name);
-					d2["setter"] = ClassDB::get_property_setter(class_name, F.name);
-					d2["getter"] = ClassDB::get_property_getter(class_name, F.name);
-					d2["index"] = ClassDB::get_property_index(class_name, F.name);
+					d2["setter"] = ClassDB::get_property_setter(class_name, pinfo.name);
+					d2["getter"] = ClassDB::get_property_getter(class_name, pinfo.name);
+					d2["index"] = ClassDB::get_property_index(class_name, pinfo.name);
 					properties.push_back(d2);
 				}
 
