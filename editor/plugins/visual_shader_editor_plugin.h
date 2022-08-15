@@ -529,8 +529,8 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) override;
 };
 
-class EditorPropertyShaderMode : public EditorProperty {
-	GDCLASS(EditorPropertyShaderMode, EditorProperty);
+class EditorPropertyVisualShaderMode : public EditorProperty {
+	GDCLASS(EditorPropertyVisualShaderMode, EditorProperty);
 	OptionButton *options = nullptr;
 
 	void _option_selected(int p_which);
@@ -542,11 +542,11 @@ public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
 	void set_option_button_clip(bool p_enable);
-	EditorPropertyShaderMode();
+	EditorPropertyVisualShaderMode();
 };
 
-class EditorInspectorShaderModePlugin : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorShaderModePlugin, EditorInspectorPlugin);
+class EditorInspectorVisualShaderModePlugin : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorVisualShaderModePlugin, EditorInspectorPlugin);
 
 public:
 	virtual bool can_handle(Object *p_object) override;

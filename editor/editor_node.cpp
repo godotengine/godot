@@ -6130,7 +6130,7 @@ EditorNode::EditorNode() {
 		rmp.instantiate();
 		EditorInspector::add_inspector_plugin(rmp);
 
-		Ref<EditorInspectorShaderModePlugin> smp;
+		Ref<EditorInspectorVisualShaderModePlugin> smp;
 		smp.instantiate();
 		EditorInspector::add_inspector_plugin(smp);
 	}

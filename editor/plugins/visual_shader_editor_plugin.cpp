@@ -6063,7 +6063,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	return editor;
 }
 
-void EditorPropertyShaderMode::_option_selected(int p_which) {
+void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	Ref<VisualShader> visual_shader(Object::cast_to<VisualShader>(get_edited_object()));
 	if (visual_shader->get_mode() == p_which) {
 		return;
@@ -6149,39 +6149,39 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 	undo_redo->commit_action();
 }
 
-void EditorPropertyShaderMode::update_property() {
+void EditorPropertyVisualShaderMode::update_property() {
 	int which = get_edited_object()->get(get_edited_property());
 	options->select(which);
 }
 
-void EditorPropertyShaderMode::setup(const Vector<String> &p_options) {
+void EditorPropertyVisualShaderMode::setup(const Vector<String> &p_options) {
 	for (int i = 0; i < p_options.size(); i++) {
 		options->add_item(p_options[i], i);
 	}
 }
 
-void EditorPropertyShaderMode::set_option_button_clip(bool p_enable) {
+void EditorPropertyVisualShaderMode::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
 }
 
-void EditorPropertyShaderMode::_bind_methods() {
+void EditorPropertyVisualShaderMode::_bind_methods() {
 }
 
-EditorPropertyShaderMode::EditorPropertyShaderMode() {
+EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyShaderMode::_option_selected));
+	options->connect("item_selected", callable_mp(this, &EditorPropertyVisualShaderMode::_option_selected));
 }
 
-bool EditorInspectorShaderModePlugin::can_handle(Object *p_object) {
+bool EditorInspectorVisualShaderModePlugin::can_handle(Object *p_object) {
 	return true; // Can handle everything.
 }
 
-bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+bool EditorInspectorVisualShaderModePlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "mode" && p_object->is_class("VisualShader") && p_type == Variant::INT) {
-		EditorPropertyShaderMode *mode_editor = memnew(EditorPropertyShaderMode);
+		EditorPropertyVisualShaderMode *mode_editor = memnew(EditorPropertyVisualShaderMode);
 		Vector<String> options = p_hint_text.split(",");
 		mode_editor->setup(options);
 		add_property_editor(p_path, mode_editor);
