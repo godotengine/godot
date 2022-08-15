@@ -1,0 +1,21 @@
+diff --git a/thirdparty/spirv-cross/spirv_cross_error_handling.hpp b/thirdparty/spirv-cross/spirv_cross_error_handling.hpp
+index e96ebb9a79..b198c61582 100644
+--- a/thirdparty/spirv-cross/spirv_cross_error_handling.hpp
++++ b/thirdparty/spirv-cross/spirv_cross_error_handling.hpp
+@@ -54,7 +54,15 @@ report_and_abort(const std::string &msg)
+ 	fprintf(stderr, "There was a compiler error: %s\n", msg.c_str());
+ #endif
+ 	fflush(stderr);
+-	abort();
++// -- GODOT start --
++	//abort();
++	// These are more convenient for debugging
++#ifdef _MSC_VER
++	__debugbreak();
++#else
++	__builtin_trap();
++#endif
++// -- GODOT end --
+ }
+ 
+ #define SPIRV_CROSS_THROW(x) report_and_abort(x)

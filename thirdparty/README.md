@@ -59,6 +59,31 @@ Files extracted from upstream source:
 - all .cpp, .h, and .txt files except the folders MakeTables and etc2packer.
 
 
+## d3d12ma
+
+- Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
+- Version: 2.0.1 (6a61103936dfadedca584e1a521fab6943d3b5ad, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `src/D3D12MemAlloc.cpp`, `src/D3D12MemAlloc.natvis`
+- `include/D3D12MemAlloc.h`
+- `LICENSE.txt`, `NOTICES.txt`
+
+
+## directx_headers
+
+- Upstream: https://github.com/microsoft/DirectX-Headers
+- Version: 1.606.3 (fd329244e62201bf959331d28514928fc1d45005, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `include/directx/*.h`
+- `LICENSE`
+
+
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
@@ -69,6 +94,21 @@ Files extracted from upstream source:
 
 - `doctest/doctest.h` as `doctest.h`
 - `LICENSE.txt`
+
+
+## dxc
+
+- Upstream: https://github.com/microsoft/DirectXShaderCompiler/
+- Version: 1.7.2207 (e9137cd1dc064dae2e7129203cb1c64153309c91, 2022)
+- License: University of Illinois/NCSA
+
+Regarding source files, see `drivers/d3d12/SCSub` under the _DirectX Shader Compiler_ title
+for detailed info about files extracted from upstream.
+
+Other files:
+- `LICENSE.TXT`
+
+Apply the patches in the `patches/` folder when syncing on newer upstream commits.
 
 
 ## embree
@@ -614,6 +654,36 @@ Files extracted from upstream source:
 Important: Some files have Godot-made changes; so to enrich the features
 originally proposed by this library and better integrate this library with
 Godot. See the patch in the `patches` folder for details.
+
+
+## spirv-cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- Version: master (8ba0820c9d6b23df5009a46bcdc970a11f861048, 2022)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `GLSL.std.450.h`
+- `LICENSE`
+- `spirv_common.hpp`
+- `spirv_cross_containers.hpp`
+- `spirv_cross_error_handling.hpp`
+- `spirv.hpp`
+- `spirv_cross.hpp`
+- `spirv_cross.cpp`
+- `spirv_parser.hpp`
+- `spirv_parser.cpp`
+- `spirv_cross_parsed_ir.hpp`
+- `spirv_cross_parsed_ir.cpp`
+- `spirv_cfg.hpp`
+- `spirv_cfg.cpp`
+- `spirv_glsl.cpp`
+- `spirv_glsl.hpp`
+- `spirv_hlsl.cpp`
+- `spirv_hlsl.hpp`
+
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## spirv-reflect

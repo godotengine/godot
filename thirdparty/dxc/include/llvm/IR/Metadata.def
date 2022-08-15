@@ -1,0 +1,101 @@
+//===- llvm/IR/Metadata.def - Metadata definitions --------------*- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+//
+// Macros for running through all types of metadata.
+//
+//===----------------------------------------------------------------------===//
+
+#if !(defined HANDLE_METADATA || defined HANDLE_METADATA_LEAF ||               \
+      defined HANDLE_METADATA_BRANCH || defined HANDLE_MDNODE_LEAF ||          \
+      defined HANDLE_MDNODE_BRANCH ||                                          \
+      defined HANDLE_SPECIALIZED_MDNODE_LEAF ||                                \
+      defined HANDLE_SPECIALIZED_MDNODE_BRANCH)
+#error "Missing macro definition of HANDLE_METADATA*"
+#endif
+
+// Handler for all types of metadata.
+#ifndef HANDLE_METADATA
+#define HANDLE_METADATA(CLASS)
+#endif
+
+// Handler for leaf nodes in the class hierarchy.
+#ifndef HANDLE_METADATA_LEAF
+#define HANDLE_METADATA_LEAF(CLASS) HANDLE_METADATA(CLASS)
+#endif
+
+// Handler for non-leaf nodes in the class hierarchy.
+#ifndef HANDLE_METADATA_BRANCH
+#define HANDLE_METADATA_BRANCH(CLASS) HANDLE_METADATA(CLASS)
+#endif
+
+// Handler for leaf nodes under MDNode.
+#ifndef HANDLE_MDNODE_LEAF
+#define HANDLE_MDNODE_LEAF(CLASS) HANDLE_METADATA_LEAF(CLASS)
+#endif
+
+// Handler for non-leaf nodes under MDNode.
+#ifndef HANDLE_MDNODE_BRANCH
+#define HANDLE_MDNODE_BRANCH(CLASS) HANDLE_METADATA_BRANCH(CLASS)
+#endif
+
+// Handler for specialized leaf nodes under MDNode.
+#ifndef HANDLE_SPECIALIZED_MDNODE_LEAF
+#define HANDLE_SPECIALIZED_MDNODE_LEAF(CLASS) HANDLE_MDNODE_LEAF(CLASS)
+#endif
+
+// Handler for specialized non-leaf nodes under MDNode.
+#ifndef HANDLE_SPECIALIZED_MDNODE_BRANCH
+#define HANDLE_SPECIALIZED_MDNODE_BRANCH(CLASS) HANDLE_MDNODE_BRANCH(CLASS)
+#endif
+
+HANDLE_METADATA_LEAF(MDString)
+HANDLE_METADATA_BRANCH(ValueAsMetadata)
+HANDLE_METADATA_LEAF(ConstantAsMetadata)
+HANDLE_METADATA_LEAF(LocalAsMetadata)
+HANDLE_MDNODE_BRANCH(MDNode)
+HANDLE_MDNODE_LEAF(MDTuple)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DILocation)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIExpression)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DINode)
+HANDLE_SPECIALIZED_MDNODE_LEAF(GenericDINode)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DISubrange)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIEnumerator)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DIScope)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DIType)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIBasicType)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DIDerivedTypeBase)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIDerivedType)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DICompositeTypeBase)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DICompositeType)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DISubroutineType)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIFile)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DICompileUnit)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DILocalScope)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DISubprogram)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DILexicalBlockBase)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DILexicalBlock)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DILexicalBlockFile)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DINamespace)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIModule)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DITemplateParameter)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DITemplateTypeParameter)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DITemplateValueParameter)
+HANDLE_SPECIALIZED_MDNODE_BRANCH(DIVariable)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIGlobalVariable)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DILocalVariable)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIObjCProperty)
+HANDLE_SPECIALIZED_MDNODE_LEAF(DIImportedEntity)
+
+#undef HANDLE_METADATA
+#undef HANDLE_METADATA_LEAF
+#undef HANDLE_METADATA_BRANCH
+#undef HANDLE_MDNODE_LEAF
+#undef HANDLE_MDNODE_BRANCH
+#undef HANDLE_SPECIALIZED_MDNODE_LEAF
+#undef HANDLE_SPECIALIZED_MDNODE_BRANCH

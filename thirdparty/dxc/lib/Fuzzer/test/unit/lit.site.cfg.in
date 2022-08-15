@@ -1,0 +1,2 @@
+config.test_exec_root = "@CMAKE_CURRENT_BINARY_DIR@"
+lit_config.load_config(config, "@CMAKE_CURRENT_SOURCE_DIR@/unit/lit.cfg")

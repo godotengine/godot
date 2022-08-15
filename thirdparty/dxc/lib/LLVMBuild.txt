@@ -1,0 +1,55 @@
+;===- ./lib/LLVMBuild.txt --------------------------------------*- Conf -*--===;
+;
+;                     The LLVM Compiler Infrastructure
+;
+; This file is distributed under the University of Illinois Open Source
+; License. See LICENSE.TXT for details.
+;
+;===------------------------------------------------------------------------===;
+;
+; This is an LLVMBuild description file for the components in this subdirectory.
+;
+; For more information on the LLVMBuild system, please see:
+;
+;   http://llvm.org/docs/LLVMBuild.html
+;
+;===------------------------------------------------------------------------===;
+
+[common]
+subdirectories =
+ Analysis
+ AsmParser
+ Bitcode
+ CodeGen
+ DebugInfo
+ DxcSupport
+ DxilPIXPasses
+ ExecutionEngine
+ Linker
+ IR
+ IRReader
+ MC
+ Object
+ Option
+ Passes
+ PassPrinters
+ ProfileData
+ Support
+ TableGen
+ Target
+ Transforms
+ HLSL
+ DXIL
+ DxilContainer
+ DxilDia
+ DxrFallback
+ DxilRootSignature
+ DxcBindingTable
+ Miniz
+
+; HLSL Change: remove LibDriver, LineEditor, add HLSL, DxrtFallback, DXIL, DxilContainer, DxilDia, DxilPIXPasses, DxilRootSignature, DxcBindingTable, LTO
+
+[component_0]
+type = Group
+name = Libraries
+parent = $ROOT

@@ -1,0 +1,1217 @@
+/*===- TableGen'erated file -------------------------------------*- C++ -*-===*\
+|*                                                                            *|
+|* Intrinsic Function Source Fragment                                         *|
+|*                                                                            *|
+|* Automatically generated file, do not edit!                                 *|
+|*                                                                            *|
+\*===----------------------------------------------------------------------===*/
+
+// VisualStudio defines setjmp as _setjmp
+#if defined(_MSC_VER) && defined(setjmp) && \
+                         !defined(setjmp_undefined_for_msvc)
+#  pragma push_macro("setjmp")
+#  undef setjmp
+#  define setjmp_undefined_for_msvc
+#endif
+
+// Enum values for Intrinsics.h
+#ifdef GET_INTRINSIC_ENUM_VALUES
+    adjust_trampoline,                         // llvm.adjust.trampoline
+    annotation,                                // llvm.annotation
+    assume,                                    // llvm.assume
+    bitset_test,                               // llvm.bitset.test
+    bswap,                                     // llvm.bswap
+    canonicalize,                              // llvm.canonicalize
+    ceil,                                      // llvm.ceil
+    clear_cache,                               // llvm.clear_cache
+    convert_from_fp16,                         // llvm.convert.from.fp16
+    convert_to_fp16,                           // llvm.convert.to.fp16
+    convertff,                                 // llvm.convertff
+    convertfsi,                                // llvm.convertfsi
+    convertfui,                                // llvm.convertfui
+    convertsif,                                // llvm.convertsif
+    convertss,                                 // llvm.convertss
+    convertsu,                                 // llvm.convertsu
+    convertuif,                                // llvm.convertuif
+    convertus,                                 // llvm.convertus
+    convertuu,                                 // llvm.convertuu
+    copysign,                                  // llvm.copysign
+    cos,                                       // llvm.cos
+    ctlz,                                      // llvm.ctlz
+    ctpop,                                     // llvm.ctpop
+    cttz,                                      // llvm.cttz
+    dbg_declare,                               // llvm.dbg.declare
+    dbg_value,                                 // llvm.dbg.value
+    debugtrap,                                 // llvm.debugtrap
+    donothing,                                 // llvm.donothing
+    eh_actions,                                // llvm.eh.actions
+    eh_begincatch,                             // llvm.eh.begincatch
+    eh_dwarf_cfa,                              // llvm.eh.dwarf.cfa
+    eh_endcatch,                               // llvm.eh.endcatch
+    eh_exceptioncode,                          // llvm.eh.exceptioncode
+    eh_return_i32,                             // llvm.eh.return.i32
+    eh_return_i64,                             // llvm.eh.return.i64
+    eh_sjlj_callsite,                          // llvm.eh.sjlj.callsite
+    eh_sjlj_functioncontext,                   // llvm.eh.sjlj.functioncontext
+    eh_sjlj_longjmp,                           // llvm.eh.sjlj.longjmp
+    eh_sjlj_lsda,                              // llvm.eh.sjlj.lsda
+    eh_sjlj_setjmp,                            // llvm.eh.sjlj.setjmp
+    eh_typeid_for,                             // llvm.eh.typeid.for
+    eh_unwind_init,                            // llvm.eh.unwind.init
+    exp,                                       // llvm.exp
+    exp2,                                      // llvm.exp2
+    expect,                                    // llvm.expect
+    experimental_gc_relocate,                  // llvm.experimental.gc.relocate
+    experimental_gc_result,                    // llvm.experimental.gc.result
+    experimental_gc_result_float,              // llvm.experimental.gc.result.float
+    experimental_gc_result_int,                // llvm.experimental.gc.result.int
+    experimental_gc_result_ptr,                // llvm.experimental.gc.result.ptr
+    experimental_gc_statepoint,                // llvm.experimental.gc.statepoint
+    experimental_patchpoint_i64,               // llvm.experimental.patchpoint.i64
+    experimental_patchpoint_void,              // llvm.experimental.patchpoint.void
+    experimental_stackmap,                     // llvm.experimental.stackmap
+    fabs,                                      // llvm.fabs
+    floor,                                     // llvm.floor
+    flt_rounds,                                // llvm.flt.rounds
+    fma,                                       // llvm.fma
+    fmuladd,                                   // llvm.fmuladd
+    frameaddress,                              // llvm.frameaddress
+    gcread,                                    // llvm.gcread
+    gcroot,                                    // llvm.gcroot
+    gcwrite,                                   // llvm.gcwrite
+    init_trampoline,                           // llvm.init.trampoline
+    instrprof_increment,                       // llvm.instrprof.increment
+    invariant_end,                             // llvm.invariant.end
+    invariant_start,                           // llvm.invariant.start
+    lifetime_end,                              // llvm.lifetime.end
+    lifetime_start,                            // llvm.lifetime.start
+    localaddress,                              // llvm.localaddress
+    localescape,                               // llvm.localescape
+    localrecover,                              // llvm.localrecover
+    log,                                       // llvm.log
+    log10,                                     // llvm.log10
+    log2,                                      // llvm.log2
+    longjmp,                                   // llvm.longjmp
+    masked_gather,                             // llvm.masked.gather
+    masked_load,                               // llvm.masked.load
+    masked_scatter,                            // llvm.masked.scatter
+    masked_store,                              // llvm.masked.store
+    maxnum,                                    // llvm.maxnum
+    memcpy,                                    // llvm.memcpy
+    memmove,                                   // llvm.memmove
+    memset,                                    // llvm.memset
+    minnum,                                    // llvm.minnum
+    nearbyint,                                 // llvm.nearbyint
+    objectsize,                                // llvm.objectsize
+    pcmarker,                                  // llvm.pcmarker
+    pow,                                       // llvm.pow
+    powi,                                      // llvm.powi
+    prefetch,                                  // llvm.prefetch
+    ptr_annotation,                            // llvm.ptr.annotation
+    read_register,                             // llvm.read_register
+    readcyclecounter,                          // llvm.readcyclecounter
+    returnaddress,                             // llvm.returnaddress
+    rint,                                      // llvm.rint
+    round,                                     // llvm.round
+    sadd_with_overflow,                        // llvm.sadd.with.overflow
+    setjmp,                                    // llvm.setjmp
+    siglongjmp,                                // llvm.siglongjmp
+    sigsetjmp,                                 // llvm.sigsetjmp
+    sin,                                       // llvm.sin
+    smul_with_overflow,                        // llvm.smul.with.overflow
+    sqrt,                                      // llvm.sqrt
+    ssub_with_overflow,                        // llvm.ssub.with.overflow
+    stackprotector,                            // llvm.stackprotector
+    stackprotectorcheck,                       // llvm.stackprotectorcheck
+    stackrestore,                              // llvm.stackrestore
+    stacksave,                                 // llvm.stacksave
+    trap,                                      // llvm.trap
+    trunc,                                     // llvm.trunc
+    uadd_with_overflow,                        // llvm.uadd.with.overflow
+    umul_with_overflow,                        // llvm.umul.with.overflow
+    usub_with_overflow,                        // llvm.usub.with.overflow
+    vacopy,                                    // llvm.va_copy
+    vaend,                                     // llvm.va_end
+    var_annotation,                            // llvm.var.annotation
+    vastart,                                   // llvm.va_start
+    write_register                             // llvm.write_register
+#endif
+
+// Intrinsic ID to name table
+#ifdef GET_INTRINSIC_NAME_TABLE
+  // Note that entry #0 is the invalid intrinsic!
+  "llvm.adjust.trampoline",
+  "llvm.annotation",
+  "llvm.assume",
+  "llvm.bitset.test",
+  "llvm.bswap",
+  "llvm.canonicalize",
+  "llvm.ceil",
+  "llvm.clear_cache",
+  "llvm.convert.from.fp16",
+  "llvm.convert.to.fp16",
+  "llvm.convertff",
+  "llvm.convertfsi",
+  "llvm.convertfui",
+  "llvm.convertsif",
+  "llvm.convertss",
+  "llvm.convertsu",
+  "llvm.convertuif",
+  "llvm.convertus",
+  "llvm.convertuu",
+  "llvm.copysign",
+  "llvm.cos",
+  "llvm.ctlz",
+  "llvm.ctpop",
+  "llvm.cttz",
+  "llvm.dbg.declare",
+  "llvm.dbg.value",
+  "llvm.debugtrap",
+  "llvm.donothing",
+  "llvm.eh.actions",
+  "llvm.eh.begincatch",
+  "llvm.eh.dwarf.cfa",
+  "llvm.eh.endcatch",
+  "llvm.eh.exceptioncode",
+  "llvm.eh.return.i32",
+  "llvm.eh.return.i64",
+  "llvm.eh.sjlj.callsite",
+  "llvm.eh.sjlj.functioncontext",
+  "llvm.eh.sjlj.longjmp",
+  "llvm.eh.sjlj.lsda",
+  "llvm.eh.sjlj.setjmp",
+  "llvm.eh.typeid.for",
+  "llvm.eh.unwind.init",
+  "llvm.exp",
+  "llvm.exp2",
+  "llvm.expect",
+  "llvm.experimental.gc.relocate",
+  "llvm.experimental.gc.result",
+  "llvm.experimental.gc.result.float",
+  "llvm.experimental.gc.result.int",
+  "llvm.experimental.gc.result.ptr",
+  "llvm.experimental.gc.statepoint",
+  "llvm.experimental.patchpoint.i64",
+  "llvm.experimental.patchpoint.void",
+  "llvm.experimental.stackmap",
+  "llvm.fabs",
+  "llvm.floor",
+  "llvm.flt.rounds",
+  "llvm.fma",
+  "llvm.fmuladd",
+  "llvm.frameaddress",
+  "llvm.gcread",
+  "llvm.gcroot",
+  "llvm.gcwrite",
+  "llvm.init.trampoline",
+  "llvm.instrprof.increment",
+  "llvm.invariant.end",
+  "llvm.invariant.start",
+  "llvm.lifetime.end",
+  "llvm.lifetime.start",
+  "llvm.localaddress",
+  "llvm.localescape",
+  "llvm.localrecover",
+  "llvm.log",
+  "llvm.log10",
+  "llvm.log2",
+  "llvm.longjmp",
+  "llvm.masked.gather",
+  "llvm.masked.load",
+  "llvm.masked.scatter",
+  "llvm.masked.store",
+  "llvm.maxnum",
+  "llvm.memcpy",
+  "llvm.memmove",
+  "llvm.memset",
+  "llvm.minnum",
+  "llvm.nearbyint",
+  "llvm.objectsize",
+  "llvm.pcmarker",
+  "llvm.pow",
+  "llvm.powi",
+  "llvm.prefetch",
+  "llvm.ptr.annotation",
+  "llvm.read_register",
+  "llvm.readcyclecounter",
+  "llvm.returnaddress",
+  "llvm.rint",
+  "llvm.round",
+  "llvm.sadd.with.overflow",
+  "llvm.setjmp",
+  "llvm.siglongjmp",
+  "llvm.sigsetjmp",
+  "llvm.sin",
+  "llvm.smul.with.overflow",
+  "llvm.sqrt",
+  "llvm.ssub.with.overflow",
+  "llvm.stackprotector",
+  "llvm.stackprotectorcheck",
+  "llvm.stackrestore",
+  "llvm.stacksave",
+  "llvm.trap",
+  "llvm.trunc",
+  "llvm.uadd.with.overflow",
+  "llvm.umul.with.overflow",
+  "llvm.usub.with.overflow",
+  "llvm.va_copy",
+  "llvm.va_end",
+  "llvm.var.annotation",
+  "llvm.va_start",
+  "llvm.write_register",
+#endif
+
+// Intrinsic ID to overload bitset
+#ifdef GET_INTRINSIC_OVERLOAD_TABLE
+static const uint8_t OTable[] = {
+  0 | (1<<2) | (1<<5) | (1<<6) | (1<<7),
+  0 | (1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) | (1<<6) | (1<<7),
+  0 | (1<<0) | (1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) | (1<<6) | (1<<7),
+  0 | (1<<0),
+  0,
+  0 | (1<<3) | (1<<4) | (1<<5) | (1<<6) | (1<<7),
+  0 | (1<<0) | (1<<1) | (1<<2) | (1<<3) | (1<<7),
+  0 | (1<<0) | (1<<2) | (1<<3),
+  0,
+  0 | (1<<1) | (1<<2) | (1<<3) | (1<<5) | (1<<6) | (1<<7),
+  0 | (1<<0) | (1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) | (1<<6) | (1<<7),
+  0 | (1<<1) | (1<<2) | (1<<4) | (1<<5),
+  0 | (1<<0) | (1<<1) | (1<<2) | (1<<6) | (1<<7),
+  0 | (1<<0) | (1<<1) | (1<<7),
+  0 | (1<<0) | (1<<1) | (1<<2) | (1<<7)
+};
+
+return (OTable[id/8] & (1 << (id%8))) != 0;
+#endif
+
+// Function name -> enum value recognizer code.
+#ifdef GET_FUNCTION_RECOGNIZER
+  StringRef NameR(Name+6, Len-6);   // Skip over 'llvm.'
+  switch (Name[5]) {                  // Dispatch on first letter.
+  default: break;
+  case 'a':
+    if (NameR.startswith("nnotation.")) return Intrinsic::annotation;
+    switch (NameR.size()) {
+    default: break;
+    case 5:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "ssume", 5))
+        break;
+      return Intrinsic::assume;	 // "ssume"
+    case 16:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "djust.trampoline", 16))
+        break;
+      return Intrinsic::adjust_trampoline;	 // "djust.trampoline"
+    }
+    break;  // end of 'a' case.
+  case 'b':
+    if (NameR.startswith("swap.")) return Intrinsic::bswap;
+    switch (NameR.size()) {
+    default: break;
+    case 10:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "itset.test", 10))
+        break;
+      return Intrinsic::bitset_test;	 // "itset.test"
+    }
+    break;  // end of 'b' case.
+  case 'c':
+    if (NameR.startswith("ttz.")) return Intrinsic::cttz;
+    if (NameR.startswith("tpop.")) return Intrinsic::ctpop;
+    if (NameR.startswith("tlz.")) return Intrinsic::ctlz;
+    if (NameR.startswith("os.")) return Intrinsic::cos;
+    if (NameR.startswith("opysign.")) return Intrinsic::copysign;
+    if (NameR.startswith("onvertuu.")) return Intrinsic::convertuu;
+    if (NameR.startswith("onvertus.")) return Intrinsic::convertus;
+    if (NameR.startswith("onvertuif.")) return Intrinsic::convertuif;
+    if (NameR.startswith("onvertsu.")) return Intrinsic::convertsu;
+    if (NameR.startswith("onvertss.")) return Intrinsic::convertss;
+    if (NameR.startswith("onvertsif.")) return Intrinsic::convertsif;
+    if (NameR.startswith("onvertfui.")) return Intrinsic::convertfui;
+    if (NameR.startswith("onvertfsi.")) return Intrinsic::convertfsi;
+    if (NameR.startswith("onvertff.")) return Intrinsic::convertff;
+    if (NameR.startswith("onvert.to.fp16.")) return Intrinsic::convert_to_fp16;
+    if (NameR.startswith("onvert.from.fp16.")) return Intrinsic::convert_from_fp16;
+    if (NameR.startswith("eil.")) return Intrinsic::ceil;
+    if (NameR.startswith("anonicalize.")) return Intrinsic::canonicalize;
+    switch (NameR.size()) {
+    default: break;
+    case 10:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "lear_cache", 10))
+        break;
+      return Intrinsic::clear_cache;	 // "lear_cache"
+    }
+    break;  // end of 'c' case.
+  case 'd':
+    switch (NameR.size()) {
+    default: break;
+    case 8:	 // 3 strings to match.
+      switch (NameR[0]) {
+      default: break;
+      case 'b':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "g.value", 7))
+          break;
+        return Intrinsic::dbg_value;	 // "bg.value"
+      case 'e':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "bugtrap", 7))
+          break;
+        return Intrinsic::debugtrap;	 // "ebugtrap"
+      case 'o':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "nothing", 7))
+          break;
+        return Intrinsic::donothing;	 // "onothing"
+      }
+      break;
+    case 10:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "bg.declare", 10))
+        break;
+      return Intrinsic::dbg_declare;	 // "bg.declare"
+    }
+    break;  // end of 'd' case.
+  case 'e':
+    if (NameR.startswith("xperimental.gc.statepoint.")) return Intrinsic::experimental_gc_statepoint;
+    if (NameR.startswith("xperimental.gc.result.ptr.")) return Intrinsic::experimental_gc_result_ptr;
+    if (NameR.startswith("xperimental.gc.result.int.")) return Intrinsic::experimental_gc_result_int;
+    if (NameR.startswith("xperimental.gc.result.float.")) return Intrinsic::experimental_gc_result_float;
+    if (NameR.startswith("xperimental.gc.result.")) return Intrinsic::experimental_gc_result;
+    if (NameR.startswith("xperimental.gc.relocate.")) return Intrinsic::experimental_gc_relocate;
+    if (NameR.startswith("xpect.")) return Intrinsic::expect;
+    if (NameR.startswith("xp2.")) return Intrinsic::exp2;
+    if (NameR.startswith("xp.")) return Intrinsic::exp;
+    switch (NameR.size()) {
+    default: break;
+    case 9:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "h.actions", 9))
+        break;
+      return Intrinsic::eh_actions;	 // "h.actions"
+    case 10:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "h.endcatch", 10))
+        break;
+      return Intrinsic::eh_endcatch;	 // "h.endcatch"
+    case 11:	 // 2 strings to match.
+      if (memcmp(NameR.data()+0, "h.", 2))
+        break;
+      switch (NameR[2]) {
+      default: break;
+      case 'd':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "warf.cfa", 8))
+          break;
+        return Intrinsic::eh_dwarf_cfa;	 // "h.dwarf.cfa"
+      case 's':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "jlj.lsda", 8))
+          break;
+        return Intrinsic::eh_sjlj_lsda;	 // "h.sjlj.lsda"
+      }
+      break;
+    case 12:	 // 4 strings to match.
+      if (memcmp(NameR.data()+0, "h.", 2))
+        break;
+      switch (NameR[2]) {
+      default: break;
+      case 'b':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "egincatch", 9))
+          break;
+        return Intrinsic::eh_begincatch;	 // "h.begincatch"
+      case 'r':	 // 2 strings to match.
+        if (memcmp(NameR.data()+3, "eturn.i", 7))
+          break;
+        switch (NameR[10]) {
+        default: break;
+        case '3':	 // 1 string to match.
+          if (NameR[11] != '2')
+            break;
+          return Intrinsic::eh_return_i32;	 // "h.return.i32"
+        case '6':	 // 1 string to match.
+          if (NameR[11] != '4')
+            break;
+          return Intrinsic::eh_return_i64;	 // "h.return.i64"
+        }
+        break;
+      case 't':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "ypeid.for", 9))
+          break;
+        return Intrinsic::eh_typeid_for;	 // "h.typeid.for"
+      }
+      break;
+    case 13:	 // 2 strings to match.
+      if (memcmp(NameR.data()+0, "h.", 2))
+        break;
+      switch (NameR[2]) {
+      default: break;
+      case 's':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "jlj.setjmp", 10))
+          break;
+        return Intrinsic::eh_sjlj_setjmp;	 // "h.sjlj.setjmp"
+      case 'u':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "nwind.init", 10))
+          break;
+        return Intrinsic::eh_unwind_init;	 // "h.unwind.init"
+      }
+      break;
+    case 14:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "h.sjlj.longjmp", 14))
+        break;
+      return Intrinsic::eh_sjlj_longjmp;	 // "h.sjlj.longjmp"
+    case 15:	 // 2 strings to match.
+      if (memcmp(NameR.data()+0, "h.", 2))
+        break;
+      switch (NameR[2]) {
+      default: break;
+      case 'e':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "xceptioncode", 12))
+          break;
+        return Intrinsic::eh_exceptioncode;	 // "h.exceptioncode"
+      case 's':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "jlj.callsite", 12))
+          break;
+        return Intrinsic::eh_sjlj_callsite;	 // "h.sjlj.callsite"
+      }
+      break;
+    case 20:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "xperimental.stackmap", 20))
+        break;
+      return Intrinsic::experimental_stackmap;	 // "xperimental.stackmap"
+    case 22:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "h.sjlj.functioncontext", 22))
+        break;
+      return Intrinsic::eh_sjlj_functioncontext;	 // "h.sjlj.functioncontext"
+    case 26:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "xperimental.patchpoint.i64", 26))
+        break;
+      return Intrinsic::experimental_patchpoint_i64;	 // "xperimental.patchpoint.i64"
+    case 27:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "xperimental.patchpoint.void", 27))
+        break;
+      return Intrinsic::experimental_patchpoint_void;	 // "xperimental.patchpoint.void"
+    }
+    break;  // end of 'e' case.
+  case 'f':
+    if (NameR.startswith("muladd.")) return Intrinsic::fmuladd;
+    if (NameR.startswith("ma.")) return Intrinsic::fma;
+    if (NameR.startswith("loor.")) return Intrinsic::floor;
+    if (NameR.startswith("abs.")) return Intrinsic::fabs;
+    switch (NameR.size()) {
+    default: break;
+    case 9:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "lt.rounds", 9))
+        break;
+      return Intrinsic::flt_rounds;	 // "lt.rounds"
+    case 11:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "rameaddress", 11))
+        break;
+      return Intrinsic::frameaddress;	 // "rameaddress"
+    }
+    break;  // end of 'f' case.
+  case 'g':
+    switch (NameR.size()) {
+    default: break;
+    case 5:	 // 2 strings to match.
+      if (memcmp(NameR.data()+0, "cr", 2))
+        break;
+      switch (NameR[2]) {
+      default: break;
+      case 'e':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "ad", 2))
+          break;
+        return Intrinsic::gcread;	 // "cread"
+      case 'o':	 // 1 string to match.
+        if (memcmp(NameR.data()+3, "ot", 2))
+          break;
+        return Intrinsic::gcroot;	 // "croot"
+      }
+      break;
+    case 6:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "cwrite", 6))
+        break;
+      return Intrinsic::gcwrite;	 // "cwrite"
+    }
+    break;  // end of 'g' case.
+  case 'i':
+    switch (NameR.size()) {
+    default: break;
+    case 12:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "nvariant.end", 12))
+        break;
+      return Intrinsic::invariant_end;	 // "nvariant.end"
+    case 14:	 // 2 strings to match.
+      if (NameR[0] != 'n')
+        break;
+      switch (NameR[1]) {
+      default: break;
+      case 'i':	 // 1 string to match.
+        if (memcmp(NameR.data()+2, "t.trampoline", 12))
+          break;
+        return Intrinsic::init_trampoline;	 // "nit.trampoline"
+      case 'v':	 // 1 string to match.
+        if (memcmp(NameR.data()+2, "ariant.start", 12))
+          break;
+        return Intrinsic::invariant_start;	 // "nvariant.start"
+      }
+      break;
+    case 18:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "nstrprof.increment", 18))
+        break;
+      return Intrinsic::instrprof_increment;	 // "nstrprof.increment"
+    }
+    break;  // end of 'i' case.
+  case 'l':
+    if (NameR.startswith("og2.")) return Intrinsic::log2;
+    if (NameR.startswith("og10.")) return Intrinsic::log10;
+    if (NameR.startswith("og.")) return Intrinsic::log;
+    switch (NameR.size()) {
+    default: break;
+    case 6:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "ongjmp", 6))
+        break;
+      return Intrinsic::longjmp;	 // "ongjmp"
+    case 10:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "ocalescape", 10))
+        break;
+      return Intrinsic::localescape;	 // "ocalescape"
+    case 11:	 // 3 strings to match.
+      switch (NameR[0]) {
+      default: break;
+      case 'i':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "fetime.end", 10))
+          break;
+        return Intrinsic::lifetime_end;	 // "ifetime.end"
+      case 'o':	 // 2 strings to match.
+        if (memcmp(NameR.data()+1, "cal", 3))
+          break;
+        switch (NameR[4]) {
+        default: break;
+        case 'a':	 // 1 string to match.
+          if (memcmp(NameR.data()+5, "ddress", 6))
+            break;
+          return Intrinsic::localaddress;	 // "ocaladdress"
+        case 'r':	 // 1 string to match.
+          if (memcmp(NameR.data()+5, "ecover", 6))
+            break;
+          return Intrinsic::localrecover;	 // "ocalrecover"
+        }
+        break;
+      }
+      break;
+    case 13:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "ifetime.start", 13))
+        break;
+      return Intrinsic::lifetime_start;	 // "ifetime.start"
+    }
+    break;  // end of 'l' case.
+  case 'm':
+    if (NameR.startswith("innum.")) return Intrinsic::minnum;
+    if (NameR.startswith("emset.")) return Intrinsic::memset;
+    if (NameR.startswith("emmove.")) return Intrinsic::memmove;
+    if (NameR.startswith("emcpy.")) return Intrinsic::memcpy;
+    if (NameR.startswith("axnum.")) return Intrinsic::maxnum;
+    if (NameR.startswith("asked.store.")) return Intrinsic::masked_store;
+    if (NameR.startswith("asked.scatter.")) return Intrinsic::masked_scatter;
+    if (NameR.startswith("asked.load.")) return Intrinsic::masked_load;
+    if (NameR.startswith("asked.gather.")) return Intrinsic::masked_gather;
+    break;  // end of 'm' case.
+  case 'n':
+    if (NameR.startswith("earbyint.")) return Intrinsic::nearbyint;
+    break;  // end of 'n' case.
+  case 'o':
+    if (NameR.startswith("bjectsize.")) return Intrinsic::objectsize;
+    break;  // end of 'o' case.
+  case 'p':
+    if (NameR.startswith("tr.annotation.")) return Intrinsic::ptr_annotation;
+    if (NameR.startswith("owi.")) return Intrinsic::powi;
+    if (NameR.startswith("ow.")) return Intrinsic::pow;
+    switch (NameR.size()) {
+    default: break;
+    case 7:	 // 2 strings to match.
+      switch (NameR[0]) {
+      default: break;
+      case 'c':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "marker", 6))
+          break;
+        return Intrinsic::pcmarker;	 // "cmarker"
+      case 'r':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "efetch", 6))
+          break;
+        return Intrinsic::prefetch;	 // "refetch"
+      }
+      break;
+    }
+    break;  // end of 'p' case.
+  case 'r':
+    if (NameR.startswith("ound.")) return Intrinsic::round;
+    if (NameR.startswith("int.")) return Intrinsic::rint;
+    if (NameR.startswith("ead_register.")) return Intrinsic::read_register;
+    switch (NameR.size()) {
+    default: break;
+    case 12:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "eturnaddress", 12))
+        break;
+      return Intrinsic::returnaddress;	 // "eturnaddress"
+    case 15:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "eadcyclecounter", 15))
+        break;
+      return Intrinsic::readcyclecounter;	 // "eadcyclecounter"
+    }
+    break;  // end of 'r' case.
+  case 's':
+    if (NameR.startswith("sub.with.overflow.")) return Intrinsic::ssub_with_overflow;
+    if (NameR.startswith("qrt.")) return Intrinsic::sqrt;
+    if (NameR.startswith("mul.with.overflow.")) return Intrinsic::smul_with_overflow;
+    if (NameR.startswith("in.")) return Intrinsic::sin;
+    if (NameR.startswith("add.with.overflow.")) return Intrinsic::sadd_with_overflow;
+    switch (NameR.size()) {
+    default: break;
+    case 5:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "etjmp", 5))
+        break;
+      return Intrinsic::setjmp;	 // "etjmp"
+    case 8:	 // 2 strings to match.
+      switch (NameR[0]) {
+      default: break;
+      case 'i':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "gsetjmp", 7))
+          break;
+        return Intrinsic::sigsetjmp;	 // "igsetjmp"
+      case 't':	 // 1 string to match.
+        if (memcmp(NameR.data()+1, "acksave", 7))
+          break;
+        return Intrinsic::stacksave;	 // "tacksave"
+      }
+      break;
+    case 9:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "iglongjmp", 9))
+        break;
+      return Intrinsic::siglongjmp;	 // "iglongjmp"
+    case 11:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "tackrestore", 11))
+        break;
+      return Intrinsic::stackrestore;	 // "tackrestore"
+    case 13:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "tackprotector", 13))
+        break;
+      return Intrinsic::stackprotector;	 // "tackprotector"
+    case 18:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "tackprotectorcheck", 18))
+        break;
+      return Intrinsic::stackprotectorcheck;	 // "tackprotectorcheck"
+    }
+    break;  // end of 's' case.
+  case 't':
+    if (NameR.startswith("runc.")) return Intrinsic::trunc;
+    switch (NameR.size()) {
+    default: break;
+    case 3:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "rap", 3))
+        break;
+      return Intrinsic::trap;	 // "rap"
+    }
+    break;  // end of 't' case.
+  case 'u':
+    if (NameR.startswith("sub.with.overflow.")) return Intrinsic::usub_with_overflow;
+    if (NameR.startswith("mul.with.overflow.")) return Intrinsic::umul_with_overflow;
+    if (NameR.startswith("add.with.overflow.")) return Intrinsic::uadd_with_overflow;
+    break;  // end of 'u' case.
+  case 'v':
+    switch (NameR.size()) {
+    default: break;
+    case 5:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "a_end", 5))
+        break;
+      return Intrinsic::vaend;	 // "a_end"
+    case 6:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "a_copy", 6))
+        break;
+      return Intrinsic::vacopy;	 // "a_copy"
+    case 7:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "a_start", 7))
+        break;
+      return Intrinsic::vastart;	 // "a_start"
+    case 13:	 // 1 string to match.
+      if (memcmp(NameR.data()+0, "ar.annotation", 13))
+        break;
+      return Intrinsic::var_annotation;	 // "ar.annotation"
+    }
+    break;  // end of 'v' case.
+  case 'w':
+    if (NameR.startswith("rite_register.")) return Intrinsic::write_register;
+    break;  // end of 'w' case.
+  }
+#endif
+
+// Global intrinsic function declaration type table.
+#ifdef GET_INTRINSIC_GENERATOR_GLOBAL
+static const unsigned IIT_Table[] = {
+  0x2E2E, (1U<<31) | 73, 0x10, (1U<<31) | 97, 0x1F1F, 0x2F2F, 0x2F2F, 
+  0x2E2E0, 0x32F, 0x2F3, 0x44AF2F, 0x449F2F, 0x449F2F, 0x44AF1F, 0x449F1F, 
+  0x449F1F, 0x44AF1F, 0x449F1F, 0x449F1F, 0x2F2F2F, 0x2F2F, 0x11F1F, 0x1F1F, 
+  0x11F1F, (1U<<31) | 108, (1U<<31) | 102, 0x0, 0x0, (1U<<31) | 116, 0x2E2E0, 0x42E, 
+  0x0, 0x4, 0x2E40, 0x2E50, 0x40, 0x2E0, 0x2E0, 0x2E, 
+  0x2E4, 0x2E4, 0x0, 0x2F2F, 0x2F2F, 0x1F1F1F, 0x4444F, 0x40F, 
+  0x42F, 0x41F, 0x44F, (1U<<31) | 136, (1U<<31) | 128, (1U<<31) | 120, (1U<<31) | 145, 0x2F2F, 
+  0x2F2F, 0x4, 0x2F2F2F2F, 0x2F2F2F2F, 0x42E, 0x2EE2E2E, 0x2E2EE0, 0x2EE2E2E0, 
+  0x2E2E2E0, 0x4452E0, (1U<<31) | 44, (1U<<31) | 45, 0x2E50, 0x2E50, 0x2E, (1U<<31) | 113, 
+  0x42E2E2E, 0x2F2F, 0x2F2F, 0x2F2F, 0x42E0, (1U<<31) | 62, (1U<<31) | 51, (1U<<31) | 10, 
+  (1U<<31) | 0, 0x2F2F2F, (1U<<31) | 20, (1U<<31) | 20, 0x149F24F0, 0x2F2F2F, 0x2F2F, 0x1CF1F, 
+  0x40, 0x2F2F2F, 0x42F2F, 0x4442E0, (1U<<31) | 83, (1U<<31) | 93, 0x5, 0x42E, 
+  0x2F2F, 0x2F2F, (1U<<31) | 30, 0x2E4, 0x42E0, 0x42E4, 0x2F2F, (1U<<31) | 30, 
+  0x2F2F, (1U<<31) | 30, 0x2EE2E0, 0x2EE0, 0x2E0, 0x2E, 0x0, 0x2F2F, 
+  (1U<<31) | 30, (1U<<31) | 30, (1U<<31) | 30, 0x2E2E0, 0x2E0, 0x42E2E2E0, 0x2E0, (1U<<31) | 39, 0
+};
+
+static const unsigned char IIT_LongEncodingTable[] = {
+  /* 0 */ 0, 15, 3, 31, 3, 4, 30, 3, 1, 0,
+  /* 10 */ 0, 15, 3, 32, 3, 4, 30, 3, 1, 0,
+  /* 20 */ 0, 15, 4, 15, 12, 15, 17, 4, 1, 0,
+  /* 30 */ 20, 15, 1, 1, 15, 1, 15, 1, 0,
+  /* 39 */ 0, 18, 15, 1, 0,
+  /* 44 */ 0, 14, 19, 5, 14, 2, 0,
+  /* 51 */ 15, 3, 31, 3, 4, 30, 3, 1, 15, 3, 0,
+  /* 62 */ 15, 3, 32, 3, 4, 30, 3, 1, 15, 3, 0,
+  /* 73 */ 15, 1, 15, 1, 14, 2, 14, 2, 4, 0,
+  /* 83 */ 15, 4, 15, 4, 14, 2, 14, 2, 4, 0,
+  /* 93 */ 15, 1, 18, 0,
+  /* 97 */ 1, 14, 2, 18, 0,
+  /* 102 */ 0, 18, 5, 18, 18, 0,
+  /* 108 */ 0, 18, 18, 18, 0,
+  /* 113 */ 0, 28, 0,
+  /* 116 */ 14, 2, 28, 0,
+  /* 120 */ 0, 5, 4, 14, 2, 4, 28, 0,
+  /* 128 */ 5, 5, 4, 14, 2, 4, 28, 0,
+  /* 136 */ 4, 5, 4, 15, 4, 4, 4, 28, 0,
+  /* 145 */ 0, 5, 4, 28, 0,
+  255
+};
+
+#endif
+
+// Add parameter attributes that are not common to all intrinsics.
+#ifdef GET_INTRINSIC_ATTRIBUTES
+AttributeSet Intrinsic::getAttributes(LLVMContext &C, ID id) {
+  static const uint8_t IntrinsicsToAttributesMap[] = {
+    1, // llvm.adjust.trampoline
+    2, // llvm.annotation
+    2, // llvm.assume
+    3, // llvm.bitset.test
+    3, // llvm.bswap
+    3, // llvm.canonicalize
+    3, // llvm.ceil
+    2, // llvm.clear_cache
+    3, // llvm.convert.from.fp16
+    3, // llvm.convert.to.fp16
+    2, // llvm.convertff
+    2, // llvm.convertfsi
+    2, // llvm.convertfui
+    2, // llvm.convertsif
+    2, // llvm.convertss
+    2, // llvm.convertsu
+    2, // llvm.convertuif
+    2, // llvm.convertus
+    2, // llvm.convertuu
+    3, // llvm.copysign
+    3, // llvm.cos
+    3, // llvm.ctlz
+    3, // llvm.ctpop
+    3, // llvm.cttz
+    3, // llvm.dbg.declare
+    3, // llvm.dbg.value
+    2, // llvm.debugtrap
+    3, // llvm.donothing
+    2, // llvm.eh.actions
+    4, // llvm.eh.begincatch
+    2, // llvm.eh.dwarf.cfa
+    2, // llvm.eh.endcatch
+    1, // llvm.eh.exceptioncode
+    2, // llvm.eh.return.i32
+    2, // llvm.eh.return.i64
+    3, // llvm.eh.sjlj.callsite
+    2, // llvm.eh.sjlj.functioncontext
+    5, // llvm.eh.sjlj.longjmp
+    3, // llvm.eh.sjlj.lsda
+    2, // llvm.eh.sjlj.setjmp
+    3, // llvm.eh.typeid.for
+    2, // llvm.eh.unwind.init
+    3, // llvm.exp
+    3, // llvm.exp2
+    3, // llvm.expect
+    2, // llvm.experimental.gc.relocate
+    2, // llvm.experimental.gc.result
+    2, // llvm.experimental.gc.result.float
+    2, // llvm.experimental.gc.result.int
+    2, // llvm.experimental.gc.result.ptr
+    6, // llvm.experimental.gc.statepoint
+    6, // llvm.experimental.patchpoint.i64
+    6, // llvm.experimental.patchpoint.void
+    6, // llvm.experimental.stackmap
+    3, // llvm.fabs
+    3, // llvm.floor
+    2, // llvm.flt.rounds
+    3, // llvm.fma
+    3, // llvm.fmuladd
+    3, // llvm.frameaddress
+    1, // llvm.gcread
+    2, // llvm.gcroot
+    7, // llvm.gcwrite
+    8, // llvm.init.trampoline
+    2, // llvm.instrprof.increment
+    9, // llvm.invariant.end
+    10, // llvm.invariant.start
+    10, // llvm.lifetime.end
+    10, // llvm.lifetime.start
+    3, // llvm.localaddress
+    2, // llvm.localescape
+    3, // llvm.localrecover
+    3, // llvm.log
+    3, // llvm.log10
+    3, // llvm.log2
+    5, // llvm.longjmp
+    1, // llvm.masked.gather
+    1, // llvm.masked.load
+    2, // llvm.masked.scatter
+    2, // llvm.masked.store
+    3, // llvm.maxnum
+    11, // llvm.memcpy
+    11, // llvm.memmove
+    8, // llvm.memset
+    3, // llvm.minnum
+    3, // llvm.nearbyint
+    3, // llvm.objectsize
+    2, // llvm.pcmarker
+    3, // llvm.pow
+    3, // llvm.powi
+    8, // llvm.prefetch
+    2, // llvm.ptr.annotation
+    1, // llvm.read_register
+    2, // llvm.readcyclecounter
+    3, // llvm.returnaddress
+    3, // llvm.rint
+    3, // llvm.round
+    3, // llvm.sadd.with.overflow
+    2, // llvm.setjmp
+    5, // llvm.siglongjmp
+    2, // llvm.sigsetjmp
+    3, // llvm.sin
+    3, // llvm.smul.with.overflow
+    3, // llvm.sqrt
+    3, // llvm.ssub.with.overflow
+    2, // llvm.stackprotector
+    2, // llvm.stackprotectorcheck
+    2, // llvm.stackrestore
+    2, // llvm.stacksave
+    5, // llvm.trap
+    3, // llvm.trunc
+    3, // llvm.uadd.with.overflow
+    3, // llvm.umul.with.overflow
+    3, // llvm.usub.with.overflow
+    2, // llvm.va_copy
+    2, // llvm.va_end
+    2, // llvm.var.annotation
+    2, // llvm.va_start
+    2, // llvm.write_register
+  };
+
+  AttributeSet AS[4];
+  unsigned NumAttrs = 0;
+  if (id != 0) {
+    switch(IntrinsicsToAttributesMap[id - 1]) {
+    default: llvm_unreachable("Invalid attribute number");
+    case 3: {
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind,Attribute::ReadNone};
+      AS[0] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 1;
+      break;
+      }
+    case 1: {
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind,Attribute::ReadOnly};
+      AS[0] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 1;
+      break;
+      }
+    case 2: {
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[0] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 1;
+      break;
+      }
+    case 8: {
+      const Attribute::AttrKind AttrParam1[]= {Attribute::NoCapture};
+      AS[0] = AttributeSet::get(C, 1, AttrParam1);
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[1] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 2;
+      break;
+      }
+    case 4: {
+      const Attribute::AttrKind AttrParam1[]= {Attribute::NoCapture};
+      AS[0] = AttributeSet::get(C, 1, AttrParam1);
+      const Attribute::AttrKind AttrParam2[]= {Attribute::NoCapture};
+      AS[1] = AttributeSet::get(C, 2, AttrParam2);
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[2] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 3;
+      break;
+      }
+    case 11: {
+      const Attribute::AttrKind AttrParam1[]= {Attribute::NoCapture};
+      AS[0] = AttributeSet::get(C, 1, AttrParam1);
+      const Attribute::AttrKind AttrParam2[]= {Attribute::NoCapture,Attribute::ReadOnly};
+      AS[1] = AttributeSet::get(C, 2, AttrParam2);
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[2] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 3;
+      break;
+      }
+    case 10: {
+      const Attribute::AttrKind AttrParam2[]= {Attribute::NoCapture};
+      AS[0] = AttributeSet::get(C, 2, AttrParam2);
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[1] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 2;
+      break;
+      }
+    case 7: {
+      const Attribute::AttrKind AttrParam2[]= {Attribute::NoCapture};
+      AS[0] = AttributeSet::get(C, 2, AttrParam2);
+      const Attribute::AttrKind AttrParam3[]= {Attribute::NoCapture};
+      AS[1] = AttributeSet::get(C, 3, AttrParam3);
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[2] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 3;
+      break;
+      }
+    case 9: {
+      const Attribute::AttrKind AttrParam3[]= {Attribute::NoCapture};
+      AS[0] = AttributeSet::get(C, 3, AttrParam3);
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind};
+      AS[1] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 2;
+      break;
+      }
+    case 5: {
+      const Attribute::AttrKind Atts[] = {Attribute::NoUnwind,Attribute::NoReturn};
+      AS[0] = AttributeSet::get(C, AttributeSet::FunctionIndex, Atts);
+      NumAttrs = 1;
+      break;
+      }
+    case 6: {
+      return AttributeSet();
+      }
+    }
+  }
+  return AttributeSet::get(C, makeArrayRef(AS, NumAttrs));
+}
+#endif // GET_INTRINSIC_ATTRIBUTES
+
+// Determine intrinsic alias analysis mod/ref behavior.
+#ifdef GET_INTRINSIC_MODREF_BEHAVIOR
+assert(iid <= Intrinsic::write_register && "Unknown intrinsic.");
+
+static const uint8_t IntrinsicModRefBehavior[] = {
+  /* invalid */ UnknownModRefBehavior,
+  /* adjust_trampoline */ OnlyReadsArgumentPointees,
+  /* annotation */ UnknownModRefBehavior,
+  /* assume */ UnknownModRefBehavior,
+  /* bitset_test */ DoesNotAccessMemory,
+  /* bswap */ DoesNotAccessMemory,
+  /* canonicalize */ DoesNotAccessMemory,
+  /* ceil */ DoesNotAccessMemory,
+  /* clear_cache */ UnknownModRefBehavior,
+  /* convert_from_fp16 */ DoesNotAccessMemory,
+  /* convert_to_fp16 */ DoesNotAccessMemory,
+  /* convertff */ UnknownModRefBehavior,
+  /* convertfsi */ UnknownModRefBehavior,
+  /* convertfui */ UnknownModRefBehavior,
+  /* convertsif */ UnknownModRefBehavior,
+  /* convertss */ UnknownModRefBehavior,
+  /* convertsu */ UnknownModRefBehavior,
+  /* convertuif */ UnknownModRefBehavior,
+  /* convertus */ UnknownModRefBehavior,
+  /* convertuu */ UnknownModRefBehavior,
+  /* copysign */ DoesNotAccessMemory,
+  /* cos */ DoesNotAccessMemory,
+  /* ctlz */ DoesNotAccessMemory,
+  /* ctpop */ DoesNotAccessMemory,
+  /* cttz */ DoesNotAccessMemory,
+  /* dbg_declare */ DoesNotAccessMemory,
+  /* dbg_value */ DoesNotAccessMemory,
+  /* debugtrap */ UnknownModRefBehavior,
+  /* donothing */ DoesNotAccessMemory,
+  /* eh_actions */ UnknownModRefBehavior,
+  /* eh_begincatch */ UnknownModRefBehavior,
+  /* eh_dwarf_cfa */ UnknownModRefBehavior,
+  /* eh_endcatch */ UnknownModRefBehavior,
+  /* eh_exceptioncode */ OnlyReadsMemory,
+  /* eh_return_i32 */ UnknownModRefBehavior,
+  /* eh_return_i64 */ UnknownModRefBehavior,
+  /* eh_sjlj_callsite */ DoesNotAccessMemory,
+  /* eh_sjlj_functioncontext */ UnknownModRefBehavior,
+  /* eh_sjlj_longjmp */ UnknownModRefBehavior,
+  /* eh_sjlj_lsda */ DoesNotAccessMemory,
+  /* eh_sjlj_setjmp */ UnknownModRefBehavior,
+  /* eh_typeid_for */ DoesNotAccessMemory,
+  /* eh_unwind_init */ UnknownModRefBehavior,
+  /* exp */ DoesNotAccessMemory,
+  /* exp2 */ DoesNotAccessMemory,
+  /* expect */ DoesNotAccessMemory,
+  /* experimental_gc_relocate */ UnknownModRefBehavior,
+  /* experimental_gc_result */ UnknownModRefBehavior,
+  /* experimental_gc_result_float */ UnknownModRefBehavior,
+  /* experimental_gc_result_int */ UnknownModRefBehavior,
+  /* experimental_gc_result_ptr */ UnknownModRefBehavior,
+  /* experimental_gc_statepoint */ UnknownModRefBehavior,
+  /* experimental_patchpoint_i64 */ UnknownModRefBehavior,
+  /* experimental_patchpoint_void */ UnknownModRefBehavior,
+  /* experimental_stackmap */ UnknownModRefBehavior,
+  /* fabs */ DoesNotAccessMemory,
+  /* floor */ DoesNotAccessMemory,
+  /* flt_rounds */ UnknownModRefBehavior,
+  /* fma */ DoesNotAccessMemory,
+  /* fmuladd */ DoesNotAccessMemory,
+  /* frameaddress */ DoesNotAccessMemory,
+  /* gcread */ OnlyReadsArgumentPointees,
+  /* gcroot */ UnknownModRefBehavior,
+  /* gcwrite */ OnlyAccessesArgumentPointees,
+  /* init_trampoline */ OnlyAccessesArgumentPointees,
+  /* instrprof_increment */ UnknownModRefBehavior,
+  /* invariant_end */ OnlyAccessesArgumentPointees,
+  /* invariant_start */ OnlyAccessesArgumentPointees,
+  /* lifetime_end */ OnlyAccessesArgumentPointees,
+  /* lifetime_start */ OnlyAccessesArgumentPointees,
+  /* localaddress */ DoesNotAccessMemory,
+  /* localescape */ UnknownModRefBehavior,
+  /* localrecover */ DoesNotAccessMemory,
+  /* log */ DoesNotAccessMemory,
+  /* log10 */ DoesNotAccessMemory,
+  /* log2 */ DoesNotAccessMemory,
+  /* longjmp */ UnknownModRefBehavior,
+  /* masked_gather */ OnlyReadsArgumentPointees,
+  /* masked_load */ OnlyReadsArgumentPointees,
+  /* masked_scatter */ OnlyAccessesArgumentPointees,
+  /* masked_store */ OnlyAccessesArgumentPointees,
+  /* maxnum */ DoesNotAccessMemory,
+  /* memcpy */ OnlyAccessesArgumentPointees,
+  /* memmove */ OnlyAccessesArgumentPointees,
+  /* memset */ OnlyAccessesArgumentPointees,
+  /* minnum */ DoesNotAccessMemory,
+  /* nearbyint */ DoesNotAccessMemory,
+  /* objectsize */ DoesNotAccessMemory,
+  /* pcmarker */ UnknownModRefBehavior,
+  /* pow */ DoesNotAccessMemory,
+  /* powi */ DoesNotAccessMemory,
+  /* prefetch */ OnlyAccessesArgumentPointees,
+  /* ptr_annotation */ UnknownModRefBehavior,
+  /* read_register */ OnlyReadsMemory,
+  /* readcyclecounter */ UnknownModRefBehavior,
+  /* returnaddress */ DoesNotAccessMemory,
+  /* rint */ DoesNotAccessMemory,
+  /* round */ DoesNotAccessMemory,
+  /* sadd_with_overflow */ DoesNotAccessMemory,
+  /* setjmp */ UnknownModRefBehavior,
+  /* siglongjmp */ UnknownModRefBehavior,
+  /* sigsetjmp */ UnknownModRefBehavior,
+  /* sin */ DoesNotAccessMemory,
+  /* smul_with_overflow */ DoesNotAccessMemory,
+  /* sqrt */ DoesNotAccessMemory,
+  /* ssub_with_overflow */ DoesNotAccessMemory,
+  /* stackprotector */ UnknownModRefBehavior,
+  /* stackprotectorcheck */ OnlyAccessesArgumentPointees,
+  /* stackrestore */ UnknownModRefBehavior,
+  /* stacksave */ UnknownModRefBehavior,
+  /* trap */ UnknownModRefBehavior,
+  /* trunc */ DoesNotAccessMemory,
+  /* uadd_with_overflow */ DoesNotAccessMemory,
+  /* umul_with_overflow */ DoesNotAccessMemory,
+  /* usub_with_overflow */ DoesNotAccessMemory,
+  /* vacopy */ UnknownModRefBehavior,
+  /* vaend */ UnknownModRefBehavior,
+  /* var_annotation */ UnknownModRefBehavior,
+  /* vastart */ UnknownModRefBehavior,
+  /* write_register */ UnknownModRefBehavior,
+};
+
+return static_cast<ModRefBehavior>(IntrinsicModRefBehavior[iid]);
+#endif // GET_INTRINSIC_MODREF_BEHAVIOR
+
+// Get the LLVM intrinsic that corresponds to a GCC builtin.
+// This is used by the C front-end.  The GCC builtin name is passed
+// in as BuiltinName, and a target prefix (e.g. 'ppc') is passed
+// in as TargetPrefix.  The result is assigned to 'IntrinsicID'.
+#ifdef GET_LLVM_INTRINSIC_FOR_GCC_BUILTIN
+Intrinsic::ID Intrinsic::getIntrinsicForGCCBuiltin(const char *TargetPrefixStr, const char *BuiltinNameStr) {
+  StringRef BuiltinName(BuiltinNameStr);
+  StringRef TargetPrefix(TargetPrefixStr);
+
+  /* Target Independent Builtins */ {
+  switch (BuiltinName.size()) {
+  default: break;
+  case 14:	 // 1 string to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_trap", 14))
+      break;
+    return Intrinsic::trap;	 // "__builtin_trap"
+  case 19:	 // 1 string to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_debugtrap", 19))
+      break;
+    return Intrinsic::debugtrap;	 // "__builtin_debugtrap"
+  case 20:	 // 2 strings to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_", 10))
+      break;
+    switch (BuiltinName[10]) {
+    default: break;
+    case 'f':	 // 1 string to match.
+      if (memcmp(BuiltinName.data()+11, "lt_rounds", 9))
+        break;
+      return Intrinsic::flt_rounds;	 // "__builtin_flt_rounds"
+    case 's':	 // 1 string to match.
+      if (memcmp(BuiltinName.data()+11, "tack_save", 9))
+        break;
+      return Intrinsic::stacksave;	 // "__builtin_stack_save"
+    }
+    break;
+  case 21:	 // 2 strings to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_", 10))
+      break;
+    switch (BuiltinName[10]) {
+    default: break;
+    case 'o':	 // 1 string to match.
+      if (memcmp(BuiltinName.data()+11, "bject_size", 10))
+        break;
+      return Intrinsic::objectsize;	 // "__builtin_object_size"
+    case 'u':	 // 1 string to match.
+      if (memcmp(BuiltinName.data()+11, "nwind_init", 10))
+        break;
+      return Intrinsic::eh_unwind_init;	 // "__builtin_unwind_init"
+    }
+    break;
+  case 23:	 // 1 string to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_stack_restore", 23))
+      break;
+    return Intrinsic::stackrestore;	 // "__builtin_stack_restore"
+  case 25:	 // 1 string to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_init_trampoline", 25))
+      break;
+    return Intrinsic::init_trampoline;	 // "__builtin_init_trampoline"
+  case 27:	 // 1 string to match.
+    if (memcmp(BuiltinName.data()+0, "__builtin_adjust_trampoline", 27))
+      break;
+    return Intrinsic::adjust_trampoline;	 // "__builtin_adjust_trampoline"
+  }
+  }
+  return Intrinsic::not_intrinsic;
+}
+#endif
+
+// Get the LLVM intrinsic that corresponds to a MS builtin.
+// This is used by the C front-end.  The MS builtin name is passed
+// in as a BuiltinName, and a target prefix (e.g. 'arm') is passed
+// in as a TargetPrefix.  The result is assigned to 'IntrinsicID'.
+#ifdef GET_LLVM_INTRINSIC_FOR_MS_BUILTIN
+Intrinsic::ID Intrinsic::getIntrinsicForMSBuiltin(const char *TP, const char *BN) {
+  StringRef BuiltinName(BN);
+  StringRef TargetPrefix(TP);
+
+  return Intrinsic::not_intrinsic;
+}
+#endif
+
+#if defined(_MSC_VER) && defined(setjmp_undefined_for_msvc)
+// let's return it to _setjmp state
+#  pragma pop_macro("setjmp")
+#  undef setjmp_undefined_for_msvc
+#endif
+

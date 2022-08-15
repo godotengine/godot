@@ -1,0 +1,5 @@
+// This is copied into the build area for a $src != $build compilation.
+module LLVM_Support_DataTypes {
+  header "Support/DataTypes.h"
+  export *
+}

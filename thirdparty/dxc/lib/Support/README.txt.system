@@ -1,0 +1,43 @@
+Design Of lib/System
+====================
+
+The software in this directory is designed to completely shield LLVM from any
+and all operating system specific functionality. It is not intended to be a
+complete operating system wrapper (such as ACE), but only to provide the
+functionality necessary to support LLVM.
+
+The software located here, of necessity, has very specific and stringent design
+rules. Violation of these rules means that cracks in the shield could form and
+the primary goal of the library is defeated. By consistently using this library,
+LLVM becomes more easily ported to new platforms since the only thing requiring
+porting is this library.
+
+Complete documentation for the library can be found in the file:
+  llvm/docs/SystemLibrary.html
+or at this URL:
+  http://llvm.org/docs/SystemLibrary.html
+
+While we recommend that you read the more detailed documentation, for the
+impatient, here's a high level summary of the library's requirements.
+
+ 1. No system header files are to be exposed through the interface.
+ 2. Std C++ and Std C header files are okay to be exposed through the interface.
+ 3. No exposed system-specific functions.
+ 4. No exposed system-specific data.
+ 5. Data in lib/System classes must use only simple C++ intrinsic types.
+ 6. Errors are handled by returning "true" and setting an optional std::string
+ 7. Library must not throw any exceptions, period.
+ 8. Interface functions must not have throw() specifications.
+ 9. No duplicate function impementations are permitted within an operating
+    system class.
+
+To accomplish these requirements, the library has numerous design criteria that
+must be satisfied. Here's a high level summary of the library's design criteria:
+
+ 1. No unused functionality (only what LLVM needs)
+ 2. High-Level Interfaces
+ 3. Use Opaque Classes
+ 4. Common Implementations
+ 5. Multiple Implementations
+ 6. Minimize Memory Allocation
+ 7. No Virtual Methods

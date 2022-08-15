@@ -1,0 +1,30 @@
+CHECK: BINGO
+
+RUN: ./LLVMFuzzer-SimpleTest 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-InfiniteTest -timeout=2 2>&1 | FileCheck %s --check-prefix=InfiniteTest
+InfiniteTest: ALARM: working on the last Unit for
+InfiniteTest: CRASHED; file written to timeout
+
+RUN: not ./LLVMFuzzer-TimeoutTest -timeout=5 2>&1 | FileCheck %s --check-prefix=TimeoutTest
+TimeoutTest: ALARM: working on the last Unit for
+TimeoutTest: CRASHED; file written to timeout
+
+RUN: not ./LLVMFuzzer-NullDerefTest 2>&1 | FileCheck %s --check-prefix=NullDerefTest
+NullDerefTest: CRASHED; file written to crash-
+
+RUN: not ./LLVMFuzzer-FullCoverageSetTest -timeout=15 -seed=1 -mutate_depth=2 -use_full_coverage_set=1 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-FourIndependentBranchesTest -timeout=15 -seed=1 -use_full_coverage_set=1 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-CounterTest -use_counters=1 -max_len=6 -seed=1 -timeout=15 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-DFSanSimpleCmpTest-DFSan -use_traces=1 -seed=1 -runs=1000000 -timeout=5 2>&1 | FileCheck %s
+RUN: not ./LLVMFuzzer-DFSanSimpleCmpTest -use_traces=1 -seed=1 -runs=1000000 -timeout=5 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-DFSanMemcmpTest-DFSan -use_traces=1 -seed=1 -runs=100 -timeout=5 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-CxxTokensTest -seed=1 -timeout=15 -tokens=%S/../cxx_fuzzer_tokens.txt 2>&1 | FileCheck %s
+
+RUN: not ./LLVMFuzzer-UserSuppliedFuzzerTest -seed=1 -timeout=15 2>&1 | FileCheck %s
+

@@ -1,0 +1,1 @@
+add_hlsl_hctgen(DxilValidationInc OUTPUT DxilValidation.inc BUILD_DIR)

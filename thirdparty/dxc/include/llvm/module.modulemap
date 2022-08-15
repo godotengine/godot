@@ -1,0 +1,227 @@
+module LLVM_Analysis {
+  requires cplusplus
+  umbrella "Analysis"
+  module * { export * }
+
+  // FIXME: Why is this excluded?
+  exclude header "Analysis/BlockFrequencyInfoImpl.h"
+
+  // This is intended for (repeated) textual inclusion.
+  textual header "Analysis/TargetLibraryInfo.def"
+}
+
+module LLVM_AsmParser { requires cplusplus umbrella "AsmParser" module * { export * } }
+
+// A module covering CodeGen/ and Target/. These are intertwined
+// and codependent, and thus notionally form a single module.
+module LLVM_Backend {
+  requires cplusplus
+
+  module CodeGen {
+    umbrella "CodeGen"
+    module * { export * }
+
+    // FIXME: Why is this excluded?
+    exclude header "CodeGen/MachineValueType.h"
+
+    // Exclude these; they're intended to be included into only a single
+    // translation unit (or none) and aren't part of this module.
+    exclude header "CodeGen/CommandFlags.h"
+    exclude header "CodeGen/LinkAllAsmWriterComponents.h"
+    exclude header "CodeGen/LinkAllCodegenComponents.h"
+
+    // These are intended for (repeated) textual inclusion.
+    textual header "CodeGen/DIEValue.def"
+  }
+
+  module Target {
+    umbrella "Target"
+    module * { export * }
+  }
+
+  // FIXME: Where should this go?
+  module Analysis_BlockFrequencyInfoImpl {
+    header "Analysis/BlockFrequencyInfoImpl.h"
+    export *
+  }
+}
+
+module LLVM_Bitcode { requires cplusplus umbrella "Bitcode" module * { export * } }
+module LLVM_Config { requires cplusplus umbrella "Config" module * { export * } }
+
+module LLVM_DebugInfo {
+  requires cplusplus
+  module DIContext { header "DebugInfo/DIContext.h" export * }
+}
+
+module LLVM_DebugInfo_DWARF {
+  requires cplusplus
+
+  umbrella "DebugInfo/DWARF"
+  module * { export * }
+}
+
+module LLVM_DebugInfo_PDB {
+  requires cplusplus
+
+  umbrella "DebugInfo/PDB"
+  module * { export * }
+
+  // Separate out this subdirectory; it's an optional component that depends on
+  // a separate library which might not be available.
+  //
+  // FIXME: There should be a better way to specify this.
+  exclude header "DebugInfo/PDB/DIA/DIADataStream.h"
+  exclude header "DebugInfo/PDB/DIA/DIAEnumDebugStreams.h"
+  exclude header "DebugInfo/PDB/DIA/DIAEnumLineNumbers.h"
+  exclude header "DebugInfo/PDB/DIA/DIAEnumSourceFiles.h"
+  exclude header "DebugInfo/PDB/DIA/DIAEnumSymbols.h"
+  exclude header "DebugInfo/PDB/DIA/DIALineNumber.h"
+  exclude header "DebugInfo/PDB/DIA/DIARawSymbol.h"
+  exclude header "DebugInfo/PDB/DIA/DIASession.h"
+  exclude header "DebugInfo/PDB/DIA/DIASourceFile.h"
+  exclude header "DebugInfo/PDB/DIA/DIASupport.h"
+}
+
+module LLVM_DebugInfo_PDB_DIA {
+  requires cplusplus
+
+  umbrella "DebugInfo/PDB/DIA"
+  module * { export * }
+}
+
+module LLVM_ExecutionEngine {
+  requires cplusplus
+
+  umbrella "ExecutionEngine"
+  module * { export * }
+
+  // Exclude this; it's an optional component of the ExecutionEngine.
+  exclude header "ExecutionEngine/OProfileWrapper.h"
+
+  // Exclude these; they're intended to be included into only a single
+  // translation unit (or none) and aren't part of this module.
+  exclude header "ExecutionEngine/JIT.h"
+  exclude header "ExecutionEngine/MCJIT.h"
+  exclude header "ExecutionEngine/Interpreter.h"
+  exclude header "ExecutionEngine/OrcMCJITReplacement.h"
+}
+
+module LLVM_IR {
+  requires cplusplus
+
+  // FIXME: Is this the right place for these?
+  module Pass { header "Pass.h" export * }
+  module PassSupport { header "PassSupport.h" export * }
+  module PassAnalysisSupport { header "PassAnalysisSupport.h" export * }
+  module PassRegistry { header "PassRegistry.h" export * }
+  module InitializePasses { header "InitializePasses.h" export * }
+
+  umbrella "IR"
+  module * { export * }
+
+  // These are intended for (repeated) textual inclusion.
+  textual header "IR/DebugInfoFlags.def"
+  textual header "IR/Instruction.def"
+  textual header "IR/Metadata.def"
+  textual header "IR/Value.def"
+}
+
+module LLVM_IRReader { requires cplusplus umbrella "IRReader" module * { export * } }
+module LLVM_LineEditor { requires cplusplus umbrella "LineEditor" module * { export * } }
+module LLVM_LTO { requires cplusplus umbrella "LTO" module * { export * } }
+
+module LLVM_MC {
+  requires cplusplus
+
+  // FIXME: Mislayered?
+  module Support_TargetRegistry {
+    header "Support/TargetRegistry.h"
+    export *
+  }
+
+  umbrella "MC"
+  module * { export * }
+
+  // Exclude this; it's fundamentally non-modular.
+  exclude header "MC/MCTargetOptionsCommandFlags.h"
+}
+
+module LLVM_Object {
+  requires cplusplus
+  umbrella "Object"
+  module * { export * }
+}
+
+module LLVM_Option { requires cplusplus umbrella "Option" module * { export * } }
+module LLVM_TableGen { requires cplusplus umbrella "TableGen" module * { export * } }
+
+module LLVM_Transforms {
+  requires cplusplus
+  umbrella "Transforms"
+  module * { export * }
+
+  // FIXME: Excluded because it does bad things with the legacy pass manager.
+  exclude header "Transforms/IPO/PassManagerBuilder.h"
+}
+
+// A module covering ADT/ and Support/. These are intertwined and
+// codependent, and notionally form a single module.
+module LLVM_Utils {
+  module ADT {
+    requires cplusplus
+
+    umbrella "ADT"
+    module * { export * }
+  }
+
+  module Support {
+    requires cplusplus
+
+    umbrella "Support"
+    module * { export * }
+
+    // Exclude this; it's only included on Solaris.
+    exclude header "Support/Solaris.h"
+
+    // Exclude this; it's only included on AIX and fundamentally non-modular.
+    exclude header "Support/AIXDataTypesFix.h"
+
+    // Exclude this; it's fundamentally non-modular.
+    exclude header "Support/PluginLoader.h"
+
+    // Exclude this; it's a weirdly-factored part of llvm-gcov and conflicts
+    // with the Analysis module (which also defines an llvm::GCOVOptions).
+    exclude header "Support/GCOV.h"
+
+    // FIXME: Mislayered?
+    exclude header "Support/TargetRegistry.h"
+
+    // These are intended for textual inclusion.
+    textual header "Support/Dwarf.def"
+    textual header "Support/ELFRelocs/AArch64.def"
+    textual header "Support/ELFRelocs/ARM.def"
+    textual header "Support/ELFRelocs/Hexagon.def"
+    textual header "Support/ELFRelocs/i386.def"
+    textual header "Support/ELFRelocs/Mips.def"
+    textual header "Support/ELFRelocs/PowerPC64.def"
+    textual header "Support/ELFRelocs/PowerPC.def"
+    textual header "Support/ELFRelocs/Sparc.def"
+    textual header "Support/ELFRelocs/SystemZ.def"
+    textual header "Support/ELFRelocs/x86_64.def"
+  }
+}
+
+module LLVM_CodeGen_MachineValueType {
+  requires cplusplus
+  header "CodeGen/MachineValueType.h"
+  export *
+}
+
+// This is used for a $src == $build compilation. Otherwise we use
+// LLVM_Support_DataTypes_Build, defined in a module map that is
+// copied into the build area.
+module LLVM_Support_DataTypes_Src {
+  header "llvm/Support/DataTypes.h"
+  export *
+}

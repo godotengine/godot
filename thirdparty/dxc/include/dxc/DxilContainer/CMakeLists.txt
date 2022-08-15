@@ -1,0 +1,1 @@
+add_hlsl_hctgen(RDAT_LibraryTypes OUTPUT RDAT_LibraryTypes.inl CODE_TAG)

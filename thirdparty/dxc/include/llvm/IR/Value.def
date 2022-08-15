@@ -1,0 +1,88 @@
+//===-------- llvm/IR/Value.def - File that describes Values ---v-*- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+//
+// This file contains descriptions of the various LLVM values.  This is
+// used as a central place for enumerating the different values.
+//
+//===----------------------------------------------------------------------===//
+
+// Provide definitions of macros so that users of this file do not have to
+// define everything to use it...
+//
+#if !(defined HANDLE_GLOBAL_VALUE || defined HANDLE_CONSTANT ||                \
+      defined HANDLE_INSTRUCTION || defined HANDLE_INLINE_ASM_VALUE ||         \
+      defined HANDLE_METADATA_VALUE || defined HANDLE_VALUE ||                 \
+      defined HANDLE_CONSTANT_MARKER)
+#error "Missing macro definition of HANDLE_VALUE*"
+#endif
+
+#ifndef HANDLE_GLOBAL_VALUE
+#define HANDLE_GLOBAL_VALUE(ValueName) HANDLE_CONSTANT(ValueName)
+#endif
+
+#ifndef HANDLE_CONSTANT
+#define HANDLE_CONSTANT(ValueName) HANDLE_VALUE(ValueName)
+#endif
+
+#ifndef HANDLE_INSTRUCTION
+#define HANDLE_INSTRUCTION(ValueName) HANDLE_VALUE(ValueName)
+#endif
+
+#ifndef HANDLE_INLINE_ASM_VALUE
+#define HANDLE_INLINE_ASM_VALUE(ValueName) HANDLE_VALUE(ValueName)
+#endif
+
+#ifndef HANDLE_METADATA_VALUE
+#define HANDLE_METADATA_VALUE(ValueName) HANDLE_VALUE(ValueName)
+#endif
+
+#ifndef HANDLE_VALUE
+#define HANDLE_VALUE(ValueName)
+#endif
+
+#ifndef HANDLE_CONSTANT_MARKER
+#define HANDLE_CONSTANT_MARKER(MarkerName, ValueName)
+#endif
+
+HANDLE_VALUE(Argument)
+HANDLE_VALUE(BasicBlock)
+
+HANDLE_GLOBAL_VALUE(Function)
+HANDLE_GLOBAL_VALUE(GlobalAlias)
+HANDLE_GLOBAL_VALUE(GlobalVariable)
+HANDLE_CONSTANT(UndefValue)
+HANDLE_CONSTANT(BlockAddress)
+HANDLE_CONSTANT(ConstantExpr)
+HANDLE_CONSTANT(ConstantAggregateZero)
+HANDLE_CONSTANT(ConstantDataArray)
+HANDLE_CONSTANT(ConstantDataVector)
+HANDLE_CONSTANT(ConstantInt)
+HANDLE_CONSTANT(ConstantFP)
+HANDLE_CONSTANT(ConstantArray)
+HANDLE_CONSTANT(ConstantStruct)
+HANDLE_CONSTANT(ConstantVector)
+HANDLE_CONSTANT(ConstantPointerNull)
+
+HANDLE_METADATA_VALUE(MetadataAsValue)
+HANDLE_INLINE_ASM_VALUE(InlineAsm)
+
+HANDLE_INSTRUCTION(Instruction)
+// Enum values starting at InstructionVal are used for Instructions;
+// don't add new values here!
+
+HANDLE_CONSTANT_MARKER(ConstantFirstVal, Function)
+HANDLE_CONSTANT_MARKER(ConstantLastVal, ConstantPointerNull)
+
+#undef HANDLE_GLOBAL_VALUE
+#undef HANDLE_CONSTANT
+#undef HANDLE_INSTRUCTION
+#undef HANDLE_METADATA_VALUE
+#undef HANDLE_INLINE_ASM_VALUE
+#undef HANDLE_VALUE
+#undef HANDLE_CONSTANT_MARKER

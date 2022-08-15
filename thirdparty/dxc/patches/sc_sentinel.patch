@@ -1,0 +1,133 @@
+diff --git a/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h b/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h
+index 62d2049e7b..a29ebeabd7 100644
+--- a/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h
++++ b/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h
+@@ -21,6 +21,9 @@
+ #include "llvm/Support/Endian.h"
+ #include <vector>
+ 
++extern thread_local bool emitting_sc_sentinel;
++extern thread_local std::vector<uint64_t> sc_sentinel_offsets;
++
+ namespace llvm {
+ 
+ class BitstreamWriter {
+@@ -370,6 +373,16 @@ private:
+           WriteByte(0);
+       } else {  // Single scalar field.
+         assert(RecordIdx < Vals.size() && "Invalid abbrev/record");
++        if (emitting_sc_sentinel && RecordIdx == 1) {
++          uint64_t sc_bit_offset = (uint64_t)Out.size_in_bytes() * 8 + CurBit;
++          uint32_t sc_index = (Vals[RecordIdx] >> 1) % 0x45678900; // It has been left-shifted on a previous step
++#ifndef NDEBUG
++          assert(sc_index < sc_sentinel_offsets.size());
++#endif
++          sc_sentinel_offsets[sc_index] = sc_bit_offset;
++          Vals[RecordIdx] = 0b1000001; // Explained somewhere else, we can't emit here more than 7 bits for a working patching
++          emitting_sc_sentinel = false;
++        }
+         EmitAbbreviatedField(Op, Vals[RecordIdx]);
+         ++RecordIdx;
+       }
+diff --git a/thirdparty/dxc/lib/Bitcode/Writer/BitcodeWriter.cpp b/thirdparty/dxc/lib/Bitcode/Writer/BitcodeWriter.cpp
+index 0718c81451..67f610c6ba 100644
+--- a/thirdparty/dxc/lib/Bitcode/Writer/BitcodeWriter.cpp
++++ b/thirdparty/dxc/lib/Bitcode/Writer/BitcodeWriter.cpp
+@@ -1363,6 +1363,8 @@ static void emitSignedInt64(SmallVectorImpl<uint64_t> &Vals, uint64_t V) {
+     Vals.push_back((-V << 1) | 1);
+ }
+ 
++thread_local bool emitting_sc_sentinel;
++
+ static void WriteConstants(unsigned FirstVal, unsigned LastVal,
+                            const ValueEnumerator &VE,
+                            BitstreamWriter &Stream, bool isGlobal) {
+@@ -1449,7 +1451,10 @@ static void WriteConstants(unsigned FirstVal, unsigned LastVal,
+         emitSignedInt64(Record, V);
+         Code = bitc::CST_CODE_INTEGER;
+         AbbrevToUse = CONSTANTS_INTEGER_ABBREV;
+-      } else {                             // Wide integers, > 64 bits in size.
++        if (V / 0x45678900 == 1) {
++          emitting_sc_sentinel = true;
++        }
++  } else { // Wide integers, > 64 bits in size.
+         // We have an arbitrary precision integer value to write whose
+         // bit width is > 64. However, in canonical unsigned integer
+         // format it is likely that the high bits are going to be zero.
+@@ -1623,6 +1628,7 @@ static void WriteConstants(unsigned FirstVal, unsigned LastVal,
+       llvm_unreachable("Unknown constant!");
+     }
+     Stream.EmitRecord(Code, Record, AbbrevToUse);
++    assert(!emitting_sc_sentinel); // Should be reset by now
+     Record.clear();
+   }
+ 
+diff --git a/thirdparty/dxc/patches/sc_sentinel.patch b/thirdparty/dxc/patches/sc_sentinel.patch
+index ba14d14014..e69de29bb2 100644
+--- a/thirdparty/dxc/patches/sc_sentinel.patch
++++ b/thirdparty/dxc/patches/sc_sentinel.patch
+@@ -1,64 +0,0 @@
+-diff --git a/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h b/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h
+-index 62d2049e7b..7e60cb4ee7 100644
+---- a/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h
+-+++ b/thirdparty/dxc/include/llvm/Bitcode/BitstreamWriter.h
+-@@ -21,6 +21,9 @@
+- #include "llvm/Support/Endian.h"
+- #include <vector>
+-
+-+extern thread_local bool emitting_sc_sentinel;
+-+extern thread_local std::vector<uint64_t> sc_sentinel_offsets;
+-+
+- namespace llvm {
+-
+- class BitstreamWriter {
+-@@ -370,6 +373,16 @@ private:
+-           WriteByte(0);
+-       } else {  // Single scalar field.
+-         assert(RecordIdx < Vals.size() && "Invalid abbrev/record");
+-+        if (emitting_sc_sentinel && RecordIdx == 1) {
+-+          uint64_t sc_bit_offset = (uint64_t)Out.size_in_bytes() * 8 + CurBit;
+-+          uint32_t sc_index = (Vals[RecordIdx] >> 1) % 0x45678900; // It has been left-shifted on a previous step
+-+#ifndef NDEBUG
+-+          assert(sc_index < sc_sentinel_offsets.size());
+-+#endif
+-+          sc_sentinel_offsets[sc_index] = sc_bit_offset;
+-+          Vals[RecordIdx] = 0b1000001; // Explained somewhere else, we can't emit here more than 7 bits for a working patching
+-+          emitting_sc_sentinel = false;
+-+        }
+-         EmitAbbreviatedField(Op, Vals[RecordIdx]);
+-         ++RecordIdx;
+-       }
+-diff --git a/thirdparty/dxc/lib/Writer/BitcodeWriter.cpp b/thirdparty/dxc/lib/Writer/BitcodeWriter.cpp
+-index 0718c81451..67f610c6ba 100644
+---- a/thirdparty/dxc/lib/Writer/BitcodeWriter.cpp
+-+++ b/thirdparty/dxc/lib/Writer/BitcodeWriter.cpp
+-@@ -1363,6 +1363,8 @@ static void emitSignedInt64(SmallVectorImpl<uint64_t> &Vals, uint64_t V) {
+-     Vals.push_back((-V << 1) | 1);
+- }
+-
+-+thread_local bool emitting_sc_sentinel;
+-+
+- static void WriteConstants(unsigned FirstVal, unsigned LastVal,
+-                            const ValueEnumerator &VE,
+-                            BitstreamWriter &Stream, bool isGlobal) {
+-@@ -1449,7 +1451,10 @@ static void WriteConstants(unsigned FirstVal, unsigned LastVal,
+-         emitSignedInt64(Record, V);
+-         Code = bitc::CST_CODE_INTEGER;
+-         AbbrevToUse = CONSTANTS_INTEGER_ABBREV;
+--      } else {                             // Wide integers, > 64 bits in size.
+-+        if (V / 0x45678900 == 1) {
+-+          emitting_sc_sentinel = true;
+-+        }
+-+  } else { // Wide integers, > 64 bits in size.
+-         // We have an arbitrary precision integer value to write whose
+-         // bit width is > 64. However, in canonical unsigned integer
+-         // format it is likely that the high bits are going to be zero.
+-@@ -1623,6 +1628,7 @@ static void WriteConstants(unsigned FirstVal, unsigned LastVal,
+-       llvm_unreachable("Unknown constant!");
+-     }
+-     Stream.EmitRecord(Code, Record, AbbrevToUse);
+-+    assert(!emitting_sc_sentinel); // Should be reset by now
+-     Record.clear();
+-   }
+-

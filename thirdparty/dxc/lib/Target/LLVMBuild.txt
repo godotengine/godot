@@ -1,0 +1,61 @@
+;===- ./lib/Target/LLVMBuild.txt -------------------------------*- Conf -*--===;
+;
+;                     The LLVM Compiler Infrastructure
+;
+; This file is distributed under the University of Illinois Open Source
+; License. See LICENSE.TXT for details.
+;
+;===------------------------------------------------------------------------===;
+;
+; This is an LLVMBuild description file for the components in this subdirectory.
+;
+; For more information on the LLVMBuild system, please see:
+;
+;   http://llvm.org/docs/LLVMBuild.html
+;
+;===------------------------------------------------------------------------===;
+
+; Please keep these as one per line so that out-of-tree merges
+; will typically require only insertion of a line.
+[common]
+subdirectories =
+
+# HLSL Change: remove ARM, AArch64, BPF, CppBackend, Hexagon, MSP430, Mips, PowerPC, Spac, SystemZ, WebAssembly, X86, XCore, NVPTX, AMDGPU
+
+; This is a special group whose required libraries are extended (by llvm-build)
+; with the best execution engine (the native JIT, if available, or the
+; interpreter).
+[component_0]
+type = LibraryGroup
+name = Engine
+parent = Libraries
+
+; This is a special group whose required libraries are extended (by llvm-build)
+; with the configured native target, if any.
+[component_1]
+type = LibraryGroup
+name = Native
+parent = Libraries
+
+; This is a special group whose required libraries are extended (by llvm-build)
+; with the configured native code generator, if any.
+[component_2]
+type = LibraryGroup
+name = NativeCodeGen
+parent = Libraries
+
+; The component for the actual target library itself.
+[component_3]
+type = Library
+name = Target
+parent = Libraries
+required_libraries = Analysis Core Support
+; MC - HLSL Change
+
+; This is a special group whose required libraries are extended (by llvm-build)
+; with every built target, which makes it easy for tools to include every
+; target.
+[component_4]
+type = LibraryGroup
+name = all-targets
+parent = Libraries
