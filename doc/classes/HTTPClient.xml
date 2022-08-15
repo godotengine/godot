@@ -35,8 +35,8 @@
 			<description>
 				Connects to a host. This needs to be done before any requests are sent.
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
-				If no [code]port[/code] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS (if [code]use_ssl[/code] is enabled).
-				[code]verify_host[/code] will check the SSL identity of the host if set to [code]true[/code].
+				If no [param port] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS (if [param use_ssl] is enabled).
+				[param verify_host] will check the SSL identity of the host if set to [code]true[/code].
 			</description>
 		</method>
 		<method name="get_response_body_length" qualifiers="const">
@@ -158,7 +158,7 @@
 				var result = new HTTPClient().Request(HTTPClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] The [code]request_data[/code] parameter is ignored if [code]method[/code] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
+				[b]Note:[/b] The [param body] parameter is ignored if [param method] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
 			</description>
 		</method>
 		<method name="request_raw">
@@ -180,7 +180,7 @@
 			<param index="1" name="port" type="int" />
 			<description>
 				Sets the proxy server for HTTP requests.
-				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
+				The proxy server is unset if [param host] is empty or [param port] is -1.
 			</description>
 		</method>
 		<method name="set_https_proxy">
@@ -189,7 +189,7 @@
 			<param index="1" name="port" type="int" />
 			<description>
 				Sets the proxy server for HTTPS requests.
-				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
+				The proxy server is unset if [param host] is empty or [param port] is -1.
 			</description>
 		</method>
 	</methods>

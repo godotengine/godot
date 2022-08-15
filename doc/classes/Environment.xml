@@ -22,7 +22,7 @@
 			<return type="float" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the intensity of the glow level [code]idx[/code].
+				Returns the intensity of the glow level [param idx].
 			</description>
 		</method>
 		<method name="set_glow_level">
@@ -30,7 +30,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="intensity" type="float" />
 			<description>
-				Sets the intensity of the glow level [code]idx[/code]. A value above [code]0.0[/code] enables the level. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
+				Sets the intensity of the glow level [param idx]. A value above [code]0.0[/code] enables the level. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>
 		</method>
 	</methods>

@@ -42,7 +42,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Registers a message capture with given [code]name[/code]. If [code]name[/code] is "my_message" then messages starting with "my_message:" will be called with the given callable.
+				Registers a message capture with given [param name]. If [param name] is "my_message" then messages starting with "my_message:" will be called with the given callable.
 				Callable must accept a message string and a data array as argument. If the message and data are valid then callable must return [code]true[/code] otherwise [code]false[/code].
 			</description>
 		</method>
@@ -51,7 +51,7 @@
 			<param index="0" name="message" type="String" />
 			<param index="1" name="data" type="Array" />
 			<description>
-				Sends a message with given [code]message[/code] and [code]data[/code] array.
+				Sends a message with given [param message] and [param data] array.
 			</description>
 		</method>
 		<method name="unregister_message_capture">

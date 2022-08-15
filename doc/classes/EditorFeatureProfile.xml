@@ -14,21 +14,21 @@
 			<return type="String" />
 			<param index="0" name="feature" type="int" enum="EditorFeatureProfile.Feature" />
 			<description>
-				Returns the specified [code]feature[/code]'s human-readable name.
+				Returns the specified [param feature]'s human-readable name.
 			</description>
 		</method>
 		<method name="is_class_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class_name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the class specified by [code]class_name[/code] is disabled. When disabled, the class won't appear in the Create New Node dialog.
+				Returns [code]true[/code] if the class specified by [param class_name] is disabled. When disabled, the class won't appear in the Create New Node dialog.
 			</description>
 		</method>
 		<method name="is_class_editor_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class_name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if editing for the class specified by [code]class_name[/code] is disabled. When disabled, the class will still appear in the Create New Node dialog but the inspector will be read-only when selecting a node that extends the class.
+				Returns [code]true[/code] if editing for the class specified by [param class_name] is disabled. When disabled, the class will still appear in the Create New Node dialog but the inspector will be read-only when selecting a node that extends the class.
 			</description>
 		</method>
 		<method name="is_class_property_disabled" qualifiers="const">
@@ -36,14 +36,14 @@
 			<param index="0" name="class_name" type="StringName" />
 			<param index="1" name="property" type="StringName" />
 			<description>
-				Returns [code]true[/code] if [code]property[/code] is disabled in the class specified by [code]class_name[/code]. When a property is disabled, it won't appear in the inspector when selecting a node that extends the class specified by [code]class_name[/code].
+				Returns [code]true[/code] if [param property] is disabled in the class specified by [param class_name]. When a property is disabled, it won't appear in the inspector when selecting a node that extends the class specified by [param class_name].
 			</description>
 		</method>
 		<method name="is_feature_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="EditorFeatureProfile.Feature" />
 			<description>
-				Returns [code]true[/code] if the [code]feature[/code] is disabled. When a feature is disabled, it will disappear from the editor entirely.
+				Returns [code]true[/code] if the [param feature] is disabled. When a feature is disabled, it will disappear from the editor entirely.
 			</description>
 		</method>
 		<method name="load_from_file">
@@ -65,7 +65,7 @@
 			<param index="0" name="class_name" type="StringName" />
 			<param index="1" name="disable" type="bool" />
 			<description>
-				If [code]disable[/code] is [code]true[/code], disables the class specified by [code]class_name[/code]. When disabled, the class won't appear in the Create New Node dialog.
+				If [param disable] is [code]true[/code], disables the class specified by [param class_name]. When disabled, the class won't appear in the Create New Node dialog.
 			</description>
 		</method>
 		<method name="set_disable_class_editor">
@@ -73,7 +73,7 @@
 			<param index="0" name="class_name" type="StringName" />
 			<param index="1" name="disable" type="bool" />
 			<description>
-				If [code]disable[/code] is [code]true[/code], disables editing for the class specified by [code]class_name[/code]. When disabled, the class will still appear in the Create New Node dialog but the inspector will be read-only when selecting a node that extends the class.
+				If [param disable] is [code]true[/code], disables editing for the class specified by [param class_name]. When disabled, the class will still appear in the Create New Node dialog but the inspector will be read-only when selecting a node that extends the class.
 			</description>
 		</method>
 		<method name="set_disable_class_property">
@@ -82,7 +82,7 @@
 			<param index="1" name="property" type="StringName" />
 			<param index="2" name="disable" type="bool" />
 			<description>
-				If [code]disable[/code] is [code]true[/code], disables editing for [code]property[/code] in the class specified by [code]class_name[/code]. When a property is disabled, it won't appear in the inspector when selecting a node that extends the class specified by [code]class_name[/code].
+				If [param disable] is [code]true[/code], disables editing for [param property] in the class specified by [param class_name]. When a property is disabled, it won't appear in the inspector when selecting a node that extends the class specified by [param class_name].
 			</description>
 		</method>
 		<method name="set_disable_feature">
@@ -90,7 +90,7 @@
 			<param index="0" name="feature" type="int" enum="EditorFeatureProfile.Feature" />
 			<param index="1" name="disable" type="bool" />
 			<description>
-				If [code]disable[/code] is [code]true[/code], disables the editor feature specified in [code]feature[/code]. When a feature is disabled, it will disappear from the editor entirely.
+				If [param disable] is [code]true[/code], disables the editor feature specified in [param feature]. When a feature is disabled, it will disappear from the editor entirely.
 			</description>
 		</method>
 	</methods>

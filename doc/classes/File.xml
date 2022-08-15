@@ -118,21 +118,21 @@
 			<param index="0" name="skip_cr" type="bool" default="false" />
 			<description>
 				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded.
-				If [code]skip_cr[/code] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
+				If [param skip_cr] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="length" type="int" />
 			<description>
-				Returns next [code]length[/code] bytes of the file as a [PackedByteArray].
+				Returns next [param length] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
 			<return type="PackedStringArray" />
 			<param index="0" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
-				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long, and cannot be a double quotation mark.
+				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long, and cannot be a double quotation mark.
 				Text is interpreted as being UTF-8 encoded. Text values must be enclosed in double quotes if they include the delimiter character. Double quotes within a text value can be escaped by doubling their occurrence.
 				For example, the following CSV lines are valid and will be properly parsed as two strings each:
 				[codeblock]
@@ -185,7 +185,7 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns the last time the [code]file[/code] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
+				Returns the last time the [param file] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_pascal_string">
@@ -230,7 +230,7 @@
 			<return type="Variant" />
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
-				Returns the next [Variant] value from the file. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
+				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
@@ -297,7 +297,7 @@
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 16 bits in the file.
-				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
 				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
 				[codeblocks]
 				[gdscript]
@@ -340,7 +340,7 @@
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 32 bits in the file.
-				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
 				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
@@ -349,7 +349,7 @@
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 64 bits in the file.
-				[b]Note:[/b] The [code]value[/code] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
+				[b]Note:[/b] The [param value] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 			</description>
 		</method>
 		<method name="store_8">
@@ -357,7 +357,7 @@
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 8 bits in the file.
-				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
 				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
@@ -373,7 +373,7 @@
 			<param index="0" name="values" type="PackedStringArray" />
 			<param index="1" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
-				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8.
 			</description>
 		</method>
@@ -395,7 +395,7 @@
 			<return type="void" />
 			<param index="0" name="line" type="String" />
 			<description>
-				Appends [code]line[/code] to the file followed by a line return character ([code]\n[/code]), encoding the text as UTF-8.
+				Appends [param line] to the file followed by a line return character ([code]\n[/code]), encoding the text as UTF-8.
 			</description>
 		</method>
 		<method name="store_pascal_string">
@@ -417,7 +417,7 @@
 			<return type="void" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Appends [code]string[/code] to the file without a line return, encoding the text as UTF-8.
+				Appends [param string] to the file without a line return, encoding the text as UTF-8.
 				[b]Note:[/b] This method is intended to be used to write text files. The string is stored as a UTF-8 encoded buffer without string length or terminating zero, which means that it can't be loaded back easily. If you want to store a retrievable string in a binary file, consider using [method store_pascal_string] instead. For retrieving strings from a text file, you can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know the length) or [method get_as_text].
 			</description>
 		</method>
@@ -426,7 +426,7 @@
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
-				Stores any Variant value in the file. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.
 			</description>
 		</method>
