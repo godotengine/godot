@@ -104,7 +104,6 @@ internal abstract class DataAccess(private val filePath: String) {
 
 	protected abstract val fileChannel: FileChannel
 	internal var endOfFile = false
-		private set
 
 	fun close() {
 		try {
@@ -125,9 +124,7 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun seek(position: Long) {
 		try {
 			fileChannel.position(position)
-			if (position <= size()) {
-				endOfFile = false
-			}
+			endOfFile = position >= fileChannel.size()
 		} catch (e: Exception) {
 			Log.w(TAG, "Exception when seeking file $filePath.", e)
 		}
@@ -161,8 +158,7 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun read(buffer: ByteBuffer): Int {
 		return try {
 			val readBytes = fileChannel.read(buffer)
-			endOfFile = readBytes == -1
-					|| (fileChannel.position() >= fileChannel.size() && fileChannel.size() > 0)
+			endOfFile = readBytes == -1 || (fileChannel.position() >= fileChannel.size())
 			if (readBytes == -1) {
 				0
 			} else {
