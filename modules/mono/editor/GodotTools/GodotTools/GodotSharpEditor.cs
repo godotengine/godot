@@ -39,18 +39,6 @@ namespace GodotTools
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
-        public static string ProjectAssemblyName
-        {
-            get
-            {
-                string projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
-                projectAssemblyName = projectAssemblyName.ToSafeDirName();
-                if (string.IsNullOrEmpty(projectAssemblyName))
-                    projectAssemblyName = "UnnamedProject";
-                return projectAssemblyName;
-            }
-        }
-
         private bool CreateProjectSolution()
         {
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
@@ -60,7 +48,7 @@ namespace GodotTools
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = ProjectAssemblyName;
+                string name = GodotSharpDirs.ProjectAssemblyName;
 
                 string guid = CsProjOperations.GenerateGameProject(path, name);
 
@@ -375,7 +363,8 @@ namespace GodotTools
         [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditorId)_editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
+            return (ExternalEditorId)_editorSettings.GetSetting("mono/editor/external_editor") !=
+                   ExternalEditorId.None;
         }
 
         public override bool Build()
@@ -396,7 +385,7 @@ namespace GodotTools
                 // NOTE: The order in which changes are made to the project is important
 
                 // Migrate to MSBuild project Sdks style if using the old style
-                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, ProjectAssemblyName);
+                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
 
                 ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
 

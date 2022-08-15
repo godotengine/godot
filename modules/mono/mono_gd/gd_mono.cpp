@@ -987,13 +987,15 @@ bool GDMono::_load_project_assembly() {
 	if (project_assembly)
 		return true;
 
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.empty()) {
-		appname_safe = "UnnamedProject";
+	String assembly_name = ProjectSettings::get_singleton()->get("mono/project/assembly_name");
+
+	if (assembly_name.empty()) {
+		String appname = ProjectSettings::get_singleton()->get("application/config/name");
+		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		assembly_name = appname_safe;
 	}
 
-	bool success = load_assembly(appname_safe, &project_assembly);
+	bool success = load_assembly(assembly_name, &project_assembly);
 
 	if (success) {
 		mono_assembly_set_main(project_assembly->get_assembly());

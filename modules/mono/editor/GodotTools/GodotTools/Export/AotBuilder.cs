@@ -231,7 +231,7 @@ namespace GodotTools.Export
                 RunLipo(new[] {CompileForArch("arm64"), CompileForArch("x86_64")}, libFilePath);
             }
 
-            string projectAssemblyName = GodotSharpEditor.ProjectAssemblyName;
+            string projectAssemblyName = GodotSharpDirs.ProjectAssemblyName;
             string libAotName = $"lib-aot-{projectAssemblyName}";
 
             string libAotXcFrameworkPath = Path.Combine(aotTempDir, $"{libAotName}.xcframework");

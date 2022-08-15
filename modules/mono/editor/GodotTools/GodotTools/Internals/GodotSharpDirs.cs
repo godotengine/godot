@@ -20,6 +20,7 @@ namespace GodotTools.Internals
         public static string MonoSolutionsDir => internal_MonoSolutionsDir();
         public static string BuildLogsDirs => internal_BuildLogsDirs();
 
+        public static string ProjectAssemblyName => internal_ProjectAssemblyName();
         public static string ProjectSlnPath => internal_ProjectSlnPath();
         public static string ProjectCsProjPath => internal_ProjectCsProjPath();
 
@@ -73,6 +74,9 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_BuildLogsDirs();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern string internal_ProjectAssemblyName();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ProjectSlnPath();
