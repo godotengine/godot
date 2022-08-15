@@ -349,6 +349,8 @@ void ShaderPreprocessor::process_directive(Tokenizer *p_tokenizer) {
 		process_ifdef(p_tokenizer);
 	} else if (directive == "ifndef") {
 		process_ifndef(p_tokenizer);
+	} else if (directive == "elif") {
+		process_elif(p_tokenizer);
 	} else if (directive == "else") {
 		process_else(p_tokenizer);
 	} else if (directive == "endif") {
@@ -415,10 +417,62 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 	}
 }
 
+void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
+	const int line = p_tokenizer->get_line();
+
+	if (state->current_branch == nullptr || state->current_branch->else_defined) {
+		set_error(RTR("Unmatched elif."), line);
+		return;
+	}
+	if (state->previous_region != nullptr) {
+		state->previous_region->to_line = line - 1;
+	}
+
+	String body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+	if (body.is_empty()) {
+		set_error(RTR("Missing condition."), line);
+		return;
+	}
+
+	Error error = expand_macros(body, line, body);
+	if (error != OK) {
+		return;
+	}
+
+	Expression expression;
+	Vector<String> names;
+	error = expression.parse(body, names);
+	if (error != OK) {
+		set_error(expression.get_error_text(), line);
+		return;
+	}
+
+	Variant v = expression.execute(Array(), nullptr, false);
+	if (v.get_type() == Variant::NIL) {
+		set_error(RTR("Condition evaluation error."), line);
+		return;
+	}
+
+	bool skip = false;
+	for (int i = 0; i < state->current_branch->conditions.size(); i++) {
+		if (state->current_branch->conditions[i]) {
+			skip = true;
+			break;
+		}
+	}
+
+	bool success = !skip && v.booleanize();
+	start_branch_condition(p_tokenizer, success, true);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region->parent);
+	}
+}
+
 void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 
-	if (state->skip_stack_else.is_empty()) {
+	if (state->current_branch == nullptr || state->current_branch->else_defined) {
 		set_error(RTR("Unmatched else."), line);
 		return;
 	}
@@ -428,17 +482,14 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 
 	p_tokenizer->advance('\n');
 
-	bool skip = state->skip_stack_else[state->skip_stack_else.size() - 1];
-	state->skip_stack_else.remove_at(state->skip_stack_else.size() - 1);
-
-	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_filename];
-	int index = vec.size() - 1;
-	if (index >= 0) {
-		SkippedCondition *cond = vec[index];
-		if (cond->end_line == -1) {
-			cond->end_line = p_tokenizer->get_line();
+	bool skip = false;
+	for (int i = 0; i < state->current_branch->conditions.size(); i++) {
+		if (state->current_branch->conditions[i]) {
+			skip = true;
+			break;
 		}
 	}
+	state->current_branch->else_defined = true;
 
 	if (state->save_regions) {
 		add_region(line + 1, !skip, state->previous_region->parent);
@@ -462,16 +513,10 @@ void ShaderPreprocessor::process_endif(Tokenizer *p_tokenizer) {
 		state->previous_region = state->previous_region->parent;
 	}
 
-	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_filename];
-	int index = vec.size() - 1;
-	if (index >= 0) {
-		SkippedCondition *cond = vec[index];
-		if (cond->end_line == -1) {
-			cond->end_line = p_tokenizer->get_line();
-		}
-	}
-
 	p_tokenizer->advance('\n');
+
+	state->current_branch = state->current_branch->parent;
+	state->branches.pop_back();
 }
 
 void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
@@ -703,24 +748,19 @@ void ShaderPreprocessor::add_region(int p_line, bool p_enabled, Region *p_parent
 	state->previous_region = &state->regions[region.file].push_back(region)->get();
 }
 
-void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_success) {
-	state->condition_depth++;
-
-	if (p_success) {
-		state->skip_stack_else.push_back(true);
+void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_success, bool p_continue) {
+	if (!p_continue) {
+		state->condition_depth++;
+		state->current_branch = &state->branches.push_back(Branch(p_success, state->current_branch))->get();
 	} else {
-		SkippedCondition *cond = memnew(SkippedCondition());
-		cond->start_line = p_tokenizer->get_line();
-		state->skipped_conditions[state->current_filename].push_back(cond);
-
+		state->current_branch->conditions.push_back(p_success);
+	}
+	if (!p_success) {
 		Vector<String> ends;
+		ends.push_back("elif");
 		ends.push_back("else");
 		ends.push_back("endif");
-		if (next_directive(p_tokenizer, ends) == "else") {
-			state->skip_stack_else.push_back(false);
-		} else {
-			state->skip_stack_else.push_back(true);
-		}
+		next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -909,12 +949,6 @@ void ShaderPreprocessor::clear() {
 			memdelete(E->get());
 		}
 
-		for (const RBMap<String, Vector<SkippedCondition *>>::Element *E = state->skipped_conditions.front(); E; E = E->next()) {
-			for (SkippedCondition *condition : E->get()) {
-				memdelete(condition);
-			}
-		}
-
 		memdelete(state);
 	}
 	state_owner = false;
@@ -1064,6 +1098,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 
 void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords) {
 	r_keywords->push_back("define");
+	r_keywords->push_back("elif");
 	if (p_include_shader_keywords) {
 		r_keywords->push_back("else");
 	}
