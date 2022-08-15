@@ -121,11 +121,11 @@
 		<method name="add_child">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
-			<param index="1" name="legible_unique_name" type="bool" default="false" />
+			<param index="1" name="force_readable_name" type="bool" default="false" />
 			<param index="2" name="internal" type="int" enum="Node.InternalMode" default="0" />
 			<description>
-				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
-				If [param legible_unique_name] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
+				Adds a child [param node]. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
+				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param node]. If not named, the [param node] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
 				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code].The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblocks]
@@ -151,10 +151,10 @@
 		<method name="add_sibling">
 			<return type="void" />
 			<param index="0" name="sibling" type="Node" />
-			<param index="1" name="legible_unique_name" type="bool" default="false" />
+			<param index="1" name="force_readable_name" type="bool" default="false" />
 			<description>
 				Adds a [param sibling] node to current's node parent, at the same level as that node, right below it.
-				If [param legible_unique_name] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instantiated instead of its type.
+				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param sibling]. If not named, the [param sibling] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 				[b]Note:[/b] If this node is internal, the new sibling will be internal too (see [code]internal[/code] parameter in [method add_child]).
 			</description>
