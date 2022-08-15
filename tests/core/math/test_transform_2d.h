@@ -83,6 +83,38 @@ TEST_CASE("[Transform2D] rotation") {
 	CHECK(orig.rotated(phi) == R * orig);
 	CHECK(orig.rotated_local(phi) == orig * R);
 }
+
+Transform2D transform_from_array(real_t arr[]) {
+	return Transform2D(arr[0], Vector2(arr[1], arr[2]), arr[3], Vector2(arr[4], arr[5]));
+}
+
+void test_one_interpolation(real_t a[], real_t b[], real_t weight) {
+	Transform2D trans_a = transform_from_array(a);
+	Transform2D trans_b = transform_from_array(b);
+	Transform2D result = trans_a.interpolate_with(trans_b, weight);
+	Size2 result_scale = result.get_scale();
+	Size2 result_origin = result.get_origin();
+	real_t c[] = {
+		result.get_rotation(),
+		result_scale.x, result_scale.y,
+		result.get_skew(),
+		result_origin.x, result_origin.y
+	};
+	for (int i = 0; i < 6; ++i) {
+		CHECK(a[i] + weight * (b[i] - a[i]) == doctest::Approx(c[i]));
+	}
+}
+
+TEST_CASE("[Transform2D] interpolation") {
+	real_t cases[][6] = {
+		{ 1, 1, 1, 1, 0, 0 },
+		{ 1, 1, 1, 1, 0, 0 },
+		{ 1.5, 1, 2, 0, 10, 20 },
+		{ 0.5, 2, 3, 1, 15, 25 },
+	};
+	test_one_interpolation(cases[0], cases[1], 0.7);
+	test_one_interpolation(cases[2], cases[3], 0.4);
+}
 } // namespace TestTransform2D
 
 #endif // TEST_TRANSFORM_2D_H
