@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  particles_material.h                                                 */
+/*  particle_motion_material.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,8 +31,8 @@
 #include "core/templates/rid.h"
 #include "scene/resources/material.h"
 
-#ifndef PARTICLES_MATERIAL_H
-#define PARTICLES_MATERIAL_H
+#ifndef PARTICLE_MOTION_MATERIAL_H
+#define PARTICLE_MOTION_MATERIAL_H
 
 /*
  TODO:
@@ -41,8 +41,8 @@
 -Proper trails
 */
 
-class ParticlesMaterial : public Material {
-	GDCLASS(ParticlesMaterial, Material);
+class ParticleMotionMaterial : public Material {
+	GDCLASS(ParticleMotionMaterial, Material);
 
 public:
 	enum Parameter {
@@ -162,7 +162,7 @@ private:
 	}
 
 	static Mutex material_mutex;
-	static SelfList<ParticlesMaterial>::List *dirty_materials;
+	static SelfList<ParticleMotionMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
 		StringName direction;
@@ -246,7 +246,7 @@ private:
 
 	static ShaderNames *shader_names;
 
-	SelfList<ParticlesMaterial> element;
+	SelfList<ParticleMotionMaterial> element;
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
@@ -417,13 +417,13 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 
-	ParticlesMaterial();
-	~ParticlesMaterial();
+	ParticleMotionMaterial();
+	~ParticleMotionMaterial();
 };
 
-VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
-VARIANT_ENUM_CAST(ParticlesMaterial::ParticleFlags)
-VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
-VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
+VARIANT_ENUM_CAST(ParticleMotionMaterial::Parameter)
+VARIANT_ENUM_CAST(ParticleMotionMaterial::ParticleFlags)
+VARIANT_ENUM_CAST(ParticleMotionMaterial::EmissionShape)
+VARIANT_ENUM_CAST(ParticleMotionMaterial::SubEmitterMode)
 
-#endif // PARTICLES_MATERIAL_H
+#endif // PARTICLE_MOTION_MATERIAL_H

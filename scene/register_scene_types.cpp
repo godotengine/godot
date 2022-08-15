@@ -161,7 +161,7 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/navigation_mesh.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_motion_material.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
@@ -759,9 +759,9 @@ void register_scene_types() {
 	/* REGISTER RESOURCES */
 
 	GDREGISTER_ABSTRACT_CLASS(Shader);
-	GDREGISTER_CLASS(ParticlesMaterial);
-	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
-	ParticlesMaterial::init_shaders();
+	GDREGISTER_CLASS(ParticleMotionMaterial);
+	SceneTree::add_idle_callback(ParticleMotionMaterial::flush_changes);
+	ParticleMotionMaterial::init_shaders();
 
 	GDREGISTER_CLASS(ProceduralSkyMaterial);
 	GDREGISTER_CLASS(PanoramaSkyMaterial);
@@ -1099,6 +1099,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("StreamTexture2DArray", "CompressedTexture2DArray");
 	ClassDB::add_compatibility_class("StreamTexture3D", "CompressedTexture3D");
 	ClassDB::add_compatibility_class("StreamTextureLayered", "CompressedTextureLayered");
+	ClassDB::add_compatibility_class("ParticleMotionMaterial", "ParticleMotionMaterial");
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -1211,7 +1212,7 @@ void unregister_scene_types() {
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
 
-	ParticlesMaterial::finish_shaders();
+	ParticleMotionMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	ColorPicker::finish_shaders();
 	SceneStringNames::free();

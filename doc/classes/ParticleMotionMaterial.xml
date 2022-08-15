@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticlesMaterial" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ParticleMotionMaterial" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Particle properties for [GPUParticles3D] and [GPUParticles2D] nodes.
 	</brief_description>
 	<description>
-		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [GPUParticles3D] and [GPUParticles2D] emitter nodes.
+		ParticleMotionMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [GPUParticles3D] and [GPUParticles2D] emitter nodes.
 		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
 		Particle animation is available only in [GPUParticles2D]. To use it, attach a [CanvasItemMaterial], with [member CanvasItemMaterial.particles_animation] enabled, to the particles node.
 	</description>
@@ -13,35 +13,35 @@
 	<methods>
 		<method name="get_param_max" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<param index="0" name="param" type="int" enum="ParticleMotionMaterial.Parameter" />
 			<description>
 				Returns the maximum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<param index="0" name="param" type="int" enum="ParticleMotionMaterial.Parameter" />
 			<description>
 				Returns the minimum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_texture" qualifiers="const">
 			<return type="Texture2D" />
-			<param index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<param index="0" name="param" type="int" enum="ParticleMotionMaterial.Parameter" />
 			<description>
 				Returns the [Texture2D] used by the specified parameter.
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="particle_flag" type="int" enum="ParticlesMaterial.ParticleFlags" />
+			<param index="0" name="particle_flag" type="int" enum="ParticleMotionMaterial.ParticleFlags" />
 			<description>
 				Returns [code]true[/code] if the specified particle flag is enabled. See [enum ParticleFlags] for options.
 			</description>
 		</method>
 		<method name="set_param_max">
 			<return type="void" />
-			<param index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<param index="0" name="param" type="int" enum="ParticleMotionMaterial.Parameter" />
 			<param index="1" name="value" type="float" />
 			<description>
 				Sets the maximum value range for the given parameter.
@@ -49,7 +49,7 @@
 		</method>
 		<method name="set_param_min">
 			<return type="void" />
-			<param index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<param index="0" name="param" type="int" enum="ParticleMotionMaterial.Parameter" />
 			<param index="1" name="value" type="float" />
 			<description>
 				Sets the minimum value range for the given parameter.
@@ -57,7 +57,7 @@
 		</method>
 		<method name="set_param_texture">
 			<return type="void" />
-			<param index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
+			<param index="0" name="param" type="int" enum="ParticleMotionMaterial.Parameter" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the [Texture2D] for the specified [enum Parameter].
@@ -65,7 +65,7 @@
 		</method>
 		<method name="set_particle_flag">
 			<return type="void" />
-			<param index="0" name="particle_flag" type="int" enum="ParticlesMaterial.ParticleFlags" />
+			<param index="0" name="particle_flag" type="int" enum="ParticleMotionMaterial.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified particle flag. See [enum ParticleFlags] for options.
@@ -175,7 +175,7 @@
 		<member name="emission_ring_radius" type="float" setter="set_emission_ring_radius" getter="get_emission_ring_radius">
 			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
-		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticlesMaterial.EmissionShape" default="0">
+		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticleMotionMaterial.EmissionShape" default="0">
 			Particles will be emitted inside this region. Use [enum EmissionShape] constants for values.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
@@ -260,7 +260,7 @@
 		</member>
 		<member name="sub_emitter_keep_velocity" type="bool" setter="set_sub_emitter_keep_velocity" getter="get_sub_emitter_keep_velocity" default="false">
 		</member>
-		<member name="sub_emitter_mode" type="int" setter="set_sub_emitter_mode" getter="get_sub_emitter_mode" enum="ParticlesMaterial.SubEmitterMode" default="0">
+		<member name="sub_emitter_mode" type="int" setter="set_sub_emitter_mode" getter="get_sub_emitter_mode" enum="ParticleMotionMaterial.SubEmitterMode" default="0">
 		</member>
 		<member name="tangential_accel_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's tangential acceleration will vary along this [CurveTexture].

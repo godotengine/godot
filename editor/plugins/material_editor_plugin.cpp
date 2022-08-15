@@ -35,7 +35,7 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/fog_material.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_motion_material.h"
 #include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
@@ -411,12 +411,12 @@ String ParticlesMaterialConversionPlugin::converts_to() const {
 }
 
 bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+	Ref<ParticleMotionMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 
 Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+	Ref<ParticleMotionMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

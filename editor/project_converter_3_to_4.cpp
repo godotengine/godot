@@ -1344,6 +1344,7 @@ static const char *class_renames[][2] = {
 	{ "PanoramaSky", "Sky" },
 	{ "Particles", "GPUParticles3D" }, // Be careful, this will be used everywhere
 	{ "Particles2D", "GPUParticles2D" },
+	{ "ParticlesMaterial", "ParticleMotionMaterial" },
 	{ "Path", "Path3D" }, // Be careful, this will be used everywhere
 	{ "PathFollow", "PathFollow3D" },
 	{ "PhysicalBone", "PhysicalBone3D" },
