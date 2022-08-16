@@ -902,7 +902,7 @@ void OS_Windows::run() {
 
 	main_loop->initialize();
 
-	while (!force_quit) {
+	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 		if (Main::iteration()) {
 			break;
@@ -1131,8 +1131,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	ticks_start = 0;
 	main_loop = nullptr;
 	process_map = nullptr;
-
-	force_quit = false;
 
 	hInstance = _hInstance;
 #ifdef STDOUT_FILE

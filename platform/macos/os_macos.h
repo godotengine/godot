@@ -40,8 +40,6 @@
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
-	bool force_quit = false;
-
 	JoypadMacOS *joypad_macos = nullptr;
 
 #ifdef COREAUDIO_ENABLED
