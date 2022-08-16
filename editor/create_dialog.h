@@ -120,7 +120,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 	String get_preferred_search_result_type() { return preferred_search_result_type; }
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node");
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node", const String &p_select_name = "");
 
 	CreateDialog();
 };

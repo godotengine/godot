@@ -2936,7 +2936,7 @@ Control *VisualScriptEditor::get_edit_menu() {
 }
 
 void VisualScriptEditor::_change_base_type() {
-	select_base_type->popup_create(true, true);
+	select_base_type->popup_create(true, true, script->get_instance_base_type());
 }
 
 void VisualScriptEditor::_toggle_tool_script() {
