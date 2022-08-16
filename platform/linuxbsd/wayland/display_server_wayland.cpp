@@ -2429,10 +2429,8 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWayland(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
-								   "If you have updated your graphics drivers recently, try rebooting.",
-				"Unable to initialize Video driver");
+		ERR_PRINT("Can't create the Wayland display server.");
+
 		memdelete(ds);
 	}
 	return ds;
@@ -2443,13 +2441,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	wls.display = wl_display_connect(nullptr);
 
-	// TODO: Better error handling.
-	ERR_FAIL_NULL(wls.display);
+	ERR_FAIL_COND_MSG(!wls.display, "Can't connect to a Wayland display.");
 
 	wls.registry = wl_display_get_registry(wls.display);
 
-	// TODO: Better error handling.
-	ERR_FAIL_NULL(wls.display);
+	ERR_FAIL_COND_MSG(!wls.registry, "Can't obtain the Wayland registry global.");
 
 	wl_registry_add_listener(wls.registry, &wl_registry_listener, &wls);
 
@@ -2457,8 +2453,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wl_display_roundtrip(wls.display);
 
 	// TODO: Perhaps gracefully handle missing protocols when possible?
-	// TODO: Split this huge check into something more manageble.
-	ERR_FAIL_COND(!wls.globals.wl_shm || !wls.globals.wl_compositor || !wls.globals.wp_pointer_constraints || !wls.globals.xdg_wm_base);
+	ERR_FAIL_COND_MSG(!wls.globals.wl_shm, "Can't obtain the Wayland shared memory global.");
+	ERR_FAIL_COND_MSG(!wls.globals.wl_compositor, "Can't obtain the Wayland compositor global.");
+	ERR_FAIL_COND_MSG(!wls.globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
+	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
