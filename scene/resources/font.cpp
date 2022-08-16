@@ -2808,6 +2808,8 @@ void SystemFont::_update_base_font() {
 		file->set_oversampling(oversampling);
 
 		base_font = file;
+
+		break;
 	}
 
 	if (base_font.is_valid()) {
