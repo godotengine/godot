@@ -178,6 +178,7 @@
 		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Returns a [PackedByteArray] with each vector encoded as bytes.
 			</description>
 		</method>
 	</methods>
@@ -186,30 +187,35 @@
 			<return type="bool" />
 			<param index="0" name="right" type="PackedVector2Array" />
 			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="PackedVector2Array" />
 			<param index="0" name="right" type="Transform2D" />
 			<description>
+				Transforms (multiplies) all vectors in the array by the [Transform2D] matrix.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="PackedVector2Array" />
 			<param index="0" name="right" type="PackedVector2Array" />
 			<description>
+				Returns a new [PackedVector2Array] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="PackedVector2Array" />
 			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal [Vector2]s at the corresponding indices.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="Vector2" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns the [Vector2] at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
 			</description>
 		</operator>
 	</operators>
