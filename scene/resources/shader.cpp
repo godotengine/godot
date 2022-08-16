@@ -120,7 +120,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (default_textures.has(pi.name)) { //do not show default textures
 				continue;
 			}
-			params_cache[pi.name] = pi.name;
+			params_cache[pi.name] = "shader_uniform/" + pi.name;
 		}
 		if (p_params) {
 			//small little hack
@@ -177,7 +177,16 @@ bool Shader::is_text_shader() const {
 }
 
 bool Shader::has_uniform(const StringName &p_param) const {
-	return params_cache.has("shader_uniform/" + p_param);
+	if (params_cache_dirty) {
+		get_shader_uniform_list(nullptr);
+	}
+	const StringName value = "shader_uniform/" + p_param;
+	for (const auto &d : params_cache) {
+		if (d.value == value) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void Shader::_update_shader() const {
