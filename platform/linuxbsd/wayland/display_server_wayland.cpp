@@ -2433,6 +2433,7 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
 								   "If you have updated your graphics drivers recently, try rebooting.",
 				"Unable to initialize Video driver");
+		memdelete(ds);
 	}
 	return ds;
 }
