@@ -473,12 +473,7 @@ void Viewport::_notification(int p_what) {
 #endif // _3D_DISABLED
 		} break;
 
-		case NOTIFICATION_VP_MOUSE_ENTER: {
-			gui.mouse_in_viewport = true;
-		} break;
-
 		case NOTIFICATION_VP_MOUSE_EXIT: {
-			gui.mouse_in_viewport = false;
 			_drop_physics_mouseover();
 			_drop_mouse_over();
 			// When the mouse exits the viewport, we want to end mouse_over, but
@@ -1659,10 +1654,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		Control *over = nullptr;
-		if (gui.mouse_in_viewport) {
-			over = gui_find_control(mpos);
-		}
+		Control *over = gui_find_control(mpos);
 
 		if (over != gui.mouse_over) {
 			_drop_mouse_over();

@@ -348,7 +348,6 @@ private:
 		// info used when this is a window
 
 		bool forced_mouse_focus = false; //used for menu buttons
-		bool mouse_in_viewport = true;
 		bool key_event_accepted = false;
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
