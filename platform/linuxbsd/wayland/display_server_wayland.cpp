@@ -2563,12 +2563,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
-	wls.events_thread_done.set();
+	if (wls.display && events_thread.is_started()) {
+		wls.events_thread_done.set();
 
-	// Wait for any Wayland event to be handled and unblock the polling thread.
-	wl_display_roundtrip(wls.display);
+		// Wait for any Wayland event to be handled and unblock the polling thread.
+		wl_display_roundtrip(wls.display);
 
-	events_thread.wait_to_finish();
+		events_thread.wait_to_finish();
+	}
 
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
