@@ -62,6 +62,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_script_signal, "signal");
 	GDVIRTUAL_BIND(_get_script_signal_list);
 
+	GDVIRTUAL_BIND(_has_property_default_value, "property");
 	GDVIRTUAL_BIND(_get_property_default_value, "property");
 
 	GDVIRTUAL_BIND(_update_exports);
