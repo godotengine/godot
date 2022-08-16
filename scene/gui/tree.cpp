@@ -2811,6 +2811,27 @@ void Tree::_text_editor_submit(String p_text) {
 	update();
 }
 
+void Tree::_text_editor_changed(String p_text) {
+	if (updating_value_editor) {
+		return;
+	}
+	if (!popup_edited_item) {
+		return;
+	}
+	if (p_text.is_empty()) {
+		return;
+	}
+
+	//TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
+	//c.text = p_text;
+	edited_item = popup_edited_item;
+	edited_col = popup_edited_item_col;
+
+	emit_signal(SNAME("text_editor_changed"), p_text);
+	//item_edited(popup_edited_item_col, popup_edited_item);
+	update();
+}
+
 void Tree::value_editor_changed(double p_value) {
 	if (updating_value_editor) {
 		return;
@@ -3596,7 +3617,7 @@ bool Tree::edit_selected() {
 		Point2i textedpos = get_screen_position() + rect.position - ofs;
 		cache.text_editor_position = textedpos;
 		popup_rect.position = textedpos;
-		popup_rect.size = rect.size;
+		popup_rect.size = rect.size * 0.75;
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
@@ -3616,7 +3637,7 @@ bool Tree::edit_selected() {
 			value_editor->hide();
 		}
 
-		popup_editor->set_position(popup_rect.position);
+		popup_editor->set_position(popup_rect.position + Vector2(0, 40));
 		popup_editor->set_size(popup_rect.size);
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
@@ -4137,6 +4158,14 @@ TreeItem *Tree::get_edited() const {
 
 int Tree::get_edited_column() const {
 	return edited_col;
+}
+
+LineEdit *Tree::get_text_editor() const {
+	return text_editor;
+}
+
+VBoxContainer *Tree::get_popup_editor_vbox() const {
+	return popup_editor_vb;
 }
 
 TreeItem *Tree::get_next_selected(TreeItem *p_item) {
@@ -4999,6 +5028,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_pressed", PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
+	ADD_SIGNAL(MethodInfo("text_editor_changed", PropertyInfo(Variant::STRING, "new_text" )));
 
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
 	BIND_ENUM_CONSTANT(SELECT_ROW);
@@ -5048,6 +5078,7 @@ Tree::Tree() {
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	text_editor->connect("text_submitted", callable_mp(this, &Tree::_text_editor_submit));
+	text_editor->connect("text_changed", callable_mp(this, &Tree::_text_editor_changed));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_modal_close));
 	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));

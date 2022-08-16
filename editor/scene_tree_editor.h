@@ -98,6 +98,7 @@ class SceneTreeEditor : public Control {
 	bool show_enabled_subscene = false;
 
 	void _renamed();
+	void _renaming(String p_text);
 	UndoRedo *undo_redo = nullptr;
 
 	HashSet<Node *> marked;

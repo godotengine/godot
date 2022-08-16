@@ -368,8 +368,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			Tree *tree = scene_tree->get_scene_tree();
 			if (tree->is_anything_selected()) {
+				// Cannot get the texture properly, returns empty now or crashes
+				//Ref<Texture2D> texture = tree->get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons"));
+				//Ref<Texture2D> texture = ;
+				String tooltip = TTR("This node can be accessed from");
+				tree->get_edited()->add_button(0, get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), 9, false, tooltip);
+
 				tree->grab_focus();
 				tree->edit_selected();
+
 			}
 		} break;
 		case TOOL_REPARENT_TO_NEW_NODE:
