@@ -387,13 +387,17 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String locale_files;
 			Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
 			if (translations.size() > 0) {
-				int index = 0;
+				HashSet<String> languages;
 				for (const String &E : translations) {
 					Ref<Translation> tr = ResourceLoader::load(E);
-					if (tr.is_valid()) {
-						String lang = tr->get_locale();
-						locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };";
+					if (tr.is_valid() && tr->get_locale() != "en") {
+						languages.insert(tr->get_locale());
 					}
+				}
+
+				int index = 0;
+				for (const String &lang : languages) {
+					locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };\n";
 					index++;
 				}
 			}
@@ -402,13 +406,17 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String locale_files;
 			Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
 			if (translations.size() > 0) {
-				int index = 0;
+				HashSet<String> languages;
 				for (const String &E : translations) {
 					Ref<Translation> tr = ResourceLoader::load(E);
-					if (tr.is_valid()) {
-						String lang = tr->get_locale();
-						locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */,";
+					if (tr.is_valid() && tr->get_locale() != "en") {
+						languages.insert(tr->get_locale());
 					}
+				}
+
+				int index = 0;
+				for (const String &lang : languages) {
+					locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */,\n";
 					index++;
 				}
 			}
@@ -1651,27 +1659,31 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
 		}
 
+		HashSet<String> languages;
 		for (const String &E : translations) {
 			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid()) {
-				String lang = tr->get_locale();
-				String fname = dest_dir + binary_name + "/" + lang + ".lproj";
-				tmp_app_path->make_dir_recursive(fname);
-				Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-				f->store_line("/* Localized versions of Info.plist keys */");
-				f->store_line("");
-				if (appnames.has(lang)) {
-					f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
-				}
-				if (camera_usage_descriptions.has(lang)) {
-					f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (microphone_usage_descriptions.has(lang)) {
-					f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (photolibrary_usage_descriptions.has(lang)) {
-					f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";");
-				}
+			if (tr.is_valid() && tr->get_locale() != "en") {
+				languages.insert(tr->get_locale());
+			}
+		}
+
+		for (const String &lang : languages) {
+			String fname = dest_dir + binary_name + "/" + lang + ".lproj";
+			tmp_app_path->make_dir_recursive(fname);
+			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("/* Localized versions of Info.plist keys */");
+			f->store_line("");
+			if (appnames.has(lang)) {
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+			}
+			if (camera_usage_descriptions.has(lang)) {
+				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (microphone_usage_descriptions.has(lang)) {
+				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (photolibrary_usage_descriptions.has(lang)) {
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";");
 			}
 		}
 	}

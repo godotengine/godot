@@ -919,54 +919,58 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
 		}
 
+		HashSet<String> languages;
 		for (const String &E : translations) {
 			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid()) {
-				String lang = tr->get_locale();
-				String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
-				tmp_app_dir->make_dir_recursive(fname);
-				Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-				f->store_line("/* Localized versions of Info.plist keys */");
-				f->store_line("");
-				if (appnames.has(lang)) {
-					f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
-				}
-				if (microphone_usage_descriptions.has(lang)) {
-					f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (camera_usage_descriptions.has(lang)) {
-					f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (location_usage_descriptions.has(lang)) {
-					f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (address_book_usage_descriptions.has(lang)) {
-					f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (calendar_usage_descriptions.has(lang)) {
-					f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (photos_library_usage_descriptions.has(lang)) {
-					f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (desktop_folder_usage_descriptions.has(lang)) {
-					f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (documents_folder_usage_descriptions.has(lang)) {
-					f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (downloads_folder_usage_descriptions.has(lang)) {
-					f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (network_volumes_usage_descriptions.has(lang)) {
-					f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (removable_volumes_usage_descriptions.has(lang)) {
-					f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
-				}
-				if (copyrights.has(lang)) {
-					f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
-				}
+			if (tr.is_valid() && tr->get_locale() != "en") {
+				languages.insert(tr->get_locale());
+			}
+		}
+
+		for (const String &lang : languages) {
+			String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
+			tmp_app_dir->make_dir_recursive(fname);
+			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("/* Localized versions of Info.plist keys */");
+			f->store_line("");
+			if (appnames.has(lang)) {
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+			}
+			if (microphone_usage_descriptions.has(lang)) {
+				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (camera_usage_descriptions.has(lang)) {
+				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (location_usage_descriptions.has(lang)) {
+				f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (address_book_usage_descriptions.has(lang)) {
+				f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (calendar_usage_descriptions.has(lang)) {
+				f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (photos_library_usage_descriptions.has(lang)) {
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (desktop_folder_usage_descriptions.has(lang)) {
+				f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (documents_folder_usage_descriptions.has(lang)) {
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (downloads_folder_usage_descriptions.has(lang)) {
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (network_volumes_usage_descriptions.has(lang)) {
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (removable_volumes_usage_descriptions.has(lang)) {
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
+			}
+			if (copyrights.has(lang)) {
+				f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
 			}
 		}
 	}
