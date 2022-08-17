@@ -598,6 +598,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_widget_focus->set_border_width_all(Math::round(2 * MAX(1, EDSCALE)));
 	style_widget_focus->set_border_color(accent_color);
 
+	Ref<StyleBoxFlat> style_widget_error = style_widget_focus->duplicate();
+	style_widget_error->set_border_color(readonly_warning_color);
+
 	Ref<StyleBoxFlat> style_widget_pressed = style_widget->duplicate();
 	style_widget_pressed->set_bg_color(dark_color_1.darkened(0.125));
 
@@ -1260,6 +1263,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_stylebox("normal", "LineEdit", style_line_edit);
 	theme->set_stylebox("focus", "LineEdit", style_widget_focus);
+	theme->set_stylebox("error", "LineEdit", style_widget_error);
 	theme->set_stylebox("read_only", "LineEdit", style_line_edit_disabled);
 	theme->set_icon("clear", "LineEdit", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
 	theme->set_color("font_color", "LineEdit", font_color);

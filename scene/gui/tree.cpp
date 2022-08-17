@@ -2818,17 +2818,11 @@ void Tree::_text_editor_changed(String p_text) {
 	if (!popup_edited_item) {
 		return;
 	}
-	if (p_text.is_empty()) {
-		return;
-	}
 
-	//TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
-	//c.text = p_text;
 	edited_item = popup_edited_item;
 	edited_col = popup_edited_item_col;
 
 	emit_signal(SNAME("text_editor_changed"), p_text);
-	//item_edited(popup_edited_item_col, popup_edited_item);
 	update();
 }
 
@@ -3617,7 +3611,7 @@ bool Tree::edit_selected() {
 		Point2i textedpos = get_screen_position() + rect.position - ofs;
 		cache.text_editor_position = textedpos;
 		popup_rect.position = textedpos;
-		popup_rect.size = rect.size * 0.75;
+		popup_rect.size = rect.size;
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
@@ -3637,7 +3631,7 @@ bool Tree::edit_selected() {
 			value_editor->hide();
 		}
 
-		popup_editor->set_position(popup_rect.position + Vector2(0, 40));
+		popup_editor->set_position(popup_rect.position);
 		popup_editor->set_size(popup_rect.size);
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
@@ -4162,10 +4156,6 @@ int Tree::get_edited_column() const {
 
 LineEdit *Tree::get_text_editor() const {
 	return text_editor;
-}
-
-VBoxContainer *Tree::get_popup_editor_vbox() const {
-	return popup_editor_vb;
 }
 
 TreeItem *Tree::get_next_selected(TreeItem *p_item) {

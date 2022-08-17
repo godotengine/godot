@@ -282,18 +282,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
-			//item->add_button(0, get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
-			//Color custom_color = item->get_custom_color(0).blend(
-			//	get_theme_color(SNAME("accent_color"), SNAME("Editor"))
-			//);
-			Color color = item->get_custom_color(0);
-			if (color == Color()) {
-				color = Color(1, 1, 1, 1);
-			}
-			Color custom_color = color.lerp( get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.25);
-
-			item->set_custom_color(0, custom_color);
-			item->set_custom_font_size(0, get_theme_default_font_size() + 1);
+			item->add_button(0, get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -860,21 +849,27 @@ void SceneTreeEditor::_renaming(String p_text) {
 
 	bool valid_node_name = true;
 
-	String stripped_node_name = p_text.validate_node_name();
-
 	// Empty node names are not allowed.
-	if (p_text.strip_edges().is_empty() || p_text == p_text.validate_node_name()) {
+	if (p_text.strip_edges().is_empty() || p_text != p_text.validate_node_name()) {
 		valid_node_name = false;
 
 	// Unique Node with the same name already exists in owner.
-	} else if (edited_node->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + p_text.validate_node_name.strip_edges()) != nullptr) {
-		valid_node_name = false;
+	} else if (edited_node->is_unique_name_in_owner()) {
+
+		String potato = UNIQUE_NODE_PREFIX + p_text.validate_node_name().strip_edges();
+		Node* found_unique_node = get_tree()->get_edited_scene_root()->get_node_or_null(potato);
+		if (found_unique_node != nullptr && found_unique_node != edited_node) {
+			valid_node_name = false;
+		}
 	}
 
 	if (valid_node_name) {
-		tree->get_popup_editor_vbox()->set_modulate(Color(1, 1, 1));
+		tree->get_text_editor()->remove_theme_style_override("focus");
 	} else {
-		tree->get_popup_editor_vbox()->set_modulate(Color(1, 0.47, 0.42));
+		Ref<StyleBox> stylebox = get_theme_stylebox("error", "LineEdit");
+
+		tree->get_text_editor()->add_theme_style_override("focus", stylebox);
+		//tree->get_text_editor()->set_modulate(Color(1, 0.47, 0.42));
 	}
 
 
@@ -888,20 +883,9 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	//tree->get_text_editor()->add_theme_color_override(SNAME("selection_color"), Color("#FF0000"));
-
-	//Ref<StyleBoxLine> stylebox = get_theme_stylebox("Popup", "Panel");
-	//stylebox.set_border_color(Color("#FF0000"));
-	//Ref<StyleBoxLine> stylebox(memnew(StyleBoxLine));
-	//stylebox->set_color(Color("#FF0000"));
-
-	//tree->get_popup_editor_vbox()->set_self_modulate(Color("#FF0000")); Color(1, 0.47, 0.42); get_theme_color(SNAME("error_color", SNAME("Editor") ))
-	//tree->get_popup_editor_vbox()->set_modulate(Color(1, 1, 1));
-
 	// Empty node names are not allowed, so resets it to previous text and show warning
 	if (which->get_text(0).strip_edges().is_empty()) {
 		which->set_text(0, n->get_name());
-		//tree->get_popup_editor_vbox()->set_modulate(Color(1, 0.47, 0.42) );
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
 	}
@@ -910,7 +894,6 @@ void SceneTreeEditor::_renamed() {
 	String new_name = raw_new_name.validate_node_name();
 
 	if (new_name != raw_new_name) {
-		//tree->get_popup_editor_vbox()->set_modulate(Color(1, 0.47, 0.42) );
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::invalid_node_name_characters);
 		error->popup_centered();
 
@@ -929,8 +912,7 @@ void SceneTreeEditor::_renamed() {
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
 
-	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
-		//tree->get_popup_editor_vbox()->set_modulate(Color(1, 0.47, 0.42) );
+	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + new_name) != nullptr) {
 		error->set_text(TTR("Another node already uses this unique name in the scene."));
 		error->popup_centered();
 		which->set_text(0, n->get_name());
@@ -1347,10 +1329,11 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
 	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
-	tree->connect("text_editor_changed", callable_mp(this, &SceneTreeEditor::_renaming));
+	//tree->connect("text_editor_changed", callable_mp(this, &SceneTreeEditor::_renaming));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+	tree->get_text_editor()->connect("text_changed", callable_mp(this, &SceneTreeEditor::_renaming));
 
 	error = memnew(AcceptDialog);
 	add_child(error);

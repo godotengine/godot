@@ -672,7 +672,6 @@ public:
 	TreeItem *get_edited() const;
 	int get_edited_column() const;
 	LineEdit *get_text_editor() const;
-	VBoxContainer *get_popup_editor_vbox() const;
 
 	void ensure_cursor_is_visible();
 
