@@ -942,7 +942,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="dict" type="PackedStringArray" />
 			<description>
-				Returns index of the first string in [code]dict[/dict] which is visually confusable with the [code]string[/string], or [code]-1[/code] if none is found.
+				Returns index of the first string in [param dict] which is visually confusable with the [param string], or [code]-1[/code] if none is found.
 				[b]Note:[/b] This method doesn't detect invisible characters, for spoof detection use it in combination with [method spoof_check].
 				[b]Note:[/b] Always returns [code]-1[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
 			</description>
@@ -1707,10 +1707,10 @@
 			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
-			Maximum font size which will use one half of the pixel subpixel positioning in [constants SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use one half of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
-			Maximum font size which will use one quarter of the pixel subpixel positioning in [constants SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use one quarter of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
 			TextServer supports simple text layouts.

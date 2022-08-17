@@ -692,7 +692,7 @@
 			<return type="int" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the dots per inch density of the specified screen. If [param screen] is [/code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
+				Returns the dots per inch density of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
 				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
