@@ -99,6 +99,7 @@ class SceneTreeEditor : public Control {
 
 	void _renamed();
 	void _renaming(String p_text);
+	void _set_show_error_stylebox(bool p_valid);
 	UndoRedo *undo_redo = nullptr;
 
 	HashSet<Node *> marked;

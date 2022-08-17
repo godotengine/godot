@@ -2811,20 +2811,6 @@ void Tree::_text_editor_submit(String p_text) {
 	update();
 }
 
-void Tree::_text_editor_changed(String p_text) {
-	if (updating_value_editor) {
-		return;
-	}
-	if (!popup_edited_item) {
-		return;
-	}
-
-	edited_item = popup_edited_item;
-	edited_col = popup_edited_item_col;
-
-	update();
-}
-
 void Tree::value_editor_changed(double p_value) {
 	if (updating_value_editor) {
 		return;
@@ -3611,6 +3597,8 @@ bool Tree::edit_selected() {
 		cache.text_editor_position = textedpos;
 		popup_rect.position = textedpos;
 		popup_rect.size = rect.size;
+		edited_item = s;
+		edited_col = col;
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
@@ -5066,7 +5054,6 @@ Tree::Tree() {
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	text_editor->connect("text_submitted", callable_mp(this, &Tree::_text_editor_submit));
-	text_editor->connect("text_changed", callable_mp(this, &Tree::_text_editor_changed));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_modal_close));
 	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
