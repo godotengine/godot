@@ -127,6 +127,116 @@ PropertyInfo Script::get_class_category() const {
 
 #endif // TOOLS_ENABLED
 
+TypedArray<Dictionary> Script::_get_script_documentation_list() {
+#ifdef TOOLS_ENABLED
+	Vector<DocData::ClassDoc> classes = get_documentation();
+	TypedArray<Dictionary> doc_dicts;
+	for (int idx = 0; idx < classes.size(); idx++) {
+		DocData::ClassDoc p_class = classes[idx];
+		Dictionary dict;
+		dict["name"] = p_class.name;
+		dict["inherits"] = p_class.inherits;
+		dict["brief_description"] = p_class.brief_description.strip_edges();
+		dict["description"] = p_class.description.strip_edges();
+
+		TypedArray<Dictionary> tutorials;
+		for (int i = 0; i < p_class.tutorials.size(); i++) {
+			Dictionary tutorial;
+			tutorial["title"] = p_class.tutorials[i].title;
+			tutorial["link"] = p_class.tutorials[i].link;
+			tutorials.append(tutorial);
+		}
+		dict["tutorials"] = tutorials;
+
+		TypedArray<Dictionary> enums;
+		for (const KeyValue<String, String> &E : p_class.enums) {
+			Dictionary _enum;
+			_enum["name"] = E.key;
+			_enum["description"] = E.value;
+			enums.append(_enum);
+		}
+		dict["enums"] = enums;
+
+		TypedArray<Dictionary> constants;
+		for (int i = 0; i < p_class.constants.size(); i++) {
+			Dictionary constant;
+			constant["name"] = p_class.constants[i].name;
+			constant["value"] = p_class.constants[i].value;
+			constant["enumeration"] = p_class.constants[i].enumeration;
+			constant["description"] = p_class.constants[i].description.strip_edges();
+			constants.append(constant);
+		}
+		dict["constants"] = constants;
+
+		TypedArray<Dictionary> signals;
+		for (int i = 0; i < p_class.signals.size(); i++) {
+			Dictionary signal;
+			signal["name"] = p_class.signals[i].name;
+			signal["return_type"] = p_class.signals[i].return_type;
+			signal["qualifiers"] = p_class.signals[i].qualifiers;
+			signal["description"] = p_class.signals[i].description.strip_edges();
+
+			TypedArray<Dictionary> arguments;
+			for (int j = 0; j < p_class.signals[i].arguments.size(); j++) {
+				Dictionary argument;
+				argument["name"] = p_class.signals[i].arguments[j].name;
+				if (p_class.signals[i].arguments[j].type != "") {
+					argument["type"] = p_class.signals[i].arguments[j].type;
+				} else {
+					argument["type"] = "Variant";
+				}
+				argument["default_value"] = p_class.signals[i].arguments[j].default_value;
+				arguments.push_back(argument);
+			}
+			signal["arguments"] = arguments;
+			signals.append(signal);
+		}
+		dict["signals"] = signals;
+
+		TypedArray<Dictionary> variables;
+		for (int i = 0; i < p_class.properties.size(); i++) {
+			Dictionary var;
+			var["name"] = p_class.properties[i].name;
+			var["type"] = p_class.properties[i].type;
+			var["enumeration"] = p_class.properties[i].enumeration;
+			var["description"] = p_class.properties[i].description.strip_edges();
+			var["default_value"] = p_class.properties[i].default_value;
+			var["setter"] = p_class.properties[i].setter;
+			var["getter"] = p_class.properties[i].getter;
+			variables.append(var);
+		}
+		dict["variables"] = variables;
+
+		TypedArray<Dictionary> methods;
+		for (int i = 0; i < p_class.methods.size(); i++) {
+			Dictionary method;
+			method["name"] = p_class.methods[i].name;
+			method["return_type"] = p_class.methods[i].return_type;
+			method["qualifiers"] = p_class.methods[i].qualifiers;
+			method["description"] = p_class.methods[i].description.strip_edges();
+
+			TypedArray<Dictionary> arguments;
+			for (int j = 0; j < p_class.methods[i].arguments.size(); j++) {
+				Dictionary argument;
+				argument["name"] = p_class.methods[i].arguments[j].name;
+				argument["type"] = p_class.methods[i].arguments[j].type;
+				argument["default_value"] = p_class.methods[i].arguments[j].default_value;
+				arguments.push_back(argument);
+			}
+			method["arguments"] = arguments;
+			methods.append(method);
+		}
+		dict["methods"] = methods;
+
+		doc_dicts.append(dict);
+	}
+
+	return doc_dicts;
+#endif // TOOLS_ENABLED
+
+	return TypedArray<Dictionary>();
+}
+
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
@@ -144,6 +254,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_method_list"), &Script::_get_script_method_list);
 	ClassDB::bind_method(D_METHOD("get_script_signal_list"), &Script::_get_script_signal_list);
 	ClassDB::bind_method(D_METHOD("get_script_constant_map"), &Script::_get_script_constant_map);
+	ClassDB::bind_method(D_METHOD("get_script_documentation_list"), &Script::_get_script_documentation_list);
 	ClassDB::bind_method(D_METHOD("get_property_default_value", "property"), &Script::_get_property_default_value);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);

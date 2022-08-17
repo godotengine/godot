@@ -43,6 +43,82 @@
 				Returns a dictionary containing constant names and their values.
 			</description>
 		</method>
+		<method name="get_script_documentation_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns an array of dictionary containing the documentation of this script and its subclasses.
+				Each dictionary contains the following structure:
+				[codeblock]
+				{
+				    "name": "",
+				    "inherits": "",
+				    "brief_description": "",
+				    "description": "",
+				    "tutorials": [
+				        {
+				            "title": "",
+				            "link": ""
+				        }
+				    ],
+				    "enums": [
+				        {
+				            "name": "",
+				            "description": ""
+				        }
+				    ],
+				    "constants": [
+				        {
+				            "name": "",
+				            "value": "",
+				            "enumeration": "",
+				            "description": ""
+				        }
+				    ],
+				    "signals": [
+				        {
+				            "name": "",
+				            "return_type": "",
+				            "qualifiers": "",
+				            "description": "",
+				            "arguments": [
+				                {
+				                    "name": "",
+				                    "type": "",
+				                    "default_value": ""
+				                }
+				            ]
+				        }
+				    ],
+				    "variables": [
+				        {
+				            "name": "",
+				            "type": "",
+				            "enumeration": "",
+				            "description": "",
+				            "default_value": "",
+				            "setter": "",
+				            "getter": ""
+				        }
+				    ],
+				    "methods": [
+				        {
+				            "name": "",
+				            "return_type": "",
+				            "qualifiers": "",
+				            "description": "",
+				            "arguments": [
+				                {
+				                    "name": "",
+				                    "type": "",
+				                    "default_value": ""
+				                }
+				            ]
+				        }
+				    ]
+				}
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_script_method_list">
 			<return type="Dictionary[]" />
 			<description>
