@@ -1477,8 +1477,11 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 		}
 	}
 
-	// Directly override the existing shortcut.
-	sc->set_events(events);
+	// Override the existing shortcut only if it wasn't customized by the user (i.e. still "original").
+	if (Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
+		sc->set_events(events);
+	}
+
 	sc->set_meta("original", events.duplicate(true));
 }
 
