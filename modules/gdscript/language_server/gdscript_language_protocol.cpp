@@ -183,7 +183,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	if (root_uri.length() && is_same_workspace) {
 		workspace->root_uri = root_uri;
 	} else {
-		workspace->root_uri = "file://" + workspace->root;
+		workspace->root_uri = "file:///" + workspace->root;
 
 		Dictionary params;
 		params["path"] = workspace->root;
