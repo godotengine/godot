@@ -174,16 +174,36 @@ float RichTextLabel::_get_text_length(Item* p_item, const Ref<Font>& p_base_font
 			font = p_base_font;
 		}
 
+		bool can_break = false;
+
 		while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
+			can_break = false;
 			float cw = font->get_char_size(c[end], c[end + 1]).width;
 			if (c[end] == '\t') {
 				cw = tab_size * font->get_char_size(' ').width;
+				can_break = true;
 			}
+
+			const CharType current = c[end];
+			const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+				(current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+				(current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+				(current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+				(current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+				(current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+				(current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+				(current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+			can_break |= separatable || c[end] == ' ';
 
 			w += cw;
 
 			end++;
 		}
+
+		if (!can_break) {
+			w += _get_text_length(_get_next_item(p_item), p_base_font);
+		}
+
 		return w;
 	}
 	default: {}
