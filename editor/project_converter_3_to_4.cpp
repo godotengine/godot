@@ -1377,7 +1377,7 @@ static const char *class_renames[][2] = {
 	{ "Skeleton", "Skeleton3D" },
 	{ "SkeletonIK", "SkeletonIK3D" },
 	{ "SliderJoint", "SliderJoint3D" },
-	{ "SoftBody", "SoftDynamicBody3D" },
+	{ "SoftBody", "SoftBody3D" },
 	{ "Spatial", "Node3D" },
 	{ "SpatialGizmo", "Node3DGizmo" },
 	{ "SpatialMaterial", "StandardMaterial3D" },
