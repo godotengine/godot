@@ -853,12 +853,11 @@ void SceneTreeEditor::_renaming(String p_text) {
 	if (p_text.strip_edges().is_empty() || p_text != p_text.validate_node_name()) {
 		valid_node_name = false;
 
-	// Unique Node with the same name already exists in owner.
 	} else if (edited_node->is_unique_name_in_owner()) {
-
-		String potato = UNIQUE_NODE_PREFIX + p_text.validate_node_name().strip_edges();
-		Node* found_unique_node = get_tree()->get_edited_scene_root()->get_node_or_null(potato);
+		String new_node_name = UNIQUE_NODE_PREFIX + p_text.validate_node_name().strip_edges();
+		Node *found_unique_node = get_tree()->get_edited_scene_root()->get_node_or_null(new_node_name);
 		if (found_unique_node != nullptr && found_unique_node != edited_node) {
+			// Unique Node with the same name already exists in owner.
 			valid_node_name = false;
 		}
 	}
@@ -869,10 +868,7 @@ void SceneTreeEditor::_renaming(String p_text) {
 		Ref<StyleBox> stylebox = get_theme_stylebox("error", "LineEdit");
 
 		tree->get_text_editor()->add_theme_style_override("focus", stylebox);
-		//tree->get_text_editor()->set_modulate(Color(1, 0.47, 0.42));
 	}
-
-
 }
 
 void SceneTreeEditor::_renamed() {

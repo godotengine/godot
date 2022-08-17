@@ -1420,8 +1420,12 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 
 void LineEdit::set_text(String p_text) {
 	clear_internal();
+	String previous_text = text;
 	insert_text_at_caret(p_text);
 	_create_undo_state();
+	if (previous_text != text) {
+		emit_signal("text_changed", text);
+	}
 
 	update();
 	caret_column = 0;

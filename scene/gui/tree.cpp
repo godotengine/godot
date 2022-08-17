@@ -2822,7 +2822,6 @@ void Tree::_text_editor_changed(String p_text) {
 	edited_item = popup_edited_item;
 	edited_col = popup_edited_item_col;
 
-	emit_signal(SNAME("text_editor_changed"), p_text);
 	update();
 }
 
@@ -5018,7 +5017,6 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_pressed", PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
-	ADD_SIGNAL(MethodInfo("text_editor_changed", PropertyInfo(Variant::STRING, "new_text" )));
 
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
 	BIND_ENUM_CONSTANT(SELECT_ROW);
