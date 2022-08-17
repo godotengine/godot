@@ -64,6 +64,7 @@ class SpinBox : public Range {
 		double diff_y = 0.0;
 	} drag;
 
+	void _line_edit_focus_enter();
 	void _line_edit_focus_exit();
 
 	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
