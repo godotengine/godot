@@ -127,7 +127,7 @@ TypedArray<String> NavigationObstacle2D::get_configuration_warnings() const {
 	}
 
 	if (Object::cast_to<StaticBody2D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationObstacle2D is intended for constantly moving bodies like CharacterBody2D or RigidDynamicBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+		warnings.push_back(RTR("The NavigationObstacle2D is intended for constantly moving bodies like CharacterBody2D or RigidBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
 							   "\nNot constantly moving or complete static objects should be captured with a refreshed NavigationPolygon so agents can not only avoid them but also move along those objects outline at high detail"));
 	}
 

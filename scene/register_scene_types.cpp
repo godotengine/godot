@@ -531,7 +531,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);
 	GDREGISTER_CLASS(AnimatableBody3D);
-	GDREGISTER_CLASS(RigidDynamicBody3D);
+	GDREGISTER_CLASS(RigidBody3D);
 	GDREGISTER_CLASS(KinematicCollision3D);
 	GDREGISTER_CLASS(CharacterBody3D);
 	GDREGISTER_CLASS(SpringArm3D);
@@ -702,7 +702,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody2D);
 	GDREGISTER_CLASS(StaticBody2D);
 	GDREGISTER_CLASS(AnimatableBody2D);
-	GDREGISTER_CLASS(RigidDynamicBody2D);
+	GDREGISTER_CLASS(RigidBody2D);
 	GDREGISTER_CLASS(CharacterBody2D);
 	GDREGISTER_CLASS(KinematicCollision2D);
 	GDREGISTER_CLASS(Area2D);
@@ -1041,8 +1041,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("RayShape", "SeparationRayShape3D");
 	ClassDB::add_compatibility_class("RayShape2D", "SeparationRayShape2D");
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
-	ClassDB::add_compatibility_class("RigidBody", "RigidDynamicBody3D");
-	ClassDB::add_compatibility_class("RigidBody2D", "RigidDynamicBody2D");
+	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");
 	ClassDB::add_compatibility_class("ShortCut", "Shortcut");
 	ClassDB::add_compatibility_class("Skeleton", "Skeleton3D");

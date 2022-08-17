@@ -133,7 +133,7 @@ TypedArray<String> NavigationObstacle3D::get_configuration_warnings() const {
 	}
 
 	if (Object::cast_to<StaticBody3D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationObstacle3D is intended for constantly moving bodies like CharacterBody3D or RigidDynamicBody3D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+		warnings.push_back(RTR("The NavigationObstacle3D is intended for constantly moving bodies like CharacterBody3D or RigidBody3D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
 							   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail"));
 	}
 
