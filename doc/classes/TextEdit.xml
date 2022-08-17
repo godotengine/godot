@@ -161,7 +161,7 @@
 		<method name="get_gutter_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the total amount of gutters registered.
+				Returns the number of gutters registered.
 			</description>
 		</method>
 		<method name="get_gutter_name" qualifiers="const">
@@ -189,7 +189,7 @@
 			<return type="int" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns the amount of spaces and [code]tab * tab_size[/code] before the first char.
+				Returns the number of spaces and [code]tab * tab_size[/code] before the first char.
 			</description>
 		</method>
 		<method name="get_last_full_visible_line" qualifiers="const">
@@ -235,7 +235,7 @@
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of total lines in the text.
+				Returns the number of lines in the text.
 			</description>
 		</method>
 		<method name="get_line_gutter_icon" qualifiers="const">
@@ -329,7 +329,7 @@
 		<method name="get_minimap_visible_lines" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the total amount of lines that can be draw on the minimap.
+				Returns the number of lines that may be drawn on the minimap.
 			</description>
 		</method>
 		<method name="get_next_visible_line_index_offset_from" qualifiers="const">
@@ -444,7 +444,7 @@
 		<method name="get_total_visible_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the total amount of lines that could be draw.
+				Returns the number of lines that may be drawn.
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">

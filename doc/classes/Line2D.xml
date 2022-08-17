@@ -29,7 +29,7 @@
 		<method name="get_point_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of points in the line.
+				Returns the number of points in the line.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">

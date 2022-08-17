@@ -101,7 +101,7 @@
 		<method name="get_surface_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of surfaces that the mesh holds.
+				Returns the number of surfaces that the mesh holds.
 			</description>
 		</method>
 		<method name="get_surface_format" qualifiers="const">
@@ -115,7 +115,7 @@
 			<return type="int" />
 			<param index="0" name="surface_idx" type="int" />
 			<description>
-				Returns the amount of lods that the mesh holds on a given surface.
+				Returns the number of lods that the mesh holds on a given surface.
 			</description>
 		</method>
 		<method name="get_surface_lod_indices" qualifiers="const">

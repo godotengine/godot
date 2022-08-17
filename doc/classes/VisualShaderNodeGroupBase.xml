@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeGroupBase" inherits="VisualShaderNodeResizableBase" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for a family of nodes with variable amount of input and output ports within the visual shader graph.
+		Base class for a family of nodes with variable number of input and output ports within the visual shader graph.
 	</brief_description>
 	<description>
 		Currently, has no direct usage, use the derived classes instead.

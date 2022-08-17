@@ -77,7 +77,7 @@
 			<description>
 				Triggers an update of the TileMap. If [param layer] is provided, only updates the given layer.
 				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
-				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurrences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
+				[b]Warning:[/b] Updating the TileMap is computationally expensive and may impact performance. Try to limit the number of updates and the tiles they impact (by placing frequently updated tiles in a dedicated layer for example).
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">

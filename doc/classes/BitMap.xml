@@ -46,7 +46,7 @@
 		<method name="get_true_bit_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of bitmap elements that are set to [code]true[/code].
+				Returns the number of bitmap elements that are set to [code]true[/code].
 			</description>
 		</method>
 		<method name="grow_mask">

@@ -45,7 +45,7 @@
 			<return type="int" />
 			<param index="0" name="bus_idx" type="int" />
 			<description>
-				Returns the amount of channels of the bus at index [param bus_idx].
+				Returns the number of channels of the bus at index [param bus_idx].
 			</description>
 		</method>
 		<method name="get_bus_effect">
