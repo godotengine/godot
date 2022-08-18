@@ -107,7 +107,7 @@
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">
-			<return type="String" />
+			<return type="bool" />
 			<description>
 				When inheriting from [AnimationRootNode], implement this virtual method to return whether the blend tree editor should display filter editing on this node.
 			</description>
