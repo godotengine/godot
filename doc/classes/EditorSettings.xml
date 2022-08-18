@@ -710,7 +710,7 @@
 			If [code]true[/code], draws tab characters as chevrons.
 		</member>
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
-			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying less lines on screen.
+			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen.
 		</member>
 		<member name="text_editor/behavior/files/auto_reload_scripts_on_external_change" type="bool" setter="" getter="">
 			If [code]true[/code], automatically reloads scripts in the editor when they have been modified and saved by external editors.
