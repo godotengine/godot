@@ -85,7 +85,8 @@ bool RefCounted::unreference() {
 			_get_extension()->unreference(_get_extension_instance());
 		}
 
-		die = die && _instance_binding_reference(false);
+		bool binding_ret = _instance_binding_reference(false);
+		die = die && binding_ret;
 	}
 
 	return die;
