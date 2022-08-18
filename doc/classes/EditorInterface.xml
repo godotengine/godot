@@ -206,6 +206,13 @@
 				Reloads the scene at the given path.
 			</description>
 		</method>
+		<method name="restart_editor">
+			<return type="void" />
+			<param index="0" name="save" type="bool" default="true" />
+			<description>
+				Restarts the editor. This closes the editor and then opens the same project. If [param save] is [code]true[/code], the project will be saved before restarting.
+			</description>
+		</method>
 		<method name="save_scene">
 			<return type="int" enum="Error" />
 			<description>
