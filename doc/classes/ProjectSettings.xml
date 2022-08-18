@@ -344,7 +344,7 @@
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
-			Specifies the maximum amount of log files allowed (used for rotation).
+			Specifies the maximum number of log files allowed (used for rotation).
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
 			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
@@ -466,7 +466,7 @@
 			Maximum call stack allowed for debugging GDScript.
 		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
-			Maximum amount of functions per frame allowed when profiling.
+			Maximum number of functions per frame allowed when profiling.
 		</member>
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
@@ -1468,13 +1468,13 @@
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer3D.map_set_edge_connection_margin].
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
-			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/debugger/max_errors_per_second" type="int" setter="" getter="" default="400">
 			Maximum number of errors allowed to be sent from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/debugger/max_queued_messages" type="int" setter="" getter="" default="2048">
-			Maximum amount of messages in the debugger queue. Over this value, content is dropped. This helps to limit the debugger memory usage.
+			Maximum number of messages in the debugger queue. Over this value, content is dropped. This helps to limit the debugger memory usage.
 		</member>
 		<member name="network/limits/debugger/max_warnings_per_second" type="int" setter="" getter="" default="400">
 			Maximum number of warnings allowed to be sent from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
@@ -1565,7 +1565,7 @@
 			Individual shapes can have a specific bias value (see [member Shape2D.custom_solver_bias]).
 		</member>
 		<member name="physics/2d/solver/solver_iterations" type="int" setter="" getter="" default="16">
-			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer2D.SPACE_PARAM_SOLVER_ITERATIONS].
+			Number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer2D.SPACE_PARAM_SOLVER_ITERATIONS].
 		</member>
 		<member name="physics/2d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 2D physics body will put to sleep. See [constant PhysicsServer2D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
@@ -1633,7 +1633,7 @@
 			Individual shapes can have a specific bias value (see [member Shape3D.custom_solver_bias]).
 		</member>
 		<member name="physics/3d/solver/solver_iterations" type="int" setter="" getter="" default="16">
-			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
+			Number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
 		</member>
 		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 3D physics body will put to sleep. See [constant PhysicsServer3D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
@@ -1836,7 +1836,7 @@
 			Max number of omnilights and spotlights renderable per object. At the default value of 8, this means that each surface can be affected by up to 8 omnilights and 8 spotlights. This is further limited by hardware support and [member rendering/limits/opengl/max_renderable_lights]. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_elements" type="int" setter="" getter="" default="65536">
-			Max amount of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+			Max number of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_lights" type="int" setter="" getter="" default="32">
 			Max number of positional lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.

@@ -349,7 +349,7 @@
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
 			<description>
-				Returns the amount of keys in a given track.
+				Returns the number of keys in a given track.
 			</description>
 		</method>
 		<method name="track_get_key_time" qualifiers="const">

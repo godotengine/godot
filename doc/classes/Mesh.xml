@@ -103,7 +103,7 @@
 			<description>
 				Calculate a [ConvexPolygonShape3D] from the mesh.
 				If [param clean] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
-				If [param simplify] is [code]true[/code], the geometry can be further simplified to reduce the amount of vertices. Disabled by default.
+				If [param simplify] is [code]true[/code], the geometry can be further simplified to reduce the number of vertices. Disabled by default.
 			</description>
 		</method>
 		<method name="create_outline" qualifiers="const">
@@ -142,7 +142,7 @@
 		<method name="get_surface_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of surfaces that the [Mesh] holds.
+				Returns the number of surfaces that the [Mesh] holds.
 			</description>
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">

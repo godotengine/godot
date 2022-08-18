@@ -176,7 +176,7 @@
 		<method name="get_downloaded_bytes" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of bytes this HTTPRequest downloaded.
+				Returns the number of bytes this HTTPRequest downloaded.
 			</description>
 		</method>
 		<method name="get_http_client_status" qualifiers="const">

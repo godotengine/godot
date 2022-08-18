@@ -1801,7 +1801,7 @@
 			<param index="1" name="longitudes" type="int" />
 			<param index="2" name="radius" type="float" />
 			<description>
-				Returns a mesh of a sphere with the given amount of horizontal and vertical subdivisions.
+				Returns a mesh of a sphere with the given number of horizontal and vertical subdivisions.
 			</description>
 		</method>
 		<method name="material_create">

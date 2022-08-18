@@ -50,7 +50,7 @@
 	</methods>
 	<members>
 		<member name="physical_bone_chain_length" type="int" setter="set_physical_bone_chain_length" getter="get_physical_bone_chain_length" default="0">
-			The amount of [PhysicalBone2D] nodes linked in this modification.
+			The number of [PhysicalBone2D] nodes linked in this modification.
 		</member>
 	</members>
 </class>

@@ -86,7 +86,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a colored polygon of any amount of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
+				Draws a colored polygon of any number of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 			</description>
 		</method>
 		<method name="draw_dashed_line">
@@ -211,7 +211,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a solid polygon of any amount of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
+				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
 			</description>
 		</method>
 		<method name="draw_polyline">

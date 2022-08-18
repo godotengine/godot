@@ -90,7 +90,7 @@
 		<method name="get_bone_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of bones in the skeleton.
+				Returns the number of bones in the skeleton.
 			</description>
 		</method>
 		<method name="get_bone_global_pose" qualifiers="const">

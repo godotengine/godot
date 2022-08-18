@@ -549,7 +549,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="amount" type="int" />
 			<description>
-				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies. This is enabled by setting the maximum number of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="body_set_mode">
@@ -1422,7 +1422,7 @@
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
 		</constant>
 		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="7" enum="SpaceParameter">
-			Constant to set/get the number of solver iterations for contacts and constraints. The greater the amount of iterations, the more accurate the collisions and constraints will be. However, a greater amount of iterations requires more CPU power, which can decrease performance.
+			Constant to set/get the number of solver iterations for contacts and constraints. The greater the number of iterations, the more accurate the collisions and constraints will be. However, a greater number of iterations requires more CPU power, which can decrease performance.
 		</constant>
 		<constant name="BODY_AXIS_LINEAR_X" value="1" enum="BodyAxis">
 		</constant>

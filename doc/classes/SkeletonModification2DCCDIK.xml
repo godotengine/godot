@@ -121,7 +121,7 @@
 	</methods>
 	<members>
 		<member name="ccdik_data_chain_length" type="int" setter="set_ccdik_data_chain_length" getter="get_ccdik_data_chain_length" default="0">
-			The amount of CCDIK joints in the CCDIK modification.
+			The number of CCDIK joints in the CCDIK modification.
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the CCDIK modification. This node is what the CCDIK chain will attempt to rotate the bone chain to.
