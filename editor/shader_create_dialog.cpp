@@ -37,6 +37,13 @@
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
 
+enum ShaderType {
+	SHADER_TYPE_TEXT,
+	SHADER_TYPE_VISUAL,
+	SHADER_TYPE_INC,
+	SHADER_TYPE_MAX,
+};
+
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
