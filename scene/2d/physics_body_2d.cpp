@@ -1065,7 +1065,7 @@ void RigidDynamicBody2D::_bind_methods() {
 void RigidDynamicBody2D::_validate_property(PropertyInfo &property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
 		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }
@@ -1779,11 +1779,11 @@ void CharacterBody2D::_bind_methods() {
 void CharacterBody2D::_validate_property(PropertyInfo &property) const {
 	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else {
 		if (property.name == "wall_min_slide_angle") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }

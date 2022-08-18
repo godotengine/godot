@@ -1127,7 +1127,7 @@ void RigidDynamicBody3D::_bind_methods() {
 void RigidDynamicBody3D::_validate_property(PropertyInfo &property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
 		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 	PhysicsBody3D::_validate_property(property);
@@ -2025,7 +2025,7 @@ void CharacterBody3D::_bind_methods() {
 void CharacterBody3D::_validate_property(PropertyInfo &property) const {
 	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 	PhysicsBody3D::_validate_property(property);

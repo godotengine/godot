@@ -181,7 +181,7 @@ AABB ReflectionProbe::get_aabb() const {
 void ReflectionProbe::_validate_property(PropertyInfo &property) const {
 	if (property.name == "ambient_color" || property.name == "ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 	VisualInstance3D::_validate_property(property);

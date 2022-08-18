@@ -612,25 +612,25 @@ void Area3D::_validate_property(PropertyInfo &property) const {
 		property.hint_string = options;
 	} else if (property.name.begins_with("gravity") && property.name != "gravity_space_override") {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		} else {
 			if (gravity_is_point) {
 				if (property.name == "gravity_direction") {
-					property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+					property.usage = PROPERTY_USAGE_NO_EDITOR;
 				}
 			} else {
 				if (property.name.begins_with("gravity_point_")) {
-					property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+					property.usage = PROPERTY_USAGE_NO_EDITOR;
 				}
 			}
 		}
 	} else if (property.name.begins_with("linear_damp") && property.name != "linear_damp_space_override") {
 		if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (property.name.begins_with("angular_damp") && property.name != "angular_damp_space_override") {
 		if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 

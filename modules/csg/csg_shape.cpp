@@ -590,7 +590,7 @@ void CSGShape3D::_validate_property(PropertyInfo &property) const {
 		//hide collision if not root
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	GeometryInstance3D::_validate_property(property);
 }

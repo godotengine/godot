@@ -515,7 +515,7 @@ Dictionary VisualScriptFunctionCall::_get_argument_cache() const {
 void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const {
 	if (property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
@@ -1293,7 +1293,7 @@ VisualScriptPropertySet::AssignOp VisualScriptPropertySet::get_assign_op() const
 void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 	if (property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
@@ -1999,7 +1999,7 @@ StringName VisualScriptPropertyGet::get_index() const {
 void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 	if (property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
