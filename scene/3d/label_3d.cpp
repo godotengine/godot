@@ -163,7 +163,17 @@ void Label3D::_bind_methods() {
 }
 
 void Label3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "material_override" || property.name == "material_overlay") {
+	if (
+			property.name == "material_override" ||
+			property.name == "material_overlay" ||
+			property.name == "lod_bias" ||
+			property.name == "gi_mode" ||
+			property.name == "gi_lightmap_scale") {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+		// Alpha-blended materials can't cast shadows.
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -889,6 +899,7 @@ void Label3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
 	if (alpha_cut != p_mode) {
 		alpha_cut = p_mode;
 		_queue_update();
+		notify_property_list_changed();
 	}
 }
 
@@ -927,7 +938,12 @@ Label3D::Label3D() {
 
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
+	// Disable shadow casting by default to improve performance and avoid unintended visual artifacts.
 	set_cast_shadows_setting(SHADOW_CASTING_SETTING_OFF);
+
+	// Label3D can't contribute to GI in any way, so disable it to improve performance.
+	set_gi_mode(GI_MODE_DISABLED);
+
 	set_base(mesh);
 }
 
