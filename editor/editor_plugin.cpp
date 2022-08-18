@@ -445,7 +445,7 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
 
 		} break;
-		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
+		case CONTAINER_INSPECTOR_BOTTOM: {
 			InspectorDock::get_singleton()->get_addon_area()->add_child(p_control);
 
 		} break;
@@ -498,7 +498,7 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			CanvasItemEditor::get_singleton()->get_bottom_split()->remove_child(p_control);
 
 		} break;
-		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
+		case CONTAINER_INSPECTOR_BOTTOM: {
 			InspectorDock::get_singleton()->get_addon_area()->remove_child(p_control);
 
 		} break;
@@ -950,7 +950,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_BOTTOM);
-	BIND_ENUM_CONSTANT(CONTAINER_PROPERTY_EDITOR_BOTTOM);
+	BIND_ENUM_CONSTANT(CONTAINER_INSPECTOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
