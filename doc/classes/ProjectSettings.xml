@@ -292,6 +292,8 @@
 		</member>
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
+			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] command line argument.
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -867,6 +869,7 @@
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] command line argument.
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
@@ -930,6 +933,9 @@
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
+			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] command line argument.
+			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] command line argument.
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
