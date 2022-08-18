@@ -129,7 +129,7 @@
 			<param index="4" name="secondary" type="bool" default="false" />
 			<description>
 				Adds a list of handles (points) which can be used to edit the properties of the gizmo's Node3D. The [param ids] argument can be used to specify a custom identifier for each handle, if an empty [code]Array[/code] is passed, the ids will be assigned automatically from the [param handles] argument order.
-				The [param secondary] argument marks the added handles as secondary, meaning they will normally have less selection priority than regular handles. When the user is holding the shift key secondary handles will switch to have higher priority than regular handles. This change in priority can be used to place multiple handles at the same point while still giving the user control on their selection.
+				The [param secondary] argument marks the added handles as secondary, meaning they will normally have lower selection priority than regular handles. When the user is holding the shift key secondary handles will switch to have higher priority than regular handles. This change in priority can be used to place multiple handles at the same point while still giving the user control on their selection.
 				There are virtual methods which will be called upon editing of these handles. Call this method during [method _redraw].
 			</description>
 		</method>
