@@ -23,7 +23,7 @@
 			<return type="void" />
 			<argument index="0" name="self_peer_id" type="int" />
 			<description>
-				Initialize the peer with the given [code]peer_id[/code] (must be between 1 and 2147483647).
+				Initialize the peer with the given [code]self_peer_id[/code] (must be between 1 and 2147483647).
 				Can only be called if the connection status is [constant NetworkedMultiplayerPeer.CONNECTION_CONNECTING]. See [method set_connection_status].
 			</description>
 		</method>
@@ -50,7 +50,7 @@
 			<argument index="1" name="buffer" type="PoolByteArray" />
 			<argument index="2" name="transfer_mode" type="int" />
 			<description>
-				Emitted when the local [MultiplayerAPI] generates a packet.
+				Emitted when the local [MultiplayerAPI] generates a packet (e.g. when calling [method Node.rpc]).
 				Your script should take this packet and send it to the requested peer over the network (which should call [method deliver_packet] with the data when it's received).
 			</description>
 		</signal>
