@@ -471,7 +471,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "error") {
 		DebuggerMarshalls::OutputError oe;
 		ERR_FAIL_COND_MSG(oe.deserialize(p_data) == false, "Failed to deserialize error message");
-
+		if (oe.warning && !ProjectSettings::get_singleton()->get_setting("debug/gdscript/warnings/enable")) {
+			return;
+		}
 		// Format time.
 		Array time_vals;
 		time_vals.push_back(oe.hr);
