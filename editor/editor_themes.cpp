@@ -788,6 +788,25 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	editor_log_button_pressed->set_border_color(accent_color);
 	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
 
+	// MenuBar
+	theme->set_stylebox("normal", "MenuBar", style_widget);
+	theme->set_stylebox("hover", "MenuBar", style_widget_hover);
+	theme->set_stylebox("pressed", "MenuBar", style_widget_pressed);
+	theme->set_stylebox("focus", "MenuBar", style_widget_focus);
+	theme->set_stylebox("disabled", "MenuBar", style_widget_disabled);
+
+	theme->set_color("font_color", "MenuBar", font_color);
+	theme->set_color("font_hover_color", "MenuBar", font_hover_color);
+	theme->set_color("font_focus_color", "MenuBar", font_focus_color);
+	theme->set_color("font_pressed_color", "MenuBar", accent_color);
+	theme->set_color("font_disabled_color", "MenuBar", font_disabled_color);
+
+	theme->set_color("icon_normal_color", "MenuBar", icon_normal_color);
+	theme->set_color("icon_hover_color", "MenuBar", icon_hover_color);
+	theme->set_color("icon_focus_color", "MenuBar", icon_focus_color);
+	theme->set_color("icon_pressed_color", "MenuBar", icon_pressed_color);
+	theme->set_color("icon_disabled_color", "MenuBar", icon_disabled_color);
+
 	// OptionButton
 	Ref<StyleBoxFlat> style_option_button_focus = style_widget_focus->duplicate();
 	Ref<StyleBoxFlat> style_option_button_normal = style_widget->duplicate();

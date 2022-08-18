@@ -144,7 +144,7 @@
 			</description>
 		</method>
 		<method name="global_menu_add_check_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="callback" type="Callable" />
@@ -153,16 +153,17 @@
 			<param index="5" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_icon_check_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
@@ -172,16 +173,17 @@
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_icon_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
@@ -191,16 +193,17 @@
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_icon_radio_check_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
@@ -210,17 +213,18 @@
 			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="callback" type="Callable" />
@@ -229,16 +233,17 @@
 			<param index="5" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_multistate_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="labe" type="String" />
 			<param index="2" name="max_states" type="int" />
@@ -250,16 +255,18 @@
 			<description>
 				Adds a new item with text [param labe] to the global menu with ID [param menu_root].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] By default, there's no indication of the current item state, it should be changed manually.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_radio_check_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="callback" type="Callable" />
@@ -268,41 +275,44 @@
 			<param index="5" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_separator">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="index" type="int" default="-1" />
 			<description>
 				Adds a separator between items to the global menu with ID [param menu_root]. Separators also occupy an index.
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_submenu_item">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="submenu" type="String" />
 			<param index="3" name="index" type="int" default="-1" />
 			<description>
 				Adds an item that will act as a submenu of the global menu [param menu_root]. The [param submenu] argument is the ID of the global menu root that will be shown when the item is clicked.
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
@@ -315,7 +325,7 @@
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
-				"" - Main menu (macOS).
+				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				[/codeblock]
 			</description>
@@ -344,6 +354,15 @@
 			<param index="1" name="idx" type="int" />
 			<description>
 				Returns the icon of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_indentation_level" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the horizontal offset of the item at the given [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -526,6 +545,16 @@
 				Replaces the [Texture2D] icon of the specified [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Note:[/b] This method is not supported by macOS "_dock" menu items.
+			</description>
+		</method>
+		<method name="global_menu_set_item_indentation_level">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="level" type="int" />
+			<description>
+				Sets the horizontal offset of the item at the given [param idx].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_max_states">

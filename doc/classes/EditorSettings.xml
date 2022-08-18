@@ -553,6 +553,10 @@
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="float" setter="" getter="">
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 20 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
 		</member>
+		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
+			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
+			Specific to the macOS platform.
+		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>

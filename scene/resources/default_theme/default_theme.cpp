@@ -177,6 +177,27 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("h_separation", "Button", 2 * scale);
 
+	// MenuBar
+	theme->set_stylebox("normal", "MenuBar", button_normal);
+	theme->set_stylebox("hover", "MenuBar", button_hover);
+	theme->set_stylebox("pressed", "MenuBar", button_pressed);
+	theme->set_stylebox("disabled", "MenuBar", button_disabled);
+	theme->set_stylebox("focus", "MenuBar", focus);
+
+	theme->set_font("font", "MenuBar", Ref<Font>());
+	theme->set_font_size("font_size", "MenuBar", -1);
+	theme->set_constant("outline_size", "MenuBar", 0 * scale);
+
+	theme->set_color("font_color", "MenuBar", control_font_color);
+	theme->set_color("font_pressed_color", "MenuBar", control_font_pressed_color);
+	theme->set_color("font_hover_color", "MenuBar", control_font_hover_color);
+	theme->set_color("font_focus_color", "MenuBar", control_font_focus_color);
+	theme->set_color("font_hover_pressed_color", "MenuBar", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "MenuBar", control_font_disabled_color);
+	theme->set_color("font_outline_color", "MenuBar", Color(1, 1, 1));
+
+	theme->set_constant("h_separation", "MenuBar", 4 * scale);
+
 	// LinkButton
 
 	theme->set_stylebox("focus", "LinkButton", focus);
@@ -669,6 +690,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "PopupMenu", Color(1, 1, 1));
 	theme->set_color("font_separator_outline_color", "PopupMenu", Color(1, 1, 1));
 
+	theme->set_constant("indent", "PopupMenu", 10 * scale);
 	theme->set_constant("h_separation", "PopupMenu", 4 * scale);
 	theme->set_constant("v_separation", "PopupMenu", 4 * scale);
 	theme->set_constant("outline_size", "PopupMenu", 0);
