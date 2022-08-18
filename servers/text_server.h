@@ -493,7 +493,7 @@ public:
 	virtual String percent_sign(const String &p_language = "") const = 0;
 
 	// String functions.
-	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const = 0;
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int p_chars_per_line = 0) const = 0;
 
 	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
 	virtual bool spoof_check(const String &p_string) const { return false; };

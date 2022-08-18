@@ -1548,8 +1548,15 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<param index="2" name="chars_per_line" type="int" default="0" />
 			<description>
-				Returns array of the word break character offsets.
+				Returns an array of the word break boundaries. Elements in the returned array are the offsets of the start and end of words. Therefore the length of the array is always even.
+				When [param chars_per_line] is greater than zero, line break boundaries are returned instead.
+				[codeblock]
+				var ts = TextServerManager.get_primary_interface()
+				print(ts.string_get_word_breaks("Godot Engine")) # Prints [0, 5, 6, 12]
+				print(ts.string_get_word_breaks("Godot Engine", "en", 5)) # Prints [0, 5, 6, 11, 11, 12]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="string_to_lower" qualifiers="const">

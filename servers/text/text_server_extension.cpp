@@ -308,7 +308,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_strip_diacritics, "string");
 	GDVIRTUAL_BIND(_is_valid_identifier, "string");
 
-	GDVIRTUAL_BIND(_string_get_word_breaks, "string", "language");
+	GDVIRTUAL_BIND(_string_get_word_breaks, "string", "language", "chars_per_line");
 
 	GDVIRTUAL_BIND(_is_confusable, "string", "dict");
 	GDVIRTUAL_BIND(_spoof_check, "string");
@@ -1379,9 +1379,9 @@ TypedArray<Vector2i> TextServerExtension::parse_structured_text(StructuredTextPa
 	return ret;
 }
 
-PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_string, const String &p_language) const {
+PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_string, const String &p_language, int p_chars_per_line) const {
 	PackedInt32Array ret;
-	GDVIRTUAL_CALL(_string_get_word_breaks, p_string, p_language, ret);
+	GDVIRTUAL_CALL(_string_get_word_breaks, p_string, p_language, p_chars_per_line, ret);
 	return ret;
 }
 
