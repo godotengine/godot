@@ -108,6 +108,10 @@ private:
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
 
+	// bind helpers
+	void _add_shortcut(const String &p_path, Ref<Shortcut> p_shortcut);
+	Vector<String> _get_shortcut_list();
+
 protected:
 	static void _bind_methods();
 
@@ -170,9 +174,11 @@ public:
 	String get_editor_layouts_config() const;
 	float get_auto_display_scale() const;
 
-	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<Shortcut> get_shortcut(const String &p_name) const;
+	void add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void remove_shortcut(const String &p_path);
+	bool is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const;
+	bool has_shortcut(const String &p_path) const;
+	Ref<Shortcut> get_shortcut(const String &p_path) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);

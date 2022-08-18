@@ -70,6 +70,14 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<description>
+				Adds a [param shortcut] whose path is specified by [param path].
+			</description>
+		</method>
 		<method name="check_changed_settings_in_group" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="setting_prefix" type="String" />
@@ -118,6 +126,19 @@
 				Returns the value of the setting specified by [param name]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="Shortcut" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the shortcut specified by [param path]. If no shortcut with the provided path is found in the list, tries to find a built-in shortcut. If found, adds it to the list and returns it, otherwise returns [code]null[/code]
+			</description>
+		</method>
+		<method name="get_shortcut_list">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of stored shortcut paths.
+			</description>
+		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -125,11 +146,33 @@
 				Returns [code]true[/code] if the setting specified by [param name] exists, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="has_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] exists, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Returns [code]true[/code] if shortcut specified by [param path] matches event specified by [param event], [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="mark_setting_changed">
 			<return type="void" />
 			<param index="0" name="setting" type="String" />
 			<description>
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
+			</description>
+		</method>
+		<method name="remove_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Removes the shortcut specified by [param path].
 			</description>
 		</method>
 		<method name="set_builtin_action_override">
