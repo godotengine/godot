@@ -751,7 +751,16 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	}
 	reason->set_text(p_reason);
-	reason->set_tooltip_text(p_reason.word_wrap(80));
+
+	const PackedInt32Array boundaries = TS->string_get_word_breaks(p_reason, "", 80);
+	PackedStringArray lines;
+	for (int i = 0; i < boundaries.size(); i += 2) {
+		const int start = boundaries[i];
+		const int end = boundaries[i + 1];
+		lines.append(p_reason.substr(start, end - start + 1));
+	}
+
+	reason->set_tooltip_text(String("\n").join(lines));
 }
 
 void ScriptEditorDebugger::_notification(int p_what) {

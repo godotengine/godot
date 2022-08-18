@@ -915,7 +915,7 @@ public:
 	MODBIND2RC(String, parse_number, const String &, const String &);
 	MODBIND1RC(String, percent_sign, const String &);
 
-	MODBIND2RC(PackedInt32Array, string_get_word_breaks, const String &, const String &);
+	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int);
 
 	MODBIND2RC(int64_t, is_confusable, const String &, const PackedStringArray &);
 	MODBIND1RC(bool, spoof_check, const String &);

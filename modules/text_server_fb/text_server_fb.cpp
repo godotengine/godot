@@ -4099,25 +4099,68 @@ String TextServerFallback::_string_to_lower(const String &p_string, const String
 	return lower;
 }
 
-PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language) const {
+PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int p_chars_per_line) const {
 	PackedInt32Array ret;
+
+	int line_start = 0;
+	int line_end = 0; // End of last word on current line.
+	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+	int word_length = 0;
+
 	for (int i = 0; i < p_string.length(); i++) {
-		char32_t c = p_string[i];
-		if (c == 0xfffc) {
-			continue;
-		}
-		if (is_punct(c) && c != 0x005F) {
+		const char32_t c = p_string[i];
+
+		if (is_linebreak(c)) {
+			// Force newline.
+			ret.push_back(line_start);
 			ret.push_back(i);
+			line_start = i + 1;
+			line_end = line_start;
+			word_start = line_start;
+			word_length = 0;
+		} else if (c == 0xfffc) {
 			continue;
+		} else if ((is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || is_whitespace(c)) {
+			// A whitespace ends current word.
+			if (word_length > 0) {
+				line_end = i - 1;
+				word_start = -1;
+				word_length = 0;
+			}
+		} else {
+			if (word_start == -1) {
+				word_start = i;
+				if (p_chars_per_line <= 0) {
+					ret.push_back(line_start);
+					ret.push_back(line_end + 1);
+					line_start = word_start;
+					line_end = line_start;
+				}
+			}
+			word_length += 1;
+
+			if (p_chars_per_line > 0) {
+				if (word_length > p_chars_per_line) {
+					// Word too long: wrap before current character.
+					ret.push_back(line_start);
+					ret.push_back(i);
+					line_start = i;
+					line_end = i;
+					word_start = i;
+					word_length = 1;
+				} else if (i - line_start + 1 > p_chars_per_line) {
+					// Line too long: wrap after the last word.
+					ret.push_back(line_start);
+					ret.push_back(line_end + 1);
+					line_start = word_start;
+					line_end = line_start;
+				}
+			}
 		}
-		if (is_underscore(c)) {
-			ret.push_back(i);
-			continue;
-		}
-		if (is_whitespace(c) || is_linebreak(c)) {
-			ret.push_back(i);
-			continue;
-		}
+	}
+	if (line_start < p_string.length()) {
+		ret.push_back(line_start);
+		ret.push_back(p_string.length());
 	}
 	return ret;
 }

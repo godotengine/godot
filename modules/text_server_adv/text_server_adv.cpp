@@ -6246,7 +6246,7 @@ String TextServerAdvanced::_string_to_lower(const String &p_string, const String
 	return String::utf16(lower.ptr(), len);
 }
 
-PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_string, const String &p_language) const {
+PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_string, const String &p_language, int p_chars_per_line) const {
 	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 	// Convert to UTF-16.
 	Char16String utf16 = p_string.utf16();
@@ -6254,15 +6254,7 @@ PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_str
 	HashSet<int> breaks;
 	UErrorCode err = U_ZERO_ERROR;
 	UBreakIterator *bi = ubrk_open(UBRK_LINE, lang.ascii().get_data(), (const UChar *)utf16.get_data(), utf16.length(), &err);
-	if (U_FAILURE(err)) {
-		// No data loaded - use fallback.
-		for (int i = 0; i < p_string.length(); i++) {
-			char32_t c = p_string[i];
-			if (is_whitespace(c) || is_linebreak(c)) {
-				breaks.insert(i);
-			}
-		}
-	} else {
+	if (U_SUCCESS(err)) {
 		while (ubrk_next(bi) != UBRK_DONE) {
 			int pos = _convert_pos(p_string, utf16, ubrk_current(bi)) - 1;
 			if (pos != p_string.length() - 1) {
@@ -6273,23 +6265,79 @@ PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_str
 	ubrk_close(bi);
 
 	PackedInt32Array ret;
+
+	int line_start = 0;
+	int line_end = 0; // End of last word on current line.
+	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+	int word_length = 0;
+
 	for (int i = 0; i < p_string.length(); i++) {
-		char32_t c = p_string[i];
-		if (c == 0xfffc) {
-			continue;
-		}
-		if (u_ispunct(c) && c != 0x005F) {
+		const char32_t c = p_string[i];
+
+		if (is_linebreak(c)) {
+			// Force newline.
+			ret.push_back(line_start);
 			ret.push_back(i);
+			line_start = i + 1;
+			line_end = line_start;
+			word_start = line_start;
+			word_length = 0;
+		} else if (c == 0xfffc) {
 			continue;
+		} else if ((u_ispunct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || is_whitespace(c)) {
+			// A whitespace ends current word.
+			if (word_length > 0) {
+				line_end = i - 1;
+				word_start = -1;
+				word_length = 0;
+			}
+		} else if (breaks.has(i)) {
+			// End current word, no space.
+			if (word_length > 0) {
+				line_end = i;
+				word_start = i + 1;
+				word_length = 0;
+			}
+			if (p_chars_per_line <= 0) {
+				ret.push_back(line_start);
+				ret.push_back(line_end + 1);
+				line_start = word_start;
+				line_end = line_start;
+			}
+		} else {
+			if (word_start == -1) {
+				word_start = i;
+				if (p_chars_per_line <= 0) {
+					ret.push_back(line_start);
+					ret.push_back(line_end + 1);
+					line_start = word_start;
+					line_end = line_start;
+				}
+			}
+			word_length += 1;
+
+			if (p_chars_per_line > 0) {
+				if (word_length > p_chars_per_line) {
+					// Word too long: wrap before current character.
+					ret.push_back(line_start);
+					ret.push_back(i);
+					line_start = i;
+					line_end = i;
+					word_start = i;
+					word_length = 1;
+				} else if (i - line_start + 1 > p_chars_per_line) {
+					// Line too long: wrap after the last word.
+					ret.push_back(line_start);
+					ret.push_back(line_end + 1);
+					line_start = word_start;
+					line_end = line_start;
+				}
+			}
 		}
-		if (is_underscore(c)) {
-			ret.push_back(i);
-			continue;
-		}
-		if (breaks.has(i)) {
-			ret.push_back(i);
-			continue;
-		}
+	}
+	if (line_start < p_string.length()) {
+		ret.push_back(line_start);
+		ret.push_back(p_string.length());
 	}
 	return ret;
 }

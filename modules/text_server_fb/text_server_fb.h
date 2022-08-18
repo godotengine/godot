@@ -786,7 +786,7 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_position, const RID &);
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
-	MODBIND2RC(PackedInt32Array, string_get_word_breaks, const String &, const String &);
+	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int);
 
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);

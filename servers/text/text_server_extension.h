@@ -510,8 +510,8 @@ public:
 	virtual String strip_diacritics(const String &p_string) const override;
 	GDVIRTUAL1RC(String, _strip_diacritics, const String &);
 
-	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
-	GDVIRTUAL2RC(PackedInt32Array, _string_get_word_breaks, const String &, const String &);
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int p_chars_per_line = 0) const override;
+	GDVIRTUAL3RC(PackedInt32Array, _string_get_word_breaks, const String &, const String &, int);
 
 	virtual bool is_valid_identifier(const String &p_string) const override;
 	GDVIRTUAL1RC(bool, _is_valid_identifier, const String &);
