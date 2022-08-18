@@ -1942,6 +1942,21 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 		} break;
 
+		case FILE_SAVE_AND_RUN_MAIN_SCENE: {
+			ProjectSettings::get_singleton()->set("application/run/main_scene", p_file);
+			ProjectSettings::get_singleton()->save();
+
+			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
+				_save_default_environment();
+				_save_scene_with_preview(p_file);
+				if ((bool)pick_main_scene->get_meta("from_native", false)) {
+					run_native->resume_run_native();
+				} else {
+					_run(false, p_file);
+				}
+			}
+		} break;
+
 		case FILE_EXPORT_MESH_LIBRARY: {
 			Ref<MeshLibrary> ml;
 			if (file_export_lib_merge->is_pressed() && FileAccess::exists(p_file)) {
@@ -2396,10 +2411,8 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		}
 
 		if (scene->get_scene_file_path().is_empty()) {
-			current_menu_option = -1;
-			_menu_option(FILE_SAVE_AS_SCENE);
-			// Set the option to save and run so when the dialog is accepted, the scene runs.
 			current_menu_option = FILE_SAVE_AND_RUN;
+			_menu_option_confirm(FILE_SAVE_AS_SCENE, true);
 			file->set_title(TTR("Save scene before running..."));
 			return;
 		}
@@ -2414,6 +2427,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		if (!ensure_main_scene(false)) {
 			return;
 		}
+		run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", "");
 	}
 
 	if (bool(EDITOR_GET("run/auto_save/save_before_running"))) {
@@ -4102,8 +4116,15 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 		}
 
 		pick_main_scene->hide();
-		current_menu_option = SETTINGS_PICK_MAIN_SCENE;
-		_dialog_action(scene->get_scene_file_path());
+
+		if (!FileAccess::exists(scene->get_scene_file_path())) {
+			current_menu_option = FILE_SAVE_AND_RUN_MAIN_SCENE;
+			_menu_option_confirm(FILE_SAVE_AS_SCENE, true);
+			file->set_title(TTR("Save scene before running..."));
+		} else {
+			current_menu_option = SETTINGS_PICK_MAIN_SCENE;
+			_dialog_action(scene->get_scene_file_path());
+		}
 	}
 }
 
