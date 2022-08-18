@@ -1460,6 +1460,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// PopupPanel
 	theme->set_stylebox("panel", "PopupPanel", style_popup);
 
+	Ref<StyleBoxFlat> control_editor_popup_style = style_popup->duplicate();
+	control_editor_popup_style->set_shadow_size(0);
+	control_editor_popup_style->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE);
+	control_editor_popup_style->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
+	control_editor_popup_style->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE);
+	control_editor_popup_style->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE);
+	control_editor_popup_style->set_border_width_all(0);
+
+	theme->set_stylebox("panel", "ControlEditorPopupButton", control_editor_popup_style);
+	theme->set_type_variation("ControlEditorPopupButton", "PopupPanel");
+
 	// SpinBox
 	theme->set_icon("updown", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdown"), SNAME("EditorIcons")));
 	theme->set_icon("updown_disabled", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), SNAME("EditorIcons")));
