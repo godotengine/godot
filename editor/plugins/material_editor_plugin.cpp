@@ -36,7 +36,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/fog_material.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 #include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
@@ -405,17 +405,17 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 	return smat;
 }
 
-String ParticlesMaterialConversionPlugin::converts_to() const {
+String ParticleProcessMaterialConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
 }
 
-bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<ParticleProcessMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 
-Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<ParticleProcessMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

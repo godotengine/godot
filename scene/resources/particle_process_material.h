@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  particles_material.h                                                 */
+/*  particle_process_material.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,8 +31,8 @@
 #include "core/templates/rid.h"
 #include "scene/resources/material.h"
 
-#ifndef PARTICLES_MATERIAL_H
-#define PARTICLES_MATERIAL_H
+#ifndef PARTICLE_PROCESS_MATERIAL_H
+#define PARTICLE_PROCESS_MATERIAL_H
 
 /*
  TODO:
@@ -41,8 +41,8 @@
 -Proper trails
 */
 
-class ParticlesMaterial : public Material {
-	GDCLASS(ParticlesMaterial, Material);
+class ParticleProcessMaterial : public Material {
+	GDCLASS(ParticleProcessMaterial, Material);
 
 public:
 	enum Parameter {
@@ -170,7 +170,7 @@ private:
 	}
 
 	static Mutex material_mutex;
-	static SelfList<ParticlesMaterial>::List *dirty_materials;
+	static SelfList<ParticleProcessMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
 		StringName direction;
@@ -254,7 +254,7 @@ private:
 
 	static ShaderNames *shader_names;
 
-	SelfList<ParticlesMaterial> element;
+	SelfList<ParticleProcessMaterial> element;
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
@@ -425,14 +425,14 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 
-	ParticlesMaterial();
-	~ParticlesMaterial();
+	ParticleProcessMaterial();
+	~ParticleProcessMaterial();
 };
 
-VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
-VARIANT_ENUM_CAST(ParticlesMaterial::ParticleFlags)
-VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
-VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
-VARIANT_ENUM_CAST(ParticlesMaterial::CollisionMode)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::Parameter)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::ParticleFlags)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::EmissionShape)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::SubEmitterMode)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::CollisionMode)
 
-#endif // PARTICLES_MATERIAL_H
+#endif // PARTICLE_PROCESS_MATERIAL_H

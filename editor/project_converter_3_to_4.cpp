@@ -201,7 +201,7 @@ static const char *gdscript_function_renames[][2] = {
 	// { "set_color", "surface_set_color"}, // ImmediateMesh broke Light2D, Theme, SurfaceTool
 	// { "set_event", "set_shortcut" }, // BaseButton - Cyclic Rename
 	// { "set_extents", "set_size"}, // BoxShape, RectangleShape broke ReflectionProbe
-	// { "set_flag", "set_particle_flag"}, // ParticlesMaterial broke Window, HingeJoint3D
+	// { "set_flag", "set_particle_flag"}, // ParticleProcessMaterial broke Window, HingeJoint3D
 	// { "set_h_offset", "set_drag_horizontal_offset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// { "set_margin", "set_offset" }, // Control broke Shape3D, AtlasTexture
 	// { "set_mode", "set_mode_file_mode" }, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
@@ -610,7 +610,7 @@ static const char *csharp_function_renames[][2] = {
 	// { "SetColor", "SurfaceSetColor"}, // ImmediateMesh broke Light2D, Theme, SurfaceTool
 	// { "SetEvent", "SetShortcut" }, // BaseButton - Cyclic Rename
 	// { "SetExtents", "SetSize"}, // BoxShape, RectangleShape broke ReflectionProbe
-	// { "SetFlag", "SetParticleFlag"}, // ParticlesMaterial broke Window, HingeJoint3D
+	// { "SetFlag", "SetParticleFlag"}, // ParticleProcessMaterial broke Window, HingeJoint3D
 	// { "SetHOffset", "SetDragHorizontalOffset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// { "SetMargin", "SetOffset" }, // Control broke Shape3D, AtlasTexture
 	// { "SetMode", "SetModeFileMode" }, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
@@ -1357,6 +1357,7 @@ static const char *class_renames[][2] = {
 	{ "PanoramaSky", "Sky" },
 	{ "Particles", "GPUParticles3D" }, // Be careful, this will be used everywhere
 	{ "Particles2D", "GPUParticles2D" },
+	{ "ParticlesMaterial", "ParticleProcessMaterial" },
 	{ "Path", "Path3D" }, // Be careful, this will be used everywhere
 	{ "PathFollow", "PathFollow3D" },
 	{ "PhysicalBone", "PhysicalBone3D" },
