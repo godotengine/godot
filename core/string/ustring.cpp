@@ -531,10 +531,12 @@ String &String::operator+=(const String &p_str) {
 
 	resize(lhs_len + rhs_len + 1);
 
-	const char32_t *src = p_str.get_data();
+	const char32_t *src = p_str.ptr();
 	char32_t *dst = ptrw() + lhs_len;
 
-	memcpy(dst, src, (rhs_len + 1) * sizeof(char32_t));
+	// Don't copy the terminating null with `memcpy` to avoid undefined behavior when string is being added to itself (it would overlap the destination).
+	memcpy(dst, src, rhs_len * sizeof(char32_t));
+	*(dst + rhs_len) = _null;
 
 	return *this;
 }
