@@ -259,6 +259,12 @@
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
+		<member name="audio/2d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer2D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength].
+		</member>
+		<member name="audio/3d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
+		</member>
 		<member name="audio/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>

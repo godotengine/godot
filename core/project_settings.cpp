@@ -1085,6 +1085,10 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
+	GLOBAL_DEF_RST("audio/2d_panning_strength", 1.0f);
+	custom_prop_info["audio/2d_panning_strength"] = PropertyInfo(Variant::REAL, "audio/2d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
+	GLOBAL_DEF_RST("audio/3d_panning_strength", 1.0f);
+	custom_prop_info["audio/3d_panning_strength"] = PropertyInfo(Variant::REAL, "audio/3d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
 
 	PoolStringArray extensions = PoolStringArray();
 	extensions.push_back("gd");

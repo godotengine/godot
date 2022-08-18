@@ -88,6 +88,9 @@
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode" default="0">
 			Decides if audio should pause when source is outside of [member max_distance] range.
 		</member>
+		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
+			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/3d_panning_strength] with this factor. Higher values will pan audio from left to right more dramatically than lower values.
+		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
