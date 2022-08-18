@@ -1698,13 +1698,13 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 								inputs[i] = "(" + src_var + " ? 1.0 : 0.0)";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
-								inputs[i] = "dot(" + src_var + ", vec2(0.5, 0.5))";
+								inputs[i] = src_var + ".x";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
-								inputs[i] = "dot(" + src_var + ", vec3(0.333333, 0.333333, 0.333333))";
+								inputs[i] = src_var + ".x";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
-								inputs[i] = "dot(" + src_var + ", vec4(0.25, 0.25, 0.25, 0.25))";
+								inputs[i] = src_var + ".x";
 							} break;
 							default:
 								break;
