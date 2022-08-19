@@ -35,6 +35,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include "asound-so_wrap.h"
@@ -64,9 +65,8 @@ class AudioDriverALSA : public AudioDriver {
 	snd_pcm_uframes_t period_size;
 	int channels;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	SafeFlag active;
+	SafeFlag exit_thread;
 
 public:
 	const char *get_name() const {

@@ -38,9 +38,8 @@ const char *AudioDriverXAudio2::get_name() const {
 }
 
 Error AudioDriverXAudio2::init() {
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
+	active.clear();
+	exit_thread.clear();
 	pcm_open = false;
 	samples_in = NULL;
 
@@ -86,17 +85,19 @@ Error AudioDriverXAudio2::init() {
 void AudioDriverXAudio2::thread_func(void *p_udata) {
 	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
 
-	while (!ad->exit_thread) {
-		if (!ad->active) {
+	while (!ad->exit_thread.is_set()) {
+		if (!ad->active.is_set()) {
 			for (int i = 0; i < AUDIO_BUFFERS; i++) {
 				ad->xaudio_buffer[i].Flags = XAUDIO2_END_OF_STREAM;
 			}
 
 		} else {
 			ad->lock();
+			ad->start_counting_ticks();
 
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
 
+			ad->stop_counting_ticks();
 			ad->unlock();
 
 			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
@@ -117,12 +118,10 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 			}
 		}
 	}
-
-	ad->thread_exited = true;
 }
 
 void AudioDriverXAudio2::start() {
-	active = true;
+	active.set();
 	HRESULT hr = source_voice->Start(0);
 	ERR_FAIL_COND_MSG(hr != S_OK, "Error starting XAudio2 driver. Error code: " + itos(hr) + ".");
 }
@@ -156,7 +155,7 @@ void AudioDriverXAudio2::finish() {
 	if (!thread.is_started())
 		return;
 
-	exit_thread = true;
+	exit_thread.set();
 	thread.wait_to_finish();
 
 	if (source_voice) {
