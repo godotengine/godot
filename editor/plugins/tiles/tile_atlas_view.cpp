@@ -127,8 +127,8 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
 	}
 
 	// Update the backgrounds.
-	background_left->update();
-	background_right->update();
+	background_left->set_size(base_tiles_root_control->get_custom_minimum_size());
+	background_right->set_size(alternative_tiles_root_control->get_custom_minimum_size());
 
 	// Zoom on the position.
 	if (p_zoom_on_mouse_pos) {
@@ -374,13 +374,11 @@ void TileAtlasView::_draw_alternatives() {
 
 void TileAtlasView::_draw_background_left() {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-	background_left->set_size(base_tiles_root_control->get_custom_minimum_size());
 	background_left->draw_texture_rect(texture, Rect2(Vector2(), background_left->get_size()), true);
 }
 
 void TileAtlasView::_draw_background_right() {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-	background_right->set_size(alternative_tiles_root_control->get_custom_minimum_size());
 	background_right->draw_texture_rect(texture, Rect2(Vector2(), background_right->get_size()), true);
 }
 
@@ -404,23 +402,6 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 
 	// Update everything.
 	_update_zoom_and_panning();
-
-	// Change children control size.
-	Size2i base_tiles_control_size = _compute_base_tiles_control_size();
-	for (int i = 0; i < base_tiles_drawing_root->get_child_count(); i++) {
-		Control *control = Object::cast_to<Control>(base_tiles_drawing_root->get_child(i));
-		if (control) {
-			control->set_size(base_tiles_control_size);
-		}
-	}
-
-	Size2i alternative_control_size = _compute_alternative_tiles_control_size();
-	for (int i = 0; i < alternative_tiles_drawing_root->get_child_count(); i++) {
-		Control *control = Object::cast_to<Control>(alternative_tiles_drawing_root->get_child(i));
-		if (control) {
-			control->set_size(alternative_control_size);
-		}
-	}
 
 	// Update.
 	base_tiles_draw->update();
@@ -613,7 +594,7 @@ TileAtlasView::TileAtlasView() {
 
 	background_left = memnew(Control);
 	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	background_left->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	background_left->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
 	background_left->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	background_left->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_left));
 	base_tiles_root_control->add_child(background_left);
@@ -651,23 +632,26 @@ TileAtlasView::TileAtlasView() {
 
 	alternative_tiles_root_control = memnew(Control);
 	alternative_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	alternative_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_alternative_tiles_root_control_gui_input));
 	right_vbox->add_child(alternative_tiles_root_control);
 
 	background_right = memnew(Control);
 	background_right->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	background_right->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
 	background_right->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	background_right->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_right));
-
 	alternative_tiles_root_control->add_child(background_right);
 
 	alternative_tiles_drawing_root = memnew(Control);
 	alternative_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	alternative_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	alternative_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	alternative_tiles_root_control->add_child(alternative_tiles_drawing_root);
 
 	alternatives_draw = memnew(Control);
 	alternatives_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	alternatives_draw->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	alternatives_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_alternatives));
 	alternative_tiles_drawing_root->add_child(alternatives_draw);
 }
