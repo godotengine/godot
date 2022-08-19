@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "menu_button.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
 
@@ -64,9 +63,7 @@ void MenuButton::pressed() {
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
 
 	// If not triggered by the mouse, start the popup with its first item selected.
-	if (popup->get_item_count() > 0 &&
-			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
-					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+	if (popup->get_item_count() > 0 && !_was_pressed_by_mouse()) {
 		popup->set_current_index(0);
 	}
 
