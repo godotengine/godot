@@ -1082,6 +1082,14 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return MARSHALLED_IN(Vector3i, unbox_addr<GDMonoMarshal::M_Vector3i>(p_obj));
 			}
 
+			if (vtclass == CACHED_CLASS(Vector4)) {
+				return MARSHALLED_IN(Vector4, unbox_addr<GDMonoMarshal::M_Vector4>(p_obj));
+			}
+
+			if (vtclass == CACHED_CLASS(Vector4i)) {
+				return MARSHALLED_IN(Vector4i, unbox_addr<GDMonoMarshal::M_Vector4i>(p_obj));
+			}
+
 			if (vtclass == CACHED_CLASS(Basis)) {
 				return MARSHALLED_IN(Basis, unbox_addr<GDMonoMarshal::M_Basis>(p_obj));
 			}
