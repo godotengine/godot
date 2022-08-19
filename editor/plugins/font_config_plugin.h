@@ -66,7 +66,8 @@ class EditorPropertyFontOTObject : public RefCounted {
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	static void _bind_methods();
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
 	void set_dict(const Dictionary &p_dict);
@@ -74,9 +75,6 @@ public:
 
 	void set_defaults(const Dictionary &p_dict);
 	Dictionary get_defaults();
-
-	bool property_can_revert(const String &p_name);
-	Variant property_get_revert(const String &p_name);
 
 	EditorPropertyFontOTObject(){};
 };

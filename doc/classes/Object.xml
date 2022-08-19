@@ -64,6 +64,22 @@
 				Called whenever the object receives a notification, which is identified in [param what] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
 			</description>
 		</method>
+		<method name="_property_can_revert" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Virtual methods that can be overridden to customize the property revert behavior in the editor.
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value. Override [method _property_get_revert] to return the actual value.
+			</description>
+		</method>
+		<method name="_property_get_revert" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Virtual methods that can be overridden to customize the property revert behavior in the editor.
+				Returns the default value of the property identified by [code]name[/code]. [method _property_can_revert] must be overridden as well for this method to be called.
+			</description>
+		</method>
 		<method name="_set" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />

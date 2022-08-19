@@ -171,6 +171,9 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const = 0;
 
+	virtual bool property_can_revert(const StringName &p_name) const = 0;
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const = 0;
+
 	virtual Object *get_owner() { return nullptr; }
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state);
 
@@ -446,6 +449,9 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
+
+	virtual bool property_can_revert(const StringName &p_name) const override { return false; };
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; };
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;

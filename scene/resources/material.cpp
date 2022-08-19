@@ -297,7 +297,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-bool ShaderMaterial::property_can_revert(const String &p_name) {
+bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_uniform(p_name);
 		if (pr) {
@@ -310,15 +310,15 @@ bool ShaderMaterial::property_can_revert(const String &p_name) {
 	return false;
 }
 
-Variant ShaderMaterial::property_get_revert(const String &p_name) {
-	Variant r_ret;
+bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_uniform(p_name);
 		if (pr) {
-			r_ret = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
+			r_property = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
+			return true;
 		}
 	}
-	return r_ret;
+	return false;
 }
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
@@ -386,8 +386,6 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_uniform", "param", "value"), &ShaderMaterial::set_shader_uniform);
 	ClassDB::bind_method(D_METHOD("get_shader_uniform", "param"), &ShaderMaterial::get_shader_uniform);
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ShaderMaterial::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ShaderMaterial::property_get_revert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }

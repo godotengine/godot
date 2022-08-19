@@ -157,8 +157,8 @@ protected:
 
 	virtual void _validate_property(PropertyInfo &property) const override;
 
-	bool property_can_revert(const String &p_name);
-	Variant property_get_revert(const String &p_name);
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
 	enum {

@@ -692,6 +692,19 @@ public:
 		return Variant::NIL;
 	}
 
+	virtual bool property_can_revert(const StringName &p_name) const override {
+		if (native_info->property_can_revert_func) {
+			return native_info->property_can_revert_func(instance, (const GDNativeStringNamePtr)&p_name);
+		}
+		return false;
+	}
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
+		if (native_info->property_get_revert_func) {
+			return native_info->property_get_revert_func(instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
+		}
+		return false;
+	}
+
 	virtual Object *get_owner() override {
 		if (native_info->get_owner_func) {
 			return (Object *)native_info->get_owner_func(instance);

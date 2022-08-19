@@ -132,20 +132,6 @@
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
 			</description>
 		</method>
-		<method name="property_can_revert">
-			<return type="bool" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns [code]true[/code] if the setting specified by [param name] can have its value reverted to the default value, [code]false[/code] otherwise. When this method returns [code]true[/code], a Revert button will display next to the setting in the Editor Settings.
-			</description>
-		</method>
-		<method name="property_get_revert">
-			<return type="Variant" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns the default value of the setting specified by [param name]. This is the value that would be applied when clicking the Revert button in the Editor Settings.
-			</description>
-		</method>
 		<method name="set_builtin_action_override">
 			<return type="void" />
 			<param index="0" name="name" type="String" />

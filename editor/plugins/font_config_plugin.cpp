@@ -100,11 +100,6 @@ bool EditorPropertyFontOTObject::_get(const StringName &p_name, Variant &r_ret) 
 	return false;
 }
 
-void EditorPropertyFontOTObject::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorPropertyFontOTObject::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorPropertyFontOTObject::property_get_revert);
-}
-
 void EditorPropertyFontOTObject::set_dict(const Dictionary &p_dict) {
 	dict = p_dict;
 }
@@ -121,7 +116,7 @@ Dictionary EditorPropertyFontOTObject::get_defaults() {
 	return defaults_dict;
 }
 
-bool EditorPropertyFontOTObject::property_can_revert(const String &p_name) {
+bool EditorPropertyFontOTObject::_property_can_revert(const StringName &p_name) const {
 	String name = p_name;
 
 	if (name.begins_with("keys")) {
@@ -136,18 +131,19 @@ bool EditorPropertyFontOTObject::property_can_revert(const String &p_name) {
 	return false;
 }
 
-Variant EditorPropertyFontOTObject::property_get_revert(const String &p_name) {
+bool EditorPropertyFontOTObject::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	String name = p_name;
 
 	if (name.begins_with("keys")) {
 		int key = name.get_slicec('/', 1).to_int();
 		if (defaults_dict.has(key)) {
 			Vector3i range = defaults_dict[key];
-			return range.z;
+			r_property = range.z;
+			return true;
 		}
 	}
 
-	return Variant();
+	return false;
 }
 
 /*************************************************************************/

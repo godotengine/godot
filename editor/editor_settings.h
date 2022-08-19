@@ -100,6 +100,8 @@ private:
 	void _initial_set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _add_property_info_bind(const Dictionary &p_info);
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_godot2_text_editor_theme();
@@ -138,8 +140,6 @@ public:
 			_set_only(p_setting, p_value);
 		}
 	}
-	bool property_can_revert(const String &p_setting);
-	Variant property_get_revert(const String &p_setting);
 	void add_property_hint(const PropertyInfo &p_hint);
 	Array get_changed_settings() const;
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
