@@ -76,6 +76,8 @@ class PopupMenu : public Popup {
 		}
 	};
 
+	bool activated_by_keyboard;
+
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
@@ -89,7 +91,7 @@ class PopupMenu : public Popup {
 	virtual Size2 get_minimum_size() const;
 	void _scroll(float p_factor, const Point2 &p_over);
 	void _gui_input(const Ref<InputEvent> &p_event);
-	void _activate_submenu(int over);
+	void _activate_submenu(int over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
 	bool invalidated_click;
