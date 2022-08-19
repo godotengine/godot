@@ -1849,14 +1849,14 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 	return theme;
 }
 
-Ref<ImageTexture> create_unscaled_default_project_icon() {
-#ifdef MODULE_SVG_ENABLED
+/**
+ * Returns the SVG code for the default project icon.
+ */
+String get_default_project_icon() {
 	for (int i = 0; i < editor_icons_count; i++) {
-		// ESCALE should never affect size of the icon
 		if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
-			return editor_generate_icon(i, false, 1.0);
+			return String(editor_icons_sources[i]);
 		}
 	}
-#endif
-	return Ref<ImageTexture>(memnew(ImageTexture));
+	return String();
 }
