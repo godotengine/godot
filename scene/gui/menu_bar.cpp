@@ -760,6 +760,12 @@ Size2 MenuBar::get_minimum_size() const {
 		size.y = MAX(size.y, sz.y);
 		size.x += sz.x + hsep;
 	}
+
+	// Remove the last extraneous spacing.
+	if (size.x > 0) {
+		size.x -= hsep;
+	}
+
 	return size;
 }
 
