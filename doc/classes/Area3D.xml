@@ -4,7 +4,7 @@
 		3D area for detection and physics and audio influence.
 	</brief_description>
 	<description>
-		3D area that detects [CollisionObject3D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to custom audio buses.
+		3D area that detects [CollisionObject3D] nodes overlapping, entering, or exiting. Area only work with collision shapes of the type BOX, other types like Trimesh or Concave shape will not work. Can also alter or override local physics parameters (gravity, damping) and route audio to custom audio buses.
 	</description>
 	<tutorials>
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
