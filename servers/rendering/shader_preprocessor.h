@@ -130,14 +130,23 @@ private:
 		String body;
 	};
 
-	struct SkippedCondition {
-		int start_line = -1;
-		int end_line = -1;
+	struct Branch {
+		Vector<bool> conditions;
+		Branch *parent = nullptr;
+		bool else_defined = false;
+
+		Branch() {}
+
+		Branch(bool p_condition, Branch *p_parent) :
+				parent(p_parent) {
+			conditions.push_back(p_condition);
+		}
 	};
 
 	struct State {
 		RBMap<String, Define *> defines;
-		Vector<bool> skip_stack_else;
+		List<Branch> branches;
+		Branch *current_branch = nullptr;
 		int condition_depth = 0;
 		RBSet<String> includes;
 		List<uint64_t> cyclic_include_hashes; // Holds code hash of includes.
@@ -149,7 +158,6 @@ private:
 		bool save_regions = false;
 		RBMap<String, List<Region>> regions;
 		Region *previous_region = nullptr;
-		RBMap<String, Vector<SkippedCondition *>> skipped_conditions;
 		bool disabled = false;
 		CompletionType completion_type = COMPLETION_TYPE_NONE;
 		HashSet<Ref<ShaderInclude>> shader_includes;
@@ -169,6 +177,7 @@ private:
 
 	void process_directive(Tokenizer *p_tokenizer);
 	void process_define(Tokenizer *p_tokenizer);
+	void process_elif(Tokenizer *p_tokenizer);
 	void process_else(Tokenizer *p_tokenizer);
 	void process_endif(Tokenizer *p_tokenizer);
 	void process_if(Tokenizer *p_tokenizer);
@@ -179,7 +188,7 @@ private:
 	void process_undef(Tokenizer *p_tokenizer);
 
 	void add_region(int p_line, bool p_enabled, Region *p_parent_region);
-	void start_branch_condition(Tokenizer *p_tokenizer, bool p_success);
+	void start_branch_condition(Tokenizer *p_tokenizer, bool p_success, bool p_continue = false);
 
 	void expand_output_macros(int p_start, int p_line);
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
