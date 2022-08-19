@@ -2537,13 +2537,6 @@ void GradientTexture2D::_bind_methods() {
 
 //////////////////////////////////////
 
-void ProxyTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
-	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_base", "get_base");
-}
-
 void ProxyTexture::set_base(const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(p_texture == this);
 

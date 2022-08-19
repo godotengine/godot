@@ -883,8 +883,6 @@ VARIANT_ENUM_CAST(GradientTexture2D::Fill);
 VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
 
 class ProxyTexture : public Texture2D {
-	GDCLASS(ProxyTexture, Texture2D);
-
 private:
 	mutable RID proxy_ph;
 	mutable RID proxy;
