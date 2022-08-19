@@ -565,6 +565,26 @@ void Control::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+bool Control::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "layout_mode" || p_name == "anchors_preset") {
+		return true;
+	}
+
+	return false;
+}
+
+bool Control::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "layout_mode") {
+		r_property = _get_default_layout_mode();
+		return true;
+	} else if (p_name == "anchors_preset") {
+		r_property = LayoutPreset::PRESET_TOP_LEFT;
+		return true;
+	}
+
+	return false;
+}
+
 // Global relations.
 
 bool Control::is_top_level_control() const {
@@ -794,24 +814,15 @@ void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (
 void Control::_set_layout_mode(LayoutMode p_mode) {
 	bool list_changed = false;
 
-	if (p_mode == LayoutMode::LAYOUT_MODE_POSITION || p_mode == LayoutMode::LAYOUT_MODE_ANCHORS) {
-		if ((int)get_meta("_edit_layout_mode", p_mode) != (int)p_mode) {
-			list_changed = true;
-		}
+	if (data.stored_layout_mode != p_mode) {
+		list_changed = true;
+		data.stored_layout_mode = p_mode;
+	}
 
-		set_meta("_edit_layout_mode", (int)p_mode);
-
-		if (p_mode == LayoutMode::LAYOUT_MODE_POSITION) {
-			remove_meta("_edit_layout_mode");
-			remove_meta("_edit_use_custom_anchors");
-			set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
-			set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
-		}
-	} else {
-		if (has_meta("_edit_layout_mode")) {
-			remove_meta("_edit_layout_mode");
-			list_changed = true;
-		}
+	if (data.stored_layout_mode == LayoutMode::LAYOUT_MODE_POSITION) {
+		data.stored_use_custom_anchors = false;
+		set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
+		set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
 	}
 
 	if (list_changed) {
@@ -832,33 +843,43 @@ Control::LayoutMode Control::_get_layout_mode() const {
 	if (_get_anchors_layout_preset() != (int)LayoutPreset::PRESET_TOP_LEFT) {
 		return LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
-	// Otherwise check what was saved.
-	if (has_meta("_edit_layout_mode")) {
-		return (LayoutMode)(int)get_meta("_edit_layout_mode");
+
+	// Otherwise fallback on what's stored.
+	return data.stored_layout_mode;
+}
+
+Control::LayoutMode Control::_get_default_layout_mode() const {
+	Node *parent_node = get_parent_control();
+	// In these modes the property is read-only.
+	if (!parent_node) {
+		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
+	} else if (Object::cast_to<Container>(parent_node)) {
+		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
-	// Or fallback on default.
+
+	// Otherwise fallback on the position mode.
 	return LayoutMode::LAYOUT_MODE_POSITION;
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
 	bool list_changed = false;
 
-	if (get_meta("_edit_layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS).operator int() != LayoutMode::LAYOUT_MODE_ANCHORS) {
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
 		list_changed = true;
-		set_meta("_edit_layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
+		data.stored_layout_mode = LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
 
 	if (p_preset == -1) {
-		if (!get_meta("_edit_use_custom_anchors", false)) {
-			set_meta("_edit_use_custom_anchors", true);
+		if (!data.stored_use_custom_anchors) {
+			data.stored_use_custom_anchors = true;
 			notify_property_list_changed();
 		}
 		return; // Keep settings as is.
 	}
 
-	if (get_meta("_edit_use_custom_anchors", true)) {
+	if (data.stored_use_custom_anchors) {
 		list_changed = true;
-		remove_meta("_edit_use_custom_anchors");
+		data.stored_use_custom_anchors = false;
 	}
 
 	LayoutPreset preset = (LayoutPreset)p_preset;
@@ -899,7 +920,7 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 
 int Control::_get_anchors_layout_preset() const {
 	// If the custom preset was selected by user, use it.
-	if ((bool)get_meta("_edit_use_custom_anchors", false)) {
+	if (data.stored_use_custom_anchors) {
 		return -1;
 	}
 
@@ -3391,7 +3412,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
 
 	const String anchors_presets_options = "Custom:-1,PresetFullRect:15,"
@@ -3399,7 +3420,7 @@ void Control::_bind_methods() {
 										   "PresetCenterLeft:4,PresetCenterTop:5,PresetCenterRight:6,PresetCenterBottom:7,PresetCenter:8,"
 										   "PresetLeftWide:9,PresetTopWide:10,PresetRightWide:11,PresetBottomWide:12,PresetVCenterWide:13,PresetHCenterWide:14";
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchors_preset", PROPERTY_HINT_ENUM, anchors_presets_options, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_anchors_layout_preset", "_get_anchors_layout_preset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchors_preset", PROPERTY_HINT_ENUM, anchors_presets_options, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_anchors_layout_preset", "_get_anchors_layout_preset");
 	ADD_PROPERTY_DEFAULT("anchors_preset", -1);
 
 	ADD_SUBGROUP_INDENT("Anchor Points", "anchor_", 1);
