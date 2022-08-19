@@ -154,6 +154,8 @@ static OS::ProcessID editor_pid = 0;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
 #endif
+bool use_startup_benchmark = false;
+String startup_benchmark_file;
 
 // Display
 
@@ -386,6 +388,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 	OS::get_singleton()->print("  --dump-extension-api                         Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
+	OS::get_singleton()->print("  --startup-benchmark                          Benchmark the startup time and print it to console.\n");
+	OS::get_singleton()->print("  --startup-benchmark-file <path>              Benchmark the startup time and save it to a given file in JSON format.\n");
 #ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test [--help]                              Run unit tests. Use --test --help for more information.\n");
 #endif
@@ -594,6 +598,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
+	engine->startup_begin();
+	engine->startup_benchmark_begin_measure("core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -1208,6 +1214,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
+
+		} else if (I->get() == "--startup-benchmark") {
+			use_startup_benchmark = true;
+		} else if (I->get() == "--startup-benchmark-file") {
+			if (I->next()) {
+				use_startup_benchmark = true;
+				startup_benchmark_file = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing <path> argument for --startup-benchmark-file <path>.\n");
+				goto error;
+			}
+
 		} else if (I->get() == "--") {
 			adding_user_args = true;
 		} else {
@@ -1624,6 +1643,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
+	engine->startup_benchmark_end_measure(); // core
+
 	if (p_second_phase) {
 		return setup2();
 	}
@@ -1690,6 +1711,8 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+	engine->startup_benchmark_begin_measure("servers");
+
 	tsman = memnew(TextServerManager);
 
 	if (tsman) {
@@ -2047,7 +2070,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
+	engine->startup_benchmark_end_measure(); // servers
+
 	MAIN_PRINT("Main: Load Scene Types");
+
+	engine->startup_benchmark_begin_measure("scene");
 
 	register_scene_types();
 	register_driver_types();
@@ -2123,6 +2150,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	print_verbose("CORE API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_CORE)));
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
+
+	engine->startup_benchmark_end_measure(); // scene
 
 	return OK;
 }
@@ -2462,6 +2491,7 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
+				Engine::get_singleton()->startup_benchmark_begin_measure("load_autoloads");
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				//first pass, add the constants so they exist before any script is loaded
@@ -2516,12 +2546,14 @@ bool Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
+				Engine::get_singleton()->startup_benchmark_end_measure(); // load autoloads
 			}
 		}
 
 #ifdef TOOLS_ENABLED
 		EditorNode *editor_node = nullptr;
 		if (editor) {
+			Engine::get_singleton()->startup_benchmark_begin_measure("editor");
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
@@ -2529,6 +2561,13 @@ bool Main::start() {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
+
+			Engine::get_singleton()->startup_benchmark_end_measure();
+
+			editor_node->set_use_startup_benchmark(use_startup_benchmark, startup_benchmark_file);
+			// Editor takes over
+			use_startup_benchmark = false;
+			startup_benchmark_file = String();
 		}
 #endif
 
@@ -2693,6 +2732,8 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 
+			Engine::get_singleton()->startup_benchmark_begin_measure("game_load");
+
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
 
@@ -2732,16 +2773,20 @@ bool Main::start() {
 					}
 				}
 			}
+
+			Engine::get_singleton()->startup_benchmark_end_measure(); // game_load
 		}
 
 #ifdef TOOLS_ENABLED
 		if (project_manager) {
+			Engine::get_singleton()->startup_benchmark_begin_measure("project_manager");
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
+			Engine::get_singleton()->startup_benchmark_end_measure();
 		}
 
 		if (project_manager || editor) {
@@ -2769,6 +2814,11 @@ bool Main::start() {
 		if (elapsed_time < minimum_time) {
 			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
 		}
+	}
+
+	if (use_startup_benchmark) {
+		Engine::get_singleton()->startup_dump(startup_benchmark_file);
+		startup_benchmark_file = String();
 	}
 
 	return true;

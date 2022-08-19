@@ -661,6 +661,7 @@ void EditorNode::_notification(int p_what) {
 
 			command_palette->register_shortcuts_as_command();
 
+			MessageQueue::get_singleton()->push_callable(callable_mp(this, &EditorNode::_begin_first_scan));
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -1043,6 +1044,8 @@ void EditorNode::_sources_changed(bool p_exist) {
 	if (waiting_for_first_scan) {
 		waiting_for_first_scan = false;
 
+		Engine::get_singleton()->startup_benchmark_end_measure(); // editor_scan_and_reimport
+
 		// Reload the global shader variables, but this time
 		// loading textures, as they are now properly imported.
 		RenderingServer::get_singleton()->global_shader_uniforms_load_settings(true);
@@ -1055,8 +1058,16 @@ void EditorNode::_sources_changed(bool p_exist) {
 		_load_docks();
 
 		if (!defer_load_scene.is_empty()) {
+			Engine::get_singleton()->startup_benchmark_begin_measure("editor_load_scene");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
+			Engine::get_singleton()->startup_benchmark_end_measure();
+
+			if (use_startup_benchmark) {
+				Engine::get_singleton()->startup_dump(startup_benchmark_file);
+				startup_benchmark_file = String();
+				use_startup_benchmark = false;
+			}
 		}
 	}
 }
@@ -4317,6 +4328,15 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 }
 
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
+
+void EditorNode::_begin_first_scan() {
+	Engine::get_singleton()->startup_benchmark_begin_measure("editor_scan_and_import");
+	EditorFileSystem::get_singleton()->scan();
+}
+void EditorNode::set_use_startup_benchmark(bool p_use_startup_benchmark, const String &p_startup_benchmark_file) {
+	use_startup_benchmark = p_use_startup_benchmark;
+	startup_benchmark_file = p_startup_benchmark_file;
+}
 
 Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only) {
 	export_defer.preset = p_preset;
