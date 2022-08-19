@@ -798,7 +798,7 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 	return p_type == "Curve";
 }
 
-Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
+Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<Curve> curve_ref = p_from;
 	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture2D>(), "It's not a reference to a valid Resource object.");
 	Curve &curve = **curve_ref;

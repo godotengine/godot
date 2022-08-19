@@ -142,7 +142,7 @@ class CurvePreviewGenerator : public EditorResourcePreviewGenerator {
 
 public:
 	virtual bool handles(const String &p_type) const override;
-	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size) const override;
+	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const override;
 };
 
 #endif // CURVE_EDITOR_PLUGIN_H
