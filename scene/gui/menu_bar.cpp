@@ -749,7 +749,6 @@ Size2 MenuBar::get_minimum_size() const {
 	}
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
-	int hsep = get_theme_constant(SNAME("h_separation"));
 
 	Vector2 size;
 	for (int i = 0; i < menu_cache.size(); i++) {
@@ -758,7 +757,10 @@ Size2 MenuBar::get_minimum_size() const {
 		}
 		Size2 sz = menu_cache[i].text_buf->get_size() + style->get_minimum_size();
 		size.y = MAX(size.y, sz.y);
-		size.x += sz.x + hsep;
+		size.x += sz.x;
+	}
+	if (menu_cache.size() > 1) {
+		size.x += get_theme_constant(SNAME("h_separation")) * (menu_cache.size() - 1);
 	}
 	return size;
 }
