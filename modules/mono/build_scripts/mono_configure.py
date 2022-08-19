@@ -96,15 +96,26 @@ def find_dotnet_app_host_dir(env):
     if not app_host_version:
         raise RuntimeError("Cannot find .NET app host for version: " + app_host_search_version)
 
-    app_host_dir = os.path.join(
-        dotnet_root,
-        "packs",
-        "Microsoft.NETCore.App.Host." + runtime_identifier,
-        app_host_version,
-        "runtimes",
-        runtime_identifier,
-        "native",
-    )
+    def get_runtime_path():
+        return os.path.join(
+            dotnet_root,
+            "packs",
+            "Microsoft.NETCore.App.Host." + runtime_identifier,
+            app_host_version,
+            "runtimes",
+            runtime_identifier,
+            "native",
+        )
+
+    app_host_dir = get_runtime_path()
+
+    # Some Linux distros use their distro name as the RID in these paths.
+    # If the initial generic path doesn't exist, try to get the RID from `dotnet --info`.
+    # The generic RID should still be the first choice. Some platforms like Windows 10
+    # define the RID as `win10-x64` but still use the generic `win-x64` for directory names.
+    if not app_host_dir or not os.path.isdir(app_host_dir):
+        runtime_identifier = find_dotnet_cli_rid(dotnet_cmd)
+        app_host_dir = get_runtime_path()
 
     return app_host_dir
 
@@ -157,6 +168,31 @@ def find_app_host_version(dotnet_cmd, search_version):
                 return version
     except (subprocess.CalledProcessError, OSError):
         pass
+    return ""
+
+
+def find_dotnet_cli_rid(dotnet_cmd):
+    import subprocess
+
+    try:
+        env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
+        lines = subprocess.check_output([dotnet_cmd, "--info"], env=env).splitlines()
+
+        for line_bytes in lines:
+            line = line_bytes.decode("utf-8")
+            if not line.startswith(" RID:"):
+                continue
+
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+
+            return parts[1]
+    except (subprocess.CalledProcessError, OSError) as e:
+        import sys
+
+        print(e, file=sys.stderr)
+
     return ""
 
 
