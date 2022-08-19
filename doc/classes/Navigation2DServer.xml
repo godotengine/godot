@@ -213,7 +213,7 @@
 		</method>
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="nap" type="RID" />
+			<argument index="0" name="map" type="RID" />
 			<description>
 				Returns [code]true[/code] if the map is active.
 			</description>

@@ -175,7 +175,7 @@ void Navigation2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_create"), &Navigation2DServer::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &Navigation2DServer::map_set_active);
-	ClassDB::bind_method(D_METHOD("map_is_active", "nap"), &Navigation2DServer::map_is_active);
+	ClassDB::bind_method(D_METHOD("map_is_active", "map"), &Navigation2DServer::map_is_active);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &Navigation2DServer::map_set_cell_size);
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &Navigation2DServer::map_get_cell_size);
 	ClassDB::bind_method(D_METHOD("map_set_cell_height", "map", "cell_height"), &Navigation2DServer::map_set_cell_size);
