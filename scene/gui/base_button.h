@@ -49,6 +49,7 @@ private:
 	bool toggle_mode;
 	bool shortcut_in_tooltip;
 	bool keep_pressed_outside;
+	bool was_mouse_pressed;
 	FocusMode enabled_focus_mode;
 	Ref<ShortCut> shortcut;
 
@@ -78,6 +79,8 @@ protected:
 	virtual void _gui_input(Ref<InputEvent> p_event);
 	virtual void _unhandled_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
+
+	bool _was_pressed_by_mouse() const;
 
 public:
 	enum DrawMode {
