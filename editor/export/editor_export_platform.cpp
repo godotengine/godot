@@ -89,7 +89,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	}
 	p_log->add_newline();
 
-	if (msg_count) {
+	if (msg_count > 0) {
 		p_log->push_table(2);
 		p_log->set_table_column_expand(0, false);
 		p_log->set_table_column_expand(1, true);
@@ -129,8 +129,11 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		}
 		p_log->pop();
 		p_log->add_newline();
+	} else {
+		p_log->add_text(TTR("Check debug output for more details."));
+		p_log->add_newline();
 	}
-	p_log->add_newline();
+
 	return has_messages;
 }
 
