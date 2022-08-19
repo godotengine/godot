@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -78,66 +79,77 @@
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 64-bit floating point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_float" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 32-bit floating point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_half" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 16-bit floating point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_s16" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 16-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_s32" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 32-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_s64" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 64-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_s8" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 8-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_u16" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 16-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_u32" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 32-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_u64" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 64-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_u8" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
+				Decodes a 8-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_var" qualifiers="const">
@@ -145,6 +157,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
+				Decodes a [Variant] from the bytes starting at [param byte_offset]. Returns [code]null[/code] if a valid variant can't be decoded or the value is [Object]-derived and [param allow_objects] is [code]false[/code].
 			</description>
 		</method>
 		<method name="decode_var_size" qualifiers="const">
@@ -152,6 +165,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
+				Decodes a size of a [Variant] from the bytes starting at [param byte_offset]. Requires at least 4 bytes of data starting at the offset, otherwise fails.
 			</description>
 		</method>
 		<method name="decompress" qualifiers="const">
@@ -183,6 +197,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
+				Encodes a 64-bit floating point number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of allocated space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_float">
@@ -190,6 +205,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
+				Encodes a 32-bit floating point number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_half">
@@ -197,6 +213,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
+				Encodes a 16-bit floating point number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s16">
@@ -204,6 +221,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 16-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s32">
@@ -211,6 +229,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 32-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s64">
@@ -218,6 +237,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 64-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s8">
@@ -225,6 +245,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 8-bit signed integer number (signed byte) at the index of [param byte_offset] bytes. The array must have at least 1 byte of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_u16">
@@ -232,6 +253,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 16-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_u32">
@@ -239,6 +261,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 32-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_u64">
@@ -246,6 +269,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 64-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_u8">
@@ -253,6 +277,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
+				Encodes a 8-bit unsigned integer number (byte) at the index of [param byte_offset] bytes. The array must have at least 1 byte of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_var">
@@ -261,6 +286,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="allow_objects" type="bool" default="false" />
 			<description>
+				Encodes a [Variant] at the index of [param byte_offset] bytes. A sufficient space must be allocated, depending on the encoded variant's size. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only.
 			</description>
 		</method>
 		<method name="fill">
@@ -314,6 +340,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
+				Returns [code]true[/code] if a valid [Variant] value can be decoded at the [param byte_offset]. Returns [code]false[/code] othewrise or when the value is [Object]-derived and [param allow_objects] is [code]false[/code].
 			</description>
 		</method>
 		<method name="hex_encode" qualifiers="const">
@@ -449,24 +476,29 @@
 			<return type="bool" />
 			<param index="0" name="right" type="PackedByteArray" />
 			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="PackedByteArray" />
 			<param index="0" name="right" type="PackedByteArray" />
 			<description>
+				Returns a new [PackedByteArray] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="PackedByteArray" />
 			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal bytes at the corresponding indices.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns the byte at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
+				Note that the byte is returned as a 64-bit [int].
 			</description>
 		</operator>
 	</operators>
