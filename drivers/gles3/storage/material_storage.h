@@ -159,6 +159,7 @@ struct CanvasShaderData : public ShaderData {
 	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	bool uses_screen_texture = false;
+	bool uses_screen_texture_mipmaps = false;
 	bool uses_sdf = false;
 	bool uses_time = false;
 
@@ -312,6 +313,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_sss;
 	bool uses_transmittance;
 	bool uses_screen_texture;
+	bool uses_screen_texture_mipmaps;
 	bool uses_depth_texture;
 	bool uses_normal_texture;
 	bool uses_time;

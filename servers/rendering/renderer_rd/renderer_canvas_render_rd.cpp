@@ -1361,6 +1361,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	Item *ci = p_item_list;
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
+	bool backbuffer_gen_mipmaps = false;
 
 	Item *canvas_group_owner = nullptr;
 
@@ -1389,6 +1390,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 					if (!material_screen_texture_found) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
+						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
 					}
 				}
 
@@ -1474,9 +1476,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
-			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
+			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
 
 			backbuffer_copy = false;
+			backbuffer_gen_mipmaps = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
 		}
 
@@ -1980,6 +1983,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 	uses_screen_texture = false;
+	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
 
@@ -1990,7 +1994,6 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	int blend_mode = BLEND_MODE_MIX;
-	uses_screen_texture = false;
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
@@ -2015,6 +2018,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
+	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+
 	if (version.is_null()) {
 		version = canvas_singleton->shader.canvas_shader.version_create();
 	}
@@ -2025,12 +2030,16 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	for (int i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
+
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
+	while (el) {
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
+	}
+
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
-	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
-	print_line("\n**vertex_code:\n" + gen_code.vertex);
-	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
-	print_line("\n**fragment_code:\n" + gen_code.fragment);
-	print_line("\n**light_code:\n" + gen_code.light);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
@@ -2175,7 +2184,11 @@ void RendererCanvasRenderRD::CanvasShaderData::get_shader_uniform_list(List<Prop
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+			// Don't expose any of these.
 			continue;
 		}
 		if (E.value.texture_order >= 0) {
