@@ -822,8 +822,6 @@ void register_scene_types() {
 	ClassDB::register_class<SkeletonModification3DStackHolder>();
 
 	OS::get_singleton()->yield(); // may take time to init
-
-	GDREGISTER_CLASS(VelocityTracker3D);
 #endif
 
 	GDREGISTER_CLASS(PhysicsMaterial);
@@ -1052,7 +1050,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Spatial", "Node3D");
 	ClassDB::add_compatibility_class("SpatialGizmo", "Node3DGizmo");
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
-	ClassDB::add_compatibility_class("SpatialVelocityTracker", "VelocityTracker3D");
 	ClassDB::add_compatibility_class("SphereShape", "SphereShape3D");
 	ClassDB::add_compatibility_class("SpotLight", "SpotLight3D");
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
