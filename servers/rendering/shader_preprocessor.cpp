@@ -434,7 +434,12 @@ void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Error error = expand_macros(body, line, body);
+	Error error = expand_condition(body, line, body);
+	if (error != OK) {
+		return;
+	}
+
+	error = expand_macros(body, line, body);
 	if (error != OK) {
 		return;
 	}
@@ -528,7 +533,12 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Error error = expand_macros(body, line, body);
+	Error error = expand_condition(body, line, body);
+	if (error != OK) {
+		return;
+	}
+
+	error = expand_macros(body, line, body);
 	if (error != OK) {
 		return;
 	}
@@ -775,6 +785,134 @@ void ShaderPreprocessor::expand_output_macros(int p_start, int p_line_number) {
 	output.resize(p_start);
 
 	add_to_output(line);
+}
+
+Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, String &r_expanded) {
+	// Checks bracket count to be even + check the cursor position.
+	{
+		int bracket_start_count = 0;
+		int bracket_end_count = 0;
+
+		for (int i = 0; i < p_string.size(); i++) {
+			switch (p_string[i]) {
+				case CURSOR:
+					state->completion_type = COMPLETION_TYPE_CONDITION;
+					break;
+				case '(':
+					bracket_start_count++;
+					break;
+				case ')':
+					bracket_end_count++;
+					break;
+			}
+		}
+		if (bracket_start_count > bracket_end_count) {
+			_set_expected_error(")", p_line);
+			return FAILED;
+		}
+		if (bracket_end_count > bracket_start_count) {
+			_set_expected_error("(", p_line);
+			return FAILED;
+		}
+	}
+
+	String result = p_string;
+
+	int index = 0;
+	int index_start = 0;
+	int index_end = 0;
+
+	while (find_match(result, "defined", index, index_start)) {
+		bool open_bracket = false;
+		bool found_word = false;
+		bool word_completed = false;
+
+		LocalVector<char32_t> text;
+		int post_bracket_index = -1;
+		int size = result.size();
+
+		for (int i = (index_start - 1); i < size; i++) {
+			char32_t c = result[i];
+			if (c == 0) {
+				if (found_word) {
+					word_completed = true;
+				}
+				break;
+			}
+			char32_t cs[] = { c, '\0' };
+			String s = String(cs);
+			bool is_space = is_char_space(c);
+
+			if (word_completed) {
+				if (c == ')') {
+					continue;
+				}
+				if (c == '|' || c == '&') {
+					if (open_bracket) {
+						_set_unexpected_token_error(s, p_line);
+						return FAILED;
+					}
+					break;
+				} else if (!is_space) {
+					_set_unexpected_token_error(s, p_line);
+					return FAILED;
+				}
+			} else if (is_space) {
+				if (found_word && !open_bracket) {
+					index_end = i;
+					word_completed = true;
+				}
+			} else if (c == '(') {
+				if (open_bracket) {
+					_set_unexpected_token_error(s, p_line);
+					return FAILED;
+				}
+				open_bracket = true;
+			} else if (c == ')') {
+				if (open_bracket) {
+					if (!found_word) {
+						_set_unexpected_token_error(s, p_line);
+						return FAILED;
+					}
+					open_bracket = false;
+					post_bracket_index = i + 1;
+				} else {
+					index_end = i;
+				}
+				word_completed = true;
+			} else if (is_char_word(c)) {
+				text.push_back(c);
+				found_word = true;
+			} else {
+				_set_unexpected_token_error(s, p_line);
+				return FAILED;
+			}
+		}
+
+		if (word_completed) {
+			if (open_bracket) {
+				_set_expected_error(")", p_line);
+				return FAILED;
+			}
+			if (post_bracket_index != -1) {
+				index_end = post_bracket_index;
+			}
+
+			String body = state->defines.has(vector_to_string(text)) ? "true" : "false";
+			String temp = result;
+
+			result = result.substr(0, index) + body;
+			index_start = result.length();
+			if (index_end > 0) {
+				result += temp.substr(index_end);
+			}
+		} else {
+			set_error(RTR("Invalid macro name."), p_line);
+			return FAILED;
+		}
+	}
+	r_expanded = result;
+	return OK;
 }
 
 Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, String &r_expanded) {
@@ -1064,7 +1202,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		switch (pp_state.completion_type) {
 			case COMPLETION_TYPE_DIRECTIVE: {
 				List<String> options;
-				get_keyword_list(&options, true);
+				get_keyword_list(&options, true, true);
 
 				for (const String &E : options) {
 					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
@@ -1083,6 +1221,11 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 				}
 
 			} break;
+			case COMPLETION_TYPE_CONDITION: {
+				ScriptLanguage::CodeCompletionOption option("defined", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_completion_options->push_back(option);
+
+			} break;
 			case COMPLETION_TYPE_INCLUDE_PATH: {
 				if (p_include_completion_func && r_completion_options) {
 					p_include_completion_func(r_completion_options);
@@ -1096,8 +1239,11 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 	return err;
 }
 
-void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords) {
+void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords) {
 	r_keywords->push_back("define");
+	if (!p_ignore_context_keywords) {
+		r_keywords->push_back("defined");
+	}
 	r_keywords->push_back("elif");
 	if (p_include_shader_keywords) {
 		r_keywords->push_back("else");
