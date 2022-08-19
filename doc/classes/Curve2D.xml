@@ -15,10 +15,10 @@
 			<argument index="0" name="position" type="Vector2" />
 			<argument index="1" name="in" type="Vector2" default="Vector2( 0, 0 )" />
 			<argument index="2" name="out" type="Vector2" default="Vector2( 0, 0 )" />
-			<argument index="3" name="at_position" type="int" default="-1" />
+			<argument index="3" name="index" type="int" default="-1" />
 			<description>
-				Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s position, with control points [code]in[/code] and [code]out[/code].
-				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt;0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
+				Adds a point with the specified [code]position[/code] relative to the curve's own position, with control points [code]in[/code] and [code]out[/code]. Appends the new point at the end of the point list.
+				If [code]index[/code] is given, the new point is inserted before the existing point identified by index [code]index[/code]. Every existing point starting from [code]index[/code] is shifted further down the list of points. The index must be greater than or equal to [code]0[/code] and must not exceed the number of existing points in the line. See [method get_point_count].
 			</description>
 		</method>
 		<method name="clear_points">
