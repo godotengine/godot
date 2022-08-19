@@ -46,9 +46,10 @@ int AStar::get_available_point_id() const {
 	return last_free_id;
 }
 
-void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
+void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale, int p_parallel_support_layers) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
-	ERR_FAIL_COND_MSG(p_weight_scale < 0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
+	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't add a point with weight scale less than one: %f.", p_weight_scale));
+	ERR_FAIL_INDEX_MSG(p_parallel_support_layers, 1 << 31 - 1, vformat("Can't add a point with p_parallel_support_layers less than 0 or more than 2^31 - 1: %d.", p_parallel_support_layers));
 
 	Point *found_pt;
 	bool p_exists = points.lookup(p_id, found_pt);
@@ -58,6 +59,7 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 		pt->id = p_id;
 		pt->pos = p_pos;
 		pt->weight_scale = p_weight_scale;
+		pt->parallel_support_layers = p_parallel_support_layers;
 		pt->prev_point = nullptr;
 		pt->open_pass = 0;
 		pt->closed_pass = 0;
@@ -66,6 +68,120 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	} else {
 		found_pt->pos = p_pos;
 		found_pt->weight_scale = p_weight_scale;
+	}
+}
+
+void AStar::append_as_bulk_array(const PoolVector<real_t> &pool_points, int max_connections, const PoolVector<int> &pool_connections)
+{
+	
+
+	
+
+
+	
+	int size = pool_points.size();
+
+	ERR_FAIL_COND_MSG(size % 6 > 0, vformat("pool_points size lacks data for each point"));
+
+	PoolVector<real_t>::Read r = pool_points.read();
+	for (int i = 0; i < size / 6; i++) {
+		
+		int p_id = r[i * 6 + 0];
+		float x = r[i * 6 + 1];
+		float y = r[i * 6 + 2];
+		float z = r[i * 6 + 3];
+		float p_weight_scale = r[i * 6 + 4];
+		int p_parallel_support_layers = r[i * 6 + 5];
+		Vector3 p_pos = Vector3(x, y, z);
+		add_point(p_id, p_pos, p_weight_scale, p_parallel_support_layers);
+		
+	}
+
+	PoolVector < int>::Read r1 = pool_connections.read();
+	size = pool_connections.size();
+	int i_mult = max_connections + 1;
+	ERR_FAIL_COND_MSG(size % i_mult > 0, vformat("pool_connections size lacks data for each point"));
+
+	for (int i = 0; i < size / i_mult; i++) {
+
+		int p_id = r1[i * i_mult + 0];
+		for (int j = 1; j < i_mult; j++) {
+			
+			int p_with_id = r1[i * i_mult + j];
+			if (p_with_id >= 0) {
+				connect_points(p_id, p_with_id);
+			}
+			
+		}
+
+		
+		
+
+	}
+
+}
+
+// this may be faster than doing it in gdscript
+void AStar::set_as_bulk_array(const PoolVector<real_t> &pool_points, int max_connections, const PoolVector<int> &pool_connections )
+{
+
+	//wipe all points
+	clear();
+
+	int size = pool_points.size();
+	ERR_FAIL_COND_MSG(size % 6 > 0, vformat("pool_points size lacks data for each point"));
+
+	PoolVector<real_t>::Read r = pool_points.read();
+	for (int i = 0; i < size / 6; i++) {
+
+		int p_id = r[i * 6 + 0];
+		float x = r[i * 6 + 1];
+		float y = r[i * 6 + 2];
+		float z = r[i * 6 + 3];
+		float p_weight_scale = r[i * 6 + 4];
+		int p_parallel_support_layers = r[i * 6 + 5];
+
+		ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
+		ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't add a point with weight scale less than one: %f.", p_weight_scale));
+		ERR_FAIL_INDEX_MSG(p_parallel_support_layers, 1 << 31 - 1, vformat("Can't add a point with p_parallel_support_layers less than 0 or more than 2^31 - 1: %d.", p_parallel_support_layers));
+
+		Vector3 p_pos = Vector3(x, y, z);
+
+		Point* pt = memnew(Point);
+		pt->id = p_id;
+		pt->pos = p_pos;
+		pt->weight_scale = p_weight_scale;
+		pt->parallel_support_layers = p_parallel_support_layers;
+		pt->prev_point = nullptr;
+		pt->open_pass = 0;
+		pt->closed_pass = 0;
+		pt->enabled = true;
+		points.set(p_id, pt);
+
+
+
+	}
+
+	PoolVector < int>::Read r1 = pool_connections.read();
+	size = pool_connections.size();
+	int i_mult = max_connections + 1;
+	ERR_FAIL_COND_MSG(size % i_mult > 0, vformat("pool_connections size lacks data for each point"));
+
+	for (int i = 0; i < size / i_mult; i++) {
+
+		int p_id = r1[i * i_mult + 0];
+		for (int j = 1; j < i_mult; j++) {
+
+			int p_with_id = r1[i * i_mult + j];
+			if (p_with_id >= 0) {
+				connect_points(p_id, p_with_id);
+			}
+
+		}
+
+
+
+
 	}
 }
 
@@ -85,6 +201,9 @@ void AStar::set_point_position(int p_id, const Vector3 &p_pos) {
 	p->pos = p_pos;
 }
 
+
+
+
 real_t AStar::get_point_weight_scale(int p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
@@ -97,7 +216,7 @@ void AStar::set_point_weight_scale(int p_id, real_t p_weight_scale) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's weight scale. Point with id: %d doesn't exist.", p_id));
-	ERR_FAIL_COND_MSG(p_weight_scale < 0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
+	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't set point's weight scale less than one: %f.", p_weight_scale));
 
 	p->weight_scale = p_weight_scale;
 }
@@ -319,7 +438,7 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 	return closest_point;
 }
 
-bool AStar::_solve(Point *begin_point, Point *end_point) {
+bool AStar::_solve(Point *begin_point, Point *end_point, int relevant_layers) {
 	pass++;
 
 	if (!end_point->enabled) {
@@ -350,7 +469,12 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 			Point *e = *(it.value); // The neighbour point
 
-			if (!e->enabled || e->closed_pass == pass) {
+			//make sure parallel layers are supported
+			// or if *relevant_layers is 0 then use all points
+			bool supported = relevant_layers == 0 || (relevant_layers & e->parallel_support_layers) > 0;
+			
+
+			if (!e->enabled || e->closed_pass == pass || !supported) {
 				continue;
 			}
 
@@ -413,7 +537,7 @@ real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
+PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id, int relevant_layers) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, PoolVector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -431,7 +555,9 @@ PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	ERR_FAIL_INDEX_V(relevant_layers, 32, PoolVector<Vector3>());
+
+	bool found_route = _solve(begin_point, end_point, relevant_layers);
 	if (!found_route) {
 		return PoolVector<Vector3>();
 	}
@@ -462,7 +588,7 @@ PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	return path;
 }
 
-PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
+PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id, int relevant_layers) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, PoolVector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
@@ -480,7 +606,9 @@ PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	ERR_FAIL_INDEX_V(relevant_layers, 32, PoolVector<int>());
+
+	bool found_route = _solve(begin_point, end_point, relevant_layers);
 	if (!found_route) {
 		return PoolVector<int>();
 	}
@@ -527,9 +655,47 @@ bool AStar::is_point_disabled(int p_id) const {
 	return !p->enabled;
 }
 
+
+
+void AStar::set_point_parallel_layer(int p_id, int layer_index, bool l_disabled)
+{
+	Point* p;
+	bool p_exists = points.lookup(p_id, p);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set parallel layer index. Point with id: %d doesn't exist.", p_id));
+
+
+	ERR_FAIL_INDEX(layer_index, 32);
+
+	uint32_t layers = p->parallel_support_layers;
+
+	if (!l_disabled) {
+		p->parallel_support_layers = layers | (1 << layer_index);
+	}
+	else {
+		p->parallel_support_layers = layers & (~(1 << layer_index));
+	}
+}
+
+bool AStar::get_point_parallel_layer(int p_id,int layer_index) const
+{
+	Point* p;
+	bool p_exists = points.lookup(p_id, p);
+	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point supports parallel layer index. Point with id: %d doesn't exist.", p_id));
+
+	uint32_t layers = p->parallel_support_layers;
+	ERR_FAIL_INDEX_V(layer_index, 32, false);
+	return (layers & (1 << layer_index));
+}
+
+
+
 void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar::get_available_point_id);
-	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar::add_point, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale","parallel_support_layers"), &AStar::add_point, DEFVAL(1.0), DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("append_as_bulk_array", "pool_points", "max_connections", "pool_connections"), &AStar::append_as_bulk_array);
+	ClassDB::bind_method(D_METHOD("set_as_bulk_array", "pool_points", "max_connections","pool_connections"), &AStar::set_as_bulk_array);
+
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStar::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_position", "id", "position"), &AStar::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar::get_point_weight_scale);
@@ -541,6 +707,11 @@ void AStar::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
+
+	ClassDB::bind_method(D_METHOD("set_point_parallel_layer", "id","layer_index","disabled"), &AStar::set_point_parallel_layer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_point_parallel_layer", "id", "layer_index"), &AStar::get_point_parallel_layer);
+	
+	
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar::disconnect_points, DEFVAL(true));
@@ -554,8 +725,8 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar::get_point_path);
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "relevant_layers"), &AStar::get_point_path, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "relevant_layers"), &AStar::get_id_path, DEFVAL(0));
 
 	BIND_VMETHOD(MethodInfo(Variant::REAL, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 	BIND_VMETHOD(MethodInfo(Variant::REAL, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
@@ -625,12 +796,12 @@ void AStar2D::connect_points(int p_id, int p_with_id, bool p_bidirectional) {
 	astar.connect_points(p_id, p_with_id, p_bidirectional);
 }
 
-void AStar2D::disconnect_points(int p_id, int p_with_id, bool p_bidirectional) {
-	astar.disconnect_points(p_id, p_with_id, p_bidirectional);
+void AStar2D::disconnect_points(int p_id, int p_with_id) {
+	astar.disconnect_points(p_id, p_with_id);
 }
 
-bool AStar2D::are_points_connected(int p_id, int p_with_id, bool p_bidirectional) const {
-	return astar.are_points_connected(p_id, p_with_id, p_bidirectional);
+bool AStar2D::are_points_connected(int p_id, int p_with_id) const {
+	return astar.are_points_connected(p_id, p_with_id);
 }
 
 int AStar2D::get_point_count() const {
@@ -866,8 +1037,8 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar2D::connect_points, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar2D::disconnect_points, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar2D::are_points_connected, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar2D::disconnect_points);
+	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar2D::are_points_connected);
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &AStar2D::get_point_count);
 	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar2D::get_point_capacity);

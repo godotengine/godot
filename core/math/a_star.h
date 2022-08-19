@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef A_STAR_H
-#define A_STAR_H
+#ifndef ASTAR_H
+#define ASTAR_H
 
 #include "core/oa_hash_map.h"
 #include "core/reference.h"
@@ -53,6 +53,7 @@ class AStar : public Reference {
 		Vector3 pos;
 		real_t weight_scale;
 		bool enabled;
+		uint32_t parallel_support_layers;
 
 		OAHashMap<int, Point *> neighbours;
 		OAHashMap<int, Point *> unlinked_neighbours;
@@ -118,7 +119,7 @@ class AStar : public Reference {
 	OAHashMap<int, Point *> points;
 	Set<Segment> segments;
 
-	bool _solve(Point *begin_point, Point *end_point);
+	bool _solve(Point *begin_point, Point *end_point, int relevant_layers);
 
 protected:
 	static void _bind_methods();
@@ -129,7 +130,10 @@ protected:
 public:
 	int get_available_point_id() const;
 
-	void add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
+	void add_point(int p_id, const Vector3& p_pos, real_t p_weight_scale = 1, int p_parallel_support_layers = 0);
+	void append_as_bulk_array(const PoolVector<real_t> &pool_points , int max_connections, const PoolVector<int> &pool_connections);
+	void set_as_bulk_array(const PoolVector<real_t> &pool_points, int max_connections, const PoolVector<int> &pool_connections);
+
 	Vector3 get_point_position(int p_id) const;
 	void set_point_position(int p_id, const Vector3 &p_pos);
 	real_t get_point_weight_scale(int p_id) const;
@@ -141,6 +145,10 @@ public:
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
+
+	void set_point_parallel_layer(int p_id, int layer_index, bool l_disabled = true);
+	bool get_point_parallel_layer(int p_id,int layer_index) const;
+
 
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id, bool bidirectional = true);
@@ -154,8 +162,8 @@ public:
 	int get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id);
-	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
+	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id, int relevant_layers = 0);
+	PoolVector<int> get_id_path(int p_from_id, int p_to_id, int relevant_layers = 0);
 
 	AStar();
 	~AStar();
@@ -190,8 +198,8 @@ public:
 	bool is_point_disabled(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool p_bidirectional = true);
-	void disconnect_points(int p_id, int p_with_id, bool p_bidirectional = true);
-	bool are_points_connected(int p_id, int p_with_id, bool p_bidirectional = true) const;
+	void disconnect_points(int p_id, int p_with_id);
+	bool are_points_connected(int p_id, int p_with_id) const;
 
 	int get_point_count() const;
 	int get_point_capacity() const;
@@ -208,4 +216,4 @@ public:
 	~AStar2D();
 };
 
-#endif // A_STAR_H
+#endif // ASTAR_H

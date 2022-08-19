@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AStar" inherits="Reference" version="3.4">
 	<brief_description>
 		An implementation of A* to find the shortest paths among connected points in space.
 	</brief_description>
@@ -46,14 +46,19 @@
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="position" type="Vector3" />
 			<argument index="2" name="weight_scale" type="float" default="1.0" />
+			<argument index="3" name="parallel_support_layers" type="int" default="0" />
 			<description>
-				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 0.0 or greater.
+				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
 				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
 				[codeblock]
 				var astar = AStar.new()
 				astar.add_point(1, Vector3(1, 0, 0), 4) # Adds the point (1, 0, 0) with weight_scale 4 and id 1
 				[/codeblock]
 				If there already exists a point for the given [code]id[/code], its position and weight scale are updated to the given values.
+
+				parallel_support_layers is a value between -1 and the 32bit integer limit which functions as a bitmask for layers that are supported at the created point for later use in [code]get_point_path()[/code].
+				
+				
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -129,8 +134,9 @@
 			<return type="PoolIntArray" />
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
+			<argument index="2" name="relevant_layers" type="int" />
 			<description>
-				Returns an array with the IDs of the points that form the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the IDs of the points that form the path found by AStar between the given points that support at least one layer in the relevant_layers bitmask value. The array is ordered from the starting point to the ending point of the path.
 				[codeblock]
 				var astar = AStar.new()
 				astar.add_point(1, Vector3(0, 0, 0))
@@ -146,6 +152,8 @@
 				var res = astar.get_id_path(1, 3) # Returns [1, 2, 3]
 				[/codeblock]
 				If you change the 2nd point's weight to 3, then the result will be [code][1, 4, 3][/code] instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.
+
+				If relevant_layers is 0, all layers are used.
 			</description>
 		</method>
 		<method name="get_point_capacity" qualifiers="const">
@@ -183,9 +191,11 @@
 			<return type="PoolVector3Array" />
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
+			<argument index="2" name="relevant_layers" type="int" />
 			<description>
-				Returns an array with the points that are in the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the points that are in the path found by AStar between the given points that support at least one layer in the relevant_layers bitmask value. The array is ordered from the starting point to the ending point of the path.
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PoolVector3Array] and will print an error message.
+				If relevant_layers is 0, all layers are used.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -206,6 +216,14 @@
 			<return type="Array" />
 			<description>
 				Returns an array of all points.
+			</description>
+		</method>
+		<method name="get_point_parallel_layer" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="layer_index" type="int" />
+			<description>
+				Returns if [code]parallel_support_layers[/code] of the specified point id supports the [code]layer_index[/code].
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -258,6 +276,60 @@
 			<argument index="1" name="weight_scale" type="float" />
 			<description>
 				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code]. The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
+			</description>
+		</method>
+		<method name="set_point_parallel_layer" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="layer_index" type="int" />
+			<argument index="2" name="disabled" type="int" />
+			<description>
+				Enable or disable [code]parallel_support_layers[/code] of the specified point id.
+				[code]layer_index[/code] must be between 0 and 32.
+			</description>
+		</method>
+		<method name="set_as_bulk_array">
+			<return type="void" />
+			<argument index="0" name="pool_points" type="PoolRealArray" />
+			<argument index="1" name="max_connections" type="int"  />
+			<argument index="2" name="pool_connections" type="PoolIntArray"  />
+			<description>
+				Sets all data related to the Astar map in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
+				(it doesn't actually do this atm and just loops through the pool arrays, but hopefully it's faster than running the loop in GDNative)
+
+				[code]pool_points[/code] is a [code]PoolRealArray[/code] with every 6 floats representing the data inserted into each point to be added and connected:
+				point_id (used as [code]int[/code]), point_position_x, point_position_y, point_position_z, point_weight_scale, parallel_support_layers (used as [code]int[/code])
+
+				[code]max_connections[/code] an [code]Int[/code]
+				to represent the maximum number of connections per point in the next [code]pool_connections[/code] parameter.
+
+				and [code]pool_connections[/code], a [code]PoolIntArray[/code] with every [code]1+max_connections[/code] Ints representing the connections to be made to each point from the first:
+				point_id, connected_point_index, connected_point_index,...(up to the total number of connections)
+
+				If a connected_point_index is -1, it is not used, so you can have less than the maximum number of connections.
+
+			</description>
+		</method>
+		<method name="append_as_bulk_array">
+			<return type="void" />
+			<argument index="0" name="pool_points" type="PoolRealArray" />
+			<argument index="1" name="max_connections" type="int"  />
+			<argument index="2" name="pool_connections" type="PoolIntArray"  />
+			<description>
+				Appends all data related to the Astar map in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
+				(it doesn't actually do this atm and just loops through the pool arrays, but hopefully it's faster than running the loop in GDNative)
+
+				[code]pool_points[/code] is a [code]PoolRealArray[/code] with every 6 floats representing the data inserted into each point to be added and connected:
+				point_id (used as [code]int[/code]), point_position_x, point_position_y, point_position_z, point_weight_scale, parallel_support_layers (used as [code]int[/code])
+
+				[code]max_connections[/code] an [code]Int[/code]
+				to represent the maximum number of connections per point in the next [code]pool_connections[/code] parameter.
+
+				and [code]pool_connections[/code], a [code]PoolIntArray[/code] with every [code]1+max_connections[/code] Ints representing the connections to be made to each point from the first:
+				point_id, connected_point_index, connected_point_index,...(up to the total number of connections)
+
+				If a connected_point_index is -1, it is not used, so you can have less than the maximum number of connections.
+
 			</description>
 		</method>
 	</methods>
