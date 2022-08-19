@@ -49,6 +49,7 @@ private:
 	MouseButton button_mask = MouseButton::MASK_LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
+	bool was_mouse_pressed = false;
 	bool keep_pressed_outside = false;
 	Ref<Shortcut> shortcut;
 	ObjectID shortcut_context;
@@ -81,6 +82,7 @@ protected:
 	void _notification(int p_what);
 
 	bool _is_focus_owner_in_shortcut_context() const;
+	bool _was_pressed_by_mouse() const;
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)
