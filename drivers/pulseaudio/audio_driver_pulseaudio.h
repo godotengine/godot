@@ -35,6 +35,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include "pulse-so_wrap.h"
@@ -70,9 +71,8 @@ class AudioDriverPulseAudio : public AudioDriver {
 	Array pa_devices;
 	Array pa_rec_devices;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	SafeFlag active;
+	SafeFlag exit_thread;
 
 	float latency;
 
