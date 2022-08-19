@@ -962,7 +962,7 @@ PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const 
 
 void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve2D::get_point_count);
-	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "index"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve2D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_in", "idx", "position"), &Curve2D::set_point_in);
@@ -1626,7 +1626,7 @@ PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const 
 
 void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve3D::get_point_count);
-	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "index"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve3D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve3D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_tilt", "idx", "tilt"), &Curve3D::set_point_tilt);
