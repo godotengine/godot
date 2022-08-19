@@ -859,6 +859,7 @@ void MenuBar::get_translatable_strings(List<String> *p_strings) const {
 }
 
 MenuBar::MenuBar() {
+	set_process_shortcut_input(true);
 }
 
 MenuBar::~MenuBar() {
