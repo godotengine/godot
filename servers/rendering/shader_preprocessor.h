@@ -192,8 +192,7 @@ private:
 
 	void expand_output_macros(int p_start, int p_line);
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
-	Error expand_macros(const String &p_string, int p_line, Vector<Pair<String, Define *>> p_defines, String &r_result);
-	Error expand_macros_once(const String &p_line, int p_line_number, Pair<String, Define *> p_define_pair, String &r_expanded);
+	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
 	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
 
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
