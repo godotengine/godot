@@ -674,6 +674,8 @@ size_t variant_get_managed_unboxed_size(const ManagedType &p_type) {
 			RETURN_CHECK_FOR_STRUCT(Transform2D);
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
+			RETURN_CHECK_FOR_STRUCT(Vector4);
+			RETURN_CHECK_FOR_STRUCT(Vector4i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
 			RETURN_CHECK_FOR_STRUCT(Quaternion);
 			RETURN_CHECK_FOR_STRUCT(Transform3D);
@@ -779,6 +781,8 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 			RETURN_CHECK_FOR_STRUCT(Transform2D);
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
+			RETURN_CHECK_FOR_STRUCT(Vector4);
+			RETURN_CHECK_FOR_STRUCT(Vector4i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
 			RETURN_CHECK_FOR_STRUCT(Quaternion);
 			RETURN_CHECK_FOR_STRUCT(Transform3D);
@@ -932,6 +936,8 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 			RETURN_CHECK_FOR_STRUCT(Transform2D);
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
+			RETURN_CHECK_FOR_STRUCT(Vector4);
+			RETURN_CHECK_FOR_STRUCT(Vector4i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
 			RETURN_CHECK_FOR_STRUCT(Quaternion);
 			RETURN_CHECK_FOR_STRUCT(Transform3D);
