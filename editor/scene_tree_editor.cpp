@@ -159,6 +159,32 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_do_method(this, "_update_tree");
 		undo_redo->add_undo_method(this, "_update_tree");
 		undo_redo->commit_action();
+	} else if (p_id == BUTTON_UNIQUE_TOGGLE) {
+		bool unique = n->is_unique_name_in_owner();
+		undo_redo->create_action(TTR("Toggle Scene Unique Name"));
+		undo_redo->add_do_method(n, "set_unique_name_in_owner", !unique);
+		undo_redo->add_undo_method(n, "set_unique_name_in_owner", unique);
+		undo_redo->add_do_method(this, "_update_tree");
+		undo_redo->add_undo_method(this, "_update_tree");
+		undo_redo->commit_action();
+
+		int button_index = item->get_button_by_id(0, BUTTON_UNIQUE_TOGGLE);
+		if (button_index == -1) {
+			return;
+		}
+
+		if (!unique) {
+			item->set_button_color(0, button_index, Color(1, 0.5, 0.1));
+			WARN_PRINT("BUTTON PRESSED, UNIQUE ON");
+		} else {
+			WARN_PRINT("BUTTON PRESSED, UNIQUE OFF");
+			if (tree->is_editing()) {
+				item->set_button_color(0, button_index, Color(1, 1, 1));
+			} /*else {
+				item->erase_button(0, button_index);
+				WARN_PRINT("POOF");
+			}*/
+		}
 	}
 }
 
@@ -282,7 +308,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
-			item->add_button(0, get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
+			String tooltip = vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX);
+			item->add_button(0, get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), BUTTON_UNIQUE_TOGGLE, false, tooltip);
+			item->set_button_color(0, item->get_button_by_id(0, BUTTON_UNIQUE_TOGGLE), Color(1, 0.5, 0.1));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -839,6 +867,42 @@ void SceneTreeEditor::_rename_node(ObjectID p_node, const String &p_name) {
 	item->set_text(0, p_name);
 }
 
+void SceneTreeEditor::_begin_rename() {
+	TreeItem *which = tree->get_selected();
+
+	ERR_FAIL_COND(!which);
+	NodePath nodepath = which->get_metadata(0);
+	Node *edited_node = get_node(nodepath);
+	ERR_FAIL_COND(!edited_node);
+
+	renaming_item = which;
+
+	Ref<Texture2D> icon = get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons"));
+	String tooltip = "Potato";
+	if (!edited_node->is_unique_name_in_owner()) {
+		renaming_item->add_button(0, icon, BUTTON_UNIQUE_TOGGLE, false, tooltip);
+		WARN_PRINT("Add Unique Toggle");
+	}
+	//WARN_PRINT("Begin Rename");
+}
+
+void SceneTreeEditor::_end_rename() {
+	if (renaming_item) {
+		NodePath nodepath = renaming_item->get_metadata(0);
+		Node *edited_node = get_node(nodepath);
+		ERR_FAIL_COND(!edited_node);
+
+		// Hide Scene Unique toggle.
+		if (!edited_node->is_unique_name_in_owner()) {
+			int button_index = renaming_item->get_button_by_id(0, BUTTON_UNIQUE_TOGGLE);
+			if (button_index != -1) {
+				renaming_item->erase_button(0, button_index);
+				WARN_PRINT("Remove Unique Toggle");
+			}
+		}
+	}
+}
+
 void SceneTreeEditor::_renamed() {
 	TreeItem *which = tree->get_edited();
 
@@ -847,7 +911,7 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	// Empty node names are not allowed, so resets it to previous text and show warning
+	// Empty node names are not allowed, so resets it to previous text and show warning.
 	if (which->get_text(0).strip_edges().is_empty()) {
 		which->set_text(0, n->get_name());
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
@@ -1296,6 +1360,9 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+
+	tree->get_text_editor()->connect("focus_entered", callable_mp(this, &SceneTreeEditor::_begin_rename));
+	tree->get_text_editor()->connect("focus_exited", callable_mp(this, &SceneTreeEditor::_end_rename));
 
 	error = memnew(AcceptDialog);
 	add_child(error);
