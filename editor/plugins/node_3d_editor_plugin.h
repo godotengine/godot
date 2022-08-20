@@ -187,6 +187,11 @@ private:
 	double gpu_time_history[FRAME_TIME_HISTORY];
 	int gpu_time_history_index;
 
+	// The type of node that will be created when dropping texture into the viewport.
+	String default_texture_node_type;
+	// Node types that are available to select from when dropping texture into viewport.
+	Vector<String> texture_node_types;
+
 	int index;
 	ViewType view_type;
 	void _menu_option(int p_option);
@@ -195,6 +200,9 @@ private:
 	AABB *preview_bounds = nullptr;
 	Vector<String> selected_files;
 	AcceptDialog *accept = nullptr;
+	AcceptDialog *resource_type_selector = nullptr;
+	VBoxContainer *button_container = nullptr;
+	Ref<ButtonGroup> button_group;
 
 	Node *target_node = nullptr;
 	Point2 drop_pos;
@@ -403,14 +411,23 @@ private:
 
 	Node *_sanitize_preview_node(Node *p_node) const;
 
+	void _on_select_type(Object *selected);
+	void _on_change_type_confirmed();
+	void _on_change_type_closed();
+	Node *_make_texture_node_type(String texture_node_type);
+
 	void _create_preview_node(const Vector<String> &files) const;
 	void _remove_preview_node();
 	bool _apply_preview_material(ObjectID p_target, const Point2 &p_point) const;
 	void _reset_preview_material() const;
 	void _remove_preview_material();
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _only_packed_scenes_selected() const;
+	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
 	void _perform_drop_data();
+	void _show_resource_type_selector();
+	void _create_resource_type_selector();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);

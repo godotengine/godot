@@ -45,9 +45,13 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/decal.h"
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/sprite_3d.cpp"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
@@ -2696,6 +2700,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 			fps_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 			cinema_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 			locked_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+
+			// Update resource Node type selector icons.
+			List<BaseButton *> button_list;
+			button_group->get_buttons(&button_list);
+			for (int i = 0; i < button_list.size(); i++) {
+				CheckBox *checkbox = Object::cast_to<CheckBox>(button_list[i]);
+				checkbox->set_icon(get_theme_icon(checkbox->get_text(), SNAME("EditorIcons")));
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -3795,6 +3807,28 @@ Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
 	return p_node;
 }
 
+void Node3DEditorViewport::_on_select_type(Object *selected) {
+	CheckBox *checkbox = Object::cast_to<CheckBox>(selected);
+	String type = checkbox->get_text();
+	resource_type_selector->set_title(vformat(TTR("Add %s"), type));
+}
+
+void Node3DEditorViewport::_on_change_type_confirmed() {
+	BaseButton* pressed_button = button_group->get_pressed_button();
+	if (!pressed_button) {
+		return;
+	}
+
+	CheckBox *checkbox = Object::cast_to<CheckBox>(pressed_button);
+	default_texture_node_type = checkbox->get_text();
+	_perform_drop_data();
+	resource_type_selector->hide();
+}
+
+void Node3DEditorViewport::_on_change_type_closed() {
+	_remove_preview_node();
+}
+
 void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) const {
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
@@ -3802,7 +3836,8 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 		ERR_CONTINUE(res.is_null());
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != nullptr || scene != nullptr) {
+		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
+		if (mesh != nullptr || scene != nullptr  || texture != nullptr) {
 			if (mesh != nullptr) {
 				MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 				mesh_instance->set_mesh(mesh);
@@ -3814,6 +3849,11 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 						instance = _sanitize_preview_node(instance);
 						preview_node->add_child(instance);
 					}
+				} else if (texture != nullptr) {
+					Sprite3D *sprite = memnew(Sprite3D);
+					sprite->set_texture(texture);
+					sprite->set_modulate(Color(1, 1, 1, 0.7f));
+					preview_node->add_child(sprite);
 				}
 			}
 			EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
@@ -3837,6 +3877,10 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 	_reset_preview_material();
 
 	if (p_target.is_null()) {
+		return false;
+	}
+
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
 		return false;
 	}
 
@@ -3946,6 +3990,136 @@ bool Node3DEditorViewport::_cyclical_dependency_exists(const String &p_target_sc
 		}
 	}
 	return false;
+}
+
+void Node3DEditorViewport::_show_resource_type_selector() {
+	_remove_preview_node();
+	_reset_preview_material();
+	_remove_preview_material();
+	List<BaseButton *> button_list;
+	button_group->get_buttons(&button_list);
+
+	for (int i = 0; i < button_list.size(); i++) {
+		CheckBox *checkbox = Object::cast_to<CheckBox>(button_list[i]);
+		checkbox->set_pressed(checkbox->get_text() == default_texture_node_type);
+	}
+	resource_type_selector->set_title(vformat(TTR("Add %s"), default_texture_node_type));
+	resource_type_selector->popup_centered();
+}
+
+void Node3DEditorViewport::_create_resource_type_selector() {
+	default_texture_node_type = "Sprite3D";
+
+	texture_node_types.push_back("Sprite3D");       // "texture".
+	texture_node_types.push_back("CPUParticles3D"); // "texture".
+	texture_node_types.push_back("GPUParticles3D"); // "texture".
+	texture_node_types.push_back("Decal");          // "texture_albedo".
+	texture_node_types.push_back("SpotLight3D");    // "projector".
+	texture_node_types.push_back("OmniLight3D");    // "projector".
+
+	accept = memnew(AcceptDialog);
+	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
+
+	resource_type_selector = memnew(AcceptDialog);
+	EditorNode::get_singleton()->get_gui_base()->add_child(resource_type_selector);
+	resource_type_selector->set_title(TTR("Change Default Type"));
+	resource_type_selector->connect("confirmed", callable_mp(this, &Node3DEditorViewport::_on_change_type_confirmed));
+	resource_type_selector->connect("cancelled", callable_mp(this, &Node3DEditorViewport::_on_change_type_closed));
+
+	VBoxContainer *vbox_container = memnew(VBoxContainer);
+	resource_type_selector->add_child(vbox_container);
+	vbox_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbox_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vbox_container->set_custom_minimum_size(Size2(240, 160) * EDSCALE);
+
+	button_container = memnew(VBoxContainer);
+	vbox_container->add_child(button_container);
+	button_container->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	button_group.instantiate();
+	for (int i = 0; i < texture_node_types.size(); i++) {
+		CheckBox *check = memnew(CheckBox);
+		button_container->add_child(check);
+		check->set_text(texture_node_types[i]);
+		check->connect("button_down", callable_mp(this, &Node3DEditorViewport::_on_select_type).bind(check));
+		check->set_button_group(button_group);
+	}
+}
+
+bool Node3DEditorViewport::_only_packed_scenes_selected() const {
+	for (int i = 0; i < selected_files.size(); ++i) {
+		if (ResourceLoader::load(selected_files[i])->get_class() != "PackedScene") {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void Node3DEditorViewport::_create_nodes(Node* parent, Node* child, String& path, const Point2& p_point) {
+	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+	String name = path.get_file().get_basename();
+	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
+		case NAME_CASING_PASCAL_CASE:
+			name = name.capitalize().replace(" ", "");
+			break;
+		case NAME_CASING_CAMEL_CASE:
+			name = name.capitalize().replace(" ", "");
+			name[0] = name.to_lower()[0];
+			break;
+		case NAME_CASING_SNAKE_CASE:
+			name = name.capitalize().replace(" ", "_").to_lower();
+			break;
+		}
+	child->set_name(name);
+
+	Ref<Texture2D> texture = ResourceCache::get_ref(path);
+
+	if (parent) {
+		editor_data->get_undo_redo().add_do_method(parent, "add_child", child, true);
+		editor_data->get_undo_redo().add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		editor_data->get_undo_redo().add_do_reference(child);
+		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
+	} else { // If no parent is selected, set as root node of the scene.
+		editor_data->get_undo_redo().add_do_method(EditorNode::get_singleton(), "set_edited_scene", child);
+		editor_data->get_undo_redo().add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		editor_data->get_undo_redo().add_do_reference(child);
+		editor_data->get_undo_redo().add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
+	}
+
+	if (parent) {
+		String new_name = parent->validate_child_name(child);
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		editor_data->get_undo_redo().add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), child->get_class(), new_name);
+		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	}
+
+	if (Object::cast_to<Sprite3D>(child)
+		|| Object::cast_to<GPUParticles3D>(child)
+		|| Object::cast_to<CPUParticles3D>(child)
+	) {
+		editor_data->get_undo_redo().add_do_property(child, "texture", texture);
+	} else if (Object::cast_to<Decal>(child)) {
+		editor_data->get_undo_redo().add_do_property(child, "texture_albedo", texture);
+	} else if (Object::cast_to<SpotLight3D>(child)
+		|| Object::cast_to<OmniLight3D>(child)) {
+		editor_data->get_undo_redo().add_do_property(child, "projector", texture);
+	}
+
+	// Compute the global position.
+	Node3D *node3d = Object::cast_to<Node3D>(child);
+	if (node3d) {
+		Transform3D global_transform;
+		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
+		if (parent_node3d) {
+			global_transform = parent_node3d->get_global_gizmo_transform();
+		}
+
+		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		global_transform.basis *= node3d->get_transform().basis;
+
+		editor_data->get_undo_redo().add_do_method(child, "set_global_transform", global_transform);
+	}
 }
 
 bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
@@ -4064,12 +4238,17 @@ void Node3DEditorViewport::_perform_drop_data() {
 		}
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
+		Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
 		if (mesh != nullptr || scene != nullptr) {
 			bool success = _create_instance(target_node, path, drop_pos);
 			if (!success) {
 				error_files.push_back(path);
 			}
+		} else if (texture.is_valid()) {
+			Node *child = _make_texture_node_type(default_texture_node_type);
+			_create_nodes(target_node, child, path, drop_pos);
 		}
+
 	}
 
 	editor_data->get_undo_redo().commit_action();
@@ -4085,10 +4264,10 @@ void Node3DEditorViewport::_perform_drop_data() {
 	}
 }
 
-bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+bool Node3DEditorViewport::can_drop_data_fw(const Point2& p_point, const Variant& p_data, Control* p_from) const {
 	bool can_instantiate = false;
 
-	if (!preview_node->is_inside_tree() && spatial_editor->get_preview_material().is_null()) {
+	if (!preview_node->is_inside_tree() && (spatial_editor->get_preview_material().is_null())) {
 		Dictionary d = p_data;
 		if (d.has("type") && (String(d["type"]) == "files")) {
 			Vector<String> files = d["files"];
@@ -4135,8 +4314,10 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						Ref<StandardMaterial3D> new_mat = memnew(StandardMaterial3D);
 						new_mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
 
-						spatial_editor->set_preview_material(new_mat);
-						break;
+						if (!Input::get_singleton()->is_key_pressed(Key::ALT)) {
+							spatial_editor->set_preview_material(new_mat);
+							break;
+						}
 					} else {
 						continue;
 					}
@@ -4170,14 +4351,40 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 
 	return false;
 }
+Node *Node3DEditorViewport::_make_texture_node_type(String texture_node_type) {
+	Node *node = nullptr;
+	if (texture_node_type == "Sprite3D") {
+		node = memnew(Sprite3D);
+	} else if (texture_node_type == "CPUParticles3D") {
+		node = memnew(CPUParticles3D);
+	} else if (texture_node_type == "GPUParticles3D") {
+		node = memnew(GPUParticles3D);
+	} else if (texture_node_type == "Decal") {
+		node = memnew(Decal);
+	} else if (texture_node_type == "SpotLight3D") {
+		node = memnew(SpotLight3D);
+	} else if (texture_node_type == "OmniLight3D") {
+		node = memnew(OmniLight3D);
+	}
+	return node;
+}
 
 void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		_reset_preview_material();
+	} else {
+		if (preview_node->is_inside_tree()) {
+			_remove_preview_node();
+		}
+	}
+
 	if (!can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
 	}
 
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
 	Dictionary d = p_data;
@@ -4212,7 +4419,11 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 	drop_pos = p_point;
 
-	_perform_drop_data();
+	if (is_alt && !_only_packed_scenes_selected()) {
+		_show_resource_type_selector();
+	} else {
+		_perform_drop_data();
+	}
 }
 
 void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
@@ -4868,7 +5079,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_material_label_desc = memnew(Label);
 	preview_material_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
 	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
-	preview_material_label_desc->set_text(TTR("Drag and drop to override the material of any geometry node.\nHold Ctrl when dropping to override a specific surface."));
+	preview_material_label_desc->set_text(TTR("Drag and drop to override the material of any geometry node.\nHold Ctrl when dropping to override a specific surface.\nHold Alt when dropping to add a subset of Node3Ds"));
 	preview_material_label_desc->add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1));
 	preview_material_label_desc->add_theme_constant_override("line_spacing", 0);
 	preview_material_label_desc->hide();
@@ -4925,6 +5136,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_type = VIEW_TYPE_USER;
 	_update_name();
+
+	_create_resource_type_selector();
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
 }
