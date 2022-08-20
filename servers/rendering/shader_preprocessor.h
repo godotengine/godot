@@ -50,6 +50,7 @@ public:
 		COMPLETION_TYPE_DIRECTIVE,
 		COMPLETION_TYPE_PRAGMA_DIRECTIVE,
 		COMPLETION_TYPE_PRAGMA,
+		COMPLETION_TYPE_CONDITION,
 		COMPLETION_TYPE_INCLUDE_PATH,
 	};
 
@@ -175,6 +176,14 @@ private:
 	static String vector_to_string(const LocalVector<char32_t> &p_v, int p_start = 0, int p_end = -1);
 	static String tokens_to_string(const LocalVector<Token> &p_tokens);
 
+	void _set_expected_error(const String &p_what, int p_line) {
+		set_error(vformat(RTR("Expected a '%s'."), p_what), p_line);
+	}
+
+	void _set_unexpected_token_error(const String &p_what, int p_line) {
+		set_error(vformat(RTR("Unexpected token '%s'."), p_what), p_line);
+	}
+
 	void process_directive(Tokenizer *p_tokenizer);
 	void process_define(Tokenizer *p_tokenizer);
 	void process_elif(Tokenizer *p_tokenizer);
@@ -190,6 +199,7 @@ private:
 	void add_region(int p_line, bool p_enabled, Region *p_parent_region);
 	void start_branch_condition(Tokenizer *p_tokenizer, bool p_success, bool p_continue = false);
 
+	Error expand_condition(const String &p_string, int p_line, String &r_result);
 	void expand_output_macros(int p_start, int p_line);
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
 	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
@@ -210,7 +220,7 @@ public:
 
 	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 
-	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords);
+	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords = false);
 	static void get_pragma_list(List<String> *r_pragmas);
 
 	ShaderPreprocessor();
