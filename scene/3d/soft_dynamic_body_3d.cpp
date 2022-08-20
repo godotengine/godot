@@ -88,10 +88,10 @@ void SoftDynamicBodyRenderingServerHandler::set_normal(int p_vertex_id, const vo
 	memcpy(&n, p_vector3, sizeof(Vector3));
 	n *= Vector3(0.5, 0.5, 0.5);
 	n += Vector3(0.5, 0.5, 0.5);
+	Vector2 res = n.octahedron_encode();
 	uint32_t value = 0;
-	value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-	value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-	value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+	value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+	value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], &value, sizeof(uint32_t));
 }
 
