@@ -2868,7 +2868,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					WARN_PRINT_ONCE("The DirectionalLight3D PSSM splits debug draw mode is not reimplemented yet.");
 				}
 
-				light_data.shadow_opacity = p_using_shadows && light_storage->light_has_shadow(base) ? light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_OPACITY) : 0.0;
+				light_data.shadow_opacity = (p_using_shadows && light_storage->light_has_shadow(base))
+						? light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_OPACITY)
+						: 0.0;
 
 				float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 				if (angular_diameter > 0.0) {
@@ -3122,7 +3124,11 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.projector_rect[3] = 0;
 		}
 
-		const bool needs_shadow = shadow_atlas && shadow_atlas->shadow_owners.has(li->self);
+		const bool needs_shadow =
+				shadow_atlas &&
+				shadow_atlas->shadow_owners.has(li->self) &&
+				p_using_shadows &&
+				light_storage->light_has_shadow(base);
 
 		bool in_shadow_range = true;
 		if (needs_shadow && light_storage->light_is_distance_fade_enabled(li->light)) {
