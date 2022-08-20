@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef SKELETON_MODIFICATION_3D_CCDIK_H
+#define SKELETON_MODIFICATION_3D_CCDIK_H
+
 #include "core/templates/local_vector.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-
-#ifndef SKELETON_MODIFICATION_3D_CCDIK_H
-#define SKELETON_MODIFICATION_3D_CCDIK_H
 
 class SkeletonModification3DCCDIK : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DCCDIK, SkeletonModification3D);
