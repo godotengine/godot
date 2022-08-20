@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ASTAR_H
-#define ASTAR_H
+#ifndef A_STAR_H
+#define A_STAR_H
 
 #include "core/oa_hash_map.h"
 #include "core/reference.h"
@@ -198,8 +198,8 @@ public:
 	bool is_point_disabled(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool p_bidirectional = true);
-	void disconnect_points(int p_id, int p_with_id);
-	bool are_points_connected(int p_id, int p_with_id) const;
+	void disconnect_points(int p_id, int p_with_id, bool p_bidirectional = true);
+	bool are_points_connected(int p_id, int p_with_id, bool p_bidirectional = true) const;
 
 	int get_point_count() const;
 	int get_point_capacity() const;
@@ -216,4 +216,4 @@ public:
 	~AStar2D();
 };
 
-#endif // ASTAR_H
+#endif // A_STAR_H
