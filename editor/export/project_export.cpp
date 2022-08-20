@@ -724,7 +724,7 @@ void ProjectExportDialog::_filter_changed(const String &p_filter) {
 void ProjectExportDialog::_fill_resource_tree() {
 	include_files->clear();
 	include_label->hide();
-	include_margin->hide();
+	include_padding->hide();
 
 	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null()) {
@@ -738,7 +738,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 	}
 
 	include_label->show();
-	include_margin->show();
+	include_padding->show();
 
 	TreeItem *root = include_files->create_item();
 
@@ -1009,15 +1009,15 @@ ProjectExportDialog::ProjectExportDialog() {
 	add_preset->set_text(TTR("Add..."));
 	add_preset->get_popup()->connect("index_pressed", callable_mp(this, &ProjectExportDialog::_add_preset));
 	preset_hb->add_child(add_preset);
-	MarginContainer *mc = memnew(MarginContainer);
-	preset_vb->add_child(mc);
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	PaddingContainer *pc = memnew(PaddingContainer);
+	preset_vb->add_child(pc);
+	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
 #ifndef _MSC_VER
 #warning must reimplement drag forward
 #endif
 	//presets->set_drag_forwarding(this);
-	mc->add_child(presets);
+	pc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_tooltip(TTR("Duplicate"));
@@ -1087,12 +1087,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_label = memnew(Label);
 	include_label->set_text(TTR("Resources to export:"));
 	resources_vb->add_child(include_label);
-	include_margin = memnew(MarginContainer);
-	include_margin->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	resources_vb->add_child(include_margin);
+	include_padding = memnew(PaddingContainer);
+	include_padding->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	resources_vb->add_child(include_padding);
 
 	include_files = memnew(Tree);
-	include_margin->add_child(include_files);
+	include_padding->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
 	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
 

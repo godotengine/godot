@@ -55,7 +55,7 @@ class AnimationTreeEditor : public VBoxContainer {
 	HBoxContainer *path_hb = nullptr;
 
 	AnimationTree *tree = nullptr;
-	MarginContainer *editor_base = nullptr;
+	PaddingContainer *editor_base = nullptr;
 
 	Vector<String> button_path;
 	Vector<String> edited_path;

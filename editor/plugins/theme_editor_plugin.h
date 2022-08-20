@@ -36,8 +36,8 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
@@ -317,8 +317,8 @@ public:
 	ThemeTypeDialog();
 };
 
-class ThemeTypeEditor : public MarginContainer {
-	GDCLASS(ThemeTypeEditor, MarginContainer);
+class ThemeTypeEditor : public PaddingContainer {
+	GDCLASS(ThemeTypeEditor, PaddingContainer);
 
 	Ref<Theme> edited_theme;
 	String edited_type;

@@ -38,7 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;
@@ -263,11 +263,11 @@ DependencyEditor::DependencyEditor() {
 
 	vb->add_child(hbc);
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	PaddingContainer *pc = memnew(PaddingContainer);
+	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	mc->add_child(tree);
-	vb->add_child(mc);
+	pc->add_child(tree);
+	vb->add_child(pc);
 
 	set_title(TTR("Dependency Editor"));
 	search = memnew(EditorFileDialog);

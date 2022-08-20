@@ -107,7 +107,7 @@ private:
 	Control *uv_edit = nullptr;
 	Control *w_edit = nullptr;
 	AspectRatioContainer *wheel_edit = nullptr;
-	MarginContainer *wheel_margin = nullptr;
+	PaddingContainer *wheel_padding = nullptr;
 	Ref<ShaderMaterial> wheel_mat;
 	Ref<ShaderMaterial> circle_mat;
 	Control *wheel = nullptr;

@@ -34,7 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/resources/theme.h"
 
@@ -45,7 +45,7 @@ class ThemeEditorPreview : public VBoxContainer {
 
 	ScrollContainer *preview_container = nullptr;
 	ColorRect *preview_bg = nullptr;
-	MarginContainer *preview_overlay = nullptr;
+	PaddingContainer *preview_overlay = nullptr;
 	Control *picker_overlay = nullptr;
 	Control *hovered_control = nullptr;
 
@@ -72,7 +72,7 @@ class ThemeEditorPreview : public VBoxContainer {
 
 protected:
 	HBoxContainer *preview_toolbar = nullptr;
-	MarginContainer *preview_content = nullptr;
+	PaddingContainer *preview_content = nullptr;
 	Button *picker_button = nullptr;
 
 	void add_preview_overlay(Control *p_overlay);

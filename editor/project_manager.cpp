@@ -49,7 +49,7 @@
 #include "editor/editor_vcs_interface.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"

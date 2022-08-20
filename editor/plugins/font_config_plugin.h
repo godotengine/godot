@@ -86,7 +86,7 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 
 	Ref<EditorPropertyFontMetaObject> object;
 
-	MarginContainer *container = nullptr;
+	PaddingContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 
 	Button *button_add = nullptr;
@@ -128,7 +128,7 @@ class EditorPropertyOTVariation : public EditorProperty {
 
 	Ref<EditorPropertyFontOTObject> object;
 
-	MarginContainer *container = nullptr;
+	PaddingContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 
 	Button *edit = nullptr;
@@ -173,7 +173,7 @@ class EditorPropertyOTFeatures : public EditorProperty {
 
 	Ref<EditorPropertyFontOTObject> object;
 
-	MarginContainer *container = nullptr;
+	PaddingContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 
 	Button *button_add = nullptr;

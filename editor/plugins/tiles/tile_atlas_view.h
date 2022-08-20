@@ -36,7 +36,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "scene/resources/tile_set.h"
 
 class ViewPanner;
@@ -72,8 +72,8 @@ private:
 	HashMap<Vector2, HashMap<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();
 
-	MarginContainer *margin_container = nullptr;
-	int margin_container_paddings[4] = { 0, 0, 0, 0 };
+	PaddingContainer *padding_container = nullptr;
+	int padding_container_paddings[4] = { 0, 0, 0, 0 };
 	HBoxContainer *hbox = nullptr;
 	Label *missing_source_label = nullptr;
 

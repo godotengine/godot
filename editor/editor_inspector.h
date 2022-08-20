@@ -360,7 +360,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	struct ArrayElement {
 		PanelContainer *panel = nullptr;
-		MarginContainer *margin = nullptr;
+		PaddingContainer *padding = nullptr;
 		HBoxContainer *hbox = nullptr;
 		TextureRect *move_texture_rect = nullptr;
 		Label *number = nullptr;

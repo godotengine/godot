@@ -37,16 +37,16 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
 // Inspector controls.
-class ControlPositioningWarning : public MarginContainer {
-	GDCLASS(ControlPositioningWarning, MarginContainer);
+class ControlPositioningWarning : public PaddingContainer {
+	GDCLASS(ControlPositioningWarning, PaddingContainer);
 
 	Control *control_node = nullptr;
 
@@ -152,8 +152,8 @@ public:
 	ControlEditorPopupButton();
 };
 
-class ControlEditorPresetPicker : public MarginContainer {
-	GDCLASS(ControlEditorPresetPicker, MarginContainer);
+class ControlEditorPresetPicker : public PaddingContainer {
+	GDCLASS(ControlEditorPresetPicker, PaddingContainer);
 
 	virtual void _preset_button_pressed(const int p_preset) {}
 

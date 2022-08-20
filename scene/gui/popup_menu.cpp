@@ -51,8 +51,8 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	int vseparation = get_theme_constant(SNAME("v_separation"));
 	int hseparation = get_theme_constant(SNAME("h_separation"));
 
-	Size2 minsize = get_theme_stylebox(SNAME("panel"))->get_minimum_size(); // Accounts for margin in the margin container
-	minsize.x += scroll_container->get_v_scroll_bar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
+	Size2 minsize = get_theme_stylebox(SNAME("panel"))->get_minimum_size(); // Accounts for padding in the padding container.
+	minsize.x += scroll_container->get_v_scroll_bar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content.
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
@@ -147,7 +147,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 		return -1;
 	}
 
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel")); // Accounts for margin in the margin container
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel")); // Accounts for padding in the padding container.
 
 	int vseparation = get_theme_constant(SNAME("v_separation"));
 
@@ -516,9 +516,9 @@ void PopupMenu::_draw_items() {
 	control->set_custom_minimum_size(Size2(0, _get_items_total_height()));
 	RID ci = control->get_canvas_item();
 
-	Size2 margin_size;
-	margin_size.width = margin_container->get_theme_constant(SNAME("margin_right")) + margin_container->get_theme_constant(SNAME("margin_left"));
-	margin_size.height = margin_container->get_theme_constant(SNAME("margin_top")) + margin_container->get_theme_constant(SNAME("margin_bottom"));
+	//Size2 padding_size;
+	//padding_size.width = padding_container->get_theme_constant(SNAME("padding_right")) + padding_container->get_theme_constant(SNAME("padding_left"));
+	//padding_size.height = padding_container->get_theme_constant(SNAME("padding_top")) + padding_container->get_theme_constant(SNAME("padding_bottom"));
 
 	// Space between the item content and the sides of popup menu.
 	int item_start_padding = get_theme_constant(SNAME("item_start_padding"));
@@ -738,8 +738,8 @@ void PopupMenu::_draw_items() {
 
 void PopupMenu::_draw_background() {
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
-	RID ci2 = margin_container->get_canvas_item();
-	style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
+	RID ci2 = padding_container->get_canvas_item();
+	style->draw(ci2, Rect2(Point2(), padding_container->get_size()));
 }
 
 void PopupMenu::_minimum_lifetime_timeout() {
@@ -901,12 +901,12 @@ void PopupMenu::_notification(int p_what) {
 					set_process_internal(true);
 				}
 
-				// Set margin on the margin container
+				// Set padding on the padding container.
 				Ref<StyleBox> panel_style = get_theme_stylebox(SNAME("panel"));
-				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Side::SIDE_LEFT));
-				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Side::SIDE_TOP));
-				margin_container->add_theme_constant_override("margin_right", panel_style->get_margin(Side::SIDE_RIGHT));
-				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
+				padding_container->add_theme_constant_override("padding_left", panel_style->get_margin(Side::SIDE_LEFT));
+				padding_container->add_theme_constant_override("padding_top", panel_style->get_margin(Side::SIDE_TOP));
+				padding_container->add_theme_constant_override("padding_right", panel_style->get_margin(Side::SIDE_RIGHT));
+				padding_container->add_theme_constant_override("padding_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
 			}
 		} break;
 	}
@@ -1998,16 +1998,16 @@ void PopupMenu::popup(const Rect2 &p_bounds) {
 }
 
 PopupMenu::PopupMenu() {
-	// Margin Container
-	margin_container = memnew(MarginContainer);
-	margin_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	add_child(margin_container, false, INTERNAL_MODE_FRONT);
-	margin_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
+	// Padding Container
+	padding_container = memnew(PaddingContainer);
+	padding_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	add_child(padding_container, false, INTERNAL_MODE_FRONT);
+	padding_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
 
 	// Scroll Container
 	scroll_container = memnew(ScrollContainer);
 	scroll_container->set_clip_contents(true);
-	margin_container->add_child(scroll_container);
+	padding_container->add_child(scroll_container);
 
 	// The control which will display the items
 	control = memnew(Control);

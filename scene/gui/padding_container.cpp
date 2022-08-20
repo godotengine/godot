@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  margin_container.cpp                                                 */
+/*  padding_container.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "margin_container.h"
+#include "padding_container.h"
 
-Size2 MarginContainer::get_minimum_size() const {
-	int margin_left = get_theme_constant(SNAME("margin_left"));
-	int margin_top = get_theme_constant(SNAME("margin_top"));
-	int margin_right = get_theme_constant(SNAME("margin_right"));
-	int margin_bottom = get_theme_constant(SNAME("margin_bottom"));
+Size2 PaddingContainer::get_minimum_size() const {
+	int padding_left = get_theme_constant(SNAME("padding_left"));
+	int padding_top = get_theme_constant(SNAME("padding_top"));
+	int padding_right = get_theme_constant(SNAME("padding_right"));
+	int padding_bottom = get_theme_constant(SNAME("padding_bottom"));
 
 	Size2 max;
 
@@ -59,13 +59,13 @@ Size2 MarginContainer::get_minimum_size() const {
 		}
 	}
 
-	max.width += (margin_left + margin_right);
-	max.height += (margin_top + margin_bottom);
+	max.width += (padding_left + padding_right);
+	max.height += (padding_top + padding_bottom);
 
 	return max;
 }
 
-Vector<int> MarginContainer::get_allowed_size_flags_horizontal() const {
+Vector<int> PaddingContainer::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
 	flags.append(SIZE_SHRINK_BEGIN);
@@ -74,7 +74,7 @@ Vector<int> MarginContainer::get_allowed_size_flags_horizontal() const {
 	return flags;
 }
 
-Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
+Vector<int> PaddingContainer::get_allowed_size_flags_vertical() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
 	flags.append(SIZE_SHRINK_BEGIN);
@@ -83,13 +83,13 @@ Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
-void MarginContainer::_notification(int p_what) {
+void PaddingContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			int margin_left = get_theme_constant(SNAME("margin_left"));
-			int margin_top = get_theme_constant(SNAME("margin_top"));
-			int margin_right = get_theme_constant(SNAME("margin_right"));
-			int margin_bottom = get_theme_constant(SNAME("margin_bottom"));
+			int padding_left = get_theme_constant(SNAME("padding_left"));
+			int padding_top = get_theme_constant(SNAME("padding_top"));
+			int padding_right = get_theme_constant(SNAME("padding_right"));
+			int padding_bottom = get_theme_constant(SNAME("padding_bottom"));
 
 			Size2 s = get_size();
 
@@ -102,9 +102,9 @@ void MarginContainer::_notification(int p_what) {
 					continue;
 				}
 
-				int w = s.width - margin_left - margin_right;
-				int h = s.height - margin_top - margin_bottom;
-				fit_child_in_rect(c, Rect2(margin_left, margin_top, w, h));
+				int w = s.width - padding_left - padding_right;
+				int h = s.height - padding_top - padding_bottom;
+				fit_child_in_rect(c, Rect2(padding_left, padding_top, w, h));
 			}
 		} break;
 
@@ -114,5 +114,5 @@ void MarginContainer::_notification(int p_what) {
 	}
 }
 
-MarginContainer::MarginContainer() {
+PaddingContainer::PaddingContainer() {
 }

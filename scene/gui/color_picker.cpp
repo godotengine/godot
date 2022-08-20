@@ -73,7 +73,7 @@ void ColorPicker::_notification(int p_what) {
 			w_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("h_width")), 0));
 
 			wheel_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("sv_width")), get_theme_constant(SNAME("sv_height"))));
-			wheel_margin->add_theme_constant_override("margin_bottom", 8 * get_theme_default_base_scale());
+			wheel_padding->add_theme_constant_override("margin_bottom", 8 * get_theme_default_base_scale());
 
 			for (int i = 0; i < SLIDER_COUNT; i++) {
 				labels[i]->set_custom_minimum_size(Size2(get_theme_constant(SNAME("label_width")), 0));
@@ -1289,17 +1289,17 @@ ColorPicker::ColorPicker() :
 	circle_mat.instantiate();
 	circle_mat->set_shader(circle_shader);
 
-	wheel_margin = memnew(MarginContainer);
-	wheel_margin->add_theme_constant_override("margin_bottom", 8);
-	wheel_edit->add_child(wheel_margin);
+	wheel_padding = memnew(PaddingContainer);
+	wheel_padding->add_theme_constant_override("padding_bottom", 8);
+	wheel_edit->add_child(wheel_padding);
 
 	wheel = memnew(Control);
-	wheel_margin->add_child(wheel);
+	wheel_padding->add_child(wheel);
 	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
 	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(2, wheel));
 
 	wheel_uv = memnew(Control);
-	wheel_margin->add_child(wheel_uv);
+	wheel_padding->add_child(wheel_uv);
 	wheel_uv->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input).bind(wheel_uv));
 	wheel_uv->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(0, wheel_uv));
 

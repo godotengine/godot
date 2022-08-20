@@ -230,7 +230,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_button->set_tooltip(TTR("Toggle the control picker, allowing to visually select control types for edit."));
 	picker_button->connect("pressed", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
-	MarginContainer *preview_body = memnew(MarginContainer);
+	PaddingContainer *preview_body = memnew(PaddingContainer);
 	preview_body->set_custom_minimum_size(Size2(480, 0) * EDSCALE);
 	preview_body->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(preview_body);
@@ -238,7 +238,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_container = memnew(ScrollContainer);
 	preview_body->add_child(preview_container);
 
-	MarginContainer *preview_root = memnew(MarginContainer);
+	PaddingContainer *preview_root = memnew(PaddingContainer);
 	preview_container->add_child(preview_root);
 	preview_root->set_theme(Theme::get_default());
 	preview_root->set_clip_contents(true);
@@ -251,14 +251,14 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	preview_root->add_child(preview_bg);
 
-	preview_content = memnew(MarginContainer);
+	preview_content = memnew(PaddingContainer);
 	preview_root->add_child(preview_content);
-	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
-	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	preview_content->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("padding_right", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("padding_top", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("padding_left", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("padding_bottom", 4 * EDSCALE);
 
-	preview_overlay = memnew(MarginContainer);
+	preview_overlay = memnew(PaddingContainer);
 	preview_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	preview_overlay->set_clip_contents(true);
 	preview_body->add_child(preview_overlay);
@@ -283,15 +283,15 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	Panel *main_panel = memnew(Panel);
 	preview_content->add_child(main_panel);
 
-	MarginContainer *main_mc = memnew(MarginContainer);
-	main_mc->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_top", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
-	preview_content->add_child(main_mc);
+	PaddingContainer *main_pc = memnew(PaddingContainer);
+	main_pc->add_theme_constant_override("padding_right", 4 * EDSCALE);
+	main_pc->add_theme_constant_override("padding_top", 4 * EDSCALE);
+	main_pc->add_theme_constant_override("padding_left", 4 * EDSCALE);
+	main_pc->add_theme_constant_override("padding_bottom", 4 * EDSCALE);
+	preview_content->add_child(main_pc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
-	main_mc->add_child(main_hb);
+	main_pc->add_child(main_hb);
 	main_hb->add_theme_constant_override("separation", 20 * EDSCALE);
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);

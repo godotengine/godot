@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  margin_container.h                                                   */
+/*  padding_container.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MARGIN_CONTAINER_H
-#define MARGIN_CONTAINER_H
+#ifndef PADDING_CONTAINER_H
+#define PADDING_CONTAINER_H
 
 #include "scene/gui/container.h"
 
-class MarginContainer : public Container {
-	GDCLASS(MarginContainer, Container);
+class PaddingContainer : public Container {
+	GDCLASS(PaddingContainer, Container);
 
 protected:
 	void _notification(int p_what);
@@ -45,7 +45,7 @@ public:
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
-	MarginContainer();
+	PaddingContainer();
 };
 
-#endif // MARGIN_CONTAINER_H
+#endif // PADDING_CONTAINER_H

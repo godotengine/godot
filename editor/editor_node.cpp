@@ -4356,7 +4356,7 @@ void EditorNode::_copy_warning(const String &p_str) {
 }
 
 void EditorNode::_dock_floating_close_request(Control *p_control) {
-	// Through the MarginContainer to the Window.
+	// Through the PaddingContainer to the Window.
 	Window *window = static_cast<Window *>(p_control->get_parent()->get_parent());
 	int window_slot = window->get_meta("dock_slot");
 
@@ -4392,15 +4392,15 @@ void EditorNode::_dock_make_float() {
 	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
 	p->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	window->add_child(p);
-	MarginContainer *margin = memnew(MarginContainer);
-	margin->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	margin->add_theme_constant_override("margin_right", borders.width);
-	margin->add_theme_constant_override("margin_top", borders.height);
-	margin->add_theme_constant_override("margin_left", borders.width);
-	margin->add_theme_constant_override("margin_bottom", borders.height);
-	window->add_child(margin);
+	PaddingContainer *padding = memnew(PaddingContainer);
+	padding->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	padding->add_theme_constant_override("padding_right", borders.width);
+	padding->add_theme_constant_override("padding_top", borders.height);
+	padding->add_theme_constant_override("padding_left", borders.width);
+	padding->add_theme_constant_override("padding_bottom", borders.height);
+	window->add_child(padding);
 	dock->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	margin->add_child(dock);
+	padding->add_child(dock);
 	window->set_wrap_controls(true);
 	window->set_size(dock_size);
 	window->set_position(dock_screen_pos);

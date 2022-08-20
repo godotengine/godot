@@ -2072,21 +2072,21 @@ void EditorInspectorArray::_setup() {
 		ae.panel->add_theme_style_override(SNAME("panel"), i % 2 ? odd_style : even_style);
 		elements_vbox->add_child(ae.panel);
 
-		ae.margin = memnew(MarginContainer);
-		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
+		ae.padding = memnew(PaddingContainer);
+		ae.padding->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
 			Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
-			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
-			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
-			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
-			ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+			ae.padding->add_theme_constant_override("padding_left", min_size.x / 2);
+			ae.padding->add_theme_constant_override("padding_top", min_size.y / 2);
+			ae.padding->add_theme_constant_override("padding_right", min_size.x / 2);
+			ae.padding->add_theme_constant_override("padding_bottom", min_size.y / 2);
 		}
-		ae.panel->add_child(ae.margin);
+		ae.panel->add_child(ae.padding);
 
 		ae.hbox = memnew(HBoxContainer);
 		ae.hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		ae.hbox->set_v_size_flags(SIZE_EXPAND_FILL);
-		ae.margin->add_child(ae.hbox);
+		ae.padding->add_child(ae.hbox);
 
 		// Move button.
 		if (movable) {
@@ -2201,10 +2201,10 @@ void EditorInspectorArray::_notification(int p_what) {
 				}
 
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
-				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
-				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
-				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
-				ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+				ae.padding->add_theme_constant_override("padding_left", min_size.x / 2);
+				ae.padding->add_theme_constant_override("padding_top", min_size.y / 2);
+				ae.padding->add_theme_constant_override("padding_right", min_size.x / 2);
+				ae.padding->add_theme_constant_override("padding_bottom", min_size.y / 2);
 
 				if (ae.erase) {
 					ae.erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));

@@ -86,7 +86,7 @@ class EditorPropertyArray : public EditorProperty {
 	int page_index = 0;
 	int changing_type_index;
 	Button *edit = nullptr;
-	MarginContainer *container = nullptr;
+	PaddingContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;
@@ -149,7 +149,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	int page_index = 0;
 	int changing_type_index;
 	Button *edit = nullptr;
-	MarginContainer *container = nullptr;
+	PaddingContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_sliderv;
 	Button *button_add_item = nullptr;
@@ -184,7 +184,7 @@ class EditorPropertyLocalizableString : public EditorProperty {
 	int page_length = 20;
 	int page_index = 0;
 	Button *edit = nullptr;
-	MarginContainer *container = nullptr;
+	PaddingContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;

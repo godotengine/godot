@@ -40,7 +40,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/panel_container.h"
 
 static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const Size2 &p_size, const Size2 &p_shadow_offset, Color p_color, Color p_shadow_color) {
@@ -1417,14 +1417,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	cc->set_v_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_scroll->add_child(cc);
 
-	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
-	split_sheet_panel->add_child(split_sheet_zoom_margin);
-	split_sheet_zoom_margin->set_h_size_flags(0);
-	split_sheet_zoom_margin->set_v_size_flags(0);
-	split_sheet_zoom_margin->add_theme_constant_override("margin_top", 5);
-	split_sheet_zoom_margin->add_theme_constant_override("margin_left", 5);
+	PaddingContainer *split_sheet_zoom_padding = memnew(PaddingContainer);
+	split_sheet_panel->add_child(split_sheet_zoom_padding);
+	split_sheet_zoom_padding->set_h_size_flags(0);
+	split_sheet_zoom_padding->set_v_size_flags(0);
+	split_sheet_zoom_padding->add_theme_constant_override("padding_top", 5);
+	split_sheet_zoom_padding->add_theme_constant_override("padding_left", 5);
 	HBoxContainer *split_sheet_zoom_hb = memnew(HBoxContainer);
-	split_sheet_zoom_margin->add_child(split_sheet_zoom_hb);
+	split_sheet_zoom_padding->add_child(split_sheet_zoom_hb);
 
 	split_sheet_zoom_out = memnew(Button);
 	split_sheet_zoom_out->set_flat(true);

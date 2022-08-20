@@ -31,7 +31,7 @@
 #include "split_container.h"
 
 #include "label.h"
-#include "margin_container.h"
+#include "padding_container.h"
 
 Control *SplitContainer::_getch(int p_idx) const {
 	int idx = 0;

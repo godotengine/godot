@@ -39,8 +39,8 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/rich_text_label.h"
@@ -127,8 +127,8 @@ public:
 	EditorAssetLibraryItemDescription();
 };
 
-class EditorAssetLibraryItemDownload : public MarginContainer {
-	GDCLASS(EditorAssetLibraryItemDownload, MarginContainer);
+class EditorAssetLibraryItemDownload : public PaddingContainer {
+	GDCLASS(EditorAssetLibraryItemDownload, PaddingContainer);
 
 	PanelContainer *panel = nullptr;
 	TextureRect *icon = nullptr;

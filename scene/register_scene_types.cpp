@@ -99,11 +99,11 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
@@ -416,7 +416,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AcceptDialog);
 	GDREGISTER_CLASS(ConfirmationDialog);
 
-	GDREGISTER_CLASS(MarginContainer);
+	GDREGISTER_CLASS(PaddingContainer);
 	GDREGISTER_CLASS(SubViewportContainer);
 	GDREGISTER_ABSTRACT_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
@@ -1090,6 +1090,7 @@ void register_scene_types() {
 	// Renamed during 4.0 alpha, added to ease transition between alphas.
 	ClassDB::add_compatibility_class("AudioStreamOGGVorbis", "AudioStreamOggVorbis");
 	ClassDB::add_compatibility_class("AudioStreamSample", "AudioStreamWAV");
+	ClassDB::add_compatibility_class("MarginContainer", "PaddingContainer");
 	ClassDB::add_compatibility_class("OGGPacketSequence", "OggPacketSequence");
 	ClassDB::add_compatibility_class("StreamCubemap", "CompressedCubemap");
 	ClassDB::add_compatibility_class("StreamCubemapArray", "CompressedCubemapArray");

@@ -56,7 +56,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -292,7 +292,7 @@ void ScriptEditorDebugger::_video_mem_export() {
 }
 
 Size2 ScriptEditorDebugger::get_minimum_size() const {
-	Size2 ms = MarginContainer::get_minimum_size();
+	Size2 ms = PaddingContainer::get_minimum_size();
 	ms.y = MAX(ms.y, 250 * EDSCALE);
 	return ms;
 }

@@ -40,7 +40,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 
 void EditorSettingsDialog::ok_pressed() {
 	if (!EditorSettings::get_singleton()) {

@@ -42,7 +42,7 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;

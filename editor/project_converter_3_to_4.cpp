@@ -1322,6 +1322,7 @@ static const char *class_renames[][2] = {
 	{ "LineShape2D", "WorldBoundaryShape2D" },
 	{ "Listener", "AudioListener3D" },
 	{ "Listener2D", "AudioListener2D" },
+	{ "MarginContainer", "PaddingContainer" },
 	{ "MeshInstance", "MeshInstance3D" },
 	{ "MultiMeshInstance", "MultiMeshInstance3D" },
 	{ "MultiplayerPeerGDNative", "MultiplayerPeerExtension" },

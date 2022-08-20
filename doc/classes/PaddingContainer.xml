@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PaddingContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Simple padding container.
+	</brief_description>
+	<description>
+		Adds top, left, bottom, and right padding to all [Control] nodes that are direct children of the container. To control the [PaddingContainer]'s margin, use the [code]margin_*[/code] theme properties listed below.
+		[b]Note:[/b] Be careful, [Control] margin values are different from the constant padding values. If you want to change the custom padding values of the [PaddingContainer] by code, you should use the following examples:
+		[codeblocks]
+		[gdscript]
+		# This code sample assumes the current script is extending PaddingContainer.
+		var padding_value = 100
+		add_theme_constant_override("padding_top", padding_value)
+		add_theme_constant_override("padding_left", padding_value)
+		add_theme_constant_override("padding_bottom", padding_value)
+		add_theme_constant_override("padding_right", padding_value)
+		[/gdscript]
+		[csharp]
+		// This code sample assumes the current script is extending PaddingContainer.
+		int paddingValue = 100;
+		AddThemeConstantOverride("padding_top", paddingValue);
+		AddThemeConstantOverride("padding_left", paddingValue);
+		AddThemeConstantOverride("padding_bottom", paddingValue);
+		AddThemeConstantOverride("padding_right", paddingValue);
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<theme_items>
+		<theme_item name="padding_bottom" data_type="constant" type="int" default="0">
+			All direct children of [PaddingContainer] will have a bottom padding of [code]padding_bottom[/code] pixels.
+		</theme_item>
+		<theme_item name="padding_left" data_type="constant" type="int" default="0">
+			All direct children of [PaddingContainer] will have a left padding of [code]padding_left[/code] pixels.
+		</theme_item>
+		<theme_item name="padding_right" data_type="constant" type="int" default="0">
+			All direct children of [PaddingContainer] will have a right padding of [code]padding_right[/code] pixels.
+		</theme_item>
+		<theme_item name="padding_top" data_type="constant" type="int" default="0">
+			All direct children of [PaddingContainer] will have a top padding of [code]padding_top[/code] pixels.
+		</theme_item>
+	</theme_items>
+</class>

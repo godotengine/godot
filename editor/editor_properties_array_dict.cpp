@@ -249,8 +249,8 @@ void EditorPropertyArray::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
+			container = memnew(PaddingContainer);
+			container->set_theme_type_variation("PaddingContainer4px");
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -825,8 +825,8 @@ void EditorPropertyDictionary::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
+			container = memnew(PaddingContainer);
+			container->set_theme_type_variation("PaddingContainer4px");
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -1307,8 +1307,8 @@ void EditorPropertyLocalizableString::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
+			container = memnew(PaddingContainer);
+			container->set_theme_type_variation("PaddingContainer4px");
 			add_child(container);
 			set_bottom_editor(container);
 

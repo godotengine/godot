@@ -120,10 +120,10 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
 		alternative_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
 
-	// Update the margin container's margins.
-	const char *constants[] = { "margin_left", "margin_top", "margin_right", "margin_bottom" };
+	// Update the padding container's paddings.
+	const char *constants[] = { "padding_left", "padding_top", "padding_right", "padding_bottom" };
 	for (int i = 0; i < 4; i++) {
-		margin_container->add_theme_constant_override(constants[i], margin_container_paddings[i] * zoom);
+		padding_container->add_theme_constant_override(constants[i], padding_container_paddings[i] * zoom);
 	}
 
 	// Update the backgrounds.
@@ -443,7 +443,7 @@ void TileAtlasView::set_transform(float p_zoom, Vector2i p_panning) {
 
 void TileAtlasView::set_padding(Side p_side, int p_padding) {
 	ERR_FAIL_COND(p_padding < 0);
-	margin_container_paddings[p_side] = p_padding;
+	padding_container_paddings[p_side] = p_padding;
 }
 
 Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos) const {
@@ -580,15 +580,15 @@ TileAtlasView::TileAtlasView() {
 	missing_source_label->set_text(TTR("No atlas source with a valid texture selected."));
 	center_container->add_child(missing_source_label);
 
-	margin_container = memnew(MarginContainer);
-	margin_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	center_container->add_child(margin_container);
+	padding_container = memnew(PaddingContainer);
+	padding_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	center_container->add_child(padding_container);
 
 	hbox = memnew(HBoxContainer);
 	hbox->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	hbox->add_theme_constant_override("separation", 10);
 	hbox->hide();
-	margin_container->add_child(hbox);
+	padding_container->add_child(hbox);
 
 	VBoxContainer *left_vbox = memnew(VBoxContainer);
 	left_vbox->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);

@@ -36,7 +36,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "scene/gui/button.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 
 class Tree;
 class LineEdit;
@@ -57,8 +57,8 @@ class EditorDebuggerPlugin;
 class DebugAdapterProtocol;
 class DebugAdapterParser;
 
-class ScriptEditorDebugger : public MarginContainer {
-	GDCLASS(ScriptEditorDebugger, MarginContainer);
+class ScriptEditorDebugger : public PaddingContainer {
+	GDCLASS(ScriptEditorDebugger, PaddingContainer);
 
 	friend class EditorDebuggerNode;
 	friend class DebugAdapterProtocol;

@@ -31,7 +31,7 @@
 #include "box_container.h"
 
 #include "label.h"
-#include "margin_container.h"
+#include "padding_container.h"
 
 struct _MinSizeCache {
 	int min_size = 0;
@@ -374,18 +374,18 @@ void BoxContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 }
 
-MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
+PaddingContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
 	Label *l = memnew(Label);
 	l->set_theme_type_variation("HeaderSmall");
 	l->set_text(p_label);
 	add_child(l);
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 0);
-	mc->add_child(p_control, true);
-	add_child(mc);
+	PaddingContainer *pc = memnew(PaddingContainer);
+	pc->add_theme_constant_override("padding_left", 0);
+	pc->add_child(p_control, true);
+	add_child(pc);
 	if (p_expand) {
-		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		pc->set_v_size_flags(SIZE_EXPAND_FILL);
 	}
 
-	return mc;
+	return pc;
 }

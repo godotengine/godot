@@ -32,7 +32,7 @@
 #define EDITOR_DEBUGGER_NODE_H
 
 #include "editor/debugger/editor_debugger_server.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 
 class Button;
 class DebugAdapterParser;
@@ -42,8 +42,8 @@ class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;
 
-class EditorDebuggerNode : public MarginContainer {
-	GDCLASS(EditorDebuggerNode, MarginContainer);
+class EditorDebuggerNode : public PaddingContainer {
+	GDCLASS(EditorDebuggerNode, PaddingContainer);
 
 public:
 	enum CameraOverride {

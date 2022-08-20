@@ -1317,10 +1317,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("separation", "BoxContainer", default_margin_size * EDSCALE);
 	theme->set_constant("separation", "HBoxContainer", default_margin_size * EDSCALE);
 	theme->set_constant("separation", "VBoxContainer", default_margin_size * EDSCALE);
-	theme->set_constant("margin_left", "MarginContainer", 0);
-	theme->set_constant("margin_top", "MarginContainer", 0);
-	theme->set_constant("margin_right", "MarginContainer", 0);
-	theme->set_constant("margin_bottom", "MarginContainer", 0);
+	theme->set_constant("padding_left", "PaddingContainer", 0);
+	theme->set_constant("padding_top", "PaddingContainer", 0);
+	theme->set_constant("padding_right", "PaddingContainer", 0);
+	theme->set_constant("padding_bottom", "PaddingContainer", 0);
 	theme->set_constant("h_separation", "GridContainer", default_margin_size * EDSCALE);
 	theme->set_constant("v_separation", "GridContainer", default_margin_size * EDSCALE);
 	theme->set_constant("h_separation", "FlowContainer", default_margin_size * EDSCALE);
@@ -1330,12 +1330,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_separation", "VFlowContainer", default_margin_size * EDSCALE);
 	theme->set_constant("v_separation", "VFlowContainer", default_margin_size * EDSCALE);
 
-	// Custom theme type for MarginContainer with 4px margins.
-	theme->set_type_variation("MarginContainer4px", "MarginContainer");
-	theme->set_constant("margin_left", "MarginContainer4px", 4 * EDSCALE);
-	theme->set_constant("margin_top", "MarginContainer4px", 4 * EDSCALE);
-	theme->set_constant("margin_right", "MarginContainer4px", 4 * EDSCALE);
-	theme->set_constant("margin_bottom", "MarginContainer4px", 4 * EDSCALE);
+	// Custom theme type for PaddingContainer with 4px paddings.
+	theme->set_type_variation("PaddingContainer4px", "PaddingContainer");
+	theme->set_constant("padding_left", "PaddingContainer4px", 4 * EDSCALE);
+	theme->set_constant("padding_top", "PaddingContainer4px", 4 * EDSCALE);
+	theme->set_constant("padding_right", "PaddingContainer4px", 4 * EDSCALE);
+	theme->set_constant("padding_bottom", "PaddingContainer4px", 4 * EDSCALE);
 
 	// Window
 

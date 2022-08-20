@@ -32,7 +32,7 @@
 #define POPUP_MENU_H
 
 #include "core/input/shortcut.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/resources/text_line.h"
@@ -125,7 +125,7 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
-	MarginContainer *margin_container = nullptr;
+	PaddingContainer *padding_container = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 

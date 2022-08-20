@@ -77,7 +77,7 @@ private:
 	Tree *include_files = nullptr;
 
 	Label *include_label = nullptr;
-	MarginContainer *include_margin = nullptr;
+	PaddingContainer *include_padding = nullptr;
 
 	Button *export_button = nullptr;
 	Button *export_all_button = nullptr;

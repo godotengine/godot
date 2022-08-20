@@ -197,14 +197,14 @@ void EditorPath::_bind_methods() {
 EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	history = p_history;
 
-	MarginContainer *main_mc = memnew(MarginContainer);
-	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
-	add_child(main_mc);
+	PaddingContainer *main_pc = memnew(PaddingContainer);
+	main_pc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	main_pc->add_theme_constant_override("padding_left", 4 * EDSCALE);
+	main_pc->add_theme_constant_override("padding_right", 6 * EDSCALE);
+	add_child(main_pc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
-	main_mc->add_child(main_hb);
+	main_pc->add_child(main_hb);
 
 	current_object_icon = memnew(TextureRect);
 	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);

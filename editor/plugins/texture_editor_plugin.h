@@ -34,8 +34,8 @@
 #include "editor/editor_plugin.h"
 #include "scene/resources/texture.h"
 
-class TexturePreview : public MarginContainer {
-	GDCLASS(TexturePreview, MarginContainer);
+class TexturePreview : public PaddingContainer {
+	GDCLASS(TexturePreview, PaddingContainer);
 
 private:
 	TextureRect *texture_display = nullptr;

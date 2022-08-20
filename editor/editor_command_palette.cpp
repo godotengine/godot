@@ -305,9 +305,9 @@ EditorCommandPalette::EditorCommandPalette() {
 	command_search_box->connect("text_changed", callable_mp(this, &EditorCommandPalette::_update_command_search));
 	command_search_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	command_search_box->set_clear_button_enabled(true);
-	MarginContainer *margin_container_csb = memnew(MarginContainer);
-	margin_container_csb->add_child(command_search_box);
-	vbc->add_child(margin_container_csb);
+	PaddingContainer *padding_container_csb = memnew(PaddingContainer);
+	padding_container_csb->add_child(command_search_box);
+	vbc->add_child(padding_container_csb);
 	register_text_enter(command_search_box);
 
 	search_options = memnew(Tree);

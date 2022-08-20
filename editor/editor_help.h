@@ -35,8 +35,8 @@
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/padding_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -213,8 +213,8 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public MarginContainer {
-	GDCLASS(EditorHelpBit, MarginContainer);
+class EditorHelpBit : public PaddingContainer {
+	GDCLASS(EditorHelpBit, PaddingContainer);
 
 	RichTextLabel *rich_text = nullptr;
 	void _go_to_help(String p_what);
