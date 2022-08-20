@@ -158,8 +158,8 @@
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/label_settings.h"
 #include "scene/resources/material.h"
-#include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
+#include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
@@ -260,7 +260,7 @@
 #include "scene/resources/fog_material.h"
 #include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh_library.h"
-#endif
+#endif // _3D_DISABLED
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
@@ -575,7 +575,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationObstacle3D);
 
 	OS::get_singleton()->yield(); // may take time to init
-#endif
+#endif // _3D_DISABLED
 
 	/* REGISTER SHADER */
 
@@ -765,10 +765,6 @@ void register_scene_types() {
 	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
 	ParticlesMaterial::init_shaders();
 
-	GDREGISTER_CLASS(ProceduralSkyMaterial);
-	GDREGISTER_CLASS(PanoramaSkyMaterial);
-	GDREGISTER_CLASS(PhysicalSkyMaterial);
-
 	GDREGISTER_VIRTUAL_CLASS(Mesh);
 	GDREGISTER_CLASS(ArrayMesh);
 	GDREGISTER_CLASS(PlaceholderMesh);
@@ -796,6 +792,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
 	GDREGISTER_CLASS(PlaceholderMaterial);
+	GDREGISTER_CLASS(ProceduralSkyMaterial);
+	GDREGISTER_CLASS(PanoramaSkyMaterial);
+	GDREGISTER_CLASS(PhysicalSkyMaterial);
 	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
 	BaseMaterial3D::init_shaders();
 
@@ -824,7 +823,7 @@ void register_scene_types() {
 	ClassDB::register_class<SkeletonModification3DStackHolder>();
 
 	OS::get_singleton()->yield(); // may take time to init
-#endif
+#endif // _3D_DISABLED
 
 	GDREGISTER_CLASS(PhysicsMaterial);
 	GDREGISTER_CLASS(World3D);
@@ -1203,11 +1202,10 @@ void unregister_scene_types() {
 	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED
 	BaseMaterial3D::finish_shaders();
-#endif // _3D_DISABLED
-
 	PhysicalSkyMaterial::cleanup_shader();
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
+#endif // _3D_DISABLED
 
 	ParticlesMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();

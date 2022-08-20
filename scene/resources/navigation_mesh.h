@@ -33,8 +33,6 @@
 
 #include "scene/resources/mesh.h"
 
-class Mesh;
-
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
 

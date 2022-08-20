@@ -32,11 +32,10 @@
 
 #include "core/math/convex_hull.h"
 #include "core/templates/pair.h"
+#include "scene/resources/surface_tool.h"
+
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
-#include "surface_tool.h"
-
-#include <stdlib.h>
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 

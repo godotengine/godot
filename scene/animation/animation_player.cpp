@@ -323,10 +323,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 #endif // _3D_DISABLED
 
-		{
-			if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
-				child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONESHOT);
-			}
+		if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
+			child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -375,7 +373,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 					node_cache->init_rot = rest.basis.get_rotation_quaternion();
 					node_cache->init_scale = rest.basis.get_scale();
 				} else {
-					// no property, just use spatialnode
+					// Not a skeleton, the node can be accessed with the node_3d member.
 					node_cache->skeleton = nullptr;
 				}
 			}

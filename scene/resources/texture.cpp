@@ -35,8 +35,8 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/os.h"
-#include "mesh.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/mesh.h"
 #include "servers/camera/camera_feed.h"
 int Texture2D::get_width() const {
 	int ret;
