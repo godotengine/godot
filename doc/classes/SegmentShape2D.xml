@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SegmentShape2D" inherits="Shape2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Segment shape resource for 2D physics.
+	</brief_description>
+	<description>
+		2D segment shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node. Consists of two points, [code]a[/code] and [code]b[/code].
+		[b]Performance:[/b] Being a primitive collision shape, [SegmentShape2D] is fast to check collisions against (though not as fast as [CircleShape2D]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="a" type="Vector2" setter="set_a" getter="get_a" default="Vector2(0, 0)">
+			The segment's first point position.
+		</member>
+		<member name="b" type="Vector2" setter="set_b" getter="get_b" default="Vector2(0, 10)">
+			The segment's second point position.
+		</member>
+	</members>
+</class>

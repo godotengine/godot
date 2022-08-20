@@ -1,0 +1,102 @@
+diff --git a/thirdparty/squish/colourblock.cpp b/thirdparty/squish/colourblock.cpp
+index af8b98036..3d87adaa7 100644
+--- a/thirdparty/squish/colourblock.cpp
++++ b/thirdparty/squish/colourblock.cpp
+@@ -24,6 +24,9 @@
+    -------------------------------------------------------------------------- */
+ 
+ #include "colourblock.h"
++// -- Godot start --
++#include "alpha.h"
++// -- Godot end --
+ 
+ namespace squish {
+ 
+@@ -211,4 +214,23 @@ void DecompressColour( u8* rgba, void const* block, bool isDxt1 )
+     }
+ }
+ 
++// -- Godot start --
++void DecompressColourBc5( u8* rgba, void const* block)
++{
++    void const* rblock = block;
++    void const* gblock = reinterpret_cast< u8 const* >( block ) + 8;
++    DecompressAlphaDxt5(rgba,rblock);
++    for ( int i = 0; i < 16; ++i ) {
++        rgba[i*4] = rgba[i*4 + 3];
++    }
++    DecompressAlphaDxt5(rgba,gblock);
++    for ( int i = 0; i < 16; ++i ) {
++        rgba[i*4+1] = rgba[i*4 + 3];
++        rgba[i*4 + 2] = 0;
++        rgba[i*4 + 3] = 255;
++    }
++}
++// -- GODOT end --
++
++
+ } // namespace squish
+diff --git a/thirdparty/squish/colourblock.h b/thirdparty/squish/colourblock.h
+index fee2cd7c5..3cb9b7e3b 100644
+--- a/thirdparty/squish/colourblock.h
++++ b/thirdparty/squish/colourblock.h
+@@ -35,6 +35,9 @@ void WriteColourBlock3( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void*
+ void WriteColourBlock4( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void* block );
+ 
+ void DecompressColour( u8* rgba, void const* block, bool isDxt1 );
++// -- GODOT start --
++void DecompressColourBc5( u8* rgba, void const* block );
++// -- GODOT end --
+ 
+ } // namespace squish
+ 
+diff --git a/thirdparty/squish/config.h b/thirdparty/squish/config.h
+index 92edefe96..05f8d7259 100644
+--- a/thirdparty/squish/config.h
++++ b/thirdparty/squish/config.h
+@@ -32,6 +32,26 @@
+ #endif
+ 
+ // Set to 1 or 2 when building squish to use SSE or SSE2 instructions.
++// -- GODOT start --
++#ifdef _MSC_VER
++  #if defined(_M_IX86_FP)
++    #if _M_IX86_FP >= 2
++      #define SQUISH_USE_SSE 2
++    #elif _M_IX86_FP >= 1
++      #define SQUISH_USE_SSE 1
++    #endif
++  #elif defined(_M_X64)
++    #define SQUISH_USE_SSE 2
++  #endif
++#else
++  #if defined(__SSE2__)
++    #define SQUISH_USE_SSE 2
++  #elif defined(__SSE__)
++    #define SQUISH_USE_SSE 1
++  #endif
++#endif
++// -- GODOT end --
++
+ #ifndef SQUISH_USE_SSE
+ #define SQUISH_USE_SSE 0
+ #endif
+diff --git a/thirdparty/squish/squish.cpp b/thirdparty/squish/squish.cpp
+index 1d22a64ad..fd11a147d 100644
+--- a/thirdparty/squish/squish.cpp
++++ b/thirdparty/squish/squish.cpp
+@@ -135,7 +135,13 @@ void Decompress( u8* rgba, void const* block, int flags )
+         colourBlock = reinterpret_cast< u8 const* >( block ) + 8;
+ 
+     // decompress colour
+-    DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
++    // -- GODOT start --
++    //DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
++    if(( flags & ( kBc5 ) ) != 0)
++        DecompressColourBc5( rgba, colourBlock);
++    else
++        DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
++    // -- GODOT end --
+ 
+     // decompress alpha separately if necessary
+     if( ( flags & kDxt3 ) != 0 )

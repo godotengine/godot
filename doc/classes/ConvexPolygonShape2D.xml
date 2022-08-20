@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConvexPolygonShape2D" inherits="Shape2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Convex polygon shape resource for 2D physics.
+	</brief_description>
+	<description>
+		2D convex polygon shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node. A convex polygon, whatever its shape, is internally decomposed into as many convex polygons as needed to ensure all collision checks against it are always done on convex polygons (which are faster to check). See also [CollisionPolygon2D].
+		The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex to speed up collision detection.
+		[b]Performance:[/b] [ConvexPolygonShape2D] is faster to check collisions against compared to [ConcavePolygonShape2D], but it is slower than primitive collision shapes such as [CircleShape2D] or [RectangleShape2D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by a primitive shape.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_point_cloud">
+			<return type="void" />
+			<param index="0" name="point_cloud" type="PackedVector2Array" />
+			<description>
+				Based on the set of points provided, this creates and assigns the [member points] property using the convex hull algorithm. Removing all unneeded points. See [method Geometry2D.convex_hull] for details.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
+			The polygon's list of vertices. Can be in either clockwise or counterclockwise order. Only set this property with convex hull points, use [method set_point_cloud] to generate a convex hull shape from concave shape points.
+		</member>
+	</members>
+</class>

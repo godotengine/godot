@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VBoxContainer" inherits="BoxContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Vertical box container.
+	</brief_description>
+	<description>
+		Vertical box container. See [BoxContainer].
+	</description>
+	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+	</tutorials>
+	<theme_items>
+		<theme_item name="separation" data_type="constant" type="int" default="4">
+			The vertical space between the [VBoxContainer]'s elements.
+		</theme_item>
+	</theme_items>
+</class>

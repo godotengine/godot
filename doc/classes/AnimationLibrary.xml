@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationLibrary" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_animation">
+			<return type="int" enum="Error" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="animation" type="Animation" />
+			<description>
+			</description>
+		</method>
+		<method name="get_animation" qualifiers="const">
+			<return type="Animation" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_list" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
+			</description>
+		</method>
+		<method name="has_animation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_animation">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="rename_animation">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="newname" type="StringName" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{}">
+		</member>
+	</members>
+	<signals>
+		<signal name="animation_added">
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</signal>
+		<signal name="animation_removed">
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</signal>
+		<signal name="animation_renamed">
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="to_name" type="StringName" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

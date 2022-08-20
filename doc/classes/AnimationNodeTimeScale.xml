@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeTimeScale" inherits="AnimationNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A time-scaling animation node to be used with [AnimationTree].
+	</brief_description>
+	<description>
+		Allows scaling the speed of the animation (or reversing it) in any children nodes. Setting it to 0 will pause the animation.
+	</description>
+	<tutorials>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+	</tutorials>
+</class>

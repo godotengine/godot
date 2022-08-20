@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Callable" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An object representing a method in a certain object that can be called.
+	</brief_description>
+	<description>
+		[Callable] is a first class object which can be held in variables and passed to functions. It represents a given method in an [Object], and is typically used for signal callbacks.
+		[b]Example:[/b]
+		[codeblocks]
+		[gdscript]
+		func print_args(arg1, arg2, arg3 = ""):
+		    prints(arg1, arg2, arg3)
+
+		func test():
+		    var callable = Callable(self, "print_args")
+		    callable.call("hello", "world")  # Prints "hello world ".
+		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(Node.gd)::print_args".
+		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
+		[/gdscript]
+		[csharp]
+		public void PrintArgs(object arg1, object arg2, object arg3 = null)
+		{
+		    GD.PrintS(arg1, arg2, arg3);
+		}
+
+		public void Test()
+		{
+		    Callable callable = new Callable(this, nameof(PrintArgs));
+		    callable.Call("hello", "world"); // Prints "hello world null".
+		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs".
+		    callable.Call("invalid"); // Invalid call, should have at least 2 arguments.
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="Callable">
+			<return type="Callable" />
+			<description>
+				Constructs a null [Callable] with no object nor method bound.
+			</description>
+		</constructor>
+		<constructor name="Callable">
+			<return type="Callable" />
+			<param index="0" name="from" type="Callable" />
+			<description>
+				Constructs a [Callable] as a copy of the given [Callable].
+			</description>
+		</constructor>
+		<constructor name="Callable">
+			<return type="Callable" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Creates a new [Callable] for the method called [param method] in the specified [param object].
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="bind" qualifiers="vararg const">
+			<return type="Callable" />
+			<description>
+				Returns a copy of this [Callable] with the arguments bound. Bound arguments are passed after the arguments supplied by [method call].
+			</description>
+		</method>
+		<method name="call" qualifiers="vararg const">
+			<return type="Variant" />
+			<description>
+				Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
+			</description>
+		</method>
+		<method name="call_deferred" qualifiers="vararg const">
+			<return type="void" />
+			<description>
+				Calls the method represented by this [Callable] in deferred mode, i.e. during the idle frame. Arguments can be passed and should match the method's signature.
+			</description>
+		</method>
+		<method name="get_method" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the method represented by this [Callable].
+			</description>
+		</method>
+		<method name="get_object" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the object on which this [Callable] is called.
+			</description>
+		</method>
+		<method name="get_object_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of this [Callable]'s object (see [method Object.get_instance_id]).
+			</description>
+		</method>
+		<method name="hash" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the 32-bit hash value of this [Callable]'s object.
+				[b]Note:[/b] [Callable]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the callables are equal, because different callables can have identical hash values due to hash collisions. The engine uses a 32-bit hash algorithm for [method hash].
+			</description>
+		</method>
+		<method name="is_custom" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Callable] is a custom callable whose behavior differs based on implementation details. Custom callables are used in the engine for various reasons. If [code]true[/code], you can't use [method get_method].
+			</description>
+		</method>
+		<method name="is_null" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Callable] has no target to call the method on.
+			</description>
+		</method>
+		<method name="is_standard" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Callable] is a standard callable, referencing an object and a method using a [StringName].
+			</description>
+		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the object exists and has a valid function assigned, or is a custom callable.
+			</description>
+		</method>
+		<method name="rpc" qualifiers="vararg const">
+			<return type="void" />
+			<description>
+				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
+			</description>
+		</method>
+		<method name="rpc_id" qualifiers="vararg const">
+			<return type="void" />
+			<param index="0" name="peer_id" type="int" />
+			<description>
+				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
+			</description>
+		</method>
+		<method name="unbind" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="argcount" type="int" />
+			<description>
+				Returns a copy of this [Callable] with the arguments unbound. Calling the returned [Callable] will call the method without the extra arguments that are supplied in the [Callable] on which you are calling this method.
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Callable" />
+			<description>
+				Returns [code]true[/code] if both [Callable]s invoke different targets.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Callable" />
+			<description>
+				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
+			</description>
+		</operator>
+	</operators>
+</class>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimatedSprite2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Sprite node that contains multiple textures as frames to play for animation.
+	</brief_description>
+	<description>
+		[AnimatedSprite2D] is similar to the [Sprite2D] node, except it carries multiple textures as animation frames. Animations are created using a [SpriteFrames] resource, which allows you to import image files (or a folder containing said files) to provide the animation frames for the sprite. The [SpriteFrames] resource can be configured in the editor via the SpriteFrames bottom panel.
+		[b]Note:[/b] You can associate a set of normal or specular maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] or [code]_specular[/code] suffix. For example, having 3 [SpriteFrames] resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/code] will make it so the [code]run[/code] animation uses normal and specular maps.
+	</description>
+	<tutorials>
+		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+	</tutorials>
+	<methods>
+		<method name="play">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="backwards" type="bool" default="false" />
+			<description>
+				Plays the animation named [param anim]. If no [param anim] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the current animation (does not reset the frame counter).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;default&quot;">
+			The current animation from the [member frames] resource. If this value changes, the [code]frame[/code] counter is reset.
+		</member>
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+			If [code]true[/code], texture will be centered.
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
+			The displayed animation frame's index.
+		</member>
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
+			The [SpriteFrames] resource containing the animation(s). Allows you the option to load, edit, clear, make unique and save the states of the [SpriteFrames] resource.
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
+			The texture's drawing offset.
+		</member>
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
+			If [code]true[/code], the [member animation] is currently playing.
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			The animation speed is multiplied by this value.
+		</member>
+	</members>
+	<signals>
+		<signal name="animation_finished">
+			<description>
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn.
+			</description>
+		</signal>
+		<signal name="frame_changed">
+			<description>
+				Emitted when [member frame] changed.
+			</description>
+		</signal>
+	</signals>
+</class>

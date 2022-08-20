@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScrollContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A helper node for displaying scrollable elements such as lists.
+	</brief_description>
+	<description>
+		A ScrollContainer node meant to contain a [Control] child.
+		ScrollContainers will automatically create a scrollbar child ([HScrollBar], [VScrollBar], or both) when needed and will only draw the Control within the ScrollContainer area. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.custom_minimum_size] of the Control relative to the ScrollContainer.
+		Works great with a [Panel] control. You can set [code]EXPAND[/code] on the children's size flags, so they will upscale to the ScrollContainer's size if it's larger (scroll is invisible for the chosen dimension).
+	</description>
+	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<methods>
+		<method name="ensure_control_visible">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Ensures the given [param control] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
+				[b]Note:[/b] This will not work on a node that was just added during the same frame. If you want to scroll to a newly added child, you must wait until the next frame using [signal SceneTree.process_frame]:
+				[codeblock]
+				add_child(child_node)
+				await get_tree().process_frame
+				ensure_control_visible(child_node)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_h_scroll_bar">
+			<return type="HScrollBar" />
+			<description>
+				Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable or hide a scrollbar, you can use [member horizontal_scroll_mode].
+			</description>
+		</method>
+		<method name="get_v_scroll_bar">
+			<return type="VScrollBar" />
+			<description>
+				Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable or hide a scrollbar, you can use [member vertical_scroll_mode].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
+			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
+		</member>
+		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
+			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+		</member>
+		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
+		</member>
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
+			The current horizontal scroll value.
+		</member>
+		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll" default="0">
+			The current vertical scroll value.
+		</member>
+		<member name="vertical_scroll_mode" type="int" setter="set_vertical_scroll_mode" getter="get_vertical_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
+			Controls whether vertical scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+		</member>
+	</members>
+	<signals>
+		<signal name="scroll_ended">
+			<description>
+				Emitted when scrolling stops.
+			</description>
+		</signal>
+		<signal name="scroll_started">
+			<description>
+				Emitted when scrolling is started.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="SCROLL_MODE_DISABLED" value="0" enum="ScrollMode">
+			Scrolling disabled, scrollbar will be invisible.
+		</constant>
+		<constant name="SCROLL_MODE_AUTO" value="1" enum="ScrollMode">
+			Scrolling enabled, scrollbar will be visible only if necessary, i.e. container's content is bigger than the container.
+		</constant>
+		<constant name="SCROLL_MODE_SHOW_ALWAYS" value="2" enum="ScrollMode">
+			Scrolling enabled, scrollbar will be always visible.
+		</constant>
+		<constant name="SCROLL_MODE_SHOW_NEVER" value="3" enum="ScrollMode">
+			Scrolling enabled, scrollbar will be hidden.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="bg" data_type="style" type="StyleBox">
+			The background [StyleBox] of the [ScrollContainer].
+		</theme_item>
+	</theme_items>
+</class>

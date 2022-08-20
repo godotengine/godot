@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+
+Import("env")
+
+if "pulseaudio" in env and env["pulseaudio"]:
+    env.add_source_files(env.drivers_sources, "pulse-so_wrap.c")
+
+env.add_source_files(env.drivers_sources, "*.cpp")

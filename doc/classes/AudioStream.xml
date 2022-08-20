@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStream" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for audio streams.
+	</brief_description>
+	<description>
+		Base class for audio streams. Audio streams are used for sound effects and music playback, and support WAV (via [AudioStreamWAV]) and Ogg (via [AudioStreamOggVorbis]) file formats.
+	</description>
+	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
+		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
+	</tutorials>
+	<methods>
+		<method name="_get_beat_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_bpm" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_length" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_stream_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_instantiate_playback" qualifiers="virtual const">
+			<return type="AudioStreamPlayback" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_monophonic" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the length of the audio stream in seconds.
+			</description>
+		</method>
+		<method name="instantiate_playback">
+			<return type="AudioStreamPlayback" />
+			<description>
+				Returns an AudioStreamPlayback. Useful for when you want to extend [method _instantiate_playback] but call [method instantiate_playback] from an internally held AudioStream subresource. An example of this can be found in the source files for [code]AudioStreamRandomPitch::instantiate_playback[/code].
+			</description>
+		</method>
+		<method name="is_monophonic" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if this audio stream only supports monophonic playback, or false if the audio stream supports polyphony.
+			</description>
+		</method>
+	</methods>
+</class>

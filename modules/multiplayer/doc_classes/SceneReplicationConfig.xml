@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneReplicationConfig" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration for properties to synchronize with a [MultiplayerSynchronizer].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_property">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="index" type="int" default="-1" />
+			<description>
+				Adds the property identified by the given [code]path[/code] to the list of the properties being synchronized, optionally passing an [code]index[/code].
+			</description>
+		</method>
+		<method name="get_properties" qualifiers="const">
+			<return type="NodePath[]" />
+			<description>
+				Returns a list of synchronized property [NodePath]s.
+			</description>
+		</method>
+		<method name="has_property" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Returns whether the given [code]path[/code] is configured for synchronization.
+			</description>
+		</method>
+		<method name="property_get_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Finds the index of the given [code]path[/code].
+			</description>
+		</method>
+		<method name="property_get_spawn">
+			<return type="bool" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Returns whether the property identified by the given [code]path[/code] is configured to be synchronized on spawn.
+			</description>
+		</method>
+		<method name="property_get_sync">
+			<return type="bool" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Returns whether the property identified by the given [code]path[/code] is configured to be synchronized on process.
+			</description>
+		</method>
+		<method name="property_set_spawn">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets whether the property identified by the given [code]path[/code] is configured to be synchronized on spawn.
+			</description>
+		</method>
+		<method name="property_set_sync">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets whether the property identified by the given [code]path[/code] is configured to be synchronized on process.
+			</description>
+		</method>
+		<method name="remove_property">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Removes the property identified by the given [code]path[/code] from the configuration.
+			</description>
+		</method>
+	</methods>
+</class>

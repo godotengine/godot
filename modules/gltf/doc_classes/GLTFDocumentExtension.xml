@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFDocumentExtension" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_export_node" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="json" type="Dictionary" />
+			<param index="3" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="_export_post" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+			</description>
+		</method>
+		<method name="_export_preflight" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="root" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="_import_node" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="json" type="Dictionary" />
+			<param index="3" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="_import_post" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="root" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="_import_post_parse" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+			</description>
+		</method>
+		<method name="_import_preflight" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

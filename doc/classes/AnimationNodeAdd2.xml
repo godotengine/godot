@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeAdd2" inherits="AnimationNodeSync" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Blends two animations additively inside of an [AnimationNodeBlendTree].
+	</brief_description>
+	<description>
+		A resource to add to an [AnimationNodeBlendTree]. Blends two animations additively based on an amount value in the [code][0.0, 1.0][/code] range.
+	</description>
+	<tutorials>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+</class>

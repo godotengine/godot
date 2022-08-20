@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="QuadMesh" inherits="PrimitiveMesh" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class representing a square mesh.
+	</brief_description>
+	<description>
+		Class representing a square [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Y axes; this default rotation is more suited for use with billboarded materials. Unlike [PlaneMesh], this mesh doesn't provide subdivision options.
+	</description>
+	<tutorials>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
+	</tutorials>
+	<members>
+		<member name="center_offset" type="Vector3" setter="set_center_offset" getter="get_center_offset" default="Vector3(0, 0, 0)">
+			Offset of the generated Quad. Useful for particles.
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(1, 1)">
+			Size on the X and Y axes.
+		</member>
+	</members>
+</class>

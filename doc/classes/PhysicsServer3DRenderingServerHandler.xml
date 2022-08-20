@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsServer3DRenderingServerHandler" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_set_aabb" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="aabb" type="AABB" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_normal" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="normals" type="const void*" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_vertex" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="vertices" type="const void*" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

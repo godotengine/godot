@@ -1,0 +1,7 @@
+extraction:
+  cpp:
+    after_prepare:
+      - pip3 install scons
+      - PATH="/opt/work/.local/bin:$PATH"
+    index:
+      build_command: scons -j2

@@ -1,0 +1,630 @@
+diff --git a/thirdparty/embree/common/algorithms/parallel_for.h b/thirdparty/embree/common/algorithms/parallel_for.h
+index f052d8b468..645681ac63 100644
+--- a/thirdparty/embree/common/algorithms/parallel_for.h
++++ b/thirdparty/embree/common/algorithms/parallel_for.h
+@@ -21,7 +21,10 @@ namespace embree
+           func(r.begin());
+         });
+       if (!TaskScheduler::wait())
+-        throw std::runtime_error("task cancelled");
++        // -- GODOT start --
++        // throw std::runtime_error("task cancelled");
++        abort();
++        // -- GODOT end --
+     }
+     
+ #elif defined(TASKING_TBB)
+@@ -31,13 +34,19 @@ namespace embree
+         func(i);
+       },context);
+     if (context.is_group_execution_cancelled())
+-      throw std::runtime_error("task cancelled");
++      // -- GODOT start --
++      // throw std::runtime_error("task cancelled");
++      abort();
++      // -- GODOT end --
+   #else
+     tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
+         func(i);
+       });
+     if (tbb::task::self().is_cancelled())
+-      throw std::runtime_error("task cancelled");
++      // -- GODOT start --
++      // throw std::runtime_error("task cancelled");
++      abort();
++      // -- GODOT end --
+   #endif
+ 
+ #elif defined(TASKING_PPL)
+@@ -57,7 +66,10 @@ namespace embree
+ #if defined(TASKING_INTERNAL)
+     TaskScheduler::spawn(first,last,minStepSize,func);
+     if (!TaskScheduler::wait())
+-      throw std::runtime_error("task cancelled");
++      // -- GODOT start --
++      // throw std::runtime_error("task cancelled");
++      abort();
++      // -- GODOT end --
+ 
+ #elif defined(TASKING_TBB)
+   #if TBB_INTERFACE_VERSION >= 12002
+@@ -66,13 +78,19 @@ namespace embree
+         func(range<Index>(r.begin(),r.end()));
+       },context);
+     if (context.is_group_execution_cancelled())
+-      throw std::runtime_error("task cancelled");
++      // -- GODOT start --
++      // throw std::runtime_error("task cancelled");
++      abort();
++      // -- GODOT end --
+   #else
+     tbb::parallel_for(tbb::blocked_range<Index>(first,last,minStepSize),[&](const tbb::blocked_range<Index>& r) {
+         func(range<Index>(r.begin(),r.end()));
+       });
+     if (tbb::task::self().is_cancelled())
+-      throw std::runtime_error("task cancelled");
++      // -- GODOT start --
++      // throw std::runtime_error("task cancelled");
++      abort();
++      // -- GODOT end --
+   #endif
+ 
+ #elif defined(TASKING_PPL)
+@@ -104,13 +122,19 @@ namespace embree
+           func(i);
+         },tbb::simple_partitioner(),context);
+       if (context.is_group_execution_cancelled())
+-        throw std::runtime_error("task cancelled");
++        // -- GODOT start --
++        // throw std::runtime_error("task cancelled");
++        abort();
++        // -- GODOT end --
+     #else
+       tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
+           func(i);
+         },tbb::simple_partitioner());
+       if (tbb::task::self().is_cancelled())
+-        throw std::runtime_error("task cancelled");
++        // -- GODOT start --
++        // throw std::runtime_error("task cancelled");
++        abort();
++        // -- GODOT end --
+     #endif
+   }
+ 
+@@ -125,13 +149,19 @@ namespace embree
+           func(i);
+         },ap,context);
+       if (context.is_group_execution_cancelled())
+-        throw std::runtime_error("task cancelled");
++        // -- GODOT start --
++        // throw std::runtime_error("task cancelled");
++        abort();
++        // -- GODOT end --
+     #else
+       tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
+           func(i);
+         },ap);
+       if (tbb::task::self().is_cancelled())
+-        throw std::runtime_error("task cancelled");
++        // -- GODOT start --
++        // throw std::runtime_error("task cancelled");
++        abort();
++        // -- GODOT end --
+     #endif
+   }
+ 
+diff --git a/thirdparty/embree/common/algorithms/parallel_reduce.h b/thirdparty/embree/common/algorithms/parallel_reduce.h
+index f42ae2ec50..8271372ea4 100644
+--- a/thirdparty/embree/common/algorithms/parallel_reduce.h
++++ b/thirdparty/embree/common/algorithms/parallel_reduce.h
+@@ -58,15 +58,19 @@ namespace embree
+     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
+       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
+       reduction,context);
+-    if (context.is_group_execution_cancelled())
+-      throw std::runtime_error("task cancelled");
++    // -- GODOT start --
++    // if (context.is_group_execution_cancelled())
++    //   throw std::runtime_error("task cancelled");
++    // -- GODOT end --
+     return v;
+   #else
+     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
+       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
+       reduction);
+-    if (tbb::task::self().is_cancelled())
+-      throw std::runtime_error("task cancelled");
++    // -- GODOT start --
++    // if (tbb::task::self().is_cancelled())
++    //   throw std::runtime_error("task cancelled");
++    // -- GODOT end --
+     return v;
+   #endif
+ #else // TASKING_PPL
+diff --git a/thirdparty/embree/common/lexers/stringstream.cpp b/thirdparty/embree/common/lexers/stringstream.cpp
+index 42ffb10176..a037869506 100644
+--- a/thirdparty/embree/common/lexers/stringstream.cpp
++++ b/thirdparty/embree/common/lexers/stringstream.cpp
+@@ -39,7 +39,10 @@ namespace embree
+     std::vector<char> str; str.reserve(64);
+     while (cin->peek() != EOF && !isSeparator(cin->peek())) {
+       int c = cin->get();
+-      if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
++      // -- GODOT start --
++      // if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
++      if (!isValidChar(c)) abort();
++      // -- GODOT end --
+       str.push_back((char)c);
+     }
+     str.push_back(0);
+diff --git a/thirdparty/embree/common/sys/alloc.cpp b/thirdparty/embree/common/sys/alloc.cpp
+index 1bc30fe9a5..abdd269069 100644
+--- a/thirdparty/embree/common/sys/alloc.cpp
++++ b/thirdparty/embree/common/sys/alloc.cpp
+@@ -21,7 +21,10 @@ namespace embree
+     void* ptr = _mm_malloc(size,align);
+ 
+     if (size != 0 && ptr == nullptr)
+-      throw std::bad_alloc();
++      // -- GODOT start --
++      // throw std::bad_alloc();
++      abort();
++      // -- GODOT end --
+     
+     return ptr;
+   }
+@@ -128,7 +131,10 @@ namespace embree
+     /* fall back to 4k pages */
+     int flags = MEM_COMMIT | MEM_RESERVE;
+     char* ptr = (char*) VirtualAlloc(nullptr,bytes,flags,PAGE_READWRITE);
+-    if (ptr == nullptr) throw std::bad_alloc();
++    // -- GODOT start --
++    // if (ptr == nullptr) throw std::bad_alloc();
++    if (ptr == nullptr) abort();
++    // -- GODOT end --
+     hugepages = false;
+     return ptr;
+   }
+@@ -145,7 +151,10 @@ namespace embree
+       return bytesOld;
+ 
+     if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT))
+-      throw std::bad_alloc();
++      // -- GODOT start --
++      // throw std::bad_alloc();
++      abort();
++      // -- GODOT end --
+ 
+     return bytesNew;
+   }
+@@ -156,7 +165,10 @@ namespace embree
+       return;
+ 
+     if (!VirtualFree(ptr,0,MEM_RELEASE))
+-      throw std::bad_alloc();
++      // -- GODOT start --
++      // throw std::bad_alloc();
++      abort();
++      // -- GODOT end --
+   }
+ 
+   void os_advise(void *ptr, size_t bytes)
+@@ -260,7 +272,10 @@ namespace embree
+ 
+     /* fallback to 4k pages */
+     void* ptr = (char*) mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+-    if (ptr == MAP_FAILED) throw std::bad_alloc();
++    // -- GODOT start --
++    // if (ptr == MAP_FAILED) throw std::bad_alloc();
++    if (ptr == MAP_FAILED) abort();
++    // -- GODOT end --
+     hugepages = false;
+ 
+     /* advise huge page hint for THP */
+@@ -277,7 +292,10 @@ namespace embree
+       return bytesOld;
+ 
+     if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1)
+-      throw std::bad_alloc();
++      // -- GODOT start --
++      // throw std::bad_alloc();
++      abort();
++      // -- GODOT end --
+ 
+     return bytesNew;
+   }
+@@ -291,7 +309,10 @@ namespace embree
+     const size_t pageSize = hugepages ? PAGE_SIZE_2M : PAGE_SIZE_4K;
+     bytes = (bytes+pageSize-1) & ~(pageSize-1);
+     if (munmap(ptr,bytes) == -1)
+-      throw std::bad_alloc();
++      // -- GODOT start --
++      // throw std::bad_alloc();
++      abort();
++      // -- GODOT end --
+   }
+ 
+   /* hint for transparent huge pages (THP) */
+diff --git a/thirdparty/embree/common/sys/platform.h b/thirdparty/embree/common/sys/platform.h
+index 8a6d9fa0a9..697e07bb86 100644
+--- a/thirdparty/embree/common/sys/platform.h
++++ b/thirdparty/embree/common/sys/platform.h
+@@ -179,11 +179,19 @@
+ #define PRINT4(x,y,z,w) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
+ 
+ #if defined(DEBUG) // only report file and line in debug mode
++  // -- GODOT start --
++  // #define THROW_RUNTIME_ERROR(str)
++  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+   #define THROW_RUNTIME_ERROR(str) \
+-    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
++    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
++  // -- GODOT end --
+ #else
++  // -- GODOT start --
++  // #define THROW_RUNTIME_ERROR(str)
++  //   throw std::runtime_error(str);
+   #define THROW_RUNTIME_ERROR(str) \
+-    throw std::runtime_error(str);
++    abort();
++  // -- GODOT end --
+ #endif
+ 
+ #define FATAL(x)   THROW_RUNTIME_ERROR(x)
+diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.cpp b/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
+index dca835a716..ad438588a3 100644
+--- a/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
++++ b/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
+@@ -48,13 +48,15 @@ namespace embree
+     {
+       Task* prevTask = thread.task;
+       thread.task = this;
+-      try {
+-        if (thread.scheduler->cancellingException == nullptr)
++      // -- GODOT start --
++      // try {
++      // if (thread.scheduler->cancellingException == nullptr)
+           closure->execute();
+-      } catch (...) {
+-        if (thread.scheduler->cancellingException == nullptr)
+-          thread.scheduler->cancellingException = std::current_exception();
+-      }
++      // } catch (...) {
++      //   if (thread.scheduler->cancellingException == nullptr)
++      //     thread.scheduler->cancellingException = std::current_exception();
++      // }
++      // -- GODOT end --
+       thread.task = prevTask;
+       add_dependencies(-1);
+     }
+@@ -291,8 +293,11 @@ namespace embree
+     size_t threadIndex = allocThreadIndex();
+     condition.wait(mutex, [&] () { return hasRootTask.load(); });
+     mutex.unlock();
+-    std::exception_ptr except = thread_loop(threadIndex);
+-    if (except != nullptr) std::rethrow_exception(except);
++    // -- GODOT start --
++    // std::exception_ptr except = thread_loop(threadIndex);
++    // if (except != nullptr) std::rethrow_exception(except);
++    thread_loop(threadIndex);
++    // -- GODOT end --
+   }
+ 
+   void TaskScheduler::reset() {
+@@ -324,7 +329,10 @@ namespace embree
+     return thread->scheduler->cancellingException == nullptr;
+   }
+ 
+-  std::exception_ptr TaskScheduler::thread_loop(size_t threadIndex)
++// -- GODOT start --
++//   std::exception_ptr TaskScheduler::thread_loop(size_t threadIndex)
++  void TaskScheduler::thread_loop(size_t threadIndex)
++// -- GODOT end --
+   {
+     /* allocate thread structure */
+     std::unique_ptr<Thread> mthread(new Thread(threadIndex,this)); // too large for stack allocation
+@@ -347,9 +355,10 @@ namespace embree
+     swapThread(oldThread);
+ 
+     /* remember exception to throw */
+-    std::exception_ptr except = nullptr;
+-    if (cancellingException != nullptr) except = cancellingException;
+-
++    // -- GODOT start --
++    // std::exception_ptr except = nullptr;
++    // if (cancellingException != nullptr) except = cancellingException;
++    // -- GODOT end --
+     /* wait for all threads to terminate */
+     threadCounter--;
+ #if defined(__WIN32__)
+@@ -367,7 +376,10 @@ namespace embree
+           yield();
+ #endif
+ 	}
+-    return except;
++     // -- GODOT start --
++     // return except;
++     return;
++     // -- GODOT end --
+   }
+ 
+   bool TaskScheduler::steal_from_other_threads(Thread& thread)
+diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.h b/thirdparty/embree/common/tasking/taskschedulerinternal.h
+index c766a0bb6a..8fa6bb12fa 100644
+--- a/thirdparty/embree/common/tasking/taskschedulerinternal.h
++++ b/thirdparty/embree/common/tasking/taskschedulerinternal.h
+@@ -123,7 +123,10 @@ namespace embree
+       {
+         size_t ofs = bytes + ((align - stackPtr) & (align-1));
+         if (stackPtr + ofs > CLOSURE_STACK_SIZE)
+-          throw std::runtime_error("closure stack overflow");
++          // -- GODOT start --
++          // throw std::runtime_error("closure stack overflow");
++          abort();
++          // -- GODOT end --
+         stackPtr += ofs;
+         return &stack[stackPtr-bytes];
+       }
+@@ -132,7 +135,10 @@ namespace embree
+       __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure)
+       {
+         if (right >= TASK_STACK_SIZE)
+-          throw std::runtime_error("task stack overflow");
++           // -- GODOT start --
++           // throw std::runtime_error("task stack overflow");
++           abort();
++           // -- GODOT end --
+ 
+ 	/* allocate new task on right side of stack */
+         size_t oldStackPtr = stackPtr;
+@@ -238,7 +244,10 @@ namespace embree
+     void wait_for_threads(size_t threadCount);
+ 
+     /*! thread loop for all worker threads */
+-    std::exception_ptr thread_loop(size_t threadIndex);
++    // -- GODOT start --
++    // std::exception_ptr thread_loop(size_t threadIndex);
++    void thread_loop(size_t threadIndex);
++    // -- GODOT end --
+ 
+     /*! steals a task from a different thread */
+     bool steal_from_other_threads(Thread& thread);
+diff --git a/thirdparty/embree/kernels/bvh/bvh_statistics.cpp b/thirdparty/embree/kernels/bvh/bvh_statistics.cpp
+index d8da78eed7..d857ff7d95 100644
+--- a/thirdparty/embree/kernels/bvh/bvh_statistics.cpp
++++ b/thirdparty/embree/kernels/bvh/bvh_statistics.cpp
+@@ -150,7 +150,10 @@ namespace embree
+       }
+     }
+     else {
+-      throw std::runtime_error("not supported node type in bvh_statistics");
++      // -- GODOT start --
++      // throw std::runtime_error("not supported node type in bvh_statistics");
++      abort();
++      // -- GODOT end --
+     }
+     return s;
+   } 
+diff --git a/thirdparty/embree/kernels/common/rtcore.cpp b/thirdparty/embree/kernels/common/rtcore.cpp
+index 74e9fb335c..94b3819e42 100644
+--- a/thirdparty/embree/kernels/common/rtcore.cpp
++++ b/thirdparty/embree/kernels/common/rtcore.cpp
+@@ -197,7 +197,10 @@ RTC_NAMESPACE_BEGIN;
+     if (quality != RTC_BUILD_QUALITY_LOW &&
+         quality != RTC_BUILD_QUALITY_MEDIUM &&
+         quality != RTC_BUILD_QUALITY_HIGH)
+-      throw std::runtime_error("invalid build quality");
++      // -- GODOT start --
++      // throw std::runtime_error("invalid build quality");
++      abort();
++      // -- GODOT end --
+     scene->setBuildQuality(quality);
+     RTC_CATCH_END2(scene);
+   }
+@@ -1350,7 +1353,10 @@ RTC_NAMESPACE_BEGIN;
+         quality != RTC_BUILD_QUALITY_MEDIUM &&
+         quality != RTC_BUILD_QUALITY_HIGH &&
+         quality != RTC_BUILD_QUALITY_REFIT)
+-      throw std::runtime_error("invalid build quality");
++      // -- GODOT start --
++      // throw std::runtime_error("invalid build quality");
++      abort();
++      // -- GODOT end --
+     geometry->setBuildQuality(quality);
+     RTC_CATCH_END2(geometry);
+   }
+diff --git a/thirdparty/embree/kernels/common/rtcore.h b/thirdparty/embree/kernels/common/rtcore.h
+index 4e4b24e9c2..373e49a689 100644
+--- a/thirdparty/embree/kernels/common/rtcore.h
++++ b/thirdparty/embree/kernels/common/rtcore.h
+@@ -25,52 +25,58 @@ namespace embree
+ #endif
+ 
+ /*! Macros used in the rtcore API implementation */
+-#define RTC_CATCH_BEGIN try {
++// -- GODOT start --
++// #define RTC_CATCH_BEGIN try {
++#define RTC_CATCH_BEGIN
+   
+-#define RTC_CATCH_END(device)                                                \
+-  } catch (std::bad_alloc&) {                                                   \
+-    Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
+-  } catch (rtcore_error& e) {                                                   \
+-    Device::process_error(device,e.error,e.what());                             \
+-  } catch (std::exception& e) {                                                 \
+-    Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
+-  } catch (...) {                                                               \
+-    Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
+-  }
++// #define RTC_CATCH_END(device)                                                \
++//   } catch (std::bad_alloc&) {                                                   \
++//     Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
++//   } catch (rtcore_error& e) {                                                   \
++//     Device::process_error(device,e.error,e.what());                             \
++//   } catch (std::exception& e) {                                                 \
++//     Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
++//   } catch (...) {                                                               \
++//     Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
++//   }
++#define RTC_CATCH_END(device)
+   
+-#define RTC_CATCH_END2(scene)                                                \
+-  } catch (std::bad_alloc&) {                                                   \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
+-  } catch (rtcore_error& e) {                                                   \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,e.error,e.what());                             \
+-  } catch (std::exception& e) {                                                 \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
+-  } catch (...) {                                                               \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
+-  }
++// #define RTC_CATCH_END2(scene)                                                \
++//   } catch (std::bad_alloc&) {                                                   \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
++//   } catch (rtcore_error& e) {                                                   \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,e.error,e.what());                             \
++//   } catch (std::exception& e) {                                                 \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
++//   } catch (...) {                                                               \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
++//   }
++#define RTC_CATCH_END2(scene)
+ 
+-#define RTC_CATCH_END2_FALSE(scene)                                             \
+-  } catch (std::bad_alloc&) {                                                   \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
+-    return false;                                                               \
+-  } catch (rtcore_error& e) {                                                   \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,e.error,e.what());                             \
+-    return false;                                                               \
+-  } catch (std::exception& e) {                                                 \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
+-    return false;                                                               \
+-  } catch (...) {                                                               \
+-    Device* device = scene ? scene->device : nullptr;                           \
+-    Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
+-    return false;                                                               \
+-  }
++// #define RTC_CATCH_END2_FALSE(scene)                                             \
++//   } catch (std::bad_alloc&) {                                                   \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,RTC_ERROR_OUT_OF_MEMORY,"out of memory");      \
++//     return false;                                                               \
++//   } catch (rtcore_error& e) {                                                   \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,e.error,e.what());                             \
++//     return false;                                                               \
++//   } catch (std::exception& e) {                                                 \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,RTC_ERROR_UNKNOWN,e.what());                   \
++//     return false;                                                               \
++//   } catch (...) {                                                               \
++//     Device* device = scene ? scene->device : nullptr;                           \
++//     Device::process_error(device,RTC_ERROR_UNKNOWN,"unknown exception caught"); \
++//     return false;                                                               \
++//   }
++#define RTC_CATCH_END2_FALSE(scene) return false;
++// -- GODOT end --
+ 
+ #define RTC_VERIFY_HANDLE(handle)                               \
+   if (handle == nullptr) {                                         \
+@@ -97,28 +103,38 @@ namespace embree
+ #define RTC_TRACE(x) 
+ #endif
+ 
+-  /*! used to throw embree API errors */
+-  struct rtcore_error : public std::exception
+-  {
+-    __forceinline rtcore_error(RTCError error, const std::string& str)
+-      : error(error), str(str) {}
+-    
+-    ~rtcore_error() throw() {}
+-    
+-    const char* what () const throw () {
+-      return str.c_str();
+-    }
+-    
+-    RTCError error;
+-    std::string str;
+-  };
++// -- GODOT begin --
++//   /*! used to throw embree API errors */
++//   struct rtcore_error : public std::exception
++//   {
++//     __forceinline rtcore_error(RTCError error, const std::string& str)
++//       : error(error), str(str) {}
++//     
++//     ~rtcore_error() throw() {}
++//     
++//     const char* what () const throw () {
++//       return str.c_str();
++//     }
++//     
++//     RTCError error;
++//     std::string str;
++//   };
++// -- GODOT end --
+ 
+ #if defined(DEBUG) // only report file and line in debug mode
++  // -- GODOT begin --
++  // #define throw_RTCError(error,str) \
++  //   throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+   #define throw_RTCError(error,str) \
+-    throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
++    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
++  // -- GODOT end --
+ #else
++  // -- GODOT begin --
++  // #define throw_RTCError(error,str) \
++  //   throw rtcore_error(error,str);
+   #define throw_RTCError(error,str) \
+-    throw rtcore_error(error,str);
++    abort();
++  // -- GODOT end --
+ #endif
+ 
+ #define RTC_BUILD_ARGUMENTS_HAS(settings,member) \
+diff --git a/thirdparty/embree/kernels/common/scene.cpp b/thirdparty/embree/kernels/common/scene.cpp
+index 0149055f2c..408d7eae6f 100644
+--- a/thirdparty/embree/kernels/common/scene.cpp
++++ b/thirdparty/embree/kernels/common/scene.cpp
+@@ -792,16 +792,18 @@ namespace embree
+     }
+ 
+     /* initiate build */
+-    try {
++    // -- GODOT start --
++    // try {
+       scheduler->spawn_root([&]() { commit_task(); Lock<MutexSys> lock(schedulerMutex); this->scheduler = nullptr; }, 1, !join);
+-    }
+-    catch (...) {
+-      accels_clear();
+-      updateInterface();
+-      Lock<MutexSys> lock(schedulerMutex);
+-      this->scheduler = nullptr;
+-      throw;
+-    }
++    // }
++    // catch (...) {
++    //   accels_clear();
++    //   updateInterface();
++    //   Lock<MutexSys> lock(schedulerMutex);
++    //   this->scheduler = nullptr;
++    //   throw;
++    // }
++    // -- GODOT end --
+   }
+ 
+ #endif

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureLayered" inherits="Texture" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for 3D texture types.
+	</brief_description>
+	<description>
+		Base class for [Texture2DArray], [Cubemap] and [CubemapArray]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_format" qualifiers="virtual const">
+			<return type="int" enum="Image.Format" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_height" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_layer_data" qualifiers="virtual const">
+			<return type="Image" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_layered_type" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_layers" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_width" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_mipmaps" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<description>
+				Returns the current format being used by this texture. See [enum Image.Format] for details.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the height of the texture. Height is typically represented by the Y-axis.
+			</description>
+		</method>
+		<method name="get_layer_data" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns an [Image] resource with the data from specified [param layer].
+			</description>
+		</method>
+		<method name="get_layered_type" qualifiers="const">
+			<return type="int" enum="TextureLayered.LayeredType" />
+			<description>
+			</description>
+		</method>
+		<method name="get_layers" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the texture. Width is typically represented by the X-axis.
+			</description>
+		</method>
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="LAYERED_TYPE_2D_ARRAY" value="0" enum="LayeredType">
+		</constant>
+		<constant name="LAYERED_TYPE_CUBEMAP" value="1" enum="LayeredType">
+		</constant>
+		<constant name="LAYERED_TYPE_CUBEMAP_ARRAY" value="2" enum="LayeredType">
+		</constant>
+	</constants>
+</class>

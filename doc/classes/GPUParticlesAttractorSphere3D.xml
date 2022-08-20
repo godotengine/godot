@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticlesAttractorSphere3D" inherits="GPUParticlesAttractor3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Ellipse-shaped 3D particle attractor affecting [GPUParticles3D] nodes.
+	</brief_description>
+	<description>
+		Ellipse-shaped 3D particle attractor affecting [GPUParticles3D] nodes.
+		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The attractor sphere's radius in 3D units.
+			[b]Note:[/b] Stretched ellipses can be obtained by using non-uniform scaling on the [GPUParticlesAttractorSphere3D] node.
+		</member>
+	</members>
+</class>

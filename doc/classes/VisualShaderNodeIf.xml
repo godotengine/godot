@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeIf" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Compares two floating-point numbers in order to return a required vector within the visual shader graph.
+	</brief_description>
+	<description>
+		First two ports are scalar floating-point numbers to compare, third is tolerance comparison amount and last three ports represents a vectors returned if [code]a == b[/code], [code]a &gt; b[/code] and [code]a &lt; b[/code] respectively.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

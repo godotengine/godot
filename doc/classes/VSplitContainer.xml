@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VSplitContainer" inherits="SplitContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Vertical split container.
+	</brief_description>
+	<description>
+		Vertical split container. See [SplitContainer]. This goes from top to bottom.
+	</description>
+	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<theme_items>
+		<theme_item name="autohide" data_type="constant" type="int" default="1">
+			Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically when it isn't under the cursor. If 0 ([code]false[/code]), it's always visible.
+		</theme_item>
+		<theme_item name="separation" data_type="constant" type="int" default="12">
+			The space between sides of the container.
+		</theme_item>
+		<theme_item name="grabber" data_type="icon" type="Texture2D">
+			The icon used for the grabber drawn in the middle area.
+		</theme_item>
+	</theme_items>
+</class>

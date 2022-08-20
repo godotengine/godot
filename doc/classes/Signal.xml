@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Signal" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class representing a signal defined in an object.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Using Signals">$DOCS_URL/getting_started/step_by_step/signals.html</link>
+		<link title="GDScript Basics">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#signals</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Signal">
+			<return type="Signal" />
+			<description>
+				Constructs a null [Signal] with no object nor signal name bound.
+			</description>
+		</constructor>
+		<constructor name="Signal">
+			<return type="Signal" />
+			<param index="0" name="from" type="Signal" />
+			<description>
+				Constructs a [Signal] as a copy of the given [Signal].
+			</description>
+		</constructor>
+		<constructor name="Signal">
+			<return type="Signal" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="signal" type="StringName" />
+			<description>
+				Creates a new [Signal] with the name [param signal] in the specified [param object].
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="connect">
+			<return type="int" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="flags" type="int" default="0" />
+			<description>
+				Connects this signal to the specified [Callable], optionally providing connection flags. You can provide additional arguments to the connected method call by using [method Callable.bind].
+				[codeblock]
+				for button in $Buttons.get_children():
+				    button.pressed.connect(on_pressed.bind(button))
+
+				func on_pressed(button):
+				    print(button.name, " was pressed")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="disconnect">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Disconnects this signal from the specified [Callable].
+			</description>
+		</method>
+		<method name="emit" qualifiers="vararg const">
+			<return type="void" />
+			<description>
+				Emits this signal to all connected objects.
+			</description>
+		</method>
+		<method name="get_connections" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the list of [Callable]s connected to this signal.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of this signal.
+			</description>
+		</method>
+		<method name="get_object" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the object emitting this signal.
+			</description>
+		</method>
+		<method name="get_object_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
+			</description>
+		</method>
+		<method name="is_connected" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Returns [code]true[/code] if the specified [Callable] is connected to this signal.
+			</description>
+		</method>
+		<method name="is_null" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</operator>
+	</operators>
+</class>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="bool" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Boolean built-in type.
+	</brief_description>
+	<description>
+		Boolean is a built-in type. There are two boolean values: [code]true[/code] and [code]false[/code]. You can think of it as a switch with on or off (1 or 0) setting. Booleans are used in programming for logic in condition statements, like [code]if[/code] statements.
+		Booleans can be directly used in [code]if[/code] statements. The code below demonstrates this on the [code]if can_shoot:[/code] line. You don't need to use [code]== true[/code], you only need [code]if can_shoot:[/code]. Similarly, use [code]if not can_shoot:[/code] rather than [code]== false[/code].
+		[codeblocks]
+		[gdscript]
+		var _can_shoot = true
+
+		func shoot():
+		    if _can_shoot:
+		        pass # Perform shooting actions here.
+		[/gdscript]
+		[csharp]
+		private bool _canShoot = true;
+
+		public void Shoot()
+		{
+		    if (_canShoot)
+		    {
+		        // Perform shooting actions here.
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+		The following code will only create a bullet if both conditions are met: action "shoot" is pressed and if [code]can_shoot[/code] is [code]true[/code].
+		[b]Note:[/b] [code]Input.is_action_pressed("shoot")[/code] is also a boolean that is [code]true[/code] when "shoot" is pressed and [code]false[/code] when "shoot" isn't pressed.
+		[codeblocks]
+		[gdscript]
+		var _can_shoot = true
+
+		func shoot():
+		    if _can_shoot and Input.is_action_pressed("shoot"):
+		        create_bullet()
+		[/gdscript]
+		[csharp]
+		private bool _canShoot = true;
+
+		public void Shoot()
+		{
+		    if (_canShoot &amp;&amp; Input.IsActionPressed("shoot"))
+		    {
+		        CreateBullet();
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+		The following code will set [code]can_shoot[/code] to [code]false[/code] and start a timer. This will prevent player from shooting until the timer runs out. Next [code]can_shoot[/code] will be set to [code]true[/code] again allowing player to shoot once again.
+		[codeblocks]
+		[gdscript]
+		var _can_shoot = true
+		@onready var _cool_down = $CoolDownTimer
+
+		func shoot():
+		    if _can_shoot and Input.is_action_pressed("shoot"):
+		        create_bullet()
+		        _can_shoot = false
+		        _cool_down.start()
+
+		func _on_CoolDownTimer_timeout():
+		    _can_shoot = true
+		[/gdscript]
+		[csharp]
+		private bool _canShoot = true;
+		private Timer _coolDown;
+
+		public override void _Ready()
+		{
+		    _coolDown = GetNode&lt;Timer&gt;("CoolDownTimer");
+		}
+
+		public void Shoot()
+		{
+		    if (_canShoot &amp;&amp; Input.IsActionPressed("shoot"))
+		    {
+		        CreateBullet();
+		        _canShoot = false;
+		        _coolDown.Start();
+		    }
+		}
+
+		public void OnCoolDownTimerTimeout()
+		{
+		    _canShoot = true;
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="bool">
+			<return type="bool" />
+			<description>
+				Constructs a default-initialized [bool] set to [code]false[/code].
+			</description>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="bool" />
+			<description>
+				Constructs a [bool] as a copy of the given [bool].
+			</description>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="float" />
+			<description>
+				Cast a [float] value to a boolean value, this method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other floats.
+			</description>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="int" />
+			<description>
+				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
+			</description>
+		</constructor>
+	</constructors>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if the left operand is [code]false[/code] and the right operand is [code]true[/code].
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if two bools are equal, i.e. both are [code]true[/code] or both are [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if the left operand is [code]true[/code] and the right operand is [code]false[/code].
+			</description>
+		</operator>
+	</operators>
+</class>

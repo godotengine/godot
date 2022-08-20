@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImporterMeshInstance3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="mesh" type="ImporterMesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="skeleton_path" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
+		</member>
+	</members>
+</class>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoxShape3D" inherits="Shape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Box shape resource for 3D collisions.
+	</brief_description>
+	<description>
+		3D box shape to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node.
+		[b]Performance:[/b] Being a primitive collision shape, [BoxShape3D] is fast to check collisions against (though not as fast as [SphereShape3D]).
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+	</tutorials>
+	<members>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
+			The box's width, height and depth.
+		</member>
+	</members>
+</class>

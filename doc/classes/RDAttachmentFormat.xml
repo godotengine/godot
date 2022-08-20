@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDAttachmentFormat" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="36">
+		</member>
+		<member name="samples" type="int" setter="set_samples" getter="get_samples" enum="RenderingDevice.TextureSamples" default="0">
+		</member>
+		<member name="usage_flags" type="int" setter="set_usage_flags" getter="get_usage_flags" default="0">
+		</member>
+	</members>
+</class>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventScreenDrag" inherits="InputEventFromWindow" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Input event type for screen drag events. Only available on mobile devices.
+	</brief_description>
+	<description>
+		Contains screen drag information. See [method Node._input].
+	</description>
+	<tutorials>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<members>
+		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
+			The drag event index in the case of a multi-drag event.
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
+			The drag position.
+		</member>
+		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2(0, 0)">
+			The drag position relative to the previous position (position at the last frame).
+		</member>
+		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
+			The drag velocity.
+		</member>
+	</members>
+</class>

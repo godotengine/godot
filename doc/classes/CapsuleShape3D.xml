@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CapsuleShape3D" inherits="Shape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Capsule shape resource for 3D collisions.
+	</brief_description>
+	<description>
+		3D capsule shape to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node. In 3D, a capsule is a cylinder shape with hemispheres at both ends.
+		[b]Performance:[/b] Being a primitive collision shape, [CapsuleShape3D] is fast to check collisions against (though not as fast as [SphereShape3D]). [CapsuleShape3D] is cheaper to check collisions against compared to [CylinderShape3D].
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The capsule's height.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			The capsule's radius.
+		</member>
+	</members>
+</class>

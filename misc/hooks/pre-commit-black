@@ -1,0 +1,202 @@
+#!/usr/bin/env bash
+
+# git pre-commit hook that runs a black stylecheck.
+# Based on pre-commit-clang-format.
+
+##################################################################
+# SETTINGS
+# Set path to black binary.
+BLACK=`which black 2>/dev/null`
+BLACK_OPTIONS="-l 120"
+
+# Remove any older patches from previous commits. Set to true or false.
+DELETE_OLD_PATCHES=false
+
+# File types to parse.
+FILE_NAMES="SConstruct SCsub"
+FILE_EXTS=".py"
+
+# Use pygmentize instead of cat to parse diff with highlighting.
+# Install it with `pip install pygments` (Linux) or `easy_install Pygments` (Mac)
+PYGMENTIZE=`which pygmentize 2>/dev/null`
+if [ ! -z "$PYGMENTIZE" ]; then
+  READER="pygmentize -l diff"
+else
+  READER=cat
+fi
+
+# Path to zenity
+ZENITY=`which zenity 2>/dev/null`
+
+# Path to xmessage
+XMSG=`which xmessage 2>/dev/null`
+
+# Path to powershell (Windows only)
+PWSH=`which powershell 2>/dev/null`
+
+##################################################################
+# There should be no need to change anything below this line.
+
+. "$(dirname -- "$0")/canonicalize_filename.sh"
+
+# exit on error
+set -e
+
+# check whether the given file matches any of the set extensions
+matches_name_or_extension() {
+    local filename=$(basename "$1")
+    local extension=".${filename##*.}"
+
+    for name in $FILE_NAMES; do [[ "$name" == "$filename" ]] && return 0; done
+    for ext in $FILE_EXTS; do [[ "$ext" == "$extension" ]] && return 0; done
+
+    return 1
+}
+
+# necessary check for initial commit
+if git rev-parse --verify HEAD >/dev/null 2>&1 ; then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+if [ ! -x "$BLACK" ] ; then
+    if [ ! -t 1 ] ; then
+        if [ -x "$ZENITY" ] ; then
+            $ZENITY --error --title="Error" --text="Error: black executable not found."
+            exit 1
+        elif [ -x "$XMSG" ] ; then
+            $XMSG -center -title "Error" "Error: black executable not found."
+            exit 1
+        elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
+            winmessage="$(canonicalize_filename "./.git/hooks/winmessage.ps1")"
+            $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -center -title "Error" --text "Error: black executable not found."
+            exit 1
+        fi
+    fi
+    printf "Error: black executable not found.\n"
+    printf "Set the correct path in $(canonicalize_filename "$0").\n"
+    exit 1
+fi
+
+# create a random filename to store our generated patch
+prefix="pre-commit-black"
+suffix="$(date +%s)"
+patch="/tmp/$prefix-$suffix.patch"
+
+# clean up any older black patches
+$DELETE_OLD_PATCHES && rm -f /tmp/$prefix*.patch
+
+# create one patch containing all changes to the files
+git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;
+do
+    # ignore thirdparty files
+    if grep -q "thirdparty" <<< $file; then
+        continue;
+    fi
+
+    # ignore file if not one of the names or extensions we handle
+    if ! matches_name_or_extension "$file"; then
+        continue;
+    fi
+
+    # format our file with black, create a patch with diff and append it to our $patch
+    # The sed call is necessary to transform the patch from
+    #    --- $file timestamp
+    #    +++ $file timestamp
+    # to both lines working on the same file and having a/ and b/ prefix.
+    # Else it can not be applied with 'git apply'.
+    "$BLACK" "$BLACK_OPTIONS" --diff "$file" | \
+        sed -e "1s|--- |--- a/|" -e "2s|+++ |+++ b/|" >> "$patch"
+done
+
+# if no patch has been generated all is ok, clean up the file stub and exit
+if [ ! -s "$patch" ] ; then
+    printf "Files in this commit comply with the black formatter rules.\n"
+    rm -f "$patch"
+    exit 0
+fi
+
+# a patch has been created, notify the user and exit
+printf "\nThe following differences were found between the code to commit "
+printf "and the black formatter rules:\n\n"
+
+if [ -t 1 ] ; then
+    $READER "$patch"
+    printf "\n"
+    # Allows us to read user input below, assigns stdin to keyboard
+    exec < /dev/tty
+    terminal="1"
+else
+    cat "$patch"
+    printf "\n"
+    # Allows non zero zenity/powershell output
+    set +e
+    terminal="0"
+fi
+
+while true; do
+    if [ $terminal = "0" ] ; then
+        if [ -x "$ZENITY" ] ; then
+            choice=$($ZENITY --text-info --filename="$patch" --width=800 --height=600 --title="Do you want to apply that patch?" --ok-label="Apply" --cancel-label="Do not apply" --extra-button="Apply and stage")
+            if [ "$?" = "0" ] ; then
+                yn="Y"
+            else
+                if [ "$choice" = "Apply and stage" ] ; then
+                    yn="S"
+                else
+                    yn="N"
+                fi
+            fi
+        elif [ -x "$XMSG" ] ; then
+            $XMSG -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"
+            choice=$?
+            if [ "$choice" = "100" ] ; then
+                yn="Y"
+            elif [ "$choice" = "200" ] ; then
+                yn="S"
+            else
+                yn="N"
+            fi
+        elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
+            winmessage="$(canonicalize_filename "./.git/hooks/winmessage.ps1")"
+            $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"
+            choice=$?
+            if [ "$choice" = "100" ] ; then
+                yn="Y"
+            elif [ "$choice" = "200" ] ; then
+                yn="S"
+            else
+                yn="N"
+            fi
+        else
+            printf "Error: zenity, xmessage, or powershell executable not found.\n"
+            exit 1
+        fi
+    else
+        read -p "Do you want to apply that patch (Y - Apply, N - Do not apply, S - Apply and stage files)? [Y/N/S] " yn
+    fi
+    case $yn in
+        [Yy] ) git apply $patch;
+        printf "The patch was applied. You can now stage the changes and commit again.\n\n";
+        break
+        ;;
+        [Nn] ) printf "\nYou can apply these changes with:\n  git apply $patch\n";
+        printf "(may need to be called from the root directory of your repository)\n";
+        printf "Aborting commit. Apply changes and commit again or skip checking with";
+        printf " --no-verify (not recommended).\n\n";
+        break
+        ;;
+        [Ss] ) git apply $patch;
+        git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;
+        do git add $file;
+        done
+        printf "The patch was applied and the changed files staged. You can now commit.\n\n";
+        break
+        ;;
+        * ) echo "Please answer yes or no."
+        ;;
+    esac
+done
+exit 1 # we don't commit in any case

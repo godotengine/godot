@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CylinderShape3D" inherits="Shape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Cylinder shape for 3D collisions.
+	</brief_description>
+	<description>
+		Cylinder shape for collisions. Like [CapsuleShape3D], but without hemispheres at the cylinder's ends.
+		[b]Performance:[/b] Being a primitive collision shape, [CylinderShape3D] is fast to check collisions against (though not as fast as [SphereShape3D]). [CylinderShape3D] is also more demanding compared to [CapsuleShape3D].
+	</description>
+	<tutorials>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The cylinder's height.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			The cylinder's radius.
+		</member>
+	</members>
+</class>

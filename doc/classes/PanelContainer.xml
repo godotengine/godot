@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PanelContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Panel container type.
+	</brief_description>
+	<description>
+		Panel container type. This container fits controls inside of the delimited area of a stylebox. It's useful for giving controls an outline.
+	</description>
+	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+	</tutorials>
+	<members>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
+	</members>
+	<theme_items>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The style of [PanelContainer]'s background.
+		</theme_item>
+	</theme_items>
+</class>

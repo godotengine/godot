@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasModulate" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Tint the entire canvas.
+	</brief_description>
+	<description>
+		[CanvasModulate] tints the canvas elements using its assigned [member color].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+			The tint color to apply.
+		</member>
+	</members>
+</class>

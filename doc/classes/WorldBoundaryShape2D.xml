@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WorldBoundaryShape2D" inherits="Shape2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		World boundary (infinite plane) shape resource for 2D physics.
+	</brief_description>
+	<description>
+		2D world boundary shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node. [WorldBoundaryShape2D] works like an infinite plane and will not allow any physics body to go to the negative side. Note that the [member normal] matters; anything "below" the plane will collide with it. If the [WorldBoundaryShape2D] is used in a [PhysicsBody2D], it will cause colliding objects placed "below" it to teleport "above" the plane.
+		[b]Performance:[/b] Being a primitive collision shape, [WorldBoundaryShape2D] is fast to check collisions against.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="distance" type="float" setter="set_distance" getter="get_distance" default="0.0">
+			The line's distance from the origin.
+		</member>
+		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal" default="Vector2(0, -1)">
+			The line's normal. Defaults to [code]Vector2.UP[/code].
+		</member>
+	</members>
+</class>

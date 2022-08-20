@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LabelSettings" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="font" type="Font" setter="set_font" getter="get_font">
+		</member>
+		<member name="font_color" type="Color" setter="set_font_color" getter="get_font_color" default="Color(1, 1, 1, 1)">
+		</member>
+		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
+		</member>
+		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="3.0">
+		</member>
+		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color(1, 1, 1, 1)">
+		</member>
+		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0)">
+		</member>
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2(1, 1)">
+		</member>
+		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="1">
+		</member>
+	</members>
+</class>

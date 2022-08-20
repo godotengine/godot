@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EngineDebugger" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes the internal debugger.
+	</brief_description>
+	<description>
+		[EngineDebugger] handles the communication between the editor and the running game. It is active in the running game. Messages can be sent/received through it. It also manages the profilers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="has_capture">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a capture with the given name is present otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="has_profiler">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a profiler with the given name is present otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="is_active">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the debugger is active otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="is_profiling">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a profiler with the given name is present and active otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="profiler_add_frame_data">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="data" type="Array" />
+			<description>
+				Calls the [code]add[/code] callable of the profiler with given [param name] and [param data].
+			</description>
+		</method>
+		<method name="profiler_enable">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="arguments" type="Array" default="[]" />
+			<description>
+				Calls the [code]toggle[/code] callable of the profiler with given [param name] and [param arguments]. Enables/Disables the same profiler depending on [code]enable[/code] argument.
+			</description>
+		</method>
+		<method name="register_message_capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Registers a message capture with given [param name]. If [param name] is "my_message" then messages starting with "my_message:" will be called with the given callable.
+				Callable must accept a message string and a data array as argument. If the message and data are valid then callable must return [code]true[/code] otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="register_profiler">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="profiler" type="EngineProfiler" />
+			<description>
+				Registers a profiler with the given [param name]. See [EngineProfiler] for more information.
+			</description>
+		</method>
+		<method name="send_message">
+			<return type="void" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="data" type="Array" />
+			<description>
+				Sends a message with given [param message] and [param data] array.
+			</description>
+		</method>
+		<method name="unregister_message_capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Unregisters the message capture with given [param name].
+			</description>
+		</method>
+		<method name="unregister_profiler">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Unregisters a profiler with given [param name].
+			</description>
+		</method>
+	</methods>
+</class>

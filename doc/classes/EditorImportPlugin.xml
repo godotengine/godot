@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorImportPlugin" inherits="ResourceImporter" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Registers a custom resource importer in the editor. Use the class to parse any file and import it as a new resource type.
+	</brief_description>
+	<description>
+		[EditorImportPlugin]s provide a way to extend the editor's resource import functionality. Use them to import resources from custom files or to provide alternatives to the editor's existing importers.
+		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method _get_recognized_extensions] and [method _get_resource_type]. They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].godot/imported[/code] directory (see [member ProjectSettings.application/config/use_hidden_project_data_directory]).
+		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
+		[codeblocks]
+		[gdscript]
+		tool
+		extends EditorImportPlugin
+
+		func _get_importer_name():
+		    return "my.special.plugin"
+
+		func _get_visible_name():
+		    return "Special Mesh"
+
+		func _get_recognized_extensions():
+		    return ["special", "spec"]
+
+		func _get_save_extension():
+		    return "mesh"
+
+		func _get_resource_type():
+		    return "Mesh"
+
+		func _get_preset_count():
+		    return 1
+
+		func _get_preset_name(i):
+		    return "Default"
+
+		func _get_import_options(i):
+		    return [{"name": "my_option", "default_value": false}]
+
+		func _import(source_file, save_path, options, platform_variants, gen_files):
+		    var file = File.new()
+		    if file.open(source_file, File.READ) != OK:
+		        return FAILED
+		    var mesh = ArrayMesh.new()
+		    # Fill the Mesh with data read in "file", left as an exercise to the reader.
+
+		    var filename = save_path + "." + _get_save_extension()
+		    return ResourceSaver.save(filename, mesh)
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+
+		public class MySpecialPlugin : EditorImportPlugin
+		{
+		    public override String GetImporterName()
+		    {
+		        return "my.special.plugin";
+		    }
+
+		    public override String GetVisibleName()
+		    {
+		        return "Special Mesh";
+		    }
+
+		    public override Godot.Collections.Array GetRecognizedExtensions()
+		    {
+		        return new Godot.Collections.Array{"special", "spec"};
+		    }
+
+		    public override String GetSaveExtension()
+		    {
+		        return "mesh";
+		    }
+
+		    public override String GetResourceType()
+		    {
+		        return "Mesh";
+		    }
+
+		    public override int GetPresetCount()
+		    {
+		        return 1;
+		    }
+
+		    public override String GetPresetName(int i)
+		    {
+		        return "Default";
+		    }
+
+		    public override Godot.Collections.Array GetImportOptions(int i)
+		    {
+		        return new Godot.Collections.Array{new Godot.Collections.Dictionary{{"name", "myOption"}, {"defaultValue", false}}};
+		    }
+
+		    public override int Import(String sourceFile, String savePath, Godot.Collections.Dictionary options, Godot.Collections.Array platformVariants, Godot.Collections.Array genFiles)
+		    {
+		        var file = new File();
+		        if (file.Open(sourceFile, File.ModeFlags.Read) != Error.Ok)
+		        {
+		            return (int)Error.Failed;
+		        }
+
+		        var mesh = new ArrayMesh();
+		        // Fill the Mesh with data read in "file", left as an exercise to the reader.
+		        String filename = savePath + "." + GetSaveExtension();
+		        return (int)ResourceSaver.Save(filename, mesh);
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+		To use [EditorImportPlugin], register it using the [method EditorPlugin.add_import_plugin] method first.
+	</description>
+	<tutorials>
+		<link title="Import plugins">$DOCS_URL/tutorials/plugins/editor/import_plugins.html</link>
+	</tutorials>
+	<methods>
+		<method name="_get_import_options" qualifiers="virtual const">
+			<return type="Array" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="preset_index" type="int" />
+			<description>
+				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
+			</description>
+		</method>
+		<method name="_get_import_order" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Gets the order of this importer to be run when importing resources. Importers with [i]lower[/i] import orders will be called first, and higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported. The default import order is [code]0[/code] unless overridden by a specific importer. See [enum ResourceImporter.ImportOrder] for some predefined values.
+			</description>
+		</method>
+		<method name="_get_importer_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Gets the unique name of the importer.
+			</description>
+		</method>
+		<method name="_get_option_visibility" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="option_name" type="StringName" />
+			<param index="2" name="options" type="Dictionary" />
+			<description>
+				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
+				[codeblocks]
+				[gdscript]
+				func _get_option_visibility(option, options):
+				    # Only show the lossy quality setting if the compression mode is set to "Lossy".
+				    if option == "compress/lossy_quality" and options.has("compress/mode"):
+				        return int(options["compress/mode"]) == COMPRESS_LOSSY # This is a constant that you set
+
+				    return true
+				[/gdscript]
+				[csharp]
+				public void GetOptionVisibility(string option, Godot.Collections.Dictionary options)
+				{
+				    // Only show the lossy quality setting if the compression mode is set to "Lossy".
+				    if (option == "compress/lossyQuality" &amp;&amp; options.Contains("compress/mode"))
+				    {
+				        return (int)options["compress/mode"] == COMPRESS_LOSSY; // This is a constant you set
+				    }
+
+				    return true;
+				}
+				[/csharp]
+				[/codeblocks]
+				Returns [code]true[/code] to make all options always visible.
+			</description>
+		</method>
+		<method name="_get_preset_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Gets the number of initial presets defined by the plugin. Use [method _get_import_options] to get the default options for the preset and [method _get_preset_name] to get the name of the preset.
+			</description>
+		</method>
+		<method name="_get_preset_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="preset_index" type="int" />
+			<description>
+				Gets the name of the options preset at this index.
+			</description>
+		</method>
+		<method name="_get_priority" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Gets the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. The default priority is [code]1.0[/code].
+			</description>
+		</method>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				Gets the list of file extensions to associate with this loader (case-insensitive). e.g. [code]["obj"][/code].
+			</description>
+		</method>
+		<method name="_get_resource_type" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Gets the Godot resource type associated with this loader. e.g. [code]"Mesh"[/code] or [code]"Animation"[/code].
+			</description>
+		</method>
+		<method name="_get_save_extension" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Gets the extension used to save this resource in the [code].godot/imported[/code] directory (see [member ProjectSettings.application/config/use_hidden_project_data_directory]).
+			</description>
+		</method>
+		<method name="_get_visible_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Gets the name to display in the import window. You should choose this name as a continuation to "Import as", e.g. "Import as Special Mesh".
+			</description>
+		</method>
+		<method name="_import" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="source_file" type="String" />
+			<param index="1" name="save_path" type="String" />
+			<param index="2" name="options" type="Dictionary" />
+			<param index="3" name="platform_variants" type="Array" />
+			<param index="4" name="gen_files" type="Array" />
+			<description>
+				Imports [param source_file] into [param save_path] with the import [param options] specified. The [param platform_variants] and [param gen_files] arrays will be modified by this function.
+				This method must be overridden to do the actual importing work. See this class' description for an example of overriding this method.
+			</description>
+		</method>
+	</methods>
+</class>

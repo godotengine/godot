@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VSeparator" inherits="Separator" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Vertical version of [Separator].
+	</brief_description>
+	<description>
+		Vertical version of [Separator]. Even though it looks vertical, it is used to separate objects horizontally.
+	</description>
+	<tutorials>
+	</tutorials>
+	<theme_items>
+		<theme_item name="separation" data_type="constant" type="int" default="4">
+			The width of the area covered by the separator. Effectively works like a minimum width.
+		</theme_item>
+		<theme_item name="separator" data_type="style" type="StyleBox">
+			The style for the separator line. Works best with [StyleBoxLine] (remember to enable [member StyleBoxLine.vertical]).
+		</theme_item>
+	</theme_items>
+</class>

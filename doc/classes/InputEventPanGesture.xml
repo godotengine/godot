@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventPanGesture" inherits="InputEventGesture" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="delta" type="Vector2" setter="set_delta" getter="get_delta" default="Vector2(0, 0)">
+		</member>
+	</members>
+</class>

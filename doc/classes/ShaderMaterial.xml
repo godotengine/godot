@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShaderMaterial" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A material that uses a custom [Shader] program.
+	</brief_description>
+	<description>
+		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
+	</description>
+	<tutorials>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_shader_uniform" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="param" type="StringName" />
+			<description>
+				Returns the current value set for this material of a uniform in the shader.
+			</description>
+		</method>
+		<method name="set_shader_uniform">
+			<return type="void" />
+			<param index="0" name="param" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Changes the value set for this material of a uniform in the shader.
+				[b]Note:[/b] [param param] must match the name of the uniform in the code exactly.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="shader" type="Shader" setter="set_shader" getter="get_shader">
+			The [Shader] program used to render this material.
+		</member>
+	</members>
+</class>

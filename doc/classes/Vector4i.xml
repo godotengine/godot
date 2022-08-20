@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector4i" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="Vector4i">
+			<return type="Vector4i" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Vector4i">
+			<return type="Vector4i" />
+			<param index="0" name="from" type="Vector4i" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Vector4i">
+			<return type="Vector4i" />
+			<param index="0" name="from" type="Vector4" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Vector4i">
+			<return type="Vector4i" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="z" type="int" />
+			<param index="3" name="w" type="int" />
+			<description>
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="abs" qualifiers="const">
+			<return type="Vector4i" />
+			<description>
+			</description>
+		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="min" type="Vector4i" />
+			<param index="1" name="max" type="Vector4i" />
+			<description>
+			</description>
+		</method>
+		<method name="length" qualifiers="const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="max_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="min_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="sign" qualifiers="const">
+			<return type="Vector4i" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="w" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="x" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="y" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="z" type="int" setter="" getter="" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_X" value="0">
+		</constant>
+		<constant name="AXIS_Y" value="1">
+		</constant>
+		<constant name="AXIS_Z" value="2">
+		</constant>
+		<constant name="AXIS_W" value="3">
+		</constant>
+		<constant name="ZERO" value="Vector4i(0, 0, 0, 0)">
+		</constant>
+		<constant name="ONE" value="Vector4i(1, 1, 1, 1)">
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4" />
+			<param index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+	</operators>
+</class>

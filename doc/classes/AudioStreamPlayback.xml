@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlayback" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Meta class for playing back audio.
+	</brief_description>
+	<description>
+		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOggVorbis] for usage.
+	</description>
+	<tutorials>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+	</tutorials>
+	<methods>
+		<method name="_get_loop_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_playback_position" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_playing" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_mix" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="buffer" type="AudioFrame*" />
+			<param index="1" name="rate_scale" type="float" />
+			<param index="2" name="frames" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_seek" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="position" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_start" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="from_pos" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_stop" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_tag_used_streams" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

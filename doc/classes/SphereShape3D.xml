@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SphereShape3D" inherits="Shape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Sphere shape resource for 3D collisions.
+	</brief_description>
+	<description>
+		3D sphere shape to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node. This shape is useful for modeling sphere-like 3D objects.
+		[b]Performance:[/b] Being a primitive collision shape, [SphereShape3D] is the fastest collision shape to check collisions against, as it only requires a distance check with the shape's origin.
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+	</tutorials>
+	<members>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			The sphere's radius. The shape's diameter is double the radius.
+		</member>
+	</members>
+</class>

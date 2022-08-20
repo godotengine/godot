@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CenterContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Keeps children controls centered.
+	</brief_description>
+	<description>
+		CenterContainer keeps children controls centered. This container keeps all children to their minimum size, in the center.
+	</description>
+	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<members>
+		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left" default="false">
+			If [code]true[/code], centers children relative to the [CenterContainer]'s top left corner.
+		</member>
+	</members>
+</class>

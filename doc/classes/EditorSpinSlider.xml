@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSpinSlider" inherits="Range" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Godot editor's control for editing numeric values.
+	</brief_description>
+	<description>
+		This [Control] node is used in the editor's Inspector dock to allow editing of numeric values. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
+		</member>
+		<member name="hide_slider" type="bool" setter="set_hide_slider" getter="is_hiding_slider" default="false">
+			If [code]true[/code], the slider is hidden.
+		</member>
+		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
+		</member>
+		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">
+		</member>
+		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
+			The suffix to display after the value (in a faded color). This should generally be a plural word. You may have to use an abbreviation if the suffix is too long to be displayed.
+		</member>
+	</members>
+</class>

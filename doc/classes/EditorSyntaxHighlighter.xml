@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSyntaxHighlighter" inherits="SyntaxHighlighter" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base Syntax highlighter resource for the [ScriptEditor].
+	</brief_description>
+	<description>
+		Base syntax highlighter resource all editor syntax highlighters extend from, it is used in the [ScriptEditor].
+		Add a syntax highlighter to an individual script by calling [method ScriptEditorBase.add_syntax_highlighter]. To apply to all scripts on open, call [method ScriptEditor.register_syntax_highlighter]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Virtual method which can be overridden to return the syntax highlighter name.
+			</description>
+		</method>
+		<method name="_get_supported_languages" qualifiers="virtual const">
+			<return type="Array" />
+			<description>
+				Virtual method which can be overridden to return the supported language names.
+			</description>
+		</method>
+	</methods>
+</class>

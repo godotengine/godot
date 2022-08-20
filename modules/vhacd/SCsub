@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_vhacd = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/vhacd/"
+
+thirdparty_sources = [
+    "src/vhacdManifoldMesh.cpp",
+    "src/FloatMath.cpp",
+    "src/vhacdMesh.cpp",
+    "src/vhacdICHull.cpp",
+    "src/vhacdVolume.cpp",
+    "src/VHACD-ASYNC.cpp",
+    "src/btAlignedAllocator.cpp",
+    "src/vhacdRaycastMesh.cpp",
+    "src/VHACD.cpp",
+    "src/btConvexHullComputer.cpp",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_vhacd.Prepend(CPPPATH=[thirdparty_dir + "inc"])
+
+env_thirdparty = env_vhacd.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_vhacd.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

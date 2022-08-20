@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a bug in Godot
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      - Read our [CONTRIBUTING.md guide](https://github.com/godotengine/godot/blob/master/CONTRIBUTING.md#reporting-bugs) on reporting bugs.
+      - Write a descriptive issue title above.
+      - Search [open](https://github.com/godotengine/godot/issues) and [closed](https://github.com/godotengine/godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+      - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/stable/about/release_policy.html).
+
+- type: input
+  attributes:
+    label: Godot version
+    description: >
+      Specify the Git commit hash if using a development or non-official build.
+      If you use a custom build, please test if your issue is reproducible in official builds too.
+    placeholder: 3.3.stable, 4.0.dev (3041becc6)
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: System information
+    description: |
+      Specify the OS version, and when relevant hardware information.
+      For graphics-related issues, specify the GPU model, driver version, and the rendering backend (GLES2, GLES3, Vulkan).
+    placeholder: Windows 10, GLES3, Intel HD Graphics 620 (27.20.100.9616)
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Issue description
+    description: |
+      Describe your issue briefly. What doesn't work, and how do you expect it to work instead?
+      You can include images or videos with drag and drop, and format code blocks or logs with <code>```</code> tags.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: |
+      List of steps or sample code that reproduces the issue. Having reproducible issues is a prerequisite for contributors to be able to solve them.
+      If you include a minimal reproduction project below, you can detail how to use it here.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Minimal reproduction project
+    description: |
+      A small Godot project which reproduces the issue. Highly recommended to speed up troubleshooting.
+      Drag and drop a ZIP archive to upload it.

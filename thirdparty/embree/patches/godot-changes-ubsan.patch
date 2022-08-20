@@ -1,0 +1,24 @@
+diff --git a/thirdparty/embree/kernels/builders/primrefgen.cpp b/thirdparty/embree/kernels/builders/primrefgen.cpp
+index bb4fc81dfe..d279dc4993 100644
+--- a/thirdparty/embree/kernels/builders/primrefgen.cpp
++++ b/thirdparty/embree/kernels/builders/primrefgen.cpp
+@@ -184,6 +184,9 @@ namespace embree
+ 
+     // special variants for grid meshes
+ 
++// -- GODOT start --
++#if defined(EMBREE_GEOMETRY_GRID)
++// -- GODOT end --
+     PrimInfo createPrimRefArrayGrids(Scene* scene, mvector<PrimRef>& prims, mvector<SubGridBuildData>& sgrids)
+     {
+       PrimInfo pinfo(empty);
+@@ -293,6 +296,9 @@ namespace embree
+ 
+       return pinfo;
+     }
++// -- GODOT start --
++#endif
++// -- GODOT end --
+     
+     // ====================================================================================================
+     // ====================================================================================================

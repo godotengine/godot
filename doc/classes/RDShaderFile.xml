@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderFile" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_spirv" qualifiers="const">
+			<return type="RDShaderSPIRV" />
+			<param index="0" name="version" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="get_version_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bytecode">
+			<return type="void" />
+			<param index="0" name="bytecode" type="RDShaderSPIRV" />
+			<param index="1" name="version" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_error" type="String" setter="set_base_error" getter="get_base_error" default="&quot;&quot;">
+		</member>
+	</members>
+</class>

@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_regex = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_pcre2"]:
+    thirdparty_dir = "#thirdparty/pcre2/src/"
+    thirdparty_flags = ["PCRE2_STATIC", "HAVE_CONFIG_H", "SUPPORT_UNICODE"]
+
+    if env["builtin_pcre2_with_jit"]:
+        thirdparty_flags.append("SUPPORT_JIT")
+
+    thirdparty_sources = [
+        "pcre2_auto_possess.c",
+        "pcre2_chartables.c",
+        "pcre2_compile.c",
+        "pcre2_config.c",
+        "pcre2_context.c",
+        "pcre2_convert.c",
+        "pcre2_dfa_match.c",
+        "pcre2_error.c",
+        "pcre2_extuni.c",
+        "pcre2_find_bracket.c",
+        "pcre2_jit_compile.c",
+        # "pcre2_jit_match.c", "pcre2_jit_misc.c", # these files are included in pcre2_jit_compile.c.
+        "pcre2_maketables.c",
+        "pcre2_match.c",
+        "pcre2_match_data.c",
+        "pcre2_newline.c",
+        "pcre2_ord2utf.c",
+        "pcre2_pattern_info.c",
+        "pcre2_script_run.c",
+        "pcre2_serialize.c",
+        "pcre2_string_utils.c",
+        "pcre2_study.c",
+        "pcre2_substitute.c",
+        "pcre2_substring.c",
+        "pcre2_tables.c",
+        "pcre2_ucd.c",
+        "pcre2_valid_utf.c",
+        "pcre2_xclass.c",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_regex.Prepend(CPPPATH=[thirdparty_dir])
+    env_regex.Append(CPPDEFINES=thirdparty_flags)
+
+    def pcre2_builtin(width):
+        env_pcre2 = env_regex.Clone()
+        env_pcre2.disable_warnings()
+        env_pcre2["OBJSUFFIX"] = "_" + width + env_pcre2["OBJSUFFIX"]
+        env_pcre2.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", width)])
+        env_pcre2.add_source_files(thirdparty_obj, thirdparty_sources)
+        env.modules_sources += thirdparty_obj
+
+    pcre2_builtin("16")
+    pcre2_builtin("32")
+
+
+# Godot source files
+
+module_obj = []
+
+env_regex.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", 0)])
+env_regex.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

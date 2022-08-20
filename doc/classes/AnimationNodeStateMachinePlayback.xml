@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeStateMachinePlayback" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Playback control for [AnimationNodeStateMachine].
+	</brief_description>
+	<description>
+		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
+		[b]Example:[/b]
+		[codeblocks]
+		[gdscript]
+		var state_machine = $AnimationTree.get("parameters/playback")
+		state_machine.travel("some_state")
+		[/gdscript]
+		[csharp]
+		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback") as AnimationNodeStateMachinePlayback;
+		stateMachine.Travel("some_state");
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_current_length" qualifiers="const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="get_current_node" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the currently playing animation state.
+			</description>
+		</method>
+		<method name="get_current_play_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position within the current animation state.
+			</description>
+		</method>
+		<method name="get_travel_path" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the current travel path as computed internally by the A* algorithm.
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an animation is playing.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<param index="0" name="node" type="StringName" />
+			<description>
+				Starts playing the given animation.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the currently playing animation.
+			</description>
+		</method>
+		<method name="travel">
+			<return type="void" />
+			<param index="0" name="to_node" type="StringName" />
+			<description>
+				Transitions from the current state to another one, following the shortest path.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
+	</members>
+</class>

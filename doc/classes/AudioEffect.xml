@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffect" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Audio effect for audio.
+	</brief_description>
+	<description>
+		Base resource for audio bus. Applies an audio effect on the bus that the resource is applied on.
+	</description>
+	<tutorials>
+		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
+	</tutorials>
+	<methods>
+		<method name="_instantiate" qualifiers="virtual">
+			<return type="AudioEffectInstance" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
