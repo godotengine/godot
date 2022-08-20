@@ -5271,7 +5271,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		cell_xform.basis.scale(Vector3(p_grid_map->get_cell_scale(),
 				p_grid_map->get_cell_scale(),
 				p_grid_map->get_cell_scale()));
-		cell_xform.set_origin(p_grid_map->map_to_world(
+		cell_xform.set_origin(p_grid_map->map_to_local(
 				Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();

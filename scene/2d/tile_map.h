@@ -40,7 +40,7 @@ class TileSetAtlasSource;
 struct TileMapQuadrant {
 	struct CoordsWorldComparator {
 		_ALWAYS_INLINE_ bool operator()(const Vector2i &p_a, const Vector2i &p_b) const {
-			// We sort the cells by their world coords, as it is needed by rendering.
+			// We sort the cells by their local coords, as it is needed by rendering.
 			if (p_a.y == p_b.y) {
 				return p_a.x > p_b.x;
 			} else {
@@ -49,7 +49,7 @@ struct TileMapQuadrant {
 		}
 	};
 
-	// Dirty list element
+	// Dirty list element.
 	SelfList<TileMapQuadrant> dirty_list_element;
 
 	// Quadrant layer and coords.
@@ -58,10 +58,10 @@ struct TileMapQuadrant {
 
 	// TileMapCells
 	RBSet<Vector2i> cells;
-	// We need those two maps to sort by world position for rendering
+	// We need those two maps to sort by local position for rendering
 	// This is kind of workaround, it would be better to sort the cells directly in the "cells" set instead.
-	RBMap<Vector2i, Vector2i> map_to_world;
-	RBMap<Vector2i, Vector2i, CoordsWorldComparator> world_to_map;
+	RBMap<Vector2i, Vector2i> map_to_local;
+	RBMap<Vector2i, Vector2i, CoordsWorldComparator> local_to_map;
 
 	// Debug.
 	RID debug_canvas_item;
@@ -368,8 +368,8 @@ public:
 
 	virtual void set_y_sort_enabled(bool p_enable) override;
 
-	Vector2 map_to_world(const Vector2i &p_pos) const;
-	Vector2i world_to_map(const Vector2 &p_pos) const;
+	Vector2 map_to_local(const Vector2i &p_pos) const;
+	Vector2i local_to_map(const Vector2 &p_pos) const;
 
 	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
