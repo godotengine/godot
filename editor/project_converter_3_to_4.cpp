@@ -2188,8 +2188,8 @@ bool ProjectConverter3To4::test_conversion(const RegExContainer &reg_container) 
 	valid = valid & (got == expected);
 }
 {
-	String base = "var node = $world/ukraine/lviv.";
-	String expected = "$world/ukraine/lviv.";
+	String base = "var node = $world/player/camera.";
+	String expected = "$world/player/camera.";
 	String got = get_object_of_execution(base);
 	if (got != expected) {
 		ERR_PRINT("Failed to get proper data from get_object_of_execution `" + base + "` should return `" + expected + "`(" + itos(expected.size()) + "), got instead `" + got + "`(" + itos(got.size()) + ")");
