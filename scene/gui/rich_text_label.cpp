@@ -4912,15 +4912,19 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 	if (percent_visible != p_percent) {
 		_stop_thread();
 
-		if (p_percent < 0 || p_percent >= 1) {
+		if (percent_visible >= 1.0) {
 			visible_characters = -1;
-			percent_visible = 1;
+			percent_visible = 1.0;
+		} else if (percent_visible < 0.0) {
+			visible_characters = 0;
+			percent_visible = 0.0;
 		} else {
 			visible_characters = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
+
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			main->first_invalid_line.store(0); //invalidate ALL
+			main->first_invalid_line.store(0); // Invalidate ALL.
 			_validate_line_caches();
 		}
 		update();
