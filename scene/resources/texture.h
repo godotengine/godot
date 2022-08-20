@@ -930,7 +930,7 @@ private:
 	int current_frame = 0;
 	bool pause = false;
 	bool oneshot = false;
-	float fps = 4.0;
+	float fps = 0.0;
 
 	float time = 0.0;
 

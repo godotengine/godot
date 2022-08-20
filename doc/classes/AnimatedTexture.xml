@@ -55,9 +55,9 @@
 		<member name="current_frame" type="int" setter="set_current_frame" getter="get_current_frame">
 			Sets the currently visible frame of the texture.
 		</member>
-		<member name="fps" type="float" setter="set_fps" getter="get_fps" default="4.0">
-			Animation speed in frames per second. This value defines the default time interval between two frames of the animation, and thus the overall duration of the animation loop based on the [member frames] property. A value of 0 means no predefined number of frames per second, the animation will play according to each frame's frame delay (see [method set_frame_delay]).
-			For example, an animation with 8 frames, no frame delay and a [code]fps[/code] value of 2 will run for 4 seconds, with each frame lasting 0.5 seconds.
+		<member name="fps" type="float" setter="set_fps" getter="get_fps" default="0.0">
+			The animation speed, in frames per second. This property does not include the additional delay that may have been set for each frame (see [method set_frame_delay]).
+			[b]Example:[/b] Any animation running at [code]4[/code] fps will switch frames every 0.25 seconds, while at [code]0.5[/code] fps it will switch every 2 seconds.
 		</member>
 		<member name="frames" type="int" setter="set_frames" getter="get_frames" default="1">
 			Number of frames to use in the animation. While you can create the frames independently with [method set_frame_texture], you need to set this value for the animation to take new frames into account. The maximum number of frames is [constant MAX_FRAMES].
