@@ -61,10 +61,6 @@
 			Limits the lines of text the node shows on screen.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
-		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
-			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.
-			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
-		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="4" />
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
@@ -89,10 +85,14 @@
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The number of characters to display. If set to [code]-1[/code], all characters are displayed. This can be useful when animating the text appearing in a dialog box.
-			[b]Note:[/b] Setting this property updates [member percent_visible] accordingly.
+			[b]Note:[/b] Setting this property updates [member visible_ratio] accordingly.
 		</member>
 		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="TextServer.VisibleCharactersBehavior" default="0">
-			Sets the clipping behavior when [member visible_characters] or [member percent_visible] is set. See [enum TextServer.VisibleCharactersBehavior] for more info.
+			Sets the clipping behavior when [member visible_characters] or [member visible_ratio] is set. See [enum TextServer.VisibleCharactersBehavior] for more info.
+		</member>
+		<member name="visible_ratio" type="float" setter="set_visible_ratio" getter="get_visible_ratio" default="1.0">
+			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.
+			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
 		</member>
 	</members>
 	<theme_items>
