@@ -49,6 +49,7 @@ private:
 
 	HashMap<StringName, Color> keywords;
 	HashMap<StringName, Color> member_keywords;
+	HashMap<StringName, Color> function_keywords;
 	HashSet<StringName> global_functions;
 
 	enum Type {
@@ -74,6 +75,7 @@ private:
 	Color function_color;
 	Color global_function_color;
 	Color function_definition_color;
+	Color function_definition_override_color;
 	Color built_in_type_color;
 	Color number_color;
 	Color member_color;

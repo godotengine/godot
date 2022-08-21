@@ -64,6 +64,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool is_bin_notation = false;
 	bool expect_type = false;
 	Color keyword_color;
+	Color chosen_function_definition_color;
 	Color color;
 
 	color_region_cache[p_line] = -1;
@@ -370,6 +371,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				if (str[k] == '(') {
 					in_function_name = true;
+					String word = str.substr(j, k - j);
+
+					if (function_keywords.has(word)) {
+						chosen_function_definition_color = function_keywords[word];
+					} else {
+						chosen_function_definition_color = function_definition_color;
+					}
+
 				} else if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
 					in_variable_declaration = true;
 				}
@@ -492,7 +501,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			next_type = FUNCTION;
 
 			if (!in_lambda && previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
-				color = function_definition_color;
+				color = chosen_function_definition_color;
 			} else {
 				color = function_color;
 			}
@@ -559,6 +568,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	keywords.clear();
 	member_keywords.clear();
 	global_functions.clear();
+	function_keywords.clear();
 	color_regions.clear();
 	color_region_cache.clear();
 
@@ -671,6 +681,32 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				member_keywords[E] = member_variable_color;
 			}
 		}
+		/* Function overrides. */
+		if (instance_base != StringName()) {
+			Ref<Script> base_script = script->get_base_script();
+			while (base_script.is_valid()) {
+				List<MethodInfo> script_method_list;
+				base_script->get_script_method_list(&script_method_list);
+				for (const MethodInfo &E : script_method_list) {
+					String name = E.name;
+
+					function_keywords[name] = function_definition_override_color;
+				}
+				base_script = base_script->get_base_script();
+			}
+
+			String base_class = instance_base;
+			if (base_class != StringName()) {
+				List<MethodInfo> class_method_list;
+				ClassDB::get_method_list(instance_base, &class_method_list);
+
+				for (const MethodInfo &E : class_method_list) {
+					String name = E.name;
+
+					function_keywords[name] = function_definition_override_color;
+				}
+			}
+		}
 	}
 
 	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
@@ -678,6 +714,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
+		function_definition_override_color = Color(0.7, 0.8, 1.0);
 		global_function_color = Color(0.64, 0.64, 0.96);
 		node_path_color = Color(0.72, 0.77, 0.49);
 		node_ref_color = Color(0.39, 0.76, 0.35);
@@ -685,6 +722,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		string_name_color = Color(1.0, 0.76, 0.65);
 	} else {
 		function_definition_color = Color(0, 0.6, 0.6);
+		function_definition_override_color = Color(0.7, 0.8, 1.0);
 		global_function_color = Color(0.36, 0.18, 0.72);
 		node_path_color = Color(0.18, 0.55, 0);
 		node_ref_color = Color(0.0, 0.5, 0);
@@ -693,6 +731,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);
+	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_override_color", function_definition_override_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/global_function_color", global_function_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_path_color", node_path_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_reference_color", node_ref_color);
@@ -702,6 +741,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/function_definition_color",
 				function_definition_color,
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/gdscript/function_definition_override_color",
+				function_definition_override_color,
 				true);
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/global_function_color",
@@ -726,6 +769,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_color");
+	function_definition_override_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_override_color");
 	global_function_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/global_function_color");
 	node_path_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_path_color");
 	node_ref_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_reference_color");
