@@ -47,7 +47,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int frames_mixed_this_step = p_frames;
 
 	int beat_length_frames = -1;
-	bool beat_loop = mp3_stream->has_loop() && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
+	bool beat_loop = loop_mode == LOOP_FORWARD && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
@@ -117,6 +117,17 @@ void AudioStreamPlaybackMP3::stop() {
 
 bool AudioStreamPlaybackMP3::is_playing() const {
 	return active;
+}
+
+void AudioStreamPlaybackMP3::set_loop_mode(const LoopMode p_loop_mode) {
+	if (p_loop_mode == LOOP_PINGPONG || p_loop_mode == LOOP_BACKWARD) {
+		WARN_PRINT("AudioStreamPlaybackMP3 does not support Ping-Pong or Backward Loop Mode! Looping forward.");
+		loop_mode = LOOP_FORWARD;
+	} else if (p_loop_mode == LOOP_DETECT) {
+		loop_mode = mp3_stream->has_loop() ? LOOP_FORWARD : LOOP_DISABLED;
+	} else {
+		loop_mode = p_loop_mode;
+	}
 }
 
 int AudioStreamPlaybackMP3::get_loop_count() const {
@@ -228,6 +239,13 @@ float AudioStreamMP3::get_loop_offset() const {
 float AudioStreamMP3::get_length() const {
 	return length;
 }
+
+Vector<AudioStreamPlayback::LoopMode> AudioStreamMP3::get_unsupported_loop_modes() const {
+	Vector<AudioStreamPlayback::LoopMode> unsupported_modes;
+	unsupported_modes.append(AudioStreamPlayback::LoopMode::LOOP_BACKWARD);
+	unsupported_modes.append(AudioStreamPlayback::LoopMode::LOOP_PINGPONG);
+	return unsupported_modes;
+};
 
 bool AudioStreamMP3::is_monophonic() const {
 	return false;

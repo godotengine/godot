@@ -288,8 +288,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				active.set();
 				Ref<AudioStreamPlayback> new_playback = stream->instantiate_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
+				new_playback->set_loop_mode(loop_mode);
+
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
+
 				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				stream_playbacks.push_back(new_playback);
 				setplay.set(-1);
@@ -532,6 +535,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
 	stop();
 	stream = p_stream;
+
+	update_configuration_warnings();
+	notify_property_list_changed();
 }
 
 Ref<AudioStream> AudioStreamPlayer3D::get_stream() const {
@@ -617,6 +623,25 @@ float AudioStreamPlayer3D::get_playback_position() {
 	return 0;
 }
 
+void AudioStreamPlayer3D::set_loop_mode(const AudioStreamPlayback::LoopMode p_loop_mode) {
+	ERR_FAIL_INDEX(0, AudioStreamPlayback::LoopMode::LOOP_MAX);
+	if (loop_mode == p_loop_mode) {
+		return;
+	}
+
+	loop_mode = p_loop_mode;
+
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		playback->set_loop_mode(loop_mode);
+	}
+
+	update_configuration_warnings();
+}
+
+AudioStreamPlayback::LoopMode AudioStreamPlayer3D::get_loop_mode() const {
+	return loop_mode;
+}
+
 void AudioStreamPlayer3D::set_bus(const StringName &p_bus) {
 	//if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
@@ -666,6 +691,33 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	}
+	if (p_property.name == "loop_mode" && stream.is_valid()) {
+		Vector<AudioStreamPlayback::LoopMode> unsupported_modes = stream->get_unsupported_loop_modes();
+		for (int i = 0; i < AudioStreamPlayback::LoopMode::LOOP_MAX; i++) {
+			if (unsupported_modes.has(static_cast<AudioStreamPlayback::LoopMode>(i))) {
+				String slice = p_property.hint_string.get_slice(",", i);
+				p_property.hint_string = p_property.hint_string.replace(slice, slice + " " + RTR("(Not Supported)"));
+			}
+		}
+	}
+}
+
+TypedArray<String> AudioStreamPlayer3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node3D::get_configuration_warnings();
+
+	if (stream.is_null()) {
+		return warnings;
+	}
+
+	Vector<AudioStreamPlayback::LoopMode> unsupported_modes = stream->get_unsupported_loop_modes();
+	if (unsupported_modes.has(loop_mode)) {
+		PropertyInfo info;
+		ClassDB::get_property_info(get_class_name(), "loop_mode", &info);
+		const String readable_name = info.hint_string.get_slice(",", loop_mode);
+		warnings.push_back(vformat(RTR("%s does not support \"%s\" loop mode.\nAs such, the stream may not play as intended.\nConsider switching to another loop mode."), stream->get_class_name(), readable_name));
+	}
+
+	return warnings;
 }
 
 void AudioStreamPlayer3D::_bus_layout_changed() {
@@ -829,6 +881,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer3D::is_playing);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer3D::get_playback_position);
 
+	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamPlayer3D::set_loop_mode);
+	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamPlayer3D::get_loop_mode);
+
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer3D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer3D::get_bus);
 
@@ -885,6 +940,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");

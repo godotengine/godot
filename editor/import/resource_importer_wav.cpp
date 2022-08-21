@@ -260,6 +260,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			}
 		}
 
+		// Detect loop mode from file (default).
 		if (import_loop_mode == 0 && chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
 			// Loop point info!
 
@@ -431,7 +432,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	}
 
 	if (import_loop_mode >= 2) {
-		loop_mode = (AudioStreamWAV::LoopMode)(import_loop_mode - 1);
+		loop_mode = (AudioStreamWAV::LoopMode)(import_loop_mode - 1); // Not counting "Detect from WAV" option.
 		loop_begin = p_options["edit/loop_begin"];
 		loop_end = p_options["edit/loop_end"];
 		// Wrap around to max frames, so `-1` can be used to select the end, etc.

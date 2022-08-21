@@ -63,6 +63,22 @@ bool AudioStreamPlaybackWAV::is_playing() const {
 	return active;
 }
 
+void AudioStreamPlaybackWAV::set_loop_mode(LoopMode p_loop_mode) {
+	if (p_loop_mode == LoopMode::LOOP_DETECT) {
+		p_loop_mode = (LoopMode)(base->loop_mode + 1); // AudioStreamWAV's LoopMode doesn't begin with LOOP_DETECT.
+		return;
+	}
+	if (p_loop_mode == loop_mode) {
+		return;
+	}
+
+	loop_mode = p_loop_mode;
+
+	if (loop_mode == LOOP_FORWARD && sign == -1) {
+		sign = 1;
+	}
+}
+
 int AudioStreamPlaybackWAV::get_loop_count() const {
 	return 0;
 }
@@ -251,13 +267,13 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
 	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
 	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
-	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin_fp : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end_fp : length_fp;
+	int64_t begin_limit = (loop_mode != LOOP_DISABLED) ? loop_begin_fp : 0;
+	int64_t end_limit = (loop_mode != LOOP_DISABLED) ? loop_end_fp : length_fp;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
 
-	if (base->loop_mode == AudioStreamWAV::LOOP_BACKWARD) {
+	if (loop_mode == LOOP_BACKWARD) {
 		sign = -1;
 	}
 
@@ -271,7 +287,7 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 
 	//looping
 
-	AudioStreamWAV::LoopMode loop_format = base->loop_mode;
+	LoopMode loop_format = loop_mode;
 	AudioStreamWAV::Format format = base->format;
 
 	/* audio data */
@@ -281,10 +297,10 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 	AudioFrame *dst_buff = p_buffer;
 
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
-		if (loop_format != AudioStreamWAV::LOOP_DISABLED) {
+		if (loop_format != LOOP_DISABLED) {
 			ima_adpcm[0].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
 			ima_adpcm[1].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
-			loop_format = AudioStreamWAV::LOOP_FORWARD;
+			loop_format = LOOP_FORWARD;
 		}
 	}
 
@@ -297,9 +313,9 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		if (increment < 0) {
 			/* going backwards */
 
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset < loop_begin_fp) {
+			if (loop_format != LOOP_DISABLED && offset < loop_begin_fp) {
 				/* loopstart reached */
-				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
+				if (loop_format == LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_begin_fp + (loop_begin_fp - offset);
 					increment = -increment;
@@ -317,10 +333,10 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 			}
 		} else {
 			/* going forward */
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= loop_end_fp) {
+			if (loop_format != LOOP_DISABLED && offset >= loop_end_fp) {
 				/* loopend reached */
 
-				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
+				if (loop_format == LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_end_fp - (offset - loop_end_fp);
 					increment = -increment;
@@ -486,6 +502,10 @@ float AudioStreamWAV::get_length() const {
 
 bool AudioStreamWAV::is_monophonic() const {
 	return false;
+}
+
+Vector<AudioStreamPlayback::LoopMode> AudioStreamWAV::get_unsupported_loop_modes() const {
+	return Vector<AudioStreamPlayback::LoopMode>();
 }
 
 void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {

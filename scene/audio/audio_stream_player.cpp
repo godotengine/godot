@@ -91,6 +91,9 @@ void AudioStreamPlayer::_notification(int p_what) {
 void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 	stop();
 	stream = p_stream;
+
+	update_configuration_warnings();
+	notify_property_list_changed();
 }
 
 Ref<AudioStream> AudioStreamPlayer::get_stream() const {
@@ -143,6 +146,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	}
 	Ref<AudioStreamPlayback> stream_playback = stream->instantiate_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
+	stream_playback->set_loop_mode(loop_mode);
 
 	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
 	stream_playbacks.push_back(stream_playback);
@@ -185,6 +189,25 @@ float AudioStreamPlayer::get_playback_position() {
 		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
 	}
 	return 0;
+}
+
+void AudioStreamPlayer::set_loop_mode(const AudioStreamPlayback::LoopMode p_loop_mode) {
+	ERR_FAIL_INDEX(0, AudioStreamPlayback::LoopMode::LOOP_MAX);
+	if (loop_mode == p_loop_mode) {
+		return;
+	}
+
+	loop_mode = p_loop_mode;
+
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		playback->set_loop_mode(loop_mode);
+	}
+
+	update_configuration_warnings();
+}
+
+AudioStreamPlayback::LoopMode AudioStreamPlayer::get_loop_mode() const {
+	return loop_mode;
 }
 
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
@@ -301,6 +324,33 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	}
+	if (p_property.name == "loop_mode" && stream.is_valid()) {
+		Vector<AudioStreamPlayback::LoopMode> unsupported_modes = stream->get_unsupported_loop_modes();
+		for (int i = 0; i < AudioStreamPlayback::LoopMode::LOOP_MAX; i++) {
+			if (unsupported_modes.has(static_cast<AudioStreamPlayback::LoopMode>(i))) {
+				const String slice = p_property.hint_string.get_slice(",", i);
+				p_property.hint_string = p_property.hint_string.replace(slice, slice + " " + RTR("(Not Supported)"));
+			}
+		}
+	}
+}
+
+TypedArray<String> AudioStreamPlayer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (stream.is_null()) {
+		return warnings;
+	}
+
+	Vector<AudioStreamPlayback::LoopMode> unsupported_modes = stream->get_unsupported_loop_modes();
+	if (unsupported_modes.has(loop_mode)) {
+		PropertyInfo info;
+		ClassDB::get_property_info(get_class_name(), "loop_mode", &info);
+		const String readable_name = info.hint_string.get_slice(",", loop_mode);
+		warnings.push_back(vformat(RTR("%s does not support \"%s\" loop mode.\nAs such, the stream may not play as intended.\nConsider switching to another loop mode."), stream->get_class_name(), readable_name));
+	}
+
+	return warnings;
 }
 
 void AudioStreamPlayer::_bus_layout_changed() {
@@ -331,6 +381,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer::is_playing);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer::get_playback_position);
 
+	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamPlayer::set_loop_mode);
+	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamPlayer::get_loop_mode);
+
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
 
@@ -357,6 +410,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");

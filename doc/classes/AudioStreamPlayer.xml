@@ -57,6 +57,10 @@
 			Bus on which this audio is playing.
 			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamPlayback.LoopMode" default="0">
+			The way the audio should loop. If set to [constant AudioStreamPlayback.LOOP_DETECT], it is inferred from the [member stream]. See [enum AudioStreamPlayback.LoopMode] for possible modes.
+			[b]Note:[/b] Not all [AudioStream]s support all looping modes.
+		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
 			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
 		</member>

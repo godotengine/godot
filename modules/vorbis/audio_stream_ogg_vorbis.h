@@ -87,6 +87,7 @@ public:
 	virtual void stop() override;
 	virtual bool is_playing() const override;
 
+	virtual void set_loop_mode(const LoopMode p_loop_mode) override;
 	virtual int get_loop_count() const override; //times it looped
 
 	virtual float get_playback_position() const override;
@@ -148,6 +149,9 @@ public:
 	virtual float get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
+
+	// OGG does not support LOOP_BACKWARD and LOOP_PINGPONG.
+	virtual Vector<AudioStreamPlayback::LoopMode> get_unsupported_loop_modes() const override;
 
 	AudioStreamOggVorbis();
 	virtual ~AudioStreamOggVorbis();

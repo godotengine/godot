@@ -83,6 +83,15 @@ int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_fra
 	return 0;
 }
 
+void AudioStreamPlayback::set_loop_mode(const LoopMode p_loop_mode) {
+	loop_mode = LOOP_DISABLED;
+	WARN_PRINT(String(get_class_name()) + "::set_loop_mode unimplemented!");
+}
+
+AudioStreamPlayback::LoopMode AudioStreamPlayback::get_loop_mode() const {
+	return loop_mode;
+}
+
 void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
@@ -96,6 +105,13 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+
+	BIND_ENUM_CONSTANT(LOOP_DETECT);
+	BIND_ENUM_CONSTANT(LOOP_DISABLED);
+	BIND_ENUM_CONSTANT(LOOP_FORWARD);
+	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
+	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
+	BIND_ENUM_CONSTANT(LOOP_MAX);
 }
 //////////////////////////////
 
@@ -221,6 +237,16 @@ bool AudioStream::is_monophonic() const {
 		return ret;
 	}
 	return true;
+}
+
+Vector<AudioStreamPlayback::LoopMode> AudioStream::get_unsupported_loop_modes() const {
+	Vector<AudioStreamPlayback::LoopMode> unsupported_modes;
+	unsupported_modes.resize(4);
+	unsupported_modes.set(0, AudioStreamPlayback::LoopMode::LOOP_FORWARD);
+	unsupported_modes.set(1, AudioStreamPlayback::LoopMode::LOOP_PINGPONG);
+	unsupported_modes.set(2, AudioStreamPlayback::LoopMode::LOOP_BACKWARD);
+	unsupported_modes.set(3, AudioStreamPlayback::LoopMode::LOOP_DETECT);
+	return unsupported_modes;
 }
 
 double AudioStream::get_bpm() const {

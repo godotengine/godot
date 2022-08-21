@@ -73,6 +73,7 @@ public:
 	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
 
+	virtual void set_loop_mode(LoopMode p_loop_mode) override;
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	virtual void tag_used_streams() override;
@@ -92,6 +93,8 @@ public:
 	};
 
 	// Keep the ResourceImporterWAV `edit/loop_mode` enum hint in sync with these options.
+	// Note: Not to be confused with AudioStreamPlayer's LoopMode.
+	// AudioStreamWAV is the only AudioStream that supports looping this way.
 	enum LoopMode {
 		LOOP_DISABLED,
 		LOOP_FORWARD,
@@ -140,6 +143,9 @@ public:
 	virtual float get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
+
+	// WAV supports all loop modes.
+	virtual Vector<AudioStreamPlayback::LoopMode> get_unsupported_loop_modes() const override;
 
 	void set_data(const Vector<uint8_t> &p_data);
 	Vector<uint8_t> get_data() const;

@@ -44,7 +44,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 	int todo = p_frames;
 
 	int beat_length_frames = -1;
-	bool beat_loop = vorbis_stream->has_loop();
+	bool beat_loop = loop_mode == LOOP_FORWARD;
 	if (beat_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
 		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
 	}
@@ -238,6 +238,17 @@ void AudioStreamPlaybackOggVorbis::stop() {
 
 bool AudioStreamPlaybackOggVorbis::is_playing() const {
 	return active;
+}
+
+void AudioStreamPlaybackOggVorbis::set_loop_mode(const LoopMode p_loop_mode) {
+	if (p_loop_mode == LOOP_PINGPONG || p_loop_mode == LOOP_BACKWARD) {
+		WARN_PRINT("AudioStreamPlaybackOggVorbis does not support Ping-Pong or Backward Loop Mode! Looping forward.");
+		loop_mode = LOOP_FORWARD;
+	} else if (p_loop_mode == LOOP_DETECT) {
+		loop_mode = vorbis_stream->has_loop() ? LOOP_FORWARD : LOOP_DISABLED;
+	} else {
+		loop_mode = p_loop_mode;
+	}
 }
 
 int AudioStreamPlaybackOggVorbis::get_loop_count() const {
@@ -507,6 +518,13 @@ int AudioStreamOggVorbis::get_bar_beats() const {
 
 bool AudioStreamOggVorbis::is_monophonic() const {
 	return false;
+}
+
+Vector<AudioStreamPlayback::LoopMode> AudioStreamOggVorbis::get_unsupported_loop_modes() const {
+	Vector<AudioStreamPlayback::LoopMode> unsupported_modes;
+	unsupported_modes.append(AudioStreamPlayback::LoopMode::LOOP_BACKWARD);
+	unsupported_modes.append(AudioStreamPlayback::LoopMode::LOOP_PINGPONG);
+	return unsupported_modes;
 }
 
 void AudioStreamOggVorbis::_bind_methods() {

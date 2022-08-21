@@ -57,6 +57,8 @@ private:
 	StringName bus = SNAME("Master");
 	int max_polyphony = 1;
 
+	AudioStreamPlayback::LoopMode loop_mode = AudioStreamPlayback::LOOP_DETECT;
+
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _mix_internal(bool p_fadeout);
@@ -95,6 +97,9 @@ public:
 	bool is_playing() const;
 	float get_playback_position();
 
+	void set_loop_mode(const AudioStreamPlayback::LoopMode p_loop_mode);
+	AudioStreamPlayback::LoopMode get_loop_mode() const;
+
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
@@ -108,6 +113,8 @@ public:
 	bool get_stream_paused() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	AudioStreamPlayer();
 	~AudioStreamPlayer();

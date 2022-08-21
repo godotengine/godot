@@ -76,6 +76,8 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 				active.set();
 				Ref<AudioStreamPlayback> new_playback = stream->instantiate_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
+				new_playback->set_loop_mode(loop_mode);
+
 				AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get(), pitch_scale);
 				stream_playbacks.push_back(new_playback);
 				setplay.set(-1);
@@ -221,6 +223,9 @@ void AudioStreamPlayer2D::_update_panning() {
 void AudioStreamPlayer2D::set_stream(Ref<AudioStream> p_stream) {
 	stop();
 	stream = p_stream;
+
+	update_configuration_warnings();
+	notify_property_list_changed();
 }
 
 Ref<AudioStream> AudioStreamPlayer2D::get_stream() const {
@@ -295,6 +300,25 @@ float AudioStreamPlayer2D::get_playback_position() {
 	return 0;
 }
 
+void AudioStreamPlayer2D::set_loop_mode(const AudioStreamPlayback::LoopMode p_loop_mode) {
+	ERR_FAIL_INDEX(0, AudioStreamPlayback::LoopMode::LOOP_MAX);
+	if (loop_mode == p_loop_mode) {
+		return;
+	}
+
+	loop_mode = p_loop_mode;
+
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		playback->set_loop_mode(loop_mode);
+	}
+
+	update_configuration_warnings();
+}
+
+AudioStreamPlayback::LoopMode AudioStreamPlayer2D::get_loop_mode() const {
+	return loop_mode;
+}
+
 void AudioStreamPlayer2D::set_bus(const StringName &p_bus) {
 	default_bus = p_bus; // This will be pushed to the audio server during the next physics timestep, which is fast enough.
 }
@@ -341,6 +365,33 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	}
+	if (p_property.name == "loop_mode" && stream.is_valid()) {
+		Vector<AudioStreamPlayback::LoopMode> unsupported_modes = stream->get_unsupported_loop_modes();
+		for (int i = 0; i < AudioStreamPlayback::LoopMode::LOOP_MAX; i++) {
+			if (unsupported_modes.has(static_cast<AudioStreamPlayback::LoopMode>(i))) {
+				String slice = p_property.hint_string.get_slice(",", i);
+				p_property.hint_string = p_property.hint_string.replace(slice, slice + " " + RTR("(Not Supported)"));
+			}
+		}
+	}
+}
+
+TypedArray<String> AudioStreamPlayer2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node2D::get_configuration_warnings();
+
+	if (stream.is_null()) {
+		return warnings;
+	}
+
+	Vector<AudioStreamPlayback::LoopMode> unsupported_modes = stream->get_unsupported_loop_modes();
+	if (unsupported_modes.has(loop_mode)) {
+		PropertyInfo info;
+		ClassDB::get_property_info(get_class_name(), "loop_mode", &info);
+		const String readable_name = info.hint_string.get_slice(",", loop_mode);
+		warnings.push_back(vformat(RTR("%s does not support \"%s\" loop mode.\nAs such, the stream may not play as intended.\nConsider switching to another loop mode."), stream->get_class_name(), readable_name));
+	}
+
+	return warnings;
 }
 
 void AudioStreamPlayer2D::_bus_layout_changed() {
@@ -430,6 +481,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer2D::is_playing);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer2D::get_playback_position);
 
+	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamPlayer2D::set_loop_mode);
+	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamPlayer2D::get_loop_mode);
+
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer2D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer2D::get_bus);
 
@@ -465,6 +519,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "1,4096,1,or_greater,exp,suffix:px"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");

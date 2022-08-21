@@ -56,4 +56,24 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="LOOP_DETECT" value="0" enum="LoopMode">
+			If supported, looping is automatically detected depending on the associated [AudioStream].
+		</constant>
+		<constant name="LOOP_DISABLED" value="1" enum="LoopMode">
+			The [AudioStream] does not loop.
+		</constant>
+		<constant name="LOOP_FORWARD" value="2" enum="LoopMode">
+			If supported, the [AudioStream] loops when it reaches the end.
+		</constant>
+		<constant name="LOOP_PINGPONG" value="3" enum="LoopMode">
+			If supported, the [AudioStream] switches between playing forward and backwards, after reaching either sides.
+		</constant>
+		<constant name="LOOP_BACKWARD" value="4" enum="LoopMode">
+			If supported, the [AudioStream] plays backwards and loops when it reaches the beginning.
+		</constant>
+		<constant name="LOOP_MAX" value="5" enum="LoopMode">
+			Represents the size of the [enum LoopMode] enum.
+		</constant>
+	</constants>
 </class>

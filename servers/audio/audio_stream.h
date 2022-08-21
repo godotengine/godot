@@ -56,18 +56,36 @@ protected:
 	GDVIRTUAL3R(int, _mix, GDNativePtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
 public:
+	enum LoopMode {
+		// LOOP_DETECT should only be assigned in AudioStreamPlayer & ResourceImporterWAV's imports.
+		// When passed in AudioStreamPlayback.set_loop_mode(),
+		// Another LoopMode should be assigned, instead.
+		LOOP_DETECT,
+		LOOP_DISABLED,
+		LOOP_FORWARD,
+		LOOP_PINGPONG,
+		LOOP_BACKWARD,
+		LOOP_MAX,
+	};
+
 	virtual void start(float p_from_pos = 0.0);
 	virtual void stop();
 	virtual bool is_playing() const;
 
-	virtual int get_loop_count() const; //times it looped
+	virtual int get_loop_count() const; // Times it looped.
 
 	virtual float get_playback_position() const;
 	virtual void seek(float p_time);
 
 	virtual void tag_used_streams();
 
+	virtual void set_loop_mode(const LoopMode p_loop_mode);
+	LoopMode get_loop_mode() const;
+
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+
+protected:
+	LoopMode loop_mode = LOOP_DISABLED;
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
@@ -137,6 +155,7 @@ public:
 
 	virtual float get_length() const;
 	virtual bool is_monophonic() const;
+	virtual Vector<AudioStreamPlayback::LoopMode> get_unsupported_loop_modes() const;
 
 	void tag_used(float p_offset);
 	uint64_t get_tagged_frame() const;
@@ -299,6 +318,7 @@ public:
 	~AudioStreamPlaybackRandomizer();
 };
 
+VARIANT_ENUM_CAST(AudioStreamPlayback::LoopMode);
 VARIANT_ENUM_CAST(AudioStreamRandomizer::PlaybackMode);
 
 #endif // AUDIO_STREAM_H

@@ -67,6 +67,8 @@ private:
 	StringName default_bus = SNAME("Master");
 	int max_polyphony = 1;
 
+	AudioStreamPlayback::LoopMode loop_mode = AudioStreamPlayback::LOOP_DETECT;
+
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
@@ -105,6 +107,9 @@ public:
 	bool is_playing() const;
 	float get_playback_position();
 
+	void set_loop_mode(const AudioStreamPlayback::LoopMode p_loop_mode);
+	AudioStreamPlayback::LoopMode get_loop_mode() const;
+
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
@@ -130,6 +135,8 @@ public:
 	float get_panning_strength() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();

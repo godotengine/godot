@@ -347,7 +347,7 @@ void AudioServer::_mix_step() {
 			buf[i] = playback->lookahead[i];
 		}
 
-		// Mix the audio stream
+		// Mix the audio stream.
 		unsigned int mixed_frames = playback->stream_playback->mix(&buf[LOOKAHEAD_BUFFER_SIZE], playback->pitch_scale.get(), buffer_size);
 
 		if (tag_used_audio_streams && playback->stream_playback->is_playing()) {
