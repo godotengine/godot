@@ -1590,7 +1590,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 GDScriptParser::Node *GDScriptParser::parse_statement() {
 	Node *result = nullptr;
 #ifdef DEBUG_ENABLED
-	bool unreachable = current_suite->has_return && !current_suite->has_unreachable_code;
+	bool unreachable = (current_suite->has_return || current_suite->has_continue) && !current_suite->has_unreachable_code;
 #endif
 
 	bool is_annotation = false;
@@ -1650,7 +1650,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			complete_extents(n_return);
 			result = n_return;
 
-			current_suite->has_return = true;
+			current_suite->has_return = !current_suite->has_continue;
 
 			end_statement("return statement");
 			break;
@@ -1788,7 +1788,7 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 	if (!can_continue) {
 		push_error(R"(Cannot use "continue" outside of a loop or pattern matching block.)");
 	}
-	current_suite->has_continue = true;
+	current_suite->has_continue = !current_suite->has_return;
 	ContinueNode *cont = alloc_node<ContinueNode>();
 	cont->is_for_match = is_continue_match;
 	complete_extents(cont);
@@ -1900,9 +1900,9 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	}
 
 #ifdef DEBUG_ENABLED
-	bool all_have_return = true;
-	bool have_wildcard = false;
+	bool all_have_return_or_continue = true;
 	bool have_wildcard_without_continue = false;
+	bool have_wildcard_with_return = false;
 #endif
 
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
@@ -1918,13 +1918,15 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		}
 
 		if (branch->has_wildcard) {
-			have_wildcard = true;
 			if (!branch->block->has_continue) {
 				have_wildcard_without_continue = true;
 			}
+			if (branch->block->has_return) {
+				have_wildcard_with_return = true;
+			}
 		}
-		if (!branch->block->has_return) {
-			all_have_return = false;
+		if (!branch->block->has_return && !branch->block->has_continue) {
+			all_have_return_or_continue = false;
 		}
 #endif
 		match->branches.push_back(branch);
@@ -1934,7 +1936,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
 #ifdef DEBUG_ENABLED
-	if (all_have_return && have_wildcard) {
+	if (all_have_return_or_continue && have_wildcard_with_return) {
 		current_suite->has_return = true;
 	}
 #endif

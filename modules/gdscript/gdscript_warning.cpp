@@ -72,7 +72,7 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case UNREACHABLE_CODE: {
 			CHECK_SYMBOLS(1);
-			return "Unreachable code (statement after return) in function '" + symbols[0] + "()'.";
+			return "Unreachable code (statement after return or continue) in function '" + symbols[0] + "()'.";
 		} break;
 		case UNREACHABLE_PATTERN: {
 			return "Unreachable pattern (pattern after wildcard or bind).";

@@ -1,0 +1,9 @@
+GDTEST_OK
+>> WARNING
+>> Line: 6
+>> UNREACHABLE_CODE
+>> Unreachable code (statement after return or continue) in function 'test()'.
+>> WARNING
+>> Line: 9
+>> UNREACHABLE_CODE
+>> Unreachable code (statement after return or continue) in function 'test()'.
