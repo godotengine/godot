@@ -169,7 +169,7 @@
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is right-clicked.
+				This signal is only used internally.
 			</description>
 		</signal>
 		<signal name="tab_changed">
