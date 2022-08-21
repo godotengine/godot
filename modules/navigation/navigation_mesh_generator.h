@@ -33,6 +33,8 @@
 
 #ifndef _3D_DISABLED
 
+#include "core/templates/local_vector.h"
+#include "navigation_geometry_parser_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 
 #include <Recast.h>
@@ -46,6 +48,8 @@ class NavigationMeshGenerator : public Object {
 
 	static NavigationMeshGenerator *singleton;
 
+	LocalVector<Ref<NavigationGeometryParser3D>> geometry_3d_parsers;
+
 protected:
 	static void _bind_methods();
 
@@ -53,7 +57,7 @@ protected:
 	static void _add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices);
 	static void _add_mesh_array(const Array &p_array, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices);
 	static void _add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices);
-	static void _parse_geometry(const Transform3D &p_navmesh_transform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children);
+	static void _parse_geometry_node(const Transform3D &p_navmesh_transform, Ref<NavigationMesh> p_navigationmesh, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, bool p_recurse_children);
 
 	static void _convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_navigation_mesh);
 	static void _build_recast_navigation_mesh(
@@ -77,6 +81,11 @@ public:
 
 	void bake(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node);
 	void clear(Ref<NavigationMesh> p_navigation_mesh);
+
+	void register_geometry_parser_3d(const Ref<NavigationGeometryParser3D> &p_geometry_parser);
+	void unregister_geometry_parser_3d(const Ref<NavigationGeometryParser3D> &p_geometry_parser);
+
+	void cleanup() { geometry_3d_parsers.clear(); };
 };
 
 #endif

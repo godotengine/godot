@@ -28,5 +28,19 @@
 				Removes all polygons and vertices from the provided [param navigation_mesh] resource.
 			</description>
 		</method>
+		<method name="register_geometry_parser_3d">
+			<return type="void" />
+			<param index="0" name="geometry_parser" type="NavigationGeometryParser3D" />
+			<description>
+				Registers a navigation geometry parser to contribute geometry data from parser specified node class(es) for navmesh baking.
+			</description>
+		</method>
+		<method name="unregister_geometry_parser_3d">
+			<return type="void" />
+			<param index="0" name="geometry_parser" type="NavigationGeometryParser3D" />
+			<description>
+				Unregisters the specific navigation geometry parser.
+			</description>
+		</method>
 	</methods>
 </class>

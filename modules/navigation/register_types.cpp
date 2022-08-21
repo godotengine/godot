@@ -35,17 +35,28 @@
 
 #include "godot_navigation_server.h"
 
+#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+
 #ifndef _3D_DISABLED
+#include "modules/navigation/geometry_parser/meshinstance3d_navigation_geometry_parser_3d.h"
+#include "modules/navigation/geometry_parser/multimeshinstance3d_navigation_geometry_parser_3d.h"
+#include "modules/navigation/geometry_parser/staticbody3d_navigation_geometry_parser_3d.h"
 #include "navigation_mesh_generator.h"
-#endif
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/navigation/geometry_parser/gridmap_navigation_geometry_parser_3d.h"
+#endif // MODULE_GRIDMAP_ENABLED
+#ifdef MODULE_CSG_ENABLED
+#include "modules/navigation/geometry_parser/csgshape3d_navigation_geometry_parser_3d.h"
+#endif // MODULE_CSG_ENABLED
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/navigation_mesh_editor_plugin.h"
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef _3D_DISABLED
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif
+#endif // _3D_DISABLED
 
 NavigationServer3D *new_server() {
 	return memnew(GodotNavigationServer);
@@ -59,24 +70,38 @@ void initialize_navigation_module(ModuleInitializationLevel p_level) {
 		_nav_mesh_generator = memnew(NavigationMeshGenerator);
 		GDREGISTER_CLASS(NavigationMeshGenerator);
 		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
-#endif
+
+		GDREGISTER_CLASS(NavigationGeometryParser3D);
+		// add default 3D node navigation geometry parsers
+#ifdef MODULE_GRIDMAP_ENABLED
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(GridMap3DNavigationGeometryParser3D));
+#endif // MODULE_GRIDMAP_ENABLED
+#ifdef MODULE_CSG_ENABLED
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(CSGShape3DNavigationGeometryParser3D));
+#endif // MODULE_CSG_ENABLED
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(MultiMeshInstance3DNavigationGeometryParser3D));
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(StaticBody3DNavigationGeometryParser3D));
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(MeshInstance3DNavigationGeometryParser3D));
+#endif // _3D_DISABLED
 	}
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
-
 #ifndef _3D_DISABLED
 	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
+		if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+			// required at this early level to avoid crashes with e.g. GDScript
+			NavigationMeshGenerator::get_singleton()->cleanup();
+		}
+		if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+			memdelete(_nav_mesh_generator);
+		}
 	}
-#endif
+#endif // _3D_DISABLED
 }

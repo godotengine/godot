@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationGeometryParser3D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Parser to contribute a node's geometry data for [NavigationMesh] baking.
+	</brief_description>
+	<description>
+		Parser to contribute a node's geometry data for [NavigationMesh] baking. If a script extends this class and the function [method _parses_node] is overridden and returns [code]true[/code] the overridden function [method _parse_geometry] gets called and can be used to add custom geometry data for the [NavigationMesh] baking process.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_parse_geometry" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="navigationmesh" type="NavigationMesh" />
+			<description>
+				Called when overridden and the [NavigationMeshGenerator] is parsing geometry for [NavigationMesh] baking. Custom 3D geometry can be added to the array's of [code]vertices[/code] and [code]indices[/code] with functions [method add_faces], [method add_mesh] or [method add_mesh_array] to be considered in the navmesh baking process.
+			</description>
+		</method>
+		<method name="_parses_node" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Called when parsing geometry nodes for navigationmesh baking. If [code]true[/code] will call [method _parse_geometry] with this node.
+			</description>
+		</method>
+		<method name="add_faces">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedVector3Array" />
+			<param index="1" name="xform" type="Transform3D" />
+			<description>
+				Adds an array of vertex positions to the geometry data for navmesh baking to form triangulated faces. For each face the array must have three vertex positions in clockwise winding order. Since [NavigationMesh] resource have no transform all vertex positions need to be offset by the node's transform using the [code]xform[/code] parameter.
+			</description>
+		</method>
+		<method name="add_mesh">
+			<return type="void" />
+			<param index="0" name="mesh" type="Mesh" />
+			<param index="1" name="xform" type="Transform3D" />
+			<description>
+				Adds the geometry data of a [Mesh] resource to the navmesh baking data. The mesh must have valid triangulated mesh data to be considered. Since [NavigationMesh] resource have no transform all vertex positions need to be offset by the node's transform using the [code]xform[/code] parameter.
+			</description>
+		</method>
+		<method name="add_mesh_array">
+			<return type="void" />
+			<param index="0" name="mesh_array" type="Array" />
+			<param index="1" name="xform" type="Transform3D" />
+			<description>
+				Adds an [Array] the size of [constant Mesh.ARRAY_MAX] and with vertices at index [constant Mesh.ARRAY_VERTEX] and indices at index [constant Mesh.ARRAY_INDEX] to the navmesh baking data. The array must have valid triangulated mesh data to be considered. Since [NavigationMesh] resource have no transform all vertex positions need to be offset by the node's transform using the [code]xform[/code] parameter.
+			</description>
+		</method>
+	</methods>
+</class>
