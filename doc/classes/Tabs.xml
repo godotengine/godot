@@ -42,6 +42,13 @@
 				Returns [code]true[/code] if select with right mouse button is enabled.
 			</description>
 		</method>
+		<method name="get_tab_button_icon" qualifiers="const">
+			<return type="Texture" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the button icon from the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
 		<method name="get_tab_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -110,6 +117,14 @@
 				If [code]true[/code], enables selecting a tab with the right mouse button.
 			</description>
 		</method>
+		<method name="set_tab_button_icon">
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="icon" type="Texture" />
+			<description>
+				Sets the button icon from the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
 		<method name="set_tab_disabled">
 			<return type="void" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -169,7 +184,7 @@
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is right-clicked.
+				Emitted when a tab's right button is pressed. See [method set_tab_button_icon].
 			</description>
 		</signal>
 		<signal name="tab_changed">
