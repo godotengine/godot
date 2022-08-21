@@ -85,6 +85,7 @@ Config::Config() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &max_viewport_size);
 
 	// the use skeleton software path should be used if either float texture is not supported,
 	// OR max_vertex_texture_image_units is zero
