@@ -417,6 +417,7 @@ void CollisionObject3D::_on_transform_changed() {
 void CollisionObject3D::set_ray_pickable(bool p_ray_pickable) {
 	ray_pickable = p_ray_pickable;
 	_update_pickable();
+	update_configuration_warnings();
 }
 
 bool CollisionObject3D::is_ray_pickable() const {
@@ -692,6 +693,18 @@ TypedArray<String> CollisionObject3D::get_configuration_warnings() const {
 
 	if (shapes.is_empty()) {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape."));
+	}
+
+	if (!ray_pickable) {
+		List<Connection> connections;
+		get_signal_connection_list("mouse_entered", &connections);
+		get_signal_connection_list("mouse_exited", &connections);
+		get_signal_connection_list("mouse_shape_entered", &connections);
+		get_signal_connection_list("mouse_shape_exited", &connections);
+
+		if (connections.size() > 0) {
+			warnings.push_back(RTR("This node's mouse signals are connected, but the mouse cannot interact with this node.\nConsider enabling input_ray_pickable to allow this functionality."));
+		}
 	}
 
 	return warnings;

@@ -478,6 +478,7 @@ void CollisionObject2D::set_pickable(bool p_enabled) {
 
 	pickable = p_enabled;
 	_update_pickable();
+	update_configuration_warnings();
 }
 
 bool CollisionObject2D::is_pickable() const {
@@ -559,6 +560,18 @@ TypedArray<String> CollisionObject2D::get_configuration_warnings() const {
 
 	if (shapes.is_empty()) {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
+	}
+
+	if (!pickable) {
+		List<Connection> connections;
+		get_signal_connection_list("mouse_entered", &connections);
+		get_signal_connection_list("mouse_exited", &connections);
+		get_signal_connection_list("mouse_shape_entered", &connections);
+		get_signal_connection_list("mouse_shape_exited", &connections);
+
+		if (connections.size() > 0) {
+			warnings.push_back(RTR("This node's mouse signals are connected, but the mouse cannot interact with this node.\nConsider enabling input_pickable to allow this functionality."));
+		}
 	}
 
 	return warnings;
