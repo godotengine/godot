@@ -856,7 +856,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
-			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function declaration color configured in the syntax theme for function declarations (e.g. [code]func _ready():[/code]).
+			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], some built-in methods, ...).
