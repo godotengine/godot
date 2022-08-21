@@ -112,10 +112,11 @@ Quaternion Quaternion::exp() const {
 	Quaternion src = *this;
 	Vector3 src_v = Vector3(src.x, src.y, src.z);
 	real_t theta = src_v.length();
-	if (theta < CMP_EPSILON) {
+	src_v = src_v.normalized();
+	if (theta < CMP_EPSILON || !src_v.is_normalized()) {
 		return Quaternion(0, 0, 0, 1);
 	}
-	return Quaternion(src_v.normalized(), theta);
+	return Quaternion(src_v, theta);
 }
 
 Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
