@@ -603,7 +603,9 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	}
 
 	if (!keep) {
-		keep = filter.is_subsequence_ofn(p_parent->get_text(0));
+		StringName node_type = get_node(p_parent->get_metadata(0))->get_class();
+		bool is_kept_by_type = (filter.begins_with("type:") && filter.trim_prefix("type:").is_subsequence_ofn(node_type)) || (filter.begins_with("t:") && filter.trim_prefix("t:").is_subsequence_ofn(node_type));
+		keep = (filter.is_subsequence_ofn(p_parent->get_text(0)) || is_kept_by_type);
 	}
 
 	p_parent->set_visible(keep);
