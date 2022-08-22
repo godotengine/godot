@@ -730,6 +730,10 @@ void Viewport::set_size(const Size2 &p_size) {
 	_update_stretch_transform();
 	update_configuration_warning();
 
+	for (Set<ViewportTexture *>::Element *E = viewport_textures.front(); E; E = E->next()) {
+		E->get()->emit_changed();
+	}
+
 	emit_signal("size_changed");
 }
 
