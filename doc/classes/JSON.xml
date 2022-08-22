@@ -10,8 +10,7 @@
 		[b]Example[/b]
 		[codeblock]
 		var data_to_send = ["a", "b", "c"]
-		var json = JSON.new()
-		var json_string = json.stringify(data_to_send)
+		var json_string = JSON.stringify(data_to_send)
 		# Save data
 		# ...
 		# Retrieve data
@@ -24,6 +23,10 @@
 		        print("Unexpected data")
 		else:
 		    print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
+		[/codeblock]
+		Alternatively, you can parse string using the static [method parse_string] method, but it doesn't allow to handle errors.
+		[codeblock]
+		var data = JSON.parse_string(json_string) # Returns null if parsing failed.
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -54,9 +57,17 @@
 			<description>
 				Attempts to parse the [param json_string] provided.
 				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [method get_data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
+				Non-static variant of [method parse_string], if you want custom error handling.
 			</description>
 		</method>
-		<method name="stringify">
+		<method name="parse_string" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="json_string" type="String" />
+			<description>
+				Attempts to parse the [param json_string] provided and returns the parsed data. Returns [code]null[/code] if parse failed.
+			</description>
+		</method>
+		<method name="stringify" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="data" type="Variant" />
 			<param index="1" name="indent" type="String" default="&quot;&quot;" />
