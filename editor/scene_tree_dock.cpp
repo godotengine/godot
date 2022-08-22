@@ -510,9 +510,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			if (selected) {
-				create_dialog->popup_create(false, true, selected->get_class());
+				create_dialog->popup_create(false, true, selected->get_class(), selected->get_name());
 			}
-
 		} break;
 		case TOOL_EXTEND_SCRIPT: {
 			attach_script_to_selected(true);
