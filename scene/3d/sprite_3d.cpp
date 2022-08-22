@@ -749,18 +749,16 @@ Rect2 Sprite3D::get_item_rect() const {
 	return Rect2(ofs, s);
 }
 
-void Sprite3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "frame") {
-		property.hint = PROPERTY_HINT_RANGE;
-		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+void Sprite3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "frame") {
+		p_property.hint = PROPERTY_HINT_RANGE;
+		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (property.name == "frame_coords") {
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	if (p_property.name == "frame_coords") {
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
-
-	SpriteBase3D::_validate_property(property);
 }
 
 void Sprite3D::_bind_methods() {
@@ -995,12 +993,12 @@ void AnimatedSprite3D::_draw() {
 	}
 }
 
-void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
+void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 	if (!frames.is_valid()) {
 		return;
 	}
-	if (property.name == "animation") {
-		property.hint = PROPERTY_HINT_ENUM;
+	if (p_property.name == "animation") {
+		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
 		frames->get_animation_list(&names);
 		names.sort_custom<StringName::AlphCompare>();
@@ -1009,36 +1007,34 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (E->prev()) {
-				property.hint_string += ",";
+				p_property.hint_string += ",";
 			}
 
-			property.hint_string += String(E->get());
+			p_property.hint_string += String(E->get());
 			if (animation == E->get()) {
 				current_found = true;
 			}
 		}
 
 		if (!current_found) {
-			if (property.hint_string.is_empty()) {
-				property.hint_string = String(animation);
+			if (p_property.hint_string.is_empty()) {
+				p_property.hint_string = String(animation);
 			} else {
-				property.hint_string = String(animation) + "," + property.hint_string;
+				p_property.hint_string = String(animation) + "," + p_property.hint_string;
 			}
 		}
 	}
 
-	if (property.name == "frame") {
-		property.hint = PROPERTY_HINT_RANGE;
+	if (p_property.name == "frame") {
+		p_property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
-			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+			p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
 		} else {
 			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
-			property.hint_string = "0,0,1";
+			p_property.hint_string = "0,0,1";
 		}
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
-
-	SpriteBase3D::_validate_property(property);
 }
 
 void AnimatedSprite3D::_notification(int p_what) {

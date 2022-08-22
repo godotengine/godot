@@ -842,9 +842,9 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 	return border_width[p_side];
 }
 
-void StyleBoxFlat::_validate_property(PropertyInfo &property) const {
-	if (!anti_aliased && property.name == "anti_aliasing_size") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
+	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

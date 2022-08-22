@@ -2224,9 +2224,9 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
-void LineEdit::_validate_property(PropertyInfo &property) const {
-	if (!caret_blink_enabled && property.name == "caret_blink_speed") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void LineEdit::_validate_property(PropertyInfo &p_property) const {
+	if (!caret_blink_enabled && p_property.name == "caret_blink_speed") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

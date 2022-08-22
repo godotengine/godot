@@ -1124,13 +1124,12 @@ void RigidDynamicBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 }
 
-void RigidDynamicBody3D::_validate_property(PropertyInfo &property) const {
+void RigidDynamicBody3D::_validate_property(PropertyInfo &p_property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
-		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == "center_of_mass") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
-	PhysicsBody3D::_validate_property(property);
 }
 
 RigidDynamicBody3D::RigidDynamicBody3D() :
@@ -2022,13 +2021,12 @@ void CharacterBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
 }
 
-void CharacterBody3D::_validate_property(PropertyInfo &property) const {
+void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
 	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
-	PhysicsBody3D::_validate_property(property);
 }
 
 CharacterBody3D::CharacterBody3D() :

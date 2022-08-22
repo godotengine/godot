@@ -660,17 +660,17 @@ void NavigationMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_MAX);
 }
 
-void NavigationMesh::_validate_property(PropertyInfo &property) const {
-	if (property.name == "geometry_collision_mask") {
+void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "geometry_collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 
-	if (property.name == "geometry_source_group_name") {
+	if (p_property.name == "geometry_source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}

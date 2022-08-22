@@ -516,36 +516,34 @@ bool CPUParticles3D::get_split_scale() {
 	return split_scale;
 }
 
-void CPUParticles3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		property.usage = PROPERTY_USAGE_NONE;
+void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture" || property.name == "emission_points") && (emission_shape != EMISSION_SHAPE_POINTS && (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS))) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") && (emission_shape != EMISSION_SHAPE_POINTS && (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS))) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name.begins_with("scale_curve_") && !split_scale) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	Node3D::_validate_property(property);
 }
 
 static uint32_t idhash(uint32_t x) {

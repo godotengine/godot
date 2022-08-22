@@ -184,15 +184,15 @@ StringName AudioEffectCompressor::get_sidechain() const {
 	return sidechain;
 }
 
-void AudioEffectCompressor::_validate_property(PropertyInfo &property) const {
-	if (property.name == "sidechain") {
+void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sidechain") {
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			buses += ",";
 			buses += AudioServer::get_singleton()->get_bus_name(i);
 		}
 
-		property.hint_string = buses;
+		p_property.hint_string = buses;
 	}
 }
 

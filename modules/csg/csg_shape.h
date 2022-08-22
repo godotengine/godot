@@ -118,7 +118,7 @@ protected:
 	friend class CSGCombiner3D;
 	CSGBrush *_get_brush();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Array get_meshes() const;
@@ -387,7 +387,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 
 public:

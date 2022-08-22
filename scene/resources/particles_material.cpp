@@ -1386,54 +1386,54 @@ RID ParticlesMaterial::get_shader_rid() const {
 	return shader_map[current_key].shader;
 }
 
-void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		property.usage = PROPERTY_USAGE_NONE;
+void ParticlesMaterial::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "emission_normal_texture" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "emission_normal_texture" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "sub_emitter_frequency" && sub_emitter_mode != SUB_EMITTER_CONSTANT) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "sub_emitter_frequency" && sub_emitter_mode != SUB_EMITTER_CONSTANT) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "sub_emitter_amount_at_end" && sub_emitter_mode != SUB_EMITTER_AT_END) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "sub_emitter_amount_at_end" && sub_emitter_mode != SUB_EMITTER_AT_END) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (!turbulence_enabled) {
-		if (property.name == "turbulence_noise_strength" ||
-				property.name == "turbulence_noise_scale" ||
-				property.name == "turbulence_noise_speed" ||
-				property.name == "turbulence_noise_speed_random" ||
-				property.name == "turbulence_influence_over_life" ||
-				property.name == "turbulence_influence_min" ||
-				property.name == "turbulence_influence_max" ||
-				property.name == "turbulence_initial_displacement_min" ||
-				property.name == "turbulence_initial_displacement_max") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == "turbulence_noise_strength" ||
+				p_property.name == "turbulence_noise_scale" ||
+				p_property.name == "turbulence_noise_speed" ||
+				p_property.name == "turbulence_noise_speed_random" ||
+				p_property.name == "turbulence_influence_over_life" ||
+				p_property.name == "turbulence_influence_min" ||
+				p_property.name == "turbulence_influence_max" ||
+				p_property.name == "turbulence_initial_displacement_min" ||
+				p_property.name == "turbulence_initial_displacement_max") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }

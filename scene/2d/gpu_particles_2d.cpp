@@ -340,7 +340,7 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void GPUParticles2D::_validate_property(PropertyInfo &property) const {
+void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {

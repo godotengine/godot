@@ -1410,17 +1410,16 @@ LightmapGI::GenerateProbes LightmapGI::get_generate_probes() const {
 	return gen_probes;
 }
 
-void LightmapGI::_validate_property(PropertyInfo &property) const {
-	if (property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		property.usage = PROPERTY_USAGE_NONE;
+void LightmapGI::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	VisualInstance3D::_validate_property(property);
 }
 
 void LightmapGI::_bind_methods() {

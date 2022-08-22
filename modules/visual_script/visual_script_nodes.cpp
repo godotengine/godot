@@ -1299,8 +1299,8 @@ StringName VisualScriptVariableGet::get_variable() const {
 	return variable;
 }
 
-void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "var_name" && get_visual_script().is_valid()) {
+void VisualScriptVariableGet::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "var_name" && get_visual_script().is_valid()) {
 		Ref<VisualScript> vs = get_visual_script();
 		List<StringName> vars;
 		vs->get_variable_list(&vars);
@@ -1314,8 +1314,8 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
 			vhint += E.operator String();
 		}
 
-		property.hint = PROPERTY_HINT_ENUM;
-		property.hint_string = vhint;
+		p_property.hint = PROPERTY_HINT_ENUM;
+		p_property.hint_string = vhint;
 	}
 }
 
@@ -1409,8 +1409,8 @@ StringName VisualScriptVariableSet::get_variable() const {
 	return variable;
 }
 
-void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "var_name" && get_visual_script().is_valid()) {
+void VisualScriptVariableSet::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "var_name" && get_visual_script().is_valid()) {
 		Ref<VisualScript> vs = get_visual_script();
 		List<StringName> vars;
 		vs->get_variable_list(&vars);
@@ -1424,8 +1424,8 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
 			vhint += E.operator String();
 		}
 
-		property.hint = PROPERTY_HINT_ENUM;
-		property.hint_string = vhint;
+		p_property.hint = PROPERTY_HINT_ENUM;
+		p_property.hint_string = vhint;
 	}
 }
 
@@ -1533,11 +1533,11 @@ Variant VisualScriptConstant::get_constant_value() const {
 	return value;
 }
 
-void VisualScriptConstant::_validate_property(PropertyInfo &property) const {
-	if (property.name == "value") {
-		property.type = type;
+void VisualScriptConstant::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "value") {
+		p_property.type = type;
 		if (type == Variant::NIL) {
-			property.usage = PROPERTY_USAGE_NONE; //do not save if nil
+			p_property.usage = PROPERTY_USAGE_NONE; //do not save if nil
 		}
 	}
 }
@@ -1982,17 +1982,17 @@ VisualScriptNodeInstance *VisualScriptClassConstant::instantiate(VisualScriptIns
 	return instance;
 }
 
-void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const {
-	if (property.name == "constant") {
+void VisualScriptClassConstant::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "constant") {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(base_type, &constants, true);
 
-		property.hint_string = "";
+		p_property.hint_string = "";
 		for (const String &E : constants) {
-			if (!property.hint_string.is_empty()) {
-				property.hint_string += ",";
+			if (!p_property.hint_string.is_empty()) {
+				p_property.hint_string += ",";
 			}
-			property.hint_string += E;
+			p_property.hint_string += E;
 		}
 	}
 }
@@ -2115,21 +2115,21 @@ VisualScriptNodeInstance *VisualScriptBasicTypeConstant::instantiate(VisualScrip
 	return instance;
 }
 
-void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) const {
-	if (property.name == "constant") {
+void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "constant") {
 		List<StringName> constants;
 		Variant::get_constants_for_type(type, &constants);
 
 		if (constants.size() == 0) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
-		property.hint_string = "";
+		p_property.hint_string = "";
 		for (const StringName &E : constants) {
-			if (!property.hint_string.is_empty()) {
-				property.hint_string += ",";
+			if (!p_property.hint_string.is_empty()) {
+				p_property.hint_string += ",";
 			}
-			property.hint_string += String(E);
+			p_property.hint_string += String(E);
 		}
 	}
 }
@@ -2344,7 +2344,7 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 	return tg;
 }
 
-void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) const {
+void VisualScriptEngineSingleton::_validate_property(PropertyInfo &p_property) const {
 	String cc;
 
 	List<Engine::Singleton> singletons;
@@ -2362,8 +2362,8 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 		cc += E.name;
 	}
 
-	property.hint = PROPERTY_HINT_ENUM;
-	property.hint_string = cc;
+	p_property.hint = PROPERTY_HINT_ENUM;
+	p_property.hint_string = cc;
 }
 
 void VisualScriptEngineSingleton::_bind_methods() {
@@ -2525,9 +2525,9 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 	return tg;
 }
 
-void VisualScriptSceneNode::_validate_property(PropertyInfo &property) const {
+void VisualScriptSceneNode::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED
-	if (property.name == "node_path") {
+	if (p_property.name == "node_path") {
 		Ref<Script> script = get_visual_script();
 		if (!script.is_valid()) {
 			return;
@@ -2552,7 +2552,7 @@ void VisualScriptSceneNode::_validate_property(PropertyInfo &property) const {
 			return;
 		}
 
-		property.hint_string = script_node->get_path();
+		p_property.hint_string = script_node->get_path();
 	}
 #endif
 }
@@ -2646,7 +2646,7 @@ VisualScriptSceneTree::TypeGuess VisualScriptSceneTree::guess_output_type(TypeGu
 	return tg;
 }
 
-void VisualScriptSceneTree::_validate_property(PropertyInfo &property) const {
+void VisualScriptSceneTree::_validate_property(PropertyInfo &p_property) const {
 }
 
 void VisualScriptSceneTree::_bind_methods() {
@@ -3757,9 +3757,9 @@ VisualScriptNodeInstance *VisualScriptInputAction::instantiate(VisualScriptInsta
 	return instance;
 }
 
-void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
-	if (property.name == "action") {
-		property.hint = PROPERTY_HINT_ENUM;
+void VisualScriptInputAction::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "action") {
+		p_property.hint = PROPERTY_HINT_ENUM;
 		String actions;
 
 		List<PropertyInfo> pinfo;
@@ -3785,7 +3785,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 			actions += al[i];
 		}
 
-		property.hint_string = actions;
+		p_property.hint_string = actions;
 	}
 }
 
@@ -3935,7 +3935,7 @@ VisualScriptNodeInstance *VisualScriptDeconstruct::instantiate(VisualScriptInsta
 	return instance;
 }
 
-void VisualScriptDeconstruct::_validate_property(PropertyInfo &property) const {
+void VisualScriptDeconstruct::_validate_property(PropertyInfo &p_property) const {
 }
 
 void VisualScriptDeconstruct::_bind_methods() {

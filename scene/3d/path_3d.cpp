@@ -330,16 +330,15 @@ bool PathFollow3D::get_cubic_interpolation() const {
 	return cubic;
 }
 
-void PathFollow3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "offset") {
+void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "offset") {
 		real_t max = 10000;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
 		}
 
-		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
+		p_property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
-	Node3D::_validate_property(property);
 }
 
 TypedArray<String> PathFollow3D::get_configuration_warnings() const {

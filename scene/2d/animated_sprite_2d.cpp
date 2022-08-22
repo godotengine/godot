@@ -104,12 +104,12 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 	return Rect2(ofs, s);
 }
 
-void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
+void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 	if (!frames.is_valid()) {
 		return;
 	}
-	if (property.name == "animation") {
-		property.hint = PROPERTY_HINT_ENUM;
+	if (p_property.name == "animation") {
+		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
 		frames->get_animation_list(&names);
 		names.sort_custom<StringName::AlphCompare>();
@@ -118,33 +118,33 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (E->prev()) {
-				property.hint_string += ",";
+				p_property.hint_string += ",";
 			}
 
-			property.hint_string += String(E->get());
+			p_property.hint_string += String(E->get());
 			if (animation == E->get()) {
 				current_found = true;
 			}
 		}
 
 		if (!current_found) {
-			if (property.hint_string.is_empty()) {
-				property.hint_string = String(animation);
+			if (p_property.hint_string.is_empty()) {
+				p_property.hint_string = String(animation);
 			} else {
-				property.hint_string = String(animation) + "," + property.hint_string;
+				p_property.hint_string = String(animation) + "," + p_property.hint_string;
 			}
 		}
 	}
 
-	if (property.name == "frame") {
-		property.hint = PROPERTY_HINT_RANGE;
+	if (p_property.name == "frame") {
+		p_property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
-			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+			p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
 		} else {
 			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
-			property.hint_string = "0,0,1";
+			p_property.hint_string = "0,0,1";
 		}
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 

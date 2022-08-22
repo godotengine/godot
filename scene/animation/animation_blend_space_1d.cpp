@@ -42,15 +42,14 @@ Ref<AnimationNode> AnimationNodeBlendSpace1D::get_child_by_name(const StringName
 	return get_blend_point_node(p_name.operator String().to_int());
 }
 
-void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("blend_point_")) {
-		String left = property.name.get_slicec('/', 0);
+void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("blend_point_")) {
+		String left = p_property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
-	AnimationRootNode::_validate_property(property);
 }
 
 void AnimationNodeBlendSpace1D::_tree_changed() {

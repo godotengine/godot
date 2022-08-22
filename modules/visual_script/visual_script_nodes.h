@@ -269,7 +269,7 @@ class VisualScriptVariableGet : public VisualScriptNode {
 	StringName variable;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -301,7 +301,7 @@ class VisualScriptVariableSet : public VisualScriptNode {
 	StringName variable;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -334,7 +334,7 @@ class VisualScriptConstant : public VisualScriptNode {
 	Variant value;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -478,7 +478,7 @@ class VisualScriptClassConstant : public VisualScriptNode {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual int get_output_sequence_port_count() const override;
@@ -514,7 +514,7 @@ class VisualScriptBasicTypeConstant : public VisualScriptNode {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual int get_output_sequence_port_count() const override;
@@ -598,7 +598,7 @@ class VisualScriptEngineSingleton : public VisualScriptNode {
 	String singleton;
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -633,7 +633,7 @@ class VisualScriptSceneNode : public VisualScriptNode {
 	NodePath path;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -665,7 +665,7 @@ class VisualScriptSceneTree : public VisualScriptNode {
 	GDCLASS(VisualScriptSceneTree, VisualScriptNode);
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -1010,7 +1010,7 @@ public:
 	Mode mode;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -1058,7 +1058,7 @@ class VisualScriptDeconstruct : public VisualScriptNode {
 	void _set_elem_cache(const Array &p_elements);
 	Array _get_elem_cache() const;
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
 	static void _bind_methods();
