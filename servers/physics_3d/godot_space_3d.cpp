@@ -701,6 +701,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 		const int max_results = 32;
 		int recover_attempts = 4;
 		Vector3 sr[max_results * 2];
+		real_t priorities[max_results];
 
 		do {
 			GodotPhysicsServer3D::CollCbkData cbk;
@@ -710,6 +711,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 			GodotPhysicsServer3D::CollCbkData *cbkptr = &cbk;
 			GodotCollisionSolver3D::CallbackResult cbkres = GodotPhysicsServer3D::_shape_col_cbk;
+			int priority_amount = 0;
 
 			bool collided = false;
 
@@ -737,12 +739,22 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 					if (GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, margin)) {
 						collided = cbk.amount > 0;
 					}
+					while (cbk.amount > priority_amount) {
+						priorities[priority_amount] = col_obj->get_collision_priority();
+						priority_amount++;
+					}
 				}
 			}
 
 			if (!collided) {
 				break;
 			}
+
+			real_t inv_total_weight = 0.0;
+			for (int i = 0; i < cbk.amount; i++) {
+				inv_total_weight += priorities[i];
+			}
+			inv_total_weight = Math::is_zero_approx(inv_total_weight) ? 1.0 : (real_t)cbk.amount / inv_total_weight;
 
 			recovered = true;
 
@@ -759,7 +771,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 				real_t depth = n.dot(a + recover_motion) - d;
 				if (depth > min_contact_depth + CMP_EPSILON) {
 					// Only recover if there is penetration.
-					recover_motion -= n * (depth - min_contact_depth) * 0.4;
+					recover_motion -= n * (depth - min_contact_depth) * 0.4 * priorities[i] * inv_total_weight;
 				}
 			}
 

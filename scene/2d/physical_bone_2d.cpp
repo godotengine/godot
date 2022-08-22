@@ -158,6 +158,7 @@ void PhysicalBone2D::_start_physics_simulation() {
 	// Apply the layers and masks.
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
+	PhysicsServer2D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
 
 	// Apply the correct mode.
 	_apply_body_mode();
@@ -176,6 +177,7 @@ void PhysicalBone2D::_stop_physics_simulation() {
 		set_physics_process_internal(false);
 		PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
+		PhysicsServer2D::get_singleton()->body_set_collision_priority(get_rid(), 1.0);
 		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
 	}
 }

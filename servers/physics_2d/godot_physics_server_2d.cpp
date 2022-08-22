@@ -718,6 +718,20 @@ uint32_t GodotPhysicsServer2D::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
+void GodotPhysicsServer2D::body_set_collision_priority(RID p_body, real_t p_priority) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_priority(p_priority);
+}
+
+real_t GodotPhysicsServer2D::body_get_collision_priority(RID p_body) const {
+	const GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_collision_priority();
+}
+
 void GodotPhysicsServer2D::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);

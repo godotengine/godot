@@ -196,6 +196,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_set_collision_mask, "body", "mask");
 	GDVIRTUAL_BIND(_body_get_collision_mask, "body");
 
+	GDVIRTUAL_BIND(_body_set_collision_priority, "body", "priority");
+	GDVIRTUAL_BIND(_body_get_collision_priority, "body");
+
 	GDVIRTUAL_BIND(_body_add_shape, "body", "shape", "transform", "disabled");
 	GDVIRTUAL_BIND(_body_set_shape, "body", "shape_idx", "shape");
 	GDVIRTUAL_BIND(_body_set_shape_transform, "body", "shape_idx", "transform");

@@ -3417,6 +3417,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
+	PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
 	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
@@ -3430,10 +3431,12 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
 	} else {
 		set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), 0);
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), 1.0);
 	}
 	if (_internal_simulate_physics) {
 		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);

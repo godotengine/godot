@@ -594,6 +594,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 		const int max_results = 32;
 		int recover_attempts = 4;
 		Vector2 sr[max_results * 2];
+		real_t priorities[max_results];
 
 		do {
 			GodotPhysicsServer2D::CollCbkData cbk;
@@ -606,6 +607,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 			GodotPhysicsServer2D::CollCbkData *cbkptr = &cbk;
 			GodotCollisionSolver2D::CallbackResult cbkres = GodotPhysicsServer2D::_shape_col_cbk;
+			int priority_amount = 0;
 
 			bool collided = false;
 
@@ -664,6 +666,10 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, margin)) {
 						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
+					while (cbk.amount > priority_amount) {
+						priorities[priority_amount] = col_obj->get_collision_priority();
+						priority_amount++;
+					}
 
 					if (!did_collide && cbk.invalid_by_dir > 0) {
 						//this shape must be excluded
@@ -686,6 +692,12 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				break;
 			}
 
+			real_t inv_total_weight = 0.0;
+			for (int i = 0; i < cbk.amount; i++) {
+				inv_total_weight += priorities[i];
+			}
+			inv_total_weight = Math::is_zero_approx(inv_total_weight) ? 1.0 : (real_t)cbk.amount / inv_total_weight;
+
 			recovered = true;
 
 			Vector2 recover_motion;
@@ -701,7 +713,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				real_t depth = n.dot(a + recover_motion) - d;
 				if (depth > min_contact_depth + CMP_EPSILON) {
 					// Only recover if there is penetration.
-					recover_motion -= n * (depth - min_contact_depth) * 0.4;
+					recover_motion -= n * (depth - min_contact_depth) * 0.4 * priorities[i] * inv_total_weight;
 				}
 			}
 

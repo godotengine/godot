@@ -286,6 +286,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_get_collision_priority" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_get_constant_force" qualifiers="virtual const">
 			<return type="Vector3" />
 			<param index="0" name="body" type="RID" />
@@ -427,6 +433,13 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mask" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_collision_priority" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="priority" type="float" />
 			<description>
 			</description>
 		</method>
