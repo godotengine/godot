@@ -2958,6 +2958,9 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		Point2 corner = Point2(begin.x, end.y);
 		Vector2 length_vector = (begin - end).abs() / zoom;
 
+		const real_t horizontal_angle_rad = length_vector.angle();
+		const real_t vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
+
 		Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 		int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 		Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
@@ -2974,6 +2977,42 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
 		text_pos.y = CLAMP(text_pos.y, text_height * 1.5, viewport->get_rect().size.y - text_height * 1.5);
 
+		// Draw lines.
+		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3));
+
+		bool draw_secondary_lines = !(Math::is_equal_approx(begin.y, corner.y) || Math::is_equal_approx(end.x, corner.x));
+		if (draw_secondary_lines) {
+			viewport->draw_line(begin, corner, ruler_secondary_color, Math::round(EDSCALE));
+			viewport->draw_line(corner, end, ruler_secondary_color, Math::round(EDSCALE));
+
+			// Angle arcs.
+			int arc_point_count = 8;
+			real_t arc_radius_max_length_percent = 0.1;
+			real_t ruler_length = length_vector.length() * zoom;
+			real_t arc_max_radius = 50.0;
+			real_t arc_line_width = 2.0;
+
+			const Vector2 end_to_begin = (end - begin);
+
+			real_t arc_1_start_angle = end_to_begin.x < 0
+					? (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0)
+					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
+			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
+			// Constrain arc to triangle height & max size.
+			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
+
+			real_t arc_2_start_angle = end_to_begin.x < 0
+					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
+					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
+			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
+			// Constrain arc to triangle width & max size.
+			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
+
+			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
+			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
+		}
+
+		// Draw text.
 		if (begin.is_equal_approx(end)) {
 			viewport->draw_string_outline(font, text_pos, (String)ruler_tool_origin, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos, (String)ruler_tool_origin, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
@@ -2985,17 +3024,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		viewport->draw_string_outline(font, text_pos, TS->format_number(vformat("%.1f px", length_vector.length())), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 		viewport->draw_string(font, text_pos, TS->format_number(vformat("%.1f px", length_vector.length())), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 
-		bool draw_secondary_lines = !(Math::is_equal_approx(begin.y, corner.y) || Math::is_equal_approx(end.x, corner.x));
-
-		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3));
 		if (draw_secondary_lines) {
-			viewport->draw_line(begin, corner, ruler_secondary_color, Math::round(EDSCALE));
-			viewport->draw_line(corner, end, ruler_secondary_color, Math::round(EDSCALE));
-		}
-
-		if (draw_secondary_lines) {
-			const real_t horizontal_angle_rad = length_vector.angle();
-			const real_t vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
 			const int horizontal_angle = round(180 * horizontal_angle_rad / Math_PI);
 			const int vertical_angle = round(180 * vertical_angle_rad / Math_PI);
 
@@ -3032,32 +3061,6 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			}
 			viewport->draw_string_outline(font, h_angle_text_pos, TS->format_number(vformat(String::utf8("%d°"), horizontal_angle)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, h_angle_text_pos, TS->format_number(vformat(String::utf8("%d°"), horizontal_angle)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
-
-			// Angle arcs
-			int arc_point_count = 8;
-			real_t arc_radius_max_length_percent = 0.1;
-			real_t ruler_length = length_vector.length() * zoom;
-			real_t arc_max_radius = 50.0;
-			real_t arc_line_width = 2.0;
-
-			const Vector2 end_to_begin = (end - begin);
-
-			real_t arc_1_start_angle = end_to_begin.x < 0
-					? (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0)
-					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
-			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
-			// Constrain arc to triangle height & max size
-			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
-
-			real_t arc_2_start_angle = end_to_begin.x < 0
-					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
-					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
-			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
-			// Constrain arc to triangle width & max size
-			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
-
-			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
-			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 		}
 
 		if (grid_snap_active) {
