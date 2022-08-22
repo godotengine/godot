@@ -75,7 +75,7 @@ Size2 CheckBox::get_minimum_size() const {
 	Size2 tex_size = get_icon_size();
 	minsize.width += tex_size.width;
 	if (get_text().length() > 0) {
-		minsize.width += get_theme_constant(SNAME("h_separation"));
+		minsize.width += MAX(0, get_theme_constant(SNAME("h_separation")));
 	}
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
 	minsize.height = MAX(minsize.height, tex_size.height + sb->get_margin(SIDE_TOP) + sb->get_margin(SIDE_BOTTOM));

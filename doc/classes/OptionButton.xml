@@ -246,7 +246,7 @@
 			The horizontal space between the arrow icon and the right edge of the button.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="2">
-			The horizontal space between [OptionButton]'s icon and text.
+			The horizontal space between [OptionButton]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="modulate_arrow" data_type="constant" type="int" default="0">
 			If different than [code]0[/code], the arrow icon will be modulated to the font color.

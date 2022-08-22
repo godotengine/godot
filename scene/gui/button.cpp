@@ -34,11 +34,9 @@
 #include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
-	Ref<Texture2D> _icon;
-	if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
+	Ref<Texture2D> _icon = icon;
+	if (_icon.is_null() && has_theme_icon(SNAME("icon"))) {
 		_icon = Control::get_theme_icon(SNAME("icon"));
-	} else {
-		_icon = icon;
 	}
 
 	return get_minimum_size_for_text_and_icon("", _icon);
@@ -342,13 +340,13 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		minsize.width = 0;
 	}
 
-	if (!expand_icon && !p_icon.is_null()) {
+	if (!expand_icon && p_icon.is_valid()) {
 		minsize.height = MAX(minsize.height, p_icon->get_height());
 
 		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
 			minsize.width += p_icon->get_width();
 			if (!xl_text.is_empty() || !p_text.is_empty()) {
-				minsize.width += get_theme_constant(SNAME("hseparation"));
+				minsize.width += MAX(0, get_theme_constant(SNAME("h_separation")));
 			}
 		} else {
 			minsize.width = MAX(minsize.width, p_icon->get_width());
