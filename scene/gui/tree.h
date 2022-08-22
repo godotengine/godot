@@ -342,6 +342,13 @@ public:
 	Array get_children();
 	int get_index();
 
+#ifdef DEV_ENABLED
+	// This debugging code can be removed once the current refactoring of this class is complete.
+	void validate_cache() const;
+#else
+	void validate_cache() const {}
+#endif
+
 	void move_before(TreeItem *p_item);
 	void move_after(TreeItem *p_item);
 
