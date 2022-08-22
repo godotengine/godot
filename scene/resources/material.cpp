@@ -1534,8 +1534,9 @@ Vector3 SpatialMaterial::get_uv1_offset() const {
 }
 
 void SpatialMaterial::set_uv1_triplanar_blend_sharpness(float p_sharpness) {
-	uv1_triplanar_sharpness = p_sharpness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, p_sharpness);
+	// Negative values or values higher than 150 can result in NaNs, leading to broken rendering.
+	uv1_triplanar_sharpness = CLAMP(p_sharpness, 0.0, 150.0);
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, uv1_triplanar_sharpness);
 }
 
 float SpatialMaterial::get_uv1_triplanar_blend_sharpness() const {
@@ -1561,8 +1562,9 @@ Vector3 SpatialMaterial::get_uv2_offset() const {
 }
 
 void SpatialMaterial::set_uv2_triplanar_blend_sharpness(float p_sharpness) {
-	uv2_triplanar_sharpness = p_sharpness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, p_sharpness);
+	// Negative values or values higher than 150 can result in NaNs, leading to broken rendering.
+	uv2_triplanar_sharpness = CLAMP(p_sharpness, 0.0, 150.0);
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, uv2_triplanar_sharpness);
 }
 
 float SpatialMaterial::get_uv2_triplanar_blend_sharpness() const {
