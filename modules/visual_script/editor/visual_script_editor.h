@@ -38,6 +38,7 @@
 
 class GraphEdit;
 
+class EditorUndoRedoManager;
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 
@@ -135,8 +136,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	EditorProperty *default_property_editor = nullptr;
 	Ref<VisualScriptEditedProperty> edited_default_property_holder;
 
-	UndoRedo *undo_redo = nullptr;
-
+	Ref<EditorUndoRedoManager> undo_redo;
 	Tree *members = nullptr;
 	AcceptDialog *function_name_edit = nullptr;
 	LineEdit *function_name_box = nullptr;

@@ -41,6 +41,7 @@ class EditorDebuggerRemoteObject;
 class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;
+class UndoRedo;
 
 class EditorDebuggerNode : public MarginContainer {
 	GDCLASS(EditorDebuggerNode, MarginContainer);
@@ -152,6 +153,7 @@ protected:
 
 public:
 	static EditorDebuggerNode *get_singleton() { return singleton; }
+	void register_undo_redo(UndoRedo *p_undo_redo);
 
 	ScriptEditorDebugger *get_current_debugger() const;
 	ScriptEditorDebugger *get_default_debugger() const;

@@ -532,7 +532,7 @@
 			</description>
 		</method>
 		<method name="get_undo_redo">
-			<return type="UndoRedo" />
+			<return type="EditorUndoRedoManager" />
 			<description>
 				Gets the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
 			</description>

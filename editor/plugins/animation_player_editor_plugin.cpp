@@ -1045,6 +1045,10 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	}
 }
 
+void AnimationPlayerEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
+}
+
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	if (player && pin->is_pressed()) {
 		return; // Ignore, pinned.
@@ -1925,7 +1929,7 @@ void AnimationPlayerEditorPlugin::_update_keying() {
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {
-	anim_editor->set_undo_redo(&get_undo_redo());
+	anim_editor->set_undo_redo(get_undo_redo());
 	if (!p_object) {
 		return;
 	}
