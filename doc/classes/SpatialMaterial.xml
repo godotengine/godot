@@ -69,7 +69,7 @@
 		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], anisotropy is enabled. Anisotropy changes the shape of the specular blob and aligns it to tangent space. This is useful for brushed aluminium and hair reflections.
 			[b]Note:[/b] Mesh tangents are needed for anisotropy to work. If the mesh does not contain tangents, the anisotropy effect will appear broken.
-			[b]Note:[/b] Material anisotropy should not to be confused with anisotropic texture filtering. Anisotropic texture filtering can be enabled by selecting a texture in the FileSystem dock, going to the Import dock, checking the [b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b].
+			[b]Note:[/b] Material anisotropy should not to be confused with anisotropic texture filtering. Anisotropic texture filtering can be enabled by selecting a texture in the FileSystem dock, going to the Import dock, checking the [b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/quality/filters/anisotropic_filter_level].
 		</member>
 		<member name="anisotropy_flowmap" type="Texture" setter="set_texture" getter="get_texture">
 			Texture that offsets the tangent map for anisotropy calculations and optionally controls the anisotropy effect (if an alpha channel is present). The flowmap texture is expected to be a derivative map, with the red channel representing distortion on the X axis and green channel representing distortion on the Y axis. Values below 0.5 will result in negative distortion, whereas values above 0.5 will result in positive distortion.
