@@ -932,11 +932,7 @@ void ItemList::_notification(int p_what) {
 			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bg->get_margin(SIDE_BOTTOM));
 
 			Size2 size = get_size();
-
 			int width = size.width - bg->get_minimum_size().width;
-			if (scroll_bar->is_visible()) {
-				width -= mw;
-			}
 
 			draw_style_box(bg, Rect2(Point2(), size));
 
@@ -1093,6 +1089,10 @@ void ItemList::_notification(int p_what) {
 
 				update_minimum_size();
 				shape_changed = false;
+			}
+
+			if (scroll_bar->is_visible()) {
+				width -= mw;
 			}
 
 			//ensure_selected_visible needs to be checked before we draw the list.
