@@ -809,7 +809,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform float emission_energy;\n";
 	}
 
-	if (features[FEATURE_REFRACTION]) {
+	if (shading_mode != SHADING_MODE_UNSHADED && features[FEATURE_REFRACTION]) {
 		code += "uniform sampler2D texture_refraction : " + texfilter_str + ";\n";
 		code += "uniform float refraction : hint_range(-16,16);\n";
 		code += "uniform vec4 refraction_texture_channel;\n";
@@ -1233,7 +1233,8 @@ void BaseMaterial3D::_update_shader() {
 		}
 	}
 
-	if (features[FEATURE_REFRACTION]) {
+	// Refraction requires per-pixel or per-vertex shading to work.
+	if (shading_mode != SHADING_MODE_UNSHADED && features[FEATURE_REFRACTION]) {
 		if (features[FEATURE_NORMAL_MAPPING]) {
 			code += "	vec3 unpacked_normal = NORMAL_MAP;\n";
 			code += "	unpacked_normal.xy = unpacked_normal.xy * 2.0 - 1.0;\n";
@@ -1962,7 +1963,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 
 	if (orm) {
 		if (property.name == "shading_mode") {
-			// Vertex not supported in ORM mode, since no individual roughness.
+			// Vertex not supported in ORM mode, since there is no individual roughness.
 			property.hint_string = "Unshaded,Per-Pixel";
 		}
 		if (property.name.begins_with("roughness") || property.name.begins_with("metallic") || property.name.begins_with("ao_texture")) {
@@ -1975,33 +1976,43 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		}
 	}
 
-	if (shading_mode != SHADING_MODE_PER_PIXEL) {
-		if (shading_mode != SHADING_MODE_PER_VERTEX) {
-			//these may still work per vertex
-			if (property.name.begins_with("ao")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-			if (property.name.begins_with("emission")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-
-			if (property.name.begins_with("metallic")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-			if (property.name.begins_with("rim")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-
-			if (property.name.begins_with("roughness")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-
-			if (property.name.begins_with("subsurf_scatter")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
+	if (shading_mode == SHADING_MODE_UNSHADED) {
+		if (property.name == "diffuse_mode" || property.name == "specular_mode" || property.name == "disable_ambient_light" || property.name == "disable_receive_shadows" || property.name == "shadow_to_opacity") {
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 
-		//these definitely only need per pixel
+		// These properties may still work with per-vertex shading, so only hide them when unshaded.
+		if (property.name.begins_with("ao")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (property.name.begins_with("emission")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (property.name.begins_with("metallic")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (property.name.begins_with("rim")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (property.name.begins_with("roughness")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (property.name.begins_with("subsurf_scatter")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (property.name.begins_with("refraction")) {
+			property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
+	if (shading_mode != SHADING_MODE_PER_PIXEL) {
+		// These properties definitely need per-pixel shading to work.
 		if (property.name.begins_with("anisotropy")) {
 			property.usage = PROPERTY_USAGE_NONE;
 		}
