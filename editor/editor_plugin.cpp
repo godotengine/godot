@@ -312,6 +312,13 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
 }
 
+void EditorInterface::restart_editor(bool p_save) {
+	if (p_save) {
+		EditorNode::get_singleton()->save_all_scenes();
+	}
+	EditorNode::get_singleton()->restart_editor();
+}
+
 bool EditorInterface::is_distraction_free_mode_enabled() const {
 	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
 }
@@ -360,6 +367,7 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("restart_editor", "save"), &EditorInterface::restart_editor, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);

@@ -116,6 +116,7 @@ public:
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+	void restart_editor(bool p_save = true);
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 
