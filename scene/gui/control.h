@@ -170,6 +170,9 @@ private:
 
 		// Positioning and sizing.
 
+		LayoutMode stored_layout_mode = LayoutMode::LAYOUT_MODE_POSITION;
+		bool stored_use_custom_anchors = false;
+
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
@@ -275,6 +278,7 @@ private:
 
 	void _set_layout_mode(LayoutMode p_mode);
 	LayoutMode _get_layout_mode() const;
+	LayoutMode _get_default_layout_mode() const;
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
@@ -318,6 +322,9 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	virtual void _validate_property(PropertyInfo &property) const override;
+
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	// Internationalization.
 
