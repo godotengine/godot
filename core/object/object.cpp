@@ -519,7 +519,7 @@ void Object::validate_property(PropertyInfo &p_property) const {
 	_validate_propertyv(p_property);
 }
 
-bool Object::property_can_revert(const String &p_name) const {
+bool Object::property_can_revert(const StringName &p_name) const {
 	if (script_instance) {
 		if (script_instance->property_can_revert(p_name)) {
 			return true;
@@ -543,7 +543,7 @@ bool Object::property_can_revert(const String &p_name) const {
 	return _property_can_revertv(p_name);
 }
 
-Variant Object::property_get_revert(const String &p_name) const {
+Variant Object::property_get_revert(const StringName &p_name) const {
 	Variant ret;
 
 	if (script_instance) {

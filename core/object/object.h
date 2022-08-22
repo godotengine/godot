@@ -805,8 +805,8 @@ public:
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 	void validate_property(PropertyInfo &p_property) const;
-	bool property_can_revert(const String &p_name) const;
-	Variant property_get_revert(const String &p_name) const;
+	bool property_can_revert(const StringName &p_name) const;
+	Variant property_get_revert(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
