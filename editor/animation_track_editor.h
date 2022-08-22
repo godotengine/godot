@@ -322,8 +322,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<AnimationTrackEditGroup *> groups;
 
 	bool animation_changing_awaiting_update = false;
-	void _animation_update();
+	void _animation_update(); // Updated by AnimationTrackEditor(this)
 	int _get_track_selected();
+	void _sync_animation_change();
 	void _animation_changed();
 	void _update_tracks();
 
@@ -447,6 +448,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _toggle_bezier_edit();
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
+	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	////////////// edit menu stuff
 
