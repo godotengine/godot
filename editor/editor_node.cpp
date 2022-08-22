@@ -1822,14 +1822,14 @@ void EditorNode::restart_editor() {
 
 	List<String> args;
 
+	for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
+		args.push_back(a);
+	}
+
 	args.push_back("--path");
 	args.push_back(ProjectSettings::get_singleton()->get_resource_path());
 
 	args.push_back("-e");
-
-	if (OS::get_singleton()->is_disable_crash_handler()) {
-		args.push_back("--disable-crash-handler");
-	}
 
 	if (!to_reopen.is_empty()) {
 		args.push_back(to_reopen);
@@ -3183,6 +3183,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
+			for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
+				args.push_back(a);
+			}
 			args.push_back("--path");
 			args.push_back(exec.get_base_dir());
 			args.push_back("--project-manager");
