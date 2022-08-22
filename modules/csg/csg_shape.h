@@ -37,6 +37,7 @@
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/physics_material.h"
 #include "thirdparty/misc/mikktspace.h"
 
 class CSGShape3D : public GeometryInstance3D {
@@ -72,6 +73,8 @@ private:
 
 	Ref<ArrayMesh> root_mesh;
 
+	Ref<PhysicsMaterial> physics_material_override;
+
 	struct Vector3Hasher {
 		_ALWAYS_INLINE_ uint32_t hash(const Vector3 &p_vec3) const {
 			uint32_t h = hash_murmur3_one_float(p_vec3.x);
@@ -106,6 +109,7 @@ private:
 
 	void _update_shape();
 	void _update_collision_faces();
+	void _update_physics_params();
 
 protected:
 	void _notification(int p_what);
@@ -149,6 +153,9 @@ public:
 
 	void set_calculate_tangents(bool p_calculate_tangents);
 	bool is_calculating_tangents() const;
+
+	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
+	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	bool is_root_shape() const;
 	CSGShape3D();
