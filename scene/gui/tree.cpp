@@ -5051,7 +5051,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 		}
 
 		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
+			//pos.x += h_scroll->get_value();
 		}
 		if (v_scroll->is_visible_in_tree()) {
 			pos.y += v_scroll->get_value();
@@ -5062,25 +5062,24 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 		if (it) {
 			const TreeItem::Cell &c = it->cells[col];
-			int col_width = get_column_width(col);
+			int col_width = get_size().width - theme_cache.panel_style->get_minimum_size().width - (h_scroll->is_visible_in_tree() ? h_scroll->get_minimum_size().width : 0);
 
 			for (int i = 0; i < col; i++) {
 				pos.x -= get_column_width(i);
 			}
-
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture2D> b = c.buttons[j].texture;
-				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
-				if (pos.x > col_width - size.width) {
+				Size2 button_size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+				if (pos.x > col_width - button_size.width) {
 					String tooltip = c.buttons[j].tooltip;
 					if (!tooltip.is_empty()) {
 						return tooltip;
 					}
 				}
-				col_width -= size.width;
+				col_width -= button_size.width;
 			}
 			String ret;
-			if (it->get_tooltip_text(col) == "") {
+			if (it->get_tooltip_text(col).is_empty()) {
 				ret = it->get_text(col);
 			} else {
 				ret = it->get_tooltip_text(col);
