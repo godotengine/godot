@@ -614,8 +614,10 @@ void NavigationMesh::_bind_methods() {
 	ADD_GROUP("Geometry", "geometry_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY_DEFAULT("geometry_collision_mask", 0xFFFFFFFF);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "NavMesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
+	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navmesh"));
 	ADD_GROUP("Cells", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_height", "get_cell_height");
@@ -659,14 +661,14 @@ void NavigationMesh::_bind_methods() {
 }
 
 void NavigationMesh::_validate_property(PropertyInfo &property) const {
-	if (property.name == "geometry/collision_mask") {
+	if (property.name == "geometry_collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
 			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 
-	if (property.name == "geometry/source_group_name") {
+	if (property.name == "geometry_source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
 			property.usage = PROPERTY_USAGE_NONE;
 			return;
