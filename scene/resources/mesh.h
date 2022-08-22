@@ -169,9 +169,6 @@ public:
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
-	Ref<Shape3D> create_trimesh_shape() const;
-	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
-
 	Ref<Mesh> create_outline(float p_margin) const;
 
 	void set_lightmap_size_hint(const Size2i &p_size);
@@ -214,6 +211,8 @@ public:
 	static ConvexDecompositionFunc convex_decomposition_function;
 
 	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
+	Ref<Shape3D> create_trimesh_shape() const;
 
 	virtual int get_builtin_bind_pose_count() const;
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;
