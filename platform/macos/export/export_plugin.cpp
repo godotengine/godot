@@ -346,6 +346,21 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
 		} else if (lines[i].find("$highres") != -1) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
+		} else if (lines[i].find("$registered_protocols") != -1) {
+			ProjectSettings *projectSettings = ProjectSettings::get_singleton();
+			const bool app_protocol_enabled = projectSettings->get("app_protocol/enable_app_protocol");
+			const String protocol = app_protocol_enabled ? projectSettings->get("app_protocol/protocol_name") : "";
+			/* App must have a valid bundle ID for this to work properly on MacOS */
+			String bundle_id = p_preset->get("application/bundle_identifier");
+			if (!protocol.is_empty()) {
+				String s = "\t<key>CFBundleURLTypes</key>\n\t";
+				s += "<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLName</key>\n";
+				s += "\t\t\t<string>" + bundle_id + "</string>\n";
+				s += "\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n";
+				s += "\t\t\t\t<string>" + protocol + "</string>\n";
+				s += "\t\t\t</array>\n\t\t</dict>\n\t</array>\n";
+				strnew += lines[i].replace("$registered_protocols", s);
+			}
 		} else if (lines[i].find("$usage_descriptions") != -1) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {

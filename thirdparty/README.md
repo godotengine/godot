@@ -246,6 +246,18 @@ Files generated from upstream source:
 - Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
 - Step 4: Copy `source/data/out/icudt71l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt71l.dat`.
 
+## ipc
+
+- Upstream: https://github.com/RevoluPowered/Generic-IPC-Handler
+- Version 3476b0b8ead4d3f6bc6f6fb8f6e0cca953d7ca28
+- License - MIT (for the files we use)
+
+Files extracted from upstream source:
+- `src/ipc.cpp`
+- `src/ipc.h`
+- `src/socket_implementation.h`
+- `src/socket_posix.cpp`
+- `src/socket_windows.cpp`
 
 ## jpeg-compressor
 

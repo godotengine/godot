@@ -22,6 +22,7 @@
 	<string>$short_version</string>
 	<key>CFBundleSignature</key>
 	<string>$signature</string>
+$registered_protocols
 	<key>CFBundleVersion</key>
 	<string>$version</string>
 $usage_descriptions
