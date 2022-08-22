@@ -37,6 +37,7 @@ class AudioEffectDelay;
 
 class AudioEffectDelayInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectDelayInstance, AudioEffectInstance);
+
 	friend class AudioEffectDelay;
 	Ref<AudioEffectDelay> base;
 
@@ -66,22 +67,22 @@ class AudioEffectDelay : public AudioEffect {
 		MAX_TAPS = 2
 	};
 
-	float dry;
+	float dry = 1.0f;
 
-	bool tap_1_active;
-	float tap_1_delay_ms;
-	float tap_1_level;
-	float tap_1_pan;
+	bool tap_1_active = true;
+	float tap_1_delay_ms = 250.0f;
+	float tap_1_level = -6.0f;
+	float tap_1_pan = 0.2f;
 
-	bool tap_2_active;
-	float tap_2_delay_ms;
-	float tap_2_level;
-	float tap_2_pan;
+	bool tap_2_active = true;
+	float tap_2_delay_ms = 500.0f;
+	float tap_2_level = -12.0f;
+	float tap_2_pan = -0.4f;
 
-	bool feedback_active;
-	float feedback_delay_ms;
-	float feedback_level;
-	float feedback_lowpass;
+	bool feedback_active = false;
+	float feedback_delay_ms = 340.0f;
+	float feedback_level = -6.0f;
+	float feedback_lowpass = 16000.0f;
 
 protected:
 	static void _bind_methods();
@@ -128,7 +129,7 @@ public:
 
 	Ref<AudioEffectInstance> instantiate() override;
 
-	AudioEffectDelay();
+	AudioEffectDelay() {}
 };
 
 #endif // AUDIO_EFFECT_DELAY_H

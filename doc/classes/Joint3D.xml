@@ -10,16 +10,16 @@
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
 	<members>
-		<member name="collision/exclude_nodes" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
+		<member name="exclude_nodes_from_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
 			If [code]true[/code], the two bodies of the nodes are not able to collide with each other.
 		</member>
-		<member name="nodes/node_a" type="NodePath" setter="set_node_a" getter="get_node_a" default="NodePath(&quot;&quot;)">
+		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a" default="NodePath(&quot;&quot;)">
 			The node attached to the first side (A) of the joint.
 		</member>
-		<member name="nodes/node_b" type="NodePath" setter="set_node_b" getter="get_node_b" default="NodePath(&quot;&quot;)">
+		<member name="node_b" type="NodePath" setter="set_node_b" getter="get_node_b" default="NodePath(&quot;&quot;)">
 			The node attached to the second side (B) of the joint.
 		</member>
-		<member name="solver/priority" type="int" setter="set_solver_priority" getter="get_solver_priority" default="1">
+		<member name="solver_priority" type="int" setter="set_solver_priority" getter="get_solver_priority" default="1">
 			The priority used to define which solver is executed first for multiple joints. The lower the value, the higher the priority.
 		</member>
 	</members>

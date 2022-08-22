@@ -140,12 +140,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
-			Extra margin used for collision recovery when calling [method move_and_slide].
-			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
-			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
-			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
-		</member>
 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
 			If [code]true[/code], the body will be able to move on the floor only. This option avoids to be able to walk on walls, it will however allow to slide down along them.
 		</member>
@@ -178,6 +172,12 @@
 		</member>
 		<member name="moving_platform_wall_layers" type="int" setter="set_moving_platform_wall_layers" getter="get_moving_platform_wall_layers" default="0">
 			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all wall bodies are ignored.
+		</member>
+		<member name="safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
+			Extra margin used for collision recovery when calling [method move_and_slide].
+			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
+			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
+			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
 		</member>
 		<member name="slide_on_ceiling" type="bool" setter="set_slide_on_ceiling_enabled" getter="is_slide_on_ceiling_enabled" default="true">
 			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.
