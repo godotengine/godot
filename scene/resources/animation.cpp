@@ -967,7 +967,6 @@ int Animation::find_track(const NodePath &p_path, const TrackType p_type) const 
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
-	ERR_FAIL_INDEX(p_interp, 3);
 	tracks[p_track]->interpolation = p_interp;
 	emit_changed();
 }
@@ -2283,6 +2282,8 @@ int Animation::_find(const Vector<K> &p_keys, double p_time, bool p_backward) co
 	return middle;
 }
 
+// Linear interpolation for anytype.
+
 Vector3 Animation::_interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const {
 	return p_a.lerp(p_b, p_c);
 }
@@ -2300,6 +2301,8 @@ Variant Animation::_interpolate(const Variant &p_a, const Variant &p_b, real_t p
 real_t Animation::_interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const {
 	return p_a * (1.0 - p_c) + p_b * p_c;
 }
+
+// Cubic interpolation for anytype.
 
 Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c) const {
 	return p_a.cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
@@ -2386,6 +2389,96 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 }
 
 real_t Animation::_cubic_interpolate(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c) const {
+	return _interpolate(p_a, p_b, p_c);
+}
+
+// Cubic interpolation in time for anytype.
+
+Vector3 Animation::_cubic_interpolate_in_time(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	return p_a.cubic_interpolate_in_time(p_b, p_pre_a, p_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+}
+
+Quaternion Animation::_cubic_interpolate_in_time(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	return p_a.spherical_cubic_interpolate_in_time(p_b, p_pre_a, p_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+}
+
+Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	Variant::Type type_a = p_a.get_type();
+	Variant::Type type_b = p_b.get_type();
+	Variant::Type type_pa = p_pre_a.get_type();
+	Variant::Type type_pb = p_post_b.get_type();
+
+	//make int and real play along
+
+	uint32_t vformat = 1 << type_a;
+	vformat |= 1 << type_b;
+	vformat |= 1 << type_pa;
+	vformat |= 1 << type_pb;
+
+	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+		//mix of real and int
+		real_t a = p_a;
+		real_t b = p_b;
+		real_t pa = p_pre_a;
+		real_t pb = p_post_b;
+
+		return Math::cubic_interpolate_in_time(a, b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+	} else if ((vformat & (vformat - 1))) {
+		return p_a; //can't interpolate, mix of types
+	}
+
+	switch (type_a) {
+		case Variant::VECTOR2: {
+			Vector2 a = p_a;
+			Vector2 b = p_b;
+			Vector2 pa = p_pre_a;
+			Vector2 pb = p_post_b;
+
+			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+		}
+		case Variant::RECT2: {
+			Rect2 a = p_a;
+			Rect2 b = p_b;
+			Rect2 pa = p_pre_a;
+			Rect2 pb = p_post_b;
+
+			return Rect2(
+					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
+					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
+		}
+		case Variant::VECTOR3: {
+			Vector3 a = p_a;
+			Vector3 b = p_b;
+			Vector3 pa = p_pre_a;
+			Vector3 pb = p_post_b;
+
+			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+		}
+		case Variant::QUATERNION: {
+			Quaternion a = p_a;
+			Quaternion b = p_b;
+			Quaternion pa = p_pre_a;
+			Quaternion pb = p_post_b;
+
+			return a.spherical_cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+		}
+		case Variant::AABB: {
+			AABB a = p_a;
+			AABB b = p_b;
+			AABB pa = p_pre_a;
+			AABB pb = p_post_b;
+
+			return AABB(
+					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
+					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
+		}
+		default: {
+			return _interpolate(p_a, p_b, p_c);
+		}
+	}
+}
+
+real_t Animation::_cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
 	return _interpolate(p_a, p_b, p_c);
 }
 
@@ -2568,26 +2661,65 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		case INTERPOLATION_LINEAR: {
 			return _interpolate(p_keys[idx].value, p_keys[next].value, c);
 		} break;
-		case INTERPOLATION_CUBIC: {
-			int pre = idx - 1;
-			if (pre < 0) {
-				if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-					pre = len - 1;
-				} else {
-					pre = 0;
+		case INTERPOLATION_CUBIC:
+		case INTERPOLATION_CUBIC_IN_TIME: {
+			int pre = 0;
+			int post = 0;
+			if (!p_backward) {
+				pre = idx - 1;
+				if (pre < 0) {
+					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+						pre = len - 1;
+					} else {
+						pre = 0;
+					}
 				}
-			}
-			int post = next + 1;
-			if (post >= len) {
-				if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-					post = 0;
-				} else {
-					post = next;
+				post = next + 1;
+				if (post >= len) {
+					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+						post = 0;
+					} else {
+						post = next;
+					}
+				}
+			} else {
+				pre = idx + 1;
+				if (pre >= len) {
+					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+						pre = 0;
+					} else {
+						pre = idx;
+					}
+				}
+				post = next - 1;
+				if (post < 0) {
+					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+						post = len - 1;
+					} else {
+						post = 0;
+					}
 				}
 			}
 
-			return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
+			if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+				if (p_interp == INTERPOLATION_CUBIC) {
+					return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
+				}
+				return _cubic_interpolate_in_time(
+						p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
+						pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time,
+						next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time,
+						next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time);
+			}
 
+			if (p_interp == INTERPOLATION_CUBIC) {
+				return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
+			}
+			return _cubic_interpolate_in_time(
+					p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
+					p_keys[pre].time - p_keys[idx].time,
+					p_keys[next].time - p_keys[idx].time,
+					p_keys[post].time - p_keys[idx].time);
 		} break;
 		default:
 			return p_keys[idx].value;
@@ -3839,6 +3971,7 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATION_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC);
+	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC_IN_TIME);
 
 	BIND_ENUM_CONSTANT(UPDATE_CONTINUOUS);
 	BIND_ENUM_CONSTANT(UPDATE_DISCRETE);
