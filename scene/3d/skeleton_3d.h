@@ -227,6 +227,9 @@ public:
 	Quaternion get_bone_pose_rotation(int p_bone) const;
 	Vector3 get_bone_pose_scale(int p_bone) const;
 
+	void reset_bone_pose(int p_bone);
+	void reset_bone_poses();
+
 	void clear_bones_global_pose_override();
 	Transform3D get_bone_global_pose_override(int p_bone) const;
 	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
