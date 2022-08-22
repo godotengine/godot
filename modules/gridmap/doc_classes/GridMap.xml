@@ -39,11 +39,25 @@
 				Returns an array of [ArrayMesh]es and [Transform3D] references of all bake meshes that exist within the current GridMap.
 			</description>
 		</method>
+		<method name="get_basis_with_orthogonal_index" qualifiers="const">
+			<return type="Basis" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns one of 24 possible rotations that lie along the vectors (x,y,z) with each component being either -1, 0, or 1. For further details, refer to the Godot source code.
+			</description>
+		</method>
 		<method name="get_cell_item" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="position" type="Vector3i" />
 			<description>
 				The [MeshLibrary] item index located at the given grid coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
+			</description>
+		</method>
+		<method name="get_cell_item_basis" qualifiers="const">
+			<return type="Basis" />
+			<param index="0" name="position" type="Vector3i" />
+			<description>
+				Returns the basis that gives the specificed cell its orientation.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
@@ -78,6 +92,13 @@
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_orthogonal_index_from_basis" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="basis" type="Basis" />
+			<description>
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index (in the range from 0 to 23) of the point best representing the orientation of the object. For further details, refer to the Godot source code.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
@@ -121,7 +142,7 @@
 			<description>
 				Sets the mesh index for the cell referenced by its grid coordinates.
 				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
-				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
+				Optionally, the item's orientation can be passed. For valid orientation values, see [method get_orthogonal_index_from_basis].
 			</description>
 		</method>
 		<method name="set_collision_layer_value">

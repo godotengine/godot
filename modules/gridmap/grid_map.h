@@ -263,6 +263,9 @@ public:
 	void set_cell_item(const Vector3i &p_position, int p_item, int p_rot = 0);
 	int get_cell_item(const Vector3i &p_position) const;
 	int get_cell_item_orientation(const Vector3i &p_position) const;
+	Basis get_cell_item_basis(const Vector3i &p_position) const;
+	Basis get_basis_with_orthogonal_index(int p_index) const;
+	int get_orthogonal_index_from_basis(const Basis &p_basis) const;
 
 	Vector3i world_to_map(const Vector3 &p_world_position) const;
 	Vector3 map_to_world(const Vector3i &p_map_position) const;
