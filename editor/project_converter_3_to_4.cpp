@@ -1606,8 +1606,8 @@ public:
 	RegEx reg_is_empty = RegEx("\\bempty\\(");
 	RegEx reg_super = RegEx("([\t ])\\.([a-zA-Z_])");
 	RegEx reg_json_to = RegEx("\\bto_json\\b");
-	RegEx reg_json_parse = RegEx("([\t]{0,})([^\n]+)parse_json\\(([^\n]+)");
-	RegEx reg_json_non_new = RegEx("([\t]{0,})([^\n]+)JSON\\.parse\\(([^\n]+)");
+	RegEx reg_json_parse = RegEx("([\t ]{0,})([^\n]+)parse_json\\(([^\n]+)");
+	RegEx reg_json_non_new = RegEx("([\t ]{0,})([^\n]+)JSON\\.parse\\(([^\n]+)");
 	RegEx reg_export = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)");
 	RegEx reg_export_advanced = RegEx("export\\(([^)^\n]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)([^\n]+)");
 	RegEx reg_setget_setget = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*,[ \t]*([a-zA-Z0-9_]+)");
@@ -2102,6 +2102,8 @@ bool ProjectConverter3To4::test_conversion(const RegExContainer &reg_container) 
 	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C) != OK):", "(connect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,D) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,[D]) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,[D,E]) != OK):", "(connect(A,Callable(B,C).bind(D,E)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,[D,E],F) != OK):", "(connect(A,Callable(B,C).bind(D,E),F) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,D,E) != OK):", "(connect(A,Callable(B,C).bind(D),E) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid & test_conversion_single_additional_builtin("(start(A,B) != OK):", "(start(Callable(A,B)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -2437,6 +2439,21 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 				parts_counter--;
 				if (parts_counter == 0 && !is_inside_string) {
 					parts.append(line.substr(start_part + 1, current_index - start_part - 1));
+					start_part = current_index;
+				}
+				break;
+			};
+			case '[': {
+				parts_counter++;
+				if (parts_counter == 1 && !is_inside_string) {
+					start_part = current_index;
+				}
+				break;
+			};
+			case ']': {
+				parts_counter--;
+				if (parts_counter == 0 && !is_inside_string) {
+					parts.append(line.substr(start_part, current_index - start_part));
 					start_part = current_index;
 				}
 				break;
