@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -226,6 +227,9 @@ namespace Godot.SourceGenerators
 
                 foreach (var property in godotClassProperties)
                 {
+                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(property.PropertySymbol))
+                        AppendGroupingPropertyInfo(source, groupingInfo);
+
                     var propertyInfo = DeterminePropertyInfo(context, typeCache,
                         property.PropertySymbol, property.Type);
 
@@ -237,6 +241,10 @@ namespace Godot.SourceGenerators
 
                 foreach (var field in godotClassFields)
                 {
+
+                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(field.FieldSymbol))
+                        AppendGroupingPropertyInfo(source, groupingInfo);
+
                     var propertyInfo = DeterminePropertyInfo(context, typeCache,
                         field.FieldSymbol, field.Type);
 
@@ -321,6 +329,21 @@ namespace Godot.SourceGenerators
                 .Append("        }\n");
         }
 
+        private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
+        {
+            source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
+                .Append((int)VariantType.Nil)
+                .Append(", name: \"")
+                .Append(propertyInfo.Name)
+                .Append("\", hint: (Godot.PropertyHint)")
+                .Append((int)PropertyHint.None)
+                .Append(", hintString: \"")
+                .Append(propertyInfo.HintString)
+                .Append("\", usage: (Godot.PropertyUsageFlags)")
+                .Append((int)propertyInfo.Usage)
+                .Append(", exported: true));\n");
+        }
+
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
             source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
@@ -336,6 +359,32 @@ namespace Godot.SourceGenerators
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")
                 .Append("));\n");
+        }
+
+        private static IEnumerable<PropertyInfo> DetermineGroupingPropertyInfo(ISymbol memberSymbol)
+        {
+            foreach (var attr in memberSymbol.GetAttributes())
+            {
+                PropertyUsageFlags? propertyUsage = attr.AttributeClass?.ToString() switch
+                {
+                    GodotClasses.ExportCategoryAttr => PropertyUsageFlags.Category,
+                    GodotClasses.ExportGroupAttr => PropertyUsageFlags.Group,
+                    GodotClasses.ExportSubgroupAttr => PropertyUsageFlags.Subgroup,
+                    _ => null
+                };
+
+                if (propertyUsage is null)
+                    continue;
+
+                if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is string name)
+                {
+                    string? hintString = null;
+                    if (propertyUsage != PropertyUsageFlags.Category && attr.ConstructorArguments.Length > 1)
+                        hintString = attr.ConstructorArguments[1].Value?.ToString();
+
+                    yield return new PropertyInfo(VariantType.Nil, name, PropertyHint.None, hintString, propertyUsage.Value, true);
+                }
+            }
         }
 
         private static PropertyInfo? DeterminePropertyInfo(

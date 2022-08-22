@@ -53,6 +53,9 @@
     <Compile Include="Core\Array.cs" />
     <Compile Include="Core\Attributes\AssemblyHasScriptsAttribute.cs" />
     <Compile Include="Core\Attributes\ExportAttribute.cs" />
+    <Compile Include="Core\Attributes\ExportCategoryAttribute.cs" />
+    <Compile Include="Core\Attributes\ExportGroupAttribute.cs" />
+    <Compile Include="Core\Attributes\ExportSubgroupAttribute.cs" />
     <Compile Include="Core\Attributes\RPCAttribute.cs" />
     <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
