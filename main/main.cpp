@@ -135,6 +135,8 @@ static bool delta_sync_after_draw = false;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+
+HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
 
 // Display
@@ -170,6 +172,12 @@ static bool print_fps = false;
 bool Main::is_project_manager() {
 	return project_manager;
 }
+
+#ifdef TOOLS_ENABLED
+const Vector<String> &Main::get_forwardable_cli_arguments(Main::CLIScope p_scope) {
+	return forwardable_cli_arguments[p_scope];
+}
+#endif
 
 static String unescape_cmdline(const String &p_str) {
 	return p_str.replace("%20", " ");
@@ -493,6 +501,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 		List<String>::Element *N = I->next();
+
+#ifdef TOOLS_ENABLED
+		if (I->get() == "--debug" ||
+				I->get() == "--verbose" ||
+				I->get() == "--disable-crash-handler") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
+		}
+		if (I->get() == "--single-window" ||
+				I->get() == "--audio-driver" ||
+				I->get() == "--video-driver") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+		}
+#endif
 
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
