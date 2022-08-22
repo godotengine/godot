@@ -1,4 +1,6 @@
-supported_platforms = ["windows", "macos", "linuxbsd", "server", "android", "haiku", "javascript", "ios"]
+# Prior to .NET Core, we supported these: ["windows", "macos", "linuxbsd", "server", "android", "haiku", "javascript", "ios"]
+# Eventually support for each them should be added back (except Haiku if not supported by .NET Core)
+supported_platforms = ["windows", "macos", "linuxbsd", "server"]
 
 
 def can_build(env, platform):
@@ -13,25 +15,10 @@ def get_opts(platform):
 
     return [
         PathVariable(
-            "mono_prefix",
-            "Path to the Mono installation directory for the target platform and architecture",
+            "dotnet_root",
+            "Path to the .NET Sdk installation directory for the target platform and architecture",
             "",
             PathVariable.PathAccept,
-        ),
-        PathVariable(
-            "mono_bcl",
-            "Path to a custom Mono BCL (Base Class Library) directory for the target platform",
-            "",
-            PathVariable.PathAccept,
-        ),
-        BoolVariable("mono_static", "Statically link Mono", default_mono_static),
-        BoolVariable("mono_glue", "Build with the Mono glue sources", True),
-        BoolVariable("build_cil", "Build C# solutions", True),
-        BoolVariable(
-            "copy_mono_root", "Make a copy of the Mono installation directory to bundle with the editor", True
-        ),
-        BoolVariable(
-            "mono_bundles_zlib", "Specify if the Mono runtime was built with bundled zlib", default_mono_bundles_zlib
         ),
     ]
 
@@ -43,13 +30,6 @@ def configure(env):
         raise RuntimeError("This module does not currently support building for this platform")
 
     env.add_module_version_string("mono")
-
-    if env["mono_bundles_zlib"]:
-        # Mono may come with zlib bundled for WASM or on newer version when built with MinGW.
-        print("This Mono runtime comes with zlib bundled. Disabling 'builtin_zlib'...")
-        env["builtin_zlib"] = False
-        thirdparty_zlib_dir = "#thirdparty/zlib/"
-        env.Prepend(CPPPATH=[thirdparty_zlib_dir])
 
 
 def get_doc_classes():

@@ -6,6 +6,8 @@ env:
   # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: master-v2
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: false
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -99,6 +101,12 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
+      - name: Set up .NET Sdk
+        uses: actions/setup-dotnet@v1
+        if: ${{ matrix.build-mono }}
+        with:
+          dotnet-version: '6.0.x'
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
@@ -108,10 +116,15 @@ jobs:
           tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
 
-      - name: Generate Mono glue
+      - name: Generate C# glue
         if: ${{ matrix.build-mono }}
         run: |
-          ${{ matrix.bin }} --headless --generate-mono-glue modules/mono/glue || true
+          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue || true
+
+      - name: Build .NET solutions
+        if: ${{ matrix.build-mono }}
+        run: |
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
 
       # Rebuild with mono
       - name: Compilation (mono_glue=yes)

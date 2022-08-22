@@ -19,6 +19,16 @@ namespace GodotTools.ProjectEditor
 
     public static class ProjectUtils
     {
+        public static void MSBuildLocatorRegisterDefaults(out Version version, out string path)
+        {
+            var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+            version = instance.Version;
+            path = instance.MSBuildPath;
+        }
+
+        public static void MSBuildLocatorRegisterMSBuildPath(string msbuildPath)
+            => Microsoft.Build.Locator.MSBuildLocator.RegisterMSBuildPath(msbuildPath);
+
         public static MSBuildProject Open(string path)
         {
             var root = ProjectRootElement.Open(path);
@@ -42,7 +52,8 @@ namespace GodotTools.ProjectEditor
             var root = project.Root;
             string godotSdkAttrValue = ProjectGenerator.GodotSdkAttrValue;
 
-            if (!string.IsNullOrEmpty(root.Sdk) && root.Sdk.Trim().Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(root.Sdk) &&
+                root.Sdk.Trim().Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
                 return;
 
             root.Sdk = godotSdkAttrValue;

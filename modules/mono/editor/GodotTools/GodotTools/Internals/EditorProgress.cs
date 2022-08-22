@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Godot;
+using Godot.NativeInterop;
 
 namespace GodotTools.Internals
 {
@@ -8,19 +9,12 @@ namespace GodotTools.Internals
     {
         public string Task { get; }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_Create(string task, string label, int amount, bool canCancel);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_Dispose(string task);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_Step(string task, string state, int step, bool forceRefresh);
-
         public EditorProgress(string task, string label, int amount, bool canCancel = false)
         {
             Task = task;
-            internal_Create(task, label, amount, canCancel);
+            using godot_string taskIn = Marshaling.ConvertStringToNative(task);
+            using godot_string labelIn = Marshaling.ConvertStringToNative(label);
+            Internal.godot_icall_EditorProgress_Create(taskIn, labelIn, amount, canCancel);
         }
 
         ~EditorProgress()
@@ -33,18 +27,23 @@ namespace GodotTools.Internals
 
         public void Dispose()
         {
-            internal_Dispose(Task);
+            using godot_string taskIn = Marshaling.ConvertStringToNative(Task);
+            Internal.godot_icall_EditorProgress_Dispose(taskIn);
             GC.SuppressFinalize(this);
         }
 
         public void Step(string state, int step = -1, bool forceRefresh = true)
         {
-            internal_Step(Task, state, step, forceRefresh);
+            using godot_string taskIn = Marshaling.ConvertStringToNative(Task);
+            using godot_string stateIn = Marshaling.ConvertStringToNative(state);
+            Internal.godot_icall_EditorProgress_Step(taskIn, stateIn, step, forceRefresh);
         }
 
         public bool TryStep(string state, int step = -1, bool forceRefresh = true)
         {
-            return internal_Step(Task, state, step, forceRefresh);
+            using godot_string taskIn = Marshaling.ConvertStringToNative(Task);
+            using godot_string stateIn = Marshaling.ConvertStringToNative(state);
+            return Internal.godot_icall_EditorProgress_Step(taskIn, stateIn, step, forceRefresh);
         }
     }
 }

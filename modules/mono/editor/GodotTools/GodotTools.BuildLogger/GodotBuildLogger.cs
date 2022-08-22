@@ -7,8 +7,6 @@ namespace GodotTools.BuildLogger
 {
     public class GodotBuildLogger : ILogger
     {
-        public static readonly string AssemblyPath = Path.GetFullPath(typeof(GodotBuildLogger).Assembly.Location);
-
         public string Parameters { get; set; }
         public LoggerVerbosity Verbosity { get; set; }
 

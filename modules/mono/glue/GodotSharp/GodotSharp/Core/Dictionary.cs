@@ -1,79 +1,50 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot.Collections
 {
-    internal class DictionarySafeHandle : SafeHandle
-    {
-        public DictionarySafeHandle(IntPtr handle) : base(IntPtr.Zero, true)
-        {
-            this.handle = handle;
-        }
-
-        public override bool IsInvalid
-        {
-            get { return handle == IntPtr.Zero; }
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Dictionary.godot_icall_Dictionary_Dtor(handle);
-            return true;
-        }
-    }
-
     /// <summary>
     /// Wrapper around Godot's Dictionary class, a dictionary of Variant
     /// typed elements allocated in the engine in C++. Useful when
     /// interfacing with the engine.
     /// </summary>
-    public class Dictionary : IDictionary, IDisposable
+    public sealed class Dictionary :
+        IDictionary<Variant, Variant>,
+        IReadOnlyDictionary<Variant, Variant>,
+        IDisposable
     {
-        private DictionarySafeHandle _safeHandle;
-        private bool _disposed = false;
+        internal godot_dictionary.movable NativeValue;
+
+        private WeakReference<IDisposable> _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
         /// </summary>
         public Dictionary()
         {
-            _safeHandle = new DictionarySafeHandle(godot_icall_Dictionary_Ctor());
+            NativeValue = (godot_dictionary.movable)NativeFuncs.godotsharp_dictionary_new();
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
-        /// <summary>
-        /// Constructs a new <see cref="Dictionary"/> from the given dictionary's elements.
-        /// </summary>
-        /// <param name="dictionary">The dictionary to construct from.</param>
-        /// <returns>A new Godot Dictionary.</returns>
-        public Dictionary(IDictionary dictionary) : this()
+        private Dictionary(godot_dictionary nativeValueToOwn)
         {
-            if (dictionary == null)
-                throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
-
-            foreach (DictionaryEntry entry in dictionary)
-                Add(entry.Key, entry.Value);
+            NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated ?
+                nativeValueToOwn :
+                NativeFuncs.godotsharp_dictionary_new());
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
-        internal Dictionary(DictionarySafeHandle handle)
-        {
-            _safeHandle = handle;
-        }
+        // Explicit name to make it very clear
+        internal static Dictionary CreateTakingOwnershipOfDisposableValue(godot_dictionary nativeValueToOwn)
+            => new Dictionary(nativeValueToOwn);
 
-        internal Dictionary(IntPtr handle)
+        ~Dictionary()
         {
-            _safeHandle = new DictionarySafeHandle(handle);
-        }
-
-        internal IntPtr GetPtr()
-        {
-            if (_disposed)
-                throw new ObjectDisposedException(GetType().FullName);
-
-            return _safeHandle.DangerousGetHandle();
+            Dispose(false);
         }
 
         /// <summary>
@@ -81,16 +52,19 @@ namespace Godot.Collections
         /// </summary>
         public void Dispose()
         {
-            if (_disposed)
-                return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (_safeHandle != null)
+        public void Dispose(bool disposing)
+        {
+            // Always dispose `NativeValue` even if disposing is true
+            NativeValue.DangerousSelfRef.Dispose();
+
+            if (_weakReferenceToSelf != null)
             {
-                _safeHandle.Dispose();
-                _safeHandle = null;
+                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
             }
-
-            _disposed = true;
         }
 
         /// <summary>
@@ -100,7 +74,10 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary Duplicate(bool deep = false)
         {
-            return new Dictionary(godot_icall_Dictionary_Duplicate(GetPtr(), deep));
+            godot_dictionary newDictionary;
+            var self = (godot_dictionary)NativeValue;
+            NativeFuncs.godotsharp_dictionary_duplicate(ref self, deep.ToGodotBool(), out newDictionary);
+            return CreateTakingOwnershipOfDisposableValue(newDictionary);
         }
 
         // IDictionary
@@ -108,176 +85,250 @@ namespace Godot.Collections
         /// <summary>
         /// Gets the collection of keys in this <see cref="Dictionary"/>.
         /// </summary>
-        public ICollection Keys
+        public ICollection<Variant> Keys
         {
             get
             {
-                IntPtr handle = godot_icall_Dictionary_Keys(GetPtr());
-                return new Array(new ArraySafeHandle(handle));
+                godot_array keysArray;
+                var self = (godot_dictionary)NativeValue;
+                NativeFuncs.godotsharp_dictionary_keys(ref self, out keysArray);
+                return Array.CreateTakingOwnershipOfDisposableValue(keysArray);
             }
         }
 
         /// <summary>
         /// Gets the collection of elements in this <see cref="Dictionary"/>.
         /// </summary>
-        public ICollection Values
+        public ICollection<Variant> Values
         {
             get
             {
-                IntPtr handle = godot_icall_Dictionary_Values(GetPtr());
-                return new Array(new ArraySafeHandle(handle));
+                godot_array valuesArray;
+                var self = (godot_dictionary)NativeValue;
+                NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
+                return Array.CreateTakingOwnershipOfDisposableValue(valuesArray);
             }
         }
 
+        IEnumerable<Variant> IReadOnlyDictionary<Variant, Variant>.Keys => Keys;
+
+        IEnumerable<Variant> IReadOnlyDictionary<Variant, Variant>.Values => Values;
+
         private (Array keys, Array values, int count) GetKeyValuePairs()
         {
-            int count = godot_icall_Dictionary_KeyValuePairs(GetPtr(), out IntPtr keysHandle, out IntPtr valuesHandle);
-            Array keys = new Array(new ArraySafeHandle(keysHandle));
-            Array values = new Array(new ArraySafeHandle(valuesHandle));
+            var self = (godot_dictionary)NativeValue;
+
+            godot_array keysArray;
+            NativeFuncs.godotsharp_dictionary_keys(ref self, out keysArray);
+            var keys = Array.CreateTakingOwnershipOfDisposableValue(keysArray);
+
+            godot_array valuesArray;
+            NativeFuncs.godotsharp_dictionary_keys(ref self, out valuesArray);
+            var values = Array.CreateTakingOwnershipOfDisposableValue(valuesArray);
+
+            int count = NativeFuncs.godotsharp_dictionary_count(ref self);
+
             return (keys, values, count);
         }
 
-        bool IDictionary.IsFixedSize => false;
-
-        bool IDictionary.IsReadOnly => false;
-
         /// <summary>
-        /// Returns the object at the given <paramref name="key"/>.
+        /// Returns the value at the given <paramref name="key"/>.
         /// </summary>
-        /// <value>The object at the given <paramref name="key"/>.</value>
-        public object this[object key]
+        /// <value>The value at the given <paramref name="key"/>.</value>
+        public Variant this[Variant key]
         {
-            get => godot_icall_Dictionary_GetValue(GetPtr(), key);
-            set => godot_icall_Dictionary_SetValue(GetPtr(), key, value);
+            get
+            {
+                var self = (godot_dictionary)NativeValue;
+
+                if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                        (godot_variant)key.NativeVar, out godot_variant value).ToBool())
+                {
+                    return Variant.CreateTakingOwnershipOfDisposableValue(value);
+                }
+                else
+                {
+                    throw new KeyNotFoundException();
+                }
+            }
+            set
+            {
+                var self = (godot_dictionary)NativeValue;
+                NativeFuncs.godotsharp_dictionary_set_value(ref self,
+                    (godot_variant)key.NativeVar, (godot_variant)value.NativeVar);
+            }
         }
 
         /// <summary>
-        /// Adds an object <paramref name="value"/> at key <paramref name="key"/>
+        /// Adds an value <paramref name="value"/> at key <paramref name="key"/>
         /// to this <see cref="Dictionary"/>.
         /// </summary>
-        /// <param name="key">The key at which to add the object.</param>
-        /// <param name="value">The object to add.</param>
-        public void Add(object key, object value) => godot_icall_Dictionary_Add(GetPtr(), key, value);
+        /// <param name="key">The key at which to add the value.</param>
+        /// <param name="value">The value to add.</param>
+        public void Add(Variant key, Variant value)
+        {
+            var variantKey = (godot_variant)key.NativeVar;
+            var self = (godot_dictionary)NativeValue;
+
+            if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
+                throw new ArgumentException("An element with the same key already exists", nameof(key));
+
+            godot_variant variantValue = (godot_variant)value.NativeVar;
+            NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
+        }
+
+        void ICollection<KeyValuePair<Variant, Variant>>.Add(KeyValuePair<Variant, Variant> item)
+            => Add(item.Key, item.Value);
 
         /// <summary>
         /// Erases all items from this <see cref="Dictionary"/>.
         /// </summary>
-        public void Clear() => godot_icall_Dictionary_Clear(GetPtr());
+        public void Clear()
+        {
+            var self = (godot_dictionary)NativeValue;
+            NativeFuncs.godotsharp_dictionary_clear(ref self);
+        }
 
         /// <summary>
         /// Checks if this <see cref="Dictionary"/> contains the given key.
         /// </summary>
         /// <param name="key">The key to look for.</param>
         /// <returns>Whether or not this dictionary contains the given key.</returns>
-        public bool Contains(object key) => godot_icall_Dictionary_ContainsKey(GetPtr(), key);
+        public bool ContainsKey(Variant key)
+        {
+            var self = (godot_dictionary)NativeValue;
+            return NativeFuncs.godotsharp_dictionary_contains_key(ref self, (godot_variant)key.NativeVar).ToBool();
+        }
 
-        /// <summary>
-        /// Gets an enumerator for this <see cref="Dictionary"/>.
-        /// </summary>
-        /// <returns>An enumerator.</returns>
-        public IDictionaryEnumerator GetEnumerator() => new DictionaryEnumerator(this);
+        public bool Contains(KeyValuePair<Variant, Variant> item)
+        {
+            godot_variant variantKey = (godot_variant)item.Key.NativeVar;
+            var self = (godot_dictionary)NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                variantKey, out godot_variant retValue).ToBool();
+
+            using (retValue)
+            {
+                if (!found)
+                    return false;
+
+                godot_variant variantValue = (godot_variant)item.Value.NativeVar;
+                return NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool();
+            }
+        }
 
         /// <summary>
         /// Removes an element from this <see cref="Dictionary"/> by key.
         /// </summary>
         /// <param name="key">The key of the element to remove.</param>
-        public void Remove(object key) => godot_icall_Dictionary_RemoveKey(GetPtr(), key);
+        public bool Remove(Variant key)
+        {
+            var self = (godot_dictionary)NativeValue;
+            return NativeFuncs.godotsharp_dictionary_remove_key(ref self, (godot_variant)key.NativeVar).ToBool();
+        }
 
-        // ICollection
+        public bool Remove(KeyValuePair<Variant, Variant> item)
+        {
+            godot_variant variantKey = (godot_variant)item.Key.NativeVar;
+            var self = (godot_dictionary)NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                variantKey, out godot_variant retValue).ToBool();
 
-        object ICollection.SyncRoot => this;
+            using (retValue)
+            {
+                if (!found)
+                    return false;
 
-        bool ICollection.IsSynchronized => false;
+                godot_variant variantValue = (godot_variant)item.Value.NativeVar;
+                if (NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool())
+                {
+                    return NativeFuncs.godotsharp_dictionary_remove_key(
+                        ref self, variantKey).ToBool();
+                }
+
+                return false;
+            }
+        }
 
         /// <summary>
         /// Returns the number of elements in this <see cref="Dictionary"/>.
         /// This is also known as the size or length of the dictionary.
         /// </summary>
         /// <returns>The number of elements.</returns>
-        public int Count => godot_icall_Dictionary_Count(GetPtr());
+        public int Count
+        {
+            get
+            {
+                var self = (godot_dictionary)NativeValue;
+                return NativeFuncs.godotsharp_dictionary_count(ref self);
+            }
+        }
+
+        bool ICollection<KeyValuePair<Variant, Variant>>.IsReadOnly => false;
+
+        public bool TryGetValue(Variant key, out Variant value)
+        {
+            var self = (godot_dictionary)NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                (godot_variant)key.NativeVar, out godot_variant retValue).ToBool();
+
+            value = found ? Variant.CreateTakingOwnershipOfDisposableValue(retValue) : default;
+
+            return found;
+        }
 
         /// <summary>
-        /// Copies the elements of this <see cref="Dictionary"/> to the given
-        /// untyped C# array, starting at the given index.
+        /// Copies the elements of this <see cref="Dictionary"/> to the given untyped
+        /// <see cref="KeyValuePair{TKey, TValue}"/> array, starting at the given index.
         /// </summary>
         /// <param name="array">The array to copy to.</param>
-        /// <param name="index">The index to start at.</param>
-        public void CopyTo(System.Array array, int index)
+        /// <param name="arrayIndex">The index to start at.</param>
+        public void CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
 
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), "Number was less than the array's lower bound in the first dimension.");
+            if (arrayIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
+                    "Number was less than the array's lower bound in the first dimension.");
 
             var (keys, values, count) = GetKeyValuePairs();
 
-            if (array.Length < (index + count))
-                throw new ArgumentException("Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
+            if (array.Length < (arrayIndex + count))
+                throw new ArgumentException(
+                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
 
             for (int i = 0; i < count; i++)
             {
-                array.SetValue(new DictionaryEntry(keys[i], values[i]), index);
-                index++;
+                array[arrayIndex] = new(keys[i], values[i]);
+                arrayIndex++;
             }
         }
 
         // IEnumerable
 
+        /// <summary>
+        /// Gets an enumerator for this <see cref="Dictionary"/>.
+        /// </summary>
+        /// <returns>An enumerator.</returns>
+        public IEnumerator<KeyValuePair<Variant, Variant>> GetEnumerator()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                yield return GetKeyValuePair(i);
+            }
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private class DictionaryEnumerator : IDictionaryEnumerator
+        private KeyValuePair<Variant, Variant> GetKeyValuePair(int index)
         {
-            private readonly Dictionary _dictionary;
-            private readonly int _count;
-            private int _index = -1;
-            private bool _dirty = true;
-
-            private DictionaryEntry _entry;
-
-            public DictionaryEnumerator(Dictionary dictionary)
-            {
-                _dictionary = dictionary;
-                _count = dictionary.Count;
-            }
-
-            public object Current => Entry;
-
-            public DictionaryEntry Entry
-            {
-                get
-                {
-                    if (_dirty)
-                    {
-                        UpdateEntry();
-                    }
-                    return _entry;
-                }
-            }
-
-            private void UpdateEntry()
-            {
-                _dirty = false;
-                godot_icall_Dictionary_KeyValuePairAt(_dictionary.GetPtr(), _index, out object key, out object value);
-                _entry = new DictionaryEntry(key, value);
-            }
-
-            public object Key => Entry.Key;
-
-            public object Value => Entry.Value;
-
-            public bool MoveNext()
-            {
-                _index++;
-                _dirty = true;
-                return _index < _count;
-            }
-
-            public void Reset()
-            {
-                _index = -1;
-                _dirty = true;
-            }
+            var self = (godot_dictionary)NativeValue;
+            NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
+                out godot_variant key,
+                out godot_variant value);
+            return new KeyValuePair<Variant, Variant>(Variant.CreateTakingOwnershipOfDisposableValue(key),
+                Variant.CreateTakingOwnershipOfDisposableValue(value));
         }
 
         /// <summary>
@@ -286,74 +337,11 @@ namespace Godot.Collections
         /// <returns>A string representation of this dictionary.</returns>
         public override string ToString()
         {
-            return godot_icall_Dictionary_ToString(GetPtr());
+            var self = (godot_dictionary)NativeValue;
+            NativeFuncs.godotsharp_dictionary_to_string(ref self, out godot_string str);
+            using (str)
+                return Marshaling.ConvertStringToManaged(str);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Dictionary_Ctor();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_Dtor(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_Dictionary_GetValue(IntPtr ptr, object key);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_Dictionary_GetValue_Generic(IntPtr ptr, object key, int valTypeEncoding, IntPtr valTypeClass);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_SetValue(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Dictionary_Keys(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Dictionary_Values(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_Dictionary_Count(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_Dictionary_KeyValuePairs(IntPtr ptr, out IntPtr keys, out IntPtr values);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_KeyValuePairAt(IntPtr ptr, int index, out object key, out object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_KeyValuePairAt_Generic(IntPtr ptr, int index, out object key, out object value, int valueTypeEncoding, IntPtr valueTypeClass);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_Clear(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_Dictionary_Contains(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_Dictionary_ContainsKey(IntPtr ptr, object key);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Dictionary_Duplicate(IntPtr ptr, bool deep);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_Dictionary_RemoveKey(IntPtr ptr, object key);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_Dictionary_Remove(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_Dictionary_TryGetValue(IntPtr ptr, object key, out object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_Dictionary_TryGetValue_Generic(IntPtr ptr, object key, out object value, int valTypeEncoding, IntPtr valTypeClass);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Dictionary_Generic_GetValueTypeInfo(Type valueType, out int valTypeEncoding, out IntPtr valTypeClass);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_Dictionary_ToString(IntPtr ptr);
     }
 
     /// <summary>
@@ -364,16 +352,51 @@ namespace Godot.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
-    public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public class Dictionary<TKey, TValue> :
+        IDictionary<TKey, TValue>,
+        IReadOnlyDictionary<TKey, TValue>
     {
-        private readonly Dictionary _objectDict;
+        // ReSharper disable StaticMemberInGenericType
+        // Warning is about unique static fields being created for each generic type combination:
+        // https://www.jetbrains.com/help/resharper/StaticMemberInGenericType.html
+        // In our case this is exactly what we want.
 
-        internal static int valTypeEncoding;
-        internal static IntPtr valTypeClass;
+        private static unsafe delegate* managed<in TKey, godot_variant> _convertKeyToVariantCallback;
+        private static unsafe delegate* managed<in godot_variant, TKey> _convertKeyToManagedCallback;
+        private static unsafe delegate* managed<in TValue, godot_variant> _convertValueToVariantCallback;
+        private static unsafe delegate* managed<in godot_variant, TValue> _convertValueToManagedCallback;
 
-        static Dictionary()
+        // ReSharper restore StaticMemberInGenericType
+
+        static unsafe Dictionary()
         {
-            Dictionary.godot_icall_Dictionary_Generic_GetValueTypeInfo(typeof(TValue), out valTypeEncoding, out valTypeClass);
+            _convertKeyToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<TKey>();
+            _convertKeyToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<TKey>();
+            _convertValueToVariantCallback = VariantConversionCallbacks.GetToVariantCallback<TValue>();
+            _convertValueToManagedCallback = VariantConversionCallbacks.GetToManagedCallback<TValue>();
+        }
+
+        private static unsafe void ValidateVariantConversionCallbacks()
+        {
+            if (_convertKeyToVariantCallback == null || _convertKeyToManagedCallback == null)
+            {
+                throw new InvalidOperationException(
+                    $"The dictionary key type is not supported for conversion to Variant: '{typeof(TKey).FullName}'");
+            }
+
+            if (_convertValueToVariantCallback == null || _convertValueToManagedCallback == null)
+            {
+                throw new InvalidOperationException(
+                    $"The dictionary value type is not supported for conversion to Variant: '{typeof(TValue).FullName}'");
+            }
+        }
+
+        private readonly Dictionary _underlyingDict;
+
+        internal ref godot_dictionary.movable NativeValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref _underlyingDict.NativeValue;
         }
 
         /// <summary>
@@ -381,7 +404,9 @@ namespace Godot.Collections
         /// </summary>
         public Dictionary()
         {
-            _objectDict = new Dictionary();
+            ValidateVariantConversionCallbacks();
+
+            _underlyingDict = new Dictionary();
         }
 
         /// <summary>
@@ -391,19 +416,15 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(IDictionary<TKey, TValue> dictionary)
         {
-            _objectDict = new Dictionary();
+            ValidateVariantConversionCallbacks();
 
             if (dictionary == null)
-                throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
+                throw new ArgumentNullException(nameof(dictionary));
 
-            // TODO: Can be optimized
-
-            IntPtr godotDictionaryPtr = GetPtr();
+            _underlyingDict = new Dictionary();
 
             foreach (KeyValuePair<TKey, TValue> entry in dictionary)
-            {
-                Dictionary.godot_icall_Dictionary_Add(godotDictionaryPtr, entry.Key, entry.Value);
-            }
+                Add(entry.Key, entry.Value);
         }
 
         /// <summary>
@@ -413,18 +434,15 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(Dictionary dictionary)
         {
-            _objectDict = dictionary;
+            ValidateVariantConversionCallbacks();
+
+            _underlyingDict = dictionary;
         }
 
-        internal Dictionary(IntPtr handle)
-        {
-            _objectDict = new Dictionary(handle);
-        }
-
-        internal Dictionary(DictionarySafeHandle handle)
-        {
-            _objectDict = new Dictionary(handle);
-        }
+        // Explicit name to make it very clear
+        internal static Dictionary<TKey, TValue> CreateTakingOwnershipOfDisposableValue(
+            godot_dictionary nativeValueToOwn)
+            => new Dictionary<TKey, TValue>(Dictionary.CreateTakingOwnershipOfDisposableValue(nativeValueToOwn));
 
         /// <summary>
         /// Converts this typed <see cref="Dictionary{TKey, TValue}"/> to an untyped <see cref="Dictionary"/>.
@@ -432,12 +450,7 @@ namespace Godot.Collections
         /// <param name="from">The typed dictionary to convert.</param>
         public static explicit operator Dictionary(Dictionary<TKey, TValue> from)
         {
-            return from._objectDict;
-        }
-
-        internal IntPtr GetPtr()
-        {
-            return _objectDict.GetPtr();
+            return from?._underlyingDict;
         }
 
         /// <summary>
@@ -447,7 +460,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary<TKey, TValue> Duplicate(bool deep = false)
         {
-            return new Dictionary<TKey, TValue>(_objectDict.Duplicate(deep));
+            return new Dictionary<TKey, TValue>(_underlyingDict.Duplicate(deep));
         }
 
         // IDictionary<TKey, TValue>
@@ -456,10 +469,32 @@ namespace Godot.Collections
         /// Returns the value at the given <paramref name="key"/>.
         /// </summary>
         /// <value>The value at the given <paramref name="key"/>.</value>
-        public TValue this[TKey key]
+        public unsafe TValue this[TKey key]
         {
-            get { return (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(_objectDict.GetPtr(), key, valTypeEncoding, valTypeClass); }
-            set { _objectDict[key] = value; }
+            get
+            {
+                using var variantKey = _convertKeyToVariantCallback(key);
+                var self = (godot_dictionary)_underlyingDict.NativeValue;
+
+                if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                        variantKey, out godot_variant value).ToBool())
+                {
+                    using (value)
+                        return _convertValueToManagedCallback(value);
+                }
+                else
+                {
+                    throw new KeyNotFoundException();
+                }
+            }
+            set
+            {
+                using var variantKey = _convertKeyToVariantCallback(key);
+                using var variantValue = _convertValueToVariantCallback(value);
+                var self = (godot_dictionary)_underlyingDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_set_value(ref self,
+                    variantKey, variantValue);
+            }
         }
 
         /// <summary>
@@ -469,8 +504,10 @@ namespace Godot.Collections
         {
             get
             {
-                IntPtr handle = Dictionary.godot_icall_Dictionary_Keys(_objectDict.GetPtr());
-                return new Array<TKey>(new ArraySafeHandle(handle));
+                godot_array keyArray;
+                var self = (godot_dictionary)_underlyingDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_keys(ref self, out keyArray);
+                return Array<TKey>.CreateTakingOwnershipOfDisposableValue(keyArray);
             }
         }
 
@@ -481,15 +518,30 @@ namespace Godot.Collections
         {
             get
             {
-                IntPtr handle = Dictionary.godot_icall_Dictionary_Values(_objectDict.GetPtr());
-                return new Array<TValue>(new ArraySafeHandle(handle));
+                godot_array valuesArray;
+                var self = (godot_dictionary)_underlyingDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
+                return Array<TValue>.CreateTakingOwnershipOfDisposableValue(valuesArray);
             }
         }
 
-        private KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => Keys;
+
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => Values;
+
+        private unsafe KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
         {
-            Dictionary.godot_icall_Dictionary_KeyValuePairAt_Generic(GetPtr(), index, out object key, out object value, valTypeEncoding, valTypeClass);
-            return new KeyValuePair<TKey, TValue>((TKey)key, (TValue)value);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
+                out godot_variant key,
+                out godot_variant value);
+            using (key)
+            using (value)
+            {
+                return new KeyValuePair<TKey, TValue>(
+                    _convertKeyToManagedCallback(key),
+                    _convertValueToManagedCallback(value));
+            }
         }
 
         /// <summary>
@@ -498,9 +550,16 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="key">The key at which to add the object.</param>
         /// <param name="value">The object to add.</param>
-        public void Add(TKey key, TValue value)
+        public unsafe void Add(TKey key, TValue value)
         {
-            _objectDict.Add(key, value);
+            using var variantKey = _convertKeyToVariantCallback(key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+
+            if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
+                throw new ArgumentException("An element with the same key already exists", nameof(key));
+
+            using var variantValue = _convertValueToVariantCallback(value);
+            NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
         }
 
         /// <summary>
@@ -508,18 +567,22 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="key">The key to look for.</param>
         /// <returns>Whether or not this dictionary contains the given key.</returns>
-        public bool ContainsKey(TKey key)
+        public unsafe bool ContainsKey(TKey key)
         {
-            return _objectDict.Contains(key);
+            using var variantKey = _convertKeyToVariantCallback(key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            return NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool();
         }
 
         /// <summary>
         /// Removes an element from this <see cref="Dictionary{TKey, TValue}"/> by key.
         /// </summary>
         /// <param name="key">The key of the element to remove.</param>
-        public bool Remove(TKey key)
+        public unsafe bool Remove(TKey key)
         {
-            return Dictionary.godot_icall_Dictionary_RemoveKey(GetPtr(), key);
+            using var variantKey = _convertKeyToVariantCallback(key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            return NativeFuncs.godotsharp_dictionary_remove_key(ref self, variantKey).ToBool();
         }
 
         /// <summary>
@@ -528,10 +591,16 @@ namespace Godot.Collections
         /// <param name="key">The key of the element to get.</param>
         /// <param name="value">The value at the given <paramref name="key"/>.</param>
         /// <returns>If an object was found for the given <paramref name="key"/>.</returns>
-        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        public unsafe bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
-            bool found = Dictionary.godot_icall_Dictionary_TryGetValue_Generic(GetPtr(), key, out object retValue, valTypeEncoding, valTypeClass);
-            value = found ? (TValue)retValue : default;
+            using var variantKey = _convertKeyToVariantCallback(key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                variantKey, out godot_variant retValue).ToBool();
+
+            using (retValue)
+                value = found ? _convertValueToManagedCallback(retValue) : default;
+
             return found;
         }
 
@@ -542,29 +611,33 @@ namespace Godot.Collections
         /// This is also known as the size or length of the dictionary.
         /// </summary>
         /// <returns>The number of elements.</returns>
-        public int Count
-        {
-            get { return _objectDict.Count; }
-        }
+        public int Count => _underlyingDict.Count;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
-        {
-            _objectDict.Add(item.Key, item.Value);
-        }
+            => Add(item.Key, item.Value);
 
         /// <summary>
         /// Erases all the items from this <see cref="Dictionary{TKey, TValue}"/>.
         /// </summary>
-        public void Clear()
-        {
-            _objectDict.Clear();
-        }
+        public void Clear() => _underlyingDict.Clear();
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
+        unsafe bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            return _objectDict.Contains(new KeyValuePair<object, object>(item.Key, item.Value));
+            using var variantKey = _convertKeyToVariantCallback(item.Key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                variantKey, out godot_variant retValue).ToBool();
+
+            using (retValue)
+            {
+                if (!found)
+                    return false;
+
+                using var variantValue = _convertValueToVariantCallback(item.Value);
+                return NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool();
+            }
         }
 
         /// <summary>
@@ -579,12 +652,14 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
 
             if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex), "Number was less than the array's lower bound in the first dimension.");
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
+                    "Number was less than the array's lower bound in the first dimension.");
 
             int count = Count;
 
             if (array.Length < (arrayIndex + count))
-                throw new ArgumentException("Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
+                throw new ArgumentException(
+                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
 
             for (int i = 0; i < count; i++)
             {
@@ -593,10 +668,27 @@ namespace Godot.Collections
             }
         }
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
+        unsafe bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            return Dictionary.godot_icall_Dictionary_Remove(GetPtr(), item.Key, item.Value);
-            ;
+            using var variantKey = _convertKeyToVariantCallback(item.Key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                variantKey, out godot_variant retValue).ToBool();
+
+            using (retValue)
+            {
+                if (!found)
+                    return false;
+
+                using var variantValue = _convertValueToVariantCallback(item.Value);
+                if (NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool())
+                {
+                    return NativeFuncs.godotsharp_dictionary_remove_key(
+                        ref self, variantKey).ToBool();
+                }
+
+                return false;
+            }
         }
 
         // IEnumerable<KeyValuePair<TKey, TValue>>
@@ -613,15 +705,18 @@ namespace Godot.Collections
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Converts this <see cref="Dictionary{TKey, TValue}"/> to a string.
         /// </summary>
         /// <returns>A string representation of this dictionary.</returns>
-        public override string ToString() => _objectDict.ToString();
+        public override string ToString() => _underlyingDict.ToString();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator Variant(Dictionary<TKey, TValue> from) => Variant.CreateFrom(from);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator Dictionary<TKey, TValue>(Variant from) => from.AsGodotDictionary<TKey, TValue>();
     }
 }

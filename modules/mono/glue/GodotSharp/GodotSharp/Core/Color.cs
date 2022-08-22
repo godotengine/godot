@@ -210,7 +210,7 @@ namespace Godot
                     case 3:
                         return a;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -230,7 +230,7 @@ namespace Godot
                         a = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -841,7 +841,7 @@ namespace Godot
             return ParseCol4(str, ofs) * 16 + ParseCol4(str, ofs + 1);
         }
 
-        private string ToHex32(float val)
+        private static string ToHex32(float val)
         {
             byte b = (byte)Mathf.RoundToInt(Mathf.Clamp(val * 255, 0, 255));
             return b.HexEncode();
@@ -849,7 +849,7 @@ namespace Godot
 
         internal static bool HtmlIsValid(string color)
         {
-            if (color.Length == 0)
+            if (string.IsNullOrEmpty(color))
             {
                 return false;
             }

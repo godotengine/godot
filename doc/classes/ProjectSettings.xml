@@ -1433,20 +1433,6 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="mono/debugger_agent/port" type="int" setter="" getter="" default="23685">
-		</member>
-		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="" default="3000">
-		</member>
-		<member name="mono/profiler/args" type="String" setter="" getter="" default="&quot;log:calls,alloc,sample,output=output.mlpd&quot;">
-		</member>
-		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="mono/runtime/unhandled_exception_policy" type="int" setter="" getter="" default="0">
-			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
-			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
-		</member>
 		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
