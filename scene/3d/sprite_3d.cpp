@@ -562,23 +562,21 @@ void Sprite3D::_draw() {
 	{
 		Vector3 n = normal * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
+		Vector2 res = n.octahedron_encode();
 		uint32_t value = 0;
-		value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-		value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 
 		v_normal = value;
 	}
 	uint32_t v_tangent;
 	{
 		Plane t = tangent;
+		Vector2 res = t.normal.octahedron_tangent_encode(t.d);
 		uint32_t value = 0;
-		value |= CLAMP(int((t.normal.x * 0.5 + 0.5) * 1023.0), 0, 1023);
-		value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-		if (t.d > 0) {
-			value |= 3UL << 30;
-		}
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+
 		v_tangent = value;
 	}
 
@@ -929,23 +927,20 @@ void AnimatedSprite3D::_draw() {
 	{
 		Vector3 n = normal * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
+		Vector2 res = n.octahedron_encode();
 		uint32_t value = 0;
-		value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-		value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 
 		v_normal = value;
 	}
 	uint32_t v_tangent;
 	{
 		Plane t = tangent;
+		Vector2 res = t.normal.octahedron_tangent_encode(t.d);
 		uint32_t value = 0;
-		value |= CLAMP(int((t.normal.x * 0.5 + 0.5) * 1023.0), 0, 1023);
-		value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-		if (t.d > 0) {
-			value |= 3UL << 30;
-		}
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 		v_tangent = value;
 	}
 

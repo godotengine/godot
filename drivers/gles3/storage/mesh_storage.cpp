@@ -124,11 +124,11 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 					} break;
 					case RS::ARRAY_NORMAL: {
-						stride += sizeof(int32_t);
+						stride += sizeof(uint16_t) * 2;
 
 					} break;
 					case RS::ARRAY_TANGENT: {
-						stride += sizeof(int32_t);
+						stride += sizeof(uint16_t) * 2;
 
 					} break;
 					case RS::ARRAY_COLOR: {
@@ -604,17 +604,16 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			} break;
 			case RS::ARRAY_NORMAL: {
 				attribs[i].offset = vertex_stride;
-				// Will need to change to accommodate octahedral compression
-				attribs[i].size = 4;
-				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
-				vertex_stride += sizeof(float);
+				attribs[i].size = 2;
+				attribs[i].type = GL_UNSIGNED_SHORT;
+				vertex_stride += sizeof(uint16_t) * 2;
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_TANGENT: {
 				attribs[i].offset = vertex_stride;
-				attribs[i].size = 4;
-				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
-				vertex_stride += sizeof(float);
+				attribs[i].size = 2;
+				attribs[i].type = GL_UNSIGNED_SHORT;
+				vertex_stride += sizeof(uint16_t) * 2;
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_COLOR: {

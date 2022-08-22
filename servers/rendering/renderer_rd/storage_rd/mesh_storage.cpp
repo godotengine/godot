@@ -1073,10 +1073,9 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				} break;
 				case RS::ARRAY_NORMAL: {
 					vd.offset = stride;
+					vd.format = RD::DATA_FORMAT_R16G16_UNORM;
+					stride += sizeof(uint16_t) * 2;
 
-					vd.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
-
-					stride += sizeof(uint32_t);
 					if (mis) {
 						buffer = mis->vertex_buffer;
 					} else {
@@ -1085,9 +1084,9 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				} break;
 				case RS::ARRAY_TANGENT: {
 					vd.offset = stride;
+					vd.format = RD::DATA_FORMAT_R16G16_UNORM;
+					stride += sizeof(uint16_t) * 2;
 
-					vd.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
-					stride += sizeof(uint32_t);
 					if (mis) {
 						buffer = mis->vertex_buffer;
 					} else {

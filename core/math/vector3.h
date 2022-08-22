@@ -112,6 +112,8 @@ struct _NO_DISCARD_ Vector3 {
 
 	Vector2 octahedron_encode() const;
 	static Vector3 octahedron_decode(const Vector2 &p_oct);
+	Vector2 octahedron_tangent_encode(const float sign) const;
+	static Vector3 octahedron_tangent_decode(const Vector2 &p_oct, float *sign);
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;

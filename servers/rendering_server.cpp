@@ -398,16 +398,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				const Vector3 *src = array.ptr();
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					Vector3 n = src[i] * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+					Vector2 res = src[i].octahedron_encode();
+					int16_t vector[2] = {
+						(int16_t)CLAMP(res.x * 65535, 0, 65535),
+						(int16_t)CLAMP(res.y * 65535, 0, 65535),
+					};
 
-					uint32_t value = 0;
-					value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-					value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-					value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
-
-					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 				}
-
 			} break;
 
 			case RS::ARRAY_TANGENT: {
@@ -416,33 +414,32 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				if (type == Variant::PACKED_FLOAT32_ARRAY) {
 					Vector<float> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-					const float *src = array.ptr();
+					const float *src_ptr = array.ptr();
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint32_t value = 0;
-						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-						if (src[i * 4 + 3] > 0) {
-							value |= 3UL << 30;
-						}
+						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
+						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+						int16_t vector[2] = {
+							(int16_t)CLAMP(res.x * 65535, 0, 65535),
+							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						};
 
-						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 					}
 				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-					const double *src = array.ptr();
+					const double *src_ptr = array.ptr();
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint32_t value = 0;
-						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-						if (src[i * 4 + 3] > 0) {
-							value |= 3UL << 30;
-						}
-						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
+						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+						int16_t vector[2] = {
+							(int16_t)CLAMP(res.x * 65535, 0, 65535),
+							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						};
+
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 					}
 				}
 			} break;
