@@ -169,9 +169,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 	Button *path_add = memnew(Button);
 	path_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	path_add->set_flat(true);
-	Vector<Variant> add_binds;
-	add_binds.push_back(String(p_io_path->openxr_path));
-	path_add->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for), add_binds);
+	path_add->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for).bind(String(p_io_path->openxr_path)));
 	path_hb->add_child(path_add);
 
 	if (interaction_profile.is_valid()) {
@@ -198,10 +196,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				Button *action_rem = memnew(Button);
 				action_rem->set_flat(true);
 				action_rem->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-				Vector<Variant> remove_binds;
-				remove_binds.push_back(action->get_name_with_set());
-				remove_binds.push_back(String(p_io_path->openxr_path));
-				action_rem->connect("pressed", callable_mp((OpenXRInteractionProfileEditorBase *)this, &OpenXRInteractionProfileEditorBase::_remove_binding), remove_binds);
+				action_rem->connect("pressed", callable_mp((OpenXRInteractionProfileEditorBase *)this, &OpenXRInteractionProfileEditorBase::_remove_binding).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
 				action_hb->add_child(action_rem);
 			}
 		}

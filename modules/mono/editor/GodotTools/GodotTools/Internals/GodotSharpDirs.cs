@@ -1,103 +1,125 @@
-using System.Runtime.CompilerServices;
+using System.IO;
+using Godot;
+using Godot.NativeInterop;
+using GodotTools.Core;
+using static GodotTools.Internals.Globals;
 
 namespace GodotTools.Internals
 {
     public static class GodotSharpDirs
     {
-        public static string ResDataDir => internal_ResDataDir();
-        public static string ResMetadataDir => internal_ResMetadataDir();
-        public static string ResAssembliesBaseDir => internal_ResAssembliesBaseDir();
-        public static string ResAssembliesDir => internal_ResAssembliesDir();
-        public static string ResConfigDir => internal_ResConfigDir();
-        public static string ResTempDir => internal_ResTempDir();
-        public static string ResTempAssembliesBaseDir => internal_ResTempAssembliesBaseDir();
-        public static string ResTempAssembliesDir => internal_ResTempAssembliesDir();
+        public static string ResMetadataDir
+        {
+            get
+            {
+                Internal.godot_icall_GodotSharpDirs_ResMetadataDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.ConvertStringToManaged(dest);
+            }
+        }
 
-        public static string MonoUserDir => internal_MonoUserDir();
-        public static string MonoLogsDir => internal_MonoLogsDir();
+        public static string MonoUserDir
+        {
+            get
+            {
+                Internal.godot_icall_GodotSharpDirs_MonoUserDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.ConvertStringToManaged(dest);
+            }
+        }
 
-        #region Tools-only
-        public static string MonoSolutionsDir => internal_MonoSolutionsDir();
-        public static string BuildLogsDirs => internal_BuildLogsDirs();
+        public static string BuildLogsDirs
+        {
+            get
+            {
+                Internal.godot_icall_GodotSharpDirs_BuildLogsDirs(out godot_string dest);
+                using (dest)
+                    return Marshaling.ConvertStringToManaged(dest);
+            }
+        }
 
-        public static string ProjectSlnPath => internal_ProjectSlnPath();
-        public static string ProjectCsProjPath => internal_ProjectCsProjPath();
+        public static string DataEditorToolsDir
+        {
+            get
+            {
+                Internal.godot_icall_GodotSharpDirs_DataEditorToolsDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.ConvertStringToManaged(dest);
+            }
+        }
 
-        public static string DataEditorToolsDir => internal_DataEditorToolsDir();
-        public static string DataEditorPrebuiltApiDir => internal_DataEditorPrebuiltApiDir();
-        #endregion
+        public static void RegisterProjectSettings()
+        {
+            GlobalDef("dotnet/project/assembly_name", "");
+            GlobalDef("dotnet/project/solution_directory", "");
+            GlobalDef("dotnet/project/c#_project_directory", "");
+        }
 
-        public static string DataMonoEtcDir => internal_DataMonoEtcDir();
-        public static string DataMonoLibDir => internal_DataMonoLibDir();
+        private static void DetermineProjectLocation()
+        {
+            static string DetermineProjectName()
+            {
+                string projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
+                projectAssemblyName = projectAssemblyName.ToSafeDirName();
+                if (string.IsNullOrEmpty(projectAssemblyName))
+                    projectAssemblyName = "UnnamedProject";
+                return projectAssemblyName;
+            }
 
-        #region Windows-only
-        public static string DataMonoBinDir => internal_DataMonoBinDir();
-        #endregion
+            _projectAssemblyName = (string)ProjectSettings.GetSetting("dotnet/project/assembly_name");
+            if (string.IsNullOrEmpty(_projectAssemblyName))
+            {
+                _projectAssemblyName = DetermineProjectName();
+                ProjectSettings.SetSetting("dotnet/project/assembly_name", _projectAssemblyName);
+            }
 
+            string slnParentDir = (string)ProjectSettings.GetSetting("dotnet/project/solution_directory");
+            if (string.IsNullOrEmpty(slnParentDir))
+                slnParentDir = "res://";
 
-        #region Internal
+            string csprojParentDir = (string)ProjectSettings.GetSetting("dotnet/project/c#_project_directory");
+            if (string.IsNullOrEmpty(csprojParentDir))
+                csprojParentDir = "res://";
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResDataDir();
+            _projectSlnPath = Path.Combine(ProjectSettings.GlobalizePath(slnParentDir),
+                string.Concat(_projectAssemblyName, ".sln"));
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResMetadataDir();
+            _projectCsProjPath = Path.Combine(ProjectSettings.GlobalizePath(csprojParentDir),
+                string.Concat(_projectAssemblyName, ".csproj"));
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResAssembliesBaseDir();
+        private static string _projectAssemblyName;
+        private static string _projectSlnPath;
+        private static string _projectCsProjPath;
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResAssembliesDir();
+        public static string ProjectAssemblyName
+        {
+            get
+            {
+                if (_projectAssemblyName == null)
+                    DetermineProjectLocation();
+                return _projectAssemblyName;
+            }
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResConfigDir();
+        public static string ProjectSlnPath
+        {
+            get
+            {
+                if (_projectSlnPath == null)
+                    DetermineProjectLocation();
+                return _projectSlnPath;
+            }
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResTempDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResTempAssembliesBaseDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ResTempAssembliesDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoUserDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoLogsDir();
-
-        #region Tools-only
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoSolutionsDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_BuildLogsDirs();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ProjectSlnPath();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_ProjectCsProjPath();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataEditorToolsDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataEditorPrebuiltApiDir();
-        #endregion
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataMonoEtcDir();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataMonoLibDir();
-
-        #region Windows-only
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_DataMonoBinDir();
-        #endregion
-
-        #endregion
+        public static string ProjectCsProjPath
+        {
+            get
+            {
+                if (_projectCsProjPath == null)
+                    DetermineProjectLocation();
+                return _projectCsProjPath;
+            }
+        }
     }
 }

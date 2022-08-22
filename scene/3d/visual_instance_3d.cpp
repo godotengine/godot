@@ -227,8 +227,8 @@ const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringNa
 	StringName *r = instance_uniform_property_remap.getptr(p_name);
 	if (!r) {
 		String s = p_name;
-		if (s.begins_with("shader_params/")) {
-			StringName name = s.replace("shader_params/", "");
+		if (s.begins_with("shader_uniforms/")) {
+			StringName name = s.replace("shader_uniforms/", "");
 			instance_uniform_property_remap[p_name] = name;
 			return instance_uniform_property_remap.getptr(p_name);
 		}
@@ -242,7 +242,7 @@ const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringNa
 bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	const StringName *r = _instance_uniform_get_remap(p_name);
 	if (r) {
-		set_shader_instance_uniform(*r, p_value);
+		set_instance_shader_uniform(*r, p_value);
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
@@ -262,7 +262,7 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 	const StringName *r = _instance_uniform_get_remap(p_name);
 	if (r) {
-		r_ret = get_shader_instance_uniform(*r);
+		r_ret = get_instance_shader_uniform(*r);
 		return true;
 	}
 
@@ -271,10 +271,10 @@ bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> pinfo;
-	RS::get_singleton()->instance_geometry_get_shader_parameter_list(get_instance(), &pinfo);
+	RS::get_singleton()->instance_geometry_get_shader_uniform_list(get_instance(), &pinfo);
 	for (PropertyInfo &pi : pinfo) {
 		bool has_def_value = false;
-		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), pi.name);
+		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_uniform_default_value(get_instance(), pi.name);
 		if (def_value.get_type() != Variant::NIL) {
 			has_def_value = true;
 		}
@@ -284,7 +284,7 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); //do not save if not changed
 		}
 
-		pi.name = "shader_params/" + pi.name;
+		pi.name = "shader_uniforms/" + pi.name;
 		p_list->push_back(pi);
 	}
 }
@@ -319,24 +319,24 @@ float GeometryInstance3D::get_lod_bias() const {
 	return lod_bias;
 }
 
-void GeometryInstance3D::set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value) {
+void GeometryInstance3D::set_instance_shader_uniform(const StringName &p_uniform, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
-		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_uniform);
-		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, def_value);
+		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_uniform_default_value(get_instance(), p_uniform);
+		RS::get_singleton()->instance_geometry_set_shader_uniform(get_instance(), p_uniform, def_value);
 		instance_uniforms.erase(p_value);
 	} else {
 		instance_uniforms[p_uniform] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_id = p_value;
-			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, tex_id);
+			RS::get_singleton()->instance_geometry_set_shader_uniform(get_instance(), p_uniform, tex_id);
 		} else {
-			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, p_value);
+			RS::get_singleton()->instance_geometry_set_shader_uniform(get_instance(), p_uniform, p_value);
 		}
 	}
 }
 
-Variant GeometryInstance3D::get_shader_instance_uniform(const StringName &p_uniform) const {
-	return RS::get_singleton()->instance_geometry_get_shader_parameter(get_instance(), p_uniform);
+Variant GeometryInstance3D::get_instance_shader_uniform(const StringName &p_uniform) const {
+	return RS::get_singleton()->instance_geometry_get_shader_uniform(get_instance(), p_uniform);
 }
 
 void GeometryInstance3D::set_custom_aabb(AABB aabb) {
@@ -434,8 +434,8 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visibility_range_fade_mode", "mode"), &GeometryInstance3D::set_visibility_range_fade_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_range_fade_mode"), &GeometryInstance3D::get_visibility_range_fade_mode);
 
-	ClassDB::bind_method(D_METHOD("set_shader_instance_uniform", "uniform", "value"), &GeometryInstance3D::set_shader_instance_uniform);
-	ClassDB::bind_method(D_METHOD("get_shader_instance_uniform", "uniform"), &GeometryInstance3D::get_shader_instance_uniform);
+	ClassDB::bind_method(D_METHOD("set_instance_shader_uniform", "uniform", "value"), &GeometryInstance3D::set_instance_shader_uniform);
+	ClassDB::bind_method(D_METHOD("get_instance_shader_uniform", "uniform"), &GeometryInstance3D::get_instance_shader_uniform);
 
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
@@ -461,15 +461,16 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
+
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×")), "set_lightmap_scale", "get_lightmap_scale");
 
 	ADD_GROUP("Visibility Range", "visibility_range_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,suffix:m"), "set_visibility_range_begin", "get_visibility_range_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,suffix:m"), "set_visibility_range_begin_margin", "get_visibility_range_begin_margin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,suffix:m"), "set_visibility_range_end", "get_visibility_range_end");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,suffix:m"), "set_visibility_range_end_margin", "get_visibility_range_end_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin", "get_visibility_range_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin_margin", "get_visibility_range_begin_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_end", "get_visibility_range_end");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_end_margin", "get_visibility_range_end_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_range_fade_mode", PROPERTY_HINT_ENUM, "Disabled,Self,Dependencies"), "set_visibility_range_fade_mode", "get_visibility_range_fade_mode");
 
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);

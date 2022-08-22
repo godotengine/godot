@@ -720,7 +720,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	for (int i = 0; i < MOD_MAX; i++) {
 		String name = mods[i];
 		mod_checkboxes[i] = memnew(CheckBox);
-		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled), varray(i));
+		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled).bind(i));
 		mod_checkboxes[i]->set_text(name);
 		mod_container->add_child(mod_checkboxes[i]);
 	}

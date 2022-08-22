@@ -14,13 +14,13 @@ namespace Godot.SourceGenerators
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.TryGetGlobalAnalyzerProperty("GodotScriptPathAttributeGenerator", out string? toggle)
-                && toggle == "disabled")
-            {
+            if (context.AreGodotSourceGeneratorsDisabled())
                 return;
-            }
 
-            // NOTE: IsNullOrEmpty doesn't work well with nullable checks
+            if (context.IsGodotToolsProject())
+                return;
+
+            // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
             // ReSharper disable once ReplaceWithStringIsNullOrEmpty
             if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out string? godotProjectDir)
                 || godotProjectDir!.Length == 0)
@@ -28,17 +28,18 @@ namespace Godot.SourceGenerators
                 throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
             }
 
-            var godotClasses = context.Compilation.SyntaxTrees
+            Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = context
+                .Compilation.SyntaxTrees
                 .SelectMany(tree =>
                     tree.GetRoot().DescendantNodes()
                         .OfType<ClassDeclarationSyntax>()
                         // Ignore inner classes
-                        .Where(cds => !(cds.Parent is ClassDeclarationSyntax))
+                        .Where(cds => !cds.IsNested())
                         .SelectGodotScriptClasses(context.Compilation)
                         // Report and skip non-partial classes
                         .Where(x =>
                         {
-                            if (x.cds.IsPartial() || x.symbol.HasDisableGeneratorsAttribute())
+                            if (x.cds.IsPartial())
                                 return true;
                             Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
@@ -89,21 +90,14 @@ namespace Godot.SourceGenerators
                 attributes.Append(@""")]");
             }
 
-            string className = symbol.Name;
-
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
                 namespaceSymbol.FullQualifiedName() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            var uniqueName = new StringBuilder();
-            if (hasNamespace)
-                uniqueName.Append($"{classNs}.");
-            uniqueName.Append(className);
-            if (symbol.IsGenericType)
-                uniqueName.Append($"Of{string.Join(string.Empty, symbol.TypeParameters)}");
-            uniqueName.Append("_ScriptPath_Generated");
+            var uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+                             + "_ScriptPath_Generated";
 
             var source = new StringBuilder();
 
@@ -123,10 +117,8 @@ namespace Godot.SourceGenerators
             }
 
             source.Append(attributes);
-            source.Append("\n    partial class ");
-            source.Append(className);
-            if (symbol.IsGenericType)
-                source.Append($"<{string.Join(", ", symbol.TypeParameters)}>");
+            source.Append("\npartial class ");
+            source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n}\n");
 
             if (hasNamespace)
@@ -134,7 +126,7 @@ namespace Godot.SourceGenerators
                 source.Append("\n}\n");
             }
 
-            context.AddSource(uniqueName.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
+            context.AddSource(uniqueHint.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
         private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,

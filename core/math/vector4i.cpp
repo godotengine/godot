@@ -47,7 +47,7 @@ Vector4i::Axis Vector4i::min_axis_index() const {
 	uint32_t min_index = 0;
 	int32_t min_value = x;
 	for (uint32_t i = 1; i < 4; i++) {
-		if (operator[](i) < min_value) {
+		if (operator[](i) <= min_value) {
 			min_index = i;
 			min_value = operator[](i);
 		}

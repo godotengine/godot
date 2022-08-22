@@ -32,8 +32,6 @@
 
 #define OPENGL_INCLUDE_H <ES3/gl.h>
 
-#define PLATFORM_REFCOUNT
-
 #define PTHREAD_RENAME_SELF
 
 #define _weakify(var) __weak typeof(var) GDWeak_##var = var;

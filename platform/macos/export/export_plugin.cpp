@@ -32,12 +32,13 @@
 
 #include "codesign.h"
 
+#include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 
-void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
 	}
@@ -47,8 +48,7 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 	if (p_preset->get("texture_format/etc2")) {
 		r_features->push_back("etc2");
 	}
-
-	r_features->push_back("64");
+	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
 bool EditorExportPlatformMacOS::get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -69,6 +69,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const String &p_opt
 }
 
 void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options) {
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "universal,x86_64,arm64", PROPERTY_USAGE_STORAGE), "universal"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -254,7 +255,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint
 			// Encode PNG icon.
 			it->set_image(copy);
 			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
-			ResourceSaver::save(path, it);
+			ResourceSaver::save(it, path);
 
 			{
 				Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
@@ -766,7 +767,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
-	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + ".64";
+	String architecture = p_preset->get("binary_format/architecture");
+	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + "." + architecture;
 
 	String pkg_name;
 	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
@@ -1064,19 +1066,19 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (data.size() > 0) {
-			if (file.find("/data.mono.macos.64.release_debug/") != -1) {
+			if (file.find("/data.mono.macos.release_debug." + architecture + "/") != -1) {
 				if (!p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.macos.64.release_debug/", "/GodotSharp/");
+				file = file.replace("/data.mono.macos.release_debug." + architecture + "/", "/GodotSharp/");
 			}
-			if (file.find("/data.mono.macos.64.release/") != -1) {
+			if (file.find("/data.mono.macos.release." + architecture + "/") != -1) {
 				if (p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.macos.64.release/", "/GodotSharp/");
+				file = file.replace("/data.mono.macos.release." + architecture + "/", "/GodotSharp/");
 			}
 
 			if (file.ends_with(".dylib")) {
@@ -1548,7 +1550,7 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 	da->list_dir_end();
 }
 
-bool EditorExportPlatformMacOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
 
@@ -1577,6 +1579,17 @@ bool EditorExportPlatformMacOS::can_export(const Ref<EditorExportPreset> &p_pres
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	if (!err.is_empty()) {
+		r_error = err;
+	}
+
+	return valid;
+}
+
+bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
+	String err;
+	bool valid = true;
 
 	String identifier = p_preset->get("application/bundle_identifier");
 	String pn_err;

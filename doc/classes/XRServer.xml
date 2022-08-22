@@ -12,22 +12,22 @@
 	<methods>
 		<method name="add_interface">
 			<return type="void" />
-			<argument index="0" name="interface" type="XRInterface" />
+			<param index="0" name="interface" type="XRInterface" />
 			<description>
 				Registers an [XRInterface] object.
 			</description>
 		</method>
 		<method name="add_tracker">
 			<return type="void" />
-			<argument index="0" name="tracker" type="XRPositionalTracker" />
+			<param index="0" name="tracker" type="XRPositionalTracker" />
 			<description>
 				Registers a new [XRPositionalTracker] that tracks a spatial location in real space.
 			</description>
 		</method>
 		<method name="center_on_hmd">
 			<return type="void" />
-			<argument index="0" name="rotation_mode" type="int" enum="XRServer.RotationMode" />
-			<argument index="1" name="keep_height" type="bool" />
+			<param index="0" name="rotation_mode" type="int" enum="XRServer.RotationMode" />
+			<param index="1" name="keep_height" type="bool" />
 			<description>
 				This is an important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
 				For platforms that do not offer spatial tracking, our origin point (0,0,0) is the location of our HMD, but you have little control over the direction the player is facing in the real world.
@@ -39,9 +39,9 @@
 		</method>
 		<method name="find_interface" qualifiers="const">
 			<return type="XRInterface" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
-				Finds an interface by its name. For instance, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
+				Finds an interface by its [param name]. For instance, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
 			</description>
 		</method>
 		<method name="get_hmd_transform">
@@ -52,9 +52,9 @@
 		</method>
 		<method name="get_interface" qualifiers="const">
 			<return type="XRInterface" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the interface registered at a given index in our list of interfaces.
+				Returns the interface registered at the given [param idx] index in the list of interfaces.
 			</description>
 		</method>
 		<method name="get_interface_count" qualifiers="const">
@@ -77,30 +77,30 @@
 		</method>
 		<method name="get_tracker" qualifiers="const">
 			<return type="XRPositionalTracker" />
-			<argument index="0" name="tracker_name" type="StringName" />
+			<param index="0" name="tracker_name" type="StringName" />
 			<description>
-				Returns the positional tracker with this name.
+				Returns the positional tracker with the given [param tracker_name].
 			</description>
 		</method>
 		<method name="get_trackers">
 			<return type="Dictionary" />
-			<argument index="0" name="tracker_types" type="int" />
+			<param index="0" name="tracker_types" type="int" />
 			<description>
-				Returns a dictionary of trackers for this type.
+				Returns a dictionary of trackers for [param tracker_types].
 			</description>
 		</method>
 		<method name="remove_interface">
 			<return type="void" />
-			<argument index="0" name="interface" type="XRInterface" />
+			<param index="0" name="interface" type="XRInterface" />
 			<description>
-				Removes this interface.
+				Removes this [param interface].
 			</description>
 		</method>
 		<method name="remove_tracker">
 			<return type="void" />
-			<argument index="0" name="tracker" type="XRPositionalTracker" />
+			<param index="0" name="tracker" type="XRPositionalTracker" />
 			<description>
-				Removes this positional tracker.
+				Removes this positional [param tracker].
 			</description>
 		</method>
 	</methods>
@@ -114,34 +114,34 @@
 	</members>
 	<signals>
 		<signal name="interface_added">
-			<argument index="0" name="interface_name" type="StringName" />
+			<param index="0" name="interface_name" type="StringName" />
 			<description>
 				Emitted when a new interface has been added.
 			</description>
 		</signal>
 		<signal name="interface_removed">
-			<argument index="0" name="interface_name" type="StringName" />
+			<param index="0" name="interface_name" type="StringName" />
 			<description>
 				Emitted when an interface is removed.
 			</description>
 		</signal>
 		<signal name="tracker_added">
-			<argument index="0" name="tracker_name" type="StringName" />
-			<argument index="1" name="type" type="int" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="type" type="int" />
 			<description>
 				Emitted when a new tracker has been added. If you don't use a fixed number of controllers or if you're using [XRAnchor3D]s for an AR solution, it is important to react to this signal to add the appropriate [XRController3D] or [XRAnchor3D] nodes related to this new tracker.
 			</description>
 		</signal>
 		<signal name="tracker_removed">
-			<argument index="0" name="tracker_name" type="StringName" />
-			<argument index="1" name="type" type="int" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="type" type="int" />
 			<description>
 				Emitted when a tracker is removed. You should remove any [XRController3D] or [XRAnchor3D] points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
 			</description>
 		</signal>
 		<signal name="tracker_updated">
-			<argument index="0" name="tracker_name" type="StringName" />
-			<argument index="1" name="type" type="int" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="type" type="int" />
 			<description>
 				Emitted when an existing tracker has been updated. This can happen if the user switches controllers.
 			</description>

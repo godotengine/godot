@@ -261,7 +261,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (!p_action.is_empty()) {
-		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
+		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action).bind(p_action));
 	}
 
 	return button;
@@ -387,7 +387,7 @@ String ConfirmationDialog::get_cancel_button_text() const {
 
 void ConfirmationDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cancel_button"), &ConfirmationDialog::get_cancel_button);
-	ClassDB::bind_method(D_METHOD("set_cancel_button_text"), &ConfirmationDialog::set_cancel_button_text);
+	ClassDB::bind_method(D_METHOD("set_cancel_button_text", "text"), &ConfirmationDialog::set_cancel_button_text);
 	ClassDB::bind_method(D_METHOD("get_cancel_button_text"), &ConfirmationDialog::get_cancel_button_text);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");

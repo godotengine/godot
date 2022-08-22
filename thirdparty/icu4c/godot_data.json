@@ -6,5 +6,6 @@
         brkitr_tree: include
         misc: include
         normalization: include
+        confusables: include
     }
 }

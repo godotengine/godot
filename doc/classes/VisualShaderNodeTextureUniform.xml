@@ -39,12 +39,15 @@
 			Represents the size of the [enum TextureType] enum.
 		</constant>
 		<constant name="COLOR_DEFAULT_WHITE" value="0" enum="ColorDefault">
-			Defaults to white color.
+			Defaults to fully opaque white color.
 		</constant>
 		<constant name="COLOR_DEFAULT_BLACK" value="1" enum="ColorDefault">
-			Defaults to black color.
+			Defaults to fully opaque black color.
 		</constant>
-		<constant name="COLOR_DEFAULT_MAX" value="2" enum="ColorDefault">
+		<constant name="COLOR_DEFAULT_TRANSPARENT" value="2" enum="ColorDefault">
+			Defaults to fully transparent black color.
+		</constant>
+		<constant name="COLOR_DEFAULT_MAX" value="3" enum="ColorDefault">
 			Represents the size of the [enum ColorDefault] enum.
 		</constant>
 		<constant name="FILTER_DEFAULT" value="0" enum="TextureFilter">

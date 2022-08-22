@@ -125,7 +125,7 @@ class ProjectManager : public Control {
 	void _on_projects_updated();
 	void _scan_multiple_folders(PackedStringArray p_files);
 	void _scan_begin(const String &p_base);
-	void _scan_dir(const String &path, List<String> *r_projects);
+	void _scan_dir(const String &path);
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 

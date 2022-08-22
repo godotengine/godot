@@ -14,8 +14,8 @@
 		</method>
 		<method name="_mix_resampled" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="dst_buffer" type="AudioFrame*" />
-			<argument index="1" name="frame_count" type="int" />
+			<param index="0" name="dst_buffer" type="AudioFrame*" />
+			<param index="1" name="frame_count" type="int" />
 			<description>
 			</description>
 		</method>

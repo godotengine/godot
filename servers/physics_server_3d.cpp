@@ -184,6 +184,8 @@ Vector<RID> PhysicsRayQueryParameters3D::get_exclude() const {
 }
 
 void PhysicsRayQueryParameters3D::_bind_methods() {
+	ClassDB::bind_static_method("PhysicsRayQueryParameters3D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters3D::create, DEFVAL(UINT32_MAX), DEFVAL(Vector<RID>()));
+
 	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsRayQueryParameters3D::set_from);
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsRayQueryParameters3D::get_from);
 
@@ -219,6 +221,16 @@ void PhysicsRayQueryParameters3D::_bind_methods() {
 }
 
 ///////////////////////////////////////////////////////
+
+Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const Vector<RID> &p_exclude) {
+	Ref<PhysicsRayQueryParameters3D> params;
+	params.instantiate();
+	params->set_from(p_from);
+	params->set_to(p_to);
+	params->set_collision_mask(p_mask);
+	params->set_exclude(p_exclude);
+	return params;
+}
 
 void PhysicsPointQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
 	parameters.exclude.clear();
@@ -737,6 +749,9 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_collision_mask", "body", "mask"), &PhysicsServer3D::body_set_collision_mask);
 	ClassDB::bind_method(D_METHOD("body_get_collision_mask", "body"), &PhysicsServer3D::body_get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("body_set_collision_priority", "body", "priority"), &PhysicsServer3D::body_set_collision_priority);
+	ClassDB::bind_method(D_METHOD("body_get_collision_priority", "body"), &PhysicsServer3D::body_get_collision_priority);
 
 	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer3D::body_add_shape, DEFVAL(Transform3D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("body_set_shape", "body", "shape_idx", "shape"), &PhysicsServer3D::body_set_shape);

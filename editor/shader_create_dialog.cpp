@@ -37,6 +37,13 @@
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
 
+enum ShaderType {
+	SHADER_TYPE_TEXT,
+	SHADER_TYPE_VISUAL,
+	SHADER_TYPE_INC,
+	SHADER_TYPE_MAX,
+};
+
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -211,7 +218,7 @@ void ShaderCreateDialog::_create_new() {
 		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		shader_inc->set_path(lpath);
 
-		Error error = ResourceSaver::save(lpath, shader_inc, ResourceSaver::FLAG_CHANGE_PATH);
+		Error error = ResourceSaver::save(shader_inc, lpath, ResourceSaver::FLAG_CHANGE_PATH);
 		if (error != OK) {
 			alert->set_text(TTR("Error - Could not create shader include in filesystem."));
 			alert->popup_centered();
@@ -224,7 +231,7 @@ void ShaderCreateDialog::_create_new() {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 			shader->set_path(lpath);
 
-			Error error = ResourceSaver::save(lpath, shader, ResourceSaver::FLAG_CHANGE_PATH);
+			Error error = ResourceSaver::save(shader, lpath, ResourceSaver::FLAG_CHANGE_PATH);
 			if (error != OK) {
 				alert->set_text(TTR("Error - Could not create shader in filesystem."));
 				alert->popup_centered();

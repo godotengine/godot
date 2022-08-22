@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
@@ -397,6 +398,10 @@ void GroupDialog::_notification(int p_what) {
 	}
 }
 
+void GroupDialog::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
+}
+
 void GroupDialog::edit() {
 	popup_centered();
 
@@ -473,7 +478,7 @@ GroupDialog::GroupDialog() {
 	add_group_button = memnew(Button);
 	add_group_button->set_text(TTR("Add"));
 	chbc->add_child(add_group_button);
-	add_group_button->connect("pressed", callable_mp(this, &GroupDialog::_add_group_pressed), varray(String()));
+	add_group_button->connect("pressed", callable_mp(this, &GroupDialog::_add_group_pressed).bind(String()));
 
 	VBoxContainer *vbc_add = memnew(VBoxContainer);
 	hbc->add_child(vbc_add);
@@ -696,6 +701,10 @@ void GroupsEditor::update_tree() {
 	}
 }
 
+void GroupsEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
+}
+
 void GroupsEditor::set_current(Node *p_node) {
 	node = p_node;
 	update_tree();
@@ -737,7 +746,7 @@ GroupsEditor::GroupsEditor() {
 	add = memnew(Button);
 	add->set_text(TTR("Add"));
 	hbc->add_child(add);
-	add->connect("pressed", callable_mp(this, &GroupsEditor::_add_group), varray(String()));
+	add->connect("pressed", callable_mp(this, &GroupsEditor::_add_group).bind(String()));
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);

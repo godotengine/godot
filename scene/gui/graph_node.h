@@ -101,7 +101,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 	void _edit_set_position(const Point2 &p_position) override;
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 #endif
 
 protected:

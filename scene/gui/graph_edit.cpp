@@ -382,9 +382,9 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
-		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
-		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated), varray(gn));
-		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
+		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved).bind(gn));
+		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
+		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
 		_graph_node_moved(gn);
@@ -710,6 +710,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = gn->get_connection_output_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
+							if (!is_node_hover_valid(gn->get_name(), j, connecting_from, connecting_index)) {
+								continue;
+							}
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -725,6 +728,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = gn->get_connection_input_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
+							if (!is_node_hover_valid(connecting_from, connecting_index, gn->get_name(), j)) {
+								continue;
+							}
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -1453,6 +1459,14 @@ void GraphEdit::force_connection_drag_end() {
 	emit_signal(SNAME("connection_drag_ended"));
 }
 
+bool GraphEdit::is_node_hover_valid(const StringName &p_from, const int p_from_port, const StringName &p_to, const int p_to_port) {
+	bool valid;
+	if (GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid)) {
+		return valid;
+	}
+	return true;
+}
+
 void GraphEdit::set_panning_scheme(PanningScheme p_scheme) {
 	panning_scheme = p_scheme;
 	panner->set_control_scheme((ViewPanner::ControlScheme)p_scheme);
@@ -1809,7 +1823,20 @@ HashMap<int, Vector<StringName>> GraphEdit::_layering(const HashSet<StringName> 
 		}
 		if (!selected) {
 			current_layer++;
+			uint32_t previous_size_z = z.size();
 			_set_operations(GraphEdit::UNION, z, u);
+			if (z.size() == previous_size_z) {
+				WARN_PRINT("Graph contains cycle(s). The cycle(s) will not be rearranged accurately.");
+				Vector<StringName> t;
+				if (l.has(0)) {
+					t.append_array(l[0]);
+				}
+				for (const StringName &E : p) {
+					t.push_back(E);
+				}
+				l.insert(0, t);
+				break;
+			}
 		}
 		selected = false;
 	}
@@ -2124,7 +2151,7 @@ void GraphEdit::arrange_nodes() {
 			HashSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
-				if (E->get().to == gn->get_name() && p_from->is_selected()) {
+				if (E->get().to == gn->get_name() && p_from->is_selected() && E->get().to != E->get().from) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
 					}
@@ -2315,6 +2342,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 
 	GDVIRTUAL_BIND(_get_connection_line, "from", "to")
+	GDVIRTUAL_BIND(_is_node_hover_valid, "from", "from_slot", "to", "to_slot");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_ofs", "get_scroll_ofs");
@@ -2353,7 +2381,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);

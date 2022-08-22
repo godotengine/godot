@@ -531,10 +531,12 @@ String &String::operator+=(const String &p_str) {
 
 	resize(lhs_len + rhs_len + 1);
 
-	const char32_t *src = p_str.get_data();
+	const char32_t *src = p_str.ptr();
 	char32_t *dst = ptrw() + lhs_len;
 
-	memcpy(dst, src, (rhs_len + 1) * sizeof(char32_t));
+	// Don't copy the terminating null with `memcpy` to avoid undefined behavior when string is being added to itself (it would overlap the destination).
+	memcpy(dst, src, rhs_len * sizeof(char32_t));
+	*(dst + rhs_len) = _null;
 
 	return *this;
 }
@@ -1656,7 +1658,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 	return ret;
 }
 
-Error String::parse_utf8(const char *p_utf8, int p_len) {
+Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
@@ -1689,6 +1691,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len) {
 			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
 			if (skip == 0) {
+				if (p_skip_cr && c == '\r') {
+					ptrtmp++;
+					continue;
+				}
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0) {
 					skip = 0;
@@ -1753,6 +1759,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len) {
 		uint8_t c = *p_utf8 >= 0 ? *p_utf8 : uint8_t(256 + *p_utf8);
 
 		if (skip == 0) {
+			if (p_skip_cr && c == '\r') {
+				p_utf8++;
+				continue;
+			}
 			/* Determine the number of characters in sequence */
 			if ((c & 0x80) == 0) {
 				*(dst++) = c;

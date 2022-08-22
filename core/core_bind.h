@@ -71,7 +71,7 @@ public:
 
 	static ResourceLoader *get_singleton() { return singleton; }
 
-	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false);
+	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
 	Ref<Resource> load_threaded_get(const String &p_path);
 
@@ -109,7 +109,7 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags);
+	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
@@ -170,6 +170,8 @@ public:
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 
+	Vector<String> get_system_fonts() const;
+	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
@@ -180,12 +182,17 @@ public:
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
+	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
+	bool is_restart_on_exit_set() const;
+	Vector<String> get_restart_on_exit_arguments() const;
+
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
 	bool set_environment(const String &p_var, const String &p_value) const;
 
 	String get_name() const;
 	Vector<String> get_cmdline_args();
+	Vector<String> get_cmdline_user_args();
 
 	String get_locale() const;
 	String get_locale_language() const;
@@ -409,7 +416,7 @@ public:
 	Vector<uint8_t> get_buffer(int64_t p_length) const; // Get an array of bytes.
 	String get_line() const;
 	Vector<String> get_csv_line(const String &p_delim = ",") const;
-	String get_as_text() const;
+	String get_as_text(bool p_skip_cr = false) const;
 	String get_md5(const String &p_path) const;
 	String get_sha256(const String &p_path) const;
 
@@ -659,6 +666,8 @@ public:
 	Dictionary get_license_info() const;
 	String get_license_text() const;
 
+	String get_architecture_name() const;
+
 	bool is_in_physics_frame() const;
 
 	bool has_singleton(const StringName &p_name) const;
@@ -673,6 +682,9 @@ public:
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
+	String get_write_movie_path() const;
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;

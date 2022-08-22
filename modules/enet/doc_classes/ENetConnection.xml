@@ -12,31 +12,31 @@
 	<methods>
 		<method name="bandwidth_limit">
 			<return type="void" />
-			<argument index="0" name="in_bandwidth" type="int" default="0" />
-			<argument index="1" name="out_bandwidth" type="int" default="0" />
+			<param index="0" name="in_bandwidth" type="int" default="0" />
+			<param index="1" name="out_bandwidth" type="int" default="0" />
 			<description>
 				Adjusts the bandwidth limits of a host.
 			</description>
 		</method>
 		<method name="broadcast">
 			<return type="void" />
-			<argument index="0" name="channel" type="int" />
-			<argument index="1" name="packet" type="PackedByteArray" />
-			<argument index="2" name="flags" type="int" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="packet" type="PackedByteArray" />
+			<param index="2" name="flags" type="int" />
 			<description>
 				Queues a [code]packet[/code] to be sent to all peers associated with the host over the specified [code]channel[/code]. See [ENetPacketPeer] [code]FLAG_*[/code] constants for available packet flags.
 			</description>
 		</method>
 		<method name="channel_limit">
 			<return type="void" />
-			<argument index="0" name="limit" type="int" />
+			<param index="0" name="limit" type="int" />
 			<description>
 				Limits the maximum allowed channels of future incoming connections.
 			</description>
 		</method>
 		<method name="compress">
 			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="ENetConnection.CompressionMode" />
+			<param index="0" name="mode" type="int" enum="ENetConnection.CompressionMode" />
 			<description>
 				Sets the compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 				[b]Note:[/b] Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.
@@ -45,10 +45,10 @@
 		</method>
 		<method name="connect_to_host">
 			<return type="ENetPacketPeer" />
-			<argument index="0" name="address" type="String" />
-			<argument index="1" name="port" type="int" />
-			<argument index="2" name="channels" type="int" default="0" />
-			<argument index="3" name="data" type="int" default="0" />
+			<param index="0" name="address" type="String" />
+			<param index="1" name="port" type="int" />
+			<param index="2" name="channels" type="int" default="0" />
+			<param index="3" name="data" type="int" default="0" />
 			<description>
 				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocating the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
 				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
@@ -56,22 +56,22 @@
 		</method>
 		<method name="create_host">
 			<return type="int" enum="Error" />
-			<argument index="0" name="max_peers" type="int" default="32" />
-			<argument index="1" name="max_channels" type="int" default="0" />
-			<argument index="2" name="in_bandwidth" type="int" default="0" />
-			<argument index="3" name="out_bandwidth" type="int" default="0" />
+			<param index="0" name="max_peers" type="int" default="32" />
+			<param index="1" name="max_channels" type="int" default="0" />
+			<param index="2" name="in_bandwidth" type="int" default="0" />
+			<param index="3" name="out_bandwidth" type="int" default="0" />
 			<description>
 				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwidth to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
 			</description>
 		</method>
 		<method name="create_host_bound">
 			<return type="int" enum="Error" />
-			<argument index="0" name="bind_address" type="String" />
-			<argument index="1" name="bind_port" type="int" />
-			<argument index="2" name="max_peers" type="int" default="32" />
-			<argument index="3" name="max_channels" type="int" default="0" />
-			<argument index="4" name="in_bandwidth" type="int" default="0" />
-			<argument index="5" name="out_bandwidth" type="int" default="0" />
+			<param index="0" name="bind_address" type="String" />
+			<param index="1" name="bind_port" type="int" />
+			<param index="2" name="max_peers" type="int" default="32" />
+			<param index="3" name="max_channels" type="int" default="0" />
+			<param index="4" name="in_bandwidth" type="int" default="0" />
+			<param index="5" name="out_bandwidth" type="int" default="0" />
 			<description>
 				Create an ENetHost like [method create_host] which is also bound to the given [code]bind_address[/code] and [code]bind_port[/code].
 			</description>
@@ -84,17 +84,17 @@
 		</method>
 		<method name="dtls_client_setup">
 			<return type="int" enum="Error" />
-			<argument index="0" name="certificate" type="X509Certificate" />
-			<argument index="1" name="hostname" type="String" />
-			<argument index="2" name="verify" type="bool" default="true" />
+			<param index="0" name="certificate" type="X509Certificate" />
+			<param index="1" name="hostname" type="String" />
+			<param index="2" name="verify" type="bool" default="true" />
 			<description>
 				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS with [code]certificate[/code] and [code]hostname[/code] verification. Verification can be optionally turned off via the [code]verify[/code] parameter.
 			</description>
 		</method>
 		<method name="dtls_server_setup">
 			<return type="int" enum="Error" />
-			<argument index="0" name="key" type="CryptoKey" />
-			<argument index="1" name="certificate" type="X509Certificate" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="certificate" type="X509Certificate" />
 			<description>
 				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet servers. Call this right after [method create_host_bound] to have ENet expect peers to connect using DTLS.
 			</description>
@@ -126,14 +126,14 @@
 		</method>
 		<method name="pop_statistic">
 			<return type="float" />
-			<argument index="0" name="statistic" type="int" enum="ENetConnection.HostStatistic" />
+			<param index="0" name="statistic" type="int" enum="ENetConnection.HostStatistic" />
 			<description>
 				Returns and resets host statistics. See [enum HostStatistic] for more info.
 			</description>
 		</method>
 		<method name="refuse_new_connections">
 			<return type="void" />
-			<argument index="0" name="refuse" type="bool" />
+			<param index="0" name="refuse" type="bool" />
 			<description>
 				Configures the DTLS server to automatically drop new connections.
 				[b]Note:[/b] This method is only relevant after calling [method dtls_server_setup].
@@ -141,7 +141,7 @@
 		</method>
 		<method name="service">
 			<return type="Array" />
-			<argument index="0" name="timeout" type="int" default="0" />
+			<param index="0" name="timeout" type="int" default="0" />
 			<description>
 				Waits for events on the host specified and shuttles packets between the host and its peers. The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
 				Call this function regularly to handle connections, disconnections, and to receive new packets.

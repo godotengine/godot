@@ -141,7 +141,7 @@ private:
 	float reverb_amount = 0.0;
 	float reverb_uniformity = 0.0;
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _initialize_wind();
 

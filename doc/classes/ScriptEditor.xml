@@ -35,22 +35,22 @@
 		</method>
 		<method name="goto_line">
 			<return type="void" />
-			<argument index="0" name="line_number" type="int" />
+			<param index="0" name="line_number" type="int" />
 			<description>
 				Goes to the specified line in the current script.
 			</description>
 		</method>
 		<method name="open_script_create_dialog">
 			<return type="void" />
-			<argument index="0" name="base_name" type="String" />
-			<argument index="1" name="base_path" type="String" />
+			<param index="0" name="base_name" type="String" />
+			<param index="1" name="base_path" type="String" />
 			<description>
-				Opens the script create dialog. The script will extend [code]base_name[/code]. The file extension can be omitted from [code]base_path[/code]. It will be added based on the selected scripting language.
+				Opens the script create dialog. The script will extend [param base_name]. The file extension can be omitted from [param base_path]. It will be added based on the selected scripting language.
 			</description>
 		</method>
 		<method name="register_syntax_highlighter">
 			<return type="void" />
-			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
+			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
 			<description>
 				Registers the [EditorSyntaxHighlighter] to the editor, the [EditorSyntaxHighlighter] will be available on all open scripts.
 				[b]Note:[/b] Does not apply to scripts that are already opened.
@@ -58,7 +58,7 @@
 		</method>
 		<method name="unregister_syntax_highlighter">
 			<return type="void" />
-			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
+			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
 			<description>
 				Unregisters the [EditorSyntaxHighlighter] from the editor.
 				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
@@ -67,13 +67,13 @@
 	</methods>
 	<signals>
 		<signal name="editor_script_changed">
-			<argument index="0" name="script" type="Script" />
+			<param index="0" name="script" type="Script" />
 			<description>
 				Emitted when user changed active script. Argument is a freshly activated [Script].
 			</description>
 		</signal>
 		<signal name="script_close">
-			<argument index="0" name="script" type="Script" />
+			<param index="0" name="script" type="Script" />
 			<description>
 				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.
 			</description>

@@ -30,6 +30,7 @@
 
 #include "gpu_particles_collision_3d.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -126,6 +127,10 @@ GPUParticlesCollisionBox3D::~GPUParticlesCollisionBox3D() {
 void GPUParticlesCollisionSDF3D::_find_meshes(const AABB &p_aabb, Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
 	if (mi && mi->is_visible_in_tree()) {
+		if ((mi->get_layer_mask() & bake_mask) == 0) {
+			return;
+		}
+
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();
@@ -339,15 +344,12 @@ void GPUParticlesCollisionSDF3D::_compute_sdf_z(uint32_t p_z, ComputeSDFParams *
 }
 
 void GPUParticlesCollisionSDF3D::_compute_sdf(ComputeSDFParams *params) {
-	ThreadWorkPool work_pool;
-	work_pool.init();
-	work_pool.begin_work(params->size.z, this, &GPUParticlesCollisionSDF3D::_compute_sdf_z, params);
-	while (!work_pool.is_done_dispatching()) {
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GPUParticlesCollisionSDF3D::_compute_sdf_z, params, params->size.z);
+	while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task)) {
 		OS::get_singleton()->delay_usec(10000);
-		bake_step_function(work_pool.get_work_index() * 100 / params->size.z, "Baking SDF");
+		bake_step_function(WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task) * 100 / params->size.z, "Baking SDF");
 	}
-	work_pool.end_work();
-	work_pool.finish();
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 }
 
 Vector3i GPUParticlesCollisionSDF3D::get_estimated_cell_size() const {
@@ -447,7 +449,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 
 	//compute bvh
 
-	ERR_FAIL_COND_V(faces.size() <= 1, Ref<Image>());
+	ERR_FAIL_COND_V_MSG(faces.size() <= 1, Ref<Image>(), "No faces detected during GPUParticlesCollisionSDF3D bake. Check whether there are visible meshes matching the bake mask within its extents.");
 
 	LocalVector<FacePos> face_pos;
 
@@ -501,6 +503,16 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	return ret;
 }
 
+TypedArray<String> GPUParticlesCollisionSDF3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (bake_mask == 0) {
+		warnings.push_back(RTR("The Bake Mask has no bits enabled, which means baking will not produce any collision for this GPUParticlesCollisionSDF3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
+	}
+
+	return warnings;
+}
+
 void GPUParticlesCollisionSDF3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesCollisionSDF3D::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesCollisionSDF3D::get_extents);
@@ -514,9 +526,15 @@ void GPUParticlesCollisionSDF3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_thickness", "thickness"), &GPUParticlesCollisionSDF3D::set_thickness);
 	ClassDB::bind_method(D_METHOD("get_thickness"), &GPUParticlesCollisionSDF3D::get_thickness);
 
+	ClassDB::bind_method(D_METHOD("set_bake_mask", "mask"), &GPUParticlesCollisionSDF3D::set_bake_mask);
+	ClassDB::bind_method(D_METHOD("get_bake_mask"), &GPUParticlesCollisionSDF3D::get_bake_mask);
+	ClassDB::bind_method(D_METHOD("set_bake_mask_value", "layer_number", "value"), &GPUParticlesCollisionSDF3D::set_bake_mask_value);
+	ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &GPUParticlesCollisionSDF3D::get_bake_mask_value);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_extents", "get_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "16,32,64,128,256,512,suffix:px"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "thickness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_thickness", "get_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");
 
 	BIND_ENUM_CONSTANT(RESOLUTION_16);
@@ -553,6 +571,31 @@ void GPUParticlesCollisionSDF3D::set_resolution(Resolution p_resolution) {
 
 GPUParticlesCollisionSDF3D::Resolution GPUParticlesCollisionSDF3D::get_resolution() const {
 	return resolution;
+}
+
+void GPUParticlesCollisionSDF3D::set_bake_mask(uint32_t p_mask) {
+	bake_mask = p_mask;
+	update_configuration_warnings();
+}
+
+uint32_t GPUParticlesCollisionSDF3D::get_bake_mask() const {
+	return bake_mask;
+}
+
+void GPUParticlesCollisionSDF3D::set_bake_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1 || p_layer_number > 20, vformat("The render layer number (%d) must be between 1 and 20 (inclusive).", p_layer_number));
+	uint32_t mask = get_bake_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_bake_mask(mask);
+}
+
+bool GPUParticlesCollisionSDF3D::get_bake_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1 || p_layer_number > 20, false, vformat("The render layer number (%d) must be between 1 and 20 (inclusive).", p_layer_number));
+	return bake_mask & (1 << (p_layer_number - 1));
 }
 
 void GPUParticlesCollisionSDF3D::set_texture(const Ref<Texture3D> &p_texture) {

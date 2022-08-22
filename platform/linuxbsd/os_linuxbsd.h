@@ -45,6 +45,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 	bool force_quit;
 
+#ifdef FONTCONFIG_ENABLED
+	bool font_config_initialized = false;
+#endif
+
 #ifdef JOYDEV_ENABLED
 	JoypadLinux *joypad = nullptr;
 #endif
@@ -79,6 +83,9 @@ public:
 	virtual MainLoop *get_main_loop() const override;
 
 	virtual uint64_t get_embedded_pck_offset() const override;
+
+	virtual Vector<String> get_system_fonts() const override;
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;

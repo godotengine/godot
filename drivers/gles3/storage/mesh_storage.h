@@ -75,7 +75,7 @@ struct Mesh {
 		// Cache vertex arrays so they can be created
 		struct Version {
 			uint32_t input_mask = 0;
-			GLuint vertex_array;
+			GLuint vertex_array = 0;
 
 			Attrib attribs[RS::ARRAY_MAX];
 		};
@@ -92,7 +92,7 @@ struct Mesh {
 			float edge_length = 0.0;
 			uint32_t index_count = 0;
 			uint32_t index_buffer_size = 0;
-			GLuint index_buffer;
+			GLuint index_buffer = 0;
 		};
 
 		LOD *lods = nullptr;
@@ -175,7 +175,7 @@ struct MultiMesh {
 	bool *data_cache_dirty_regions = nullptr;
 	uint32_t data_cache_used_dirty_regions = 0;
 
-	GLuint buffer;
+	GLuint buffer = 0;
 
 	bool dirty = false;
 	MultiMesh *dirty_list = nullptr;
@@ -362,7 +362,7 @@ public:
 	_FORCE_INLINE_ GLenum mesh_surface_get_index_type(void *p_surface) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
-		return s->vertex_count <= 65536 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
+		return (s->vertex_count <= 65536 && s->vertex_count > 0) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
 	}
 
 	// Use this to cache Vertex Array Objects so they are only generated once

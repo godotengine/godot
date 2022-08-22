@@ -33,6 +33,7 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
+#include "scene/main/multiplayer_api.h"
 #include "visual_script.h"
 
 class VisualScriptFunction : public VisualScriptNode {
@@ -49,7 +50,7 @@ class VisualScriptFunction : public VisualScriptNode {
 
 	bool stack_less;
 	int stack_size;
-	Multiplayer::RPCMode rpc_mode;
+	MultiplayerAPI::RPCMode rpc_mode;
 	bool sequenced;
 
 protected:
@@ -90,8 +91,8 @@ public:
 	void set_stack_size(int p_size);
 	int get_stack_size() const;
 
-	void set_rpc_mode(Multiplayer::RPCMode p_mode);
-	Multiplayer::RPCMode get_rpc_mode() const;
+	void set_rpc_mode(MultiplayerAPI::RPCMode p_mode);
+	MultiplayerAPI::RPCMode get_rpc_mode() const;
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -268,7 +269,7 @@ class VisualScriptVariableGet : public VisualScriptNode {
 	StringName variable;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -300,7 +301,7 @@ class VisualScriptVariableSet : public VisualScriptNode {
 	StringName variable;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -333,7 +334,7 @@ class VisualScriptConstant : public VisualScriptNode {
 	Variant value;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -477,7 +478,7 @@ class VisualScriptClassConstant : public VisualScriptNode {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual int get_output_sequence_port_count() const override;
@@ -513,7 +514,7 @@ class VisualScriptBasicTypeConstant : public VisualScriptNode {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual int get_output_sequence_port_count() const override;
@@ -597,7 +598,7 @@ class VisualScriptEngineSingleton : public VisualScriptNode {
 	String singleton;
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -632,7 +633,7 @@ class VisualScriptSceneNode : public VisualScriptNode {
 	NodePath path;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -664,7 +665,7 @@ class VisualScriptSceneTree : public VisualScriptNode {
 	GDCLASS(VisualScriptSceneTree, VisualScriptNode);
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -1009,7 +1010,7 @@ public:
 	Mode mode;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
@@ -1057,7 +1058,7 @@ class VisualScriptDeconstruct : public VisualScriptNode {
 	void _set_elem_cache(const Array &p_elements);
 	Array _get_elem_cache() const;
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
 	static void _bind_methods();

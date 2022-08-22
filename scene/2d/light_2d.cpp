@@ -227,9 +227,9 @@ real_t Light2D::get_shadow_smooth() const {
 	return shadow_smooth;
 }
 
-void Light2D::_validate_property(PropertyInfo &property) const {
-	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_filter" || property.name == "shadow_filter_smooth" || property.name == "shadow_item_cull_mask")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Light2D::_validate_property(PropertyInfo &p_property) const {
+	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

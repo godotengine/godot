@@ -94,16 +94,16 @@ void NoiseTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
 }
 
-void NoiseTexture::_validate_property(PropertyInfo &property) const {
-	if (property.name == "bump_strength") {
+void NoiseTexture::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "bump_strength") {
 		if (!as_normal_map) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "seamless_blend_skirt") {
+	if (p_property.name == "seamless_blend_skirt") {
 		if (!seamless) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }

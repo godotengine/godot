@@ -30,7 +30,7 @@
 	</members>
 	<signals>
 		<signal name="dragged">
-			<argument index="0" name="offset" type="int" />
+			<param index="0" name="offset" type="int" />
 			<description>
 				Emitted when the dragger is dragged by user.
 			</description>

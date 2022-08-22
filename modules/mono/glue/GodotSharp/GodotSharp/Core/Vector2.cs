@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -62,7 +57,7 @@ namespace Godot
                     case 1:
                         return y;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -76,7 +71,7 @@ namespace Godot
                         y = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -495,10 +490,10 @@ namespace Godot
         /// </summary>
         /// <param name="angle">The angle to rotate by, in radians.</param>
         /// <returns>The rotated vector.</returns>
-        public Vector2 Rotated(real_t phi)
+        public Vector2 Rotated(real_t angle)
         {
-            real_t sine = Mathf.Sin(phi);
-            real_t cosi = Mathf.Cos(phi);
+            real_t sine = Mathf.Sin(angle);
+            real_t cosi = Mathf.Cos(angle);
             return new Vector2(
                 x * cosi - y * sine,
                 x * sine + y * cosi);
@@ -534,7 +529,7 @@ namespace Godot
         ///
         /// This method also handles interpolating the lengths if the input vectors
         /// have different lengths. For the special case of one or both input vectors
-        /// having zero length, this method behaves like <see cref="Lerp"/>.
+        /// having zero length, this method behaves like <see cref="Lerp(Vector2, real_t)"/>.
         /// </summary>
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>

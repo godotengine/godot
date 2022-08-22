@@ -1045,6 +1045,8 @@ void CodeTextEditor::update_editor_settings() {
 			guideline_cols.append(EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/line_length_guideline_soft_column"));
 		}
 		text_editor->set_line_length_guidelines(guideline_cols);
+	} else {
+		text_editor->set_line_length_guidelines(TypedArray<int>());
 	}
 }
 
@@ -1867,7 +1869,8 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS);
-	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KeyModifierMask::CMD | Key::KEY_0);
+	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTR("Reset Zoom"),
+			{ int32_t(KeyModifierMask::CMD | Key::KEY_0), int32_t(KeyModifierMask::CMD | Key::KP_0) });
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);

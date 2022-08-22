@@ -47,7 +47,7 @@ void ShaderInclude::set_code(const String &p_code) {
 	{
 		String pp_code;
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, pp_code, nullptr, nullptr, &new_dependencies);
+		preprocessor.preprocess(p_code, "", pp_code, nullptr, nullptr, nullptr, &new_dependencies);
 	}
 
 	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
@@ -113,7 +113,7 @@ String ResourceFormatLoaderShaderInclude::get_resource_type(const String &p_path
 
 // ResourceFormatSaverShaderInclude
 
-Error ResourceFormatSaverShaderInclude::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverShaderInclude::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ShaderInclude> shader_inc = p_resource;
 	ERR_FAIL_COND_V(shader_inc.is_null(), ERR_INVALID_PARAMETER);
 

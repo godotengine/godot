@@ -21,7 +21,7 @@
 		</method>
 		<method name="resource_changed">
 			<return type="void" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				If this method exists within a script it will be called whenever the shape resource has been modified.
 			</description>

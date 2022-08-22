@@ -53,6 +53,7 @@ class EditorImportPlugin;
 class EditorExportPlugin;
 class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
+class EditorUndoRedoManager;
 class EditorFileSystem;
 class EditorToolAddons;
 class EditorPaths;
@@ -116,6 +117,7 @@ public:
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+	void restart_editor(bool p_save = true);
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 
@@ -129,9 +131,7 @@ public:
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	UndoRedo *undo_redo = nullptr;
-
-	UndoRedo *_get_undo_redo() { return undo_redo; }
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
@@ -144,7 +144,7 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	UndoRedo &get_undo_redo() { return *undo_redo; }
+	Ref<EditorUndoRedoManager> get_undo_redo();
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
@@ -184,7 +184,7 @@ public:
 		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
 		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
 		CONTAINER_CANVAS_EDITOR_BOTTOM,
-		CONTAINER_PROPERTY_EDITOR_BOTTOM,
+		CONTAINER_INSPECTOR_BOTTOM,
 		CONTAINER_PROJECT_SETTING_TAB_LEFT,
 		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
 	};

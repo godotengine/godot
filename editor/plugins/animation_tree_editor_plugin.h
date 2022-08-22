@@ -32,7 +32,6 @@
 #define ANIMATION_TREE_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "editor/property_editor.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"

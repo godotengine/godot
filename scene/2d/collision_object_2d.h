@@ -49,6 +49,7 @@ public:
 private:
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
 
 	bool area = false;
 	RID rid;
@@ -114,6 +115,9 @@ public:
 
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
+
+	void set_collision_priority(real_t p_priority);
+	real_t get_collision_priority() const;
 
 	void set_disable_mode(DisableMode p_mode);
 	DisableMode get_disable_mode() const;

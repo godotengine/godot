@@ -36,9 +36,14 @@
 #include "csharp_script.h"
 #include "mono_gc_handle.h"
 
-Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter);
+Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr);
 
-class SignalAwaiterCallable : public CallableCustom {
+class BaseSignalCallable : public CallableCustom {
+public:
+	virtual StringName get_signal() const = 0;
+};
+
+class SignalAwaiterCallable : public BaseSignalCallable {
 	ObjectID target_id;
 	MonoGCHandleData awaiter_handle;
 	StringName signal;
@@ -59,17 +64,17 @@ public:
 
 	ObjectID get_object() const override;
 
-	_FORCE_INLINE_ StringName get_signal() const { return signal; }
+	StringName get_signal() const override;
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
-	SignalAwaiterCallable(Object *p_target, MonoObject *p_awaiter, const StringName &p_signal);
+	SignalAwaiterCallable(Object *p_target, MonoGCHandleData p_awaiter_handle, const StringName &p_signal);
 	~SignalAwaiterCallable();
 };
 
-class EventSignalCallable : public CallableCustom {
+class EventSignalCallable : public BaseSignalCallable {
 	Object *owner = nullptr;
-	const CSharpScript::EventSignal *event_signal;
+	StringName event_signal_name;
 
 public:
 	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
@@ -87,11 +92,11 @@ public:
 
 	ObjectID get_object() const override;
 
-	StringName get_signal() const;
+	StringName get_signal() const override;
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
-	EventSignalCallable(Object *p_owner, const CSharpScript::EventSignal *p_event_signal);
+	EventSignalCallable(Object *p_owner, const StringName &p_event_signal_name);
 };
 
 #endif // SIGNAL_AWAITER_UTILS_H

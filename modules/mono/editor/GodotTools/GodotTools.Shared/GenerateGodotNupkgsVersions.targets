@@ -8,8 +8,8 @@
   </Target>
 
   <Target Name="GenerateGodotNupkgsVersionsFile"
-          DependsOnTargets="PrepareForBuild;_GenerateGodotNupkgsVersionsFile"
-          BeforeTargets="BeforeCompile;CoreCompile">
+          DependsOnTargets="_GenerateGodotNupkgsVersionsFile"
+          BeforeTargets="PrepareForBuild;CompileDesignTime;BeforeCompile;CoreCompile">
     <ItemGroup>
       <Compile Include="$(GeneratedGodotNupkgsVersionsFile)" />
       <FileWrites Include="$(GeneratedGodotNupkgsVersionsFile)" />

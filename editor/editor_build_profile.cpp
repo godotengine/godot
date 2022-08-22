@@ -46,19 +46,68 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"disable_3d_physics",
 	"disable_navigation",
 	"openxr",
+	"rendering_device", // FIXME: there's no scons option to disable rendering device
 	"opengl3",
 	"vulkan",
+	"module_text_server_fb_enabled",
+	"module_text_server_adv_enabled",
+	"module_freetype_enabled",
+	"brotli",
+	"graphite",
+	"module_msdfgen_enabled"
+};
+
+const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX] = {
+	// This maps to SCons build options.
+	false, // 3D
+	false, // PHYSICS_2D
+	false, // PHYSICS_3D
+	false, // NAVIGATION
+	false, // XR
+	false, // RENDERING_DEVICE
+	false, // OPENGL
+	false, // VULKAN
+	true, // TEXT_SERVER_FALLBACK
+	false, // TEXT_SERVER_COMPLEX
+	false, // DYNAMIC_FONTS
+	false, // WOFF2_FONTS
+	false, // GRPAHITE_FONTS
+	false, // MSDFGEN
 };
 
 const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
-	true,
-	true,
-	true,
-	true,
-	false,
-	false,
-	false
+	true, // 3D
+	true, // PHYSICS_2D
+	true, // PHYSICS_3D
+	true, // NAVIGATION
+	false, // XR
+	false, // RENDERING_DEVICE
+	false, // OPENGL
+	false, // VULKAN
+	false, // TEXT_SERVER_FALLBACK
+	false, // TEXT_SERVER_COMPLEX
+	false, // DYNAMIC_FONTS
+	false, // WOFF2_FONTS
+	false, // GRPAHITE_FONTS
+	false, // MSDFGEN
+};
+
+const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_category[BUILD_OPTION_MAX] = {
+	BUILD_OPTION_CATEGORY_GENERAL, // 3D
+	BUILD_OPTION_CATEGORY_GENERAL, // PHYSICS_2D
+	BUILD_OPTION_CATEGORY_GENERAL, // PHYSICS_3D
+	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION
+	BUILD_OPTION_CATEGORY_GENERAL, // XR
+	BUILD_OPTION_CATEGORY_GENERAL, // RENDERING_DEVICE
+	BUILD_OPTION_CATEGORY_GENERAL, // OPENGL
+	BUILD_OPTION_CATEGORY_GENERAL, // VULKAN
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_FALLBACK
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_COMPLEX
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // DYNAMIC_FONTS
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // WOFF2_FONTS
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRPAHITE_FONTS
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // MSDFGEN
 };
 
 void EditorBuildProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -127,6 +176,12 @@ String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 		TTRC("RenderingDevice"),
 		TTRC("OpenGL"),
 		TTRC("Vulkan"),
+		TTRC("Text Server: Fallback"),
+		TTRC("Text Server: Advanced"),
+		TTRC("TTF, OTF, Type 1, WOFF1 Fonts"),
+		TTRC("WOFF2 Fonts"),
+		TTRC("SIL Graphite Fonts"),
+		TTRC("Multi-channel Signed Distance Field Font Rendering"),
 	};
 	return TTRGET(build_option_names[p_build_option]);
 }
@@ -143,9 +198,31 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 		TTRC("RenderingDevice based rendering (if disabled, the OpenGL back-end is required)."),
 		TTRC("OpenGL back-end (if disabled, the RenderingDevice back-end is required)."),
 		TTRC("Vulkan back-end of RenderingDevice."),
+		TTRC("Fallback implementation of Text Server\nSupports basic text layouts."),
+		TTRC("Text Server implementation powered by ICU and HarfBuzz libraries.\nSupports complex text layouts, BiDi, and contextual OpenType font features."),
+		TTRC("TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType library (if disabled, WOFF2 support is also disabled)."),
+		TTRC("WOFF2 font format support using FreeType and Brotli libraries."),
+		TTRC("SIL Graphite smart font technology support (supported by Advanced Text Server only)."),
+		TTRC("Multi-channel signed distance field font rendering support using msdfgen library (pre-rendered MSDF fonts can be used even if this option disabled)."),
 	};
 
 	return TTRGET(build_option_descriptions[p_build_option]);
+}
+
+EditorBuildProfile::BuildOptionCategory EditorBuildProfile::get_build_option_category(BuildOption p_build_option) {
+	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, BUILD_OPTION_CATEGORY_GENERAL);
+	return build_option_category[p_build_option];
+}
+
+String EditorBuildProfile::get_build_option_category_name(BuildOptionCategory p_build_option_category) {
+	ERR_FAIL_INDEX_V(p_build_option_category, BUILD_OPTION_CATEGORY_MAX, String());
+
+	const char *build_option_subcategories[BUILD_OPTION_CATEGORY_MAX]{
+		TTRC("General Features:"),
+		TTRC("Text Rendering and Font Options:"),
+	};
+
+	return TTRGET(build_option_subcategories[p_build_option_category]);
 }
 
 Error EditorBuildProfile::save_to_file(const String &p_path) {
@@ -160,8 +237,12 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 
 	Dictionary dis_build_options;
 	for (int i = 0; i < BUILD_OPTION_MAX; i++) {
-		if (build_options_disabled[i]) {
-			dis_build_options[build_option_identifiers[i]] = build_option_disable_values[i];
+		if (build_options_disabled[i] != build_option_disabled_by_default[i]) {
+			if (build_options_disabled[i]) {
+				dis_build_options[build_option_identifiers[i]] = build_option_disable_values[i];
+			} else {
+				dis_build_options[build_option_identifiers[i]] = !build_option_disable_values[i];
+			}
 		}
 	}
 
@@ -211,7 +292,7 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 	}
 
 	for (int i = 0; i < BUILD_OPTION_MAX; i++) {
-		build_options_disabled[i] = false;
+		build_options_disabled[i] = build_option_disabled_by_default[i];
 	}
 
 	if (data.has("disabled_build_options")) {
@@ -259,10 +340,24 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_RENDERING_DEVICE);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_OPENGL);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_VULKAN);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_FALLBACK);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_ADVANCED);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_DYNAMIC_FONTS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_WOFF2_FONTS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_GRPAHITE_FONTS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_MSDFGEN);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MAX);
+
+	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_GENERAL);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_TEXT_SERVER);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_MAX);
 }
 
-EditorBuildProfile::EditorBuildProfile() {}
+EditorBuildProfile::EditorBuildProfile() {
+	for (int i = 0; i < EditorBuildProfile::BUILD_OPTION_MAX; i++) {
+		build_options_disabled[i] = build_option_disabled_by_default[i];
+	}
+}
 
 //////////////////////////
 
@@ -633,11 +728,18 @@ void EditorBuildProfileManager::_update_edited_profile() {
 
 	TreeItem *root = class_list->create_item();
 
-	TreeItem *build_options = class_list->create_item(root);
-	build_options->set_text(0, TTR("General Features:"));
+	HashMap<EditorBuildProfile::BuildOptionCategory, TreeItem *> subcats;
+	for (int i = 0; i < EditorBuildProfile::BUILD_OPTION_CATEGORY_MAX; i++) {
+		TreeItem *build_cat;
+		build_cat = class_list->create_item(root);
+
+		build_cat->set_text(0, EditorBuildProfile::get_build_option_category_name(EditorBuildProfile::BuildOptionCategory(i)));
+		subcats[EditorBuildProfile::BuildOptionCategory(i)] = build_cat;
+	}
+
 	for (int i = 0; i < EditorBuildProfile::BUILD_OPTION_MAX; i++) {
 		TreeItem *build_option;
-		build_option = class_list->create_item(build_options);
+		build_option = class_list->create_item(subcats[EditorBuildProfile::get_build_option_category(EditorBuildProfile::BuildOption(i))]);
 
 		build_option->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		build_option->set_text(0, EditorBuildProfile::get_build_option_name(EditorBuildProfile::BuildOption(i)));
@@ -723,19 +825,19 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_NEW] = memnew(Button(TTR("New")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
-	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_NEW));
+	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTR("Load")));
 	path_hbc->add_child(profile_actions[ACTION_LOAD]);
-	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_LOAD));
+	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
 
 	profile_actions[ACTION_SAVE] = memnew(Button(TTR("Save")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE]);
-	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_SAVE));
+	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
 
 	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTR("Save As")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE_AS]);
-	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_SAVE_AS));
+	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
 
 	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
 
@@ -745,11 +847,11 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
 	profiles_hbc->add_child(profile_actions[ACTION_RESET]);
-	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_RESET));
+	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
 
 	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
-	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_DETECT));
+	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
 
 	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
 
@@ -757,7 +859,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", callable_mp(this, &EditorBuildProfileManager::_class_list_item_selected));
-	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), varray(), CONNECT_DEFERRED);
+	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
 	// It will be displayed once the user creates or chooses a profile.
 	main_vbc->add_margin_child(TTR("Configure Engine Build Profile:"), class_list, true);

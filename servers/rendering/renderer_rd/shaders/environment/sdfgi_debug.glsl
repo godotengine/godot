@@ -37,16 +37,14 @@ layout(push_constant, std430) uniform Params {
 	uint max_cascades;
 
 	ivec2 screen_size;
-	bool use_occlusion;
 	float y_mult;
 
-	int probe_axis_size;
 	float z_near;
-	float reserved1;
-	float reserved2;
 
-	mat4 cam_transform;
-	mat4 inv_projection;
+	mat3x4 inv_projection;
+	// We pack these more tightly than mat3 and vec3, which will require some reconstruction trickery.
+	float cam_basis[3][3];
+	float cam_origin[3];
 }
 params;
 
@@ -82,13 +80,21 @@ void main() {
 	vec3 ray_pos;
 	vec3 ray_dir;
 	{
-		ray_pos = params.cam_transform[3].xyz;
+		ray_pos = vec3(params.cam_origin[0], params.cam_origin[1], params.cam_origin[2]);
 
 		ray_dir.xy = ((vec2(screen_pos) / vec2(params.screen_size)) * 2.0 - 1.0);
 		ray_dir.z = params.z_near;
-		ray_dir = (params.inv_projection * vec4(ray_dir, 1.0)).xyz;
 
-		ray_dir = normalize(mat3(params.cam_transform) * ray_dir);
+		ray_dir = (vec4(ray_dir, 1.0) * mat4(params.inv_projection)).xyz;
+
+		mat3 cam_basis;
+		{
+			vec3 c0 = vec3(params.cam_basis[0][0], params.cam_basis[0][1], params.cam_basis[0][2]);
+			vec3 c1 = vec3(params.cam_basis[1][0], params.cam_basis[1][1], params.cam_basis[1][2]);
+			vec3 c2 = vec3(params.cam_basis[2][0], params.cam_basis[2][1], params.cam_basis[2][2]);
+			cam_basis = mat3(c0, c1, c2);
+		}
+		ray_dir = normalize(cam_basis * ray_dir);
 	}
 
 	ray_pos.y *= params.y_mult;

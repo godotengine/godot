@@ -1,6 +1,8 @@
 #ifndef OT_LAYOUT_GPOS_PAIRVALUERECORD_HH
 #define OT_LAYOUT_GPOS_PAIRVALUERECORD_HH
 
+#include "ValueFormat.hh"
+
 namespace OT {
 namespace Layout {
 namespace GPOS_impl {

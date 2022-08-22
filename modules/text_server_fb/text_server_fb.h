@@ -79,9 +79,9 @@ using namespace godot;
 
 #include "servers/text/text_server_extension.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
@@ -98,6 +98,10 @@ using namespace godot;
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_CONFIG_OPTIONS_H
+#if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
+#warning FreeType is configured without Brotli support, built-in fonts will not be available.
+#endif
 #endif
 
 /*************************************************************************/
@@ -208,10 +212,7 @@ class TextServerFallback : public TextServerExtension {
 		size_t data_size;
 		int face_index = 0;
 
-		mutable ThreadWorkPool work_pool;
-
 		~FontFallback() {
-			work_pool.finish();
 			for (const KeyValue<Vector2i, FontForSizeFallback *> &E : cache) {
 				memdelete(E.value);
 			}

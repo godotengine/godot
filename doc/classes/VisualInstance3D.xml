@@ -34,7 +34,7 @@
 		</method>
 		<method name="get_layer_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member layers] is enabled, given a [code]layer_number[/code] between 1 and 20.
 			</description>
@@ -48,17 +48,17 @@
 		</method>
 		<method name="set_base">
 			<return type="void" />
-			<argument index="0" name="base" type="RID" />
+			<param index="0" name="base" type="RID" />
 			<description>
 				Sets the resource that is instantiated by this [VisualInstance3D], which changes how the engine handles the [VisualInstance3D] under the hood. Equivalent to [method RenderingServer.instance_set_base].
 			</description>
 		</method>
 		<method name="set_layer_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member layers], given a [code]layer_number[/code] between 1 and 20.
+				Based on [param value], enables or disables the specified layer in the [member layers], given a [param layer_number] between 1 and 20.
 			</description>
 		</method>
 	</methods>

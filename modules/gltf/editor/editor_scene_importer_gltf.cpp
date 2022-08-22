@@ -60,6 +60,9 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		}
 		return nullptr;
 	}
+	if (p_options.has("animation/import")) {
+		state->set_create_animations(bool(p_options["animation/import"]));
+	}
 	return doc->generate_scene(state, p_bake_fps);
 }
 

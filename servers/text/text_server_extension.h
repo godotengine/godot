@@ -496,6 +496,9 @@ public:
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
 	GDVIRTUAL2RC(PackedInt32Array, string_get_word_breaks, const String &, const String &);
 
+	virtual bool is_valid_identifier(const String &p_string) const override;
+	GDVIRTUAL1RC(bool, is_valid_identifier, const String &);
+
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 	GDVIRTUAL2RC(String, string_to_upper, const String &, const String &);
@@ -503,6 +506,11 @@ public:
 
 	Array parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 	GDVIRTUAL3RC(Array, parse_structured_text, StructuredTextParser, const Array &, const String &);
+
+	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
+	virtual bool spoof_check(const String &p_string) const override;
+	GDVIRTUAL2RC(int, is_confusable, const String &, const PackedStringArray &);
+	GDVIRTUAL1RC(bool, spoof_check, const String &);
 
 	TextServerExtension();
 	~TextServerExtension();

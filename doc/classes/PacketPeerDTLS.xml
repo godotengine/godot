@@ -13,12 +13,12 @@
 	<methods>
 		<method name="connect_to_peer">
 			<return type="int" enum="Error" />
-			<argument index="0" name="packet_peer" type="PacketPeerUDP" />
-			<argument index="1" name="validate_certs" type="bool" default="true" />
-			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;" />
-			<argument index="3" name="valid_certificate" type="X509Certificate" default="null" />
+			<param index="0" name="packet_peer" type="PacketPeerUDP" />
+			<param index="1" name="validate_certs" type="bool" default="true" />
+			<param index="2" name="for_hostname" type="String" default="&quot;&quot;" />
+			<param index="3" name="valid_certificate" type="X509Certificate" default="null" />
 			<description>
-				Connects a [code]peer[/code] beginning the DTLS handshake using the underlying [PacketPeerUDP] which must be connected (see [method PacketPeerUDP.connect_to_host]). If [code]validate_certs[/code] is [code]true[/code], [PacketPeerDTLS] will validate that the certificate presented by the remote peer and match it with the [code]for_hostname[/code] argument. You can specify a custom [X509Certificate] to use for validation via the [code]valid_certificate[/code] argument.
+				Connects a [param packet_peer] beginning the DTLS handshake using the underlying [PacketPeerUDP] which must be connected (see [method PacketPeerUDP.connect_to_host]). If [param validate_certs] is [code]true[/code], [PacketPeerDTLS] will validate that the certificate presented by the remote peer and match it with the [param for_hostname] argument. You can specify a custom [X509Certificate] to use for validation via the [param valid_certificate] argument.
 			</description>
 		</method>
 		<method name="disconnect_from_peer">

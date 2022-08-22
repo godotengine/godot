@@ -12,7 +12,7 @@
 		<method name="get_ref" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns the [Object] this weakref is referring to.
+				Returns the [Object] this weakref is referring to. Returns [code]null[/code] if that object no longer exists.
 			</description>
 		</method>
 	</methods>

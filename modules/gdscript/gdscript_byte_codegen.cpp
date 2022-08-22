@@ -158,7 +158,7 @@ void GDScriptByteCodeGenerator::end_parameters() {
 	function->default_arguments.reverse();
 }
 
-void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Multiplayer::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) {
+void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) {
 	function = memnew(GDScriptFunction);
 	debug_stack = EngineDebugger::is_active();
 
@@ -1608,7 +1608,7 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 				// Typed array.
 				const GDScriptDataType &element_type = function->return_type.get_container_element_type();
 
-				Variant script = function->return_type.script_type;
+				Variant script = element_type.script_type;
 				int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
 				append(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY, 2);

@@ -5,49 +5,49 @@
 #
 # Jafar Tarverdiyev <cefertarverdiyevv@gmail.com>, 2021.
 # Lucifer25x <umudyt2006@gmail.com>, 2021.
+# Ümid Quliyev <lucifer25x@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-09-16 14:36+0000\n"
-"Last-Translator: Lucifer25x <umudyt2006@gmail.com>\n"
+"PO-Revision-Date: 2022-08-05 01:04+0000\n"
+"Last-Translator: Ümid Quliyev <lucifer25x@protonmail.com>\n"
 "Language-Team: Azerbaijani <https://hosted.weblate.org/projects/godot-engine/"
 "godot/az/>\n"
 "Language: az\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
+#, fuzzy
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Planşet sürücü"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Pano boşdur!"
+msgstr "Pano"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Animasiya xüsusiyyətləri."
+msgstr "Aktiv Ekran"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Çıxış Kodu"
 
 #: core/bind/core_bind.cpp
 msgid "V-Sync Enabled"
-msgstr ""
+msgstr "V-Sync Aktivdir"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-Sync Kompozitor Vasitəsilə"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Delta hamarlanması"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
@@ -59,28 +59,28 @@ msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr ""
+msgstr "Ekranı Açıq Tut"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr ""
+msgstr "Minimum Pəncərə Ölçüsü"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr ""
+msgstr "Maksimum Pəncərə Ölçüsü"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
-msgstr ""
+msgstr "Pəncərə Nisbəti"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
 msgid "Window"
-msgstr ""
+msgstr "Pəncərə"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
-msgstr ""
+msgstr "Kənarsız"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
@@ -88,29 +88,28 @@ msgstr ""
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
-msgstr ""
+msgstr "Bütün Ekran"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr ""
+msgstr "Böyüdülmüş"
 
 #: core/bind/core_bind.cpp
 msgid "Minimized"
-msgstr ""
+msgstr "Kiçildilmiş"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Ölçüsü Dəyişdirilə Bilər"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Position"
-msgstr "Animasiyanı Təmizləmə"
+msgstr "Pozisiya"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
 #: main/main.cpp modules/gridmap/grid_map.cpp
@@ -122,7 +121,7 @@ msgstr "Animasiyanı Təmizləmə"
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
 msgid "Size"
-msgstr ""
+msgstr "Ölçü"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
@@ -131,25 +130,23 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Editor Hint"
-msgstr "Redaktə et"
+msgstr "Editor İpucu"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Xəta Mesajlarını Yazdır"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "İnterpolasiya rejimi"
+msgstr "Hər Saniyədə İterasiya Sayı"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
-msgstr ""
+msgstr "Hədəf FPS"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Animasya Açarlarını Ölçülə"
+msgstr "Zaman Ölçəyi"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Physics Jitter Fix"
@@ -157,25 +154,23 @@ msgstr ""
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
-msgstr ""
+msgstr "Xəta"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Yükləmə xətası:"
+msgstr "Xəta Yazısı"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Yükləmə xətası:"
+msgstr "Xəta Sətiri"
 
 #: core/bind/core_bind.cpp
 msgid "Result"
-msgstr ""
+msgstr "Nəticə"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Yaddaş"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -186,11 +181,11 @@ msgstr ""
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Limitlər"
 
 #: core/command_queue_mt.cpp
 msgid "Command Queue"
-msgstr ""
+msgstr "Əmr Növbəsi"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
@@ -200,14 +195,13 @@ msgstr ""
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Funksiyalar:"
+msgstr "Funksiya"
 
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Data"
-msgstr ""
+msgstr "Məlumat"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
@@ -215,16 +209,15 @@ msgstr ""
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
 msgid "Network"
-msgstr ""
+msgstr "Şəbəkə"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Sil"
+msgstr "Uzaqdan FS"
 
 #: core/io/file_access_network.cpp
 msgid "Page Size"
-msgstr ""
+msgstr "Səhifə Ölçüsü"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -232,12 +225,11 @@ msgstr ""
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Bloklama Modu Aktivdir"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "Qoş"
+msgstr "Əlaqə"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
@@ -245,15 +237,15 @@ msgstr ""
 
 #: core/io/marshalls.cpp
 msgid "Object ID"
-msgstr ""
+msgstr "Obyekt ID"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 msgid "Allow Object Decoding"
-msgstr ""
+msgstr "Obyekt Deşifrəsinə İzn Verin"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Yeni Şəbəkə Əlaqələrindən İmtina Et"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Network Peer"
@@ -261,16 +253,15 @@ msgstr ""
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
 msgid "Root Node"
-msgstr ""
+msgstr "Kök Düyün"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Qoş"
+msgstr "Yeni Əlaqələrdən İmtina Et"
 
 #: core/io/networked_multiplayer_peer.cpp
 msgid "Transfer Mode"
-msgstr ""
+msgstr "Transfer Modu"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
@@ -294,16 +285,15 @@ msgstr ""
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Məlumat Siyahısı"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "Əl Sıxmağın Qarşısının Alınması"
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "Əlaqəni redaktə edin:"
+msgstr "Gözlənilən Maksimum Əlaqələr"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -325,7 +315,6 @@ msgstr ""
 "format."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
 msgstr "İfadədə uyğunsuz giriş %d (ötürülmədi)"
 
@@ -2163,14 +2152,15 @@ msgstr "Favoritlər:"
 msgid "Recent:"
 msgstr "Son:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Axtar:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Uyğunlaşmalar:"
@@ -2230,8 +2220,8 @@ msgstr "Əvəzetmə mənbəyini axtarın:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2809,8 +2799,9 @@ msgid "Project export for platform:"
 msgstr ""
 
 #: editor/editor_export.cpp
-msgid "Completed with errors."
-msgstr ""
+#, fuzzy
+msgid "Completed with warnings."
+msgstr "Animasiyanı Təmizləmə"
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
@@ -5408,6 +5399,10 @@ msgstr ""
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Ölçmə seçimi"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11443,6 +11438,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Animasiyanı Təmizləmə"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -19631,14 +19631,13 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
+msgid "rcedit failed to modify executable: %s."
 msgstr ""
 
 #: platform/windows/export/export.cpp
@@ -19660,14 +19659,13 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
+msgid "Signtool failed to sign executable: %s."
 msgstr ""
 
 #: platform/windows/export/export.cpp

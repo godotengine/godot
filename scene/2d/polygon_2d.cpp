@@ -90,9 +90,9 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 }
 #endif
 
-void Polygon2D::_validate_property(PropertyInfo &property) const {
-	if (!invert && property.name == "invert_border") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Polygon2D::_validate_property(PropertyInfo &p_property) const {
+	if (!invert && p_property.name == "invert_border") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

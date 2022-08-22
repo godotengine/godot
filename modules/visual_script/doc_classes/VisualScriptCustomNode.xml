@@ -29,28 +29,28 @@
 		</method>
 		<method name="_get_input_value_port_hint" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="input_idx" type="int" />
+			<param index="0" name="input_idx" type="int" />
 			<description>
 				Returns the specified input port's hint. See the [enum @GlobalScope.PropertyHint] hints.
 			</description>
 		</method>
 		<method name="_get_input_value_port_hint_string" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="input_idx" type="int" />
+			<param index="0" name="input_idx" type="int" />
 			<description>
 				Returns the specified input port's hint string.
 			</description>
 		</method>
 		<method name="_get_input_value_port_name" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="input_idx" type="int" />
+			<param index="0" name="input_idx" type="int" />
 			<description>
 				Returns the specified input port's name.
 			</description>
 		</method>
 		<method name="_get_input_value_port_type" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="input_idx" type="int" />
+			<param index="0" name="input_idx" type="int" />
 			<description>
 				Returns the specified input port's type. See the [enum Variant.Type] values.
 			</description>
@@ -63,7 +63,7 @@
 		</method>
 		<method name="_get_output_sequence_port_text" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="seq_idx" type="int" />
+			<param index="0" name="seq_idx" type="int" />
 			<description>
 				Returns the specified [b]sequence[/b] output's name.
 			</description>
@@ -76,28 +76,28 @@
 		</method>
 		<method name="_get_output_value_port_hint" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="output_idx" type="int" />
+			<param index="0" name="output_idx" type="int" />
 			<description>
 				Returns the specified output port's hint. See the [enum @GlobalScope.PropertyHint] hints.
 			</description>
 		</method>
 		<method name="_get_output_value_port_hint_string" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="output_idx" type="int" />
+			<param index="0" name="output_idx" type="int" />
 			<description>
 				Returns the specified output port's hint string.
 			</description>
 		</method>
 		<method name="_get_output_value_port_name" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="output_idx" type="int" />
+			<param index="0" name="output_idx" type="int" />
 			<description>
 				Returns the specified output port's name.
 			</description>
 		</method>
 		<method name="_get_output_value_port_type" qualifiers="virtual const">
 			<return type="int" />
-			<argument index="0" name="output_idx" type="int" />
+			<param index="0" name="output_idx" type="int" />
 			<description>
 				Returns the specified output port's type. See the [enum Variant.Type] values.
 			</description>
@@ -122,10 +122,10 @@
 		</method>
 		<method name="_step" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="inputs" type="Array" />
-			<argument index="1" name="outputs" type="Array" />
-			<argument index="2" name="start_mode" type="int" />
-			<argument index="3" name="working_mem" type="Array" />
+			<param index="0" name="inputs" type="Array" />
+			<param index="1" name="outputs" type="Array" />
+			<param index="2" name="start_mode" type="int" />
+			<param index="3" name="working_mem" type="Array" />
 			<description>
 				Execute the custom node's logic, returning the index of the output sequence port to use or a [String] when there is an error.
 				The [code]inputs[/code] array contains the values of the input ports.

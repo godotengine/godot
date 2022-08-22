@@ -42,6 +42,7 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
 	mutable Vector<Vector3> debug_lines;
 	Size2i lightmap_size_hint;
 
@@ -143,6 +144,7 @@ public:
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE,
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS,
 
+		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY,
 	};
 
 	virtual int get_surface_count() const;
@@ -161,12 +163,11 @@ public:
 	virtual AABB get_aabb() const;
 
 	Vector<Face3> get_faces() const;
+	Vector<Face3> get_surface_faces(int p_surface) const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
+	Ref<TriangleMesh> generate_surface_triangle_mesh(int p_surface) const;
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
-
-	Ref<Shape3D> create_trimesh_shape() const;
-	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
@@ -210,6 +211,8 @@ public:
 	static ConvexDecompositionFunc convex_decomposition_function;
 
 	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
+	Ref<Shape3D> create_trimesh_shape() const;
 
 	virtual int get_builtin_bind_pose_count() const;
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;

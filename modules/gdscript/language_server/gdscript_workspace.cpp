@@ -38,6 +38,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "scene/resources/packed_scene.h"
 
@@ -499,8 +500,8 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
 	String path = p_uri;
-	path = path.replace(root_uri + "/", "res://");
 	path = path.uri_decode();
+	path = path.replacen(root_uri + "/", "res://");
 	return path;
 }
 

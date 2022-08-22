@@ -166,7 +166,6 @@ Object::Connection::operator Variant() const {
 	d["signal"] = signal;
 	d["callable"] = callable;
 	d["flags"] = flags;
-	d["binds"] = binds;
 	return d;
 }
 
@@ -188,9 +187,6 @@ Object::Connection::Connection(const Variant &p_variant) {
 	}
 	if (d.has("flags")) {
 		flags = d["flags"];
-	}
-	if (d.has("binds")) {
-		binds = d["binds"];
 	}
 }
 
@@ -476,7 +472,6 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 
 void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) const {
 	if (script_instance && p_reversed) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
 	}
 
@@ -507,7 +502,6 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	if (script_instance && !p_reversed) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
 	}
 
@@ -521,7 +515,61 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 }
 
-void Object::_validate_property(PropertyInfo &property) const {
+void Object::validate_property(PropertyInfo &p_property) const {
+	_validate_propertyv(p_property);
+}
+
+bool Object::property_can_revert(const String &p_name) const {
+	if (script_instance) {
+		if (script_instance->property_can_revert(p_name)) {
+			return true;
+		}
+	}
+
+// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
+	if (_extension && _extension->property_can_revert) {
+		if (_extension->property_can_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name)) {
+			return true;
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	return _property_can_revertv(p_name);
+}
+
+Variant Object::property_get_revert(const String &p_name) const {
+	Variant ret;
+
+	if (script_instance) {
+		if (script_instance->property_get_revert(p_name, ret)) {
+			return ret;
+		}
+	}
+
+// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
+	if (_extension && _extension->property_get_revert) {
+		if (_extension->property_get_revert(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
+			return ret;
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	if (_property_get_revertv(p_name, ret)) {
+		return ret;
+	}
+	return Variant();
 }
 
 void Object::get_method_list(List<MethodInfo> *p_list) const {
@@ -973,8 +1021,6 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	OBJ_DEBUG_LOCK
 
-	Vector<const Variant *> bind_mem;
-
 	Error err = OK;
 
 	for (int i = 0; i < ssize; i++) {
@@ -989,28 +1035,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		const Variant **args = p_args;
 		int argc = p_argcount;
 
-		if (c.binds.size()) {
-			//handle binds
-			bind_mem.resize(p_argcount + c.binds.size());
-
-			for (int j = 0; j < p_argcount; j++) {
-				bind_mem.write[j] = p_args[j];
-			}
-			for (int j = 0; j < c.binds.size(); j++) {
-				bind_mem.write[p_argcount + j] = &c.binds[j];
-			}
-
-			args = (const Variant **)bind_mem.ptr();
-			argc = bind_mem.size();
-		}
-
 		if (c.flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(c.callable, args, argc, true);
 		} else {
 			Callable::CallError ce;
 			_emitting = true;
 			Variant ret;
-			c.callable.call(args, argc, ret, ce);
+			c.callable.callp(args, argc, ret, ce);
 			_emitting = false;
 
 			if (ce.error != Callable::CallError::CALL_OK) {
@@ -1196,7 +1227,7 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 	}
 }
 
-Error Object::connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
+Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
@@ -1244,7 +1275,6 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	conn.callable = target;
 	conn.signal = ::Signal(this, p_signal);
 	conn.flags = p_flags;
-	conn.binds = p_binds;
 	slot.conn = conn;
 	slot.cE = target_object->connections.push_back(conn);
 	if (p_flags & CONNECT_REFERENCE_COUNTED) {
@@ -1492,7 +1522,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_connection_list", "signal"), &Object::_get_signal_connection_list);
 	ClassDB::bind_method(D_METHOD("get_incoming_connections"), &Object::_get_incoming_connections);
 
-	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "flags"), &Object::connect, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("disconnect", "signal", "callable"), &Object::disconnect);
 	ClassDB::bind_method(D_METHOD("is_connected", "signal", "callable"), &Object::is_connected);
 
@@ -1523,10 +1553,12 @@ void Object::_bind_methods() {
 	miget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_OBJ_CORE_METHOD(miget);
 
-	MethodInfo plget("_get_property_list");
-
-	plget.return_val.type = Variant::ARRAY;
-	BIND_OBJ_CORE_METHOD(plget);
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::ARRAY, "_get_property_list"));
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
+	MethodInfo mipgr("_property_get_revert", PropertyInfo(Variant::STRING_NAME, "property"));
+	mipgr.return_val.name = "Variant";
+	mipgr.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	BIND_OBJ_CORE_METHOD(mipgr);
 
 #endif
 	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFLight" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Represents a GLTF light.
 	</brief_description>
 	<description>
+		Represents a light as defined by the [code]KHR_lights_punctual[/code] GLTF extension.
 	</description>
 	<tutorials>
+		<link title="KHR_lights_punctual GLTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
 	</tutorials>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">

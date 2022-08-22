@@ -185,7 +185,7 @@ String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverCrypto::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Error err;
 	Ref<X509Certificate> cert = p_resource;
 	Ref<CryptoKey> key = p_resource;

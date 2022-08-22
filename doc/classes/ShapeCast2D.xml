@@ -6,7 +6,7 @@
 	<description>
 		Shape casting allows to detect collision objects by sweeping the [member shape] along the cast direction determined by [member target_position] (useful for things like beam weapons).
 		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector2(0, 0)[/code] and by calling [method force_shapecast_update] within the same [b]physics_frame[/b]. This also helps to overcome some limitations of [Area2D] when used as a continuous detection area, often requiring waiting a couple of frames before collision information is available to [Area2D] nodes, and when using the signals creates unnecessary complexity.
-		The node can detect multiple collision objects, but usually the first detected collision
+		The node can detect multiple collision objects, but it's usually used to detect the first collision.
 		[b]Note:[/b] shape casting is more computationally expensive compared to ray casting.
 	</description>
 	<tutorials>
@@ -14,14 +14,14 @@
 	<methods>
 		<method name="add_exception">
 			<return type="void" />
-			<argument index="0" name="node" type="CollisionObject2D" />
+			<param index="0" name="node" type="CollisionObject2D" />
 			<description>
 				Adds a collision exception so the shape does not report collisions with the specified [CollisionObject2D] node.
 			</description>
 		</method>
 		<method name="add_exception_rid">
 			<return type="void" />
-			<argument index="0" name="rid" type="RID" />
+			<param index="0" name="rid" type="RID" />
 			<description>
 				Adds a collision exception so the shape does not report collisions with the specified [RID].
 			</description>
@@ -42,27 +42,27 @@
 		<method name="get_closest_collision_safe_fraction" qualifiers="const">
 			<return type="float" />
 			<description>
-				The fraction of the motion (between 0 and 1) of how far the shape can move without triggering a collision. The motion is determined by [member target_position].
+				The fraction from the [ShapeCast2D]'s origin to its [member target_position] (between 0 and 1) of how far the shape can move without triggering a collision.
 			</description>
 		</method>
 		<method name="get_closest_collision_unsafe_fraction" qualifiers="const">
 			<return type="float" />
 			<description>
-				The fraction of the motion (between 0 and 1) when the shape triggers a collision. The motion is determined by [member target_position].
+				The fraction from the [ShapeCast2D]'s origin to its [member target_position] (between 0 and 1) of how far the shape must move to trigger a collision.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [Object] of one of the multiple collisions at [code]index[/code], or [code]null[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
+				Returns the collided [Object] of one of the multiple collisions at [param index], or [code]null[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the shape ID of one of the multiple collisions at [code]index[/code] that the shape intersects, or [code]0[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
+				Returns the shape ID of the colliding shape of one of the multiple collisions at [param index], or [code]0[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collision_count" qualifiers="const">
@@ -73,23 +73,23 @@
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the normal containing one of the multiple collisions at [code]index[/code] of the intersecting object.
+				Returns the normal of one of the multiple collisions at [param index] of the intersecting object.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the collision point containing one of the multiple collisions at [code]index[/code] at which the shape intersects the object.
+				Returns the collision point of one of the multiple collisions at [param index] where the shape intersects the colliding object.
 				[b]Note:[/b] this point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
@@ -101,24 +101,24 @@
 		</method>
 		<method name="remove_exception">
 			<return type="void" />
-			<argument index="0" name="node" type="CollisionObject2D" />
+			<param index="0" name="node" type="CollisionObject2D" />
 			<description>
 				Removes a collision exception so the shape does report collisions with the specified [CollisionObject2D] node.
 			</description>
 		</method>
 		<method name="remove_exception_rid">
 			<return type="void" />
-			<argument index="0" name="rid" type="RID" />
+			<param index="0" name="rid" type="RID" />
 			<description>
 				Removes a collision exception so the shape does report collisions with the specified [RID].
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 	</methods>
@@ -133,7 +133,7 @@
 			The shape's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>
 		<member name="collision_result" type="Array" setter="" getter="_get_collision_result" default="[]">
-			A complete collision information. The data returned is the same as in the [method PhysicsDirectSpaceState2D.get_rest_info] method.
+			Returns the complete collision information from the collision sweep. The data returned is the same as in the [method PhysicsDirectSpaceState2D.get_rest_info] method.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], collisions will be reported.
@@ -148,7 +148,7 @@
 			The number of intersections can be limited with this parameter, to reduce the processing time.
 		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
-			Any [Shape2D] derived shape used for collision queries.
+			The [Shape2D]-derived shape to be used for collision queries.
 		</member>
 		<member name="target_position" type="Vector2" setter="set_target_position" getter="get_target_position" default="Vector2(0, 50)">
 			The shape's destination point, relative to this node's [code]position[/code].

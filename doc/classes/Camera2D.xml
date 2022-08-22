@@ -43,14 +43,14 @@
 		</method>
 		<method name="get_drag_margin" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="margin" type="int" enum="Side" />
+			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
 		<method name="get_limit" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="margin" type="int" enum="Side" />
+			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
@@ -64,16 +64,16 @@
 		</method>
 		<method name="set_drag_margin">
 			<return type="void" />
-			<argument index="0" name="margin" type="int" enum="Side" />
-			<argument index="1" name="drag_margin" type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="drag_margin" type="float" />
 			<description>
 				Sets the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
 		<method name="set_limit">
 			<return type="void" />
-			<argument index="0" name="margin" type="int" enum="Side" />
-			<argument index="1" name="limit" type="int" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="limit" type="int" />
 			<description>
 				Sets the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>

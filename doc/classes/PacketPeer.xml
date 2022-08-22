@@ -30,25 +30,25 @@
 		</method>
 		<method name="get_var">
 			<return type="Variant" />
-			<argument index="0" name="allow_objects" type="bool" default="false" />
+			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
-				Gets a Variant. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
+				Gets a Variant. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="put_packet">
 			<return type="int" enum="Error" />
-			<argument index="0" name="buffer" type="PackedByteArray" />
+			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Sends a raw packet.
 			</description>
 		</method>
 		<method name="put_var">
 			<return type="int" enum="Error" />
-			<argument index="0" name="var" type="Variant" />
-			<argument index="1" name="full_objects" type="bool" default="false" />
+			<param index="0" name="var" type="Variant" />
+			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
-				Sends a [Variant] as a packet. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Sends a [Variant] as a packet. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

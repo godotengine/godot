@@ -317,8 +317,8 @@ hb_unicode_funcs_set_user_data (hb_unicode_funcs_t *ufuncs,
 
 
 HB_EXTERN void *
-hb_unicode_funcs_get_user_data (hb_unicode_funcs_t *ufuncs,
-				hb_user_data_key_t *key);
+hb_unicode_funcs_get_user_data (const hb_unicode_funcs_t *ufuncs,
+				hb_user_data_key_t       *key);
 
 
 HB_EXTERN void

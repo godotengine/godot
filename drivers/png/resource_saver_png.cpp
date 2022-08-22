@@ -35,7 +35,7 @@
 #include "drivers/png/png_driver_common.h"
 #include "scene/resources/texture.h"
 
-Error ResourceSaverPNG::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ImageTexture> texture = p_resource;
 
 	ERR_FAIL_COND_V_MSG(!texture.is_valid(), ERR_INVALID_PARAMETER, "Can't save invalid texture as PNG.");

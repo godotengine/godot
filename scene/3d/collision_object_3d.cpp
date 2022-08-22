@@ -183,6 +183,17 @@ bool CollisionObject3D::get_collision_mask_value(int p_layer_number) const {
 	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
+void CollisionObject3D::set_collision_priority(real_t p_priority) {
+	collision_priority = p_priority;
+	if (!area) {
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), p_priority);
+	}
+}
+
+real_t CollisionObject3D::get_collision_priority() const {
+	return collision_priority;
+}
+
 void CollisionObject3D::set_disable_mode(DisableMode p_mode) {
 	if (disable_mode == p_mode) {
 		return;
@@ -319,7 +330,7 @@ bool CollisionObject3D::_are_collision_shapes_visible() {
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 	if (_are_collision_shapes_visible()) {
 		if (debug_shapes_to_update.is_empty()) {
-			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferred({}, 0);
+			callable_mp(this, &CollisionObject3D::_update_debug_shapes).call_deferredp({}, 0);
 		}
 		debug_shapes_to_update.insert(p_owner);
 	}
@@ -365,8 +376,7 @@ void CollisionObject3D::_update_debug_shapes() {
 					RS::get_singleton()->instance_set_scenario(s.debug_shape, get_world_3d()->get_scenario());
 
 					if (!s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_shape_changed))) {
-						s.shape->connect("changed", callable_mp(this, &CollisionObject3D::_shape_changed),
-								varray(s.shape), CONNECT_DEFERRED);
+						s.shape->connect("changed", callable_mp(this, &CollisionObject3D::_shape_changed).bind(s.shape), CONNECT_DEFERRED);
 					}
 
 					++debug_shapes_count;
@@ -404,6 +414,9 @@ void CollisionObject3D::_on_transform_changed() {
 		debug_shape_old_transform = get_global_transform();
 		for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 			ShapeData &shapedata = E.value;
+			if (shapedata.disabled) {
+				continue; // If disabled then there are no debug shapes to update.
+			}
 			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
@@ -430,6 +443,8 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CollisionObject3D::get_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CollisionObject3D::set_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CollisionObject3D::get_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CollisionObject3D::set_collision_priority);
+	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CollisionObject3D::get_collision_priority);
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject3D::set_disable_mode);
 	ClassDB::bind_method(D_METHOD("get_disable_mode"), &CollisionObject3D::get_disable_mode);
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject3D::set_ray_pickable);
@@ -464,6 +479,7 @@ void CollisionObject3D::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
 
 	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");

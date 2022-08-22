@@ -349,6 +349,8 @@ void ShaderPreprocessor::process_directive(Tokenizer *p_tokenizer) {
 		process_ifdef(p_tokenizer);
 	} else if (directive == "ifndef") {
 		process_ifndef(p_tokenizer);
+	} else if (directive == "elif") {
+		process_elif(p_tokenizer);
 	} else if (directive == "else") {
 		process_else(p_tokenizer);
 	} else if (directive == "endif") {
@@ -415,23 +417,87 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 	}
 }
 
-void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
-	if (state->skip_stack_else.is_empty()) {
-		set_error(RTR("Unmatched else."), p_tokenizer->get_line());
+void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
+	const int line = p_tokenizer->get_line();
+
+	if (state->current_branch == nullptr || state->current_branch->else_defined) {
+		set_error(RTR("Unmatched elif."), line);
 		return;
 	}
+	if (state->previous_region != nullptr) {
+		state->previous_region->to_line = line - 1;
+	}
+
+	String body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+	if (body.is_empty()) {
+		set_error(RTR("Missing condition."), line);
+		return;
+	}
+
+	Error error = expand_condition(body, line, body);
+	if (error != OK) {
+		return;
+	}
+
+	error = expand_macros(body, line, body);
+	if (error != OK) {
+		return;
+	}
+
+	Expression expression;
+	Vector<String> names;
+	error = expression.parse(body, names);
+	if (error != OK) {
+		set_error(expression.get_error_text(), line);
+		return;
+	}
+
+	Variant v = expression.execute(Array(), nullptr, false);
+	if (v.get_type() == Variant::NIL) {
+		set_error(RTR("Condition evaluation error."), line);
+		return;
+	}
+
+	bool skip = false;
+	for (int i = 0; i < state->current_branch->conditions.size(); i++) {
+		if (state->current_branch->conditions[i]) {
+			skip = true;
+			break;
+		}
+	}
+
+	bool success = !skip && v.booleanize();
+	start_branch_condition(p_tokenizer, success, true);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region->parent);
+	}
+}
+
+void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
+	const int line = p_tokenizer->get_line();
+
+	if (state->current_branch == nullptr || state->current_branch->else_defined) {
+		set_error(RTR("Unmatched else."), line);
+		return;
+	}
+	if (state->previous_region != nullptr) {
+		state->previous_region->to_line = line - 1;
+	}
+
 	p_tokenizer->advance('\n');
 
-	bool skip = state->skip_stack_else[state->skip_stack_else.size() - 1];
-	state->skip_stack_else.remove_at(state->skip_stack_else.size() - 1);
-
-	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_include];
-	int index = vec.size() - 1;
-	if (index >= 0) {
-		SkippedCondition *cond = vec[index];
-		if (cond->end_line == -1) {
-			cond->end_line = p_tokenizer->get_line();
+	bool skip = false;
+	for (int i = 0; i < state->current_branch->conditions.size(); i++) {
+		if (state->current_branch->conditions[i]) {
+			skip = true;
+			break;
 		}
+	}
+	state->current_branch->else_defined = true;
+
+	if (state->save_regions) {
+		add_region(line + 1, !skip, state->previous_region->parent);
 	}
 
 	if (skip) {
@@ -447,21 +513,19 @@ void ShaderPreprocessor::process_endif(Tokenizer *p_tokenizer) {
 		set_error(RTR("Unmatched endif."), p_tokenizer->get_line());
 		return;
 	}
-
-	Vector<SkippedCondition *> vec = state->skipped_conditions[state->current_include];
-	int index = vec.size() - 1;
-	if (index >= 0) {
-		SkippedCondition *cond = vec[index];
-		if (cond->end_line == -1) {
-			cond->end_line = p_tokenizer->get_line();
-		}
+	if (state->previous_region != nullptr) {
+		state->previous_region->to_line = p_tokenizer->get_line() - 1;
+		state->previous_region = state->previous_region->parent;
 	}
 
 	p_tokenizer->advance('\n');
+
+	state->current_branch = state->current_branch->parent;
+	state->branches.pop_back();
 }
 
 void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
-	int line = p_tokenizer->get_line();
+	const int line = p_tokenizer->get_line();
 
 	String body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
 	if (body.is_empty()) {
@@ -469,7 +533,12 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Error error = expand_macros(body, line, body);
+	Error error = expand_condition(body, line, body);
+	if (error != OK) {
+		return;
+	}
+
+	error = expand_macros(body, line, body);
 	if (error != OK) {
 		return;
 	}
@@ -490,6 +559,10 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 
 	bool success = v.booleanize();
 	start_branch_condition(p_tokenizer, success);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region);
+	}
 }
 
 void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
@@ -510,6 +583,10 @@ void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
 
 	bool success = state->defines.has(label);
 	start_branch_condition(p_tokenizer, success);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region);
+	}
 }
 
 void ShaderPreprocessor::process_ifndef(Tokenizer *p_tokenizer) {
@@ -530,6 +607,10 @@ void ShaderPreprocessor::process_ifndef(Tokenizer *p_tokenizer) {
 
 	bool success = !state->defines.has(label);
 	start_branch_condition(p_tokenizer, success);
+
+	if (state->save_regions) {
+		add_region(line + 1, success, state->previous_region);
+	}
 }
 
 void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
@@ -594,15 +675,15 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	String old_include = state->current_include;
-	state->current_include = real_path;
+	String old_filename = state->current_filename;
+	state->current_filename = real_path;
 	ShaderPreprocessor processor;
 
 	int prev_condition_depth = state->condition_depth;
 	state->condition_depth = 0;
 
 	FilePosition fp;
-	fp.file = state->current_include;
+	fp.file = state->current_filename;
 	fp.line = line;
 	state->include_positions.push_back(fp);
 
@@ -614,7 +695,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 
 	// Reset to last include if there are no errors. We want to use this as context.
 	if (state->error.is_empty()) {
-		state->current_include = old_include;
+		state->current_filename = old_filename;
 		state->include_positions.pop_back();
 	} else {
 		return;
@@ -668,24 +749,28 @@ void ShaderPreprocessor::process_undef(Tokenizer *p_tokenizer) {
 	state->defines.erase(label);
 }
 
-void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_success) {
-	state->condition_depth++;
+void ShaderPreprocessor::add_region(int p_line, bool p_enabled, Region *p_parent_region) {
+	Region region;
+	region.file = state->current_filename;
+	region.enabled = p_enabled;
+	region.from_line = p_line;
+	region.parent = p_parent_region;
+	state->previous_region = &state->regions[region.file].push_back(region)->get();
+}
 
-	if (p_success) {
-		state->skip_stack_else.push_back(true);
+void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_success, bool p_continue) {
+	if (!p_continue) {
+		state->condition_depth++;
+		state->current_branch = &state->branches.push_back(Branch(p_success, state->current_branch))->get();
 	} else {
-		SkippedCondition *cond = memnew(SkippedCondition());
-		cond->start_line = p_tokenizer->get_line();
-		state->skipped_conditions[state->current_include].push_back(cond);
-
+		state->current_branch->conditions.push_back(p_success);
+	}
+	if (!p_success) {
 		Vector<String> ends;
+		ends.push_back("elif");
 		ends.push_back("else");
 		ends.push_back("endif");
-		if (next_directive(p_tokenizer, ends) == "else") {
-			state->skip_stack_else.push_back(false);
-		} else {
-			state->skip_stack_else.push_back(true);
-		}
+		next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -702,47 +787,173 @@ void ShaderPreprocessor::expand_output_macros(int p_start, int p_line_number) {
 	add_to_output(line);
 }
 
-Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, String &r_expanded) {
-	Vector<Pair<String, Define *>> active_defines;
-	active_defines.resize(state->defines.size());
-	int index = 0;
-	for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
-		active_defines.set(index++, Pair<String, Define *>(E->key(), E->get()));
+Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, String &r_expanded) {
+	// Checks bracket count to be even + check the cursor position.
+	{
+		int bracket_start_count = 0;
+		int bracket_end_count = 0;
+
+		for (int i = 0; i < p_string.size(); i++) {
+			switch (p_string[i]) {
+				case CURSOR:
+					state->completion_type = COMPLETION_TYPE_CONDITION;
+					break;
+				case '(':
+					bracket_start_count++;
+					break;
+				case ')':
+					bracket_end_count++;
+					break;
+			}
+		}
+		if (bracket_start_count > bracket_end_count) {
+			_set_expected_error(")", p_line);
+			return FAILED;
+		}
+		if (bracket_end_count > bracket_start_count) {
+			_set_expected_error("(", p_line);
+			return FAILED;
+		}
 	}
 
-	return expand_macros(p_string, p_line, active_defines, r_expanded);
-}
+	String result = p_string;
 
-Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, Vector<Pair<String, Define *>> p_defines, String &r_expanded) {
-	r_expanded = p_string;
-	// When expanding macros we must only evaluate them once.
-	// Later we continue expanding but with the already
-	// evaluated macros removed.
-	for (int i = 0; i < p_defines.size(); i++) {
-		Pair<String, Define *> define_pair = p_defines[i];
+	int index = 0;
+	int index_start = 0;
+	int index_end = 0;
 
-		Error error = expand_macros_once(r_expanded, p_line, define_pair, r_expanded);
-		if (error != OK) {
-			return error;
+	while (find_match(result, "defined", index, index_start)) {
+		bool open_bracket = false;
+		bool found_word = false;
+		bool word_completed = false;
+
+		LocalVector<char32_t> text;
+		int post_bracket_index = -1;
+		int size = result.size();
+
+		for (int i = (index_start - 1); i < size; i++) {
+			char32_t c = result[i];
+			if (c == 0) {
+				if (found_word) {
+					word_completed = true;
+				}
+				break;
+			}
+			char32_t cs[] = { c, '\0' };
+			String s = String(cs);
+			bool is_space = is_char_space(c);
+
+			if (word_completed) {
+				if (c == ')') {
+					continue;
+				}
+				if (c == '|' || c == '&') {
+					if (open_bracket) {
+						_set_unexpected_token_error(s, p_line);
+						return FAILED;
+					}
+					break;
+				} else if (!is_space) {
+					_set_unexpected_token_error(s, p_line);
+					return FAILED;
+				}
+			} else if (is_space) {
+				if (found_word && !open_bracket) {
+					index_end = i;
+					word_completed = true;
+				}
+			} else if (c == '(') {
+				if (open_bracket) {
+					_set_unexpected_token_error(s, p_line);
+					return FAILED;
+				}
+				open_bracket = true;
+			} else if (c == ')') {
+				if (open_bracket) {
+					if (!found_word) {
+						_set_unexpected_token_error(s, p_line);
+						return FAILED;
+					}
+					open_bracket = false;
+					post_bracket_index = i + 1;
+				} else {
+					index_end = i;
+				}
+				word_completed = true;
+			} else if (is_char_word(c)) {
+				text.push_back(c);
+				found_word = true;
+			} else {
+				_set_unexpected_token_error(s, p_line);
+				return FAILED;
+			}
 		}
 
-		// Remove expanded macro and recursively replace remaining.
-		p_defines.remove_at(i);
-		return expand_macros(r_expanded, p_line, p_defines, r_expanded);
-	}
+		if (word_completed) {
+			if (open_bracket) {
+				_set_expected_error(")", p_line);
+				return FAILED;
+			}
+			if (post_bracket_index != -1) {
+				index_end = post_bracket_index;
+			}
 
+			String body = state->defines.has(vector_to_string(text)) ? "true" : "false";
+			String temp = result;
+
+			result = result.substr(0, index) + body;
+			index_start = result.length();
+			if (index_end > 0) {
+				result += temp.substr(index_end);
+			}
+		} else {
+			set_error(RTR("Invalid macro name."), p_line);
+			return FAILED;
+		}
+	}
+	r_expanded = result;
 	return OK;
 }
 
-Error ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_number, Pair<String, Define *> p_define_pair, String &r_expanded) {
+Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, String &r_expanded) {
+	String iterative = p_string;
+	int pass_count = 0;
+	bool expanded = true;
+
+	while (expanded) {
+		expanded = false;
+
+		// As long as we find something to expand, keep going.
+		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
+			if (expand_macros_once(iterative, p_line, E, iterative)) {
+				expanded = true;
+			}
+		}
+
+		pass_count++;
+		if (pass_count > 50) {
+			set_error(RTR("Macro expansion limit exceeded."), p_line);
+			break;
+		}
+	}
+
+	r_expanded = iterative;
+
+	if (!state->error.is_empty()) {
+		return FAILED;
+	}
+	return OK;
+}
+
+bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded) {
 	String result = p_line;
 
-	const String &key = p_define_pair.first;
-	const Define *define = p_define_pair.second;
+	const String &key = p_define_pair->key();
+	const Define *define = p_define_pair->value();
 
 	int index_start = 0;
 	int index = 0;
-	while (find_match(result, key, index, index_start)) {
+	if (find_match(result, key, index, index_start)) {
 		String body = define->body;
 		if (define->arguments.size() > 0) {
 			// Complex macro with arguments.
@@ -750,14 +961,14 @@ Error ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_nu
 			int args_end = p_line.find(")", args_start);
 			if (args_start == -1 || args_end == -1) {
 				set_error(RTR("Missing macro argument parenthesis."), p_line_number);
-				return FAILED;
+				return false;
 			}
 
 			String values = result.substr(args_start + 1, args_end - (args_start + 1));
 			Vector<String> args = values.split(",");
 			if (args.size() != define->arguments.size()) {
 				set_error(RTR("Invalid macro argument count."), p_line_number);
-				return FAILED;
+				return false;
 			}
 
 			// Insert macro arguments into the body.
@@ -779,11 +990,13 @@ Error ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_nu
 			// Manually reset index_start to where the body value of the define finishes.
 			// This ensures we don't skip another instance of this macro in the string.
 			index_start = index + body.length() + 1;
-			break;
 		}
+
+		r_expanded = result;
+		return true;
 	}
-	r_expanded = result;
-	return OK;
+
+	return false;
 }
 
 bool ShaderPreprocessor::find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start) {
@@ -872,12 +1085,6 @@ void ShaderPreprocessor::clear() {
 	if (state_owner && state != nullptr) {
 		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
 			memdelete(E->get());
-		}
-
-		for (const RBMap<String, Vector<SkippedCondition *>>::Element *E = state->skipped_conditions.front(); E; E = E->next()) {
-			for (SkippedCondition *condition : E->get()) {
-				memdelete(condition);
-			}
 		}
 
 		memdelete(state);
@@ -969,8 +1176,12 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
+Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
 	State pp_state;
+	if (!p_filename.is_empty()) {
+		pp_state.current_filename = p_filename;
+		pp_state.save_regions = r_regions != nullptr;
+	}
 	Error err = preprocess(&pp_state, p_code, r_result);
 	if (err != OK) {
 		if (r_error_text) {
@@ -980,6 +1191,9 @@ Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, Str
 			*r_error_position = pp_state.include_positions;
 		}
 	}
+	if (r_regions) {
+		*r_regions = pp_state.regions[p_filename];
+	}
 	if (r_includes) {
 		*r_includes = pp_state.shader_includes;
 	}
@@ -988,7 +1202,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, Str
 		switch (pp_state.completion_type) {
 			case COMPLETION_TYPE_DIRECTIVE: {
 				List<String> options;
-				get_keyword_list(&options, true);
+				get_keyword_list(&options, true, true);
 
 				for (const String &E : options) {
 					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
@@ -1007,6 +1221,11 @@ Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, Str
 				}
 
 			} break;
+			case COMPLETION_TYPE_CONDITION: {
+				ScriptLanguage::CodeCompletionOption option("defined", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_completion_options->push_back(option);
+
+			} break;
 			case COMPLETION_TYPE_INCLUDE_PATH: {
 				if (p_include_completion_func && r_completion_options) {
 					p_include_completion_func(r_completion_options);
@@ -1020,8 +1239,12 @@ Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, Str
 	return err;
 }
 
-void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords) {
+void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords) {
 	r_keywords->push_back("define");
+	if (!p_ignore_context_keywords) {
+		r_keywords->push_back("defined");
+	}
+	r_keywords->push_back("elif");
 	if (p_include_shader_keywords) {
 		r_keywords->push_back("else");
 	}

@@ -461,10 +461,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-		if (p_font_data->work_pool.get_thread_count() == 0) {
-			p_font_data->work_pool.init();
-		}
-		p_font_data->work_pool.do_work(h, this, &TextServerFallback::_generateMTSDF_threaded, &td);
+		WorkerThreadPool::GroupID group_id = WorkerThreadPool::get_singleton()->add_template_group_task(this, &TextServerFallback::_generateMTSDF_threaded, &td, h, -1, true, SNAME("TextServerFBRenderMSDF"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_id);
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
@@ -735,12 +733,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		fargs.stream = &fd->stream;
 
 		int max_index = 0;
-		FT_Face tmp_face;
+		FT_Face tmp_face = nullptr;
 		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-		if (error == 0) {
+		if (tmp_face && error == 0) {
 			max_index = tmp_face->num_faces - 1;
 		}
-		FT_Done_Face(tmp_face);
+		if (tmp_face) {
+			FT_Done_Face(tmp_face);
+		}
 
 		error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
 		if (error) {
@@ -3206,7 +3206,7 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if (p_trim_flags.has_flag(OVERRUN_TRIM) || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
 		sd->overrun_trim_data.ellipsis_pos = -1;
 		return;

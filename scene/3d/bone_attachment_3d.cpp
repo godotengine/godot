@@ -30,8 +30,8 @@
 
 #include "bone_attachment_3d.h"
 
-void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "bone_name") {
+void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "bone_name") {
 		// Because it is a constant function, we cannot use the _get_skeleton_3d function.
 		const Skeleton3D *parent = nullptr;
 		if (use_external_skeleton) {
@@ -51,15 +51,13 @@ void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 				names += parent->get_bone_name(i);
 			}
 
-			property.hint = PROPERTY_HINT_ENUM;
-			property.hint_string = names;
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = names;
 		} else {
-			property.hint = PROPERTY_HINT_NONE;
-			property.hint_string = "";
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.hint_string = "";
 		}
 	}
-
-	Node3D::_validate_property(property);
 }
 
 bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {

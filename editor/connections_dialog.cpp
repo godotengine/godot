@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
 
@@ -627,7 +628,7 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
 
 	Callable callable = p_cd.get_callable();
 	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(p_cd.signal), String(p_cd.method)));
-	undo_redo->add_do_method(source, "connect", p_cd.signal, callable, varray(), p_cd.flags);
+	undo_redo->add_do_method(source, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_undo_method(source, "disconnect", p_cd.signal, callable);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
@@ -922,6 +923,10 @@ void ConnectionsDock::_notification(int p_what) {
 
 void ConnectionsDock::_bind_methods() {
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
+}
+
+void ConnectionsDock::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
 }
 
 void ConnectionsDock::set_node(Node *p_node) {

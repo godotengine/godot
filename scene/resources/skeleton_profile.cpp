@@ -121,18 +121,26 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 	return true;
 }
 
-void SkeletonProfile::_validate_property(PropertyInfo &property) const {
+void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
 	if (is_read_only) {
-		if (property.name == ("group_size") || property.name == ("bone_size")) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == ("group_size") || p_property.name == ("bone_size") || p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			return;
 		}
 	}
 
-	PackedStringArray split = property.name.split("/");
+	if (p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
+		String hint = "";
+		for (int i = 0; i < bones.size(); i++) {
+			hint += i == 0 ? String(bones[i].bone_name) : "," + String(bones[i].bone_name);
+		}
+		p_property.hint_string = hint;
+	}
+
+	PackedStringArray split = p_property.name.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		if (split[2] == "bone_tail" && get_tail_direction(split[1].to_int()) != TAIL_DIRECTION_SPECIFIC_CHILD) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -166,6 +174,28 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (PropertyInfo &E : *p_list) {
 		_validate_property(E);
 	}
+}
+
+StringName SkeletonProfile::get_root_bone() {
+	return root_bone;
+}
+
+void SkeletonProfile::set_root_bone(StringName p_bone_name) {
+	if (is_read_only) {
+		return;
+	}
+	root_bone = p_bone_name;
+}
+
+StringName SkeletonProfile::get_scale_base_bone() {
+	return scale_base_bone;
+}
+
+void SkeletonProfile::set_scale_base_bone(StringName p_bone_name) {
+	if (is_read_only) {
+		return;
+	}
+	scale_base_bone = p_bone_name;
 }
 
 int SkeletonProfile::get_group_size() {
@@ -361,6 +391,12 @@ bool SkeletonProfile::has_bone(StringName p_bone_name) {
 }
 
 void SkeletonProfile::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_root_bone", "bone_name"), &SkeletonProfile::set_root_bone);
+	ClassDB::bind_method(D_METHOD("get_root_bone"), &SkeletonProfile::get_root_bone);
+
+	ClassDB::bind_method(D_METHOD("set_scale_base_bone", "bone_name"), &SkeletonProfile::set_scale_base_bone);
+	ClassDB::bind_method(D_METHOD("get_scale_base_bone"), &SkeletonProfile::get_scale_base_bone);
+
 	ClassDB::bind_method(D_METHOD("set_group_size", "size"), &SkeletonProfile::set_group_size);
 	ClassDB::bind_method(D_METHOD("get_group_size"), &SkeletonProfile::get_group_size);
 
@@ -396,6 +432,9 @@ void SkeletonProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_group", "bone_idx"), &SkeletonProfile::get_group);
 	ClassDB::bind_method(D_METHOD("set_group", "bone_idx", "group"), &SkeletonProfile::set_group);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "root_bone", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_root_bone", "get_root_bone");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "scale_base_bone", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_scale_base_bone", "get_scale_base_bone");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "group_size", PROPERTY_HINT_RANGE, "0,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Groups,groups/"), "set_group_size", "get_group_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_size", PROPERTY_HINT_RANGE, "0,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Bones,bones/"), "set_bone_size", "get_bone_size");
 
@@ -414,6 +453,9 @@ SkeletonProfile::~SkeletonProfile() {
 
 SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	is_read_only = true;
+
+	root_bone = "Root";
+	scale_base_bone = "Hips";
 
 	groups.resize(4);
 

@@ -235,7 +235,7 @@ private:
 	HashMap<StringName, Function> functions;
 	HashMap<StringName, Variable> variables;
 	HashMap<StringName, Vector<Argument>> custom_signals;
-	Vector<Multiplayer::RPCConfig> rpc_functions;
+	Dictionary rpc_functions;
 
 	HashMap<Object *, VisualScriptInstance *> instances;
 
@@ -363,7 +363,7 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const override;
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
+	virtual const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
@@ -409,6 +409,9 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 
+	virtual bool property_can_revert(const StringName &p_name) const { return false; };
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const { return false; };
+
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -444,7 +447,7 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
+	virtual const Variant get_rpc_config() const;
 
 	VisualScriptInstance();
 	~VisualScriptInstance();

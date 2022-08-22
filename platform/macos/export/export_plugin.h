@@ -39,8 +39,8 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "editor/editor_export.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "platform/macos/logo.gen.h"
 
 #include <sys/stat.h>
@@ -99,7 +99,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	}
 
 protected:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
@@ -119,9 +119,10 @@ public:
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
-	virtual void get_platform_features(List<String> *r_features) override {
+	virtual void get_platform_features(List<String> *r_features) const override {
 		r_features->push_back("pc");
 		r_features->push_back("s3tc");
 		r_features->push_back("macos");

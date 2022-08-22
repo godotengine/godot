@@ -657,7 +657,7 @@ void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
 		}
 		settings = p_settings;
 		if (settings.is_valid()) {
-			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), varray(), CONNECT_REFERENCE_COUNTED);
+			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
 		}
 		_invalidate();
 	}
@@ -764,13 +764,17 @@ int Label::get_visible_characters() const {
 
 void Label::set_percent_visible(float p_percent) {
 	if (percent_visible != p_percent) {
-		if (p_percent < 0 || p_percent >= 1) {
+		if (percent_visible >= 1.0) {
 			visible_chars = -1;
-			percent_visible = 1;
+			percent_visible = 1.0;
+		} else if (percent_visible < 0.0) {
+			visible_chars = 0;
+			percent_visible = 0.0;
 		} else {
 			visible_chars = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
+
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
 		}

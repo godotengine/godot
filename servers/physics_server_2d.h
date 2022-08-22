@@ -393,6 +393,9 @@ public:
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask) = 0;
 	virtual uint32_t body_get_collision_mask(RID p_body) const = 0;
 
+	virtual void body_set_collision_priority(RID p_body, real_t p_priority) = 0;
+	virtual real_t body_get_collision_priority(RID p_body) const = 0;
+
 	// common body variables
 	enum BodyParameter {
 		BODY_PARAM_BOUNCE,
@@ -605,6 +608,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<PhysicsRayQueryParameters2D> create(Vector2 p_from, Vector2 p_to, uint32_t p_mask, const Vector<RID> &p_exclude);
 	const PhysicsDirectSpaceState2D::RayParameters &get_parameters() const { return parameters; }
 
 	void set_from(const Vector2 &p_from) { parameters.from = p_from; }

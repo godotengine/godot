@@ -8,7 +8,7 @@ namespace Godot
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ScriptPathAttribute : Attribute
     {
-        private string path;
+        public string Path { get; }
 
         /// <summary>
         /// Constructs a new ScriptPathAttribute instance.
@@ -16,7 +16,7 @@ namespace Godot
         /// <param name="path">The file path to the script</param>
         public ScriptPathAttribute(string path)
         {
-            this.path = path;
+            Path = path;
         }
     }
 }

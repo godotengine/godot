@@ -51,7 +51,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/editor_paths.h"
 #endif
 
 ///////////////////////////
@@ -290,7 +290,9 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 #endif
 				mi.arguments.push_back(arginfo);
 			}
-
+#ifdef TOOLS_ENABLED
+			mi.default_arguments.append_array(func->get_default_arg_values());
+#endif
 			mi.return_val = func->get_return_type();
 			r_list->push_back(mi);
 		}
@@ -325,15 +327,22 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
+
+#ifdef TOOLS_ENABLED
+		r_list->push_back(sptr->get_class_category());
+#endif // TOOLS_ENABLED
+
+		for (const PropertyInfo &E : props) {
+			r_list->push_back(E);
+		}
+
+		props.clear();
+
 		if (!p_include_base) {
 			break;
 		}
 
 		sptr = sptr->_base;
-	}
-
-	for (const PropertyInfo &E : props) {
-		r_list->push_back(E);
 	}
 }
 
@@ -434,16 +443,16 @@ void GDScript::set_source_code(const String &p_code) {
 
 #ifdef TOOLS_ENABLED
 void GDScript::_update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames) {
-	if (base_cache.is_valid()) {
-		base_cache->_update_exports_values(values, propnames);
-	}
-
 	for (const KeyValue<StringName, Variant> &E : member_default_values_cache) {
 		values[E.key] = E.value;
 	}
 
 	for (const PropertyInfo &E : members_cache) {
 		propnames.push_back(E);
+	}
+
+	if (base_cache.is_valid()) {
+		base_cache->_update_exports_values(values, propnames);
 	}
 }
 
@@ -703,6 +712,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			member_default_values_cache.clear();
 			_signals.clear();
 
+			members_cache.push_back(get_class_category());
+
 			for (int i = 0; i < c->members.size(); i++) {
 				const GDScriptParser::ClassNode::Member &member = c->members[i];
 
@@ -727,6 +738,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
 						}
 						_signals[member.signal->identifier->name] = parameters_names;
+					} break;
+					case GDScriptParser::ClassNode::Member::GROUP: {
+						members_cache.push_back(member.annotation->export_info);
 					} break;
 					default:
 						break; // Nothing.
@@ -848,7 +862,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 // Loading a template, don't parse.
 #ifdef TOOLS_ENABLED
-	if (EditorSettings::get_singleton() && basedir.begins_with(EditorSettings::get_singleton()->get_project_script_templates_dir())) {
+	if (EditorPaths::get_singleton() && basedir.begins_with(EditorPaths::get_singleton()->get_project_script_templates_dir())) {
 		return OK;
 	}
 #endif
@@ -954,8 +968,8 @@ void GDScript::get_members(HashSet<StringName> *p_members) {
 	}
 }
 
-const Vector<Multiplayer::RPCConfig> GDScript::get_rpc_methods() const {
-	return rpc_functions;
+const Variant GDScript::get_rpc_config() const {
+	return rpc_config;
 }
 
 Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1212,9 +1226,9 @@ void GDScript::_save_orphaned_subclasses() {
 
 void GDScript::_init_rpc_methods_properties() {
 	// Copy the base rpc methods so we don't mask their IDs.
-	rpc_functions.clear();
+	rpc_config.clear();
 	if (base.is_valid()) {
-		rpc_functions = base->rpc_functions;
+		rpc_config = base->rpc_config.duplicate();
 	}
 
 	GDScript *cscript = this;
@@ -1222,12 +1236,9 @@ void GDScript::_init_rpc_methods_properties() {
 	while (cscript) {
 		// RPC Methods
 		for (KeyValue<StringName, GDScriptFunction *> &E : cscript->member_functions) {
-			Multiplayer::RPCConfig config = E.value->get_rpc_config();
-			if (config.rpc_mode != Multiplayer::RPC_MODE_DISABLED) {
-				config.name = E.value->get_name();
-				if (rpc_functions.find(config) == -1) {
-					rpc_functions.push_back(config);
-				}
+			Variant config = E.value->get_rpc_config();
+			if (config.get_type() != Variant::NIL) {
+				rpc_config[E.value->get_name()] = config;
 			}
 		}
 
@@ -1241,9 +1252,6 @@ void GDScript::_init_rpc_methods_properties() {
 			cscript = nullptr;
 		}
 	}
-
-	// Sort so we are 100% that they are always the same.
-	rpc_functions.sort_custom<Multiplayer::SortRPCConfig>();
 }
 
 GDScript::~GDScript() {
@@ -1408,9 +1416,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			while (sl) {
 				HashMap<StringName, GDScriptFunction *>::ConstIterator E = sl->member_functions.find(p_name);
 				if (E) {
-					Multiplayer::RPCConfig config;
-					config.name = p_name;
-					if (sptr->rpc_functions.find(config) != -1) {
+					if (sptr->rpc_config.has(p_name)) {
 						r_ret = Callable(memnew(GDScriptRPCCallable(this->owner, E->key)));
 					} else {
 						r_ret = Callable(this->owner, E->key);
@@ -1518,12 +1524,59 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
 
+#ifdef TOOLS_ENABLED
+		p_properties->push_back(sptr->get_class_category());
+#endif // TOOLS_ENABLED
+
+		for (const PropertyInfo &prop : props) {
+			p_properties->push_back(prop);
+		}
+
+		props.clear();
+
+		sptr = sptr->_base;
+	}
+}
+
+bool GDScriptInstance::property_can_revert(const StringName &p_name) const {
+	Variant name = p_name;
+	const Variant *args[1] = { &name };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_can_revert);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+			if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::BOOL && ret.operator bool()) {
+				return true;
+			}
+		}
 		sptr = sptr->_base;
 	}
 
-	for (const PropertyInfo &E : props) {
-		p_properties->push_back(E);
+	return false;
+}
+
+bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const {
+	Variant name = p_name;
+	const Variant *args[1] = { &name };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_get_revert);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+			if (err.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
+				r_ret = ret;
+				return true;
+			}
+		}
+		sptr = sptr->_base;
 	}
+
+	return false;
 }
 
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
@@ -1629,14 +1682,12 @@ ScriptLanguage *GDScriptInstance::get_language() {
 	return GDScriptLanguage::get_singleton();
 }
 
-const Vector<Multiplayer::RPCConfig> GDScriptInstance::get_rpc_methods() const {
-	return script->get_rpc_methods();
+const Variant GDScriptInstance::get_rpc_config() const {
+	return script->get_rpc_config();
 }
 
 void GDScriptInstance::reload_members() {
 #ifdef DEBUG_ENABLED
-
-	members.resize(script->member_indices.size()); //resize
 
 	Vector<Variant> new_members;
 	new_members.resize(script->member_indices.size());
@@ -1648,6 +1699,8 @@ void GDScriptInstance::reload_members() {
 			new_members.write[E.value.index] = value;
 		}
 	}
+
+	members.resize(new_members.size()); //resize
 
 	//apply
 	members = new_members;
@@ -2236,6 +2289,8 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
 	strings._get_property_list = StaticCString::create("_get_property_list");
+	strings._property_can_revert = StaticCString::create("_property_can_revert");
+	strings._property_get_revert = StaticCString::create("_property_get_revert");
 	strings._script_source = StaticCString::create("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
@@ -2388,7 +2443,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 }
 
-Error ResourceFormatSaverGDScript::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<GDScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 

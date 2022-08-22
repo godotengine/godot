@@ -96,11 +96,9 @@ void OpenXRSelectActionDialog::open() {
 
 			Button *action_button = memnew(Button);
 			String action_name = action->get_name_with_set();
-			Vector<Variant> binds;
-			binds.push_back(action_name);
 			action_button->set_flat(true);
 			action_button->set_text(action->get_name() + ": " + action->get_localized_name());
-			action_button->connect("pressed", callable_mp(this, &OpenXRSelectActionDialog::_on_select_action), binds);
+			action_button->connect("pressed", callable_mp(this, &OpenXRSelectActionDialog::_on_select_action).bind(action_name));
 			action_hb->add_child(action_button);
 
 			action_buttons[action_name] = action_button->get_path();

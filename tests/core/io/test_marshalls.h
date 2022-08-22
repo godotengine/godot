@@ -254,11 +254,13 @@ TEST_CASE("[Marshalls] Invalid data Variant decoding") {
 	uint8_t some_buffer[1] = { 0x00 };
 	uint8_t out_of_range_type_buffer[4] = { 0xff }; // Greater than Variant::VARIANT_MAX
 
+	ERR_PRINT_OFF;
 	CHECK(decode_variant(variant, some_buffer, /* less than 4 */ 1, &r_len) == ERR_INVALID_DATA);
 	CHECK(r_len == 0);
 
 	CHECK(decode_variant(variant, out_of_range_type_buffer, 4, &r_len) == ERR_INVALID_DATA);
 	CHECK(r_len == 0);
+	ERR_PRINT_ON;
 }
 
 TEST_CASE("[Marshalls] NIL Variant decoding") {

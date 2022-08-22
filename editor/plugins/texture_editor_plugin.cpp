@@ -137,7 +137,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 
 		// It's okay that these colors are static since the grid color is static too.
 		metadata_label->add_theme_color_override("font_color", Color::named("white"));
-		metadata_label->add_theme_color_override("font_color_shadow", Color::named("black"));
+		metadata_label->add_theme_color_override("font_shadow_color", Color::named("black"));
 
 		metadata_label->add_theme_font_size_override("font_size", 14 * EDSCALE);
 		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));

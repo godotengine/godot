@@ -58,19 +58,14 @@ bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
 	// @TODO we need an overrule switch so we can force enable openxr, i.e run "godot --openxr_enabled"
 
 	if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
-#ifdef TOOLS_ENABLED
 		// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
 		return false;
-
-		// bool enabled = GLOBAL_GET("xr/openxr/in_editor"); // EDITOR_GET("xr/openxr/in_editor");
-		// return enabled;
-#else
-		// we should never get here, editor hint won't be true if the editor isn't compiled in.
-		return false;
-#endif
 	} else {
-		bool enabled = GLOBAL_GET("xr/openxr/enabled");
-		return enabled;
+		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+			return GLOBAL_GET("xr/openxr/enabled");
+		} else {
+			return XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+		}
 	}
 }
 

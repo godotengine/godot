@@ -723,7 +723,12 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_child(int p_idx) {
 	_create_children_cache();
+
+	if (p_idx < 0) {
+		p_idx += children_cache.size();
+	}
 	ERR_FAIL_INDEX_V(p_idx, children_cache.size(), nullptr);
+
 	return children_cache.get(p_idx);
 }
 
@@ -744,6 +749,7 @@ int TreeItem::get_child_count() {
 }
 
 Array TreeItem::get_children() {
+	// Don't need to explicitly create children cache, because get_child_count creates it.
 	int size = get_child_count();
 	Array arr;
 	arr.resize(size);
@@ -764,6 +770,22 @@ int TreeItem::get_index() {
 	}
 	return idx - 1;
 }
+
+#ifdef DEV_ENABLED
+void TreeItem::validate_cache() const {
+	if (!parent || parent->children_cache.is_empty()) {
+		return;
+	}
+	TreeItem *scan = parent->first_child;
+	int index = 0;
+	while (scan) {
+		DEV_ASSERT(parent->children_cache[index] == scan);
+		++index;
+		scan = scan->get_next();
+	}
+	DEV_ASSERT(index == parent->children_cache.size());
+}
+#endif
 
 void TreeItem::move_before(TreeItem *p_item) {
 	ERR_FAIL_NULL(p_item);
@@ -792,7 +814,11 @@ void TreeItem::move_before(TreeItem *p_item) {
 		parent->children_cache.clear();
 	} else {
 		parent->first_child = this;
-		parent->children_cache.insert(0, this);
+		// If the cache is empty, it has not been built but there
+		// are items in the tree (note p_item != nullptr,) so we cannot update it.
+		if (!parent->children_cache.is_empty()) {
+			parent->children_cache.insert(0, this);
+		}
 	}
 
 	prev = item_prev;
@@ -802,6 +828,8 @@ void TreeItem::move_before(TreeItem *p_item) {
 	if (tree && old_tree == tree) {
 		tree->update();
 	}
+
+	validate_cache();
 }
 
 void TreeItem::move_after(TreeItem *p_item) {
@@ -834,12 +862,17 @@ void TreeItem::move_after(TreeItem *p_item) {
 	if (next) {
 		parent->children_cache.clear();
 	} else {
-		parent->children_cache.append(this);
+		// If the cache is empty, it has not been built but there
+		// are items in the tree (note p_item != nullptr,) so we cannot update it.
+		if (!parent->children_cache.is_empty()) {
+			parent->children_cache.append(this);
+		}
 	}
 
 	if (tree && old_tree == tree) {
 		tree->update();
 	}
+	validate_cache();
 }
 
 void TreeItem::remove_child(TreeItem *p_item) {
@@ -854,6 +887,7 @@ void TreeItem::remove_child(TreeItem *p_item) {
 	if (tree) {
 		tree->update();
 	}
+	validate_cache();
 }
 
 void TreeItem::set_selectable(int p_column, bool p_selectable) {
@@ -1391,6 +1425,7 @@ TreeItem::TreeItem(Tree *p_tree) {
 
 TreeItem::~TreeItem() {
 	_unlink_from_tree();
+	validate_cache();
 	prev = nullptr;
 	clear_children();
 	_change_tree(nullptr);
@@ -1844,15 +1879,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 
-				if (rtl) {
-					r.position.x = get_size().width - r.position.x - r.size.x;
-				}
-
-				if (p_item->cells[i].selected) {
-					if (has_focus()) {
-						cache.selected_focus->draw(ci, r);
-					} else {
-						cache.selected->draw(ci, r);
+				if (select_mode != SELECT_ROW) {
+					if (rtl) {
+						r.position.x = get_size().width - r.position.x - r.size.x;
+					}
+					if (p_item->cells[i].selected) {
+						if (has_focus()) {
+							cache.selected_focus->draw(ci, r);
+						} else {
+							cache.selected->draw(ci, r);
+						}
 					}
 				}
 			}

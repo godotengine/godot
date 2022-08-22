@@ -20,7 +20,7 @@
 		</method>
 		<method name="set_disable_shortcuts">
 			<return type="void" />
-			<argument index="0" name="disabled" type="bool" />
+			<param index="0" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
 			</description>
@@ -65,7 +65,7 @@
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="3">
-			The horizontal space between [MenuButton]'s icon and text.
+			The horizontal space between [MenuButton]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

@@ -17,14 +17,14 @@
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="state" type="PhysicsDirectBodyState2D" />
+			<param index="0" name="state" type="PhysicsDirectBodyState2D" />
 			<description>
 				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_constant_central_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector2" />
+			<param index="0" name="force" type="Vector2" />
 			<description>
 				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
 				This is equivalent to using [method add_constant_force] at the body's center of mass.
@@ -32,23 +32,23 @@
 		</method>
 		<method name="add_constant_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector2" />
-			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="force" type="Vector2" />
+			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="add_constant_torque">
 			<return type="void" />
-			<argument index="0" name="torque" type="float" />
+			<param index="0" name="torque" type="float" />
 			<description>
 				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = 0[/code].
 			</description>
 		</method>
 		<method name="apply_central_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector2" />
+			<param index="0" name="force" type="Vector2" />
 			<description>
 				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
 				This is equivalent to using [method apply_force] at the body's center of mass.
@@ -56,7 +56,7 @@
 		</method>
 		<method name="apply_central_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="impulse" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Applies a directional impulse without affecting rotation.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
@@ -65,33 +65,33 @@
 		</method>
 		<method name="apply_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector2" />
-			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="force" type="Vector2" />
+			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector2" />
-			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="impulse" type="Vector2" />
+			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Applies a positioned impulse to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_torque">
 			<return type="void" />
-			<argument index="0" name="torque" type="float" />
+			<param index="0" name="torque" type="float" />
 			<description>
 				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
 			<return type="void" />
-			<argument index="0" name="torque" type="float" />
+			<param index="0" name="torque" type="float" />
 			<description>
 				Applies a rotational impulse to the body without affecting the position.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
@@ -106,7 +106,7 @@
 		</method>
 		<method name="set_axis_velocity">
 			<return type="void" />
-			<argument index="0" name="axis_velocity" type="Vector2" />
+			<param index="0" name="axis_velocity" type="Vector2" />
 			<description>
 				Sets the body's velocity on the given axis. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
@@ -197,43 +197,43 @@
 	</members>
 	<signals>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Emitted when a collision with another [PhysicsBody2D] or [TileMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Emitted when the collision with another [PhysicsBody2D] or [TileMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
-			<argument index="0" name="body_rid" type="RID" />
-			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape_index" type="int" />
-			<argument index="3" name="local_shape_index" type="int" />
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of this RigidDynamicBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMap]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[code]body_rid[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
-				[code]body_shape_index[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[code]local_shape_index[/code] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param body_rid] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
-			<argument index="0" name="body_rid" type="RID" />
-			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape_index" type="int" />
-			<argument index="3" name="local_shape_index" type="int" />
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when the collision between one of this RigidDynamicBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMap]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[code]body_rid[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
-				[code]body_shape_index[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[code]local_shape_index[/code] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param body_rid] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

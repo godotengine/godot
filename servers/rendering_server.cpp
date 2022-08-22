@@ -398,16 +398,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				const Vector3 *src = array.ptr();
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					Vector3 n = src[i] * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+					Vector2 res = src[i].octahedron_encode();
+					int16_t vector[2] = {
+						(int16_t)CLAMP(res.x * 65535, 0, 65535),
+						(int16_t)CLAMP(res.y * 65535, 0, 65535),
+					};
 
-					uint32_t value = 0;
-					value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-					value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-					value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
-
-					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 				}
-
 			} break;
 
 			case RS::ARRAY_TANGENT: {
@@ -416,33 +414,32 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				if (type == Variant::PACKED_FLOAT32_ARRAY) {
 					Vector<float> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-					const float *src = array.ptr();
+					const float *src_ptr = array.ptr();
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint32_t value = 0;
-						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-						if (src[i * 4 + 3] > 0) {
-							value |= 3UL << 30;
-						}
+						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
+						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+						int16_t vector[2] = {
+							(int16_t)CLAMP(res.x * 65535, 0, 65535),
+							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						};
 
-						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 					}
 				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-					const double *src = array.ptr();
+					const double *src_ptr = array.ptr();
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint32_t value = 0;
-						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-						if (src[i * 4 + 3] > 0) {
-							value |= 3UL << 30;
-						}
-						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
+						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+						int16_t vector[2] = {
+							(int16_t)CLAMP(res.x * 65535, 0, 65535),
+							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						};
+
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 					}
 				}
 			} break;
@@ -627,7 +624,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const int *src = indices.ptr();
 
 				for (int i = 0; i < p_index_array_len; i++) {
-					if (p_vertex_array_len < (1 << 16)) {
+					if (p_vertex_array_len < (1 << 16) && p_vertex_array_len > 0) {
 						uint16_t v = src[i];
 
 						memcpy(&iw[i * 2], &v, 2);
@@ -772,19 +769,11 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 					elem_size = 3;
 				}
 
-				{
-					elem_size *= sizeof(float);
-				}
-
-				if (elem_size == 6) {
-					elem_size = 8;
-				}
-
+				elem_size *= sizeof(float);
 			} break;
 			case RS::ARRAY_NORMAL: {
 				elem_size = 4;
 			} break;
-
 			case RS::ARRAY_TANGENT: {
 				elem_size = 4;
 			} break;
@@ -793,12 +782,9 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 			} break;
 			case RS::ARRAY_TEX_UV: {
 				elem_size = 8;
-
 			} break;
-
 			case RS::ARRAY_TEX_UV2: {
 				elem_size = 8;
-
 			} break;
 			case RS::ARRAY_CUSTOM0:
 			case RS::ARRAY_CUSTOM1:
@@ -847,9 +833,8 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 					break;
 				}
 				/* determine whether using 16 or 32 bits indices */
-				if (p_vertex_len >= (1 << 16)) {
+				if (p_vertex_len >= (1 << 16) || p_vertex_len == 0) {
 					elem_size = 4;
-
 				} else {
 					elem_size = 2;
 				}
@@ -920,8 +905,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		}
 	}
 
-	ERR_FAIL_COND_V((format & RS::ARRAY_FORMAT_VERTEX) == 0, ERR_INVALID_PARAMETER); // Mandatory
-
 	if (p_blend_shapes.size()) {
 		// Validate format for morphs.
 		for (int i = 0; i < p_blend_shapes.size(); i++) {
@@ -954,6 +937,12 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	uint32_t mask = (1 << ARRAY_MAX) - 1;
 	format |= (~mask) & p_compress_format; // Make the full format.
+
+	if ((format & RS::ARRAY_FORMAT_VERTEX) == 0 && !(format & RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY)) {
+		ERR_PRINT("Mesh created without vertex array. This mesh will not be visible with the default shader. If using an empty vertex array is intentional, create the mesh with the ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY flag to silence this error.");
+		// Set the flag here after warning to suppress errors down the pipeline.
+		format |= RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY;
+	}
 
 	int vertex_array_size = vertex_element_size * array_len;
 	int attrib_array_size = attrib_element_size * array_len;
@@ -1389,7 +1378,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 	Vector<uint8_t> attrib_data = p_data.attribute_data;
 	Vector<uint8_t> skin_data = p_data.skin_data;
 
-	ERR_FAIL_COND_V(vertex_data.size() == 0, Array());
+	ERR_FAIL_COND_V(vertex_data.size() == 0 && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
 	int vertex_len = p_data.vertex_count;
 
 	Vector<uint8_t> index_data = p_data.index_data;
@@ -1410,7 +1399,7 @@ Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_su
 }
 #endif
 
-int RenderingServer::global_variable_type_get_shader_datatype(GlobalVariableType p_type) {
+int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShaderUniformType p_type) {
 	switch (p_type) {
 		case RS::GLOBAL_VAR_TYPE_BOOL:
 			return ShaderLanguage::TYPE_BOOL;
@@ -1511,9 +1500,9 @@ TypedArray<Image> RenderingServer::_texture_3d_get(RID p_texture) const {
 	return ret;
 }
 
-TypedArray<Dictionary> RenderingServer::_shader_get_param_list(RID p_shader) const {
+TypedArray<Dictionary> RenderingServer::_shader_get_shader_uniform_list(RID p_shader) const {
 	List<PropertyInfo> l;
-	shader_get_param_list(p_shader, &l);
+	shader_get_shader_uniform_list(p_shader, &l);
 	return convert_property_list(&l);
 }
 
@@ -1636,9 +1625,9 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 	return d;
 }
 
-Array RenderingServer::_instance_geometry_get_shader_parameter_list(RID p_instance) const {
+Array RenderingServer::_instance_geometry_get_shader_uniform_list(RID p_instance) const {
 	List<PropertyInfo> params;
-	instance_geometry_get_shader_parameter_list(p_instance, &params);
+	instance_geometry_get_shader_uniform_list(p_instance, &params);
 	return convert_property_list(&params);
 }
 
@@ -1712,7 +1701,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &RenderingServer::shader_set_code);
 	ClassDB::bind_method(D_METHOD("shader_set_path_hint", "shader", "path"), &RenderingServer::shader_set_path_hint);
 	ClassDB::bind_method(D_METHOD("shader_get_code", "shader"), &RenderingServer::shader_get_code);
-	ClassDB::bind_method(D_METHOD("shader_get_param_list", "shader"), &RenderingServer::_shader_get_param_list);
+	ClassDB::bind_method(D_METHOD("shader_get_shader_uniform_list", "shader"), &RenderingServer::_shader_get_shader_uniform_list);
 	ClassDB::bind_method(D_METHOD("shader_get_param_default", "shader", "param"), &RenderingServer::shader_get_param_default);
 
 	ClassDB::bind_method(D_METHOD("shader_set_default_texture_param", "shader", "param", "texture", "index"), &RenderingServer::shader_set_default_texture_param, DEFVAL(0));
@@ -1896,9 +1885,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
 
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
+	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL);
@@ -1921,6 +1911,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
+	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_TRANSMITTANCE_BIAS);
@@ -2000,9 +1991,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DECAL_TEXTURE_MAX);
 
 	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS);
+	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
 	/* GI API (affects VoxelGI and SDFGI) */
@@ -2184,7 +2176,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_mode", "viewport", "scaling_3d_mode"), &RenderingServer::viewport_set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_scale", "viewport", "scale"), &RenderingServer::viewport_set_scaling_3d_scale);
 	ClassDB::bind_method(D_METHOD("viewport_set_fsr_sharpness", "viewport", "sharpness"), &RenderingServer::viewport_set_fsr_sharpness);
-	ClassDB::bind_method(D_METHOD("viewport_set_fsr_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_fsr_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &RenderingServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &RenderingServer::viewport_set_clear_mode);
 	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &RenderingServer::viewport_get_texture);
@@ -2493,10 +2485,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_lightmap", "instance", "lightmap", "lightmap_uv_scale", "lightmap_slice"), &RenderingServer::instance_geometry_set_lightmap);
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_lod_bias", "instance", "lod_bias"), &RenderingServer::instance_geometry_set_lod_bias);
 
-	ClassDB::bind_method(D_METHOD("instance_geometry_set_shader_parameter", "instance", "parameter", "value"), &RenderingServer::instance_geometry_set_shader_parameter);
-	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_parameter);
-	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter_default_value", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_parameter_default_value);
-	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter_list", "instance"), &RenderingServer::_instance_geometry_get_shader_parameter_list);
+	ClassDB::bind_method(D_METHOD("instance_geometry_set_shader_uniform", "instance", "parameter", "value"), &RenderingServer::instance_geometry_set_shader_uniform);
+	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_uniform", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_uniform);
+	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_uniform_default_value", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_uniform_default_value);
+	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_uniform_list", "instance"), &RenderingServer::_instance_geometry_get_shader_uniform_list);
 
 	ClassDB::bind_method(D_METHOD("instances_cull_aabb", "aabb", "scenario"), &RenderingServer::_instances_cull_aabb_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &RenderingServer::_instances_cull_ray_bind, DEFVAL(RID()));
@@ -2690,15 +2682,15 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE);
 	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE);
 
-	/* GLOBAL VARIABLES */
+	/* GLOBAL SHADER UNIFORMS */
 
-	ClassDB::bind_method(D_METHOD("global_variable_add", "name", "type", "default_value"), &RenderingServer::global_variable_add);
-	ClassDB::bind_method(D_METHOD("global_variable_remove", "name"), &RenderingServer::global_variable_remove);
-	ClassDB::bind_method(D_METHOD("global_variable_get_list"), &RenderingServer::global_variable_get_list);
-	ClassDB::bind_method(D_METHOD("global_variable_set", "name", "value"), &RenderingServer::global_variable_set);
-	ClassDB::bind_method(D_METHOD("global_variable_set_override", "name", "value"), &RenderingServer::global_variable_set_override);
-	ClassDB::bind_method(D_METHOD("global_variable_get", "name"), &RenderingServer::global_variable_get);
-	ClassDB::bind_method(D_METHOD("global_variable_get_type", "name"), &RenderingServer::global_variable_get_type);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_add", "name", "type", "default_value"), &RenderingServer::global_shader_uniform_add);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_remove", "name"), &RenderingServer::global_shader_uniform_remove);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_get_list"), &RenderingServer::global_shader_uniform_get_list);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_set", "name", "value"), &RenderingServer::global_shader_uniform_set);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_set_override", "name", "value"), &RenderingServer::global_shader_uniform_set_override);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_get", "name"), &RenderingServer::global_shader_uniform_get);
+	ClassDB::bind_method(D_METHOD("global_shader_uniform_get_type", "name"), &RenderingServer::global_shader_uniform_get_type);
 
 	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BOOL);
 	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC2);
@@ -2831,7 +2823,6 @@ void RenderingServer::set_render_loop_enabled(bool p_enabled) {
 RenderingServer::RenderingServer() {
 	//ERR_FAIL_COND(singleton);
 
-	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
 }
 
@@ -2947,7 +2938,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/scaling_3d/mode", 0);
 	GLOBAL_DEF("rendering/scaling_3d/scale", 1.0);
 	GLOBAL_DEF("rendering/scaling_3d/fsr_sharpness", 0.2f);
-	GLOBAL_DEF("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
+	GLOBAL_DEF("rendering/textures/default_filters/texture_mipmap_bias", 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
@@ -2962,15 +2953,15 @@ void RenderingServer::init() {
 			PropertyInfo(Variant::FLOAT,
 					"rendering/scaling_3d/fsr_sharpness",
 					PROPERTY_HINT_RANGE, "0,2,0.1"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/fsr_mipmap_bias",
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/texture_mipmap_bias",
 			PropertyInfo(Variant::FLOAT,
-					"rendering/scaling_3d/fsr_mipmap_bias",
-					PROPERTY_HINT_RANGE, "-2,2,0.1"));
+					"rendering/textures/default_filters/texture_mipmap_bias",
+					PROPERTY_HINT_RANGE, "-2,2,0.001"));
 
 	GLOBAL_DEF("rendering/textures/decals/filter", DECAL_FILTER_LINEAR_MIPMAPS);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/decals/filter", PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Nearest+Mipmaps,Linear,Linear+Mipmaps,Linear+Mipmaps Anisotropic (Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/decals/filter", PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"));
 	GLOBAL_DEF("rendering/textures/light_projectors/filter", LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/light_projectors/filter", PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Nearest+Mipmaps,Linear,Linear+Mipmaps,Linear+Mipmaps Anisotropic (Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/light_projectors/filter", PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"));
 
 	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
 	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
@@ -3032,6 +3023,5 @@ void RenderingServer::init() {
 }
 
 RenderingServer::~RenderingServer() {
-	memdelete(thread_pool);
 	singleton = nullptr;
 }

@@ -387,8 +387,8 @@ void RigidDynamicBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p
 			//E->value.rc=0;
 			E->value.in_scene = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree), make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree).bind(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree).bind(objid));
 				if (E->value.in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
@@ -1062,10 +1062,10 @@ void RigidDynamicBody2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_SHAPE);
 }
 
-void RigidDynamicBody2D::_validate_property(PropertyInfo &property) const {
+void RigidDynamicBody2D::_validate_property(PropertyInfo &p_property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
-		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name == "center_of_mass") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }
@@ -1776,14 +1776,14 @@ void CharacterBody2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
 }
 
-void CharacterBody2D::_validate_property(PropertyInfo &property) const {
+void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
 	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else {
-		if (property.name == "wall_min_slide_angle") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name == "wall_min_slide_angle") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }
@@ -1821,6 +1821,10 @@ Vector2 KinematicCollision2D::get_remainder() const {
 real_t KinematicCollision2D::get_angle(const Vector2 &p_up_direction) const {
 	ERR_FAIL_COND_V(p_up_direction == Vector2(), 0);
 	return result.get_angle(p_up_direction);
+}
+
+real_t KinematicCollision2D::get_depth() const {
+	return result.collision_depth;
 }
 
 Object *KinematicCollision2D::get_local_shape() const {
@@ -1874,6 +1878,7 @@ void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision2D::get_travel);
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision2D::get_remainder);
 	ClassDB::bind_method(D_METHOD("get_angle", "up_direction"), &KinematicCollision2D::get_angle, DEFVAL(Vector2(0.0, -1.0)));
+	ClassDB::bind_method(D_METHOD("get_depth"), &KinematicCollision2D::get_depth);
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision2D::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision2D::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision2D::get_collider_id);

@@ -39,7 +39,7 @@
 			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
-			The separation between the check icon and the text (in pixels).
+			The separation between the check icon and the text (in pixels). Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

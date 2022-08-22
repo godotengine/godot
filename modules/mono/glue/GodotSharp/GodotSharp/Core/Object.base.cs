@@ -1,54 +1,78 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Godot.Bridge;
+using Godot.NativeInterop;
 
 namespace Godot
 {
     public partial class Object : IDisposable
     {
         private bool _disposed = false;
+        private static readonly Type CachedType = typeof(Object);
 
-        private static StringName nativeName = "Object";
+        internal IntPtr NativePtr;
+        private bool _memoryOwn;
 
-        internal IntPtr ptr;
-        internal bool memoryOwn;
+        private WeakReference<Object> _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new <see cref="Object"/>.
         /// </summary>
         public Object() : this(false)
         {
-            if (ptr == IntPtr.Zero)
-                ptr = godot_icall_Object_Ctor(this);
-            _InitializeGodotScriptInstanceInternals();
+            unsafe
+            {
+                _ConstructAndInitialize(NativeCtor, NativeName, CachedType, refCounted: false);
+            }
         }
 
-        internal void _InitializeGodotScriptInstanceInternals()
+        internal unsafe void _ConstructAndInitialize(
+            delegate* unmanaged<IntPtr> nativeCtor,
+            StringName nativeName,
+            Type cachedType,
+            bool refCounted
+        )
         {
-            godot_icall_Object_ConnectEventSignals(ptr);
+            if (NativePtr == IntPtr.Zero)
+            {
+                NativePtr = nativeCtor();
+
+                InteropUtils.TieManagedToUnmanaged(this, NativePtr,
+                    nativeName, refCounted, GetType(), cachedType);
+            }
+            else
+            {
+                InteropUtils.TieManagedToUnmanagedWithPreSetup(this, NativePtr,
+                    GetType(), cachedType);
+            }
+
+            _weakReferenceToSelf = DisposablesTracker.RegisterGodotObject(this);
         }
 
         internal Object(bool memoryOwn)
         {
-            this.memoryOwn = memoryOwn;
+            _memoryOwn = memoryOwn;
         }
 
         /// <summary>
         /// The pointer to the native instance of this <see cref="Object"/>.
         /// </summary>
-        public IntPtr NativeInstance
-        {
-            get { return ptr; }
-        }
+        public IntPtr NativeInstance => NativePtr;
 
         internal static IntPtr GetPtr(Object instance)
         {
             if (instance == null)
                 return IntPtr.Zero;
 
-            if (instance._disposed)
+            // We check if NativePtr is null because this may be called by the debugger.
+            // If the debugger puts a breakpoint in one of the base constructors, before
+            // NativePtr is assigned, that would result in UB or crashes when calling
+            // native functions that receive the pointer, which can happen because the
+            // debugger calls ToString() and tries to get the value of properties.
+            if (instance._disposed || instance.NativePtr == IntPtr.Zero)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
-            return instance.ptr;
+            return instance.NativePtr;
         }
 
         ~Object()
@@ -73,22 +97,35 @@ namespace Godot
             if (_disposed)
                 return;
 
-            if (ptr != IntPtr.Zero)
+            _disposed = true;
+
+            if (NativePtr != IntPtr.Zero)
             {
-                if (memoryOwn)
+                IntPtr gcHandleToFree = NativeFuncs.godotsharp_internal_object_get_associated_gchandle(NativePtr);
+
+                if (gcHandleToFree != IntPtr.Zero)
                 {
-                    memoryOwn = false;
-                    godot_icall_RefCounted_Disposed(this, ptr, !disposing);
+                    object target = GCHandle.FromIntPtr(gcHandleToFree).Target;
+                    // The GC handle may have been replaced in another thread. Release it only if
+                    // it's associated to this managed instance, or if the target is no longer alive.
+                    if (target != this && target != null)
+                        gcHandleToFree = IntPtr.Zero;
+                }
+
+                if (_memoryOwn)
+                {
+                    NativeFuncs.godotsharp_internal_refcounted_disposed(NativePtr, gcHandleToFree,
+                        (!disposing).ToGodotBool());
                 }
                 else
                 {
-                    godot_icall_Object_Disposed(this, ptr);
+                    NativeFuncs.godotsharp_internal_object_disposed(NativePtr, gcHandleToFree);
                 }
 
-                ptr = IntPtr.Zero;
+                NativePtr = IntPtr.Zero;
             }
 
-            _disposed = true;
+            DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
         }
 
         /// <summary>
@@ -97,7 +134,9 @@ namespace Godot
         /// <returns>A string representation of this object.</returns>
         public override string ToString()
         {
-            return godot_icall_Object_ToString(GetPtr(this));
+            NativeFuncs.godotsharp_object_to_string(GetPtr(this), out godot_string str);
+            using (str)
+                return Marshaling.ConvertStringToManaged(str);
         }
 
         /// <summary>
@@ -132,33 +171,72 @@ namespace Godot
             return new SignalAwaiter(source, signal, this);
         }
 
-        /// <summary>
-        /// Gets a new <see cref="DynamicGodotObject"/> associated with this instance.
-        /// </summary>
-        public dynamic DynamicObject => new DynamicGodotObject(this);
-
-        internal static IntPtr __ClassDB_get_method(StringName type, string method)
+        internal static Type InternalGetClassNativeBase(Type t)
         {
-            return godot_icall_Object_ClassDB_get_method(StringName.GetPtr(type), method);
+            do
+            {
+                var assemblyName = t.Assembly.GetName();
+
+                if (assemblyName.Name == "GodotSharp")
+                    return t;
+
+                if (assemblyName.Name == "GodotSharpEditor")
+                    return t;
+            } while ((t = t.BaseType) != null);
+
+            return null;
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Object_Ctor(Object obj);
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected internal virtual bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+        {
+            return false;
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected internal virtual bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
+        {
+            value = default;
+            return false;
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_RefCounted_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected internal virtual void RaiseGodotClassSignalCallbacks(in godot_string_name signal,
+            NativeVariantPtrArgs args, int argCount)
+        {
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Object_ConnectEventSignals(IntPtr obj);
+        internal static IntPtr ClassDB_get_method(StringName type, StringName method)
+        {
+            var typeSelf = (godot_string_name)type.NativeValue;
+            var methodSelf = (godot_string_name)method.NativeValue;
+            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_Object_ToString(IntPtr ptr);
+            if (methodBind == IntPtr.Zero)
+                throw new NativeMethodBindNotFoundException(type + "." + method);
 
-        // Used by the generated API
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Object_ClassDB_get_method(IntPtr type, string method);
+            return methodBind;
+        }
+
+        internal static unsafe delegate* unmanaged<IntPtr> ClassDB_get_constructor(StringName type)
+        {
+            // for some reason the '??' operator doesn't support 'delegate*'
+            var typeSelf = (godot_string_name)type.NativeValue;
+            var nativeConstructor = NativeFuncs.godotsharp_get_class_constructor(typeSelf);
+
+            if (nativeConstructor == null)
+                throw new NativeConstructorNotFoundException(type);
+
+            return nativeConstructor;
+        }
+
+        protected internal virtual void SaveGodotObjectData(GodotSerializationInfo info)
+        {
+        }
+
+        // TODO: Should this be a constructor overload?
+        protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
+        {
+        }
     }
 }

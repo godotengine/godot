@@ -42,6 +42,8 @@ class MovieWriter : public Object {
 	uint64_t mix_rate = 0;
 	uint32_t audio_channels = 0;
 
+	String project_name;
+
 	LocalVector<int32_t> audio_mix_buffer;
 
 	enum {

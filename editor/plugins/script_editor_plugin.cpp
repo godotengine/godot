@@ -41,6 +41,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -590,7 +591,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 	}
 
-	Control *c = Object::cast_to<Control>(tab_container->get_tab_control(p_idx));
+	Control *c = tab_container->get_tab_control(p_idx);
 	if (!c) {
 		return;
 	}
@@ -812,7 +813,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (history_pos >= 0) {
 			idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 		}
-		tab_container->set_current_tab(idx);
+		_go_to_tab(idx);
 	} else {
 		_update_selected_editor_menu();
 	}
@@ -882,7 +883,7 @@ void ScriptEditor::_queue_close_tabs() {
 			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
 				_ask_close_current_unsaved_tab(se);
-				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), varray(), CONNECT_ONESHOT);
+				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), CONNECT_ONESHOT);
 				break;
 			}
 		}
@@ -1407,8 +1408,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				es->set_editor(EditorNode::get_singleton());
 
 				es->_run();
-
-				EditorNode::get_undo_redo()->clear_history();
 			} break;
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
@@ -1447,20 +1446,20 @@ void ScriptEditor::_menu_option(int p_option) {
 			case WINDOW_MOVE_UP: {
 				if (tab_container->get_current_tab() > 0) {
 					tab_container->move_child(current, tab_container->get_current_tab() - 1);
-					tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+					tab_container->set_current_tab(tab_container->get_current_tab());
 					_update_script_names();
 				}
 			} break;
 			case WINDOW_MOVE_DOWN: {
 				if (tab_container->get_current_tab() < tab_container->get_tab_count() - 1) {
 					tab_container->move_child(current, tab_container->get_current_tab() + 1);
-					tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+					tab_container->set_current_tab(tab_container->get_current_tab());
 					_update_script_names();
 				}
 			} break;
 			default: {
 				if (p_option >= WINDOW_SELECT_BASE) {
-					tab_container->set_current_tab(p_option - WINDOW_SELECT_BASE);
+					_go_to_tab(p_option - WINDOW_SELECT_BASE);
 					_update_script_names();
 				}
 			}
@@ -1493,14 +1492,14 @@ void ScriptEditor::_menu_option(int p_option) {
 				case WINDOW_MOVE_UP: {
 					if (tab_container->get_current_tab() > 0) {
 						tab_container->move_child(help, tab_container->get_current_tab() - 1);
-						tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+						tab_container->set_current_tab(tab_container->get_current_tab());
 						_update_script_names();
 					}
 				} break;
 				case WINDOW_MOVE_DOWN: {
 					if (tab_container->get_current_tab() < tab_container->get_tab_count() - 1) {
 						tab_container->move_child(help, tab_container->get_current_tab() + 1);
-						tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+						tab_container->set_current_tab(tab_container->get_current_tab());
 						_update_script_names();
 					}
 				} break;
@@ -1542,7 +1541,7 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog_option = THEME_SAVE_AS;
 	file_dialog->clear_filters();
 	file_dialog->add_filter("*.tet");
-	file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
+	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
 	file_dialog->popup_file_dialog();
 	file_dialog->set_title(TTR("Save Theme As..."));
 }
@@ -1852,10 +1851,12 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 	if (members_overview_enabled && se->show_members_overview()) {
 		members_overview_alphabeta_sort_button->set_visible(true);
+		filter_methods->set_visible(true);
 		members_overview->set_visible(true);
 		overview_vbox->set_visible(true);
 	} else {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		filter_methods->set_visible(false);
 		members_overview->set_visible(false);
 		overview_vbox->set_visible(false);
 	}
@@ -1910,6 +1911,7 @@ void ScriptEditor::_update_help_overview_visibility() {
 
 	if (help_overview_enabled) {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		filter_methods->set_visible(false);
 		help_overview->set_visible(true);
 		overview_vbox->set_visible(true);
 		filename->set_text(se->get_name());
@@ -2124,8 +2126,8 @@ void ScriptEditor::_update_script_names() {
 			sd.index = i;
 			sedata.set(i, sd);
 		}
-		tab_container->set_current_tab(new_prev_tab);
-		tab_container->set_current_tab(new_cur_tab);
+		_go_to_tab(new_prev_tab);
+		_go_to_tab(new_cur_tab);
 		_sort_list_on_update = false;
 	}
 
@@ -2153,8 +2155,10 @@ void ScriptEditor::_update_script_names() {
 		}
 		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
 			script_list->select(index);
+
 			script_name_label->set_text(sedata_filtered[i].name);
 			script_icon->set_texture(sedata_filtered[i].icon);
+
 			ScriptEditorBase *se = _get_current_editor();
 			if (se) {
 				se->enable_editor();
@@ -3264,7 +3268,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
 
 	// Save the cache.
-	script_editor_cache->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
+	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
 }
 
 void ScriptEditor::_help_class_open(const String &p_class) {
@@ -3645,7 +3649,7 @@ ScriptEditor::ScriptEditor() {
 	current_theme = "";
 
 	script_editor_cache.instantiate();
-	script_editor_cache->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
+	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
 
 	completion_cache = memnew(EditorScriptCodeCompletionCache);
 	restoring_layout = false;
@@ -3685,7 +3689,7 @@ ScriptEditor::ScriptEditor() {
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(70 * EDSCALE);
 	_sort_list_on_update = true;
-	script_list->connect("gui_input", callable_mp(this, &ScriptEditor::_script_list_gui_input), varray(), CONNECT_DEFERRED);
+	script_list->connect("gui_input", callable_mp(this, &ScriptEditor::_script_list_gui_input), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
 	script_list->set_drag_forwarding(this);
 
@@ -3853,14 +3857,14 @@ ScriptEditor::ScriptEditor() {
 	site_search = memnew(Button);
 	site_search->set_flat(true);
 	site_search->set_text(TTR("Online Docs"));
-	site_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_WEBSITE));
+	site_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation."));
 
 	help_search = memnew(Button);
 	help_search->set_flat(true);
 	help_search->set_text(TTR("Search Help"));
-	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_HELP));
+	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
 	menu_hb->add_child(help_search);
 	help_search->set_tooltip(TTR("Search the reference documentation."));
 
@@ -3885,7 +3889,7 @@ ScriptEditor::ScriptEditor() {
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->set_ok_button_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
-	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab), varray(true));
+	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab).bind(true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 
@@ -3939,8 +3943,8 @@ ScriptEditor::ScriptEditor() {
 	help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
 	find_in_files_dialog = memnew(FindInFilesDialog);
-	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files), varray(false));
-	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files), varray(true));
+	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
+	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
 	find_in_files_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Search Results"), find_in_files);

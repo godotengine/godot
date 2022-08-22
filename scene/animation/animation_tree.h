@@ -111,7 +111,7 @@ protected:
 
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)
@@ -320,6 +320,8 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
 
 public:
 	void set_tree_root(const Ref<AnimationNode> &p_root);

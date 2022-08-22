@@ -138,7 +138,7 @@ private:
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
 	double speed_scale = 1.0;
-	bool local_coords = true;
+	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
 
@@ -198,7 +198,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	AABB get_aabb() const override;

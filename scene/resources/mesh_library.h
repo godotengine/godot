@@ -33,8 +33,8 @@
 
 #include "core/io/resource.h"
 #include "core/templates/rb_map.h"
-#include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/resources/mesh.h"
 #include "shape_3d.h"
 
 class MeshLibrary : public Resource {

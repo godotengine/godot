@@ -27,15 +27,11 @@ jobs:
           sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils
           sudo update-alternatives --remove-all clang-format
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
-          sudo pip3 install black==22.3.0 pygments
+          sudo pip3 install black==22.3.0 pygments pytest
 
       - name: File formatting checks (file_format.sh)
         run: |
           bash ./misc/scripts/file_format.sh
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          bash ./misc/scripts/clang_format.sh
 
       - name: Header guards formatting checks (header_guards.sh)
         run: |
@@ -44,6 +40,10 @@ jobs:
       - name: Python style checks via black (black_format.sh)
         run: |
           bash ./misc/scripts/black_format.sh
+
+      - name: Python builders checks via pytest (pytest_builders.sh)
+        run: |
+          bash ./misc/scripts/pytest_builders.sh
 
       - name: JavaScript style and documentation checks via ESLint and JSDoc
         run: |
@@ -59,3 +59,7 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/make_rst.py --dry-run --color doc/classes modules
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./misc/scripts/clang_format.sh

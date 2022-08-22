@@ -376,12 +376,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_keycode, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_keycode, jint p_physical_keycode, jint p_unicode, jboolean p_pressed) {
 	if (step.get() <= 0) {
 		return;
 	}
-
-	input_handler->process_key_event(p_keycode, p_scancode, p_unicode_char, p_pressed);
+	input_handler->process_key_event(p_keycode, p_physical_keycode, p_unicode, p_pressed);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {

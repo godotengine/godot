@@ -14,7 +14,7 @@
 	<methods>
 		<method name="add_excluded_object">
 			<return type="void" />
-			<argument index="0" name="RID" type="RID" />
+			<param index="0" name="RID" type="RID" />
 			<description>
 				Adds the [PhysicsBody3D] object with the given [RID] to the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>
@@ -33,7 +33,7 @@
 		</method>
 		<method name="remove_excluded_object">
 			<return type="bool" />
-			<argument index="0" name="RID" type="RID" />
+			<param index="0" name="RID" type="RID" />
 			<description>
 				Removes the given [RID] from the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>

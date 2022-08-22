@@ -135,7 +135,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		Size2i ssize = texture_storage->render_target_get_size(p_to_render_target);
 
 		Transform3D screen_transform;
-		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
+		screen_transform.translate_local(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		screen_transform.scale(Vector3(2.0f / ssize.width, 2.0f / ssize.height, 1.0f));
 		_update_transform_to_mat4(screen_transform, state_buffer.screen_transform);
 		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
@@ -183,7 +183,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		glBindBufferBase(GL_UNIFORM_BUFFER, BASE_UNIFORM_LOCATION, state.canvas_state_buffer);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(StateBuffer), &state_buffer, GL_STREAM_DRAW);
 
-		GLuint global_buffer = material_storage->global_variables_get_uniform_buffer();
+		GLuint global_buffer = material_storage->global_shader_uniforms_get_uniform_buffer();
 
 		glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_UNIFORM_LOCATION, global_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -201,6 +201,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	bool material_screen_texture_found = false;
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
+	bool backbuffer_gen_mipmaps = false;
 
 	Item *ci = p_item_list;
 	Item *canvas_group_owner = nullptr;
@@ -225,6 +226,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 					if (!material_screen_texture_found) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
+						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
 					}
 				}
 
@@ -282,7 +284,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
-			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
+			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
 
 			backbuffer_copy = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
@@ -815,10 +817,8 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				_bind_canvas_texture(texture, current_filter, current_repeat, r_index);
 				if (instance_count == 1) {
 					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_ATTRIBUTES);
-				} else if (instance_count > 1) {
-					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_INSTANCED);
 				} else {
-					ERR_PRINT("Must have at least one mesh instance to draw mesh");
+					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_INSTANCED);
 				}
 
 				uint32_t surf_count = mesh_storage->mesh_get_surface_count(mesh);
@@ -882,7 +882,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 						} else {
 							glDrawArrays(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(surface));
 						}
-					} else if (instance_count > 1) {
+					} else {
 						if (use_index_buffer) {
 							glDrawElementsInstanced(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(surface), mesh_storage->mesh_surface_get_index_type(surface), 0, instance_count);
 						} else {
@@ -1570,7 +1570,7 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	String global_defines;
-	global_defines += "#define MAX_GLOBAL_VARIABLES 256\n"; // TODO: this is arbitrary for now
+	global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
 	global_defines += "#define MAX_LIGHTS " + itos(state.max_instances_per_batch) + "\n";
 	global_defines += "#define MAX_DRAW_DATA_INSTANCES " + itos(state.max_instances_per_batch) + "\n";
 
@@ -1609,6 +1609,8 @@ void fragment() {
 
 RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
+	memdelete_arr(state.instance_data_array);
 
 	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_free(state.canvas_shader_default_version);
 	material_storage->material_free(default_canvas_group_material);

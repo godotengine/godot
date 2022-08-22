@@ -293,7 +293,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 /* MISC */
 
 void Utilities::update_dirty_resources() {
-	MaterialStorage::get_singleton()->_update_global_variables();
+	MaterialStorage::get_singleton()->_update_global_shader_uniforms();
 	MaterialStorage::get_singleton()->_update_queued_materials();
 	//MeshStorage::get_singleton()->_update_dirty_skeletons();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();

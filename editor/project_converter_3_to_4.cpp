@@ -42,7 +42,8 @@ const int ERROR_CODE = 77;
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 
-const int CONVERSION_MAX_FILE_SIZE = 1024 * 1024 * 4; // 4 MB
+const uint64_t CONVERSION_MAX_FILE_SIZE_MB = 4;
+const uint64_t CONVERSION_MAX_FILE_SIZE = 1024 * 1024 * CONVERSION_MAX_FILE_SIZE_MB;
 
 static const char *enum_renames[][2] = {
 	//// constants
@@ -120,7 +121,7 @@ static const char *enum_renames[][2] = {
 	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, // PhysicsServer2D
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, // PhysicsServer3D
 	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
-	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, //AudioStreamSample
+	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, // AudioStreamWAV
 	{ "MATH_RAND", "MATH_RANDF_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
@@ -255,6 +256,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "damped_spring_joint_create", "joint_make_damped_spring" }, // PhysicsServer2D
 	{ "damped_string_joint_get_param", "damped_spring_joint_get_param" }, // PhysicsServer2D
 	{ "damped_string_joint_set_param", "damped_spring_joint_set_param" }, // PhysicsServer2D
+	{ "dectime", "move_toward" }, // GDScript, Math functions
 	{ "delete_char_at_cursor", "delete_char_at_caret" }, // LineEdit
 	{ "deselect_items", "deselect_all" }, // FileDialog
 	{ "disable_plugin", "_disable_plugin" }, // EditorPlugin
@@ -356,6 +358,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_scancode_with_modifiers", "get_keycode_with_modifiers" }, // InputEventKey
 	{ "get_shift", "is_shift_pressed" }, // InputEventWithModifiers
 	{ "get_size_override", "get_size_2d_override" }, // SubViewport
+	{ "get_slide_count", "get_slide_collision_count" }, // CharacterBody2D, CharacterBody3D
 	{ "get_slips_on_slope", "get_slide_on_slope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "get_space_override_mode", "get_gravity_space_override_mode" }, // Area2D
 	{ "get_speed", "get_velocity" }, // InputEventMouseMotion
@@ -427,6 +430,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "joint_create_slider", "joint_make_slider" }, // PhysicsServer3D
 	{ "line_intersects_line_2d", "line_intersects_line" }, // Geometry2D
 	{ "load_from_globals", "load_from_project_settings" }, // InputMap
+	{ "load_interactive", "load_threaded_request" }, // ResourceLoader - load_threaded_request is alternative, but is used differently
 	{ "make_convex_from_brothers", "make_convex_from_siblings" }, // CollisionShape3D
 	{ "make_visible", "_make_visible" }, // EditorPlugin
 	{ "merge_polygons_2d", "merge_polygons" }, // Geometry2D
@@ -484,6 +488,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_enabled_focus_mode", "set_focus_mode" }, // BaseButton
 	{ "set_endian_swap", "set_big_endian" }, // File
 	{ "set_expand_to_text_length", "set_expand_to_text_length_enabled" }, // LineEdit
+	{ "set_filename", "set_scene_file_path" }, // Node, WARNING, this may be used in a lot of other places
 	{ "set_focus_neighbour", "set_focus_neighbor" }, // Control
 	{ "set_frame_color", "set_color" }, // ColorRect
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
@@ -511,6 +516,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_region_filter_clip", "set_region_filter_clip_enabled" }, // Sprite2D
 	{ "set_rotate", "set_rotates" }, // PathFollow2D
 	{ "set_scancode", "set_keycode" }, // InputEventKey
+	{ "set_shader_param", "set_shader_uniform" }, // ShaderMaterial
 	{ "set_shift", "set_shift_pressed" }, // InputEventWithModifiers
 	{ "set_size_override", "set_size_2d_override" }, // SubViewport broke ImageTexture
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, // SubViewport
@@ -975,6 +981,7 @@ static const char *gdscript_properties_renames[][2] = {
 	//	{ "wrap_enabled", "wrap_mode" }, // TextEdit
 	//	{ "zfar", "far" }, // Camera3D
 	//	{ "znear", "near" }, // Camera3D
+	//	{ "filename", "scene_file_path" }, // Node
 	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "bbcode_text", "text" }, // RichTextLabel
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
@@ -1250,7 +1257,9 @@ static const char *class_renames[][2] = {
 	{ "AnimatedSprite", "AnimatedSprite2D" },
 	{ "AnimationTreePlayer", "AnimationTree" },
 	{ "Area", "Area3D" }, // Be careful, this will be used everywhere
+	{ "AudioStreamOGGVorbis", "AudioStreamOggVorbis" },
 	{ "AudioStreamRandomPitch", "AudioStreamRandomizer" },
+	{ "AudioStreamSample", "AudioStreamWAV" },
 	{ "BakedLightmap", "LightmapGI" },
 	{ "BakedLightmapData", "LightmapGIData" },
 	{ "BitmapFont", "FontFile" },
@@ -1372,7 +1381,6 @@ static const char *class_renames[][2] = {
 	{ "Spatial", "Node3D" },
 	{ "SpatialGizmo", "Node3DGizmo" },
 	{ "SpatialMaterial", "StandardMaterial3D" },
-	{ "SpatialVelocityTracker", "VelocityTracker3D" },
 	{ "SphereShape", "SphereShape3D" },
 	{ "SpotLight", "SpotLight3D" },
 	{ "SpringArm", "SpringArm3D" },
@@ -1593,12 +1601,34 @@ static const char *colors_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
+class ProjectConverter3To4::RegExContainer {
+public:
+	RegEx reg_is_empty = RegEx("\\bempty\\(");
+	RegEx reg_super = RegEx("([\t ])\\.([a-zA-Z_])");
+	RegEx reg_json_to = RegEx("\\bto_json\\b");
+	RegEx reg_json_parse = RegEx("([\t ]{0,})([^\n]+)parse_json\\(([^\n]+)");
+	RegEx reg_json_non_new = RegEx("([\t ]{0,})([^\n]+)JSON\\.parse\\(([^\n]+)");
+	RegEx reg_export = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)");
+	RegEx reg_export_advanced = RegEx("export\\(([^)^\n]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)([^\n]+)");
+	RegEx reg_setget_setget = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*,[ \t]*([a-zA-Z0-9_]+)");
+	RegEx reg_setget_set = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*[,]*[^a-z^A-Z^0-9^_]*$");
+	RegEx reg_setget_get = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+,[ \t]*([a-zA-Z0-9_]+)[ \t]*$");
+	RegEx reg_join = RegEx("([\\(\\)a-zA-Z0-9_]+)\\.join\\(([^\n^\\)]+)\\)");
+	RegEx reg_mixed_tab_space = RegEx("([\t]+)([ ]+)");
+	RegEx reg_image_lock = RegEx("([a-zA-Z0-9_\\.]+)\\.lock\\(\\)");
+	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
+	RegEx reg_os_fullscreen = RegEx("OS.window_fullscreen[= ]+([^#^\n]+)");
+	RegEx reg_instantiate = RegEx("\\.instance\\(([^\\)]*)\\)");
+};
+
 // Function responsible for converting project
 int ProjectConverter3To4::convert() {
 	print_line("Starting conversion.");
 
+	RegExContainer reg_container = RegExContainer();
+
 	ERR_FAIL_COND_V_MSG(!test_array_names(), ERROR_CODE, "Cannot start converting due to problems with data in arrays.");
-	ERR_FAIL_COND_V_MSG(!test_conversion(), ERROR_CODE, "Cannot start converting due to problems with converting arrays.");
+	ERR_FAIL_COND_V_MSG(!test_conversion(reg_container), ERROR_CODE, "Cannot start converting due to problems with converting arrays.");
 
 	// Checking if folder contains valid Godot 3 project.
 	// Project cannot be converted 2 times
@@ -1638,7 +1668,7 @@ int ProjectConverter3To4::convert() {
 		uint64_t start_time = Time::get_singleton()->get_ticks_msec();
 
 		if (file_name.ends_with(".shader")) {
-			DirAccess::remove_file_or_error(file_name);
+			DirAccess::remove_file_or_error(file_name.trim_prefix("res://"));
 			file_name = file_name.replace(".shader", ".gdshader");
 		}
 
@@ -1651,7 +1681,7 @@ int ProjectConverter3To4::convert() {
 				rename_enums(file_content); // Require to additional rename
 
 				rename_common(gdscript_function_renames, file_content);
-				rename_gdscript_functions(file_content); // Require to additional rename
+				rename_gdscript_functions(file_content, reg_container, false); // Require to additional rename
 
 				rename_common(project_settings_renames, file_content);
 				rename_gdscript_keywords(file_content);
@@ -1661,7 +1691,6 @@ int ProjectConverter3To4::convert() {
 				rename_common(builtin_types_renames, file_content);
 
 				custom_rename(file_content, "\\.shader", ".gdshader");
-				custom_rename(file_content, "instance", "instantiate");
 			} else if (file_name.ends_with(".tscn")) {
 				rename_classes(file_content); // Using only specialized function
 
@@ -1669,7 +1698,7 @@ int ProjectConverter3To4::convert() {
 				rename_enums(file_content); // Require to additional rename
 
 				rename_common(gdscript_function_renames, file_content);
-				rename_gdscript_functions(file_content); // Require to additional rename
+				rename_gdscript_functions(file_content, reg_container, true); // Require to additional rename
 
 				rename_common(project_settings_renames, file_content);
 				rename_gdscript_keywords(file_content);
@@ -1686,6 +1715,7 @@ int ProjectConverter3To4::convert() {
 				rename_common(csharp_properties_renames, file_content);
 				rename_common(csharp_signals_renames, file_content);
 				rename_csharp_functions(file_content);
+				rename_csharp_attributes(file_content);
 				custom_rename(file_content, "public class ", "public partial class ");
 			} else if (file_name.ends_with(".gdshader") || file_name.ends_with(".shader")) {
 				rename_common(shaders_renames, file_content);
@@ -1706,7 +1736,7 @@ int ProjectConverter3To4::convert() {
 				continue;
 			}
 		} else {
-			reason.append("    ERROR: File has exceeded the maximum size allowed - 500 KB");
+			reason.append("    ERROR: File has exceeded the maximum size allowed - " + itos(CONVERSION_MAX_FILE_SIZE_MB) + " MB");
 			is_ignored = true;
 		}
 
@@ -1716,7 +1746,7 @@ int ProjectConverter3To4::convert() {
 			uint64_t hash_after = file_content.hash64();
 			// Don't need to save file without any changes
 			// Save if this is a shader, because it was renamed
-			if (hash_before != hash_after || file_name.find(".gdshader") != -1) {
+			if (hash_before != hash_after || file_name.ends_with(".gdshader")) {
 				converted_files++;
 
 				Ref<FileAccess> file = FileAccess::open(file_name, FileAccess::WRITE);
@@ -1740,8 +1770,10 @@ int ProjectConverter3To4::convert() {
 int ProjectConverter3To4::validate_conversion() {
 	print_line("Starting checking if project conversion can be done.");
 
+	RegExContainer reg_container = RegExContainer();
+
 	ERR_FAIL_COND_V_MSG(!test_array_names(), ERROR_CODE, "Cannot start converting due to problems with data in arrays.");
-	ERR_FAIL_COND_V_MSG(!test_conversion(), ERROR_CODE, "Cannot start converting due to problems with converting arrays.");
+	ERR_FAIL_COND_V_MSG(!test_conversion(reg_container), ERROR_CODE, "Cannot start converting due to problems with converting arrays.");
 
 	// Checking if folder contains valid Godot 3 project.
 	// Project cannot be converted 2 times
@@ -1782,7 +1814,7 @@ int ProjectConverter3To4::validate_conversion() {
 		bool is_ignored = false;
 		uint64_t start_time = Time::get_singleton()->get_ticks_msec();
 
-		if (file_name.ends_with(".sader")) {
+		if (file_name.ends_with(".shader")) {
 			reason.append("\tFile extension will be renamed from `shader` to `gdshader`.");
 		}
 
@@ -1794,7 +1826,7 @@ int ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_enums(file_content));
 
 				changed_elements.append_array(check_for_rename_common(gdscript_function_renames, file_content));
-				changed_elements.append_array(check_for_rename_gdscript_functions(file_content));
+				changed_elements.append_array(check_for_rename_gdscript_functions(file_content, reg_container, false));
 
 				changed_elements.append_array(check_for_rename_common(project_settings_renames, file_content));
 				changed_elements.append_array(check_for_rename_gdscript_keywords(file_content));
@@ -1803,7 +1835,6 @@ int ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(shaders_renames, file_content));
 				changed_elements.append_array(check_for_rename_common(builtin_types_renames, file_content));
 
-				changed_elements.append_array(check_for_custom_rename(file_content, "instance", "instantiate"));
 				changed_elements.append_array(check_for_custom_rename(file_content, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with(".tscn")) {
 				changed_elements.append_array(check_for_rename_classes(file_content));
@@ -1812,7 +1843,7 @@ int ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_enums(file_content));
 
 				changed_elements.append_array(check_for_rename_common(gdscript_function_renames, file_content));
-				changed_elements.append_array(check_for_rename_gdscript_functions(file_content));
+				changed_elements.append_array(check_for_rename_gdscript_functions(file_content, reg_container, true));
 
 				changed_elements.append_array(check_for_rename_common(project_settings_renames, file_content));
 				changed_elements.append_array(check_for_rename_gdscript_keywords(file_content));
@@ -1829,6 +1860,7 @@ int ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(csharp_properties_renames, file_content));
 				changed_elements.append_array(check_for_rename_common(csharp_signals_renames, file_content));
 				changed_elements.append_array(check_for_rename_csharp_functions(file_content));
+				changed_elements.append_array(check_for_rename_csharp_attributes(file_content));
 				changed_elements.append_array(check_for_custom_rename(file_content, "public class ", "public partial class "));
 			} else if (file_name.ends_with(".gdshader") || file_name.ends_with(".shader")) {
 				changed_elements.append_array(check_for_rename_common(shaders_renames, file_content));
@@ -1849,7 +1881,7 @@ int ProjectConverter3To4::validate_conversion() {
 				continue;
 			}
 		} else {
-			reason.append("\tERROR: File has exceeded the maximum size allowed - 500 KB");
+			reason.append("\tERROR: File has exceeded the maximum size allowed  - " + itos(CONVERSION_MAX_FILE_SIZE_MB) + " MB");
 			is_ignored = true;
 		}
 
@@ -1896,14 +1928,14 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					continue;
 				}
 				if (dir.current_is_dir()) {
-					directories_to_check.append(current_dir + file_name + "/");
+					directories_to_check.append(current_dir.plus_file(file_name) + "/");
 				} else {
 					bool proper_extension = false;
 					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
 						proper_extension = true;
 
 					if (proper_extension) {
-						collected_files.append(current_dir + file_name);
+						collected_files.append(current_dir.plus_file(file_name));
 					}
 				}
 				file_name = dir.get_next();
@@ -1926,6 +1958,17 @@ bool ProjectConverter3To4::test_conversion_single_additional(String name, String
 	return true;
 }
 
+bool ProjectConverter3To4::test_conversion_single_additional_builtin(String name, String expected, void (ProjectConverter3To4::*func)(String &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin_script) {
+	String got = name;
+	(this->*func)(got, reg_container, builtin_script);
+	if (expected != got) {
+		ERR_PRINT("Failed to convert " + what + " `" + name + "` to `" + expected + "`, got instead `" + got + "`");
+		return false;
+	}
+
+	return true;
+}
+
 bool ProjectConverter3To4::test_conversion_single_normal(String name, String expected, const char *array[][2], String what) {
 	String got = name;
 	rename_common(array, got);
@@ -1937,7 +1980,7 @@ bool ProjectConverter3To4::test_conversion_single_normal(String name, String exp
 }
 
 // Validate if conversions are proper
-bool ProjectConverter3To4::test_conversion() {
+bool ProjectConverter3To4::test_conversion(const RegExContainer &reg_container) {
 	bool valid = true;
 
 	valid = valid & test_conversion_single_normal("Spatial", "Node3D", class_renames, "class");
@@ -1968,26 +2011,37 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("(Disconnect(A,B,C) != OK):", "(Disconnect(A,new Callable(B,C)) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename csharp");
 	valid = valid & test_conversion_single_additional("(IsConnected(A,B,C) != OK):", "(IsConnected(A,new Callable(B,C)) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename");
 
-	valid = valid & test_conversion_single_additional("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\"display/window/size/fullscreen\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("[Remote]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[RemoteSync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[Sync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[Slave]", "[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[Puppet]", "[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[PuppetSync]", "[RPC(CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[Master]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
+	valid = valid & test_conversion_single_additional("[MasterSync]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC(CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp");
 
-	valid = valid & test_conversion_single_additional("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_motion_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tvar aa = roman(r.move_and_slide()) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_motion_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tvar aa = roman(r.move_and_slide()) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\"display/window/size/fullscreen\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, true);
+	valid = valid & test_conversion_single_additional_builtin("OS.get_window_safe_area()", "DisplayServer.get_display_safe_area()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("sort_custom( a , b )", "sort_custom(Callable(a,b))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("func c(var a, var b)", "func c(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("sort_custom( a , b )", "sort_custom(Callable(a,b))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("draw_line(1, 2, 3, 4, 5)", "draw_line(1,2,3,4)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("func c(var a, var b)", "func c(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("\timage.lock()", "\tfalse # image.lock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\timage.unlock()", "\tfalse # image.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\troman.image.unlock()", "\tfalse # roman.image.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\tmtx.lock()", "\tmtx.lock()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\tmutex.unlock()", "\tmutex.unlock()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("draw_line(1, 2, 3, 4, 5)", "draw_line(1,2,3,4)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid & test_conversion_single_additional_builtin("\timage.lock()", "\tfalse # image.lock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\timage.unlock()", "\tfalse # image.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\troman.image.unlock()", "\tfalse # roman.image.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\tmtx.lock()", "\tmtx.lock()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\tmutex.unlock()", "\tmutex.unlock()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid & test_conversion_single_additional("\nonready", "\n@onready", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("onready", "@onready", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
@@ -2000,82 +2054,96 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("tool", "@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n    tool", "\n    tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 	valid = valid & test_conversion_single_additional("\n\ntool", "\n\n@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\nmaster func", "\n\n@rpc(any) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\npuppet func", "\n\n@rpc(auth) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\nremote func", "\n\n@rpc(any) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\nremotesync func", "\n\n@rpc(any,sync) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\nsync func", "\n\n@rpc(any,sync) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\npuppetsync func", "\n\n@rpc(auth,sync) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
-	valid = valid & test_conversion_single_additional("\n\nmastersync func", "\n\n@rpc(any,sync) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nremote func", "\n\n@rpc(any_peer) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nremotesync func", "\n\n@rpc(any_peer, call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nsync func", "\n\n@rpc(any_peer, call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nslave func", "\n\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\npuppet func", "\n\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\npuppetsync func", "\n\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nmaster func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
+	valid = valid & test_conversion_single_additional("\n\nmastersync func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword");
 
-	valid = valid & test_conversion_single_additional("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function\n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function \n	set(mod_value):\n		mod_value  # TODOConverter40  Non existent set function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function\n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function \n	set(mod_value):\n		mod_value  # TODOConverter40  Non existent set function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("get_node(@", "get_node(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("get_node(@", "get_node(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("yield(this, \"timeout\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("yield(this, \"timeout\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("yield(this, \\\"timeout\\\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, true);
 
-	valid = valid & test_conversion_single_additional(" Transform.xform(Vector3(a,b,c)) ", " Transform * Vector3(a,b,c) ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional(" Transform.xform_inv(Vector3(a,b,c)) ", " Vector3(a,b,c) * Transform ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin(" Transform.xform(Vector3(a,b,c)) ", " Transform * Vector3(a,b,c) ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin(" Transform.xform_inv(Vector3(a,b,c)) ", " Vector3(a,b,c) * Transform ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("export(float) var lifetime = 3.0", "export var lifetime: float = 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro'", "export var _font_name = 'AnonymousPro' # (String, 'AnonymousPro', 'CourierPrime')", &ProjectConverter3To4::rename_gdscript_functions, "custom rename"); // TODO, this is only a workaround
-	valid = valid & test_conversion_single_additional("export(PackedScene) var mob_scene", "export var mob_scene: PackedScene", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("export(float) var lifetime = 3.0", "export var lifetime: float = 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro'", "export var _font_name = 'AnonymousPro' # (String, 'AnonymousPro', 'CourierPrime')", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false); // TODO, this is only a workaround
+	valid = valid & test_conversion_single_additional_builtin("export(PackedScene) var mob_scene", "export var mob_scene: PackedScene", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("var d = parse_json(roman(sfs))", "var test_json_conv = JSON.new()\ntest_json_conv.parse(roman(sfs))\nvar d = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("var d = parse_json(roman(sfs))", "var test_json_conv = JSON.new()\ntest_json_conv.parse(roman(sfs))\nvar d = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("to_json( AA ) szon", "JSON.new().stringify( AA ) szon", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("s to_json", "s JSON.new().stringify", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("AF to_json2", "AF to_json2", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("var rr = JSON.parse(a)", "var test_json_conv = JSON.new()\ntest_json_conv.parse(a)\nvar rr = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("to_json( AA ) szon", "JSON.new().stringify( AA ) szon", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("s to_json", "s JSON.new().stringify", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("AF to_json2", "AF to_json2", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("var rr = JSON.parse(a)", "var test_json_conv = JSON.new()\ntest_json_conv.parse(a)\nvar rr = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("empty()", "is_empty()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional(".empty", ".empty", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("empty()", "is_empty()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin(".empty", ".empty", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional(").roman(", ").roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\t.roman(", "\tsuper.roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional(" .roman(", " super.roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional(".1", ".1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional(" .1", " .1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("'.'", "'.'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("'.a'", "'.a'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\t._input(_event)", "\tsuper._input(_event)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin(").roman(", ").roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\t.roman(", "\tsuper.roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin(" .roman(", " super.roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin(".1", ".1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin(" .1", " .1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("'.'", "'.'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("'.a'", "'.a'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\t._input(_event)", "\tsuper._input(_event)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("(start(A,B,C,D,E,F,G) != OK):", "(start(A,Callable(B,C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("(connect(A,B,C,D,E,F,G) != OK):", "(connect(A,Callable(B,C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("(connect(A,B,C) != OK):", "(connect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("disconnect(A,B,C) != OK):", "disconnect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("is_connected(A,B,C) != OK):", "is_connected(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("is_connected(A,B,C))", "is_connected(A,Callable(B,C)))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C) != OK):", "(connect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,D) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,[D]) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,[D,E]) != OK):", "(connect(A,Callable(B,C).bind(D,E)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,[D,E],F) != OK):", "(connect(A,Callable(B,C).bind(D,E),F) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(connect(A,B,C,D,E) != OK):", "(connect(A,Callable(B,C).bind(D),E) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("func _init(p_x:int)->void:", "func _init(p_x:int):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("q_PackedDataContainer._iter_init(variable1)", "q_PackedDataContainer._iter_init(variable1)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("(start(A,B) != OK):", "(start(Callable(A,B)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("func start(A,B):", "func start(A,B):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(start(A,B,C,D,E,F,G) != OK):", "(start(Callable(A,B).bind(C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("disconnect(A,B,C) != OK):", "disconnect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("is_connected(A,B,C) != OK):", "is_connected(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("is_connected(A,B,C))", "is_connected(A,Callable(B,C)))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("assert(speed < 20, str(randi()%10))", "assert(speed < 20) #,str(randi()%10))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("assert(speed < 2)", "assert(speed < 2)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("assert(false, \"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", "assert(false) #,\"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("(tween_method(A,B,C,D,E).foo())", "(tween_method(Callable(A,B),C,D,E).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(tween_method(A,B,C,D,E,[F,G]).foo())", "(tween_method(Callable(A,B).bind(F,G),C,D,E).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(tween_callback(A,B).foo())", "(tween_callback(Callable(A,B)).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("(tween_callback(A,B,[C,D]).foo())", "(tween_callback(Callable(A,B).bind(C,D)).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("create_from_image(aa, bb)", "create_from_image(aa) #,bb", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("q_ImageTexture.create_from_image(variable1, variable2)", "q_ImageTexture.create_from_image(variable1) #,variable2", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("func _init(p_x:int)->void:", "func _init(p_x:int):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("q_PackedDataContainer._iter_init(variable1)", "q_PackedDataContainer._iter_init(variable1)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("set_cell_item(a, b, c, d ,e) # AA", "set_cell_item( Vector3(a,b,c) ,d,e) # AA", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("set_cell_item(a, b)", "set_cell_item(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("map_to_world(a, b,c)", "map_to_world(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("assert(speed < 20, str(randi()%10))", "assert(speed < 20) #,str(randi()%10))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("assert(speed < 2)", "assert(speed < 2)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("assert(false, \"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", "assert(false) #,\"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("create_from_image(aa, bb)", "create_from_image(aa) #,bb", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("q_ImageTexture.create_from_image(variable1, variable2)", "q_ImageTexture.create_from_image(variable1) #,variable2", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("    aa", "    aa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\taa", "\taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("\t    aa", "\taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("    \taa", "    \taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("set_cell_item(a, b, c, d ,e) # AA", "set_cell_item( Vector3(a,b,c) ,d,e) # AA", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("set_cell_item(a, b)", "set_cell_item(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("map_to_world(a, b,c)", "map_to_world(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid & test_conversion_single_additional("apply_force(position, impulse)", "apply_force(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
-	valid = valid & test_conversion_single_additional("apply_impulse(position, impulse)", "apply_impulse(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional_builtin("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid & test_conversion_single_additional_builtin("    aa", "    aa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\taa", "\taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("\t    aa", "\taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("    \taa", "    \taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid & test_conversion_single_additional_builtin("apply_force(position, impulse)", "apply_force(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_single_additional_builtin("apply_impulse(position, impulse)", "apply_impulse(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid & test_conversion_single_additional("AAA Color.white AF", "AAA Color.WHITE AF", &ProjectConverter3To4::rename_enums, "custom rename");
 
@@ -2115,6 +2183,15 @@ bool ProjectConverter3To4::test_conversion() {
 {
 	String base = "mortadela(";
 	String expected = "";
+	String got = get_object_of_execution(base);
+	if (got != expected) {
+		ERR_PRINT("Failed to get proper data from get_object_of_execution `" + base + "` should return `" + expected + "`(" + itos(expected.size()) + "), got instead `" + got + "`(" + itos(got.size()) + ")");
+	}
+	valid = valid & (got == expected);
+}
+{
+	String base = "var node = $world/ukraine/lviv.";
+	String expected = "$world/ukraine/lviv.";
 	String got = get_object_of_execution(base);
 	if (got != expected) {
 		ERR_PRINT("Failed to get proper data from get_object_of_execution `" + base + "` should return `" + expected + "`(" + itos(expected.size()) + "), got instead `" + got + "`(" + itos(got.size()) + ")");
@@ -2366,6 +2443,21 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 				}
 				break;
 			};
+			case '[': {
+				parts_counter++;
+				if (parts_counter == 1 && !is_inside_string) {
+					start_part = current_index;
+				}
+				break;
+			};
+			case ']': {
+				parts_counter--;
+				if (parts_counter == 0 && !is_inside_string) {
+					parts.append(line.substr(start_part, current_index - start_part));
+					start_part = current_index;
+				}
+				break;
+			};
 			case ',': {
 				if (parts_counter == 1 && !is_inside_string) {
 					parts.append(line.substr(start_part + 1, current_index - start_part - 1));
@@ -2472,22 +2564,43 @@ String ProjectConverter3To4::get_starting_space(const String &line) const {
 // so it is `var roman = kieliszek.` and this function return `kieliszek.`
 String ProjectConverter3To4::get_object_of_execution(const String &line) const {
 	int end = line.size() - 1; // Last one is \0
+	int variable_start = end - 1;
 	int start = end - 1;
+
+	bool is_possibly_nodepath = false;
+	bool is_valid_nodepath = false;
 
 	while (start >= 0) {
 		char32_t character = line[start];
-		if ((character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') || character == '.' || character == '_') {
+		bool is_variable_char = (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') || character == '.' || character == '_';
+		bool is_nodepath_start = character == '$';
+		bool is_nodepath_sep = character == '/';
+		if (is_variable_char || is_nodepath_start || is_nodepath_sep) {
 			if (start == 0) {
 				break;
+			} else if (is_nodepath_sep) {
+				// Freeze variable_start, try to fetch more chars since this might be node path literal
+				is_possibly_nodepath = true;
+			} else if (is_nodepath_start) {
+				// Found $, this is a node path literal
+				is_valid_nodepath = true;
+				break;
+			}
+			if (!is_possibly_nodepath) {
+				variable_start--;
 			}
 			start--;
 			continue;
 		} else {
-			start++; // Found invalid character, needs to be ignored
+			// Abandon all hope, this is neither a variable nor a node path literal
+			variable_start++; // Found invalid character, needs to be ignored
 			break;
 		}
 	}
-	return line.substr(start, (end - start));
+	if (is_valid_nodepath) {
+		variable_start = start;
+	}
+	return line.substr(variable_start, (end - variable_start));
 }
 
 void ProjectConverter3To4::rename_enums(String &file_content) {
@@ -2517,7 +2630,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_enums(Vector<String> &file
 
 			int current_line = 1;
 			for (String &line : file_content) {
-				Array reg_match = reg.search_all(line);
+				TypedArray<RegExMatch> reg_match = reg.search_all(line);
 				if (reg_match.size() > 0) {
 					found_things.append(line_formatter(current_line, colors_renames[current_index][0], colors_renames[current_index][1], line));
 				}
@@ -2533,7 +2646,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_enums(Vector<String> &file
 void ProjectConverter3To4::rename_classes(String &file_content) {
 	int current_index = 0;
 
-	// TODO Maybe it is better way to not rename gd, tscn and other files which are named are classes
+	// TODO Maybe it is better way to not rename gd, tscn and other files which are named as classes
 	while (class_renames[current_index][0]) {
 		// Begin renaming workaround `Resource.gd` -> `RefCounter.gd`
 		RegEx reg_before = RegEx(String("\\b") + class_renames[current_index][0] + ".tscn\\b");
@@ -2594,7 +2707,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &fi
 			line = reg_before.sub(line, "TEMP_RENAMED_CLASS.tscn", true);
 			line = reg_before2.sub(line, "TEMP_RENAMED_CLASS.gd", true);
 
-			Array reg_match = reg.search_all(line);
+			TypedArray<RegExMatch> reg_match = reg.search_all(line);
 			if (reg_match.size() > 0) {
 				found_things.append(line_formatter(current_line, class_renames[current_index][0], class_renames[current_index][1], line));
 			}
@@ -2623,432 +2736,11 @@ Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &fi
 	return found_things;
 }
 
-void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
-	// Custom renaming, each rule needs to be set manually
-	// Don't forget to put validate each rule in validate_conversion function
+void ProjectConverter3To4::rename_gdscript_functions(String &file_content, const RegExContainer &reg_container, bool builtin) {
 	Vector<String> lines = file_content.split("\n");
 
-	RegEx reg_is_empty = RegEx("\\bempty\\(");
-	RegEx reg_super = RegEx("([\t ])\\.([a-zA-Z_])");
-	RegEx reg_json_to = RegEx("\\bto_json\\b");
-	RegEx reg_json_parse = RegEx("([\t]{0,})([^\n]+)parse_json\\(([^\n]+)");
-	RegEx reg_json_non_new = RegEx("([\t]{0,})([^\n]+)JSON\\.parse\\(([^\n]+)");
-	RegEx reg_export = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)");
-	RegEx reg_export_advanced = RegEx("export\\(([^)^\n]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)([^\n]+)");
-	RegEx reg_setget_setget = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*,[ \t]*([a-zA-Z0-9_]+)");
-	RegEx reg_setget_set = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*[,]*[^a-z^A-Z^0-9^_]*$");
-	RegEx reg_setget_get = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+,[ \t]*([a-zA-Z0-9_]+)[ \t]*$");
-	RegEx reg_join = RegEx("([\\(\\)a-zA-Z0-9_]+)\\.join\\(([^\n^\\)]+)\\)");
-	RegEx reg_mixed_tab_space = RegEx("([\t]+)([ ]+)");
-	RegEx reg_image_lock = RegEx("([a-zA-Z0-9_\\.]+)\\.lock\\(\\)");
-	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
-	RegEx reg_os_fullscreen = RegEx("OS.window_fullscreen[= ]+([^#^\n]+)");
-
-	CRASH_COND(!reg_is_empty.is_valid());
-	CRASH_COND(!reg_super.is_valid());
-	CRASH_COND(!reg_json_to.is_valid());
-	CRASH_COND(!reg_json_parse.is_valid());
-	CRASH_COND(!reg_json_non_new.is_valid());
-	CRASH_COND(!reg_export.is_valid());
-	CRASH_COND(!reg_export_advanced.is_valid());
-	CRASH_COND(!reg_setget_setget.is_valid());
-	CRASH_COND(!reg_setget_set.is_valid());
-	CRASH_COND(!reg_setget_get.is_valid());
-	CRASH_COND(!reg_join.is_valid());
-	CRASH_COND(!reg_mixed_tab_space.is_valid());
-	CRASH_COND(!reg_image_lock.is_valid());
-	CRASH_COND(!reg_image_unlock.is_valid());
-	CRASH_COND(!reg_os_fullscreen.is_valid());
-
 	for (String &line : lines) {
-		if (line.find("mtx") == -1 && line.find("mutex") == -1 && line.find("Mutex") == -1) {
-			line = reg_image_lock.sub(line, "false # $1.lock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", true);
-			line = reg_image_unlock.sub(line, "false # $1.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", true);
-		}
-
-		// Mixed use of spaces and tabs - tabs as first - TODO, this probably is problem problem, but not sure
-		line = reg_mixed_tab_space.sub(line, "$1", true);
-
-		// PackedStringArray(req_godot).join('.') -> '.'.join(PackedStringArray(req_godot))       PoolStringArray
-		line = reg_join.sub(line, "$2.join($1)", true);
-
-		// -- empty() -> is_empty()       Pool*Array
-		line = reg_is_empty.sub(line, "is_empty(", true);
-
-		// -- \t.func() -> \tsuper.func()       Object
-		line = reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this brake String text e.g. "Choosen .gitignore" -> "Choosen super.gitignore"
-
-		// -- JSON.parse(a) -> JSON.new().parse(a) etc.    JSON
-		line = reg_json_non_new.sub(line, "$1var test_json_conv = JSON.new()\n$1test_json_conv.parse($3\n$1$2test_json_conv.get_data()", true);
-
-		// -- to_json(a) -> JSON.new().stringify(a)     Object
-		line = reg_json_to.sub(line, "JSON.new().stringify", true);
-
-		// -- parse_json(a) -> JSON.get_data() etc.    Object
-		line = reg_json_parse.sub(line, "$1var test_json_conv = JSON.new()\n$1test_json_conv.parse($3\n$1$2test_json_conv.get_data()", true);
-
-		// -- get_node(@ -> get_node(       Node
-		line = line.replace("get_node(@", "get_node(");
-
-		// export(float) var lifetime = 3.0 -> export var lifetime: float = 3.0     GDScript
-		line = reg_export.sub(line, "export var $2: $1");
-
-		// export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro' -> export var _font_name = 'AnonymousPro' #(String, 'AnonymousPro', 'CourierPrime')   GDScript
-		line = reg_export_advanced.sub(line, "export var $2$3 # ($1)");
-
-		// Setget Setget
-		line = reg_setget_setget.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $4\n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
-
-		// Setget set
-		line = reg_setget_set.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Non existent get function \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
-
-		// Setget get
-		line = reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
-
-		// OS.window_fullscreen = true -> ProjectSettings.set("display/window/size/fullscreen",true)
-		line = reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
-
-		// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_motion_velocity(a) ... r.move_and_slide()         KinematicBody
-		if (line.find("move_and_slide(") != -1) {
-			int start = line.find("move_and_slide(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				String base_obj = get_object_of_execution(line.substr(0, start));
-				String starting_space = get_starting_space(line);
-
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 1) {
-					String line_new;
-
-					// motion_velocity
-					line_new += starting_space + base_obj + "set_motion_velocity(" + parts[0] + ")\n";
-
-					// up_direction
-					if (parts.size() >= 2) {
-						line_new += starting_space + base_obj + "set_up_direction(" + parts[1] + ")\n";
-					}
-
-					// stop_on_slope
-					if (parts.size() >= 3) {
-						line_new += starting_space + base_obj + "set_floor_stop_on_slope_enabled(" + parts[2] + ")\n";
-					}
-
-					// max_slides
-					if (parts.size() >= 4) {
-						line_new += starting_space + base_obj + "set_max_slides(" + parts[3] + ")\n";
-					}
-
-					// floor_max_angle
-					if (parts.size() >= 5) {
-						line_new += starting_space + base_obj + "set_floor_max_angle(" + parts[4] + ")\n";
-					}
-
-					// infiinite_interia
-					if (parts.size() >= 6) {
-						line_new += starting_space + "# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `" + parts[5] + "`\n";
-					}
-
-					line = line_new + line.substr(0, start) + "move_and_slide()" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- r.move_and_slide_with_snap( a, b, c, d, e )  ->  r.set_motion_velocity(a) ... r.move_and_slide()         KinematicBody
-		if (line.find("move_and_slide_with_snap(") != -1) {
-			int start = line.find("move_and_slide_with_snap(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				String base_obj = get_object_of_execution(line.substr(0, start));
-				String starting_space = get_starting_space(line);
-
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 1) {
-					String line_new;
-
-					// motion_velocity
-					line_new += starting_space + base_obj + "set_motion_velocity(" + parts[0] + ")\n";
-
-					// snap
-					if (parts.size() >= 2) {
-						line_new += starting_space + "# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `" + parts[1] + "`\n";
-					}
-
-					// up_direction
-					if (parts.size() >= 3) {
-						line_new += starting_space + base_obj + "set_up_direction(" + parts[2] + ")\n";
-					}
-
-					// stop_on_slope
-					if (parts.size() >= 4) {
-						line_new += starting_space + base_obj + "set_floor_stop_on_slope_enabled(" + parts[3] + ")\n";
-					}
-
-					// max_slides
-					if (parts.size() >= 5) {
-						line_new += starting_space + base_obj + "set_max_slides(" + parts[4] + ")\n";
-					}
-
-					// floor_max_angle
-					if (parts.size() >= 6) {
-						line_new += starting_space + base_obj + "set_floor_max_angle(" + parts[5] + ")\n";
-					}
-
-					// infiinite_interia
-					if (parts.size() >= 7) {
-						line_new += starting_space + "# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `" + parts[6] + "`\n";
-					}
-
-					line = line_new + line.substr(0, start) + "move_and_slide()" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- sort_custom( a , b )  ->  sort_custom(Callable( a , b ))            Object
-		if (line.find("sort_custom(") != -1) {
-			int start = line.find("sort_custom(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "sort_custom(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- list_dir_begin( )  ->  list_dir_begin()            Object
-		if (line.find("list_dir_begin(") != -1) {
-			int start = line.find("list_dir_begin(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				line = line.substr(0, start) + "list_dir_begin() " + line.substr(end + start) + "# TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547";
-			}
-		}
-
-		// -- draw_line(1,2,3,4,5) -> draw_line(1,2,3,4)            CanvasItem
-		if (line.find("draw_line(") != -1) {
-			int start = line.find("draw_line(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 5) {
-					line = line.substr(0, start) + "draw_line(" + parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + ")" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- func c(var a, var b) -> func c(a, b)
-		if (line.find("func ") != -1 && line.find("var ") != -1) {
-			int start = line.find("func ");
-			start = line.substr(start).find("(") + start;
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-
-				String start_string = line.substr(0, start) + "(";
-				for (int i = 0; i < parts.size(); i++) {
-					start_string += parts[i].strip_edges().trim_prefix("var ");
-					if (i != parts.size() - 1) {
-						start_string += ", ";
-					}
-				}
-				line = start_string + ")" + line.substr(end + start);
-			}
-		}
-
-		// -- yield(this, \"timeout\") -> await this.timeout         GDScript
-		if (line.find("yield(") != -1) {
-			int start = line.find("yield(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- parse_json( AA ) -> TODO       Object
-		if (line.find("parse_json(") != -1) {
-			int start = line.find("parse_json(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				line = line.substr(0, start) + "JSON.new().stringify(" + connect_arguments(parts, 0) + ")" + line.substr(end + start);
-			}
-		}
-
-		// -- .xform(Vector3(a,b,c)) -> * Vector3(a,b,c)            Transform
-		if (line.find(".xform(") != -1) {
-			int start = line.find(".xform(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 1) {
-					line = line.substr(0, start) + " * " + parts[0] + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- .xform_inv(Vector3(a,b,c)) -> * Vector3(a,b,c)       Transform
-		if (line.find(".xform_inv(") != -1) {
-			int start = line.find(".xform_inv(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				String object_exec = get_object_of_execution(line.substr(0, start));
-				if (line.find(object_exec + ".xform") != -1) {
-					int start2 = line.find(object_exec + ".xform");
-					Vector<String> parts = parse_arguments(line.substr(start, end));
-					if (parts.size() == 1) {
-						line = line.substr(0, start2) + parts[0] + " * " + object_exec + line.substr(end + start);
-					}
-				}
-			}
-		}
-
-		// -- connect(,,,things) -> connect(,Callable(,),things)      Object
-		if (line.find("connect(") != -1) {
-			int start = line.find("connect(");
-			// Protection from disconnect
-			if (start == 0 || line.get(start - 1) != 's') {
-				int end = get_end_parenthess(line.substr(start)) + 1;
-				if (end > -1) {
-					Vector<String> parts = parse_arguments(line.substr(start, end));
-					if (parts.size() >= 3) {
-						line = line.substr(0, start) + "connect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-					}
-				}
-			}
-		}
-		// -- disconnect(a,b,c) -> disconnect(a,Callable(b,c))      Object
-		if (line.find("disconnect(") != -1) {
-			int start = line.find("disconnect(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "disconnect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		// -- is_connected(a,b,c) -> is_connected(a,Callable(b,c))      Object
-		if (line.find("is_connected(") != -1) {
-			int start = line.find("is_connected(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "is_connected(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		// -- start(a,b,c) -> start(a,Callable(b,c))      Thread
-		if (line.find("start(") != -1) {
-			int start = line.find("start(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 3) {
-					line = line.substr(0, start) + "start(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-				}
-			}
-		}
-		// -- func _init(p_x:int)->void:  -> func _init(p_x:int):    Object # https://github.com/godotengine/godot/issues/50589
-		if (line.find(" _init(") != -1) {
-			int start = line.find(" _init(");
-			int end = line.rfind(":") + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				line = line.substr(0, start) + " _init(" + connect_arguments(parts, 0) + "):" + line.substr(end + start);
-			}
-		}
-		//  assert(speed < 20, str(randi()%10))  ->  assert(speed < 20) #,str(randi()%10))    GDScript - GDScript bug constant message
-		if (line.find("assert(") != -1) {
-			int start = line.find("assert(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "assert(" + parts[0] + ") " + line.substr(end + start) + "#," + parts[1] + ")";
-				}
-			}
-		}
-		//  create_from_image(aa, bb)  ->   create_from_image(aa) #, bb   ImageTexture
-		if (line.find("create_from_image(") != -1) {
-			int start = line.find("create_from_image(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "create_from_image(" + parts[0] + ") " + "#," + parts[1] + line.substr(end + start);
-				}
-			}
-		}
-		//  set_cell_item(a, b, c, d ,e)  ->   set_cell_item(Vector3(a, b, c), d ,e)
-		if (line.find("set_cell_item(") != -1) {
-			int start = line.find("set_cell_item(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() > 2) {
-					line = line.substr(0, start) + "set_cell_item( Vector3(" + parts[0] + "," + parts[1] + "," + parts[2] + ") " + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-				}
-			}
-		}
-		//  get_cell_item(a, b, c)  ->   get_cell_item(Vector3i(a, b, c))
-		if (line.find("get_cell_item(") != -1) {
-			int start = line.find("get_cell_item(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "get_cell_item(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		//  get_cell_item_orientation(a, b, c)  ->   get_cell_item_orientation(Vector3i(a, b, c))
-		if (line.find("get_cell_item_orientation(") != -1) {
-			int start = line.find("get_cell_item_orientation(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "get_cell_item_orientation(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		//  apply_impulse(A, B)  ->   apply_impulse(B, A)
-		if (line.find("apply_impulse(") != -1) {
-			int start = line.find("apply_impulse(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "apply_impulse(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
-				}
-			}
-		}
-		//  apply_force(A, B)  ->   apply_force(B, A)
-		if (line.find("apply_force(") != -1) {
-			int start = line.find("apply_force(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "apply_force(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
-				}
-			}
-		}
-		//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
-		if (line.find("map_to_world(") != -1) {
-			int start = line.find("map_to_world(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
+		process_gdscript_line(line, reg_container, builtin);
 	}
 
 	// Collect vector to string
@@ -3062,424 +2754,14 @@ void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
 	}
 };
 
-// This is almost 1:1 copy of function which rename gdscript functions
-Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<String> &file_content) {
+Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<String> &file_content, const RegExContainer &reg_container, bool builtin) {
 	int current_line = 1;
 
 	Vector<String> found_things;
 
-	RegEx reg_is_empty = RegEx("\\bempty\\(");
-	RegEx reg_super = RegEx("([\t ])\\.([a-zA-Z_])");
-	RegEx reg_json_to = RegEx("\\bto_json\\b");
-	RegEx reg_json_parse = RegEx("([\t]{0,})([^\n]+)parse_json\\(([^\n]+)");
-	RegEx reg_json_non_new = RegEx("([\t]{0,})([^\n]+)JSON\\.parse\\(([^\n]+)");
-	RegEx reg_export = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)");
-	RegEx reg_export_advanced = RegEx("export\\(([^)^\n]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)([^\n]+)");
-	RegEx reg_setget_setget = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*,[ \t]*([a-zA-Z0-9_]+)");
-	RegEx reg_setget_set = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+([a-zA-Z0-9_]+)[ \t]*[,]*[^a-z^A-Z^0-9^_]*$");
-	RegEx reg_setget_get = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+)setget[ \t]+,[ \t]*([a-zA-Z0-9_]+)[ \t]*$");
-	RegEx reg_join = RegEx("([\\(\\)a-zA-Z0-9_]+)\\.join\\(([^\n^\\)]+)\\)");
-	RegEx reg_mixed_tab_space = RegEx("([\t]+)([ ]+)");
-	RegEx reg_image_lock = RegEx("([a-zA-Z0-9_\\.]+)\\.lock\\(\\)");
-	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
-	RegEx reg_os_fullscreen = RegEx("OS.window_fullscreen[= ]+([^#^\n]+)");
-
-	CRASH_COND(!reg_is_empty.is_valid());
-	CRASH_COND(!reg_super.is_valid());
-	CRASH_COND(!reg_json_to.is_valid());
-	CRASH_COND(!reg_json_parse.is_valid());
-	CRASH_COND(!reg_json_non_new.is_valid());
-	CRASH_COND(!reg_export.is_valid());
-	CRASH_COND(!reg_export_advanced.is_valid());
-	CRASH_COND(!reg_setget_setget.is_valid());
-	CRASH_COND(!reg_setget_set.is_valid());
-	CRASH_COND(!reg_setget_get.is_valid());
-	CRASH_COND(!reg_join.is_valid());
-	CRASH_COND(!reg_mixed_tab_space.is_valid());
-	CRASH_COND(!reg_image_lock.is_valid());
-	CRASH_COND(!reg_image_unlock.is_valid());
-	CRASH_COND(!reg_os_fullscreen.is_valid());
-
 	for (String &line : file_content) {
 		String old_line = line;
-
-		if (line.find("mtx") == -1 && line.find("mutex") == -1 && line.find("Mutex") == -1) {
-			line = reg_image_lock.sub(line, "false # $1.lock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", true);
-			line = reg_image_unlock.sub(line, "false # $1.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", true);
-		}
-
-		// Mixed use of spaces and tabs - tabs as first - TODO, this probably is problem problem, but not sure
-		line = reg_mixed_tab_space.sub(line, "$1", true);
-
-		// PackedStringArray(req_godot).join('.') -> '.'.join(PackedStringArray(req_godot))       PoolStringArray
-		line = reg_join.sub(line, "$2.join($1)", true);
-
-		// -- empty() -> is_empty()       Pool*Array
-		line = reg_is_empty.sub(line, "is_empty(", true);
-
-		// -- \t.func() -> \tsuper.func()       Object
-		line = reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this brake String text e.g. "Choosen .gitignore" -> "Choosen super.gitignore"
-
-		// -- JSON.parse(a) -> JSON.new().parse(a) etc.    JSON
-		line = reg_json_non_new.sub(line, "$1var test_json_conv = JSON.new()\n$1test_json_conv.parse($3\n$1$2test_json_conv.get_data()", true);
-
-		// -- to_json(a) -> JSON.new().stringify(a)     Object
-		line = reg_json_to.sub(line, "JSON.new().stringify", true);
-
-		// -- parse_json(a) -> JSON.get_data() etc.    Object
-		line = reg_json_parse.sub(line, "$1var test_json_conv = JSON.new()\n$1test_json_conv.parse($3\n$1$2test_json_conv.get_data()", true);
-
-		// -- get_node(@ -> get_node(       Node
-		line = line.replace("get_node(@", "get_node(");
-
-		// export(float) var lifetime = 3.0 -> export var lifetime: float = 3.0     GDScript
-		line = reg_export.sub(line, "export var $2: $1");
-
-		// export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro' -> export var _font_name = 'AnonymousPro' #(String, 'AnonymousPro', 'CourierPrime')   GDScript
-		line = reg_export_advanced.sub(line, "export var $2$3 # ($1)");
-
-		// Setget Setget
-		line = reg_setget_setget.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $4\n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
-
-		// Setget set
-		line = reg_setget_set.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Non existent get function \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
-
-		// Setget get
-		line = reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
-
-		// OS.window_fullscreen = true -> ProjectSettings.set("display/window/size/fullscreen",true)
-		line = reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
-
-		// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_motion_velocity(a) ... r.move_and_slide()         KinematicBody
-		if (line.find("move_and_slide(") != -1) {
-			int start = line.find("move_and_slide(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				String base_obj = get_object_of_execution(line.substr(0, start));
-				String starting_space = get_starting_space(line);
-
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 1) {
-					String line_new;
-
-					// motion_velocity
-					line_new += starting_space + base_obj + "set_motion_velocity(" + parts[0] + ")\n";
-
-					// up_direction
-					if (parts.size() >= 2) {
-						line_new += starting_space + base_obj + "set_up_direction(" + parts[1] + ")\n";
-					}
-
-					// stop_on_slope
-					if (parts.size() >= 3) {
-						line_new += starting_space + base_obj + "set_floor_stop_on_slope_enabled(" + parts[2] + ")\n";
-					}
-
-					// max_slides
-					if (parts.size() >= 4) {
-						line_new += starting_space + base_obj + "set_max_slides(" + parts[3] + ")\n";
-					}
-
-					// floor_max_angle
-					if (parts.size() >= 5) {
-						line_new += starting_space + base_obj + "set_floor_max_angle(" + parts[4] + ")\n";
-					}
-
-					// infiinite_interia
-					if (parts.size() >= 6) {
-						line_new += starting_space + "# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `" + parts[5] + "`\n";
-					}
-
-					line = line_new + line.substr(0, start) + "move_and_slide()" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- r.move_and_slide_with_snap( a, b, c, d, e )  ->  r.set_motion_velocity(a) ... r.move_and_slide()         KinematicBody
-		if (line.find("move_and_slide_with_snap(") != -1) {
-			int start = line.find("move_and_slide_with_snap(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				String base_obj = get_object_of_execution(line.substr(0, start));
-				String starting_space = get_starting_space(line);
-
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 1) {
-					String line_new;
-
-					// motion_velocity
-					line_new += starting_space + base_obj + "set_motion_velocity(" + parts[0] + ")\n";
-
-					// snap
-					if (parts.size() >= 2) {
-						line_new += starting_space + "# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `" + parts[1] + "`\n";
-					}
-
-					// up_direction
-					if (parts.size() >= 3) {
-						line_new += starting_space + base_obj + "set_up_direction(" + parts[2] + ")\n";
-					}
-
-					// stop_on_slope
-					if (parts.size() >= 4) {
-						line_new += starting_space + base_obj + "set_floor_stop_on_slope_enabled(" + parts[3] + ")\n";
-					}
-
-					// max_slides
-					if (parts.size() >= 5) {
-						line_new += starting_space + base_obj + "set_max_slides(" + parts[4] + ")\n";
-					}
-
-					// floor_max_angle
-					if (parts.size() >= 6) {
-						line_new += starting_space + base_obj + "set_floor_max_angle(" + parts[5] + ")\n";
-					}
-
-					// infiinite_interia
-					if (parts.size() >= 7) {
-						line_new += starting_space + "# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `" + parts[6] + "`\n";
-					}
-
-					line = line_new + line.substr(0, start) + "move_and_slide()" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- sort_custom( a , b )  ->  sort_custom(Callable( a , b ))            Object
-		if (line.find("sort_custom(") != -1) {
-			int start = line.find("sort_custom(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "sort_custom(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- draw_line(1,2,3,4,5) -> draw_line(1,2,3,4)            CanvasItem
-		if (line.find("draw_line(") != -1) {
-			int start = line.find("draw_line(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 5) {
-					line = line.substr(0, start) + "draw_line(" + parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + ")" + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- func c(var a, var b) -> func c(a, b)
-		if (line.find("func ") != -1 && line.find("var ") != -1) {
-			int start = line.find("func ");
-			start = line.substr(start).find("(") + start;
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-
-				String start_string = line.substr(0, start) + "(";
-				for (int i = 0; i < parts.size(); i++) {
-					start_string += parts[i].strip_edges().trim_prefix("var ");
-					if (i != parts.size() - 1) {
-						start_string += ", ";
-					}
-				}
-				line = start_string + ")" + line.substr(end + start);
-			}
-		}
-
-		// -- yield(this, \"timeout\") -> await this.timeout         GDScript
-		if (line.find("yield(") != -1) {
-			int start = line.find("yield(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- parse_json( AA ) -> TODO       Object
-		if (line.find("parse_json(") != -1) {
-			int start = line.find("parse_json(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				line = line.substr(0, start) + "JSON.new().stringify(" + connect_arguments(parts, 0) + ")" + line.substr(end + start);
-			}
-		}
-
-		// -- .xform(Vector3(a,b,c)) -> * Vector3(a,b,c)            Transform
-		if (line.find(".xform(") != -1) {
-			int start = line.find(".xform(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 1) {
-					line = line.substr(0, start) + " * " + parts[0] + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- .xform_inv(Vector3(a,b,c)) -> / Vector3(a,b,c)       Transform
-		if (line.find(".xform_inv(") != -1) {
-			int start = line.find(".xform_inv(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 1) {
-					line = line.substr(0, start) + " / " + parts[0] + line.substr(end + start);
-				}
-			}
-		}
-
-		// -- connect(,,,things) -> connect(,Callable(,),things)      Object
-		if (line.find("connect(") != -1) {
-			int start = line.find("connect(");
-			// Protection from disconnect
-			if (start == 0 || line.get(start - 1) != 's') {
-				int end = get_end_parenthess(line.substr(start)) + 1;
-				if (end > -1) {
-					Vector<String> parts = parse_arguments(line.substr(start, end));
-					if (parts.size() >= 3) {
-						line = line.substr(0, start) + "connect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-					}
-				}
-			}
-		}
-		// -- disconnect(a,b,c) -> disconnect(a,Callable(b,c))      Object
-		if (line.find("disconnect(") != -1) {
-			int start = line.find("disconnect(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "disconnect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		// -- is_connected(a,b,c) -> is_connected(a,Callable(b,c))      Object
-		if (line.find("is_connected(") != -1) {
-			int start = line.find("is_connected(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "is_connected(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		// -- start(a,b,c) -> start(a,Callable(b,c))      Thread
-		if (line.find("start(") != -1) {
-			int start = line.find("start(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 3) {
-					line = line.substr(0, start) + "start(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-				}
-			}
-		}
-		// -- func _init(p_x:int)->void:  -> func _init(p_x:int):    Object # https://github.com/godotengine/godot/issues/50589
-		if (line.find(" _init(") != -1) {
-			int start = line.find(" _init(");
-			int end = line.rfind(":") + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				line = line.substr(0, start) + " _init(" + connect_arguments(parts, 0) + "):" + line.substr(end + start);
-			}
-		}
-		//  assert(speed < 20, str(randi()%10))  ->  assert(speed < 20) #,str(randi()%10))    GDScript - GDScript bug constant message
-		if (line.find("assert(") != -1) {
-			int start = line.find("assert(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "assert(" + parts[0] + ") " + line.substr(end + start) + "#," + parts[1] + ")";
-				}
-			}
-		}
-		//  create_from_image(aa, bb)  ->   create_from_image(aa) #, bb   ImageTexture
-		if (line.find("create_from_image(") != -1) {
-			int start = line.find("create_from_image(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "create_from_image(" + parts[0] + ") " + "#," + parts[1] + line.substr(end + start);
-				}
-			}
-		}
-		//  set_cell_item(a, b, c, d ,e)  ->   set_cell_item(Vector3(a, b, c), d ,e)
-		if (line.find("set_cell_item(") != -1) {
-			int start = line.find("set_cell_item(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() > 2) {
-					line = line.substr(0, start) + "set_cell_item( Vector3(" + parts[0] + "," + parts[1] + "," + parts[2] + ") " + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-				}
-			}
-		}
-		//  get_cell_item(a, b, c)  ->   get_cell_item(Vector3i(a, b, c))
-		if (line.find("get_cell_item(") != -1) {
-			int start = line.find("get_cell_item(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "get_cell_item(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		//  get_cell_item_orientation(a, b, c)  ->   get_cell_item_orientation(Vector3i(a, b, c))
-		if (line.find("get_cell_item_orientation(") != -1) {
-			int start = line.find("get_cell_item_orientation(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "get_cell_item_orientation(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-
-		//  apply_impulse(A, B)  ->   apply_impulse(B, A)
-		if (line.find("apply_impulse(") != -1) {
-			int start = line.find("apply_impulse(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "apply_impulse(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
-				}
-			}
-		}
-		//  apply_force(A, B)  ->   apply_force(B, A)
-		if (line.find("apply_force(") != -1) {
-			int start = line.find("apply_force(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 2) {
-					line = line.substr(0, start) + "apply_force(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
-				}
-			}
-		}
-		//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
-		if (line.find("map_to_world(") != -1) {
-			int start = line.find("get_cell_item_orientation(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-
+		process_gdscript_line(line, reg_container, builtin);
 		if (old_line != line) {
 			found_things.append(simple_line_formatter(current_line, old_line, line));
 		}
@@ -3487,52 +2769,503 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 
 	return found_things;
 }
+void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin) {
+	if (line.find("mtx") == -1 && line.find("mutex") == -1 && line.find("Mutex") == -1) {
+		line = reg_container.reg_image_lock.sub(line, "false # $1.lock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", true);
+		line = reg_container.reg_image_unlock.sub(line, "false # $1.unlock() # TODOConverter40, image no longer require locking, `false` helps to not broke one line if/else, so can be freely removed", true);
+	}
+
+	// Mixed use of spaces and tabs - tabs as first - TODO, this probably is problem problem, but not sure
+	line = reg_container.reg_mixed_tab_space.sub(line, "$1", true);
+
+	// PackedStringArray(req_godot).join('.') -> '.'.join(PackedStringArray(req_godot))       PoolStringArray
+	line = reg_container.reg_join.sub(line, "$2.join($1)", true);
+
+	// -- empty() -> is_empty()       Pool*Array
+	line = reg_container.reg_is_empty.sub(line, "is_empty(", true);
+
+	// -- \t.func() -> \tsuper.func()       Object
+	line = reg_container.reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this brake String text e.g. "Choosen .gitignore" -> "Choosen super.gitignore"
+
+	// -- JSON.parse(a) -> JSON.new().parse(a) etc.    JSON
+	line = reg_container.reg_json_non_new.sub(line, "$1var test_json_conv = JSON.new()\n$1test_json_conv.parse($3\n$1$2test_json_conv.get_data()", true);
+
+	// -- to_json(a) -> JSON.new().stringify(a)     Object
+	line = reg_container.reg_json_to.sub(line, "JSON.new().stringify", true);
+
+	// -- parse_json(a) -> JSON.get_data() etc.    Object
+	line = reg_container.reg_json_parse.sub(line, "$1var test_json_conv = JSON.new()\n$1test_json_conv.parse($3\n$1$2test_json_conv.get_data()", true);
+
+	// -- get_node(@ -> get_node(       Node
+	line = line.replace("get_node(@", "get_node(");
+
+	// export(float) var lifetime = 3.0 -> export var lifetime: float = 3.0     GDScript
+	line = reg_container.reg_export.sub(line, "export var $2: $1");
+
+	// export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro' -> export var _font_name = 'AnonymousPro' #(String, 'AnonymousPro', 'CourierPrime')   GDScript
+	line = reg_container.reg_export_advanced.sub(line, "export var $2$3 # ($1)");
+
+	// Setget Setget
+	line = reg_container.reg_setget_setget.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $4\n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
+
+	// Setget set
+	line = reg_container.reg_setget_set.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Non existent get function \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40 Copy here content of $3", true);
+
+	// Setget get
+	line = reg_container.reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
+
+	// OS.window_fullscreen = true -> ProjectSettings.set("display/window/size/fullscreen",true)
+	if (builtin) {
+		line = reg_container.reg_os_fullscreen.sub(line, "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", $1)", true);
+	} else {
+		line = reg_container.reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
+	}
+
+	// Instantiate
+	line = reg_container.reg_instantiate.sub(line, ".instantiate($1)", true);
+
+	// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
+	if (line.find("move_and_slide(") != -1) {
+		int start = line.find("move_and_slide(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			String base_obj = get_object_of_execution(line.substr(0, start));
+			String starting_space = get_starting_space(line);
+
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() >= 1) {
+				String line_new;
+
+				// motion_velocity
+				line_new += starting_space + base_obj + "set_velocity(" + parts[0] + ")\n";
+
+				// up_direction
+				if (parts.size() >= 2) {
+					line_new += starting_space + base_obj + "set_up_direction(" + parts[1] + ")\n";
+				}
+
+				// stop_on_slope
+				if (parts.size() >= 3) {
+					line_new += starting_space + base_obj + "set_floor_stop_on_slope_enabled(" + parts[2] + ")\n";
+				}
+
+				// max_slides
+				if (parts.size() >= 4) {
+					line_new += starting_space + base_obj + "set_max_slides(" + parts[3] + ")\n";
+				}
+
+				// floor_max_angle
+				if (parts.size() >= 5) {
+					line_new += starting_space + base_obj + "set_floor_max_angle(" + parts[4] + ")\n";
+				}
+
+				// infiinite_interia
+				if (parts.size() >= 6) {
+					line_new += starting_space + "# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `" + parts[5] + "`\n";
+				}
+
+				line_new += starting_space + base_obj + "move_and_slide()\n";
+				line = line_new + line.substr(0, start) + "velocity" + line.substr(end + start);
+			}
+		}
+	}
+
+	// -- r.move_and_slide_with_snap( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
+	if (line.find("move_and_slide_with_snap(") != -1) {
+		int start = line.find("move_and_slide_with_snap(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			String base_obj = get_object_of_execution(line.substr(0, start));
+			String starting_space = get_starting_space(line);
+
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() >= 1) {
+				String line_new;
+
+				// motion_velocity
+				line_new += starting_space + base_obj + "set_velocity(" + parts[0] + ")\n";
+
+				// snap
+				if (parts.size() >= 2) {
+					line_new += starting_space + "# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `" + parts[1] + "`\n";
+				}
+
+				// up_direction
+				if (parts.size() >= 3) {
+					line_new += starting_space + base_obj + "set_up_direction(" + parts[2] + ")\n";
+				}
+
+				// stop_on_slope
+				if (parts.size() >= 4) {
+					line_new += starting_space + base_obj + "set_floor_stop_on_slope_enabled(" + parts[3] + ")\n";
+				}
+
+				// max_slides
+				if (parts.size() >= 5) {
+					line_new += starting_space + base_obj + "set_max_slides(" + parts[4] + ")\n";
+				}
+
+				// floor_max_angle
+				if (parts.size() >= 6) {
+					line_new += starting_space + base_obj + "set_floor_max_angle(" + parts[5] + ")\n";
+				}
+
+				// infiinite_interia
+				if (parts.size() >= 7) {
+					line_new += starting_space + "# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `" + parts[6] + "`\n";
+				}
+
+				line_new += starting_space + base_obj + "move_and_slide()\n";
+				line = line_new + line.substr(0, start) + "velocity" + line.substr(end + start); // move_and_slide used to return velocity
+			}
+		}
+	}
+
+	// -- sort_custom( a , b )  ->  sort_custom(Callable( a , b ))            Object
+	if (line.find("sort_custom(") != -1) {
+		int start = line.find("sort_custom(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				line = line.substr(0, start) + "sort_custom(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
+			}
+		}
+	}
+
+	// -- list_dir_begin( )  ->  list_dir_begin()            Object
+	if (line.find("list_dir_begin(") != -1) {
+		int start = line.find("list_dir_begin(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			line = line.substr(0, start) + "list_dir_begin() " + line.substr(end + start) + "# TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547";
+		}
+	}
+
+	// -- draw_line(1,2,3,4,5) -> draw_line(1,2,3,4)            CanvasItem
+	if (line.find("draw_line(") != -1) {
+		int start = line.find("draw_line(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 5) {
+				line = line.substr(0, start) + "draw_line(" + parts[0] + "," + parts[1] + "," + parts[2] + "," + parts[3] + ")" + line.substr(end + start);
+			}
+		}
+	}
+
+	// -- func c(var a, var b) -> func c(a, b)
+	if (line.find("func ") != -1 && line.find("var ") != -1) {
+		int start = line.find("func ");
+		start = line.substr(start).find("(") + start;
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+
+			String start_string = line.substr(0, start) + "(";
+			for (int i = 0; i < parts.size(); i++) {
+				start_string += parts[i].strip_edges().trim_prefix("var ");
+				if (i != parts.size() - 1) {
+					start_string += ", ";
+				}
+			}
+			line = start_string + ")" + line.substr(end + start);
+		}
+	}
+
+	// -- yield(this, \"timeout\") -> await this.timeout         GDScript
+	if (line.find("yield(") != -1) {
+		int start = line.find("yield(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				if (builtin) {
+					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\\\"", "").replace("\\'", "").replace(" ", "") + line.substr(end + start);
+				} else {
+					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
+				}
+			}
+		}
+	}
+
+	// -- parse_json( AA ) -> TODO       Object
+	if (line.find("parse_json(") != -1) {
+		int start = line.find("parse_json(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			line = line.substr(0, start) + "JSON.new().stringify(" + connect_arguments(parts, 0) + ")" + line.substr(end + start);
+		}
+	}
+
+	// -- .xform(Vector3(a,b,c)) -> * Vector3(a,b,c)            Transform
+	if (line.find(".xform(") != -1) {
+		int start = line.find(".xform(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 1) {
+				line = line.substr(0, start) + " * " + parts[0] + line.substr(end + start);
+			}
+		}
+	}
+
+	// -- .xform_inv(Vector3(a,b,c)) -> * Vector3(a,b,c)       Transform
+	if (line.find(".xform_inv(") != -1) {
+		int start = line.find(".xform_inv(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			String object_exec = get_object_of_execution(line.substr(0, start));
+			if (line.find(object_exec + ".xform") != -1) {
+				int start2 = line.find(object_exec + ".xform");
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 1) {
+					line = line.substr(0, start2) + parts[0] + " * " + object_exec + line.substr(end + start);
+				}
+			}
+		}
+	}
+
+	// -- "(connect(A,B,C,D,E) != OK):", "(connect(A,Callable(B,C).bind(D),E)      Object
+	if (line.find("connect(") != -1) {
+		int start = line.find("connect(");
+		// Protection from disconnect
+		if (start == 0 || line.get(start - 1) != 's') {
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 3) {
+					line = line.substr(0, start) + "connect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+				} else if (parts.size() >= 4) {
+					line = line.substr(0, start) + "connect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ").bind(" + parts[3].lstrip("[").rstrip("]") + ")" + connect_arguments(parts, 4) + ")" + line.substr(end + start);
+				}
+			}
+		}
+	}
+	// -- disconnect(a,b,c) -> disconnect(a,Callable(b,c))      Object
+	if (line.find("disconnect(") != -1) {
+		int start = line.find("disconnect(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "disconnect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+	// -- is_connected(a,b,c) -> is_connected(a,Callable(b,c))      Object
+	if (line.find("is_connected(") != -1) {
+		int start = line.find("is_connected(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "is_connected(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+	// -- "(tween_method(A,B,C,D,E) != OK):", "(tween_method(Callable(A,B),C,D,E)      Object
+	// -- "(tween_method(A,B,C,D,E,[F,G]) != OK):", "(tween_method(Callable(A,B).bind(F,G),C,D,E)      Object
+	if (line.find("tween_method(") != -1) {
+		int start = line.find("tween_method(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 5) {
+				line = line.substr(0, start) + "tween_method(Callable(" + parts[0] + "," + parts[1] + ")," + parts[2] + "," + parts[3] + "," + parts[4] + ")" + line.substr(end + start);
+			} else if (parts.size() >= 6) {
+				line = line.substr(0, start) + "tween_method(Callable(" + parts[0] + "," + parts[1] + ").bind(" + connect_arguments(parts, 5).substr(1).lstrip("[").rstrip("]") + ")," + parts[2] + "," + parts[3] + "," + parts[4] + ")" + line.substr(end + start);
+			}
+		}
+	}
+	// -- "(tween_callback(A,B,[C,D]) != OK):", "(connect(Callable(A,B).bind(C,D))      Object
+	if (line.find("tween_callback(") != -1) {
+		int start = line.find("tween_callback(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				line = line.substr(0, start) + "tween_callback(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
+			} else if (parts.size() >= 3) {
+				line = line.substr(0, start) + "tween_callback(Callable(" + parts[0] + "," + parts[1] + ").bind(" + connect_arguments(parts, 2).substr(1).lstrip("[").rstrip("]") + "))" + line.substr(end + start);
+			}
+		}
+	}
+	// -- start(a,b) -> start(Callable(a,b))      Thread
+	// -- start(a,b,c,d) -> start(Callable(a,b).bind(c),d)      Thread
+	if (line.find("start(") != -1) {
+		int start = line.find("start(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		// Protection from 'func start'
+		if (!line.begins_with("func ")) {
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "start(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
+				} else if (parts.size() >= 3) {
+					line = line.substr(0, start) + "start(Callable(" + parts[0] + "," + parts[1] + ").bind(" + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
+				}
+			}
+		}
+	}
+	// -- func _init(p_x:int)->void:  -> func _init(p_x:int):    Object # https://github.com/godotengine/godot/issues/50589
+	if (line.find(" _init(") != -1) {
+		int start = line.find(" _init(");
+		int end = line.rfind(":") + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			line = line.substr(0, start) + " _init(" + connect_arguments(parts, 0) + "):" + line.substr(end + start);
+		}
+	}
+	//  assert(speed < 20, str(randi()%10))  ->  assert(speed < 20) #,str(randi()%10))    GDScript - GDScript bug constant message
+	if (line.find("assert(") != -1) {
+		int start = line.find("assert(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				line = line.substr(0, start) + "assert(" + parts[0] + ") " + line.substr(end + start) + "#," + parts[1] + ")";
+			}
+		}
+	}
+	//  create_from_image(aa, bb)  ->   create_from_image(aa) #, bb   ImageTexture
+	if (line.find("create_from_image(") != -1) {
+		int start = line.find("create_from_image(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				line = line.substr(0, start) + "create_from_image(" + parts[0] + ") " + "#," + parts[1] + line.substr(end + start);
+			}
+		}
+	}
+	//  set_cell_item(a, b, c, d ,e)  ->   set_cell_item(Vector3(a, b, c), d ,e)
+	if (line.find("set_cell_item(") != -1) {
+		int start = line.find("set_cell_item(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() > 2) {
+				line = line.substr(0, start) + "set_cell_item( Vector3(" + parts[0] + "," + parts[1] + "," + parts[2] + ") " + connect_arguments(parts, 3) + ")" + line.substr(end + start);
+			}
+		}
+	}
+	//  get_cell_item(a, b, c)  ->   get_cell_item(Vector3i(a, b, c))
+	if (line.find("get_cell_item(") != -1) {
+		int start = line.find("get_cell_item(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "get_cell_item(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+	//  get_cell_item_orientation(a, b, c)  ->   get_cell_item_orientation(Vector3i(a, b, c))
+	if (line.find("get_cell_item_orientation(") != -1) {
+		int start = line.find("get_cell_item_orientation(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "get_cell_item_orientation(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+	//  apply_impulse(A, B)  ->   apply_impulse(B, A)
+	if (line.find("apply_impulse(") != -1) {
+		int start = line.find("apply_impulse(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				line = line.substr(0, start) + "apply_impulse(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
+			}
+		}
+	}
+	//  apply_force(A, B)  ->   apply_force(B, A)
+	if (line.find("apply_force(") != -1) {
+		int start = line.find("apply_force(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 2) {
+				line = line.substr(0, start) + "apply_force(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
+			}
+		}
+	}
+	//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
+	if (line.find("map_to_world(") != -1) {
+		int start = line.find("map_to_world(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+	//  OS.get_window_safe_area()  ->   DisplayServer.get_display_safe_area()
+	if (line.find("OS.get_window_safe_area(") != -1) {
+		int start = line.find("OS.get_window_safe_area(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 0) {
+				line = line.substr(0, start) + "DisplayServer.get_display_safe_area()" + line.substr(end + start);
+			}
+		}
+	}
+}
+
+void ProjectConverter3To4::process_csharp_line(String &line) {
+	// TODO maybe this can be changed to normal rule
+	line = line.replace("OS.GetWindowSafeArea()", "DisplayServer.ScreenGetUsableRect()");
+
+	// -- Connect(,,,things) -> Connect(,Callable(,),things)      Object
+	if (line.find("Connect(") != -1) {
+		int start = line.find("Connect(");
+		// Protection from disconnect
+		if (start == 0 || line.get(start - 1) != 's') {
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() >= 3) {
+					line = line.substr(0, start) + "Connect(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
+				}
+			}
+		}
+	}
+	// -- Disconnect(a,b,c) -> Disconnect(a,Callable(b,c))      Object
+	if (line.find("Disconnect(") != -1) {
+		int start = line.find("Disconnect(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "Disconnect(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+	// -- IsConnected(a,b,c) -> IsConnected(a,Callable(b,c))      Object
+	if (line.find("IsConnected(") != -1) {
+		int start = line.find("IsConnected(");
+		int end = get_end_parenthess(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "IsConnected(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			}
+		}
+	}
+}
 
 void ProjectConverter3To4::rename_csharp_functions(String &file_content) {
-	// Custom renaming, each rule needs to be set manually
-	// Don't forget to put validate each rule in validate_conversion function
 	Vector<String> lines = file_content.split("\n");
 
 	for (String &line : lines) {
-		// TODO maybe this can be changed to normal rule
-		line = line.replace("OS.GetWindowSafeArea()", "DisplayServer.ScreenGetUsableRect()");
-
-		// -- Connect(,,,things) -> Connect(,Callable(,),things)      Object
-		if (line.find("Connect(") != -1) {
-			int start = line.find("Connect(");
-			// Protection from disconnect
-			if (start == 0 || line.get(start - 1) != 's') {
-				int end = get_end_parenthess(line.substr(start)) + 1;
-				if (end > -1) {
-					Vector<String> parts = parse_arguments(line.substr(start, end));
-					if (parts.size() >= 3) {
-						line = line.substr(0, start) + "Connect(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-					}
-				}
-			}
-		}
-		// -- Disconnect(a,b,c) -> Disconnect(a,Callable(b,c))      Object
-		if (line.find("Disconnect(") != -1) {
-			int start = line.find("Disconnect(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "Disconnect(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		// -- IsConnected(a,b,c) -> IsConnected(a,Callable(b,c))      Object
-		if (line.find("IsConnected(") != -1) {
-			int start = line.find("IsConnected(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "IsConnected(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
+		process_csharp_line(line);
 	}
 
 	// Collect vector to string
@@ -3554,47 +3287,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<St
 
 	for (String &line : file_content) {
 		String old_line = line;
-
-		// TODO maybe this can be changed to normal rule
-		line = line.replace("OS.GetWindowSafeArea()", "DisplayServer.ScreenGetUsableRect()");
-
-		// -- Connect(,,,things) -> connect(,Callable(,),things)      Object
-		if (line.find("Connect(") != -1) {
-			int start = line.find("Connect(");
-			// Protection from disconnect
-			if (start == 0 || line.get(start - 1) != 's') {
-				int end = get_end_parenthess(line.substr(start)) + 1;
-				if (end > -1) {
-					Vector<String> parts = parse_arguments(line.substr(start, end));
-					if (parts.size() >= 3) {
-						line = line.substr(0, start) + "Connect(" + parts[0] + ",new Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
-					}
-				}
-			}
-		}
-		// -- Disconnect(a,b,c) -> Disconnect(a,Callable(b,c))      Object
-		if (line.find("Disconnect(") != -1) {
-			int start = line.find("Disconnect(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "Disconnect(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-		// -- IsConnected(a,b,c) -> IsConnected(a,Callable(b,c))      Object
-		if (line.find("IsConnected(") != -1) {
-			int start = line.find("IsConnected(");
-			int end = get_end_parenthess(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "IsConnected(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
-				}
-			}
-		}
-
+		process_csharp_line(line);
 		if (old_line != line) {
 			found_things.append(simple_line_formatter(current_line, old_line, line));
 		}
@@ -3603,88 +3296,205 @@ Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<St
 	return found_things;
 }
 
-void ProjectConverter3To4::rename_gdscript_keywords(String &file_content){
-	{ RegEx reg_tool = RegEx("([\n]+)tool");
-CRASH_COND(!reg_tool.is_valid());
-file_content = reg_tool.sub(file_content, "$1@tool", true);
-RegEx reg_tool2 = RegEx("^tool");
-CRASH_COND(!reg_tool2.is_valid());
-file_content = reg_tool2.sub(file_content, "@tool", true);
+void ProjectConverter3To4::rename_csharp_attributes(String &file_content) {
+	// -- [Remote] -> [RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	{
+		RegEx reg_remote = RegEx("\\[Remote(Attribute)?(\\(\\))?\\]");
+		CRASH_COND(!reg_remote.is_valid());
+		file_content = reg_remote.sub(file_content, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
+	}
+	// -- [RemoteSync] -> [RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]
+	{
+		RegEx reg_remotesync = RegEx("\\[(Remote)?Sync(Attribute)?(\\(\\))?\\]");
+		CRASH_COND(!reg_remotesync.is_valid());
+		file_content = reg_remotesync.sub(file_content, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
+	}
+	// -- [Puppet] -> [RPC]
+	{
+		RegEx reg_puppet = RegEx("\\[(Puppet|Slave)(Attribute)?(\\(\\))?\\]");
+		CRASH_COND(!reg_puppet.is_valid());
+		file_content = reg_puppet.sub(file_content, "[RPC]", true);
+	}
+	// -- [PuppetSync] -> [RPC(CallLocal = true)]
+	{
+		RegEx reg_puppetsync = RegEx("\\[PuppetSync(Attribute)?(\\(\\))?\\]");
+		CRASH_COND(!reg_puppetsync.is_valid());
+		file_content = reg_puppetsync.sub(file_content, "[RPC(CallLocal = true)]", true);
+	}
+	String error_message = "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n";
+	// -- [Master] -> [RPC]
+	{
+		RegEx reg_remote = RegEx("\\[Master(Attribute)?(\\(\\))?\\]");
+		CRASH_COND(!reg_remote.is_valid());
+		file_content = reg_remote.sub(file_content, error_message + "[RPC]", true);
+	}
+	// -- [MasterSync] -> [RPC(CallLocal = true)]
+	{
+		RegEx reg_remote = RegEx("\\[MasterSync(Attribute)?(\\(\\))?\\]");
+		CRASH_COND(!reg_remote.is_valid());
+		file_content = reg_remote.sub(file_content, error_message + "[RPC(CallLocal = true)]", true);
+	}
 }
-{
-	RegEx reg_export = RegEx("([\n\t]+)export\\b");
-	CRASH_COND(!reg_export.is_valid());
-	file_content = reg_export.sub(file_content, "$1@export", true);
-	RegEx reg_export2 = RegEx("^export");
-	CRASH_COND(!reg_export2.is_valid());
-	file_content = reg_export2.sub(file_content, "@export", true);
+
+Vector<String> ProjectConverter3To4::check_for_rename_csharp_attributes(Vector<String> &file_content) {
+	int current_line = 1;
+
+	Vector<String> found_things;
+
+	for (String &line : file_content) {
+		String old;
+		old = line;
+		{
+			RegEx regex = RegEx("\\[Remote(Attribute)?(\\(\\))?\\]");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "[Remote]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("\\[(Remote)?Sync(Attribute)?(\\(\\))?\\]");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "[RemoteSync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("\\[Puppet(Attribute)?(\\(\\))?\\]");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "[RPC]", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "[Puppet]", "[RPC]", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("\\[(Puppet|Slave)Sync(Attribute)?(\\(\\))?\\]");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "[RPC(CallLocal = true)]", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "[PuppetSync]", "[RPC(CallLocal = true)]", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("\\[Master(Attribute)?(\\(\\))?\\]");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "[RPC]", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "[Master]", "[RPC]", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("\\[MasterSync(Attribute)?(\\(\\))?\\]");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "[RPC(CallLocal = true)]", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "[MasterSync]", "[RPC(CallLocal = true)]", line));
+		}
+
+		current_line++;
+	}
+
+	return found_things;
 }
-{
-	RegEx reg_onready = RegEx("([\n]+)onready");
-	CRASH_COND(!reg_onready.is_valid());
-	file_content = reg_onready.sub(file_content, "$1@onready", true);
-	RegEx reg_onready2 = RegEx("^onready");
-	CRASH_COND(!reg_onready2.is_valid());
-	file_content = reg_onready2.sub(file_content, "@onready", true);
+
+void ProjectConverter3To4::rename_gdscript_keywords(String &file_content) {
+	{
+		RegEx reg_first = RegEx("([\n]+)tool");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@tool", true);
+		RegEx reg_second = RegEx("^tool");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@tool", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n\t]+)export\\b");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@export", true);
+		RegEx reg_second = RegEx("^export");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@export", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)onready");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@onready", true);
+		RegEx reg_second = RegEx("^onready");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@onready", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)remote func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc(any_peer) func", true);
+		RegEx reg_second = RegEx("^remote func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc(any_peer) func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)remotesync func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc(any_peer, call_local) func", true);
+		RegEx reg_second = RegEx("^remotesync func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc(any_peer, call_local) func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)sync func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc(any_peer, call_local) func", true);
+		RegEx reg_second = RegEx("^sync func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc(any_peer, call_local) func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)slave func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc func", true);
+		RegEx reg_second = RegEx("^slave func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)puppet func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc func", true);
+		RegEx reg_second = RegEx("^puppet func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)puppetsync func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1@rpc(call_local) func", true);
+		RegEx reg_second = RegEx("^puppetsync func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, "@rpc(call_local) func", true);
+	}
+	String error_message = "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n";
+	{
+		RegEx reg_first = RegEx("([\n]+)master func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1" + error_message + "@rpc func", true);
+		RegEx reg_second = RegEx("^master func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, error_message + "@rpc func", true);
+	}
+	{
+		RegEx reg_first = RegEx("([\n]+)mastersync func");
+		CRASH_COND(!reg_first.is_valid());
+		file_content = reg_first.sub(file_content, "$1" + error_message + "@rpc(call_local) func", true);
+		RegEx reg_second = RegEx("^mastersync func");
+		CRASH_COND(!reg_second.is_valid());
+		file_content = reg_second.sub(file_content, error_message + "@rpc(call_local) func", true);
+	}
 }
-{
-	RegEx reg_master = RegEx("([\n]+)master func");
-	CRASH_COND(!reg_master.is_valid());
-	file_content = reg_master.sub(file_content, "$1@rpc(any) func", true);
-	RegEx reg_master2 = RegEx("^master func");
-	CRASH_COND(!reg_master2.is_valid());
-	file_content = reg_master2.sub(file_content, "@rpc(any) func", true);
-}
-{
-	RegEx reg_puppet = RegEx("([\n]+)puppet func");
-	CRASH_COND(!reg_puppet.is_valid());
-	file_content = reg_puppet.sub(file_content, "$1@rpc(auth) func", true);
-	RegEx reg_puppet2 = RegEx("^puppet func");
-	CRASH_COND(!reg_puppet2.is_valid());
-	file_content = reg_puppet2.sub(file_content, "@rpc(auth) func", true);
-}
-{
-	RegEx reg_remote = RegEx("([\n]+)remote func");
-	CRASH_COND(!reg_remote.is_valid());
-	file_content = reg_remote.sub(file_content, "$1@rpc(any) func", true);
-	RegEx reg_remote2 = RegEx("^remote func");
-	CRASH_COND(!reg_remote2.is_valid());
-	file_content = reg_remote2.sub(file_content, "@rpc(any) func", true);
-}
-{
-	RegEx reg_remotesync = RegEx("([\n]+)remotesync func");
-	CRASH_COND(!reg_remotesync.is_valid());
-	file_content = reg_remotesync.sub(file_content, "$1@rpc(any,sync) func", true);
-	RegEx reg_remotesync2 = RegEx("^remotesync func");
-	CRASH_COND(!reg_remotesync2.is_valid());
-	file_content = reg_remotesync2.sub(file_content, "@rpc(any,sync) func", true);
-}
-{
-	RegEx reg_sync = RegEx("([\n]+)sync func");
-	CRASH_COND(!reg_sync.is_valid());
-	file_content = reg_sync.sub(file_content, "$1@rpc(any,sync) func", true);
-	RegEx reg_sync2 = RegEx("^sync func");
-	CRASH_COND(!reg_sync2.is_valid());
-	file_content = reg_sync2.sub(file_content, "@rpc(any,sync) func", true);
-}
-{
-	RegEx reg_puppetsync = RegEx("([\n]+)puppetsync func");
-	CRASH_COND(!reg_puppetsync.is_valid());
-	file_content = reg_puppetsync.sub(file_content, "$1@rpc(auth,sync) func", true);
-	RegEx reg_puppetsync2 = RegEx("^puppetsync func");
-	CRASH_COND(!reg_puppetsync2.is_valid());
-	file_content = reg_puppetsync2.sub(file_content, "@rpc(auth,sync) func", true);
-}
-{
-	RegEx reg_mastersync = RegEx("([\n]+)mastersync func");
-	CRASH_COND(!reg_mastersync.is_valid());
-	file_content = reg_mastersync.sub(file_content, "$1@rpc(any,sync) func", true);
-	RegEx reg_mastersync2 = RegEx("^mastersync func");
-	CRASH_COND(!reg_mastersync2.is_valid());
-	file_content = reg_mastersync2.sub(file_content, "@rpc(any,sync) func", true);
-}
-}
-;
 
 Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<String> &file_content) {
 	Vector<String> found_things;
@@ -3695,96 +3505,105 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<S
 		String old;
 		old = line;
 		{
-			RegEx reg_tool2 = RegEx("^tool");
-			CRASH_COND(!reg_tool2.is_valid());
-			line = reg_tool2.sub(line, "@tool", true);
+			RegEx reg_first = RegEx("^tool");
+			CRASH_COND(!reg_first.is_valid());
+			line = reg_first.sub(line, "@tool", true);
 		}
 		if (old != line) {
 			found_things.append(line_formatter(current_line, "tool", "@tool", line));
 		}
 		old = line;
 		{
-			RegEx reg_export = RegEx("([\t]+)export\\b");
-			CRASH_COND(!reg_export.is_valid());
-			line = reg_export.sub(line, "$1@export", true);
-			RegEx reg_export2 = RegEx("^export");
-			CRASH_COND(!reg_export2.is_valid());
-			line = reg_export2.sub(line, "@export", true);
+			RegEx reg_first = RegEx("([\t]+)export\\b");
+			CRASH_COND(!reg_first.is_valid());
+			line = reg_first.sub(line, "$1@export", true);
+			RegEx reg_second = RegEx("^export");
+			CRASH_COND(!reg_second.is_valid());
+			line = reg_second.sub(line, "@export", true);
 		}
 		if (old != line) {
 			found_things.append(line_formatter(current_line, "export", "@export", line));
 		}
 		old = line;
 		{
-			RegEx reg_onready2 = RegEx("^onready");
-			CRASH_COND(!reg_onready2.is_valid());
-			line = reg_onready2.sub(line, "@onready", true);
+			RegEx reg_first = RegEx("^onready");
+			CRASH_COND(!reg_first.is_valid());
+			line = reg_first.sub(line, "@onready", true);
 		}
 		if (old != line) {
 			found_things.append(line_formatter(current_line, "onready", "@onready", line));
 		}
 		old = line;
 		{
-			RegEx reg_master2 = RegEx("^master func");
-			CRASH_COND(!reg_master2.is_valid());
-			line = reg_master2.sub(line, "@rpc(any) func", true);
+			RegEx regex = RegEx("^remote func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc(any_peer) func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "master func", "@rpc(any) func", line));
+			found_things.append(line_formatter(current_line, "remote func", "@rpc(any_peer) func", line));
 		}
 		old = line;
 		{
-			RegEx reg_puppet2 = RegEx("^puppet func");
-			CRASH_COND(!reg_puppet2.is_valid());
-			line = reg_puppet2.sub(line, "@rpc(auth) func", true);
+			RegEx regex = RegEx("^remotesync func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc(any_peer, call_local)) func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "puppet func", "@rpc(auth) func", line));
+			found_things.append(line_formatter(current_line, "remotesync func", "@rpc(any_peer, call_local)) func", line));
 		}
 		old = line;
 		{
-			RegEx reg_remote2 = RegEx("^remote func");
-			CRASH_COND(!reg_remote2.is_valid());
-			line = reg_remote2.sub(line, "@rpc(any) func", true);
+			RegEx regex = RegEx("^sync func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc(any_peer, call_local)) func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "remote func", "@rpc(any) func", line));
+			found_things.append(line_formatter(current_line, "sync func", "@rpc(any_peer, call_local)) func", line));
 		}
 		old = line;
 		{
-			RegEx reg_remotesync2 = RegEx("^remotesync func");
-			CRASH_COND(!reg_remotesync2.is_valid());
-			line = reg_remotesync2.sub(line, "@rpc(any,sync) func", true);
+			RegEx regex = RegEx("^slave func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "remotesync func", "@rpc(any,sync) func", line));
+			found_things.append(line_formatter(current_line, "slave func", "@rpc func", line));
 		}
 		old = line;
 		{
-			RegEx reg_sync2 = RegEx("^sync func");
-			CRASH_COND(!reg_sync2.is_valid());
-			line = reg_sync2.sub(line, "@rpc(any,sync) func", true);
+			RegEx regex = RegEx("^puppet func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "sync func", "@rpc(any,sync) func", line));
+			found_things.append(line_formatter(current_line, "puppet func", "@rpc func", line));
 		}
 		old = line;
 		{
-			RegEx reg_puppetsync2 = RegEx("^puppetsync func");
-			CRASH_COND(!reg_puppetsync2.is_valid());
-			line = reg_puppetsync2.sub(line, "@rpc(auth,sync) func", true);
+			RegEx regex = RegEx("^puppetsync func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc(call_local) func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "puppetsync func", "@rpc(any,sync) func", line));
+			found_things.append(line_formatter(current_line, "puppetsync func", "@rpc(call_local) func", line));
 		}
 		old = line;
 		{
-			RegEx reg_mastersync2 = RegEx("^mastersync func");
-			CRASH_COND(!reg_mastersync2.is_valid());
-			line = reg_mastersync2.sub(line, "@rpc(any,sync) func", true);
+			RegEx regex = RegEx("^master func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc func", true);
 		}
 		if (old != line) {
-			found_things.append(line_formatter(current_line, "mastersync", "@rpc(any,sync) func", line));
+			found_things.append(line_formatter(current_line, "master func", "@rpc func", line));
+		}
+		old = line;
+		{
+			RegEx regex = RegEx("^mastersync func");
+			CRASH_COND(!regex.is_valid());
+			line = regex.sub(line, "@rpc(call_local) func", true);
+		}
+		if (old != line) {
+			found_things.append(line_formatter(current_line, "mastersync func", "@rpc(call_local) func", line));
 		}
 		old = line;
 
@@ -3808,7 +3627,7 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &fil
 
 	int current_line = 1;
 	for (String &line : file_content) {
-		Array reg_match = reg.search_all(line);
+		TypedArray<RegExMatch> reg_match = reg.search_all(line);
 		if (reg_match.size() > 0) {
 			found_things.append(line_formatter(current_line, from.replace("\\.", "."), to, line)); // Without replacing it will print "\.shader" instead ".shader"
 		}
@@ -3839,7 +3658,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[]
 
 		int current_line = 1;
 		for (String &line : file_content) {
-			Array reg_match = reg.search_all(line);
+			TypedArray<RegExMatch> reg_match = reg.search_all(line);
 			if (reg_match.size() > 0) {
 				found_things.append(line_formatter(current_line, array[current_index][0], array[current_index][1], line));
 			}
