@@ -342,7 +342,7 @@ void register_scene_types() {
 	/* REGISTER GUI */
 
 	GDREGISTER_CLASS(ButtonGroup);
-	GDREGISTER_VIRTUAL_CLASS(BaseButton);
+	GDREGISTER_CLASS(BaseButton);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -364,7 +364,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
-	GDREGISTER_VIRTUAL_CLASS(Range);
+	GDREGISTER_CLASS(Range);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -486,8 +486,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Skeleton3D);
 	GDREGISTER_CLASS(ImporterMesh);
 	GDREGISTER_CLASS(ImporterMeshInstance3D);
-	GDREGISTER_VIRTUAL_CLASS(VisualInstance3D);
-	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
+	GDREGISTER_CLASS(VisualInstance3D);
+	GDREGISTER_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
