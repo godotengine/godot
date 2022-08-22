@@ -670,6 +670,7 @@ public:
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;
+	LineEdit *get_text_editor() const;
 
 	void ensure_cursor_is_visible();
 

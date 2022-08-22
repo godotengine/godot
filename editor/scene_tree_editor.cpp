@@ -876,7 +876,7 @@ void SceneTreeEditor::_renamed() {
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
 
-	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
+	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + new_name) != nullptr) {
 		error->set_text(TTR("Another node already uses this unique name in the scene."));
 		error->popup_centered();
 		which->set_text(0, n->get_name());
@@ -893,6 +893,41 @@ void SceneTreeEditor::_renamed() {
 		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
 		undo_redo->add_undo_method(this, "_rename_node", n->get_instance_id(), n->get_name());
 		undo_redo->commit_action();
+	}
+}
+
+void SceneTreeEditor::_renaming(String p_text) {
+	TreeItem *which = tree->get_edited();
+
+	ERR_FAIL_COND(!which);
+	NodePath path = which->get_metadata(0);
+	Node *edited_node = get_node(path);
+	ERR_FAIL_COND(!edited_node);
+
+	bool allowed = true;
+
+	// Empty node names are not allowed.
+	if (p_text.strip_edges().is_empty() || p_text != p_text.validate_node_name()) {
+		allowed = false;
+
+	} else if (edited_node->is_unique_name_in_owner()) {
+		String searched_name = UNIQUE_NODE_PREFIX + p_text.validate_node_name().strip_edges();
+		Node *found_unique_node = get_tree()->get_edited_scene_root()->get_node_or_null(searched_name);
+		// Unique nodes with the same name are not allowed.
+		if (found_unique_node != nullptr && found_unique_node != edited_node) {
+			allowed = false;
+		}
+	}
+
+	_set_show_error_stylebox(!allowed);
+}
+
+void SceneTreeEditor::_set_show_error_stylebox(bool p_show) {
+	if (p_show) {
+		Ref<StyleBox> stylebox = get_theme_stylebox("error", "LineEdit");
+		tree->get_text_editor()->add_theme_style_override("focus", stylebox);
+	} else {
+		tree->get_text_editor()->remove_theme_style_override("focus");
 	}
 }
 
@@ -1296,6 +1331,10 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+
+	// Need to refresh Tree's text editor's error stylebox.
+	tree->get_text_editor()->connect("focus_entered", callable_mp(this, &SceneTreeEditor::_set_show_error_stylebox).bind(false));
+	tree->get_text_editor()->connect("text_changed", callable_mp(this, &SceneTreeEditor::_renaming));
 
 	error = memnew(AcceptDialog);
 	add_child(error);

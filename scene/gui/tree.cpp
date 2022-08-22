@@ -3597,6 +3597,8 @@ bool Tree::edit_selected() {
 		cache.text_editor_position = textedpos;
 		popup_rect.position = textedpos;
 		popup_rect.size = rect.size;
+		edited_item = s;
+		edited_col = col;
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
@@ -4137,6 +4139,10 @@ TreeItem *Tree::get_edited() const {
 
 int Tree::get_edited_column() const {
 	return edited_col;
+}
+
+LineEdit *Tree::get_text_editor() const {
+	return text_editor;
 }
 
 TreeItem *Tree::get_next_selected(TreeItem *p_item) {
