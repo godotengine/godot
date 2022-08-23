@@ -526,7 +526,7 @@ def main() -> None:
         )
         if os.path.exists(lang_file):
             try:
-                import polib
+                import polib  # type: ignore
             except ImportError:
                 print("Base template strings localization requires `polib`.")
                 exit(1)
@@ -739,9 +739,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(f"- {make_link(url, title)}\n\n")
 
     # Properties overview
+    ml: List[Tuple[Optional[str], ...]] = []
     if len(class_def.properties) > 0:
         f.write(make_heading("Properties", "-"))
-        ml: List[Tuple[Optional[str], ...]] = []
+        ml = []
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             default = property_def.default_value
@@ -757,7 +758,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
     # Constructors, Methods, Operators overview
     if len(class_def.constructors) > 0:
         f.write(make_heading("Constructors", "-"))
-        ml: List[Tuple[Optional[str], ...]] = []
+        ml = []
         for method_list in class_def.constructors.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "constructor", state))
@@ -765,7 +766,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
     if len(class_def.methods) > 0:
         f.write(make_heading("Methods", "-"))
-        ml: List[Tuple[Optional[str], ...]] = []
+        ml = []
         for method_list in class_def.methods.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "method", state))
@@ -773,7 +774,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
     if len(class_def.operators) > 0:
         f.write(make_heading("Operators", "-"))
-        ml: List[Tuple[Optional[str], ...]] = []
+        ml = []
         for method_list in class_def.operators.values():
             for m in method_list:
                 ml.append(make_method_signature(class_def, m, "operator", state))
@@ -858,7 +859,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         f.write(make_heading("Annotations", "-"))
         index = 0
 
-        for method_list in class_def.annotations.values():
+        for method_list in class_def.annotations.values():  # type: ignore
             for i, m in enumerate(method_list):
                 if index != 0:
                     f.write("----\n\n")
@@ -1039,17 +1040,15 @@ def make_method_signature(
 ) -> Tuple[str, str]:
     ret_type = ""
 
-    is_method_def = isinstance(definition, MethodDef)
-    if is_method_def:
+    if isinstance(definition, MethodDef):
         ret_type = definition.return_type.to_rst(state)
 
     qualifiers = None
-    if is_method_def or isinstance(definition, AnnotationDef):
+    if isinstance(definition, (MethodDef, AnnotationDef)):
         qualifiers = definition.qualifiers
 
     out = ""
-
-    if is_method_def and ref_type != "":
+    if isinstance(definition, MethodDef) and ref_type != "":
         if ref_type == "operator":
             op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
             out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}_{definition.return_type.type_name}>` "
@@ -1456,18 +1455,14 @@ def format_text_block(
                         escape_post = True
 
                     elif cmd.startswith("param"):
-                        valid_context = (
-                            isinstance(context, MethodDef)
-                            or isinstance(context, SignalDef)
-                            or isinstance(context, AnnotationDef)
-                        )
+                        valid_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
                         if not valid_context:
                             print_error(
                                 f'{state.current_class}.xml: Argument reference "{link_target}" used outside of method, signal, or annotation context in {context_name}.',
                                 state,
                             )
                         else:
-                            context_params: List[ParameterDef] = context.parameters
+                            context_params: List[ParameterDef] = context.parameters  # type: ignore
                             found = False
                             for param_def in context_params:
                                 if param_def.name == link_target:

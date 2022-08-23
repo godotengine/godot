@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 import glob
 import subprocess
 from collections import OrderedDict
@@ -663,7 +662,6 @@ def detect_visual_c_compiler_version(tools_env):
         if vc_x86_amd64_compiler_detection_index > -1 and (
             vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index
         ):
-            vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
     return vc_chosen_compiler_str
@@ -781,7 +779,7 @@ def generate_vs_project(env, num_jobs):
                     f'bin\\godot.windows.{config}{dev}.{plat_id}{f".{name}" if name else ""}.exe'
                     for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
-                    for dev in ModuleConfig.DEV_SUFFIX
+                    for dev in ModuleConfigs.DEV_SUFFIX
                 ]
                 self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
                 self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
