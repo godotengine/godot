@@ -7632,7 +7632,7 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_tonemap_button->set_pressed(true);
 	environ_ao_button->set_pressed(false);
 	environ_gi_button->set_pressed(false);
-	sun_max_distance->set_value(250);
+	sun_max_distance->set_value(100);
 
 	sun_color->set_pick_color(Color(1, 1, 1));
 	sun_energy->set_value(1.0);
