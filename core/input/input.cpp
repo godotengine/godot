@@ -767,9 +767,6 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 	return rel_warped;
 }
 
-void Input::iteration(float p_step) {
-}
-
 void Input::action_press(const StringName &p_action, float p_strength) {
 	Action action;
 
