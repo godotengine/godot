@@ -349,7 +349,9 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			emit_signal(SNAME("mouse_entered"));
 			notification(NOTIFICATION_VP_MOUSE_ENTER);
-			DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
+			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
 			notification(NOTIFICATION_VP_MOUSE_EXIT);
