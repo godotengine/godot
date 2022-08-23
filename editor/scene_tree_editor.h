@@ -64,7 +64,6 @@ class SceneTreeEditor : public Control {
 	String filter;
 
 	AcceptDialog *error = nullptr;
-	AcceptDialog *warning = nullptr;
 
 	bool auto_expand_selected = true;
 	bool connect_to_script_mode = false;
