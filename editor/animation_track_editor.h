@@ -32,6 +32,7 @@
 #define ANIMATION_TRACK_EDITOR_H
 
 #include "editor/editor_data.h"
+#include "editor/editor_properties.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
 
@@ -451,6 +452,12 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	////////////// edit menu stuff
 
+	ConfirmationDialog *bake_dialog = nullptr;
+	CheckBox *bake_trs = nullptr;
+	CheckBox *bake_blendshape = nullptr;
+	CheckBox *bake_value = nullptr;
+	SpinBox *bake_fps = nullptr;
+
 	ConfirmationDialog *optimize_dialog = nullptr;
 	SpinBox *optimize_velocity_error = nullptr;
 	SpinBox *optimize_angular_error = nullptr;
@@ -463,6 +470,11 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	ConfirmationDialog *scale_dialog = nullptr;
 	SpinBox *scale = nullptr;
+
+	ConfirmationDialog *ease_dialog = nullptr;
+	OptionButton *transition_selection = nullptr;
+	OptionButton *ease_selection = nullptr;
+	SpinBox *ease_fps = nullptr;
 
 	void _select_all_tracks_for_copy();
 
@@ -521,6 +533,8 @@ public:
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
+		EDIT_EASE_SELECTION,
+		EDIT_EASE_CONFIRM,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_DUPLICATE_TRANSPOSED,
 		EDIT_ADD_RESET_KEY,
@@ -529,6 +543,8 @@ public:
 		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
 		EDIT_APPLY_RESET,
+		EDIT_BAKE_ANIMATION,
+		EDIT_BAKE_ANIMATION_CONFIRM,
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
