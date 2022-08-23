@@ -355,7 +355,7 @@ namespace Godot
 
         public int GetPixelsPerMeter(int forPixelWidth)
         {
-            Vector3 result = Xform(new Vector3(1, 0, -1));
+            Vector3 result = this * new Vector3(1, 0, -1);
 
             return (int)((result.x * (real_t)0.5 + (real_t)0.5) * forPixelWidth);
         }
@@ -588,19 +588,51 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by this projection.
+        /// Returns a Vector4 transformed (multiplied) by the projection.
         /// </summary>
         /// <param name="proj">The projection to apply.</param>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        public static Vector4 operator *(Projection proj, Vector4 v)
+        /// <param name="vector">A Vector4 to transform.</param>
+        /// <returns>The transformed Vector4.</returns>
+        public static Vector4 operator *(Projection proj, Vector4 vector)
         {
             return new Vector4(
-                proj.x.x * v.x + proj.y.x * v.y + proj.z.x * v.z + proj.w.x * v.w,
-                proj.x.y * v.x + proj.y.y * v.y + proj.z.y * v.z + proj.w.y * v.w,
-                proj.x.z * v.x + proj.y.z * v.y + proj.z.z * v.z + proj.w.z * v.w,
-                proj.x.w * v.x + proj.y.w * v.y + proj.z.w * v.z + proj.w.w * v.w
+                proj.x.x * vector.x + proj.y.x * vector.y + proj.z.x * vector.z + proj.w.x * vector.w,
+                proj.x.y * vector.x + proj.y.y * vector.y + proj.z.y * vector.z + proj.w.y * vector.w,
+                proj.x.z * vector.x + proj.y.z * vector.y + proj.z.z * vector.z + proj.w.z * vector.w,
+                proj.x.w * vector.x + proj.y.w * vector.y + proj.z.w * vector.z + proj.w.w * vector.w
             );
+        }
+
+        /// <summary>
+        /// Returns a Vector4 transformed (multiplied) by the inverse projection.
+        /// </summary>
+        /// <param name="proj">The projection to apply.</param>
+        /// <param name="vector">A Vector4 to transform.</param>
+        /// <returns>The inversely transformed Vector4.</returns>
+        public static Vector4 operator *(Vector4 vector, Projection proj)
+        {
+            return new Vector4(
+                proj.x.x * vector.x + proj.x.y * vector.y + proj.x.z * vector.z + proj.x.w * vector.w,
+                proj.y.x * vector.x + proj.y.y * vector.y + proj.y.z * vector.z + proj.y.w * vector.w,
+                proj.z.x * vector.x + proj.z.y * vector.y + proj.z.z * vector.z + proj.z.w * vector.w,
+                proj.w.x * vector.x + proj.w.y * vector.y + proj.w.z * vector.z + proj.w.w * vector.w
+            );
+        }
+
+        /// <summary>
+        /// Returns a Vector3 transformed (multiplied) by the projection.
+        /// </summary>
+        /// <param name="proj">The projection to apply.</param>
+        /// <param name="vector">A Vector3 to transform.</param>
+        /// <returns>The transformed Vector3.</returns>
+        public static Vector3 operator *(Projection proj, Vector3 vector)
+        {
+            Vector3 ret = new Vector3(
+                proj.x.x * vector.x + proj.y.x * vector.y + proj.z.x * vector.z + proj.w.x,
+                proj.x.y * vector.x + proj.y.y * vector.y + proj.z.y * vector.z + proj.w.y,
+                proj.x.z * vector.x + proj.y.z * vector.y + proj.z.z * vector.z + proj.w.z
+            );
+            return ret / (proj.x.w * vector.x + proj.y.w * vector.y + proj.z.w * vector.z + proj.w.w);
         }
 
         /// <summary>
@@ -712,21 +744,6 @@ namespace Godot
                         throw new IndexOutOfRangeException();
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by this projection.
-        /// </summary>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        private Vector3 Xform(Vector3 v)
-        {
-            Vector3 ret = new Vector3(
-                x.x * v.x + y.x * v.y + z.x * v.z + w.x,
-                x.y * v.x + y.y * v.y + z.y * v.z + w.y,
-                x.z * v.x + y.z * v.y + z.z * v.z + w.z
-            );
-            return ret / (x.w * v.x + y.w * v.y + z.w * v.z + w.w);
         }
 
         // Constants

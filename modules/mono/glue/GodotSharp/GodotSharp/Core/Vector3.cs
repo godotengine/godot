@@ -518,7 +518,7 @@ namespace Godot
                 throw new ArgumentException("Argument is not normalized", nameof(axis));
             }
 #endif
-            return new Basis(axis, angle).Xform(this);
+            return new Basis(axis, angle) * this;
         }
 
         /// <summary>

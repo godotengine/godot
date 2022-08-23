@@ -313,24 +313,6 @@ namespace Godot
             );
         }
 
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by this quaternion.
-        /// </summary>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        public Vector3 Xform(Vector3 v)
-        {
-#if DEBUG
-            if (!IsNormalized())
-            {
-                throw new InvalidOperationException("Quaternion is not normalized");
-            }
-#endif
-            var u = new Vector3(x, y, z);
-            Vector3 uv = u.Cross(v);
-            return v + (((uv * w) + u.Cross(uv)) * 2);
-        }
-
         // Constants
         private static readonly Quaternion _identity = new Quaternion(0, 0, 0, 1);
 
@@ -461,6 +443,36 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a Vector3 rotated (multiplied) by the quaternion.
+        /// </summary>
+        /// <param name="quaternion">The quaternion to rotate by.</param>
+        /// <param name="vector">A Vector3 to transform.</param>
+        /// <returns>The rotated Vector3.</returns>
+        public static Vector3 operator *(Quaternion quaternion, Vector3 vector)
+        {
+#if DEBUG
+            if (!quaternion.IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized");
+            }
+#endif
+            var u = new Vector3(quaternion.x, quaternion.y, quaternion.z);
+            Vector3 uv = u.Cross(vector);
+            return vector + (((uv * quaternion.w) + u.Cross(uv)) * 2);
+        }
+
+        /// <summary>
+        /// Returns a Vector3 rotated (multiplied) by the inverse quaternion.
+        /// </summary>
+        /// <param name="vector">A Vector3 to inversely rotate.</param>
+        /// <param name="quaternion">The quaternion to rotate by.</param>
+        /// <returns>The inversely rotated Vector3.</returns>
+        public static Vector3 operator *(Vector3 vector, Quaternion quaternion)
+        {
+            return quaternion.Inverse() * vector;
+        }
+
+        /// <summary>
         /// Adds each component of the left <see cref="Quaternion"/>
         /// to the right <see cref="Quaternion"/>. This operation is not
         /// meaningful on its own, but it can be used as a part of a
@@ -500,38 +512,6 @@ namespace Godot
         public static Quaternion operator -(Quaternion quat)
         {
             return new Quaternion(-quat.x, -quat.y, -quat.z, -quat.w);
-        }
-
-        /// <summary>
-        /// Rotates (multiplies) the <see cref="Vector3"/>
-        /// by the given <see cref="Quaternion"/>.
-        /// </summary>
-        /// <param name="quat">The quaternion to rotate by.</param>
-        /// <param name="vec">The vector to rotate.</param>
-        /// <returns>The rotated vector.</returns>
-        public static Vector3 operator *(Quaternion quat, Vector3 vec)
-        {
-#if DEBUG
-            if (!quat.IsNormalized())
-            {
-                throw new InvalidOperationException("Quaternion is not normalized.");
-            }
-#endif
-            var u = new Vector3(quat.x, quat.y, quat.z);
-            Vector3 uv = u.Cross(vec);
-            return vec + (((uv * quat.w) + u.Cross(uv)) * 2);
-        }
-
-        /// <summary>
-        /// Inversely rotates (multiplies) the <see cref="Vector3"/>
-        /// by the given <see cref="Quaternion"/>.
-        /// </summary>
-        /// <param name="vec">The vector to rotate.</param>
-        /// <param name="quat">The quaternion to rotate by.</param>
-        /// <returns>The inversely rotated vector.</returns>
-        public static Vector3 operator *(Vector3 vec, Quaternion quat)
-        {
-            return quat.Inverse() * vec;
         }
 
         /// <summary>

@@ -26,7 +26,7 @@ public partial class _CLASS_ : _BASE_
         // Get the input direction and handle the movement/deceleration.
         // As good practice, you should replace UI actions with custom gameplay actions.
         Vector2 inputDir = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-        Vector3 direction = Transform.basis.Xform(new Vector3(inputDir.x, 0, inputDir.y)).Normalized();
+        Vector3 direction = (Transform.basis * new Vector3(inputDir.x, 0, inputDir.y)).Normalized();
         if (direction != Vector3.Zero)
         {
             velocity.x = direction.x * Speed;
