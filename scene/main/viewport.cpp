@@ -1875,7 +1875,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		}
 	}
 
 	Ref<InputEventScreenTouch> touch_event = p_event;
@@ -2684,7 +2686,9 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					DisplayServer::CURSOR_FDIAGSIZE
 				};
 
-				DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
+				}
 
 				return true; // Reserved for showing the resize cursor.
 			}
