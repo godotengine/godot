@@ -369,6 +369,7 @@ private:
 		ObjectID drag_preview_id;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
+		bool tooltip_forced = false;
 		Transform2D focus_inv_xform;
 		bool roots_order_dirty = false;
 		List<Control *> roots;
@@ -416,6 +417,7 @@ private:
 	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = nullptr);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
+	void _gui_force_show_tooltip();
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);

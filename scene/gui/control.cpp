@@ -3041,6 +3041,13 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 	return nullptr;
 }
 
+void Control::show_tooltip() {
+	Viewport *viewport = get_viewport();
+	if (viewport) {
+		viewport->_gui_force_show_tooltip();
+	}
+}
+
 // Base object overrides.
 
 void Control::add_child_notify(Node *p_child) {
@@ -3366,6 +3373,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tooltip", "tooltip"), &Control::set_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("_get_tooltip"), &Control::_get_tooltip);
+	ClassDB::bind_method(D_METHOD("show_tooltip"), &Control::show_tooltip);
 
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
