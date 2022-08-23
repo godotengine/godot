@@ -399,7 +399,7 @@ Collection of single-file libraries used in Godot components.
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg
-- Version: git (4c8f0139b62c6e7faa3b67ce1fbe6e63590ed148, 2022)
+- Version: git (bd16c4e6b2842e1f0286dc374d21f85c659862e5, 2022)
 - License: zlib
 
 Files extracted from the upstream source:
