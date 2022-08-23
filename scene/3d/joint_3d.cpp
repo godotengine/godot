@@ -221,11 +221,11 @@ void Joint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint3D::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint3D::get_exclude_nodes_from_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_b", "get_node_b");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver/priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver_priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision/exclude_nodes"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_nodes_from_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
 }
 
 Joint3D::Joint3D() {
@@ -292,22 +292,6 @@ PinJoint3D::PinJoint3D() {
 
 ///////////////////////////////////
 
-void HingeJoint3D::_set_upper_limit(real_t p_limit) {
-	set_param(PARAM_LIMIT_UPPER, Math::deg2rad(p_limit));
-}
-
-real_t HingeJoint3D::_get_upper_limit() const {
-	return Math::rad2deg(get_param(PARAM_LIMIT_UPPER));
-}
-
-void HingeJoint3D::_set_lower_limit(real_t p_limit) {
-	set_param(PARAM_LIMIT_LOWER, Math::deg2rad(p_limit));
-}
-
-real_t HingeJoint3D::_get_lower_limit() const {
-	return Math::rad2deg(get_param(PARAM_LIMIT_LOWER));
-}
-
 void HingeJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &HingeJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &HingeJoint3D::get_param);
@@ -315,17 +299,11 @@ void HingeJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enabled"), &HingeJoint3D::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &HingeJoint3D::get_flag);
 
-	ClassDB::bind_method(D_METHOD("_set_upper_limit", "upper_limit"), &HingeJoint3D::_set_upper_limit);
-	ClassDB::bind_method(D_METHOD("_get_upper_limit"), &HingeJoint3D::_get_upper_limit);
-
-	ClassDB::bind_method(D_METHOD("_set_lower_limit", "lower_limit"), &HingeJoint3D::_set_lower_limit);
-	ClassDB::bind_method(D_METHOD("_get_lower_limit"), &HingeJoint3D::_get_lower_limit);
-
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "params/bias", PROPERTY_HINT_RANGE, "0.00,0.99,0.01"), "set_param", "get_param", PARAM_BIAS);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_limit/enable"), "set_flag", "get_flag", FLAG_USE_LIMIT);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit/upper", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_upper_limit", "_get_upper_limit");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit/lower", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_lower_limit", "_get_lower_limit");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/upper", PROPERTY_HINT_RANGE, "-180,180,0.1,radians"), "set_param", "get_param", PARAM_LIMIT_UPPER);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/lower", PROPERTY_HINT_RANGE, "-180,180,0.1,radians"), "set_param", "get_param", PARAM_LIMIT_LOWER);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"), "set_param", "get_param", PARAM_LIMIT_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param", "get_param", PARAM_LIMIT_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/relaxation", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param", "get_param", PARAM_LIMIT_RELAXATION);
@@ -420,33 +398,9 @@ HingeJoint3D::HingeJoint3D() {
 
 /////////////////////////////////////////////////
 
-//////////////////////////////////
-
-void SliderJoint3D::_set_upper_limit_angular(real_t p_limit_angular) {
-	set_param(PARAM_ANGULAR_LIMIT_UPPER, Math::deg2rad(p_limit_angular));
-}
-
-real_t SliderJoint3D::_get_upper_limit_angular() const {
-	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_UPPER));
-}
-
-void SliderJoint3D::_set_lower_limit_angular(real_t p_limit_angular) {
-	set_param(PARAM_ANGULAR_LIMIT_LOWER, Math::deg2rad(p_limit_angular));
-}
-
-real_t SliderJoint3D::_get_lower_limit_angular() const {
-	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_LOWER));
-}
-
 void SliderJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint3D::get_param);
-
-	ClassDB::bind_method(D_METHOD("_set_upper_limit_angular", "upper_limit_angular"), &SliderJoint3D::_set_upper_limit_angular);
-	ClassDB::bind_method(D_METHOD("_get_upper_limit_angular"), &SliderJoint3D::_get_upper_limit_angular);
-
-	ClassDB::bind_method(D_METHOD("_set_lower_limit_angular", "lower_limit_angular"), &SliderJoint3D::_set_lower_limit_angular);
-	ClassDB::bind_method(D_METHOD("_get_lower_limit_angular"), &SliderJoint3D::_get_lower_limit_angular);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_limit/upper_distance", PROPERTY_HINT_RANGE, "-1024,1024,0.01,suffix:m"), "set_param", "get_param", PARAM_LINEAR_LIMIT_UPPER);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_limit/lower_distance", PROPERTY_HINT_RANGE, "-1024,1024,0.01,suffix:m"), "set_param", "get_param", PARAM_LINEAR_LIMIT_LOWER);
@@ -460,8 +414,8 @@ void SliderJoint3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_ortho/restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_LINEAR_ORTHOGONAL_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_ortho/damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"), "set_param", "get_param", PARAM_LINEAR_ORTHOGONAL_DAMPING);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_upper_limit_angular", "_get_upper_limit_angular");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_lower_limit_angular", "_get_lower_limit_angular");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.1,radians"), "set_param", "get_param", PARAM_ANGULAR_LIMIT_UPPER);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.1,radians"), "set_param", "get_param", PARAM_ANGULAR_LIMIT_LOWER);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_LIMIT_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_LIMIT_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit/damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_LIMIT_DAMPING);
@@ -562,34 +516,12 @@ SliderJoint3D::SliderJoint3D() {
 
 //////////////////////////////////
 
-void ConeTwistJoint3D::_set_swing_span(real_t p_limit_angular) {
-	set_param(PARAM_SWING_SPAN, Math::deg2rad(p_limit_angular));
-}
-
-real_t ConeTwistJoint3D::_get_swing_span() const {
-	return Math::rad2deg(get_param(PARAM_SWING_SPAN));
-}
-
-void ConeTwistJoint3D::_set_twist_span(real_t p_limit_angular) {
-	set_param(PARAM_TWIST_SPAN, Math::deg2rad(p_limit_angular));
-}
-
-real_t ConeTwistJoint3D::_get_twist_span() const {
-	return Math::rad2deg(get_param(PARAM_TWIST_SPAN));
-}
-
 void ConeTwistJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &ConeTwistJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &ConeTwistJoint3D::get_param);
 
-	ClassDB::bind_method(D_METHOD("_set_swing_span", "swing_span"), &ConeTwistJoint3D::_set_swing_span);
-	ClassDB::bind_method(D_METHOD("_get_swing_span"), &ConeTwistJoint3D::_get_swing_span);
-
-	ClassDB::bind_method(D_METHOD("_set_twist_span", "twist_span"), &ConeTwistJoint3D::_set_twist_span);
-	ClassDB::bind_method(D_METHOD("_get_twist_span"), &ConeTwistJoint3D::_get_twist_span);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "swing_span", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_swing_span", "_get_swing_span");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1"), "_set_twist_span", "_get_twist_span");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "swing_span", PROPERTY_HINT_RANGE, "-180,180,0.1,radians"), "set_param", "get_param", PARAM_SWING_SPAN);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,radians"), "set_param", "get_param", PARAM_TWIST_SPAN);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_SOFTNESS);
@@ -620,8 +552,6 @@ real_t ConeTwistJoint3D::get_param(Param p_param) const {
 
 void ConeTwistJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Transform3D gt = get_global_transform();
-	//Vector3 cone_twistpos = gt.origin;
-	//Vector3 cone_twistdir = gt.basis.get_axis(2);
 
 	Transform3D ainv = body_a->get_global_transform().affine_inverse();
 
@@ -652,73 +582,7 @@ ConeTwistJoint3D::ConeTwistJoint3D() {
 
 /////////////////////////////////////////////////////////////////////
 
-void Generic6DOFJoint3D::_set_angular_hi_limit_x(real_t p_limit_angular) {
-	set_param_x(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
-}
-
-real_t Generic6DOFJoint3D::_get_angular_hi_limit_x() const {
-	return Math::rad2deg(get_param_x(PARAM_ANGULAR_UPPER_LIMIT));
-}
-
-void Generic6DOFJoint3D::_set_angular_lo_limit_x(real_t p_limit_angular) {
-	set_param_x(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
-}
-
-real_t Generic6DOFJoint3D::_get_angular_lo_limit_x() const {
-	return Math::rad2deg(get_param_x(PARAM_ANGULAR_LOWER_LIMIT));
-}
-
-void Generic6DOFJoint3D::_set_angular_hi_limit_y(real_t p_limit_angular) {
-	set_param_y(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
-}
-
-real_t Generic6DOFJoint3D::_get_angular_hi_limit_y() const {
-	return Math::rad2deg(get_param_y(PARAM_ANGULAR_UPPER_LIMIT));
-}
-
-void Generic6DOFJoint3D::_set_angular_lo_limit_y(real_t p_limit_angular) {
-	set_param_y(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
-}
-
-real_t Generic6DOFJoint3D::_get_angular_lo_limit_y() const {
-	return Math::rad2deg(get_param_y(PARAM_ANGULAR_LOWER_LIMIT));
-}
-
-void Generic6DOFJoint3D::_set_angular_hi_limit_z(real_t p_limit_angular) {
-	set_param_z(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
-}
-
-real_t Generic6DOFJoint3D::_get_angular_hi_limit_z() const {
-	return Math::rad2deg(get_param_z(PARAM_ANGULAR_UPPER_LIMIT));
-}
-
-void Generic6DOFJoint3D::_set_angular_lo_limit_z(real_t p_limit_angular) {
-	set_param_z(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
-}
-
-real_t Generic6DOFJoint3D::_get_angular_lo_limit_z() const {
-	return Math::rad2deg(get_param_z(PARAM_ANGULAR_LOWER_LIMIT));
-}
-
 void Generic6DOFJoint3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_set_angular_hi_limit_x", "angle"), &Generic6DOFJoint3D::_set_angular_hi_limit_x);
-	ClassDB::bind_method(D_METHOD("_get_angular_hi_limit_x"), &Generic6DOFJoint3D::_get_angular_hi_limit_x);
-
-	ClassDB::bind_method(D_METHOD("_set_angular_lo_limit_x", "angle"), &Generic6DOFJoint3D::_set_angular_lo_limit_x);
-	ClassDB::bind_method(D_METHOD("_get_angular_lo_limit_x"), &Generic6DOFJoint3D::_get_angular_lo_limit_x);
-
-	ClassDB::bind_method(D_METHOD("_set_angular_hi_limit_y", "angle"), &Generic6DOFJoint3D::_set_angular_hi_limit_y);
-	ClassDB::bind_method(D_METHOD("_get_angular_hi_limit_y"), &Generic6DOFJoint3D::_get_angular_hi_limit_y);
-
-	ClassDB::bind_method(D_METHOD("_set_angular_lo_limit_y", "angle"), &Generic6DOFJoint3D::_set_angular_lo_limit_y);
-	ClassDB::bind_method(D_METHOD("_get_angular_lo_limit_y"), &Generic6DOFJoint3D::_get_angular_lo_limit_y);
-
-	ClassDB::bind_method(D_METHOD("_set_angular_hi_limit_z", "angle"), &Generic6DOFJoint3D::_set_angular_hi_limit_z);
-	ClassDB::bind_method(D_METHOD("_get_angular_hi_limit_z"), &Generic6DOFJoint3D::_get_angular_hi_limit_z);
-
-	ClassDB::bind_method(D_METHOD("_set_angular_lo_limit_z", "angle"), &Generic6DOFJoint3D::_set_angular_lo_limit_z);
-	ClassDB::bind_method(D_METHOD("_get_angular_lo_limit_z"), &Generic6DOFJoint3D::_get_angular_lo_limit_z);
-
 	ClassDB::bind_method(D_METHOD("set_param_x", "param", "value"), &Generic6DOFJoint3D::set_param_x);
 	ClassDB::bind_method(D_METHOD("get_param_x", "param"), &Generic6DOFJoint3D::get_param_x);
 
@@ -794,8 +658,8 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ADD_GROUP("Angular Limit", "angular_limit_");
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_ANGULAR_LIMIT);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_x/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.01"), "_set_angular_hi_limit_x", "_get_angular_hi_limit_x");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_x/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.01"), "_set_angular_lo_limit_x", "_get_angular_lo_limit_x");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_x/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.01,radians"), "set_param_x", "get_param_x", PARAM_ANGULAR_UPPER_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_x/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.01,radians"), "set_param_x", "get_param_x", PARAM_ANGULAR_LOWER_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_x/softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_x", "get_param_x", PARAM_ANGULAR_LIMIT_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_x/restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_x", "get_param_x", PARAM_ANGULAR_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_x/damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_x", "get_param_x", PARAM_ANGULAR_DAMPING);
@@ -803,8 +667,8 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_x/erp"), "set_param_x", "get_param_x", PARAM_ANGULAR_ERP);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_limit_y/enabled"), "set_flag_y", "get_flag_y", FLAG_ENABLE_ANGULAR_LIMIT);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_y/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.01"), "_set_angular_hi_limit_y", "_get_angular_hi_limit_y");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_y/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.01"), "_set_angular_lo_limit_y", "_get_angular_lo_limit_y");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_y/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.01,radians"), "set_param_y", "get_param_y", PARAM_ANGULAR_UPPER_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_y/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.01,radians"), "set_param_y", "get_param_y", PARAM_ANGULAR_LOWER_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_y/softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_y", "get_param_y", PARAM_ANGULAR_LIMIT_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_y/restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_y", "get_param_y", PARAM_ANGULAR_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_y/damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_y", "get_param_y", PARAM_ANGULAR_DAMPING);
@@ -812,8 +676,8 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_y/erp"), "set_param_y", "get_param_y", PARAM_ANGULAR_ERP);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_limit_z/enabled"), "set_flag_z", "get_flag_z", FLAG_ENABLE_ANGULAR_LIMIT);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_z/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.01"), "_set_angular_hi_limit_z", "_get_angular_hi_limit_z");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_z/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.01"), "_set_angular_lo_limit_z", "_get_angular_lo_limit_z");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_z/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.01,radians"), "set_param_z", "get_param_z", PARAM_ANGULAR_UPPER_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_z/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.01,radians"), "set_param_z", "get_param_z", PARAM_ANGULAR_LOWER_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_z/softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_z", "get_param_z", PARAM_ANGULAR_LIMIT_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_z/restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_z", "get_param_z", PARAM_ANGULAR_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_limit_z/damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param_z", "get_param_z", PARAM_ANGULAR_DAMPING);

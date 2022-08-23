@@ -40,7 +40,7 @@
 				Moves the body along the vector [param distance]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param distance] should be computed using [code]delta[/code].
 				The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision when stopped, or when touching another body along the motion.
 				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
-				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
 				[param max_collisions] allows to retrieve more than one collision result.
 			</description>
 		</method>
@@ -70,7 +70,7 @@
 				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param distance] should be computed using [code]delta[/code].
 				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [param distance]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
 				[param collision] is an optional object of type [KinematicCollision3D], which contains additional information about the collision when stopped, or when touching another body along the motion.
-				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
 				[param max_collisions] allows to retrieve more than one collision result.
 			</description>
 		</method>
