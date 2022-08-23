@@ -80,6 +80,11 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void EditorPath::_show_popup() {
+	if (sub_objects_menu->is_visible()) {
+		sub_objects_menu->hide();
+		return;
+	}
+
 	sub_objects_menu->clear();
 
 	Size2 size = get_size();
