@@ -2042,10 +2042,12 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, nullptr, drag_selection);
 
+			real_t rotation = drag_selection[0]->get_global_transform_with_canvas().get_rotation();
+			bool is_tan_rotation_finite = Math::is_nan(Math::tan(rotation));
 			if (drag_type == DRAG_MOVE_X) {
-				new_pos.y = previous_pos.y;
+				new_pos.y = previous_pos.y + (is_tan_rotation_finite ? 0 : (new_pos.x - previous_pos.x) * Math::tan(rotation));
 			} else if (drag_type == DRAG_MOVE_Y) {
-				new_pos.x = previous_pos.x;
+				new_pos.x = previous_pos.x - (is_tan_rotation_finite ? 0 : (new_pos.y - previous_pos.y) / Math::tan(Math_PI / 2 - rotation));
 			}
 
 			bool single_axis = m->is_shift_pressed();
