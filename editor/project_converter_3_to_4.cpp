@@ -206,6 +206,7 @@ static const char *gdscript_function_renames[][2] = {
 	// { "set_margin", "set_offset" }, // Control broke Shape3D, AtlasTexture
 	// { "set_mode", "set_mode_file_mode" }, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
 	// { "set_normal", "surface_set_normal"}, // ImmediateGeometry broke SurfaceTool, WorldMarginShape2D
+	// { "set_offset", "set_progress" }, // PathFollow2D, PathFollow3D - Too common
 	// { "set_process_mode", "set_process_callback" }, // AnimationTree broke Node, Tween, Sky
 	// { "set_refuse_new_network_connections", "set_refuse_new_connections"}, // MultiplayerAPI broke SceneTree
 	// { "set_uv", "surface_set_uv" }, // ImmediateMesh broke Polygon2D
@@ -371,6 +372,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_theme_item_types", "get_theme_item_type_list" }, // Theme
 	{ "get_timer_process_mode", "get_timer_process_callback" }, // Timer
 	{ "get_translation", "get_position" }, // Node3D broke GLTFNode which is used rarely
+	{ "get_unit_offset", "get_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "get_use_in_baked_light", "is_baking_navigation" }, // GridMap
 	{ "get_used_cells_by_id", "get_used_cells" }, // TileMap
 	{ "get_v_scrollbar", "get_v_scroll_bar" }, //ScrollContainer
@@ -532,6 +534,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_timer_process_mode", "set_timer_process_callback" }, // Timer
 	{ "set_tonemap_auto_exposure", "set_tonemap_auto_exposure_enabled" }, // Environment
 	{ "set_translation", "set_position" }, // Node3D - this broke GLTFNode which is used rarely
+	{ "set_unit_offset", "set_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "set_uv2", "surface_set_uv2" }, // ImmediateMesh broke Surffacetool
 	{ "set_v_drag_enabled", "set_drag_vertical_enabled" }, // Camera2D
 	{ "set_valign", "set_vertical_alignment" }, // Label
@@ -612,6 +615,7 @@ static const char *csharp_function_renames[][2] = {
 	// { "SetMargin", "SetOffset" }, // Control broke Shape3D, AtlasTexture
 	// { "SetMode", "SetModeFileMode" }, // FileDialog broke Panel, Shader, CSGPolygon, Tilemap
 	// { "SetNormal", "SurfaceSetNormal"}, // ImmediateGeometry broke SurfaceTool, WorldMarginShape2D
+	// { "SetOffset", "SetProgress" }, // PathFollow2D, PathFollow3D - Too common
 	// { "SetProcessMode", "SetProcessCallback" }, // AnimationTree broke Node, Tween, Sky
 	// { "SetRefuseNewNetworkConnections", "SetRefuseNewConnections"}, // MultiplayerAPI broke SceneTree
 	// { "SetUv", "SurfaceSetUv" }, // ImmediateMesh broke Polygon2D
@@ -767,6 +771,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetThemeItemTypes", "GetThemeItemTypeList" }, // Theme
 	{ "GetTimerProcessMode", "GetTimerProcessCallback" }, // Timer
 	{ "GetTranslation", "GetPosition" }, // Node3D broke GLTFNode which is used rarely
+	{ "GetUnitOffset", "GetProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "GetUseInBakedLight", "IsBakingNavigation" }, // GridMap
 	{ "GetUsedCellsById", "GetUsedCells" }, // TileMap
 	{ "GetVScrollbar", "GetVScrollBar" }, //ScrollContainer
@@ -918,6 +923,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetTimerProcessMode", "SetTimerProcessCallback" }, // Timer
 	{ "SetTonemapAutoExposure", "SetTonemapAutoExposureEnabled" }, // Environment
 	{ "SetTranslation", "SetPosition" }, // Node3D - this broke GLTFNode which is used rarely
+	{ "SetUnitOffset", "SetProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "SetUv2", "SurfaceSetUv2" }, // ImmediateMesh broke Surffacetool
 	{ "SetVDragEnabled", "SetDragVerticalEnabled" }, // Camera2D
 	{ "SetValign", "SetVerticalAlignment" }, // Label
@@ -969,6 +975,7 @@ static const char *gdscript_properties_renames[][2] = {
 	//	// {"meta","meta_pressed"},// This may broke a lot of comments and user variables
 	//	// {"pause_mode","process_mode"}, // Node - Cyclic rename, look for others
 	//	// {"rotate","rotates"}, // PathFollow2D - probably function exists with same name
+	// 	// {"offset","progress"}, // PathFollow2D, PathFollow3D - Name is way too vague
 	//	// {"shift","shift_pressed"},// This may broke a lot of comments and user variables
 	//	{ "autowrap", "autowrap_mode" }, // Label
 	//	{ "cast_to", "target_position" }, // RayCast2D, RayCast3D
@@ -1036,6 +1043,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "table_hseparation", "table_h_separation" }, // Theme
 	{ "table_vseparation", "table_v_separation" }, // Theme
 	{ "translation", "position" }, // Node3D - broke GLTFNode
+	{ "unit_offset", "progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "vseparation", "v_separation" }, // Theme
 
 	{ nullptr, nullptr },
@@ -1051,6 +1059,7 @@ static const char *csharp_properties_renames[][2] = {
 	//	// {"Meta","MetaPressed"},// This may broke a lot of comments and user variables
 	//	// {"PauseMode","ProcessMode"}, // Node - Cyclic rename, look for others
 	//	// {"Rotate","Rotates"}, // PathFollow2D - probably function exists with same name
+	// 	// {"Offset","Progress"}, // PathFollow2D, PathFollow3D - Name is way too vague
 	//	// {"Shift","ShiftPressed"},// This may broke a lot of comments and user variables
 	//	{ "Autowrap", "AutowrapMode" }, // Label
 	//	{ "CastTo", "TargetPosition" }, // RayCast2D, RayCast3D
@@ -1117,6 +1126,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "TableHseparation", "TableHSeparation" }, // Theme
 	{ "TableVseparation", "TableVSeparation" }, // Theme
 	{ "Translation", "Position" }, // Node3D - broke GLTFNode
+	{ "UnitOffset", "ProgressRatio" }, // PathFollow2D, PathFollow3D
 	{ "Vseparation", "VSeparation" }, // Theme
 
 	{ nullptr, nullptr },

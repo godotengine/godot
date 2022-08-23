@@ -183,8 +183,8 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		return;
 	}
 	real_t bi = c->get_bake_interval();
-	real_t o_next = offset + bi;
-	real_t o_prev = offset - bi;
+	real_t o_next = progress + bi;
+	real_t o_prev = progress - bi;
 
 	if (loop) {
 		o_next = Math::fposmod(o_next, bl);
@@ -198,7 +198,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		}
 	}
 
-	Vector3 pos = c->interpolate_baked(offset, cubic);
+	Vector3 pos = c->interpolate_baked(progress, cubic);
 	Transform3D t = get_transform();
 	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
@@ -217,9 +217,9 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			forward.normalize();
 		}
 
-		Vector3 up = c->interpolate_baked_up_vector(offset, true);
+		Vector3 up = c->interpolate_baked_up_vector(progress, true);
 
-		if (o_next < offset) {
+		if (o_next < progress) {
 			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
 			Vector3 axis = up.cross(up1);
 
@@ -247,12 +247,12 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		// for a discussion about why not Frenet frame.
 
 		t.origin = pos;
-		if (p_update_xyz_rot && prev_offset != offset) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
+		if (p_update_xyz_rot && prev_offset != progress) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
 			real_t sample_distance = bi * 0.01;
 			Vector3 t_prev_pos_a = c->interpolate_baked(prev_offset - sample_distance, cubic);
 			Vector3 t_prev_pos_b = c->interpolate_baked(prev_offset + sample_distance, cubic);
-			Vector3 t_cur_pos_a = c->interpolate_baked(offset - sample_distance, cubic);
-			Vector3 t_cur_pos_b = c->interpolate_baked(offset + sample_distance, cubic);
+			Vector3 t_cur_pos_a = c->interpolate_baked(progress - sample_distance, cubic);
+			Vector3 t_cur_pos_b = c->interpolate_baked(progress + sample_distance, cubic);
 			Vector3 t_prev = (t_prev_pos_a - t_prev_pos_b).normalized();
 			Vector3 t_cur = (t_cur_pos_a - t_cur_pos_b).normalized();
 
@@ -277,7 +277,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			}
 
 			// do the additional tilting
-			real_t tilt_angle = c->interpolate_baked_tilt(offset);
+			real_t tilt_angle = c->interpolate_baked_tilt(progress);
 			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
 
 			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
@@ -359,8 +359,8 @@ TypedArray<String> PathFollow3D::get_configuration_warnings() const {
 }
 
 void PathFollow3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &PathFollow3D::set_offset);
-	ClassDB::bind_method(D_METHOD("get_offset"), &PathFollow3D::get_offset);
+	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow3D::set_progress);
+	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow3D::get_progress);
 
 	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow3D::get_h_offset);
@@ -368,8 +368,8 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow3D::set_v_offset);
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow3D::get_v_offset);
 
-	ClassDB::bind_method(D_METHOD("set_unit_offset", "unit_offset"), &PathFollow3D::set_unit_offset);
-	ClassDB::bind_method(D_METHOD("get_unit_offset"), &PathFollow3D::get_unit_offset);
+	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow3D::set_progress_ratio);
+	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow3D::get_progress_ratio);
 
 	ClassDB::bind_method(D_METHOD("set_rotation_mode", "rotation_mode"), &PathFollow3D::set_rotation_mode);
 	ClassDB::bind_method(D_METHOD("get_rotation_mode"), &PathFollow3D::get_rotation_mode);
@@ -380,8 +380,8 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:m"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:m"), "set_progress", "get_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
@@ -395,22 +395,22 @@ void PathFollow3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_ORIENTED);
 }
 
-void PathFollow3D::set_offset(real_t p_offset) {
-	ERR_FAIL_COND(!isfinite(p_offset));
-	prev_offset = offset;
-	offset = p_offset;
+void PathFollow3D::set_progress(real_t p_progress) {
+	ERR_FAIL_COND(!isfinite(p_progress));
+	prev_offset = progress;
+	progress = p_progress;
 
 	if (path) {
 		if (path->get_curve().is_valid()) {
 			real_t path_length = path->get_curve()->get_baked_length();
 
 			if (loop && path_length) {
-				offset = Math::fposmod(offset, path_length);
-				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
-					offset = path_length;
+				progress = Math::fposmod(progress, path_length);
+				if (!Math::is_zero_approx(p_progress) && Math::is_zero_approx(progress)) {
+					progress = path_length;
 				}
 			} else {
-				offset = CLAMP(offset, 0, path_length);
+				progress = CLAMP(progress, 0, path_length);
 			}
 		}
 
@@ -440,19 +440,19 @@ real_t PathFollow3D::get_v_offset() const {
 	return v_offset;
 }
 
-real_t PathFollow3D::get_offset() const {
-	return offset;
+real_t PathFollow3D::get_progress() const {
+	return progress;
 }
 
-void PathFollow3D::set_unit_offset(real_t p_unit_offset) {
+void PathFollow3D::set_progress_ratio(real_t p_ratio) {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
+		set_progress(p_ratio * path->get_curve()->get_baked_length());
 	}
 }
 
-real_t PathFollow3D::get_unit_offset() const {
+real_t PathFollow3D::get_progress_ratio() const {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		return get_offset() / path->get_curve()->get_baked_length();
+		return get_progress() / path->get_curve()->get_baked_length();
 	} else {
 		return 0;
 	}
