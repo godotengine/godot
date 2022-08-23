@@ -2122,7 +2122,7 @@ void TextServerFallback::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && FT_HAS_COLOR(fd->cache[size]->face)) {
+			if (fd->cache[size]->face && fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
