@@ -4320,6 +4320,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 }
 
 void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
+	_validate_line_caches();
+
 	if (p_paragraph <= 0) {
 		vscroll->set_value(0);
 	} else if (p_paragraph >= main->first_invalid_line.load()) {
@@ -4341,6 +4343,8 @@ int RichTextLabel::get_visible_paragraph_count() const {
 }
 
 void RichTextLabel::scroll_to_line(int p_line) {
+	_validate_line_caches();
+
 	if (p_line <= 0) {
 		vscroll->set_value(0);
 		return;
@@ -4958,6 +4962,8 @@ void RichTextLabel::install_effect(const Variant effect) {
 }
 
 int RichTextLabel::get_content_height() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	int total_height = 0;
 	int to_line = main->first_invalid_line.load();
 	if (to_line) {
@@ -4968,6 +4974,8 @@ int RichTextLabel::get_content_height() const {
 }
 
 int RichTextLabel::get_content_width() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	int total_width = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
