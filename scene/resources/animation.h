@@ -73,10 +73,19 @@ public:
 		LOOP_PINGPONG,
 	};
 
+#ifdef TOOLS_ENABLED
 	enum HandleMode {
 		HANDLE_MODE_FREE,
+		HANDLE_MODE_LINEAR,
 		HANDLE_MODE_BALANCED,
+		HANDLE_MODE_MIRRORED,
 	};
+	enum HandleSetMode {
+		HANDLE_SET_MODE_NONE,
+		HANDLE_SET_MODE_RESET,
+		HANDLE_SET_MODE_AUTO,
+	};
+#endif // TOOLS_ENABLED
 
 private:
 	struct Track {
@@ -166,8 +175,10 @@ private:
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
-		HandleMode handle_mode = HANDLE_MODE_BALANCED;
 		real_t value = 0.0;
+#ifdef TOOLS_ENABLED
+		HandleMode handle_mode = HANDLE_MODE_FREE;
+#endif // TOOLS_ENABLED
 	};
 
 	struct BezierTrack : public Track {
@@ -429,15 +440,17 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const HandleMode p_handle_mode = HandleMode::HANDLE_MODE_BALANCED);
-	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, double p_balanced_value_time_ratio = 1.0);
+	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
-	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
-	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
 	real_t bezier_track_get_key_value(int p_track, int p_index) const;
-	int bezier_track_get_key_handle_mode(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
+#ifdef TOOLS_ENABLED
+	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, HandleSetMode p_set_mode = HANDLE_SET_MODE_NONE);
+	HandleMode bezier_track_get_key_handle_mode(int p_track, int p_index) const;
+#endif // TOOLS_ENABLED
 
 	real_t bezier_track_interpolate(int p_track, double p_time) const;
 
@@ -490,7 +503,10 @@ public:
 VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
-VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
+#ifdef TOOLS_ENABLED
+VARIANT_ENUM_CAST(Animation::HandleMode);
+VARIANT_ENUM_CAST(Animation::HandleSetMode);
+#endif // TOOLS_ENABLED
 
 #endif // ANIMATION_H

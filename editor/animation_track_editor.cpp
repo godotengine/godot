@@ -65,12 +65,12 @@ public:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method("_update_obj", &AnimationTrackKeyEdit::_update_obj);
-		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
-		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
-		ClassDB::bind_method("get_root_path", &AnimationTrackKeyEdit::get_root_path);
-		ClassDB::bind_method("_dont_undo_redo", &AnimationTrackKeyEdit::_dont_undo_redo);
-		ClassDB::bind_method("_read_only", &AnimationTrackKeyEdit::_read_only);
+		ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationTrackKeyEdit::_update_obj);
+		ClassDB::bind_method(D_METHOD("_key_ofs_changed"), &AnimationTrackKeyEdit::_key_ofs_changed);
+		ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &AnimationTrackKeyEdit::_hide_script_from_inspector);
+		ClassDB::bind_method(D_METHOD("get_root_path"), &AnimationTrackKeyEdit::get_root_path);
+		ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &AnimationTrackKeyEdit::_dont_undo_redo);
+		ClassDB::bind_method(D_METHOD("_read_only"), &AnimationTrackKeyEdit::_read_only);
 	}
 
 	void _fix_node_path(Variant &value) {
@@ -351,8 +351,8 @@ public:
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 					int prev = animation->bezier_track_get_key_handle_mode(track, key);
-					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, prev);
+					undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), track, key, value);
+					undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -637,10 +637,16 @@ public:
 
 			} break;
 			case Animation::TYPE_BEZIER: {
+				Animation::HandleMode hm = animation->bezier_track_get_key_handle_mode(track, key);
 				p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("value")));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("in_handle")));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("out_handle")));
-				p_list->push_back(PropertyInfo(Variant::INT, PNAME("handle_mode"), PROPERTY_HINT_ENUM, "Free,Balanced"));
+				if (hm == Animation::HANDLE_MODE_LINEAR) {
+					p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("in_handle"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
+					p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("out_handle"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
+				} else {
+					p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("in_handle")));
+					p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("out_handle")));
+				}
+				p_list->push_back(PropertyInfo(Variant::INT, PNAME("handle_mode"), PROPERTY_HINT_ENUM, "Free,Linear,Balanced,Mirrored"));
 
 			} break;
 			case Animation::TYPE_AUDIO: {
@@ -726,12 +732,12 @@ public:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method("_update_obj", &AnimationMultiTrackKeyEdit::_update_obj);
-		ClassDB::bind_method("_key_ofs_changed", &AnimationMultiTrackKeyEdit::_key_ofs_changed);
-		ClassDB::bind_method("_hide_script_from_inspector", &AnimationMultiTrackKeyEdit::_hide_script_from_inspector);
-		ClassDB::bind_method("get_root_path", &AnimationMultiTrackKeyEdit::get_root_path);
-		ClassDB::bind_method("_dont_undo_redo", &AnimationMultiTrackKeyEdit::_dont_undo_redo);
-		ClassDB::bind_method("_read_only", &AnimationMultiTrackKeyEdit::_read_only);
+		ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationMultiTrackKeyEdit::_update_obj);
+		ClassDB::bind_method(D_METHOD("_key_ofs_changed"), &AnimationMultiTrackKeyEdit::_key_ofs_changed);
+		ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &AnimationMultiTrackKeyEdit::_hide_script_from_inspector);
+		ClassDB::bind_method(D_METHOD("get_root_path"), &AnimationMultiTrackKeyEdit::get_root_path);
+		ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &AnimationMultiTrackKeyEdit::_dont_undo_redo);
+		ClassDB::bind_method(D_METHOD("_read_only"), &AnimationMultiTrackKeyEdit::_read_only);
 	}
 
 	void _fix_node_path(Variant &value, NodePath &base) {
@@ -972,8 +978,8 @@ public:
 								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
 							Vector2 prev = animation->bezier_track_get_key_in_handle(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev);
+							undo_redo->add_do_method(this, "_bezier_track_set_key_in_handle", track, key, value);
+							undo_redo->add_undo_method(this, "_bezier_track_set_key_in_handle", track, key, prev);
 							update_obj = true;
 						} else if (name == "out_handle") {
 							const Variant &value = p_value;
@@ -983,8 +989,8 @@ public:
 								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
 							Vector2 prev = animation->bezier_track_get_key_out_handle(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
+							undo_redo->add_do_method(this, "_bezier_track_set_key_out_handle", track, key, value);
+							undo_redo->add_undo_method(this, "_bezier_track_set_key_out_handle", track, key, prev);
 							update_obj = true;
 						} else if (name == "handle_mode") {
 							const Variant &value = p_value;
@@ -994,8 +1000,8 @@ public:
 								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
 							int prev = animation->bezier_track_get_key_handle_mode(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, prev);
+							undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), track, key, value);
+							undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), track, key, prev);
 							update_obj = true;
 						}
 					} break;
@@ -1326,7 +1332,7 @@ public:
 					p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
-					p_list->push_back(PropertyInfo(Variant::INT, "handle_mode", PROPERTY_HINT_ENUM, "Free,Balanced"));
+					p_list->push_back(PropertyInfo(Variant::INT, "handle_mode", PROPERTY_HINT_ENUM, "Free,Linear,Balanced,Mirrored"));
 				} break;
 				case Animation::TYPE_AUDIO: {
 					p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
@@ -2726,8 +2732,14 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 						case Animation::HANDLE_MODE_FREE: {
 							text += TTR("Handle mode: Free\n");
 						} break;
+						case Animation::HANDLE_MODE_LINEAR: {
+							text += TTR("Handle mode: Linear\n");
+						} break;
 						case Animation::HANDLE_MODE_BALANCED: {
 							text += TTR("Handle mode: Balanced\n");
+						} break;
+						case Animation::HANDLE_MODE_MIRRORED: {
+							text += TTR("Handle mode: Mirrored\n");
 						} break;
 					}
 				} break;
@@ -3259,7 +3271,6 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("bezier_edit"));
 
 	ADD_SIGNAL(MethodInfo("move_selection_begin"));
 	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
@@ -3422,7 +3433,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		track_edits[_get_track_selected()]->release_focus();
 	}
 	if (animation.is_valid()) {
-		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
+		animation->disconnect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
+		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change));
 		_clear_selection();
 	}
 	animation = p_anim;
@@ -3433,7 +3445,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	_update_tracks();
 
 	if (animation.is_valid()) {
-		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
+		animation->connect("tracks_changed", callable_mp(this, &AnimationTrackEditor::_animation_changed), CONNECT_DEFERRED);
+		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_sync_animation_change), CONNECT_DEFERRED);
 
 		hscroll->show();
 		edit->set_disabled(read_only);
@@ -4348,13 +4361,12 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		} break;
 		case Animation::TYPE_BEZIER: {
 			Array array;
-			array.resize(6);
+			array.resize(5);
 			array[0] = p_id.value;
 			array[1] = -0.25;
 			array[2] = 0;
 			array[3] = 0.25;
 			array[4] = 0;
-			array[5] = Animation::HANDLE_MODE_BALANCED;
 			value = array;
 			bezier_edit_icon->set_disabled(false);
 
@@ -4617,9 +4629,17 @@ void AnimationTrackEditor::_update_tracks() {
 	}
 }
 
+void AnimationTrackEditor::_sync_animation_change() {
+	bezier_edit->update();
+}
+
 void AnimationTrackEditor::_animation_changed() {
 	if (animation_changing_awaiting_update) {
 		return; // All will be updated, don't bother with anything.
+	}
+
+	if (key_edit) {
+		_update_key_edit();
 	}
 
 	if (key_edit && key_edit->setting) {
@@ -5081,13 +5101,12 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			Variant value;
 			_find_hint_for_track(p_track, bp, &value);
 			Array arr;
-			arr.resize(6);
+			arr.resize(5);
 			arr[0] = value;
 			arr[1] = -0.25;
 			arr[2] = 0;
 			arr[3] = 0.25;
 			arr[4] = 0;
-			arr[5] = 0;
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, arr);
@@ -5564,6 +5583,13 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 	scroll->hide();
 	bezier_edit->show();
 	// Search everything within the track and curve - edit it.
+}
+
+void AnimationTrackEditor::_bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode) {
+	if (!p_anim) {
+		return;
+	}
+	p_anim->bezier_track_set_key_handle_mode(p_track, p_index, p_mode, p_set_mode);
 }
 
 void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
@@ -6416,15 +6442,17 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 }
 
 void AnimationTrackEditor::_bind_methods() {
-	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
-	ClassDB::bind_method("_track_grab_focus", &AnimationTrackEditor::_track_grab_focus);
-	ClassDB::bind_method("_update_tracks", &AnimationTrackEditor::_update_tracks);
-	ClassDB::bind_method("_clear_selection_for_anim", &AnimationTrackEditor::_clear_selection_for_anim);
-	ClassDB::bind_method("_select_at_anim", &AnimationTrackEditor::_select_at_anim);
+	ClassDB::bind_method(D_METHOD("_animation_update"), &AnimationTrackEditor::_animation_update);
+	ClassDB::bind_method(D_METHOD("_track_grab_focus"), &AnimationTrackEditor::_track_grab_focus);
+	ClassDB::bind_method(D_METHOD("_update_tracks"), &AnimationTrackEditor::_update_tracks);
+	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"), &AnimationTrackEditor::_clear_selection_for_anim);
+	ClassDB::bind_method(D_METHOD("_select_at_anim"), &AnimationTrackEditor::_select_at_anim);
 
-	ClassDB::bind_method("_key_selected", &AnimationTrackEditor::_key_selected); // Still used by some connect_compat.
-	ClassDB::bind_method("_key_deselected", &AnimationTrackEditor::_key_deselected); // Still used by some connect_compat.
-	ClassDB::bind_method("_clear_selection", &AnimationTrackEditor::_clear_selection); // Still used by some connect_compat.
+	ClassDB::bind_method(D_METHOD("_key_selected"), &AnimationTrackEditor::_key_selected); // Still used by some connect_compat.
+	ClassDB::bind_method(D_METHOD("_key_deselected"), &AnimationTrackEditor::_key_deselected); // Still used by some connect_compat.
+	ClassDB::bind_method(D_METHOD("_clear_selection"), &AnimationTrackEditor::_clear_selection); // Still used by some connect_compat.
+
+	ClassDB::bind_method(D_METHOD("_bezier_track_set_key_handle_mode", "animation", "track_idx", "key_idx", "key_handle_mode", "key_handle_set_mode"), &AnimationTrackEditor::_bezier_track_set_key_handle_mode, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
 
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("keying_changed"));
