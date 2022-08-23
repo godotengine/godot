@@ -149,11 +149,5 @@ namespace Godot
                 NativeFuncs.godotsharp_callable_call_deferred(callable, (godot_variant**)argsPtr, argc);
             }
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_Callable_Call(ref Callable callable, object[] args);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Callable_CallDeferred(ref Callable callable, object[] args);
     }
 }
