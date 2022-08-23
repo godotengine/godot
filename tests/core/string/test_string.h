@@ -803,6 +803,96 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish -99.990000  frog"));
 
+	////// VECTORS
+
+	// Vector2
+	format = "fish %v frog";
+	args.clear();
+	args.push_back(Variant(Vector2(19.99, 1.00)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (19.990000, 1.000000) frog"));
+
+	// Vector3
+	format = "fish %v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (19.990000, 1.000000, -2.050000) frog"));
+
+	// Vector4
+	format = "fish %v frog";
+	args.clear();
+	args.push_back(Variant(Vector4(19.99, 1.00, -2.05, 5.5)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (19.990000, 1.000000, -2.050000, 5.500000) frog"));
+
+	// Vector with negative values
+	format = "fish %v frog";
+	args.clear();
+	args.push_back(Variant(Vector2(-19.99, -1.00)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (-19.990000, -1.000000) frog"));
+
+	// Vector left-padded
+	format = "fish %11v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (  19.990000,    1.000000,   -2.050000) frog"));
+
+	// Vector right-padded
+	format = "fish %-11v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (19.990000  , 1.000000   , -2.050000  ) frog"));
+
+	// Vector left-padded with zeros
+	format = "fish %011v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (0019.990000, 0001.000000, -002.050000) frog"));
+
+	// Vector given Vector3i.
+	format = "fish %v frog";
+	args.clear();
+	args.push_back(Variant(Vector3i(19, 1, -2)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (19.000000, 1.000000, -2.000000) frog"));
+
+	// Vector with 1 decimals.
+	format = "fish %.1v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (20.0, 1.0, -2.0) frog"));
+
+	// Vector with 12 decimals.
+	format = "fish %.12v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.00, 1.00, -2.00)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (19.000000000000, 1.000000000000, -2.000000000000) frog"));
+
+	// Vector with no decimals.
+	format = "fish %.v frog";
+	args.clear();
+	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (20, 1, -2) frog"));
+
 	/////// Strings.
 
 	// String
@@ -920,14 +1010,14 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error);
 	CHECK(output == "too many decimal points in format");
 
-	// * not a number
+	// * not a number or vector
 	format = "fish %*f frog";
 	args.clear();
 	args.push_back("cheese");
 	args.push_back(99.99);
 	output = format.sprintf(args, &error);
 	REQUIRE(error);
-	CHECK(output == "* wants number");
+	CHECK(output == "* wants number or vector");
 
 	// Character too long.
 	format = "fish %c frog";
