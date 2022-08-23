@@ -279,7 +279,19 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				warning_icon = SNAME("NodeWarnings4Plus");
 			}
 
-			item->add_button(0, get_theme_icon(warning_icon, SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + warning);
+			// Improve looks on tooltip, extra spacing on non-bullet point newlines.
+			const String bullet_point = String::utf8("•  ");
+			int next_newline = 0;
+			while (next_newline != -1) {
+				next_newline = warning.find("\n", next_newline + 2);
+				if (warning.substr(next_newline + 1, bullet_point.length()) != bullet_point) {
+					warning = warning.insert(next_newline + 1, "    ");
+				}
+			}
+
+			String newline = (num_warnings == 1 ? "\n" : "\n\n");
+
+			item->add_button(0, get_theme_icon(warning_icon, SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + warning);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
