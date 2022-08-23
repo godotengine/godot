@@ -84,7 +84,7 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	// with integer scales.
 	const bool upsample = !Math::is_equal_approx(Math::round(scale), scale);
 	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, false);
+	img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
 #endif
 
 	return ImageTexture::create_from_image(img);

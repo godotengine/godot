@@ -35,13 +35,13 @@
 
 #include <thorvg.h>
 
-void ImageLoaderSVG::_replace_color_property(const String &p_prefix, String &r_string) {
-	// Replace colors in the SVG based on what is configured in `replace_colors`.
+void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_color_map, const String &p_prefix, String &r_string) {
+	// Replace colors in the SVG based on what is passed in `p_color_map`.
 	// Used to change the colors of editor icons based on the used theme.
 	// The strings being replaced are typically of the form:
 	//   fill="#5abbef"
 	// But can also be 3-letter codes, include alpha, be "none" or a named color
-	// string ("blue"). So we convert to Godot Color to compare with `replace_colors`.
+	// string ("blue"). So we convert to Godot Color to compare with `p_color_map`.
 
 	const int prefix_len = p_prefix.length();
 	int pos = r_string.find(p_prefix);
@@ -52,8 +52,8 @@ void ImageLoaderSVG::_replace_color_property(const String &p_prefix, String &r_s
 		const String color_code = r_string.substr(pos, end_pos - pos);
 		if (color_code != "none" && !color_code.begins_with("url(")) {
 			const Color color = Color(color_code); // Handles both HTML codes and named colors.
-			if (replace_colors.has(color)) {
-				r_string = r_string.left(pos) + "#" + replace_colors[color].operator Color().to_html(false) + r_string.substr(end_pos);
+			if (p_color_map.has(color)) {
+				r_string = r_string.left(pos) + "#" + p_color_map[color].to_html(false) + r_string.substr(end_pos);
 			}
 		}
 		// Search for other occurrences.
@@ -61,13 +61,13 @@ void ImageLoaderSVG::_replace_color_property(const String &p_prefix, String &r_s
 	}
 }
 
-void ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, bool p_convert_color) {
+void ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {
 	ERR_FAIL_COND(Math::is_zero_approx(p_scale));
 
-	if (p_convert_color) {
-		_replace_color_property("stop-color=\"", p_string);
-		_replace_color_property("fill=\"", p_string);
-		_replace_color_property("stroke=\"", p_string);
+	if (p_color_map.size()) {
+		_replace_color_property(p_color_map, "stop-color=\"", p_string);
+		_replace_color_property(p_color_map, "fill=\"", p_string);
+		_replace_color_property(p_color_map, "stroke=\"", p_string);
 	}
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
@@ -138,7 +138,7 @@ void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, bool p_force_linear, float p_scale) {
 	String svg = p_fileaccess->get_as_utf8_string();
-	create_image_from_string(p_image, svg, p_scale, false, false);
+	create_image_from_string(p_image, svg, p_scale, false, HashMap<Color, Color>());
 	ERR_FAIL_COND_V(p_image->is_empty(), FAILED);
 	if (p_force_linear) {
 		p_image->srgb_to_linear();

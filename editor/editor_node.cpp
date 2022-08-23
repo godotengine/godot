@@ -6227,6 +6227,7 @@ EditorNode::EditorNode() {
 	add_child(editor_export);
 
 	// Exporters might need the theme.
+	EditorColorMap::create();
 	theme = create_custom_theme();
 
 	register_exporters();
