@@ -517,6 +517,10 @@ bool GDMono::_load_project_assembly() {
 								   .plus_file(assembly_name + ".dll");
 	assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
+	if (!FileAccess::exists(assembly_path)) {
+		return false;
+	}
+
 	String loaded_assembly_path;
 	bool success = plugin_callbacks.LoadProjectAssemblyCallback(assembly_path.utf16(), &loaded_assembly_path);
 
