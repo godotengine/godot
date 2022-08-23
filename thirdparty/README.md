@@ -195,6 +195,7 @@ Files extracted from upstream source:
   to `glslang/build_info.h`
 - `LICENSE.txt`
 - Unnecessary files like `CMakeLists.txt`, `*.m4` and `updateGrammar` removed.
+- Patch in `patches/unused_cleanup.diff` must be applied.
 
 
 ## graphite
