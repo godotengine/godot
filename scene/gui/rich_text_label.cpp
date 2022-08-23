@@ -1346,7 +1346,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	return line_count;
 }
 
-void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside) {
+void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside, bool p_meta) {
 	if (r_click_item) {
 		*r_click_item = nullptr;
 	}
@@ -1369,7 +1369,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 	while (ofs.y < size.height && from_line < to_line) {
 		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
-		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char);
+		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char, false, p_meta);
 		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
@@ -1381,7 +1381,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	}
 }
 
-float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table) {
+float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table, bool p_meta) {
 	Vector2 off;
 
 	bool line_clicked = false;
@@ -1479,7 +1479,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									}
 									if (crect.has_point(p_click)) {
 										for (int j = 0; j < (int)frame->lines.size(); j++) {
-											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true);
+											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
@@ -1512,7 +1512,15 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
 			if ((!rtl && p_click.x >= rect.position.x) || (rtl && p_click.x <= rect.position.x + rect.size.x)) {
-				char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+				if (p_meta) {
+					int64_t glyph_idx = TS->shaped_text_hit_test_grapheme(rid, p_click.x - rect.position.x);
+					if (glyph_idx >= 0) {
+						const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+						char_pos = glyphs[glyph_idx].start;
+					}
+				} else {
+					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+				}
 			}
 			line_clicked = true;
 			text_rect_begin = rtl ? rect.position.x + rect.size.x : rect.position.x;
@@ -1825,7 +1833,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 
 	Item *item = nullptr;
 	bool outside = true;
-	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &item, nullptr, &outside);
+	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &item, nullptr, &outside, true);
 
 	if (item && !outside && const_cast<RichTextLabel *>(this)->_find_meta(item, nullptr)) {
 		return CURSOR_POINTING_HAND;
@@ -1850,7 +1858,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 				selection.drag_attempt = false;
 
-				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
+				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
 				if (c_item != nullptr) {
 					if (selection.enabled) {
 						selection.click_frame = c_frame;
@@ -1888,7 +1896,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 				selection.drag_attempt = false;
 
-				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
+				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
 
 				if (c_frame) {
 					const Line &l = c_frame->lines[c_line];
@@ -1938,7 +1946,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					Item *c_item = nullptr;
 
 					bool outside = true;
-					_find_click(main, b->get_position(), nullptr, nullptr, &c_item, nullptr, &outside);
+					_find_click(main, b->get_position(), nullptr, nullptr, &c_item, nullptr, &outside, true);
 
 					if (c_item) {
 						Variant meta;
@@ -2044,7 +2052,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		int c_index = 0;
 		bool outside;
 
-		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
+		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
 		if (selection.click_item && c_item) {
 			selection.from_frame = selection.click_frame;
 			selection.from_line = selection.click_line;
@@ -2102,7 +2110,7 @@ String RichTextLabel::get_tooltip(const Point2 &p_pos) const {
 	Item *c_item = nullptr;
 	bool outside;
 
-	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &c_item, nullptr, &outside);
+	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
 
 	String description;
 	if (c_item && !outside && const_cast<RichTextLabel *>(this)->_find_hint(c_item, &description)) {
