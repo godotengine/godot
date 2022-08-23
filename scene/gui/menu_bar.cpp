@@ -276,10 +276,7 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 }
 
 bool MenuBar::is_native_menu() const {
-	if (!is_visible_in_tree()) {
-		return false;
-	}
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this)) {
+	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this)) {
 		return false;
 	}
 
@@ -308,7 +305,7 @@ void MenuBar::_clear_menu() {
 void MenuBar::_update_menu() {
 	_clear_menu();
 
-	if (!is_inside_tree()) {
+	if (!is_visible_in_tree()) {
 		return;
 	}
 

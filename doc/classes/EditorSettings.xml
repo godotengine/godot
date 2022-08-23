@@ -495,6 +495,10 @@
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=https://docs.godotengine.org/en/latest/community/contributing/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
+		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
+			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
+			Specific to the macOS platform.
+		</member>
 		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
 			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
 		</member>

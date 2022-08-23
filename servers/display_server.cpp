@@ -663,6 +663,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_flag", "flag", "enabled", "window_id"), &DisplayServer::window_set_flag, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_flag", "flag", "window_id"), &DisplayServer::window_get_flag, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_get_safe_title_margins", "window_id"), &DisplayServer::window_get_safe_title_margins, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("window_request_attention", "window_id"), &DisplayServer::window_request_attention, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_move_to_foreground", "window_id"), &DisplayServer::window_move_to_foreground, DEFVAL(MAIN_WINDOW_ID));
@@ -676,6 +678,9 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_maximize_on_title_dbl_click"), &DisplayServer::window_maximize_on_title_dbl_click);
+	ClassDB::bind_method(D_METHOD("window_minimize_on_title_dbl_click"), &DisplayServer::window_minimize_on_title_dbl_click);
 
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
@@ -733,6 +738,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SWAP_BUFFERS);
 	BIND_ENUM_CONSTANT(FEATURE_CLIPBOARD_PRIMARY);
 	BIND_ENUM_CONSTANT(FEATURE_TEXT_TO_SPEECH);
+	BIND_ENUM_CONSTANT(FEATURE_EXTEND_TO_TITLE);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -792,6 +798,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_NO_FOCUS);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_POPUP);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);

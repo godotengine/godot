@@ -1068,6 +1068,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="window_get_safe_title_margins" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns left and right margins of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+			</description>
+		</method>
 		<method name="window_get_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -1079,6 +1086,20 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns the V-Sync mode of the given window.
+			</description>
+		</method>
+		<method name="window_maximize_on_title_dbl_click" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], if double-click on a window title should maximize it.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="window_minimize_on_title_dbl_click" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], if double-click on a window title should minimize it.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="window_move_to_foreground">
@@ -1316,6 +1337,9 @@
 		<constant name="FEATURE_TEXT_TO_SPEECH" value="19" enum="Feature">
 			Display server supports text-to-speech. See [code]tts_*[/code] methods.
 		</constant>
+		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
+			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE].
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -1446,7 +1470,11 @@
 		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
 			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [constant WINDOW_FLAG_TRANSPARENT] set.
 		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="6" enum="WindowFlags">
+		<constant name="WINDOW_FLAG_EXTEND_TO_TITLE" value="6" enum="WindowFlags">
+			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
+			[b]Note:[/b] This flag is implemented on macOS.
+		</constant>
+		<constant name="WINDOW_FLAG_MAX" value="7" enum="WindowFlags">
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 		</constant>
@@ -1483,13 +1511,13 @@
 			Window handle:
 			- Windows: [code]HWND[/code] for the window.
 			- Linux: [code]X11::Window*[/code] for the window.
-			- MacOS: [code]NSWindow*[/code] for the window.
+			- macOS: [code]NSWindow*[/code] for the window.
 			- iOS: [code]UIViewController*[/code] for the view controller.
 			- Android: [code]jObject[/code] for the activity.
 		</constant>
 		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
 			Window view:
-			- MacOS: [code]NSView*[/code] for the window main view.
+			- macOS: [code]NSView*[/code] for the window main view.
 			- iOS: [code]UIView*[/code] for the window main view.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">

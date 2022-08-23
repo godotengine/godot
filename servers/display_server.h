@@ -122,6 +122,7 @@ public:
 		FEATURE_KEEP_SCREEN_ON,
 		FEATURE_CLIPBOARD_PRIMARY,
 		FEATURE_TEXT_TO_SPEECH,
+		FEATURE_EXTEND_TO_TITLE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -289,6 +290,7 @@ public:
 		WINDOW_FLAG_TRANSPARENT,
 		WINDOW_FLAG_NO_FOCUS,
 		WINDOW_FLAG_POPUP,
+		WINDOW_FLAG_EXTEND_TO_TITLE,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -300,6 +302,7 @@ public:
 		WINDOW_FLAG_TRANSPARENT_BIT = (1 << WINDOW_FLAG_TRANSPARENT),
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
+		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
@@ -371,12 +374,17 @@ public:
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
+	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); };
+
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual bool can_any_window_draw() const = 0;
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
+
+	virtual bool window_maximize_on_title_dbl_click() const { return false; }
+	virtual bool window_minimize_on_title_dbl_click() const { return false; }
 
 	// necessary for GL focus, may be able to use one of the existing functions for this, not sure yet
 	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);

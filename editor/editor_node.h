@@ -35,6 +35,7 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_title_bar.h"
 #include "editor/export/editor_export.h"
 #include "editor/inspector_dock.h"
 
@@ -322,7 +323,7 @@ private:
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
-	HBoxContainer *menu_hb = nullptr;
+	EditorTitleBar *menu_hb = nullptr;
 	Control *main_control = nullptr;
 	MenuBar *main_menu = nullptr;
 	PopupMenu *file_menu = nullptr;

@@ -703,6 +703,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		//case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_EXTEND_TO_TITLE:
 			return true;
 		default: {
 		}
@@ -2538,6 +2539,45 @@ bool DisplayServerMacOS::window_is_maximize_allowed(WindowID p_window) const {
 	return true;
 }
 
+bool DisplayServerMacOS::window_maximize_on_title_dbl_click() const {
+	id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleActionOnDoubleClick"];
+	if ([value isKindOfClass:[NSString class]]) {
+		return [value isEqualToString:@"Maximize"];
+	}
+	return false;
+}
+
+bool DisplayServerMacOS::window_minimize_on_title_dbl_click() const {
+	id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleActionOnDoubleClick"];
+	if ([value isKindOfClass:[NSString class]]) {
+		return [value isEqualToString:@"Minimize"];
+	}
+	return false;
+}
+
+Vector2i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Vector2i());
+	const WindowData &wd = windows[p_window];
+
+	float max_x = 0.f;
+	NSButton *cb = [wd.window_object standardWindowButton:NSWindowCloseButton];
+	if (cb) {
+		max_x = MAX(max_x, [cb frame].origin.x + [cb frame].size.width);
+	}
+	NSButton *mb = [wd.window_object standardWindowButton:NSWindowMiniaturizeButton];
+	if (mb) {
+		max_x = MAX(max_x, [mb frame].origin.x + [mb frame].size.width);
+	}
+	NSButton *zb = [wd.window_object standardWindowButton:NSWindowZoomButton];
+	if (zb) {
+		max_x = MAX(max_x, [zb frame].origin.x + [zb frame].size.width);
+	}
+
+	return Vector2i(max_x * screen_get_max_scale(), 0);
+}
+
 void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2555,6 +2595,19 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			} else {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
 			}
+		} break;
+		case WINDOW_FLAG_EXTEND_TO_TITLE: {
+			NSRect rect = [wd.window_object frame];
+			if (p_enabled) {
+				[wd.window_object setTitlebarAppearsTransparent:YES];
+				[wd.window_object setTitleVisibility:NSWindowTitleHidden];
+				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
+			} else {
+				[wd.window_object setTitlebarAppearsTransparent:NO];
+				[wd.window_object setTitleVisibility:NSWindowTitleVisible];
+				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskFullSizeContentView];
+			}
+			[wd.window_object setFrame:rect display:YES];
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			// OrderOut prevents a lose focus bug with the window.
@@ -2622,6 +2675,9 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
+		} break;
+		case WINDOW_FLAG_EXTEND_TO_TITLE: {
+			return [wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;

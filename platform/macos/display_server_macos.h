@@ -377,6 +377,11 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
+	virtual bool window_maximize_on_title_dbl_click() const override;
+	virtual bool window_minimize_on_title_dbl_click() const override;
+
+	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
+
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
