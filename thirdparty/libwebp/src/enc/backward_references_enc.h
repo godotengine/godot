@@ -134,10 +134,11 @@ struct VP8LHashChain {
 
 // Must be called first, to set size.
 int VP8LHashChainInit(VP8LHashChain* const p, int size);
-// Pre-compute the best matches for argb.
+// Pre-compute the best matches for argb. pic and percent are for progress.
 int VP8LHashChainFill(VP8LHashChain* const p, int quality,
                       const uint32_t* const argb, int xsize, int ysize,
-                      int low_effort);
+                      int low_effort, const WebPPicture* const pic,
+                      int percent_range, int* const percent);
 void VP8LHashChainClear(VP8LHashChain* const p);  // release memory
 
 static WEBP_INLINE int VP8LHashChainFindOffset(const VP8LHashChain* const p,
@@ -227,11 +228,14 @@ enum VP8LLZ77Type {
 // VP8LBackwardRefs is put in the first element, the best value with no-cache in
 // the second element.
 // In both cases, the last element is used as temporary internally.
-WebPEncodingError VP8LGetBackwardReferences(
+// pic and percent are for progress.
+// Returns false in case of error (stored in pic->error_code).
+int VP8LGetBackwardReferences(
     int width, int height, const uint32_t* const argb, int quality,
     int low_effort, int lz77_types_to_try, int cache_bits_max, int do_no_cache,
     const VP8LHashChain* const hash_chain, VP8LBackwardRefs* const refs,
-    int* const cache_bits_best);
+    int* const cache_bits_best, const WebPPicture* const pic, int percent_range,
+    int* const percent);
 
 #ifdef __cplusplus
 }

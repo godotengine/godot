@@ -178,7 +178,7 @@ static WEBP_INLINE int PlaneCodeToDistance(int xsize, int plane_code) {
 
 //------------------------------------------------------------------------------
 // Decodes the next Huffman code from bit-stream.
-// FillBitWindow(br) needs to be called at minimum every second call
+// VP8LFillBitWindow(br) needs to be called at minimum every second call
 // to ReadSymbol, in order to pre-fetch enough bits.
 static WEBP_INLINE int ReadSymbol(const HuffmanCode* table,
                                   VP8LBitReader* const br) {
@@ -321,7 +321,7 @@ static int ReadHuffmanCode(int alphabet_size, VP8LDecoder* const dec,
     // The first code is either 1 bit or 8 bit code.
     int symbol = VP8LReadBits(br, (first_symbol_len_code == 0) ? 1 : 8);
     code_lengths[symbol] = 1;
-    // The second code (if present), is always 8 bit long.
+    // The second code (if present), is always 8 bits long.
     if (num_symbols == 2) {
       symbol = VP8LReadBits(br, 8);
       code_lengths[symbol] = 1;
@@ -1281,7 +1281,7 @@ static int ExpandColorMap(int num_colors, VP8LTransform* const transform) {
     uint8_t* const new_data = (uint8_t*)new_color_map;
     new_color_map[0] = transform->data_[0];
     for (i = 4; i < 4 * num_colors; ++i) {
-      // Equivalent to AddPixelEq(), on a byte-basis.
+      // Equivalent to VP8LAddPixels(), on a byte-basis.
       new_data[i] = (data[i] + new_data[i - 4]) & 0xff;
     }
     for (; i < 4 * final_num_colors; ++i) {

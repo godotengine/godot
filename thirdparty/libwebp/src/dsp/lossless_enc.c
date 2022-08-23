@@ -402,7 +402,7 @@ static float FastLog2Slow_C(uint32_t v) {
 // Compute the combined Shanon's entropy for distribution {X} and {X+Y}
 static float CombinedShannonEntropy_C(const int X[256], const int Y[256]) {
   int i;
-  double retval = 0.;
+  float retval = 0.f;
   int sumX = 0, sumXY = 0;
   for (i = 0; i < 256; ++i) {
     const int x = X[i];
@@ -418,7 +418,7 @@ static float CombinedShannonEntropy_C(const int X[256], const int Y[256]) {
     }
   }
   retval += VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY);
-  return (float)retval;
+  return retval;
 }
 
 void VP8LBitEntropyInit(VP8LBitEntropy* const entropy) {
@@ -636,17 +636,17 @@ void VP8LBundleColorMap_C(const uint8_t* const row, int width, int xbits,
 
 //------------------------------------------------------------------------------
 
-static double ExtraCost_C(const uint32_t* population, int length) {
+static float ExtraCost_C(const uint32_t* population, int length) {
   int i;
-  double cost = 0.;
+  float cost = 0.f;
   for (i = 2; i < length - 2; ++i) cost += (i >> 1) * population[i + 2];
   return cost;
 }
 
-static double ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
+static float ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
                                   int length) {
   int i;
-  double cost = 0.;
+  float cost = 0.f;
   for (i = 2; i < length - 2; ++i) {
     const int xy = X[i + 2] + Y[i + 2];
     cost += (i >> 1) * xy;

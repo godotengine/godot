@@ -45,6 +45,22 @@ int WebPPictureInitInternal(WebPPicture* picture, int version) {
 
 //------------------------------------------------------------------------------
 
+int WebPValidatePicture(const WebPPicture* const picture) {
+  if (picture == NULL) return 0;
+  if (picture->width <= 0 || picture->height <= 0) {
+    return WebPEncodingSetError(picture, VP8_ENC_ERROR_BAD_DIMENSION);
+  }
+  if (picture->width <= 0 || picture->width / 4 > INT_MAX / 4 ||
+      picture->height <= 0 || picture->height / 4 > INT_MAX / 4) {
+    return WebPEncodingSetError(picture, VP8_ENC_ERROR_BAD_DIMENSION);
+  }
+  if (picture->colorspace != WEBP_YUV420 &&
+      picture->colorspace != WEBP_YUV420A) {
+    return WebPEncodingSetError(picture, VP8_ENC_ERROR_INVALID_CONFIGURATION);
+  }
+  return 1;
+}
+
 static void WebPPictureResetBufferARGB(WebPPicture* const picture) {
   picture->memory_argb_ = NULL;
   picture->argb = NULL;
@@ -63,18 +79,17 @@ void WebPPictureResetBuffers(WebPPicture* const picture) {
   WebPPictureResetBufferYUVA(picture);
 }
 
-int WebPPictureAllocARGB(WebPPicture* const picture, int width, int height) {
+int WebPPictureAllocARGB(WebPPicture* const picture) {
   void* memory;
+  const int width = picture->width;
+  const int height = picture->height;
   const uint64_t argb_size = (uint64_t)width * height;
 
-  assert(picture != NULL);
+  if (!WebPValidatePicture(picture)) return 0;
 
   WebPSafeFree(picture->memory_argb_);
   WebPPictureResetBufferARGB(picture);
 
-  if (width <= 0 || height <= 0) {
-    return WebPEncodingSetError(picture, VP8_ENC_ERROR_BAD_DIMENSION);
-  }
   // allocate a new buffer.
   memory = WebPSafeMalloc(argb_size + WEBP_ALIGN_CST, sizeof(*picture->argb));
   if (memory == NULL) {
@@ -86,10 +101,10 @@ int WebPPictureAllocARGB(WebPPicture* const picture, int width, int height) {
   return 1;
 }
 
-int WebPPictureAllocYUVA(WebPPicture* const picture, int width, int height) {
-  const WebPEncCSP uv_csp =
-      (WebPEncCSP)((int)picture->colorspace & WEBP_CSP_UV_MASK);
+int WebPPictureAllocYUVA(WebPPicture* const picture) {
   const int has_alpha = (int)picture->colorspace & WEBP_CSP_ALPHA_BIT;
+  const int width = picture->width;
+  const int height = picture->height;
   const int y_stride = width;
   const int uv_width = (int)(((int64_t)width + 1) >> 1);
   const int uv_height = (int)(((int64_t)height + 1) >> 1);
@@ -98,14 +113,10 @@ int WebPPictureAllocYUVA(WebPPicture* const picture, int width, int height) {
   uint64_t y_size, uv_size, a_size, total_size;
   uint8_t* mem;
 
-  assert(picture != NULL);
+  if (!WebPValidatePicture(picture)) return 0;
 
   WebPSafeFree(picture->memory_);
   WebPPictureResetBufferYUVA(picture);
-
-  if (uv_csp != WEBP_YUV420) {
-    return WebPEncodingSetError(picture, VP8_ENC_ERROR_INVALID_CONFIGURATION);
-  }
 
   // alpha
   a_width = has_alpha ? width : 0;
@@ -152,15 +163,12 @@ int WebPPictureAllocYUVA(WebPPicture* const picture, int width, int height) {
 
 int WebPPictureAlloc(WebPPicture* picture) {
   if (picture != NULL) {
-    const int width = picture->width;
-    const int height = picture->height;
-
     WebPPictureFree(picture);   // erase previous buffer
 
     if (!picture->use_argb) {
-      return WebPPictureAllocYUVA(picture, width, height);
+      return WebPPictureAllocYUVA(picture);
     } else {
-      return WebPPictureAllocARGB(picture, width, height);
+      return WebPPictureAllocARGB(picture);
     }
   }
   return 1;

@@ -190,27 +190,28 @@ static WEBP_INLINE uint32_t MakeARGB32(int r, int g, int b) {
   return (0xff000000u | (r << 16) | (g << 8) | b);
 }
 
-void WebPBlendAlpha(WebPPicture* pic, uint32_t background_rgb) {
+void WebPBlendAlpha(WebPPicture* picture, uint32_t background_rgb) {
   const int red = (background_rgb >> 16) & 0xff;
   const int green = (background_rgb >> 8) & 0xff;
   const int blue = (background_rgb >> 0) & 0xff;
   int x, y;
-  if (pic == NULL) return;
-  if (!pic->use_argb) {
-    const int uv_width = (pic->width >> 1);  // omit last pixel during u/v loop
+  if (picture == NULL) return;
+  if (!picture->use_argb) {
+    // omit last pixel during u/v loop
+    const int uv_width = (picture->width >> 1);
     const int Y0 = VP8RGBToY(red, green, blue, YUV_HALF);
     // VP8RGBToU/V expects the u/v values summed over four pixels
     const int U0 = VP8RGBToU(4 * red, 4 * green, 4 * blue, 4 * YUV_HALF);
     const int V0 = VP8RGBToV(4 * red, 4 * green, 4 * blue, 4 * YUV_HALF);
-    const int has_alpha = pic->colorspace & WEBP_CSP_ALPHA_BIT;
-    uint8_t* y_ptr = pic->y;
-    uint8_t* u_ptr = pic->u;
-    uint8_t* v_ptr = pic->v;
-    uint8_t* a_ptr = pic->a;
+    const int has_alpha = picture->colorspace & WEBP_CSP_ALPHA_BIT;
+    uint8_t* y_ptr = picture->y;
+    uint8_t* u_ptr = picture->u;
+    uint8_t* v_ptr = picture->v;
+    uint8_t* a_ptr = picture->a;
     if (!has_alpha || a_ptr == NULL) return;    // nothing to do
-    for (y = 0; y < pic->height; ++y) {
+    for (y = 0; y < picture->height; ++y) {
       // Luma blending
-      for (x = 0; x < pic->width; ++x) {
+      for (x = 0; x < picture->width; ++x) {
         const uint8_t alpha = a_ptr[x];
         if (alpha < 0xff) {
           y_ptr[x] = BLEND(Y0, y_ptr[x], alpha);
@@ -219,7 +220,7 @@ void WebPBlendAlpha(WebPPicture* pic, uint32_t background_rgb) {
       // Chroma blending every even line
       if ((y & 1) == 0) {
         uint8_t* const a_ptr2 =
-            (y + 1 == pic->height) ? a_ptr : a_ptr + pic->a_stride;
+            (y + 1 == picture->height) ? a_ptr : a_ptr + picture->a_stride;
         for (x = 0; x < uv_width; ++x) {
           // Average four alpha values into a single blending weight.
           // TODO(skal): might lead to visible contouring. Can we do better?
@@ -229,24 +230,24 @@ void WebPBlendAlpha(WebPPicture* pic, uint32_t background_rgb) {
           u_ptr[x] = BLEND_10BIT(U0, u_ptr[x], alpha);
           v_ptr[x] = BLEND_10BIT(V0, v_ptr[x], alpha);
         }
-        if (pic->width & 1) {   // rightmost pixel
+        if (picture->width & 1) {  // rightmost pixel
           const uint32_t alpha = 2 * (a_ptr[2 * x + 0] + a_ptr2[2 * x + 0]);
           u_ptr[x] = BLEND_10BIT(U0, u_ptr[x], alpha);
           v_ptr[x] = BLEND_10BIT(V0, v_ptr[x], alpha);
         }
       } else {
-        u_ptr += pic->uv_stride;
-        v_ptr += pic->uv_stride;
+        u_ptr += picture->uv_stride;
+        v_ptr += picture->uv_stride;
       }
-      memset(a_ptr, 0xff, pic->width);  // reset alpha value to opaque
-      a_ptr += pic->a_stride;
-      y_ptr += pic->y_stride;
+      memset(a_ptr, 0xff, picture->width);  // reset alpha value to opaque
+      a_ptr += picture->a_stride;
+      y_ptr += picture->y_stride;
     }
   } else {
-    uint32_t* argb = pic->argb;
+    uint32_t* argb = picture->argb;
     const uint32_t background = MakeARGB32(red, green, blue);
-    for (y = 0; y < pic->height; ++y) {
-      for (x = 0; x < pic->width; ++x) {
+    for (y = 0; y < picture->height; ++y) {
+      for (x = 0; x < picture->width; ++x) {
         const int alpha = (argb[x] >> 24) & 0xff;
         if (alpha != 0xff) {
           if (alpha > 0) {
@@ -262,7 +263,7 @@ void WebPBlendAlpha(WebPPicture* pic, uint32_t background_rgb) {
           }
         }
       }
-      argb += pic->argb_stride;
+      argb += picture->argb_stride;
     }
   }
 }

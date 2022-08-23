@@ -15,10 +15,11 @@
 //
 
 #include <assert.h>
+#include <float.h>
 
+#include "src/dsp/lossless_common.h"
 #include "src/enc/backward_references_enc.h"
 #include "src/enc/histogram_enc.h"
-#include "src/dsp/lossless_common.h"
 #include "src/utils/color_cache_utils.h"
 #include "src/utils/utils.h"
 
@@ -30,15 +31,15 @@ extern void VP8LBackwardRefsCursorAdd(VP8LBackwardRefs* const refs,
                                       const PixOrCopy v);
 
 typedef struct {
-  double alpha_[VALUES_IN_BYTE];
-  double red_[VALUES_IN_BYTE];
-  double blue_[VALUES_IN_BYTE];
-  double distance_[NUM_DISTANCE_CODES];
-  double* literal_;
+  float alpha_[VALUES_IN_BYTE];
+  float red_[VALUES_IN_BYTE];
+  float blue_[VALUES_IN_BYTE];
+  float distance_[NUM_DISTANCE_CODES];
+  float* literal_;
 } CostModel;
 
 static void ConvertPopulationCountTableToBitEstimates(
-    int num_symbols, const uint32_t population_counts[], double output[]) {
+    int num_symbols, const uint32_t population_counts[], float output[]) {
   uint32_t sum = 0;
   int nonzeros = 0;
   int i;
@@ -51,7 +52,7 @@ static void ConvertPopulationCountTableToBitEstimates(
   if (nonzeros <= 1) {
     memset(output, 0, num_symbols * sizeof(*output));
   } else {
-    const double logsum = VP8LFastLog2(sum);
+    const float logsum = VP8LFastLog2(sum);
     for (i = 0; i < num_symbols; ++i) {
       output[i] = logsum - VP8LFastLog2(population_counts[i]);
     }
@@ -75,8 +76,8 @@ static int CostModelBuild(CostModel* const m, int xsize, int cache_bits,
   }
 
   ConvertPopulationCountTableToBitEstimates(
-      VP8LHistogramNumCodes(histo->palette_code_bits_),
-      histo->literal_, m->literal_);
+      VP8LHistogramNumCodes(histo->palette_code_bits_), histo->literal_,
+      m->literal_);
   ConvertPopulationCountTableToBitEstimates(
       VALUES_IN_BYTE, histo->red_, m->red_);
   ConvertPopulationCountTableToBitEstimates(
@@ -92,27 +93,27 @@ static int CostModelBuild(CostModel* const m, int xsize, int cache_bits,
   return ok;
 }
 
-static WEBP_INLINE double GetLiteralCost(const CostModel* const m, uint32_t v) {
+static WEBP_INLINE float GetLiteralCost(const CostModel* const m, uint32_t v) {
   return m->alpha_[v >> 24] +
          m->red_[(v >> 16) & 0xff] +
          m->literal_[(v >> 8) & 0xff] +
          m->blue_[v & 0xff];
 }
 
-static WEBP_INLINE double GetCacheCost(const CostModel* const m, uint32_t idx) {
+static WEBP_INLINE float GetCacheCost(const CostModel* const m, uint32_t idx) {
   const int literal_idx = VALUES_IN_BYTE + NUM_LENGTH_CODES + idx;
   return m->literal_[literal_idx];
 }
 
-static WEBP_INLINE double GetLengthCost(const CostModel* const m,
-                                        uint32_t length) {
+static WEBP_INLINE float GetLengthCost(const CostModel* const m,
+                                       uint32_t length) {
   int code, extra_bits;
   VP8LPrefixEncodeBits(length, &code, &extra_bits);
   return m->literal_[VALUES_IN_BYTE + code] + extra_bits;
 }
 
-static WEBP_INLINE double GetDistanceCost(const CostModel* const m,
-                                          uint32_t distance) {
+static WEBP_INLINE float GetDistanceCost(const CostModel* const m,
+                                         uint32_t distance) {
   int code, extra_bits;
   VP8LPrefixEncodeBits(distance, &code, &extra_bits);
   return m->distance_[code] + extra_bits;
@@ -122,20 +123,20 @@ static WEBP_INLINE void AddSingleLiteralWithCostModel(
     const uint32_t* const argb, VP8LColorCache* const hashers,
     const CostModel* const cost_model, int idx, int use_color_cache,
     float prev_cost, float* const cost, uint16_t* const dist_array) {
-  double cost_val = prev_cost;
+  float cost_val = prev_cost;
   const uint32_t color = argb[idx];
   const int ix = use_color_cache ? VP8LColorCacheContains(hashers, color) : -1;
   if (ix >= 0) {
     // use_color_cache is true and hashers contains color
-    const double mul0 = 0.68;
+    const float mul0 = 0.68f;
     cost_val += GetCacheCost(cost_model, ix) * mul0;
   } else {
-    const double mul1 = 0.82;
+    const float mul1 = 0.82f;
     if (use_color_cache) VP8LColorCacheInsert(hashers, color);
     cost_val += GetLiteralCost(cost_model, color) * mul1;
   }
   if (cost[idx] > cost_val) {
-    cost[idx] = (float)cost_val;
+    cost[idx] = cost_val;
     dist_array[idx] = 1;  // only one is inserted.
   }
 }
@@ -172,7 +173,7 @@ struct CostInterval {
 
 // The GetLengthCost(cost_model, k) are cached in a CostCacheInterval.
 typedef struct {
-  double cost_;
+  float cost_;
   int start_;
   int end_;       // Exclusive.
 } CostCacheInterval;
@@ -187,7 +188,7 @@ typedef struct {
   int count_;  // The number of stored intervals.
   CostCacheInterval* cache_intervals_;
   size_t cache_intervals_size_;
-  double cost_cache_[MAX_LENGTH];  // Contains the GetLengthCost(cost_model, k).
+  float cost_cache_[MAX_LENGTH];  // Contains the GetLengthCost(cost_model, k).
   float* costs_;
   uint16_t* dist_array_;
   // Most of the time, we only need few intervals -> use a free-list, to avoid
@@ -262,10 +263,13 @@ static int CostManagerInit(CostManager* const manager,
   CostManagerInitFreeList(manager);
 
   // Fill in the cost_cache_.
-  manager->cache_intervals_size_ = 1;
-  manager->cost_cache_[0] = GetLengthCost(cost_model, 0);
-  for (i = 1; i < cost_cache_size; ++i) {
+  // Has to be done in two passes due to a GCC bug on i686
+  // related to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=323
+  for (i = 0; i < cost_cache_size; ++i) {
     manager->cost_cache_[i] = GetLengthCost(cost_model, i);
+  }
+  manager->cache_intervals_size_ = 1;
+  for (i = 1; i < cost_cache_size; ++i) {
     // Get the number of bound intervals.
     if (manager->cost_cache_[i] != manager->cost_cache_[i - 1]) {
       ++manager->cache_intervals_size_;
@@ -294,7 +298,7 @@ static int CostManagerInit(CostManager* const manager,
     cur->end_ = 1;
     cur->cost_ = manager->cost_cache_[0];
     for (i = 1; i < cost_cache_size; ++i) {
-      const double cost_val = manager->cost_cache_[i];
+      const float cost_val = manager->cost_cache_[i];
       if (cost_val != cur->cost_) {
         ++cur;
         // Initialize an interval.
@@ -303,6 +307,8 @@ static int CostManagerInit(CostManager* const manager,
       }
       cur->end_ = i + 1;
     }
+    assert((size_t)(cur - manager->cache_intervals_) + 1 ==
+           manager->cache_intervals_size_);
   }
 
   manager->costs_ = (float*)WebPSafeMalloc(pix_count, sizeof(*manager->costs_));
@@ -311,7 +317,7 @@ static int CostManagerInit(CostManager* const manager,
     return 0;
   }
   // Set the initial costs_ high for every pixel as we will keep the minimum.
-  for (i = 0; i < pix_count; ++i) manager->costs_[i] = 1e38f;
+  for (i = 0; i < pix_count; ++i) manager->costs_[i] = FLT_MAX;
 
   return 1;
 }
@@ -457,7 +463,7 @@ static WEBP_INLINE void InsertInterval(CostManager* const manager,
 // If handling the interval or one of its subintervals becomes to heavy, its
 // contribution is added to the costs right away.
 static WEBP_INLINE void PushInterval(CostManager* const manager,
-                                     double distance_cost, int position,
+                                     float distance_cost, int position,
                                      int len) {
   size_t i;
   CostInterval* interval = manager->head_;
@@ -474,7 +480,7 @@ static WEBP_INLINE void PushInterval(CostManager* const manager,
       const int k = j - position;
       float cost_tmp;
       assert(k >= 0 && k < MAX_LENGTH);
-      cost_tmp = (float)(distance_cost + manager->cost_cache_[k]);
+      cost_tmp = distance_cost + manager->cost_cache_[k];
 
       if (manager->costs_[j] > cost_tmp) {
         manager->costs_[j] = cost_tmp;
@@ -492,7 +498,7 @@ static WEBP_INLINE void PushInterval(CostManager* const manager,
     const int end = position + (cost_cache_intervals[i].end_ > len
                                  ? len
                                  : cost_cache_intervals[i].end_);
-    const float cost = (float)(distance_cost + cost_cache_intervals[i].cost_);
+    const float cost = distance_cost + cost_cache_intervals[i].cost_;
 
     for (; interval != NULL && interval->start_ < end;
          interval = interval_next) {
@@ -570,22 +576,21 @@ static int BackwardReferencesHashChainDistanceOnly(
   const int pix_count = xsize * ysize;
   const int use_color_cache = (cache_bits > 0);
   const size_t literal_array_size =
-      sizeof(double) * (NUM_LITERAL_CODES + NUM_LENGTH_CODES +
-                        ((cache_bits > 0) ? (1 << cache_bits) : 0));
+      sizeof(float) * (VP8LHistogramNumCodes(cache_bits));
   const size_t cost_model_size = sizeof(CostModel) + literal_array_size;
   CostModel* const cost_model =
       (CostModel*)WebPSafeCalloc(1ULL, cost_model_size);
   VP8LColorCache hashers;
   CostManager* cost_manager =
-      (CostManager*)WebPSafeMalloc(1ULL, sizeof(*cost_manager));
+      (CostManager*)WebPSafeCalloc(1ULL, sizeof(*cost_manager));
   int offset_prev = -1, len_prev = -1;
-  double offset_cost = -1;
+  float offset_cost = -1.f;
   int first_offset_is_constant = -1;  // initialized with 'impossible' value
   int reach = 0;
 
   if (cost_model == NULL || cost_manager == NULL) goto Error;
 
-  cost_model->literal_ = (double*)(cost_model + 1);
+  cost_model->literal_ = (float*)(cost_model + 1);
   if (use_color_cache) {
     cc_init = VP8LColorCacheInit(&hashers, cache_bits);
     if (!cc_init) goto Error;
@@ -675,7 +680,7 @@ static int BackwardReferencesHashChainDistanceOnly(
   }
 
   ok = !refs->error_;
-Error:
+ Error:
   if (cc_init) VP8LColorCacheClear(&hashers);
   CostManagerClear(cost_manager);
   WebPSafeFree(cost_model);

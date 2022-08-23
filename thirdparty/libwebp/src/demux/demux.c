@@ -25,7 +25,7 @@
 
 #define DMUX_MAJ_VERSION 1
 #define DMUX_MIN_VERSION 2
-#define DMUX_REV_VERSION 2
+#define DMUX_REV_VERSION 4
 
 typedef struct {
   size_t start_;        // start location of the data
@@ -614,7 +614,6 @@ static int IsValidExtendedFormat(const WebPDemuxer* const dmux) {
 
   while (f != NULL) {
     const int cur_frame_set = f->frame_num_;
-    int frame_count = 0;
 
     // Check frame properties.
     for (; f != NULL && f->frame_num_ == cur_frame_set; f = f->next_) {
@@ -649,8 +648,6 @@ static int IsValidExtendedFormat(const WebPDemuxer* const dmux) {
                             dmux->canvas_width_, dmux->canvas_height_)) {
         return 0;
       }
-
-      ++frame_count;
     }
   }
   return 1;
