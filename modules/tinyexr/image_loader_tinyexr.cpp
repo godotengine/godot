@@ -37,7 +37,7 @@
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
-Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale) {
+Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale) {
 	Vector<uint8_t> src_image;
 	uint64_t src_image_len = f->get_length();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -229,7 +229,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool
 							color.a = *a_channel++;
 						}
 
-						if (p_force_linear) {
+						if (p_flags & FLAG_FORCE_LINEAR) {
 							color = color.srgb_to_linear();
 						}
 
@@ -260,7 +260,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool
 							color.a = *a_channel++;
 						}
 
-						if (p_force_linear) {
+						if (p_flags & FLAG_FORCE_LINEAR) {
 							color = color.srgb_to_linear();
 						}
 
