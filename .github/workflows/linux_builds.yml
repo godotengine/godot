@@ -26,7 +26,7 @@ jobs:
             target: release_debug
             tools: true
             tests: false # Disabled due freeze caused by mix Mono build and CI
-            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
+            sconsflags: module_mono_enabled=yes
             doc-test: true
             bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
             build-mono: true
@@ -64,7 +64,7 @@ jobs:
             target: release
             tools: false
             tests: false
-            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
+            sconsflags: module_mono_enabled=yes debug_symbols=no
             build-mono: false
             artifact: true
 
@@ -125,16 +125,6 @@ jobs:
         if: ${{ matrix.build-mono }}
         run: |
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
-
-      # Rebuild with mono
-      - name: Compilation (mono_glue=yes)
-        uses: ./.github/actions/godot-build
-        if: ${{ matrix.build-mono }}
-        with:
-          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} mono_glue=yes
-          platform: linuxbsd
-          target: ${{ matrix.target }}
-          tools: ${{ matrix.tools }}
 
       # Execute unit tests for the editor
       - name: Unit tests
