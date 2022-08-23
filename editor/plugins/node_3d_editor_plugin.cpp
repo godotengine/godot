@@ -46,6 +46,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -2972,6 +2973,13 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					xform.scale_basis(sp->get_scale());
 				}
 
+				if (Object::cast_to<Decal>(E)) {
+					// Adjust rotation to match Decal's default orientation.
+					// This makes the decal "look" in the same direction as the camera,
+					// rather than pointing down relative to the camera orientation.
+					xform.basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
+				}
+
 				undo_redo->add_do_method(sp, "set_global_transform", xform);
 				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
 			}
@@ -2999,7 +3007,16 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(sp, "set_rotation", camera_transform.basis.get_euler_normalized());
+				Basis basis = camera_transform.basis;
+
+				if (Object::cast_to<Decal>(E)) {
+					// Adjust rotation to match Decal's default orientation.
+					// This makes the decal "look" in the same direction as the camera,
+					// rather than pointing down relative to the camera orientation.
+					basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
+				}
+
+				undo_redo->add_do_method(sp, "set_rotation", basis.get_euler_normalized());
 				undo_redo->add_undo_method(sp, "set_rotation", sp->get_rotation());
 			}
 			undo_redo->commit_action();
