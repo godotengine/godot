@@ -14,8 +14,7 @@
     "format:engine": "npm run lint:engine -- --fix",
     "format:libs": "npm run lint:libs -- --fix",
     "format:modules": "npm run lint:modules -- --fix",
-    "format:tools": "npm run lint:tools -- --fix",
-    "serve": "serve"
+    "format:tools": "npm run lint:tools -- --fix"
   },
   "author": "Godot Engine contributors",
   "license": "MIT",
@@ -23,7 +22,6 @@
     "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4",
-    "jsdoc": "^3.6.7",
-    "serve": "^13.0.2"
+    "jsdoc": "^3.6.7"
   }
 }
