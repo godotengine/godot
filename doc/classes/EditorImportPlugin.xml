@@ -115,7 +115,7 @@
 	</tutorials>
 	<methods>
 		<method name="_get_import_options" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="preset_index" type="int" />
 			<description>

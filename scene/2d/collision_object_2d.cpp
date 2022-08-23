@@ -361,8 +361,8 @@ void CollisionObject2D::get_shape_owners(List<uint32_t> *r_owners) {
 	}
 }
 
-Array CollisionObject2D::_get_shape_owners() {
-	Array ret;
+PackedInt32Array CollisionObject2D::_get_shape_owners() {
+	PackedInt32Array ret;
 	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ret.push_back(E.key);
 	}

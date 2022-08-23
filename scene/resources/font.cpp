@@ -1267,7 +1267,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 	for (int i = 0; i < cache.size(); i++) {
 		String prefix = "cache/" + itos(i) + "/";
-		Array sizes = get_size_cache_list(i);
+		TypedArray<Vector2i> sizes = get_size_cache_list(i);
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -1289,7 +1289,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 			}
-			Array glyphs = get_glyph_list(i, sz);
+			PackedInt32Array glyphs = get_glyph_list(i, sz);
 			for (int k = 0; k < glyphs.size(); k++) {
 				const int32_t &gl = glyphs[k];
 				if (sz.y == 0) {
@@ -1301,7 +1301,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::INT, prefix_sz + "glyphs/" + itos(gl) + "/texture_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 			}
 			if (sz.y == 0) {
-				Array kerning_map = get_kerning_list(i, sz.x);
+				TypedArray<Vector2i> kerning_map = get_kerning_list(i, sz.x);
 				for (int k = 0; k < kerning_map.size(); k++) {
 					const Vector2i &gl_pair = kerning_map[k];
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "kerning_overrides/" + itos(gl_pair.x) + "/" + itos(gl_pair.y), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -2089,7 +2089,7 @@ void FontFile::remove_cache(int p_cache_index) {
 	emit_changed();
 }
 
-Array FontFile::get_size_cache_list(int p_cache_index) const {
+TypedArray<Vector2i> FontFile::get_size_cache_list(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_size_cache_list(cache[p_cache_index]);
@@ -2260,8 +2260,8 @@ PackedInt32Array FontFile::get_texture_offsets(int p_cache_index, const Vector2i
 	return TS->font_get_texture_offsets(cache[p_cache_index], p_size, p_texture_index);
 }
 
-Array FontFile::get_glyph_list(int p_cache_index, const Vector2i &p_size) const {
-	ERR_FAIL_COND_V(p_cache_index < 0, Array());
+PackedInt32Array FontFile::get_glyph_list(int p_cache_index, const Vector2i &p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, PackedInt32Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_list(cache[p_cache_index], p_size);
 }
@@ -2338,7 +2338,7 @@ int FontFile::get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, i
 	return TS->font_get_glyph_texture_idx(cache[p_cache_index], p_size, p_glyph);
 }
 
-Array FontFile::get_kerning_list(int p_cache_index, int p_size) const {
+TypedArray<Vector2i> FontFile::get_kerning_list(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_kerning_list(cache[p_cache_index], p_size);

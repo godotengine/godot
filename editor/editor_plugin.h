@@ -67,7 +67,7 @@ protected:
 	static void _bind_methods();
 	static EditorInterface *singleton;
 
-	Array _make_mesh_previews(const Array &p_meshes, int p_preview_size);
+	TypedArray<Texture2D> _make_mesh_previews(const Array &p_meshes, int p_preview_size);
 
 public:
 	static EditorInterface *get_singleton() { return singleton; }
@@ -87,7 +87,7 @@ public:
 	String get_playing_scene() const;
 
 	Node *get_edited_scene_root();
-	Array get_open_scenes() const;
+	PackedStringArray get_open_scenes() const;
 	ScriptEditor *get_script_editor();
 
 	EditorCommandPalette *get_command_palette() const;

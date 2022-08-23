@@ -245,7 +245,7 @@
 			</description>
 		</method>
 		<method name="get_point_ids">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<description>
 				Returns an array of all point IDs.
 			</description>

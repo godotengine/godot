@@ -83,7 +83,7 @@ bool DisplayServerAndroid::tts_is_paused() const {
 	return TTS_Android::is_paused();
 }
 
-Array DisplayServerAndroid::tts_get_voices() const {
+TypedArray<Dictionary> DisplayServerAndroid::tts_get_voices() const {
 	return TTS_Android::get_voices();
 }
 
@@ -136,7 +136,7 @@ bool DisplayServerAndroid::clipboard_has() const {
 	}
 }
 
-Array DisplayServerAndroid::get_display_cutouts() const {
+TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
 	return godot_io_java->get_display_cutouts();

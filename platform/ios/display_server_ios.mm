@@ -336,8 +336,8 @@ bool DisplayServerIOS::tts_is_paused() const {
 	return [tts isPaused];
 }
 
-Array DisplayServerIOS::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+TypedArray<Dictionary> DisplayServerIOS::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
 	return [tts getVoices];
 }
 

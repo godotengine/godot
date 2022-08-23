@@ -165,8 +165,8 @@ float GodotIOJavaWrapper::get_screen_refresh_rate(float fallback) {
 	return fallback;
 }
 
-Array GodotIOJavaWrapper::get_display_cutouts() {
-	Array result;
+TypedArray<Rect2> GodotIOJavaWrapper::get_display_cutouts() {
+	TypedArray<Rect2> result;
 	ERR_FAIL_NULL_V(_get_display_cutouts, result);
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, result);

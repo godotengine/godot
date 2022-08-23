@@ -30,7 +30,7 @@
 			</description>
 		</method>
 		<method name="capture_get_device_list">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all audio input devices detected on the system.
 			</description>
@@ -117,7 +117,7 @@
 			</description>
 		</method>
 		<method name="get_device_list">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all audio devices detected on the system.
 			</description>

@@ -188,7 +188,7 @@
 			</description>
 		</method>
 		<method name="font_get_glyph_list" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
@@ -268,7 +268,7 @@
 			</description>
 		</method>
 		<method name="font_get_kerning_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="int" />
 			<description>
@@ -349,7 +349,7 @@
 			</description>
 		</method>
 		<method name="font_get_size_cache_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
@@ -993,7 +993,7 @@
 			</description>
 		</method>
 		<method name="parse_structured_text" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="parser_type" type="int" enum="TextServer.StructuredTextParser" />
 			<param index="1" name="args" type="Array" />
 			<param index="2" name="text" type="String" />

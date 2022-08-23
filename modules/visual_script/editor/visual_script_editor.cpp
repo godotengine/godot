@@ -2850,8 +2850,8 @@ void VisualScriptEditor::reload(bool p_soft) {
 	_update_graph();
 }
 
-Array VisualScriptEditor::get_breakpoints() {
-	Array breakpoints;
+PackedInt32Array VisualScriptEditor::get_breakpoints() {
+	PackedInt32Array breakpoints;
 	List<StringName> functions;
 	script->get_function_list(&functions);
 	for (int i = 0; i < functions.size(); i++) {

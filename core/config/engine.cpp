@@ -36,6 +36,7 @@
 #include "core/io/json.h"
 #include "core/license.gen.h"
 #include "core/os/os.h"
+#include "core/variant/typed_array.h"
 #include "core/version.h"
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
@@ -136,8 +137,8 @@ Dictionary Engine::get_author_info() const {
 	return dict;
 }
 
-Array Engine::get_copyright_info() const {
-	Array components;
+TypedArray<Dictionary> Engine::get_copyright_info() const {
+	TypedArray<Dictionary> components;
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 		const ComponentCopyright &cp_info = COPYRIGHT_INFO[component_index];
 		Dictionary component_dict;

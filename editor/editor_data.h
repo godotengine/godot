@@ -271,7 +271,7 @@ class EditorSelection : public Object {
 	List<Node *> selected_node_list;
 
 	void _update_node_list();
-	Array _get_transformable_selected_nodes();
+	TypedArray<Node> _get_transformable_selected_nodes();
 	void _emit_change();
 
 protected:

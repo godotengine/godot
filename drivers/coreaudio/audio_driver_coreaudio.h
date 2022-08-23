@@ -59,7 +59,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 	Vector<int16_t> input_buf;
 
 #ifdef MACOS_ENABLED
-	Array _get_device_list(bool capture = false);
+	PackedStringArray _get_device_list(bool capture = false);
 	void _set_device(const String &device, bool capture = false);
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
@@ -107,11 +107,11 @@ public:
 	void stop();
 
 #ifdef MACOS_ENABLED
-	virtual Array get_device_list();
+	virtual PackedStringArray get_device_list();
 	virtual String get_device();
 	virtual void set_device(String device);
 
-	virtual Array capture_get_device_list();
+	virtual PackedStringArray capture_get_device_list();
 	virtual void capture_set_device(const String &p_name);
 	virtual String capture_get_device();
 #endif

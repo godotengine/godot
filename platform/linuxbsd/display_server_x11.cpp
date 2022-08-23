@@ -322,8 +322,8 @@ bool DisplayServerX11::tts_is_paused() const {
 	return tts->is_paused();
 }
 
-Array DisplayServerX11::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+TypedArray<Dictionary> DisplayServerX11::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 

@@ -66,7 +66,7 @@
 			</description>
 		</method>
 		<method name="class_get_method_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
@@ -83,7 +83,7 @@
 			</description>
 		</method>
 		<method name="class_get_property_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
@@ -99,7 +99,7 @@
 			</description>
 		</method>
 		<method name="class_get_signal_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>

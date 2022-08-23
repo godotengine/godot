@@ -105,7 +105,7 @@
 			</description>
 		</method>
 		<method name="get_display_cutouts" qualifiers="const">
-			<return type="Array" />
+			<return type="Rect2[]" />
 			<description>
 				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
 				[b]Note:[/b] Currently only implemented on Android. Other platforms will return an empty array even if they do have display cutouts or notches.
@@ -857,7 +857,7 @@
 			</description>
 		</method>
 		<method name="tts_get_voices" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of voice information dictionaries.
 				Each [Dictionary] contains two [String] entries:

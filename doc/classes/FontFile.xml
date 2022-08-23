@@ -146,7 +146,7 @@
 			</description>
 		</method>
 		<method name="get_glyph_list" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
@@ -199,7 +199,7 @@
 			</description>
 		</method>
 		<method name="get_kerning_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
@@ -233,7 +233,7 @@
 			</description>
 		</method>
 		<method name="get_size_cache_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.

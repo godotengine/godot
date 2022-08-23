@@ -1143,8 +1143,8 @@ void EditorSelection::_emit_change() {
 	emitted = false;
 }
 
-Array EditorSelection::_get_transformable_selected_nodes() {
-	Array ret;
+TypedArray<Node> EditorSelection::_get_transformable_selected_nodes() {
+	TypedArray<Node> ret;
 
 	for (const Node *E : selected_node_list) {
 		ret.push_back(E);

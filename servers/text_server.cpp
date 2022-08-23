@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "servers/text_server.h"
+#include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
 TextServerManager *TextServerManager::singleton = nullptr;
@@ -1585,8 +1586,8 @@ String TextServer::strip_diacritics(const String &p_string) const {
 	return result;
 }
 
-Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	Array ret;
+TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector2i> ret;
 	switch (p_parser_type) {
 		case STRUCTURED_TEXT_URI: {
 			int prev = 0;

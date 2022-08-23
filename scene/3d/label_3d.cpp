@@ -432,7 +432,7 @@ void Label3D::_shape() {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 
-		Array stt;
+		TypedArray<Vector2i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
 			GDVIRTUAL_CALL(_structured_text_parser, st_args, text, stt);
 		} else {

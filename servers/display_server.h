@@ -198,7 +198,7 @@ private:
 public:
 	virtual bool tts_is_speaking() const;
 	virtual bool tts_is_paused() const;
-	virtual Array tts_get_voices() const;
+	virtual TypedArray<Dictionary> tts_get_voices() const;
 	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
 
 	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
@@ -230,7 +230,7 @@ public:
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 
-	virtual Array get_display_cutouts() const { return Array(); }
+	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {

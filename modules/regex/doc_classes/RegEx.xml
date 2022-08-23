@@ -76,7 +76,7 @@
 			</description>
 		</method>
 		<method name="get_names" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Returns an array of names of named capturing groups in the compiled pattern. They are ordered by appearance.
 			</description>

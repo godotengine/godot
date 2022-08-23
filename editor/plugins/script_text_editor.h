@@ -229,7 +229,7 @@ public:
 	virtual void clear_executing_line() override;
 
 	virtual void reload(bool p_soft) override;
-	virtual Array get_breakpoints() override;
+	virtual PackedInt32Array get_breakpoints() override;
 	virtual void set_breakpoint(int p_line, bool p_enabled) override;
 	virtual void clear_breakpoints() override;
 

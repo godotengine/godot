@@ -328,7 +328,7 @@ protected:
 
 	// Internationalization.
 
-	virtual Array structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	virtual TypedArray<Vector2i> structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	// Base object overrides.
 
@@ -341,7 +341,7 @@ protected:
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
-	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL2RC(TypedArray<Vector2i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 
 	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)

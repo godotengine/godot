@@ -39,6 +39,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/variant/typed_array.h"
 
 namespace core_bind {
 
@@ -2022,10 +2023,10 @@ Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 	}
 }
 
-Array ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
-	Array ret;
+	TypedArray<Dictionary> ret;
 
 	for (const MethodInfo &E : signals) {
 		ret.push_back(E.operator Dictionary());
@@ -2034,10 +2035,10 @@ Array ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const 
 	return ret;
 }
 
-Array ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
-	Array ret;
+	TypedArray<Dictionary> ret;
 	for (const PropertyInfo &E : plist) {
 		ret.push_back(E.operator Dictionary());
 	}
@@ -2066,10 +2067,10 @@ bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inhe
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-Array ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
-	Array ret;
+	TypedArray<Dictionary> ret;
 
 	for (const MethodInfo &E : methods) {
 #ifdef DEBUG_METHODS_ENABLED
@@ -2254,7 +2255,7 @@ Dictionary Engine::get_author_info() const {
 	return ::Engine::get_singleton()->get_author_info();
 }
 
-Array Engine::get_copyright_info() const {
+TypedArray<Dictionary> Engine::get_copyright_info() const {
 	return ::Engine::get_singleton()->get_copyright_info();
 }
 

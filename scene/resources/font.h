@@ -230,7 +230,7 @@ public:
 	virtual void clear_cache();
 	virtual void remove_cache(int p_cache_index);
 
-	virtual Array get_size_cache_list(int p_cache_index) const;
+	virtual TypedArray<Vector2i> get_size_cache_list(int p_cache_index) const;
 	virtual void clear_size_cache(int p_cache_index);
 	virtual void remove_size_cache(int p_cache_index, const Vector2i &p_size);
 
@@ -271,7 +271,7 @@ public:
 	virtual void set_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset);
 	virtual PackedInt32Array get_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index) const;
 
-	virtual Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
+	virtual PackedInt32Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
 	virtual void clear_glyphs(int p_cache_index, const Vector2i &p_size);
 	virtual void remove_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_glyph);
 
@@ -290,7 +290,7 @@ public:
 	virtual void set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx);
 	virtual int get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
 
-	virtual Array get_kerning_list(int p_cache_index, int p_size) const;
+	virtual TypedArray<Vector2i> get_kerning_list(int p_cache_index, int p_size) const;
 	virtual void clear_kerning_map(int p_cache_index, int p_size);
 	virtual void remove_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair);
 

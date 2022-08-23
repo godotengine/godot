@@ -35,6 +35,9 @@
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 
+template <typename T>
+class TypedArray;
+
 class BitMap : public Resource {
 	GDCLASS(BitMap, Resource);
 	OBJ_SAVE_TYPE(BitMap);
@@ -45,7 +48,7 @@ class BitMap : public Resource {
 
 	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
 
-	Array _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
+	TypedArray<PackedVector2Array> _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
 
 protected:
 	void _set_data(const Dictionary &p_d);
