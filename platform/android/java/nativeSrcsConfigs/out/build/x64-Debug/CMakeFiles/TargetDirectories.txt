@@ -1,0 +1,3 @@
+C:/Users/Alex/Desktop/Godot_v3.1.1-stable_mono_win64/godot master/godot/platform/android/java/nativeSrcsConfigs/out/build/x64-Debug/CMakeFiles/godot.dir
+C:/Users/Alex/Desktop/Godot_v3.1.1-stable_mono_win64/godot master/godot/platform/android/java/nativeSrcsConfigs/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/Alex/Desktop/Godot_v3.1.1-stable_mono_win64/godot master/godot/platform/android/java/nativeSrcsConfigs/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir

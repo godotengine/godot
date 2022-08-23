@@ -130,7 +130,7 @@ protected:
 public:
 	int get_available_point_id() const;
 
-	void add_point(int p_id, const Vector3& p_pos, real_t p_weight_scale = 1, int p_parallel_support_layers = 0);
+	void add_point(int p_id, const Vector3& p_pos, real_t p_weight_scale = 1, int p_layers = 0);
 	void append_as_bulk_array(const PoolVector<real_t> &pool_points , int max_connections, const PoolVector<int> &pool_connections);
 	void set_as_bulk_array(const PoolVector<real_t> &pool_points, int max_connections, const PoolVector<int> &pool_connections);
 
@@ -146,9 +146,9 @@ public:
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
 
-	void set_point_parallel_layer(int p_id, int layer_index, bool l_disabled = true);
-	bool get_point_parallel_layer(int p_id,int layer_index) const;
-
+	void set_point_layer(int p_id, int layer_index, bool l_disabled = true);
+	bool get_point_layer(int p_id,int layer_index) const;
+	int get_point_layers_value(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id, bool bidirectional = true);

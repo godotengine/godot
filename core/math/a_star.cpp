@@ -46,10 +46,10 @@ int AStar::get_available_point_id() const {
 	return last_free_id;
 }
 
-void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale, int p_parallel_support_layers) {
+void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale, int p_layers) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
-	ERR_FAIL_INDEX_MSG(p_parallel_support_layers, 1 << 31 - 1, vformat("Can't add a point with p_parallel_support_layers less than 0 or more than 2^31 - 1: %d.", p_parallel_support_layers));
+	ERR_FAIL_INDEX_MSG(p_layers, 1 << 31 - 1, vformat("Can't add a point with layers value less than 0 or more than 2^31 - 1: %d.", p_layers));
 
 	Point *found_pt;
 	bool p_exists = points.lookup(p_id, found_pt);
@@ -59,7 +59,7 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale, int
 		pt->id = p_id;
 		pt->pos = p_pos;
 		pt->weight_scale = p_weight_scale;
-		pt->parallel_support_layers = p_parallel_support_layers;
+		pt->parallel_support_layers = p_layers;
 		pt->prev_point = nullptr;
 		pt->open_pass = 0;
 		pt->closed_pass = 0;
@@ -91,9 +91,9 @@ void AStar::append_as_bulk_array(const PoolVector<real_t> &pool_points, int max_
 		float y = r[i * 6 + 2];
 		float z = r[i * 6 + 3];
 		float p_weight_scale = r[i * 6 + 4];
-		int p_parallel_support_layers = r[i * 6 + 5];
+		int p_layers = r[i * 6 + 5];
 		Vector3 p_pos = Vector3(x, y, z);
-		add_point(p_id, p_pos, p_weight_scale, p_parallel_support_layers);
+		add_point(p_id, p_pos, p_weight_scale, p_layers);
 		
 	}
 
@@ -139,11 +139,11 @@ void AStar::set_as_bulk_array(const PoolVector<real_t> &pool_points, int max_con
 		float y = r[i * 6 + 2];
 		float z = r[i * 6 + 3];
 		float p_weight_scale = r[i * 6 + 4];
-		int p_parallel_support_layers = r[i * 6 + 5];
+		int p_layers = r[i * 6 + 5];
 
 		ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 		ERR_FAIL_COND_MSG(p_weight_scale < 0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
-		ERR_FAIL_INDEX_MSG(p_parallel_support_layers, 1 << 31 - 1, vformat("Can't add a point with p_parallel_support_layers less than 0 or more than 2^31 - 1: %d.", p_parallel_support_layers));
+		ERR_FAIL_INDEX_MSG(p_layers, 1 << 31 - 1, vformat("Can't add a point with layers value less than 0 or more than 2^31 - 1: %d.", p_layers));
 
 		Vector3 p_pos = Vector3(x, y, z);
 
@@ -151,7 +151,7 @@ void AStar::set_as_bulk_array(const PoolVector<real_t> &pool_points, int max_con
 		pt->id = p_id;
 		pt->pos = p_pos;
 		pt->weight_scale = p_weight_scale;
-		pt->parallel_support_layers = p_parallel_support_layers;
+		pt->parallel_support_layers = p_layers;
 		pt->prev_point = nullptr;
 		pt->open_pass = 0;
 		pt->closed_pass = 0;
@@ -657,11 +657,11 @@ bool AStar::is_point_disabled(int p_id) const {
 
 
 
-void AStar::set_point_parallel_layer(int p_id, int layer_index, bool l_disabled)
+void AStar::set_point_layer(int p_id, int layer_index, bool l_disabled)
 {
 	Point* p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set parallel layer index. Point with id: %d doesn't exist.", p_id));
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point layer index. Point with id: %d doesn't exist.", p_id));
 
 
 	ERR_FAIL_INDEX(layer_index, 31);
@@ -676,22 +676,31 @@ void AStar::set_point_parallel_layer(int p_id, int layer_index, bool l_disabled)
 	}
 }
 
-bool AStar::get_point_parallel_layer(int p_id,int layer_index) const
+bool AStar::get_point_layer(int p_id,int layer_index) const
 {
 	Point* p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point supports parallel layer index. Point with id: %d doesn't exist.", p_id));
+	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point supports layer index. Point with id: %d doesn't exist.", p_id));
 
 	uint32_t layers = p->parallel_support_layers;
 	ERR_FAIL_INDEX_V(layer_index, 31, false);
 	return (layers & (1 << layer_index));
 }
 
+int AStar::get_point_layers_value(int p_id) const
+{
+	Point* p;
+	bool p_exists = points.lookup(p_id, p);
+	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get the point's layers value. Point with id: %d doesn't exist.", p_id));
+
+	return p->parallel_support_layers;
+	
+}
 
 
 void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar::get_available_point_id);
-	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale","parallel_support_layers"), &AStar::add_point, DEFVAL(1.0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale","point_layers"), &AStar::add_point, DEFVAL(1.0), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("append_as_bulk_array", "pool_points", "max_connections", "pool_connections"), &AStar::append_as_bulk_array);
 	ClassDB::bind_method(D_METHOD("set_as_bulk_array", "pool_points", "max_connections","pool_connections"), &AStar::set_as_bulk_array);
@@ -708,9 +717,9 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
 
-	ClassDB::bind_method(D_METHOD("set_point_parallel_layer", "id","layer_index","disabled"), &AStar::set_point_parallel_layer, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_point_parallel_layer", "id", "layer_index"), &AStar::get_point_parallel_layer);
-	
+	ClassDB::bind_method(D_METHOD("set_point_layer", "id","layer_index","disabled"), &AStar::set_point_layer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_point_layer", "id", "layer_index"), &AStar::get_point_layer);
+	ClassDB::bind_method(D_METHOD("get_point_layers_value", "id"), &AStar::get_point_layers_value);
 	
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar::connect_points, DEFVAL(true));
