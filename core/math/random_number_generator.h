@@ -43,6 +43,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<RandomNumberGenerator> create_from_seed(const uint64_t p_seed);
+
 	_FORCE_INLINE_ void set_seed(uint64_t p_seed) { randbase.seed(p_seed); }
 	_FORCE_INLINE_ uint64_t get_seed() { return randbase.get_seed(); }
 

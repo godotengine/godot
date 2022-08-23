@@ -30,7 +30,16 @@
 
 #include "random_number_generator.h"
 
+Ref<RandomNumberGenerator> RandomNumberGenerator::create_from_seed(const uint64_t p_seed) {
+	Ref<RandomNumberGenerator> rng;
+	rng.instantiate();
+	rng->set_seed(p_seed);
+	return rng;
+}
+
 void RandomNumberGenerator::_bind_methods() {
+	ClassDB::bind_static_method("RandomNumberGenerator", D_METHOD("create_from_seed", "seed"), &RandomNumberGenerator::create_from_seed);
+
 	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &RandomNumberGenerator::set_seed);
 	ClassDB::bind_method(D_METHOD("get_seed"), &RandomNumberGenerator::get_seed);
 
