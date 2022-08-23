@@ -990,6 +990,13 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 	Size2 start_pos = size * -0.5;
 
+	Vector3 normal = Vector3(0.0, 1.0, 0.0);
+	if (orientation == FACE_X) {
+		normal = Vector3(1.0, 0.0, 0.0);
+	} else if (orientation == FACE_Z) {
+		normal = Vector3(0.0, 0.0, 1.0);
+	}
+
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
 	Vector<float> tangents;
@@ -1015,8 +1022,14 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 			u /= (subdivide_w + 1.0);
 			v /= (subdivide_d + 1.0);
 
-			points.push_back(Vector3(-x, 0.0, -z) + center_offset);
-			normals.push_back(Vector3(0.0, 1.0, 0.0));
+			if (orientation == FACE_X) {
+				points.push_back(Vector3(0.0, z, x) + center_offset);
+			} else if (orientation == FACE_Y) {
+				points.push_back(Vector3(-x, 0.0, -z) + center_offset);
+			} else if (orientation == FACE_Z) {
+				points.push_back(Vector3(-x, z, 0.0) + center_offset);
+			}
+			normals.push_back(normal);
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(1.0 - u, 1.0 - v)); /* 1.0 - uv to match orientation with Quad */
 			point++;
@@ -1053,13 +1066,22 @@ void PlaneMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &PlaneMesh::get_subdivide_width);
 	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "subdivide"), &PlaneMesh::set_subdivide_depth);
 	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &PlaneMesh::get_subdivide_depth);
+
 	ClassDB::bind_method(D_METHOD("set_center_offset", "offset"), &PlaneMesh::set_center_offset);
 	ClassDB::bind_method(D_METHOD("get_center_offset"), &PlaneMesh::get_center_offset);
+
+	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &PlaneMesh::set_orientation);
+	ClassDB::bind_method(D_METHOD("get_orientation"), &PlaneMesh::get_orientation);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_width", "get_subdivide_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_depth", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_depth", "get_subdivide_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_center_offset", "get_center_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Face X, Face Y, Face Z"), "set_orientation", "get_orientation");
+
+	BIND_ENUM_CONSTANT(FACE_X)
+	BIND_ENUM_CONSTANT(FACE_Y)
+	BIND_ENUM_CONSTANT(FACE_Z)
 }
 
 void PlaneMesh::set_size(const Size2 &p_size) {
@@ -1096,6 +1118,15 @@ void PlaneMesh::set_center_offset(const Vector3 p_offset) {
 
 Vector3 PlaneMesh::get_center_offset() const {
 	return center_offset;
+}
+
+void PlaneMesh::set_orientation(const Orientation p_orientation) {
+	orientation = p_orientation;
+	_request_update();
+}
+
+PlaneMesh::Orientation PlaneMesh::get_orientation() const {
+	return orientation;
 }
 
 PlaneMesh::PlaneMesh() {}
@@ -1379,98 +1410,6 @@ int PrismMesh::get_subdivide_depth() const {
 }
 
 PrismMesh::PrismMesh() {}
-
-/**
-  QuadMesh
-*/
-
-void QuadMesh::_create_mesh_array(Array &p_arr) const {
-	Vector<Vector3> faces;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-
-	faces.resize(6);
-	normals.resize(6);
-	tangents.resize(6 * 4);
-	uvs.resize(6);
-
-	Vector2 _size = Vector2(size.x / 2.0f, size.y / 2.0f);
-
-	Vector3 quad_faces[4] = {
-		Vector3(-_size.x, -_size.y, 0) + center_offset,
-		Vector3(-_size.x, _size.y, 0) + center_offset,
-		Vector3(_size.x, _size.y, 0) + center_offset,
-		Vector3(_size.x, -_size.y, 0) + center_offset,
-	};
-
-	static const int indices[6] = {
-		0, 1, 2,
-		0, 2, 3
-	};
-
-	for (int i = 0; i < 6; i++) {
-		int j = indices[i];
-		faces.set(i, quad_faces[j]);
-		normals.set(i, Vector3(0, 0, 1));
-		tangents.set(i * 4 + 0, 1.0);
-		tangents.set(i * 4 + 1, 0.0);
-		tangents.set(i * 4 + 2, 0.0);
-		tangents.set(i * 4 + 3, 1.0);
-
-		static const Vector2 quad_uv[4] = {
-			Vector2(0, 1),
-			Vector2(0, 0),
-			Vector2(1, 0),
-			Vector2(1, 1),
-		};
-
-		uvs.set(i, quad_uv[j]);
-	}
-
-	p_arr[RS::ARRAY_VERTEX] = faces;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
-}
-
-void QuadMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadMesh::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &QuadMesh::get_size);
-	ClassDB::bind_method(D_METHOD("set_center_offset", "center_offset"), &QuadMesh::set_center_offset);
-	ClassDB::bind_method(D_METHOD("get_center_offset"), &QuadMesh::get_center_offset);
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_center_offset", "get_center_offset");
-}
-
-uint32_t QuadMesh::surface_get_format(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, 1, 0);
-
-	return RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_TANGENT | RS::ARRAY_FORMAT_TEX_UV;
-}
-
-QuadMesh::QuadMesh() {
-	primitive_type = PRIMITIVE_TRIANGLES;
-}
-
-void QuadMesh::set_size(const Size2 &p_size) {
-	size = p_size;
-	_request_update();
-}
-
-Size2 QuadMesh::get_size() const {
-	return size;
-}
-
-void QuadMesh::set_center_offset(Vector3 p_center_offset) {
-	center_offset = p_center_offset;
-	_request_update();
-}
-
-Vector3 QuadMesh::get_center_offset() const {
-	return center_offset;
-}
 
 /**
   SphereMesh

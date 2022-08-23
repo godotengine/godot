@@ -217,17 +217,25 @@ public:
 	CylinderMesh();
 };
 
-/**
-	Similar to quadmesh but with tessellation support
+/*
+	A flat rectangle, can be used as quad or heightmap.
 */
 class PlaneMesh : public PrimitiveMesh {
 	GDCLASS(PlaneMesh, PrimitiveMesh);
+
+public:
+	enum Orientation {
+		FACE_X,
+		FACE_Y,
+		FACE_Z,
+	};
 
 private:
 	Size2 size = Size2(2.0, 2.0);
 	int subdivide_w = 0;
 	int subdivide_d = 0;
 	Vector3 center_offset;
+	Orientation orientation = FACE_Y;
 
 protected:
 	static void _bind_methods();
@@ -246,8 +254,13 @@ public:
 	void set_center_offset(const Vector3 p_offset);
 	Vector3 get_center_offset() const;
 
+	void set_orientation(const Orientation p_orientation);
+	Orientation get_orientation() const;
+
 	PlaneMesh();
 };
+
+VARIANT_ENUM_CAST(PlaneMesh::Orientation)
 
 /**
 	A prism shapen, handy for ramps, triangles, etc.
@@ -283,33 +296,6 @@ public:
 	int get_subdivide_depth() const;
 
 	PrismMesh();
-};
-
-/**
-	Our original quadmesh...
-*/
-
-class QuadMesh : public PrimitiveMesh {
-	GDCLASS(QuadMesh, PrimitiveMesh);
-
-private:
-	Size2 size = Size2(1.0, 1.0);
-	Vector3 center_offset;
-
-protected:
-	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr) const override;
-
-public:
-	virtual uint32_t surface_get_format(int p_idx) const override;
-
-	QuadMesh();
-
-	void set_size(const Size2 &p_size);
-	Size2 get_size() const;
-
-	void set_center_offset(const Vector3 p_offset);
-	Vector3 get_center_offset() const;
 };
 
 /**
