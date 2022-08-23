@@ -4,7 +4,7 @@ using Godot.NativeInterop;
 
 namespace Godot.Bridge;
 
-public class GodotSerializationInfo : IDisposable
+public sealed class GodotSerializationInfo : IDisposable
 {
     private readonly Collections.Dictionary _properties;
     private readonly Collections.Dictionary _signalEvents;
