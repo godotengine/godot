@@ -1888,7 +1888,7 @@ void VisualScriptEditor::_on_nodes_delete(const Array &p_nodes) {
 			}
 		}
 	} else {
-		for (int i = 0; i < graph->get_child_count(); i++) {
+		for (int i = 0; i < p_nodes.size(); i++) {
 			to_erase.push_back(p_nodes[i].operator String().to_int());
 		}
 	}
