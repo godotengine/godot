@@ -185,25 +185,16 @@ public:
 
 	mutable RID_Owner<Viewport, true> viewport_owner;
 
-	struct ViewportSort {
-		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {
-			bool left_to_screen = p_left->viewport_to_screen_rect.size != Size2();
-			bool right_to_screen = p_right->viewport_to_screen_rect.size != Size2();
-
-			if (left_to_screen == right_to_screen) {
-				return p_right->parent == p_left->self;
-			}
-			return (right_to_screen ? 0 : 1) < (left_to_screen ? 0 : 1);
-		}
-	};
-
 	Vector<Viewport *> active_viewports;
+	Vector<Viewport *> sorted_active_viewports;
+	bool sorted_active_viewports_dirty = false;
 
 	int total_objects_drawn = 0;
 	int total_vertices_drawn = 0;
 	int total_draw_calls_used = 0;
 
 private:
+	Vector<Viewport *> _sort_active_viewports();
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
