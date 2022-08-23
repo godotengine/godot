@@ -6,20 +6,20 @@
 	<description>
 		A [Texture2D] based on an [Image]. For an image to be displayed, an [ImageTexture] has to be created from it using the [method create_from_image] method:
 		[codeblock]
-		var image = Image.load_from_file("res://icon.png")
+		var image = Image.load_from_file("res://icon.svg")
 		var texture = ImageTexture.create_from_image(image)
 		$Sprite2D.texture = texture
 		[/codeblock]
 		This way, textures can be created at run-time by loading images both from within the editor and externally.
 		[b]Warning:[/b] Prefer to load imported textures with [method @GDScript.load] over loading them from within the filesystem dynamically with [method Image.load], as it may not work in exported projects:
 		[codeblock]
-		var texture = load("res://icon.png")
+		var texture = load("res://icon.svg")
 		$Sprite2D.texture = texture
 		[/codeblock]
 		This is because images have to be imported as a [CompressedTexture2D] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
 		[b]Note:[/b] The image can be retrieved from an imported texture using the [method Texture2D.get_image] method, which returns a copy of the image:
 		[codeblock]
-		var texture = load("res://icon.png")
+		var texture = load("res://icon.svg")
 		var image : Image = texture.get_image()
 		[/codeblock]
 		An [ImageTexture] is not meant to be operated from within the editor interface directly, and is mostly useful for rendering images on screen dynamically via code. If you need to generate images procedurally from within the editor, consider saving and importing images as custom texture resources implementing a new [EditorImportPlugin].

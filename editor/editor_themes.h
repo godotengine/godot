@@ -38,6 +38,6 @@ Ref<Theme> create_editor_theme(Ref<Theme> p_theme = nullptr);
 
 Ref<Theme> create_custom_theme(Ref<Theme> p_theme = nullptr);
 
-Ref<ImageTexture> create_unscaled_default_project_icon();
+String get_default_project_icon();
 
 #endif // EDITOR_THEMES_H

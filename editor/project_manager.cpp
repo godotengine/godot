@@ -484,12 +484,20 @@ private:
 					project_features.sort();
 					initial_settings["application/config/features"] = project_features;
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
-					initial_settings["application/config/icon"] = "res://icon.png";
+					initial_settings["application/config/icon"] = "res://icon.svg";
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(create_unscaled_default_project_icon(), dir.plus_file("icon.png"));
+						// Store default project icon in SVG format.
+						Error err;
+						Ref<FileAccess> fa_icon = FileAccess::open(dir.plus_file("icon.svg"), FileAccess::WRITE, &err);
+						fa_icon->store_string(get_default_project_icon());
+
+						if (err != OK) {
+							set_message(TTR("Couldn't create icon.svg in project path."), MESSAGE_ERROR);
+						}
+
 						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
 					}
 				} else if (mode == MODE_INSTALL) {
