@@ -990,6 +990,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "close_h_ofs", "close_h_offset" }, // Theme
 	{ "close_v_ofs", "close_v_offset" }, // Theme
 	{ "commentfocus", "comment_focus" }, // Theme
+	{ "contacts_reported", "max_contacts_reported" }, // RigidDynamicBody
 	{ "drag_margin_bottom", "drag_bottom_margin" }, // Camera2D
 	{ "drag_margin_h_enabled", "drag_horizontal_enabled" }, // Camera2D
 	{ "drag_margin_left", "drag_left_margin" }, // Camera2D
