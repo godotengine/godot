@@ -211,7 +211,7 @@ VERTEX_SHADER_CODE
 
 	xform = transpose(xform);
 
-	out_velocity_active.a = mix(0.0, 1.0, shader_active);
+	out_velocity_active.a = float(shader_active);
 
 	out_xform_1 = xform[0];
 	out_xform_2 = xform[1];
