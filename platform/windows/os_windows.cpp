@@ -3339,16 +3339,6 @@ BOOL is_wow64() {
 	return wow64;
 }
 
-int OS_Windows::get_processor_count() const {
-	SYSTEM_INFO sysinfo;
-	if (is_wow64())
-		GetNativeSystemInfo(&sysinfo);
-	else
-		GetSystemInfo(&sysinfo);
-
-	return sysinfo.dwNumberOfProcessors;
-}
-
 String OS_Windows::get_processor_name() const {
 	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
 
