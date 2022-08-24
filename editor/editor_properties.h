@@ -625,9 +625,26 @@ public:
 
 class EditorPropertyQuaternion : public EditorProperty {
 	GDCLASS(EditorPropertyQuaternion, EditorProperty);
+	BoxContainer *default_layout = nullptr;
 	EditorSpinSlider *spin[4];
 	bool setting = false;
+
+	Button *warning = nullptr;
+	AcceptDialog *warning_dialog = nullptr;
+
+	Label *euler_label = nullptr;
+	VBoxContainer *edit_custom_bc = nullptr;
+	EditorSpinSlider *euler[3];
+	Button *edit_button = nullptr;
+
+	Vector3 edit_euler = Vector3();
+
 	void _value_changed(double p_val, const String &p_name);
+	void _edit_custom_value();
+	void _custom_value_changed(double p_val);
+	void _warning_pressed();
+
+	bool is_grabbing_euler();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -636,7 +653,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), bool p_hide_editor = false);
 	EditorPropertyQuaternion();
 };
 

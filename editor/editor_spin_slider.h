@@ -110,6 +110,8 @@ public:
 	void set_flat(bool p_enable);
 	bool is_flat() const;
 
+	bool is_grabbing() const;
+
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit();
 
