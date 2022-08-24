@@ -3322,12 +3322,18 @@ static SpvReflectResult ParseExecutionModes(
     }
     for (size_t entry_point_idx = 0; entry_point_idx < p_module->entry_point_count; ++entry_point_idx) {
       SpvReflectEntryPoint* p_entry_point = &p_module->entry_points[entry_point_idx];
-      p_entry_point->execution_modes =
-          (SpvExecutionMode*)calloc(p_entry_point->execution_mode_count, sizeof(*p_entry_point->execution_modes));
-      if (IsNull(p_entry_point->execution_modes)) {
-        SafeFree(indices);
-        return SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED;
+// -- GODOT begin --
+      if (p_entry_point->execution_mode_count > 0) {
+// -- GODOT end --
+        p_entry_point->execution_modes =
+            (SpvExecutionMode*)calloc(p_entry_point->execution_mode_count, sizeof(*p_entry_point->execution_modes));
+        if (IsNull(p_entry_point->execution_modes)) {
+          SafeFree(indices);
+          return SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED;
+        }
+// -- GODOT begin --
       }
+// -- GODOT end --
     }
 
     for (size_t node_idx = 0; node_idx < p_parser->node_count; ++node_idx) {
