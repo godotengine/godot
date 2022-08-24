@@ -45,6 +45,9 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
+template <typename T>
+class TypedArray;
+
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_lesser][,no_slider][,radians][,degrees][,exp][,suffix:<keyword>] range.
@@ -207,7 +210,7 @@ struct PropertyInfo {
 	}
 };
 
-Array convert_property_list(const List<PropertyInfo> *p_list);
+TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
 
 enum MethodFlags {
 	METHOD_FLAG_NORMAL = 1,
@@ -597,9 +600,9 @@ private:
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Array _get_signal_list() const;
-	Array _get_signal_connection_list(const StringName &p_signal) const;
-	Array _get_incoming_connections() const;
+	TypedArray<Dictionary> _get_signal_list() const;
+	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
+	TypedArray<Dictionary> _get_incoming_connections() const;
 	void _set_bind(const StringName &p_set, const Variant &p_value);
 	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
@@ -698,8 +701,8 @@ protected:
 	}
 
 	Vector<StringName> _get_meta_list_bind() const;
-	Array _get_property_list_bind() const;
-	Array _get_method_list_bind() const;
+	TypedArray<Dictionary> _get_property_list_bind() const;
+	TypedArray<Dictionary> _get_method_list_bind() const;
 
 	void _clear_internal_resource_paths(const Variant &p_var);
 

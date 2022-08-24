@@ -71,13 +71,13 @@ Array Mesh::surface_get_arrays(int p_surface) const {
 	return Array();
 }
 
-Array Mesh::surface_get_blend_shape_arrays(int p_surface) const {
-	Array ret;
+TypedArray<Array> Mesh::surface_get_blend_shape_arrays(int p_surface) const {
+	TypedArray<Array> ret;
 	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_blend_shape_arrays, p_surface, ret)) {
 		return ret;
 	}
 
-	return Array();
+	return TypedArray<Array>();
 }
 
 Dictionary Mesh::surface_get_lods(int p_surface) const {
@@ -1640,8 +1640,8 @@ Array ArrayMesh::surface_get_arrays(int p_surface) const {
 	return RenderingServer::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
 
-Array ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
-	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
+TypedArray<Array> ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), TypedArray<Array>());
 	return RenderingServer::get_singleton()->mesh_surface_get_blend_shape_arrays(mesh, p_surface);
 }
 

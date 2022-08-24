@@ -304,7 +304,7 @@ public:
 	void set_use_continuous_collision_detection(bool p_enable);
 	bool is_using_continuous_collision_detection() const;
 
-	Array get_colliding_bodies() const;
+	TypedArray<Node3D> get_colliding_bodies() const;
 
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());

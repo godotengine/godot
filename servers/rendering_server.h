@@ -42,6 +42,9 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+template <typename T>
+class TypedArray;
+
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
@@ -325,7 +328,7 @@ public:
 	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
 	Array mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const;
 	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
-	Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
+	TypedArray<Array> mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);

@@ -34,6 +34,9 @@
 #include "core/io/ip_address.h"
 #include "core/os/os.h"
 
+template <typename T>
+class TypedArray;
+
 struct _IP_ResolverPrivate;
 
 class IP : public Object {
@@ -68,8 +71,8 @@ protected:
 	static IP *singleton;
 	static void _bind_methods();
 
-	Array _get_local_addresses() const;
-	Array _get_local_interfaces() const;
+	PackedStringArray _get_local_addresses() const;
+	TypedArray<Dictionary> _get_local_interfaces() const;
 
 	static IP *(*_create)();
 
@@ -82,7 +85,7 @@ public:
 	};
 
 	IPAddress resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
-	Array resolve_hostname_addresses(const String &p_hostname, Type p_type = TYPE_ANY);
+	PackedStringArray resolve_hostname_addresses(const String &p_hostname, Type p_type = TYPE_ANY);
 	// async resolver hostname
 	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;

@@ -1000,8 +1000,8 @@ int64_t SceneTree::get_frame() const {
 	return current_frame;
 }
 
-Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
-	Array ret;
+TypedArray<Node> SceneTree::_get_nodes_in_group(const StringName &p_group) {
+	TypedArray<Node> ret;
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return ret;
@@ -1171,8 +1171,8 @@ Ref<Tween> SceneTree::create_tween() {
 	return tween;
 }
 
-Array SceneTree::get_processed_tweens() {
-	Array ret;
+TypedArray<Tween> SceneTree::get_processed_tweens() {
+	TypedArray<Tween> ret;
 	ret.resize(tweens.size());
 
 	int i = 0;

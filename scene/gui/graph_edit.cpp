@@ -1591,10 +1591,10 @@ void GraphEdit::remove_valid_left_disconnect_type(int p_type) {
 	valid_left_disconnect_types.erase(p_type);
 }
 
-Array GraphEdit::_get_connection_list() const {
+TypedArray<Dictionary> GraphEdit::_get_connection_list() const {
 	List<Connection> conns;
 	get_connection_list(&conns);
-	Array arr;
+	TypedArray<Dictionary> arr;
 	for (const Connection &E : conns) {
 		Dictionary d;
 		d["from"] = E.from;

@@ -53,7 +53,7 @@ public:
 	/// MUST be used in single thread!
 	static NavigationServer2D *get_singleton_mut() { return singleton; }
 
-	virtual Array get_maps() const;
+	virtual TypedArray<RID> get_maps() const;
 
 	/// Create a new map.
 	virtual RID map_create() const;
@@ -82,8 +82,8 @@ public:
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
 
-	virtual Array map_get_regions(RID p_map) const;
-	virtual Array map_get_agents(RID p_map) const;
+	virtual TypedArray<RID> map_get_regions(RID p_map) const;
+	virtual TypedArray<RID> map_get_agents(RID p_map) const;
 
 	virtual void map_force_update(RID p_map);
 

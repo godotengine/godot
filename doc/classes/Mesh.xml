@@ -60,7 +60,7 @@
 			</description>
 		</method>
 		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="Array[]" />
 			<param index="0" name="index" type="int" />
 			<description>
 			</description>
@@ -153,7 +153,7 @@
 			</description>
 		</method>
 		<method name="surface_get_blend_shape_arrays" qualifiers="const">
-			<return type="Array" />
+			<return type="Array[]" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the blend shape arrays for the requested surface.

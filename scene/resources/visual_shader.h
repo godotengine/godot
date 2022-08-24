@@ -132,7 +132,7 @@ private:
 	Shader::Mode shader_mode = Shader::MODE_SPATIAL;
 	mutable String previous_code;
 
-	Array _get_node_connections(Type p_type) const;
+	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
 	Vector2 graph_offset;
 

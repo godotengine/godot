@@ -141,7 +141,7 @@ private:
 
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
 
-	Array _get_nodes_in_group(const StringName &p_group);
+	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
 
@@ -367,7 +367,7 @@ public:
 
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
 	Ref<Tween> create_tween();
-	Array get_processed_tweens();
+	TypedArray<Tween> get_processed_tweens();
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);

@@ -1959,7 +1959,7 @@
 			</description>
 		</method>
 		<method name="mesh_surface_get_blend_shape_arrays" qualifiers="const">
-			<return type="Array" />
+			<return type="Array[]" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<description>

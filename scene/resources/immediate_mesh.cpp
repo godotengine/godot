@@ -340,8 +340,8 @@ Array ImmediateMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, int(surfaces.size()), Array());
 	return RS::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
-Array ImmediateMesh::surface_get_blend_shape_arrays(int p_surface) const {
-	return Array();
+TypedArray<Array> ImmediateMesh::surface_get_blend_shape_arrays(int p_surface) const {
+	return TypedArray<Array>();
 }
 Dictionary ImmediateMesh::surface_get_lods(int p_surface) const {
 	return Dictionary();

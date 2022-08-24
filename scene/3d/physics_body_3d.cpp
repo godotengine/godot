@@ -960,10 +960,10 @@ bool RigidDynamicBody3D::is_contact_monitor_enabled() const {
 	return contact_monitor != nullptr;
 }
 
-Array RigidDynamicBody3D::get_colliding_bodies() const {
-	ERR_FAIL_COND_V(!contact_monitor, Array());
+TypedArray<Node3D> RigidDynamicBody3D::get_colliding_bodies() const {
+	ERR_FAIL_COND_V(!contact_monitor, TypedArray<Node3D>());
 
-	Array ret;
+	TypedArray<Node3D> ret;
 	ret.resize(contact_monitor->body_map.size());
 	int idx = 0;
 	for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {

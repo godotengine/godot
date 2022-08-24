@@ -10,14 +10,14 @@
 	</tutorials>
 	<methods>
 		<method name="build_box_planes">
-			<return type="Array" />
+			<return type="Plane[]" />
 			<param index="0" name="extents" type="Vector3" />
 			<description>
 				Returns an array with 6 [Plane]s that describe the sides of a box centered at the origin. The box size is defined by [param extents], which represents one (positive) corner of the box (i.e. half its actual size).
 			</description>
 		</method>
 		<method name="build_capsule_planes">
-			<return type="Array" />
+			<return type="Plane[]" />
 			<param index="0" name="radius" type="float" />
 			<param index="1" name="height" type="float" />
 			<param index="2" name="sides" type="int" />
@@ -28,7 +28,7 @@
 			</description>
 		</method>
 		<method name="build_cylinder_planes">
-			<return type="Array" />
+			<return type="Plane[]" />
 			<param index="0" name="radius" type="float" />
 			<param index="1" name="height" type="float" />
 			<param index="2" name="sides" type="int" />

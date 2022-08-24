@@ -43,7 +43,7 @@
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method get_property_list].
 				Returns the object's property list as an [Array] of dictionaries.
@@ -353,7 +353,7 @@
 			</description>
 		</method>
 		<method name="get_incoming_connections" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of dictionaries with information about signals that are connected to the object.
 				Each [Dictionary] contains three String entries:
@@ -394,13 +394,13 @@
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the object's methods and their signatures as an [Array].
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the object's property list as an [Array] of dictionaries.
 				Each property's [Dictionary] contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum PropertyUsageFlags]).
@@ -413,14 +413,14 @@
 			</description>
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal].
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the list of signals as an [Array] of dictionaries.
 			</description>

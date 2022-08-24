@@ -819,7 +819,7 @@ Vector<Point2> Geometry2D::convex_hull(const Vector<Point2> &p_points) {
 	return ::Geometry2D::convex_hull(p_points);
 }
 
-Array Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -830,10 +830,10 @@ Array Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vecto
 	return ret;
 }
 
-Array Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -841,7 +841,7 @@ Array Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector
 	return ret;
 }
 
-Array Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -852,7 +852,7 @@ Array Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const V
 	return ret;
 }
 
-Array Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -863,7 +863,7 @@ Array Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vec
 	return ret;
 }
 
-Array Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
 
 	Array ret;
@@ -874,7 +874,7 @@ Array Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, 
 	return ret;
 }
 
-Array Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
 
 	Array ret;
@@ -885,7 +885,7 @@ Array Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyl
 	return ret;
 }
 
-Array Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polygon(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type));
 
 	Array ret;
@@ -896,7 +896,7 @@ Array Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delt
 	return ret;
 }
 
-Array Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+TypedArray<PackedVector2Array> Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polyline(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type), ::Geometry2D::PolyEndType(p_end_type));
 
 	Array ret;
@@ -989,16 +989,19 @@ Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
 
-Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
-	return ::Geometry3D::build_box_planes(p_extents);
+TypedArray<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
+	Variant ret = ::Geometry3D::build_box_planes(p_extents);
+	return ret;
 }
 
-Vector<Plane> Geometry3D::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
-	return ::Geometry3D::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
+TypedArray<Plane> Geometry3D::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+	Variant ret = ::Geometry3D::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
+	return ret;
 }
 
-Vector<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
-	return ::Geometry3D::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
+TypedArray<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	Variant ret = ::Geometry3D::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
+	return ret;
 }
 
 Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
