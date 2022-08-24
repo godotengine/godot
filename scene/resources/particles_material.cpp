@@ -1451,12 +1451,12 @@ void ParticlesMaterial::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
-	if (property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "collision_bounce" && collision_mode != COLLISION_RIGID) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "collision_bounce" && collision_mode != COLLISION_RIGID) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
