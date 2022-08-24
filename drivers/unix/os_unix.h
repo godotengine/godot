@@ -95,8 +95,6 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const;
 	virtual String get_locale() const;
 
-	virtual int get_processor_count() const;
-
 	virtual void debug_break();
 	virtual void initialize_debugging();
 
