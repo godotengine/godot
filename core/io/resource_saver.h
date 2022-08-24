@@ -42,11 +42,13 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL3R(int64_t, _save, Ref<Resource>, String, uint32_t)
+	GDVIRTUAL3C(_on_save, Ref<Resource>, String, uint32_t);
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual void on_save(Ref<Resource> p_resource, const String &p_path, uint32_t p_flags) const;
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

@@ -60,9 +60,11 @@ protected:
 	GDVIRTUAL1RC(bool, _exists, String)
 
 	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
+	GDVIRTUAL3C(_on_load, Ref<Resource>, String, int);
 
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual void on_load(Ref<Resource> p_resource, const String &p_path, CacheMode p_cache_mode) const;
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;

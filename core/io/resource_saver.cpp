@@ -50,6 +50,10 @@ Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p
 	return ERR_METHOD_NOT_FOUND;
 }
 
+void ResourceFormatSaver::on_save(Ref<Resource> p_resource, const String &p_path, uint32_t p_flags) const {
+	GDVIRTUAL_CALL(_on_save, p_resource, p_path, p_flags);
+}
+
 bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
 	bool success;
 	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
@@ -71,6 +75,7 @@ void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resou
 
 void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_save, "path", "resource", "flags");
+	GDVIRTUAL_BIND(_on_save, "resource", "path", "flags");
 	GDVIRTUAL_BIND(_recognize, "resource");
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }
@@ -134,7 +139,13 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 				save_callback(p_resource, path);
 			}
 
-			return OK;
+			break;
+		}
+	}
+
+	if (err == OK) {
+		for (int i = 0; i < saver_count; i++) {
+			saver[i]->on_save(p_resource, path, p_flags);
 		}
 	}
 

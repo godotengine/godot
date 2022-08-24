@@ -17,6 +17,15 @@
 				Returns the list of extensions available for saving the resource object, provided it is recognized (see [method _recognize]).
 			</description>
 		</method>
+		<method name="_on_save" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
+			<param index="2" name="flags" type="int" />
+			<description>
+				Executes on every successfully saved resource regardless of type or path. All arguments are the same as those from [method _save].
+			</description>
+		</method>
 		<method name="_recognize" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="resource" type="Resource" />

@@ -159,6 +159,10 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 	ERR_FAIL_V_MSG(Ref<Resource>(), "Failed to load resource '" + p_path + "'. ResourceFormatLoader::load was not implemented for this resource type.");
 }
 
+void ResourceFormatLoader::on_load(Ref<Resource> p_resource, const String &p_path, CacheMode p_cache_mode) const {
+	GDVIRTUAL_CALL(_on_load, p_resource, p_path, p_cache_mode);
+}
+
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 	PackedStringArray deps;
 	if (GDVIRTUAL_CALL(_get_dependencies, p_path, p_add_types, deps)) {
@@ -197,6 +201,7 @@ void ResourceFormatLoader::_bind_methods() {
 	GDVIRTUAL_BIND(_exists, "path");
 	GDVIRTUAL_BIND(_get_classes_used, "path");
 	GDVIRTUAL_BIND(_load, "path", "original_path", "use_sub_threads", "cache_mode");
+	GDVIRTUAL_BIND(_on_load, "resource", "path", "cache_mode");
 }
 
 ///////////////////////////////////
@@ -205,16 +210,22 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	bool found = false;
 
 	// Try all loaders and pick the first match for the type hint
+	Ref<Resource> res;
 	for (int i = 0; i < loader_count; i++) {
 		if (!loader[i]->recognize_path(p_path, p_type_hint)) {
 			continue;
 		}
 		found = true;
-		Ref<Resource> res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
-		if (res.is_null()) {
-			continue;
+		res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+		if (res.is_valid()) {
+			break;
 		}
+	}
 
+	if (res.is_valid()) {
+		for (int i = 0; i < loader_count; i++) {
+			loader[i]->on_load(res, p_original_path, p_cache_mode);
+		}
 		return res;
 	}
 
