@@ -610,6 +610,7 @@ public:
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	Control() {}
+	~Control();
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);

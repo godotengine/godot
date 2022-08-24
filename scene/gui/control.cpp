@@ -3622,3 +3622,24 @@ void Control::_bind_methods() {
 
 	GDVIRTUAL_BIND(_gui_input, "event");
 }
+
+Control::~Control() {
+	// Resources need to be disconnected.
+	for (KeyValue<StringName, Ref<Texture2D>> &E : data.icon_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+	}
+	for (KeyValue<StringName, Ref<StyleBox>> &E : data.style_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+	}
+	for (KeyValue<StringName, Ref<Font>> &E : data.font_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+	}
+
+	// Then override maps can be simply cleared.
+	data.icon_override.clear();
+	data.style_override.clear();
+	data.font_override.clear();
+	data.font_size_override.clear();
+	data.color_override.clear();
+	data.constant_override.clear();
+}
