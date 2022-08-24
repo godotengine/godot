@@ -148,8 +148,29 @@ namespace Godot.SourceGenerators
 
                 if (invokeMethodData == null)
                 {
-                    // TODO: Better error for incompatible signature. We should indicate incompatible argument types, as we do with exported properties.
-                    Common.ReportSignalDelegateSignatureNotSupported(context, signalDelegateSymbol);
+                    if (signalDelegateSymbol.DelegateInvokeMethod is IMethodSymbol methodSymbol)
+                    {
+                        foreach (var parameter in methodSymbol.Parameters)
+                        {
+                            if (parameter.RefKind != RefKind.None)
+                            {
+                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
+                                continue;
+                            }
+
+                            var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(parameter.Type, typeCache);
+
+                            if (marshalType == null)
+                            {
+                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
+                            }
+                        }
+
+                        if (!methodSymbol.ReturnsVoid)
+                        {
+                            Common.ReportSignalDelegateSignatureMustReturnVoid(context, signalDelegateSymbol);
+                        }
+                    }
                     continue;
                 }
 
