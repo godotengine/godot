@@ -384,12 +384,17 @@ void AStar::reserve_space(int p_num_nodes) {
 	points.reserve(p_num_nodes);
 }
 
-int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled) const {
+int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled, int relevant_layers) const {
 	int closest_id = -1;
 	real_t closest_dist = 1e20;
 
 	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
-		if (!p_include_disabled && !(*it.value)->enabled) {
+
+		//make sure parallel layers are supported
+		// or if *relevant_layers is 0 then use all points
+		bool supported = relevant_layers == 0 || (relevant_layers & (*it.value)->parallel_support_layers) > 0;
+
+		if (!p_include_disabled && !(*it.value)->enabled || !supported) {
 			continue; // Disabled points should not be considered.
 		}
 
@@ -731,7 +736,7 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar::clear);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar::get_closest_point, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled","relevant_layers"), &AStar::get_closest_point, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar::get_closest_position_in_segment);
 
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "relevant_layers"), &AStar::get_point_path, DEFVAL(0));

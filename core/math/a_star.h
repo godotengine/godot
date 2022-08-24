@@ -159,7 +159,7 @@ public:
 	void reserve_space(int p_num_nodes);
 	void clear();
 
-	int get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
+	int get_closest_point(const Vector3 &p_point, bool p_include_disabled = false, int relevant_layers = 0) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
 	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id, int relevant_layers = 0);
