@@ -602,7 +602,7 @@ namespace Godot
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Transform2D transform2D && Equals(transform2D);
+            return obj is Transform2D other && Equals(other);
         }
 
         /// <summary>

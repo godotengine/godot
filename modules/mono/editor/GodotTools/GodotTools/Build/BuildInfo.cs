@@ -27,15 +27,13 @@ namespace GodotTools.Build
 
         public override bool Equals(object? obj)
         {
-            if (obj is BuildInfo other)
-                return other.Solution == Solution &&
-                       other.Configuration == Configuration && other.RuntimeIdentifier == RuntimeIdentifier &&
-                       other.PublishOutputDir == PublishOutputDir && other.Restore == Restore &&
-                       other.Rebuild == Rebuild && other.OnlyClean == OnlyClean &&
-                       other.CustomProperties == CustomProperties &&
-                       other.LogsDirPath == LogsDirPath;
-
-            return false;
+            return obj is BuildInfo other &&
+                other.Solution == Solution &&
+                other.Configuration == Configuration && other.RuntimeIdentifier == RuntimeIdentifier &&
+                other.PublishOutputDir == PublishOutputDir && other.Restore == Restore &&
+                other.Rebuild == Rebuild && other.OnlyClean == OnlyClean &&
+                other.CustomProperties == CustomProperties &&
+                other.LogsDirPath == LogsDirPath;
         }
 
         public override int GetHashCode()

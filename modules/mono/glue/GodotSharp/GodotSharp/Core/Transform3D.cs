@@ -579,12 +579,7 @@ namespace Godot
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
         public override readonly bool Equals(object obj)
         {
-            if (obj is Transform3D)
-            {
-                return Equals((Transform3D)obj);
-            }
-
-            return false;
+            return obj is Transform3D other && Equals(other);
         }
 
         /// <summary>

@@ -697,12 +697,7 @@ namespace Godot
         /// <returns>Whether or not the AABB and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is AABB)
-            {
-                return Equals((AABB)obj);
-            }
-
-            return false;
+            return obj is AABB other && Equals(other);
         }
 
         /// <summary>

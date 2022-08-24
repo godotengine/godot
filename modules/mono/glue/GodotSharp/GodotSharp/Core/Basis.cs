@@ -892,12 +892,7 @@ namespace Godot
         /// <returns>Whether or not the basis matrix and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Basis)
-            {
-                return Equals((Basis)obj);
-            }
-
-            return false;
+            return obj is Basis other && Equals(other);
         }
 
         /// <summary>
