@@ -762,9 +762,6 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 						methods.push_back(d2);
 
-					} else if (F.name.begins_with("_")) {
-						//hidden method, ignore
-
 					} else {
 						Dictionary d2;
 						d2["name"] = String(method_name);
@@ -859,9 +856,6 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				for (const PropertyInfo &F : property_list) {
 					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP || (F.type == Variant::NIL && F.usage & PROPERTY_USAGE_ARRAY)) {
 						continue; //not real properties
-					}
-					if (F.name.begins_with("_")) {
-						continue; //hidden property
 					}
 					if (F.name.find("/") >= 0) {
 						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
