@@ -62,9 +62,9 @@
 		</signal>
 		<signal name="resource_selected">
 			<param index="0" name="resource" type="Resource" />
-			<param index="1" name="edit" type="bool" />
+			<param index="1" name="inspect" type="bool" />
 			<description>
-				Emitted when the resource value was set and user clicked to edit it. When [param edit] is [code]true[/code], the signal was caused by the context menu "Edit" option.
+				Emitted when the resource value was set and user clicked to edit it. When [param inspect] is [code]true[/code], the signal was caused by the context menu "Edit" or "Inspect" option.
 			</description>
 		</signal>
 	</signals>

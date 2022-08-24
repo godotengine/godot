@@ -60,7 +60,7 @@ public:
 		return true;
 	}
 
-	bool _read_only() {
+	bool _is_read_only() {
 		return animation_read_only;
 	}
 
@@ -70,7 +70,7 @@ public:
 		ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &AnimationTrackKeyEdit::_hide_script_from_inspector);
 		ClassDB::bind_method(D_METHOD("get_root_path"), &AnimationTrackKeyEdit::get_root_path);
 		ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &AnimationTrackKeyEdit::_dont_undo_redo);
-		ClassDB::bind_method(D_METHOD("_read_only"), &AnimationTrackKeyEdit::_read_only);
+		ClassDB::bind_method(D_METHOD("_is_read_only"), &AnimationTrackKeyEdit::_is_read_only);
 	}
 
 	void _fix_node_path(Variant &value) {
@@ -727,7 +727,7 @@ public:
 		return true;
 	}
 
-	bool _read_only() {
+	bool _is_read_only() {
 		return animation_read_only;
 	}
 
@@ -737,7 +737,7 @@ public:
 		ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &AnimationMultiTrackKeyEdit::_hide_script_from_inspector);
 		ClassDB::bind_method(D_METHOD("get_root_path"), &AnimationMultiTrackKeyEdit::get_root_path);
 		ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &AnimationMultiTrackKeyEdit::_dont_undo_redo);
-		ClassDB::bind_method(D_METHOD("_read_only"), &AnimationMultiTrackKeyEdit::_read_only);
+		ClassDB::bind_method(D_METHOD("_is_read_only"), &AnimationMultiTrackKeyEdit::_is_read_only);
 	}
 
 	void _fix_node_path(Variant &value, NodePath &base) {

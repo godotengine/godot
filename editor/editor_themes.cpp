@@ -518,8 +518,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color warning_color = Color(1, 0.87, 0.4);
 	Color error_color = Color(1, 0.47, 0.42);
 	Color property_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
-	Color readonly_color = property_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
-	Color readonly_warning_color = error_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
+	Color readonly_color = property_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
+	Color readonly_warning_color = error_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
 
 	if (!dark_theme) {
 		// Darken some colors to be readable on a light background

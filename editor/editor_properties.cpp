@@ -3653,20 +3653,24 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 };
 
-void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_edit) {
+void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 
-		if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
-			// If the resource belongs to another scene, edit it in that scene instead.
-			EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
-			return;
+		if (p_inspect) {
+			if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
+				// If the resource belongs to another (non-imported) scene, edit it in that scene instead.
+				if (!FileAccess::exists(parent + ".import")) {
+					EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
+					return;
+				}
+			}
 		}
 	}
 
-	if (!p_edit && use_sub_inspector) {
+	if (!p_inspect && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
