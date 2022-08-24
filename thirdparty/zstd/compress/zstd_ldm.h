@@ -66,7 +66,7 @@ size_t ZSTD_ldm_generateSequences(
  */
 size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
             ZSTD_matchState_t* ms, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
-            ZSTD_useRowMatchFinderMode_e useRowMatchFinder,
+            ZSTD_paramSwitch_e useRowMatchFinder,
             void const* src, size_t srcSize);
 
 /**

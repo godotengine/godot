@@ -109,11 +109,13 @@ def configure(env):
 
     if env["ios_simulator"]:
         detect_darwin_sdk_path("iphonesimulator", env)
+        env.Append(ASFLAGS=["-mios-simulator-version-min=10.0"])
         env.Append(CCFLAGS=["-mios-simulator-version-min=10.0"])
         env.Append(LINKFLAGS=["-mios-simulator-version-min=10.0"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("iphone", env)
+        env.Append(ASFLAGS=["-miphoneos-version-min=10.0"])
         env.Append(CCFLAGS=["-miphoneos-version-min=10.0"])
         env.Append(LINKFLAGS=["-miphoneos-version-min=10.0"])
 
@@ -127,16 +129,19 @@ def configure(env):
                 + " -fobjc-arc -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK"
             ).split()
         )
+        env.Append(ASFLAGS=["-arch", arch_flag])
     elif env["arch"] == "arm":
         detect_darwin_sdk_path("iphone", env)
         env.Append(
             CCFLAGS='-fobjc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -MMD -MT dependencies'.split()
         )
+        env.Append(ASFLAGS=["-arch", "armv7"])
     elif env["arch"] == "arm64":
         detect_darwin_sdk_path("iphone", env)
         env.Append(
             CCFLAGS="-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -isysroot $IPHONESDK".split()
         )
+        env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
         env.Append(CPPDEFINES=["LIBYUV_DISABLE_NEON"])
 
