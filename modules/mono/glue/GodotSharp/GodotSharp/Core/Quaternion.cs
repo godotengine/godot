@@ -158,6 +158,18 @@ namespace Godot
             return (x * b.x) + (y * b.y) + (z * b.z) + (w * b.w);
         }
 
+        public Quaternion Exp()
+        {
+            Vector3 v = new Vector3(x, y, z);
+            real_t theta = v.Length();
+            v = v.Normalized();
+            if (theta < Mathf.Epsilon || !v.IsNormalized())
+            {
+                return new Quaternion(0, 0, 0, 1);
+            }
+            return new Quaternion(v, theta);
+        }
+
         public real_t GetAngle()
         {
             return 2 * Mathf.Acos(w);
@@ -215,6 +227,12 @@ namespace Godot
         public bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
+        }
+
+        public Quaternion Log()
+        {
+            Vector3 v = GetAxis() * GetAngle();
+            return new Quaternion(v.x, v.y, v.z, 0);
         }
 
         /// <summary>
