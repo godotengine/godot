@@ -130,6 +130,9 @@ String AcceptDialog::get_text() const {
 }
 
 void AcceptDialog::set_text(String p_text) {
+	if (label->get_text() == p_text) {
+		return;
+	}
 	label->set_text(p_text);
 	child_controls_changed();
 	if (is_visible()) {

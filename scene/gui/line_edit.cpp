@@ -607,10 +607,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 void LineEdit::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (alignment != p_alignment) {
-		alignment = p_alignment;
-		_shape();
+	if (alignment == p_alignment) {
+		return;
 	}
+
+	alignment = p_alignment;
+	_shape();
 	update();
 }
 
@@ -1525,6 +1527,10 @@ String LineEdit::get_text() const {
 }
 
 void LineEdit::set_placeholder(String p_text) {
+	if (placeholder == p_text) {
+		return;
+	}
+
 	placeholder = p_text;
 	placeholder_translated = atr(placeholder);
 	_shape();
@@ -1781,10 +1787,12 @@ bool LineEdit::is_editable() const {
 }
 
 void LineEdit::set_secret(bool p_secret) {
-	if (pass != p_secret) {
-		pass = p_secret;
-		_shape();
+	if (pass == p_secret) {
+		return;
 	}
+
+	pass = p_secret;
+	_shape();
 	update();
 }
 
@@ -1797,10 +1805,12 @@ void LineEdit::set_secret_character(const String &p_string) {
 	// It also wouldn't make sense to use multiple characters as the secret character.
 	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
-	if (secret_character != p_string) {
-		secret_character = p_string;
-		_shape();
+	if (secret_character == p_string) {
+		return;
 	}
+
+	secret_character = p_string;
+	_shape();
 	update();
 }
 
@@ -2057,6 +2067,10 @@ bool LineEdit::is_middle_mouse_paste_enabled() const {
 }
 
 void LineEdit::set_selecting_enabled(bool p_enabled) {
+	if (selecting_enabled == p_enabled) {
+		return;
+	}
+
 	selecting_enabled = p_enabled;
 
 	if (!selecting_enabled) {
@@ -2069,6 +2083,10 @@ bool LineEdit::is_selecting_enabled() const {
 }
 
 void LineEdit::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	if (deselect_on_focus_loss_enabled == p_enabled) {
+		return;
+	}
+
 	deselect_on_focus_loss_enabled = p_enabled;
 	if (p_enabled && selection.enabled && !has_focus()) {
 		deselect();

@@ -38,10 +38,12 @@
 #include "servers/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
-	if (autowrap_mode != p_mode) {
-		autowrap_mode = p_mode;
-		lines_dirty = true;
+	if (autowrap_mode == p_mode) {
+		return;
 	}
+
+	autowrap_mode = p_mode;
+	lines_dirty = true;
 	update();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
@@ -54,6 +56,10 @@ TextServer::AutowrapMode Label::get_autowrap_mode() const {
 }
 
 void Label::set_uppercase(bool p_uppercase) {
+	if (uppercase == p_uppercase) {
+		return;
+	}
+
 	uppercase = p_uppercase;
 	dirty = true;
 
@@ -608,12 +614,15 @@ int Label::get_visible_line_count() const {
 
 void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (horizontal_alignment != p_alignment) {
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			lines_dirty = true; // Reshape lines.
-		}
-		horizontal_alignment = p_alignment;
+	if (horizontal_alignment == p_alignment) {
+		return;
 	}
+
+	if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		lines_dirty = true; // Reshape lines.
+	}
+	horizontal_alignment = p_alignment;
+
 	update();
 }
 
@@ -623,6 +632,11 @@ HorizontalAlignment Label::get_horizontal_alignment() const {
 
 void Label::set_vertical_alignment(VerticalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
+
+	if (vertical_alignment == p_alignment) {
+		return;
+	}
+
 	vertical_alignment = p_alignment;
 	update();
 }
@@ -689,6 +703,10 @@ TextServer::StructuredTextParser Label::get_structured_text_bidi_override() cons
 }
 
 void Label::set_structured_text_bidi_override_options(Array p_args) {
+	if (st_args == p_args) {
+		return;
+	}
+
 	st_args = p_args;
 	dirty = true;
 	update();
@@ -715,6 +733,10 @@ String Label::get_language() const {
 }
 
 void Label::set_clip_text(bool p_clip) {
+	if (clip == p_clip) {
+		return;
+	}
+
 	clip = p_clip;
 	update();
 	update_minimum_size();
@@ -725,10 +747,12 @@ bool Label::is_clipping_text() const {
 }
 
 void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
-	if (overrun_behavior != p_behavior) {
-		overrun_behavior = p_behavior;
-		lines_dirty = true;
+	if (overrun_behavior == p_behavior) {
+		return;
 	}
+
+	overrun_behavior = p_behavior;
+	lines_dirty = true;
 	update();
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -800,6 +824,11 @@ void Label::set_visible_characters_behavior(TextServer::VisibleCharactersBehavio
 
 void Label::set_lines_skipped(int p_lines) {
 	ERR_FAIL_COND(p_lines < 0);
+
+	if (lines_skipped == p_lines) {
+		return;
+	}
+
 	lines_skipped = p_lines;
 	_update_visible();
 	update();
@@ -810,6 +839,10 @@ int Label::get_lines_skipped() const {
 }
 
 void Label::set_max_lines_visible(int p_lines) {
+	if (max_lines_visible == p_lines) {
+		return;
+	}
+
 	max_lines_visible = p_lines;
 	_update_visible();
 	update();

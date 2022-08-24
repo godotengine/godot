@@ -106,6 +106,10 @@ void Range::set_value(double p_val) {
 }
 
 void Range::set_min(double p_min) {
+	if (shared->min == p_min) {
+		return;
+	}
+
 	shared->min = p_min;
 	set_value(shared->val);
 	_validate_values();
@@ -116,6 +120,10 @@ void Range::set_min(double p_min) {
 }
 
 void Range::set_max(double p_max) {
+	if (shared->max == p_max) {
+		return;
+	}
+
 	shared->max = p_max;
 	set_value(shared->val);
 	_validate_values();
@@ -124,11 +132,19 @@ void Range::set_max(double p_max) {
 }
 
 void Range::set_step(double p_step) {
+	if (shared->step == p_step) {
+		return;
+	}
+
 	shared->step = p_step;
 	shared->emit_changed("step");
 }
 
 void Range::set_page(double p_page) {
+	if (shared->page == p_page) {
+		return;
+	}
+
 	shared->page = p_page;
 	set_value(shared->val);
 	_validate_values();
@@ -300,6 +316,10 @@ bool Range::is_using_rounded_values() const {
 }
 
 void Range::set_exp_ratio(bool p_enable) {
+	if (shared->exp_ratio == p_enable) {
+		return;
+	}
+
 	shared->exp_ratio = p_enable;
 
 	update_configuration_warnings();

@@ -109,6 +109,10 @@ String LinkButton::get_language() const {
 }
 
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
+	if (underline_mode == p_underline_mode) {
+		return;
+	}
+
 	underline_mode = p_underline_mode;
 	update();
 }

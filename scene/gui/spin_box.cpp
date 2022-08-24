@@ -250,6 +250,10 @@ HorizontalAlignment SpinBox::get_horizontal_alignment() const {
 }
 
 void SpinBox::set_suffix(const String &p_suffix) {
+	if (suffix == p_suffix) {
+		return;
+	}
+
 	suffix = p_suffix;
 	_value_changed(0);
 }
@@ -259,6 +263,10 @@ String SpinBox::get_suffix() const {
 }
 
 void SpinBox::set_prefix(const String &p_prefix) {
+	if (prefix == p_prefix) {
+		return;
+	}
+
 	prefix = p_prefix;
 	_value_changed(0);
 }

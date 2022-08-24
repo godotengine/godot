@@ -1640,6 +1640,9 @@ bool GraphEdit::is_valid_connection_type(int p_type, int p_with_type) const {
 }
 
 void GraphEdit::set_use_snap(bool p_enable) {
+	if (snap_button->is_pressed() == p_enable) {
+		return;
+	}
 	snap_button->set_pressed(p_enable);
 	update();
 }
@@ -1683,6 +1686,9 @@ Vector2 GraphEdit::get_minimap_size() const {
 }
 
 void GraphEdit::set_minimap_opacity(float p_opacity) {
+	if (minimap->get_modulate().a == p_opacity) {
+		return;
+	}
 	minimap->set_modulate(Color(1, 1, 1, p_opacity));
 	minimap->update();
 }
@@ -1693,6 +1699,9 @@ float GraphEdit::get_minimap_opacity() const {
 }
 
 void GraphEdit::set_minimap_enabled(bool p_enable) {
+	if (minimap_button->is_pressed() == p_enable) {
+		return;
+	}
 	minimap_button->set_pressed(p_enable);
 	_minimap_toggled();
 	minimap->update();
@@ -1721,6 +1730,9 @@ float GraphEdit::get_connection_lines_curvature() const {
 }
 
 void GraphEdit::set_connection_lines_thickness(float p_thickness) {
+	if (lines_thickness == p_thickness) {
+		return;
+	}
 	lines_thickness = p_thickness;
 	update();
 }
@@ -1730,6 +1742,9 @@ float GraphEdit::get_connection_lines_thickness() const {
 }
 
 void GraphEdit::set_connection_lines_antialiased(bool p_antialiased) {
+	if (lines_antialiased == p_antialiased) {
+		return;
+	}
 	lines_antialiased = p_antialiased;
 	update();
 }

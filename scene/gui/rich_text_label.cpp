@@ -3378,6 +3378,10 @@ void RichTextLabel::clear() {
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {
+	if (tab_size == p_spaces) {
+		return;
+	}
+
 	_stop_thread();
 
 	tab_size = p_spaces;
@@ -3401,6 +3405,10 @@ bool RichTextLabel::is_fit_content_height_enabled() const {
 }
 
 void RichTextLabel::set_meta_underline(bool p_underline) {
+	if (underline_meta == p_underline) {
+		return;
+	}
+
 	underline_meta = p_underline;
 	update();
 }
@@ -4417,6 +4425,10 @@ int RichTextLabel::get_visible_line_count() const {
 }
 
 void RichTextLabel::set_selection_enabled(bool p_enabled) {
+	if (selection.enabled == p_enabled) {
+		return;
+	}
+
 	selection.enabled = p_enabled;
 	if (!p_enabled) {
 		if (selection.active) {
@@ -4429,6 +4441,10 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 }
 
 void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	if (deselect_on_focus_loss_enabled == p_enabled) {
+		return;
+	}
+
 	deselect_on_focus_loss_enabled = p_enabled;
 	if (p_enabled && selection.active && !has_focus()) {
 		deselect();
@@ -4796,6 +4812,10 @@ int RichTextLabel::get_selection_to() const {
 }
 
 void RichTextLabel::set_text(const String &p_bbcode) {
+	if (text == p_bbcode) {
+		return;
+	}
+
 	text = p_bbcode;
 	if (use_bbcode) {
 		parse_bbcode(p_bbcode);
@@ -5332,6 +5352,10 @@ int RichTextLabel::get_total_glyph_count() const {
 }
 
 void RichTextLabel::set_fixed_size_to_width(int p_width) {
+	if (fixed_width == p_width) {
+		return;
+	}
+
 	fixed_width = p_width;
 	update_minimum_size();
 }

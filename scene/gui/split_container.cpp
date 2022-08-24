@@ -331,6 +331,10 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 }
 
 void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
+	if (dragger_visibility == p_visibility) {
+		return;
+	}
+
 	dragger_visibility = p_visibility;
 	queue_sort();
 	update();

@@ -308,6 +308,9 @@ void BoxContainer::_notification(int p_what) {
 }
 
 void BoxContainer::set_alignment(AlignmentMode p_alignment) {
+	if (alignment == p_alignment) {
+		return;
+	}
 	alignment = p_alignment;
 	_resort();
 }
