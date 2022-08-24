@@ -98,16 +98,16 @@ namespace GodotTools.Export
                 return;
 
             if (!DeterminePlatformFromFeatures(features, out string platform))
-                throw new NotSupportedException("Target platform not supported");
+                throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS }
                     .Contains(platform))
             {
-                throw new NotImplementedException("Target platform not yet implemented");
+                throw new NotImplementedException("Target platform not yet implemented.");
             }
 
             string outputDir = new FileInfo(path).Directory?.FullName ??
-                               throw new FileNotFoundException("Output base directory not found");
+                               throw new FileNotFoundException("Output base directory not found.");
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
@@ -131,7 +131,7 @@ namespace GodotTools.Export
             if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
                     runtimeIdentifier, publishOutputTempDir))
             {
-                throw new Exception("Failed to build project");
+                throw new InvalidOperationException("Failed to build project.");
             }
 
             string soExt = ridOS switch

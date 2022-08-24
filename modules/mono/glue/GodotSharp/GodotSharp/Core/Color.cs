@@ -595,7 +595,7 @@ namespace Godot
         /// </summary>
         /// <param name="rgba">A string for the HTML hexadecimal representation of this color.</param>
         /// <exception name="ArgumentOutOfRangeException">
-        /// Thrown when the given <paramref name="rgba"/> color code is invalid.
+        /// <paramref name="rgba"/> color code is invalid.
         /// </exception>
         private static Color FromHTML(string rgba)
         {

@@ -120,13 +120,13 @@ namespace GodotTools.Build
         private void IssueActivated(int idx)
         {
             if (idx < 0 || idx >= _issuesList.ItemCount)
-                throw new IndexOutOfRangeException("Item list index out of range");
+                throw new ArgumentOutOfRangeException(nameof(idx), "Item list index out of range.");
 
             // Get correct issue idx from issue list
             int issueIndex = (int)_issuesList.GetItemMetadata(idx);
 
             if (issueIndex < 0 || issueIndex >= _issues.Count)
-                throw new IndexOutOfRangeException("Issue index out of range");
+                throw new InvalidOperationException("Issue index out of range.");
 
             BuildIssue issue = _issues[issueIndex];
 
@@ -293,7 +293,7 @@ namespace GodotTools.Build
         public void RestartBuild()
         {
             if (!HasBuildExited)
-                throw new InvalidOperationException("Build already started");
+                throw new InvalidOperationException("Build already started.");
 
             BuildManager.RestartBuild(this);
         }
@@ -301,7 +301,7 @@ namespace GodotTools.Build
         public void StopBuild()
         {
             if (!HasBuildExited)
-                throw new InvalidOperationException("Build is not in progress");
+                throw new InvalidOperationException("Build is not in progress.");
 
             BuildManager.StopBuild(this);
         }

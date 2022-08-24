@@ -16,7 +16,7 @@ namespace Godot.SourceGenerators
                 INamedTypeSymbol GetTypeByMetadataNameOrThrow(string fullyQualifiedMetadataName)
                 {
                     return compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) ??
-                           throw new InvalidOperationException("Type not found: " + fullyQualifiedMetadataName);
+                           throw new InvalidOperationException($"Type not found: '{fullyQualifiedMetadataName}'.");
                 }
 
                 GodotObjectType = GetTypeByMetadataNameOrThrow("Godot.Object");

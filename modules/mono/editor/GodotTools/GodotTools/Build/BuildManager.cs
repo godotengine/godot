@@ -62,7 +62,7 @@ namespace GodotTools.Build
         private static bool Build(BuildInfo buildInfo)
         {
             if (_buildInProgress != null)
-                throw new InvalidOperationException("A build is already in progress");
+                throw new InvalidOperationException("A build is already in progress.");
 
             _buildInProgress = buildInfo;
 
@@ -111,7 +111,7 @@ namespace GodotTools.Build
         public static async Task<bool> BuildAsync(BuildInfo buildInfo)
         {
             if (_buildInProgress != null)
-                throw new InvalidOperationException("A build is already in progress");
+                throw new InvalidOperationException("A build is already in progress.");
 
             _buildInProgress = buildInfo;
 
@@ -157,7 +157,7 @@ namespace GodotTools.Build
         private static bool Publish(BuildInfo buildInfo)
         {
             if (_buildInProgress != null)
-                throw new InvalidOperationException("A build is already in progress");
+                throw new InvalidOperationException("A build is already in progress.");
 
             _buildInProgress = buildInfo;
 

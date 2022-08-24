@@ -257,7 +257,7 @@ namespace GodotTools.Utils
             using Process process = Process.Start(startInfo);
 
             if (process == null)
-                throw new Exception("No process was started");
+                throw new InvalidOperationException("No process was started.");
 
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
