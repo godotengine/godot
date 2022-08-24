@@ -196,6 +196,75 @@ namespace Godot
         }
 
         /// <summary>
+        /// Performs a spherical cubic interpolation between quaternions <paramref name="preA"/>, this quaternion,
+        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
+        /// It can perform smoother interpolation than <see cref="SphericalCubicInterpolate"/>
+        /// by the time values.
+        /// </summary>
+        /// <param name="b">The destination quaternion.</param>
+        /// <param name="preA">A quaternion before this quaternion.</param>
+        /// <param name="postB">A quaternion after <paramref name="b"/>.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="bT"></param>
+        /// <param name="preAT"></param>
+        /// <param name="postBT"></param>
+        /// <returns>The interpolated quaternion.</returns>
+        public Quaternion SphericalCubicInterpolateInTime(Quaternion b, Quaternion preA, Quaternion postB, real_t weight, real_t bT, real_t preAT, real_t postBT)
+        {
+#if DEBUG
+            if (!IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized");
+            }
+            if (!b.IsNormalized())
+            {
+                throw new ArgumentException("Argument is not normalized", nameof(b));
+            }
+#endif
+
+            // Align flip phases.
+            Quaternion fromQ = new Basis(this).GetRotationQuaternion();
+            Quaternion preQ = new Basis(preA).GetRotationQuaternion();
+            Quaternion toQ = new Basis(b).GetRotationQuaternion();
+            Quaternion postQ = new Basis(postB).GetRotationQuaternion();
+
+            // Flip quaternions to shortest path if necessary.
+            bool flip1 = Math.Sign(fromQ.Dot(preQ)) < 0;
+            preQ = flip1 ? -preQ : preQ;
+            bool flip2 = Math.Sign(fromQ.Dot(toQ)) < 0;
+            toQ = flip2 ? -toQ : toQ;
+            bool flip3 = flip2 ? toQ.Dot(postQ) <= 0 : Math.Sign(toQ.Dot(postQ)) < 0;
+            postQ = flip3 ? -postQ : postQ;
+
+            // Calc by Expmap in fromQ space.
+            Quaternion lnFrom = new Quaternion(0, 0, 0, 0);
+            Quaternion lnTo = (fromQ.Inverse() * toQ).Log();
+            Quaternion lnPre = (fromQ.Inverse() * preQ).Log();
+            Quaternion lnPost = (fromQ.Inverse() * postQ).Log();
+            Quaternion ln = new Quaternion(
+                Mathf.CubicInterpolateInTime(lnFrom.x, lnTo.x, lnPre.x, lnPost.x, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.y, lnTo.y, lnPre.y, lnPost.y, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.z, lnTo.z, lnPre.z, lnPost.z, weight, bT, preAT, postBT),
+                0);
+            Quaternion q1 = fromQ * ln.Exp();
+
+            // Calc by Expmap in toQ space.
+            lnFrom = (toQ.Inverse() * fromQ).Log();
+            lnTo = new Quaternion(0, 0, 0, 0);
+            lnPre = (toQ.Inverse() * preQ).Log();
+            lnPost = (toQ.Inverse() * postQ).Log();
+            ln = new Quaternion(
+                Mathf.CubicInterpolateInTime(lnFrom.x, lnTo.x, lnPre.x, lnPost.x, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.y, lnTo.y, lnPre.y, lnPost.y, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.z, lnTo.z, lnPre.z, lnPost.z, weight, bT, preAT, postBT),
+                0);
+            Quaternion q2 = toQ * ln.Exp();
+
+            // To cancel error made by Expmap ambiguity, do blends.
+            return q1.Slerp(q2, weight);
+        }
+
+        /// <summary>
         /// Returns the dot product of two quaternions.
         /// </summary>
         /// <param name="b">The other quaternion.</param>
