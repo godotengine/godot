@@ -3,11 +3,11 @@ import os.path
 
 
 def is_desktop(platform):
-    return platform in ["windows", "macos", "linuxbsd", "server", "uwp", "haiku"]
+    return platform in ["windows", "macos", "linuxbsd", "uwp", "haiku"]
 
 
 def is_unix_like(platform):
-    return platform in ["macos", "linuxbsd", "server", "android", "haiku", "ios"]
+    return platform in ["macos", "linuxbsd", "android", "haiku", "ios"]
 
 
 def module_supports_tools_on(platform):
@@ -132,7 +132,6 @@ def determine_runtime_identifier(env):
         "windows": "win",
         "macos": "osx",
         "linuxbsd": "linux",
-        "server": "linux",  # FIXME: Is server linux only, or also macos?
     }
 
     # .NET RID architectures: x86, x64, arm, or arm64

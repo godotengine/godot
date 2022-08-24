@@ -1,6 +1,6 @@
-# Prior to .NET Core, we supported these: ["windows", "macos", "linuxbsd", "server", "android", "haiku", "javascript", "ios"]
+# Prior to .NET Core, we supported these: ["windows", "macos", "linuxbsd", "android", "haiku", "javascript", "ios"]
 # Eventually support for each them should be added back (except Haiku if not supported by .NET Core)
-supported_platforms = ["windows", "macos", "linuxbsd", "server"]
+supported_platforms = ["windows", "macos", "linuxbsd"]
 
 
 def can_build(env, platform):
