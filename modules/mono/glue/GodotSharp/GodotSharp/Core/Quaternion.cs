@@ -292,6 +292,17 @@ namespace Godot
         /// <returns>The resulting quaternion of the interpolation.</returns>
         public Quaternion Slerpni(Quaternion to, real_t weight)
         {
+#if DEBUG
+            if (!IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized");
+            }
+            if (!to.IsNormalized())
+            {
+                throw new ArgumentException("Argument is not normalized", nameof(to));
+            }
+#endif
+
             real_t dot = Dot(to);
 
             if (Mathf.Abs(dot) > 0.9999f)
