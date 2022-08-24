@@ -142,10 +142,43 @@ namespace Godot
         /// <returns>The interpolated quaternion.</returns>
         public Quaternion CubicSlerp(Quaternion b, Quaternion preA, Quaternion postB, real_t weight)
         {
-            real_t t2 = (1.0f - weight) * weight * 2f;
-            Quaternion sp = Slerp(b, weight);
-            Quaternion sq = preA.Slerpni(postB, weight);
-            return sp.Slerpni(sq, t2);
+            // Align flip phases.
+            Quaternion retQ = new Basis(this).GetRotationQuaternion();
+            Quaternion preQ = new Basis(preA).GetRotationQuaternion();
+            Quaternion toQ = new Basis(b).GetRotationQuaternion();
+            Quaternion postQ = new Basis(postB).GetRotationQuaternion();
+
+            // Flip quaternions to shortest path if necessary.
+            bool flip1 = Math.Sign(retQ.Dot(preQ)) < 0;
+            preQ = flip1 ? -preQ : preQ;
+            bool flip2 = Math.Sign(retQ.Dot(toQ)) < 0;
+            toQ = flip2 ? -toQ : toQ;
+            bool flip3 = flip2 ? toQ.Dot(postQ) <= 0 : Math.Sign(toQ.Dot(postQ)) < 0;
+            postQ = flip3 ? -postQ : postQ;
+
+            if (flip1 || flip2 || flip3)
+            {
+                // Angle is too large, calc by Approximate.
+                retQ.x = Mathf.CubicInterpolate(retQ.x, toQ.x, preQ.x, postQ.x, weight);
+                retQ.y = Mathf.CubicInterpolate(retQ.y, toQ.y, preQ.y, postQ.y, weight);
+                retQ.z = Mathf.CubicInterpolate(retQ.z, toQ.z, preQ.z, postQ.z, weight);
+                retQ.w = Mathf.CubicInterpolate(retQ.w, toQ.w, preQ.w, postQ.w, weight);
+                retQ = retQ.Normalized();
+            }
+            else
+            {
+                // Calc by Expmap.
+                Quaternion ln_ret = retQ.Log();
+                Quaternion ln_to = toQ.Log();
+                Quaternion ln_pre = preQ.Log();
+                Quaternion ln_post = postQ.Log();
+                Quaternion ln = new Quaternion(0, 0, 0, 0);
+                ln.x = Mathf.CubicInterpolate(ln_ret.x, ln_to.x, ln_pre.x, ln_post.x, weight);
+                ln.y = Mathf.CubicInterpolate(ln_ret.y, ln_to.y, ln_pre.y, ln_post.y, weight);
+                ln.z = Mathf.CubicInterpolate(ln_ret.z, ln_to.z, ln_pre.z, ln_post.z, weight);
+                retQ = ln.Exp();
+            }
+            return retQ;
         }
 
         /// <summary>
@@ -267,7 +300,7 @@ namespace Godot
 #endif
 
             // Calculate cosine.
-            real_t cosom = x * to.x + y * to.y + z * to.z + w * to.w;
+            real_t cosom = Dot(to);
 
             var to1 = new Quaternion();
 
@@ -275,17 +308,11 @@ namespace Godot
             if (cosom < 0.0)
             {
                 cosom = -cosom;
-                to1.x = -to.x;
-                to1.y = -to.y;
-                to1.z = -to.z;
-                to1.w = -to.w;
+                to1 = -to;
             }
             else
             {
-                to1.x = to.x;
-                to1.y = to.y;
-                to1.z = to.z;
-                to1.w = to.w;
+                to1 = to;
             }
 
             real_t sinom, scale0, scale1;
