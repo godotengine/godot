@@ -13,14 +13,15 @@
 
 #include "src/webp/encode.h"
 
-#if !defined(WEBP_REDUCE_SIZE)
-
 #include <assert.h>
 #include <stdlib.h>
 
 #include "src/enc/vp8i_enc.h"
+
+#if !defined(WEBP_REDUCE_SIZE)
 #include "src/utils/rescaler_utils.h"
 #include "src/utils/utils.h"
+#endif  // !defined(WEBP_REDUCE_SIZE)
 
 #define HALVE(x) (((x) + 1) >> 1)
 
@@ -56,6 +57,7 @@ static int AdjustAndCheckRectangle(const WebPPicture* const pic,
   return 1;
 }
 
+#if !defined(WEBP_REDUCE_SIZE)
 int WebPPictureCopy(const WebPPicture* src, WebPPicture* dst) {
   if (src == NULL || dst == NULL) return 0;
   if (src == dst) return 1;
@@ -81,6 +83,7 @@ int WebPPictureCopy(const WebPPicture* src, WebPPicture* dst) {
   }
   return 1;
 }
+#endif  // !defined(WEBP_REDUCE_SIZE)
 
 int WebPPictureIsView(const WebPPicture* picture) {
   if (picture == NULL) return 0;
@@ -120,6 +123,7 @@ int WebPPictureView(const WebPPicture* src,
   return 1;
 }
 
+#if !defined(WEBP_REDUCE_SIZE)
 //------------------------------------------------------------------------------
 // Picture cropping
 
@@ -198,34 +202,34 @@ static void AlphaMultiplyY(WebPPicture* const pic, int inverse) {
   }
 }
 
-int WebPPictureRescale(WebPPicture* pic, int width, int height) {
+int WebPPictureRescale(WebPPicture* picture, int width, int height) {
   WebPPicture tmp;
   int prev_width, prev_height;
   rescaler_t* work;
 
-  if (pic == NULL) return 0;
-  prev_width = pic->width;
-  prev_height = pic->height;
+  if (picture == NULL) return 0;
+  prev_width = picture->width;
+  prev_height = picture->height;
   if (!WebPRescalerGetScaledDimensions(
           prev_width, prev_height, &width, &height)) {
     return 0;
   }
 
-  PictureGrabSpecs(pic, &tmp);
+  PictureGrabSpecs(picture, &tmp);
   tmp.width = width;
   tmp.height = height;
   if (!WebPPictureAlloc(&tmp)) return 0;
 
-  if (!pic->use_argb) {
+  if (!picture->use_argb) {
     work = (rescaler_t*)WebPSafeMalloc(2ULL * width, sizeof(*work));
     if (work == NULL) {
       WebPPictureFree(&tmp);
       return 0;
     }
     // If present, we need to rescale alpha first (for AlphaMultiplyY).
-    if (pic->a != NULL) {
+    if (picture->a != NULL) {
       WebPInitAlphaProcessing();
-      if (!RescalePlane(pic->a, prev_width, prev_height, pic->a_stride,
+      if (!RescalePlane(picture->a, prev_width, prev_height, picture->a_stride,
                         tmp.a, width, height, tmp.a_stride, work, 1)) {
         return 0;
       }
@@ -233,17 +237,15 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
 
     // We take transparency into account on the luma plane only. That's not
     // totally exact blending, but still is a good approximation.
-    AlphaMultiplyY(pic, 0);
-    if (!RescalePlane(pic->y, prev_width, prev_height, pic->y_stride,
+    AlphaMultiplyY(picture, 0);
+    if (!RescalePlane(picture->y, prev_width, prev_height, picture->y_stride,
                       tmp.y, width, height, tmp.y_stride, work, 1) ||
-        !RescalePlane(pic->u,
-                      HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
-                      tmp.u,
-                      HALVE(width), HALVE(height), tmp.uv_stride, work, 1) ||
-        !RescalePlane(pic->v,
-                      HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
-                      tmp.v,
-                      HALVE(width), HALVE(height), tmp.uv_stride, work, 1)) {
+        !RescalePlane(picture->u, HALVE(prev_width), HALVE(prev_height),
+                      picture->uv_stride, tmp.u, HALVE(width), HALVE(height),
+                      tmp.uv_stride, work, 1) ||
+        !RescalePlane(picture->v, HALVE(prev_width), HALVE(prev_height),
+                      picture->uv_stride, tmp.v, HALVE(width), HALVE(height),
+                      tmp.uv_stride, work, 1)) {
       return 0;
     }
     AlphaMultiplyY(&tmp, 1);
@@ -257,18 +259,17 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
     // weighting first (black-matting), scale the RGB values, and remove
     // the premultiplication afterward (while preserving the alpha channel).
     WebPInitAlphaProcessing();
-    AlphaMultiplyARGB(pic, 0);
-    if (!RescalePlane((const uint8_t*)pic->argb, prev_width, prev_height,
-                      pic->argb_stride * 4,
-                      (uint8_t*)tmp.argb, width, height,
-                      tmp.argb_stride * 4, work, 4)) {
+    AlphaMultiplyARGB(picture, 0);
+    if (!RescalePlane((const uint8_t*)picture->argb, prev_width, prev_height,
+                      picture->argb_stride * 4, (uint8_t*)tmp.argb, width,
+                      height, tmp.argb_stride * 4, work, 4)) {
       return 0;
     }
     AlphaMultiplyARGB(&tmp, 1);
   }
-  WebPPictureFree(pic);
+  WebPPictureFree(picture);
   WebPSafeFree(work);
-  *pic = tmp;
+  *picture = tmp;
   return 1;
 }
 
@@ -276,23 +277,6 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
 
 int WebPPictureCopy(const WebPPicture* src, WebPPicture* dst) {
   (void)src;
-  (void)dst;
-  return 0;
-}
-
-int WebPPictureIsView(const WebPPicture* picture) {
-  (void)picture;
-  return 0;
-}
-
-int WebPPictureView(const WebPPicture* src,
-                    int left, int top, int width, int height,
-                    WebPPicture* dst) {
-  (void)src;
-  (void)left;
-  (void)top;
-  (void)width;
-  (void)height;
   (void)dst;
   return 0;
 }

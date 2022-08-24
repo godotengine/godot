@@ -32,7 +32,7 @@ extern "C" {
 // version numbers
 #define ENC_MAJ_VERSION 1
 #define ENC_MIN_VERSION 2
-#define ENC_REV_VERSION 2
+#define ENC_REV_VERSION 4
 
 enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level
        MAX_VARIABLE_LEVEL = 67,  // last (inclusive) level with variable cost
@@ -470,7 +470,8 @@ int VP8EncAnalyze(VP8Encoder* const enc);
 // Sets up segment's quantization values, base_quant_ and filter strengths.
 void VP8SetSegmentParams(VP8Encoder* const enc, float quality);
 // Pick best modes and fills the levels. Returns true if skipped.
-int VP8Decimate(VP8EncIterator* const it, VP8ModeScore* const rd,
+int VP8Decimate(VP8EncIterator* WEBP_RESTRICT const it,
+                VP8ModeScore* WEBP_RESTRICT const rd,
                 VP8RDLevel rd_opt);
 
   // in alpha.c
@@ -490,19 +491,24 @@ int VP8FilterStrengthFromDelta(int sharpness, int delta);
 
   // misc utils for picture_*.c:
 
+// Returns true if 'picture' is non-NULL and dimensions/colorspace are within
+// their valid ranges. If returning false, the 'error_code' in 'picture' is
+// updated.
+int WebPValidatePicture(const WebPPicture* const picture);
+
 // Remove reference to the ARGB/YUVA buffer (doesn't free anything).
 void WebPPictureResetBuffers(WebPPicture* const picture);
 
-// Allocates ARGB buffer of given dimension (previous one is always free'd).
-// Preserves the YUV(A) buffer. Returns false in case of error (invalid param,
-// out-of-memory).
-int WebPPictureAllocARGB(WebPPicture* const picture, int width, int height);
+// Allocates ARGB buffer according to set width/height (previous one is
+// always free'd). Preserves the YUV(A) buffer. Returns false in case of error
+// (invalid param, out-of-memory).
+int WebPPictureAllocARGB(WebPPicture* const picture);
 
-// Allocates YUVA buffer of given dimension (previous one is always free'd).
-// Uses picture->csp to determine whether an alpha buffer is needed.
+// Allocates YUVA buffer according to set width/height (previous one is always
+// free'd). Uses picture->csp to determine whether an alpha buffer is needed.
 // Preserves the ARGB buffer.
 // Returns false in case of error (invalid param, out-of-memory).
-int WebPPictureAllocYUVA(WebPPicture* const picture, int width, int height);
+int WebPPictureAllocYUVA(WebPPicture* const picture);
 
 // Replace samples that are fully transparent by 'color' to help compressibility
 // (no guarantee, though). Assumes pic->use_argb is true.
