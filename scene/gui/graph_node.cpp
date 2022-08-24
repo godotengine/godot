@@ -736,11 +736,12 @@ Vector2 GraphNode::get_position_offset() const {
 }
 
 void GraphNode::set_selected(bool p_selected) {
-	if (selected == p_selected) {
+	if (!is_selectable() || selected == p_selected) {
 		return;
 	}
 
 	selected = p_selected;
+	emit_signal(p_selected ? SNAME("selected") : SNAME("deselected"));
 	queue_redraw();
 }
 
@@ -1012,6 +1013,9 @@ bool GraphNode::is_draggable() {
 }
 
 void GraphNode::set_selectable(bool p_selectable) {
+	if (!p_selectable) {
+		set_selected(false);
+	}
 	selectable = p_selectable;
 }
 
@@ -1123,6 +1127,8 @@ void GraphNode::_bind_methods() {
 	ADD_GROUP("", "");
 
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
+	ADD_SIGNAL(MethodInfo("selected"));
+	ADD_SIGNAL(MethodInfo("deselected"));
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
