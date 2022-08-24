@@ -34,6 +34,20 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/theme.h"
 
+// The default icon theme is designed to be used for a dark theme. This map stores
+// Color values to convert to other colors for better readability on a light theme.
+class EditorColorMap {
+	// Godot Color values are used to avoid the ambiguity of strings
+	// (where "#ffffff", "fff", and "white" are all equivalent).
+	static HashMap<Color, Color> editor_color_map;
+
+public:
+	static void create();
+	static void add_color_pair(const String p_from_color, const String p_to_color);
+
+	static HashMap<Color, Color> &get() { return editor_color_map; };
+};
+
 Ref<Theme> create_editor_theme(Ref<Theme> p_theme = nullptr);
 
 Ref<Theme> create_custom_theme(Ref<Theme> p_theme = nullptr);
