@@ -70,7 +70,7 @@ static Error set_name(const String &p_name) {
 }
 
 void init_thread_posix() {
-	Thread::_set_platform_funcs(&set_name, nullptr);
+	Thread::_set_platform_functions({ .set_name = set_name });
 }
 
 #endif // UNIX_ENABLED || PTHREAD_ENABLED

@@ -63,6 +63,14 @@ public:
 		Settings() { priority = PRIORITY_NORMAL; }
 	};
 
+	struct PlatformFunctions {
+		Error (*set_name)(const String &) = nullptr;
+		void (*set_priority)(Thread::Priority) = nullptr;
+		void (*init)() = nullptr;
+		void (*wrapper)(Thread::Callback, void *) = nullptr;
+		void (*term)() = nullptr;
+	};
+
 private:
 	friend class Main;
 
@@ -76,17 +84,10 @@ private:
 
 	static void callback(Thread *p_self, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
 
-	static Error (*set_name_func)(const String &);
-	static void (*set_priority_func)(Thread::Priority);
-	static void (*init_func)();
-	static void (*term_func)();
+	static PlatformFunctions platform_functions;
 
 public:
-	static void _set_platform_funcs(
-			Error (*p_set_name_func)(const String &),
-			void (*p_set_priority_func)(Thread::Priority),
-			void (*p_init_func)() = nullptr,
-			void (*p_term_func)() = nullptr);
+	static void _set_platform_functions(const PlatformFunctions &p_functions);
 
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
