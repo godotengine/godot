@@ -164,13 +164,13 @@
 		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody2D.MotionMode" default="0">
 			Sets the motion mode which defines the behavior of [method move_and_slide]. See [enum MotionMode] constants for available modes.
 		</member>
-		<member name="moving_platform_apply_velocity_on_leave" type="int" setter="set_moving_platform_apply_velocity_on_leave" getter="get_moving_platform_apply_velocity_on_leave" enum="CharacterBody2D.MovingPlatformApplyVelocityOnLeave" default="0">
-			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behavior.
-		</member>
-		<member name="moving_platform_floor_layers" type="int" setter="set_moving_platform_floor_layers" getter="get_moving_platform_floor_layers" default="4294967295">
+		<member name="platform_floor_layers" type="int" setter="set_platform_floor_layers" getter="get_platform_floor_layers" default="4294967295">
 			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all floor bodies are detected and propagate their velocity.
 		</member>
-		<member name="moving_platform_wall_layers" type="int" setter="set_moving_platform_wall_layers" getter="get_moving_platform_wall_layers" default="0">
+		<member name="platform_on_leave" type="int" setter="set_platform_on_leave" getter="get_platform_on_leave" enum="CharacterBody2D.PlatformOnLeave" default="0">
+			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum PlatformOnLeave] constants for available behavior.
+		</member>
+		<member name="platform_wall_layers" type="int" setter="set_platform_wall_layers" getter="get_platform_wall_layers" default="0">
 			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all wall bodies are ignored.
 		</member>
 		<member name="safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
@@ -199,13 +199,13 @@
 		<constant name="MOTION_MODE_FLOATING" value="1" enum="MotionMode">
 			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for top-down games.
 		</constant>
-		<constant name="PLATFORM_VEL_ON_LEAVE_ALWAYS" value="0" enum="MovingPlatformApplyVelocityOnLeave">
+		<constant name="PLATFORM_ON_LEAVE_ADD_VELOCITY" value="0" enum="PlatformOnLeave">
 			Add the last platform velocity to the [member velocity] when you leave a moving platform.
 		</constant>
-		<constant name="PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY" value="1" enum="MovingPlatformApplyVelocityOnLeave">
+		<constant name="PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY" value="1" enum="PlatformOnLeave">
 			Add the last platform velocity to the [member velocity] when you leave a moving platform, but any downward motion is ignored. It's useful to keep full jump height even when the platform is moving down.
 		</constant>
-		<constant name="PLATFORM_VEL_ON_LEAVE_NEVER" value="2" enum="MovingPlatformApplyVelocityOnLeave">
+		<constant name="PLATFORM_ON_LEAVE_DO_NOTHING" value="2" enum="PlatformOnLeave">
 			Do nothing when leaving a platform.
 		</constant>
 	</constants>

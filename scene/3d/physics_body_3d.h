@@ -348,10 +348,10 @@ public:
 		MOTION_MODE_GROUNDED,
 		MOTION_MODE_FLOATING,
 	};
-	enum MovingPlatformApplyVelocityOnLeave {
-		PLATFORM_VEL_ON_LEAVE_ALWAYS,
-		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
-		PLATFORM_VEL_ON_LEAVE_NEVER,
+	enum PlatformOnLeave {
+		PLATFORM_ON_LEAVE_ADD_VELOCITY,
+		PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY,
+		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
 	bool move_and_slide();
 
@@ -383,7 +383,7 @@ public:
 private:
 	real_t margin = 0.001;
 	MotionMode motion_mode = MOTION_MODE_GROUNDED;
-	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
+	PlatformOnLeave platform_on_leave = PLATFORM_ON_LEAVE_ADD_VELOCITY;
 	union CollisionState {
 		uint32_t state = 0;
 		struct {
@@ -411,8 +411,8 @@ private:
 	int platform_layer = 0;
 	RID platform_rid;
 	ObjectID platform_object_id;
-	uint32_t moving_platform_floor_layers = UINT32_MAX;
-	uint32_t moving_platform_wall_layers = 0;
+	uint32_t platform_floor_layers = UINT32_MAX;
+	uint32_t platform_wall_layers = 0;
 	real_t floor_snap_length = 0.1;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
@@ -457,17 +457,17 @@ private:
 	real_t get_wall_min_slide_angle() const;
 	void set_wall_min_slide_angle(real_t p_radians);
 
-	uint32_t get_moving_platform_floor_layers() const;
-	void set_moving_platform_floor_layers(const uint32_t p_exclude_layer);
+	uint32_t get_platform_floor_layers() const;
+	void set_platform_floor_layers(const uint32_t p_exclude_layer);
 
-	uint32_t get_moving_platform_wall_layers() const;
-	void set_moving_platform_wall_layers(const uint32_t p_exclude_layer);
+	uint32_t get_platform_wall_layers() const;
+	void set_platform_wall_layers(const uint32_t p_exclude_layer);
 
 	void set_motion_mode(MotionMode p_mode);
 	MotionMode get_motion_mode() const;
 
-	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
-	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
+	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
+	PlatformOnLeave get_platform_on_leave() const;
 
 	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
@@ -488,7 +488,7 @@ protected:
 };
 
 VARIANT_ENUM_CAST(CharacterBody3D::MotionMode);
-VARIANT_ENUM_CAST(CharacterBody3D::MovingPlatformApplyVelocityOnLeave);
+VARIANT_ENUM_CAST(CharacterBody3D::PlatformOnLeave);
 
 class KinematicCollision3D : public RefCounted {
 	GDCLASS(KinematicCollision3D, RefCounted);
