@@ -89,6 +89,9 @@ private:
 	float max_distance;
 	float attenuation;
 
+	float panning_strength = 1.0f;
+	float cached_global_panning_strength = 1.0f;
+
 protected:
 	void _validate_property(PropertyInfo &property) const;
 	void _notification(int p_what);
@@ -121,6 +124,9 @@ public:
 
 	void set_attenuation(float p_curve);
 	float get_attenuation() const;
+
+	void set_panning_strength(float p_panning_strength);
+	float get_panning_strength() const;
 
 	void set_area_mask(uint32_t p_mask);
 	uint32_t get_area_mask() const;
