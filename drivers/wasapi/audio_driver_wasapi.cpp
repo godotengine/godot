@@ -553,8 +553,8 @@ AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
 }
 
-Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
-	Array list;
+PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
+	PackedStringArray list;
 	IMMDeviceCollection *devices = nullptr;
 	IMMDeviceEnumerator *enumerator = nullptr;
 
@@ -563,14 +563,14 @@ Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 	CoInitialize(nullptr);
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
-	ERR_FAIL_COND_V(hr != S_OK, Array());
+	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	hr = enumerator->EnumAudioEndpoints(p_capture ? eCapture : eRender, DEVICE_STATE_ACTIVE, &devices);
-	ERR_FAIL_COND_V(hr != S_OK, Array());
+	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	UINT count = 0;
 	hr = devices->GetCount(&count);
-	ERR_FAIL_COND_V(hr != S_OK, Array());
+	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	for (ULONG i = 0; i < count; i++) {
 		IMMDevice *device = nullptr;
@@ -600,7 +600,7 @@ Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 	return list;
 }
 
-Array AudioDriverWASAPI::get_device_list() {
+PackedStringArray AudioDriverWASAPI::get_device_list() {
 	return audio_device_get_list(false);
 }
 
@@ -950,7 +950,7 @@ void AudioDriverWASAPI::capture_set_device(const String &p_name) {
 	unlock();
 }
 
-Array AudioDriverWASAPI::capture_get_device_list() {
+PackedStringArray AudioDriverWASAPI::capture_get_device_list() {
 	return audio_device_get_list(true);
 }
 

@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -62,7 +57,7 @@ namespace Godot
                     case 1:
                         return y;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -76,7 +71,7 @@ namespace Godot
                         y = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -352,27 +347,6 @@ namespace Godot
         {
             this.x = x;
             this.y = y;
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="Vector2i"/> from an existing <see cref="Vector2i"/>.
-        /// </summary>
-        /// <param name="vi">The existing <see cref="Vector2i"/>.</param>
-        public Vector2i(Vector2i vi)
-        {
-            this.x = vi.x;
-            this.y = vi.y;
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="Vector2i"/> from an existing <see cref="Vector2"/>
-        /// by rounding the components via <see cref="Mathf.RoundToInt(real_t)"/>.
-        /// </summary>
-        /// <param name="v">The <see cref="Vector2"/> to convert.</param>
-        public Vector2i(Vector2 v)
-        {
-            this.x = Mathf.RoundToInt(v.x);
-            this.y = Mathf.RoundToInt(v.y);
         }
 
         /// <summary>
@@ -679,7 +653,10 @@ namespace Godot
         /// <param name="value">The vector to convert.</param>
         public static explicit operator Vector2i(Vector2 value)
         {
-            return new Vector2i(value);
+            return new Vector2i(
+                Mathf.RoundToInt(value.x),
+                Mathf.RoundToInt(value.y)
+            );
         }
 
         /// <summary>

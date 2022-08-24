@@ -32,8 +32,9 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
-#include "core/templates/rb_set.h"
+#include "core/templates/hashfuncs.h"
 
+class EditorUndoRedoManager;
 class ViewPanner;
 
 class AnimationBezierTrackEdit : public Control {
@@ -44,16 +45,21 @@ class AnimationBezierTrackEdit : public Control {
 		MENU_KEY_DUPLICATE,
 		MENU_KEY_DELETE,
 		MENU_KEY_SET_HANDLE_FREE,
+		MENU_KEY_SET_HANDLE_LINEAR,
 		MENU_KEY_SET_HANDLE_BALANCED,
+		MENU_KEY_SET_HANDLE_MIRRORED,
+		MENU_KEY_SET_HANDLE_AUTO_BALANCED,
+		MENU_KEY_SET_HANDLE_AUTO_MIRRORED,
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	Node *root = nullptr;
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
-	float play_position_pos = 0;
+	real_t play_position_pos = 0;
 
 	Ref<Animation> animation;
+	bool read_only = false;
 	int selected_track = 0;
 
 	Vector<Rect2> view_rects;
@@ -110,25 +116,37 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
 
-	int moving_handle = 0; //0 no move -1 or +1 out
+	int moving_handle = 0; //0 no move -1 or +1 out, 2 both (drawing only)
 	int moving_handle_key = 0;
 	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
 	int moving_handle_mode = 0; // value from Animation::HandleMode
 
+	struct PairHasher {
+		static _FORCE_INLINE_ uint32_t hash(const Pair<int, int> &p_value) {
+			int32_t hash = 23;
+			hash = hash * 31 * hash_one_uint64(p_value.first);
+			hash = hash * 31 * hash_one_uint64(p_value.second);
+			return hash;
+		}
+	};
+
+	HashMap<Pair<int, int>, Vector2, PairHasher> additional_moving_handle_lefts;
+	HashMap<Pair<int, int>, Vector2, PairHasher> additional_moving_handle_rights;
+
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
-	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
-	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode);
+	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos);
+	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
 
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
 		int track = 0;
-		float time = 0;
+		double time = 0;
 		Variant key;
-		float transition = 0;
+		real_t transition = 0;
 	};
 
 	AnimationTrackEditor *editor = nullptr;
@@ -143,7 +161,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	Vector<EditPoint> edit_points;
 
-	struct SelectionCompare {
+	struct PairCompare {
 		bool operator()(const IntPair &lh, const IntPair &rh) {
 			if (lh.first == rh.first) {
 				return lh.second < rh.second;
@@ -153,7 +171,7 @@ class AnimationBezierTrackEdit : public Control {
 		}
 	};
 
-	typedef RBSet<IntPair, SelectionCompare> SelectionSet;
+	typedef RBSet<IntPair, PairCompare> SelectionSet;
 
 	SelectionSet selection;
 
@@ -176,20 +194,22 @@ public:
 
 	Ref<Animation> get_animation() const;
 
-	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
+	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
-	void set_undo_redo(UndoRedo *p_undo_redo);
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
 	void set_filtered(bool p_filtered);
 
-	void set_play_position(float p_pos);
+	void set_play_position(real_t p_pos);
 	void update_play_position();
 
 	void duplicate_selection();
 	void delete_selection();
+
+	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
 
 	AnimationBezierTrackEdit();
 };

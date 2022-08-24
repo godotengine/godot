@@ -13,31 +13,31 @@
 	<methods>
 		<method name="add_modification">
 			<return type="void" />
-			<argument index="0" name="modification" type="SkeletonModification2D" />
+			<param index="0" name="modification" type="SkeletonModification2D" />
 			<description>
 				Adds the passed-in [SkeletonModification2D] to the stack.
 			</description>
 		</method>
 		<method name="delete_modification">
 			<return type="void" />
-			<argument index="0" name="mod_idx" type="int" />
+			<param index="0" name="mod_idx" type="int" />
 			<description>
-				Deletes the [SkeletonModification2D] at the index position [code]mod_idx[/code], if it exists.
+				Deletes the [SkeletonModification2D] at the index position [param mod_idx], if it exists.
 			</description>
 		</method>
 		<method name="enable_all_modifications">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
 				Enables all [SkeletonModification2D]s in the stack.
 			</description>
 		</method>
 		<method name="execute">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
-			<argument index="1" name="execution_mode" type="int" />
+			<param index="0" name="delta" type="float" />
+			<param index="1" name="execution_mode" type="int" />
 			<description>
-				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [code]execution_mode[/code], starting from index [code]0[/code] to [member modification_count].
+				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [param execution_mode], starting from index [code]0[/code] to [member modification_count].
 				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
 			</description>
 		</method>
@@ -49,9 +49,9 @@
 		</method>
 		<method name="get_modification" qualifiers="const">
 			<return type="SkeletonModification2D" />
-			<argument index="0" name="mod_idx" type="int" />
+			<param index="0" name="mod_idx" type="int" />
 			<description>
-				Returns the [SkeletonModification2D] at the passed-in index, [code]mod_idx[/code].
+				Returns the [SkeletonModification2D] at the passed-in index, [param mod_idx].
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
@@ -62,10 +62,10 @@
 		</method>
 		<method name="set_modification">
 			<return type="void" />
-			<argument index="0" name="mod_idx" type="int" />
-			<argument index="1" name="modification" type="SkeletonModification2D" />
+			<param index="0" name="mod_idx" type="int" />
+			<param index="1" name="modification" type="SkeletonModification2D" />
 			<description>
-				Sets the modification at [code]mod_idx[/code] to the passed-in modification, [code]modification[/code].
+				Sets the modification at [param mod_idx] to the passed-in modification, [param modification].
 			</description>
 		</method>
 		<method name="setup">

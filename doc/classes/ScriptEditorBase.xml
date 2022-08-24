@@ -11,7 +11,7 @@
 	<methods>
 		<method name="add_syntax_highlighter">
 			<return type="void" />
-			<argument index="0" name="highlighter" type="EditorSyntaxHighlighter" />
+			<param index="0" name="highlighter" type="EditorSyntaxHighlighter" />
 			<description>
 				Adds a [EditorSyntaxHighlighter] to the open script.
 			</description>
@@ -30,7 +30,7 @@
 			</description>
 		</signal>
 		<signal name="go_to_help">
-			<argument index="0" name="what" type="String" />
+			<param index="0" name="what" type="String" />
 			<description>
 				Emitted when the user requests a specific documentation page.
 			</description>
@@ -41,20 +41,20 @@
 			</description>
 		</signal>
 		<signal name="replace_in_files_requested">
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Emitted when the user request to find and replace text in the file system. Not used by visual scripts.
 			</description>
 		</signal>
 		<signal name="request_help">
-			<argument index="0" name="topic" type="String" />
+			<param index="0" name="topic" type="String" />
 			<description>
 				Emitted when the user requests contextual help.
 			</description>
 		</signal>
 		<signal name="request_open_script_at_line">
-			<argument index="0" name="script" type="Object" />
-			<argument index="1" name="line" type="int" />
+			<param index="0" name="script" type="Object" />
+			<param index="1" name="line" type="int" />
 			<description>
 				Emitted when the user requests a script.
 			</description>
@@ -65,7 +65,7 @@
 			</description>
 		</signal>
 		<signal name="search_in_files_requested">
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Emitted when the user request to search text in the file system. Not used by visual scripts.
 			</description>

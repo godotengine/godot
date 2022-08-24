@@ -32,7 +32,6 @@
 #define PROJECT_SETTINGS_EDITOR_H
 
 #include "core/config/project_settings.h"
-#include "core/object/undo_redo.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
@@ -42,6 +41,9 @@
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/tab_container.h"
+
+class EditorUndoRedoManager;
+class FileSystemDock;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
@@ -61,6 +63,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced = nullptr;
 
+	HBoxContainer *custom_properties = nullptr;
 	LineEdit *property_box = nullptr;
 	OptionButton *feature_box = nullptr;
 	OptionButton *type_box = nullptr;
@@ -74,9 +77,10 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _advanced_toggled(bool p_button_pressed);
+	void _update_advanced(bool p_is_advanced);
 	void _property_box_changed(const String &p_text);
 	void _update_property_box();
 	void _feature_selected(int p_index);
@@ -118,6 +122,7 @@ public:
 	TabContainer *get_tabs() { return tab_container; }
 
 	void queue_save();
+	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
 
 	ProjectSettingsEditor(EditorData *p_data);
 };

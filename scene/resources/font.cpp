@@ -1267,7 +1267,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 	for (int i = 0; i < cache.size(); i++) {
 		String prefix = "cache/" + itos(i) + "/";
-		Array sizes = get_size_cache_list(i);
+		TypedArray<Vector2i> sizes = get_size_cache_list(i);
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -1289,7 +1289,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 			}
-			Array glyphs = get_glyph_list(i, sz);
+			PackedInt32Array glyphs = get_glyph_list(i, sz);
 			for (int k = 0; k < glyphs.size(); k++) {
 				const int32_t &gl = glyphs[k];
 				if (sz.y == 0) {
@@ -1301,7 +1301,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::INT, prefix_sz + "glyphs/" + itos(gl) + "/texture_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 			}
 			if (sz.y == 0) {
-				Array kerning_map = get_kerning_list(i, sz.x);
+				TypedArray<Vector2i> kerning_map = get_kerning_list(i, sz.x);
 				for (int k = 0; k < kerning_map.size(); k++) {
 					const Vector2i &gl_pair = kerning_map[k];
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "kerning_overrides/" + itos(gl_pair.x) + "/" + itos(gl_pair.y), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -2089,7 +2089,7 @@ void FontFile::remove_cache(int p_cache_index) {
 	emit_changed();
 }
 
-Array FontFile::get_size_cache_list(int p_cache_index) const {
+TypedArray<Vector2i> FontFile::get_size_cache_list(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_size_cache_list(cache[p_cache_index]);
@@ -2260,8 +2260,8 @@ PackedInt32Array FontFile::get_texture_offsets(int p_cache_index, const Vector2i
 	return TS->font_get_texture_offsets(cache[p_cache_index], p_size, p_texture_index);
 }
 
-Array FontFile::get_glyph_list(int p_cache_index, const Vector2i &p_size) const {
-	ERR_FAIL_COND_V(p_cache_index < 0, Array());
+PackedInt32Array FontFile::get_glyph_list(int p_cache_index, const Vector2i &p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, PackedInt32Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_list(cache[p_cache_index], p_size);
 }
@@ -2338,7 +2338,7 @@ int FontFile::get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, i
 	return TS->font_get_glyph_texture_idx(cache[p_cache_index], p_size, p_glyph);
 }
 
-Array FontFile::get_kerning_list(int p_cache_index, int p_size) const {
+TypedArray<Vector2i> FontFile::get_kerning_list(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_kerning_list(cache[p_cache_index], p_size);
@@ -2714,6 +2714,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &SystemFont::set_subpixel_positioning);
 	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &SystemFont::get_subpixel_positioning);
 
+	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &SystemFont::set_multichannel_signed_distance_field);
+	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &SystemFont::is_multichannel_signed_distance_field);
+
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &SystemFont::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &SystemFont::get_oversampling);
 
@@ -2729,6 +2732,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), "set_fallbacks", "get_fallbacks");
 }
@@ -2805,9 +2809,12 @@ void SystemFont::_update_base_font() {
 		file->set_force_autohinter(force_autohinter);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
+		file->set_multichannel_signed_distance_field(msdf);
 		file->set_oversampling(oversampling);
 
 		base_font = file;
+
+		break;
 	}
 
 	if (base_font.is_valid()) {
@@ -2840,6 +2847,7 @@ void SystemFont::reset_state() {
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	oversampling = 0.f;
+	msdf = false;
 
 	Font::reset_state();
 }
@@ -2967,6 +2975,20 @@ void SystemFont::set_subpixel_positioning(TextServer::SubpixelPositioning p_subp
 
 TextServer::SubpixelPositioning SystemFont::get_subpixel_positioning() const {
 	return subpixel_positioning;
+}
+
+void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
+	if (msdf != p_msdf) {
+		msdf = p_msdf;
+		if (base_font.is_valid()) {
+			base_font->set_multichannel_signed_distance_field(msdf);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::is_multichannel_signed_distance_field() const {
+	return msdf;
 }
 
 void SystemFont::set_oversampling(real_t p_oversampling) {

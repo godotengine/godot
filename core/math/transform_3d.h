@@ -46,6 +46,7 @@ struct _NO_DISCARD_ Transform3D {
 	Transform3D affine_inverse() const;
 
 	Transform3D rotated(const Vector3 &p_axis, real_t p_angle) const;
+	Transform3D rotated_local(const Vector3 &p_axis, real_t p_angle) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_angle);
 	void rotate_basis(const Vector3 &p_axis, real_t p_angle);
@@ -55,9 +56,11 @@ struct _NO_DISCARD_ Transform3D {
 
 	void scale(const Vector3 &p_scale);
 	Transform3D scaled(const Vector3 &p_scale) const;
+	Transform3D scaled_local(const Vector3 &p_scale) const;
 	void scale_basis(const Vector3 &p_scale);
 	void translate_local(real_t p_tx, real_t p_ty, real_t p_tz);
 	void translate_local(const Vector3 &p_translation);
+	Transform3D translated(const Vector3 &p_translation) const;
 	Transform3D translated_local(const Vector3 &p_translation) const;
 
 	const Basis &get_basis() const { return basis; }

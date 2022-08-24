@@ -47,6 +47,7 @@ public:
 private:
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
 
 	bool area = false;
 
@@ -125,13 +126,16 @@ public:
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
 
+	void set_collision_priority(real_t p_priority);
+	real_t get_collision_priority() const;
+
 	void set_disable_mode(DisableMode p_mode);
 	DisableMode get_disable_mode() const;
 
 	uint32_t create_shape_owner(Object *p_owner);
 	void remove_shape_owner(uint32_t owner);
 	void get_shape_owners(List<uint32_t> *r_owners);
-	Array _get_shape_owners();
+	PackedInt32Array _get_shape_owners();
 
 	void shape_owner_set_transform(uint32_t p_owner, const Transform3D &p_transform);
 	Transform3D shape_owner_get_transform(uint32_t p_owner) const;

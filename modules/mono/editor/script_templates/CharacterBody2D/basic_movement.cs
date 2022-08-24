@@ -9,7 +9,7 @@ public partial class _CLASS_ : _BASE_
     public const float JumpVelocity = -400.0f;
 
     // Get the gravity from the project settings to be synced with RigidDynamicBody nodes.
-    public float gravity = (float)ProjectSettings.GetSetting("physics/2d/default_gravity");
+    public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 
     public override void _PhysicsProcess(float delta)
     {

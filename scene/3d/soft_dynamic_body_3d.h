@@ -34,6 +34,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
+class PhysicsBody3D;
 class SoftDynamicBody3D;
 
 class SoftDynamicBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
@@ -168,7 +169,7 @@ public:
 	void set_drag_coefficient(real_t p_drag_coefficient);
 	real_t get_drag_coefficient();
 
-	Array get_collision_exceptions();
+	TypedArray<PhysicsBody3D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node);
 	void remove_collision_exception_with(Node *p_node);
 

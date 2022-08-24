@@ -54,6 +54,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
+#include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
@@ -134,6 +135,30 @@ public:
 	};
 
 private:
+	struct Pools {
+		union BucketSmall {
+			BucketSmall() {}
+			~BucketSmall() {}
+			Transform2D _transform2d;
+			::AABB _aabb;
+		};
+		union BucketMedium {
+			BucketMedium() {}
+			~BucketMedium() {}
+			Basis _basis;
+			Transform3D _transform3d;
+		};
+		union BucketLarge {
+			BucketLarge() {}
+			~BucketLarge() {}
+			Projection _projection;
+		};
+
+		static PagedAllocator<BucketSmall, true> _bucket_small;
+		static PagedAllocator<BucketMedium, true> _bucket_medium;
+		static PagedAllocator<BucketLarge, true> _bucket_large;
+	};
+
 	friend struct _VariantCall;
 	friend class VariantInternal;
 	// Variant takes 20 bytes when real_t is float, and 36 if double

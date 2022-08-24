@@ -75,7 +75,7 @@ public:
 	virtual int surface_get_array_len(int p_idx) const override;
 	virtual int surface_get_array_index_len(int p_idx) const override;
 	virtual Array surface_get_arrays(int p_surface) const override;
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const override;
+	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
 	virtual Dictionary surface_get_lods(int p_surface) const override;
 	virtual uint32_t surface_get_format(int p_idx) const override;
 	virtual Mesh::PrimitiveType surface_get_primitive_type(int p_idx) const override;
@@ -348,6 +348,38 @@ public:
 	bool get_is_hemisphere() const;
 
 	SphereMesh();
+};
+
+/**
+	Big donut
+*/
+class TorusMesh : public PrimitiveMesh {
+	GDCLASS(TorusMesh, PrimitiveMesh);
+
+private:
+	float inner_radius = 0.5;
+	float outer_radius = 1.0;
+	int rings = 64;
+	int ring_segments = 32;
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+public:
+	void set_inner_radius(const float p_inner_radius);
+	float get_inner_radius() const;
+
+	void set_outer_radius(const float p_outer_radius);
+	float get_outer_radius() const;
+
+	void set_rings(const int p_rings);
+	int get_rings() const;
+
+	void set_ring_segments(const int p_ring_segments);
+	int get_ring_segments() const;
+
+	TorusMesh();
 };
 
 /**

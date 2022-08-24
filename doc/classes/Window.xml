@@ -30,9 +30,9 @@
 		</method>
 		<method name="get_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="flag" type="int" enum="Window.Flags" />
+			<param index="0" name="flag" type="int" enum="Window.Flags" />
 			<description>
-				Returns [code]true[/code] if the flag is set.
+				Returns [code]true[/code] if the [param flag] is set.
 			</description>
 		</method>
 		<method name="get_layout_direction" qualifiers="const">
@@ -49,19 +49,19 @@
 		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Color] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [Color] at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the constant at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the constant at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -88,37 +88,37 @@
 		</method>
 		<method name="get_theme_font" qualifiers="const">
 			<return type="Font" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Font] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [Font] at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the font size at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the font size at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the icon at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the icon at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
 			<return type="StyleBox" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [StyleBox] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [StyleBox] at [param name] if the theme has [param theme_type].
 				See [method Control.get_theme_color] for more details.
 			</description>
 		</method>
@@ -136,50 +136,50 @@
 		</method>
 		<method name="has_theme_color" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Color] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [Color] with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_constant" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if constant with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if constant with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_font" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [Font] with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if font size with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if font size with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if icon with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if icon with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [StyleBox] with [param name] is in [param theme_type].
 			</description>
 		</method>
 		<method name="hide">
@@ -220,15 +220,15 @@
 		</method>
 		<method name="popup">
 			<return type="void" />
-			<argument index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [code]rect[/code] is provided, it will be set as the [Window]'s size.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size.
 				Fails if called on the main window.
 			</description>
 		</method>
 		<method name="popup_centered">
 			<return type="void" />
-			<argument index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
 				Popups the [Window] at the center of the current screen, with optionally given minimum size.
 				If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
@@ -236,8 +236,8 @@
 		</method>
 		<method name="popup_centered_clamped">
 			<return type="void" />
-			<argument index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
-			<argument index="1" name="fallback_ratio" type="float" default="0.75" />
+			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
 				Popups the [Window] centered inside its parent [Window].
 				[code]fallback_ratio[/code] determines the maximum size of the [Window], in relation to its parent.
@@ -245,14 +245,14 @@
 		</method>
 		<method name="popup_centered_ratio">
 			<return type="void" />
-			<argument index="0" name="ratio" type="float" default="0.8" />
+			<param index="0" name="ratio" type="float" default="0.8" />
 			<description>
-				Popups the [Window] centered inside its parent [Window] and sets its size as a [code]ratio[/code] of parent's size.
+				Popups the [Window] centered inside its parent [Window] and sets its size as a [param ratio] of parent's size.
 			</description>
 		</method>
 		<method name="popup_on_parent">
 			<return type="void" />
-			<argument index="0" name="parent_rect" type="Rect2i" />
+			<param index="0" name="parent_rect" type="Rect2i" />
 			<description>
 				Popups the [Window] with a position shifted by parent [Window]'s position.
 				If the [Window] is embedded, has the same effect as [method popup].
@@ -272,36 +272,36 @@
 		</method>
 		<method name="set_flag">
 			<return type="void" />
-			<argument index="0" name="flag" type="int" enum="Window.Flags" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="flag" type="int" enum="Window.Flags" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets a specified window flag.
 			</description>
 		</method>
 		<method name="set_ime_active">
 			<return type="void" />
-			<argument index="0" name="active" type="bool" />
+			<param index="0" name="active" type="bool" />
 			<description>
-				If [code]active[/code] is [code]true[/code], enables system's native IME (Input Method Editor).
+				If [param active] is [code]true[/code], enables system's native IME (Input Method Editor).
 			</description>
 		</method>
 		<method name="set_ime_position">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2i" />
+			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Moves IME to the given position.
 			</description>
 		</method>
 		<method name="set_layout_direction">
 			<return type="void" />
-			<argument index="0" name="direction" type="int" enum="Window.LayoutDirection" />
+			<param index="0" name="direction" type="int" enum="Window.LayoutDirection" />
 			<description>
 				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 			</description>
 		</method>
 		<method name="set_use_font_oversampling">
 			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables font oversampling. This makes fonts look better when they are scaled up.
 			</description>
@@ -344,9 +344,11 @@
 		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
+			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
 		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be smaller than this size.
+			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
@@ -388,7 +390,7 @@
 			If [code]true[/code], the window is visible.
 		</member>
 		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" default="false">
-			If [code]true[/code], the window's size will automatically update when a child node is added or removed.
+			If [code]true[/code], the window's size will automatically update when a child node is added or removed, ignoring [member min_size] if the new size is bigger.
 			If [code]false[/code], you need to call [method child_controls_changed] manually.
 		</member>
 	</members>
@@ -405,7 +407,7 @@
 			</description>
 		</signal>
 		<signal name="files_dropped">
-			<argument index="0" name="files" type="PackedStringArray" />
+			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 				Note that this method only works with non-embedded windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
@@ -455,7 +457,7 @@
 			</description>
 		</signal>
 		<signal name="window_input">
-			<argument index="0" name="event" type="InputEvent" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument.
 			</description>

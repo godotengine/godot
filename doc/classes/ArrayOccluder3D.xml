@@ -12,8 +12,8 @@
 	<methods>
 		<method name="set_arrays">
 			<return type="void" />
-			<argument index="0" name="vertices" type="PackedVector3Array" />
-			<argument index="1" name="indices" type="PackedInt32Array" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
+			<param index="1" name="indices" type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>

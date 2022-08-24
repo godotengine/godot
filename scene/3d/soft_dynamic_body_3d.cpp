@@ -83,7 +83,16 @@ void SoftDynamicBodyRenderingServerHandler::set_vertex(int p_vertex_id, const vo
 }
 
 void SoftDynamicBodyRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
+	// Store normal vector in A2B10G10R10 format.
+	Vector3 n;
+	memcpy(&n, p_vector3, sizeof(Vector3));
+	n *= Vector3(0.5, 0.5, 0.5);
+	n += Vector3(0.5, 0.5, 0.5);
+	Vector2 res = n.octahedron_encode();
+	uint32_t value = 0;
+	value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+	value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], &value, sizeof(uint32_t));
 }
 
 void SoftDynamicBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
@@ -582,10 +591,10 @@ Vector<SoftDynamicBody3D::PinnedPoint> SoftDynamicBody3D::get_pinned_points_indi
 	return pinned_points;
 }
 
-Array SoftDynamicBody3D::get_collision_exceptions() {
+TypedArray<PhysicsBody3D> SoftDynamicBody3D::get_collision_exceptions() {
 	List<RID> exceptions;
 	PhysicsServer3D::get_singleton()->soft_body_get_collision_exceptions(physics_rid, &exceptions);
-	Array ret;
+	TypedArray<PhysicsBody3D> ret;
 	for (const RID &body : exceptions) {
 		ObjectID instance_id = PhysicsServer3D::get_singleton()->body_get_object_instance_id(body);
 		Object *obj = ObjectDB::get_instance(instance_id);

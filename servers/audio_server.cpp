@@ -144,8 +144,8 @@ int AudioDriver::get_total_channels_by_speaker_mode(AudioDriver::SpeakerMode p_m
 	ERR_FAIL_V(2);
 }
 
-Array AudioDriver::get_device_list() {
-	Array list;
+PackedStringArray AudioDriver::get_device_list() {
+	PackedStringArray list;
 
 	list.push_back("Default");
 
@@ -156,8 +156,8 @@ String AudioDriver::get_device() {
 	return "Default";
 }
 
-Array AudioDriver::capture_get_device_list() {
-	Array list;
+PackedStringArray AudioDriver::capture_get_device_list() {
+	PackedStringArray list;
 
 	list.push_back("Default");
 
@@ -1637,7 +1637,7 @@ Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	return state;
 }
 
-Array AudioServer::get_device_list() {
+PackedStringArray AudioServer::get_device_list() {
 	return AudioDriver::get_singleton()->get_device_list();
 }
 
@@ -1649,7 +1649,7 @@ void AudioServer::set_device(String device) {
 	AudioDriver::get_singleton()->set_device(device);
 }
 
-Array AudioServer::capture_get_device_list() {
+PackedStringArray AudioServer::capture_get_device_list() {
 	return AudioDriver::get_singleton()->capture_get_device_list();
 }
 

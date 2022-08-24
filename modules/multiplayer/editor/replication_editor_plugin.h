@@ -34,14 +34,15 @@
 #include "editor/editor_plugin.h"
 
 #include "editor/editor_spin_slider.h"
-#include "editor/property_editor.h"
 #include "editor/property_selector.h"
 
 #include "../scene_replication_config.h"
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
+class SceneTreeDialog;
 class Tree;
+class TreeItem;
 
 class ReplicationEditor : public VBoxContainer {
 	GDCLASS(ReplicationEditor, VBoxContainer);
@@ -60,7 +61,6 @@ private:
 	Ref<SceneReplicationConfig> config;
 	NodePath deleting;
 	Tree *tree = nullptr;
-	bool keying = false;
 
 	PropertySelector *prop_selector = nullptr;
 	SceneTreeDialog *pick_node = nullptr;
@@ -97,11 +97,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void update_keying();
 	void edit(MultiplayerSynchronizer *p_object);
-	bool has_keying() const { return keying; }
 	MultiplayerSynchronizer *get_current() const { return current; }
-	void property_keyed(const String &p_property);
 
 	Button *get_pin() { return pin; }
 	ReplicationEditor();
@@ -116,8 +113,6 @@ private:
 	ReplicationEditor *repl_editor = nullptr;
 
 	void _node_removed(Node *p_node);
-	void _keying_changed();
-	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
 
 	void _pinned();
 
@@ -131,18 +126,6 @@ public:
 
 	ReplicationEditorPlugin();
 	~ReplicationEditorPlugin();
-};
-#else
-class ReplicationEditorPlugin : public EditorPlugin {
-	GDCLASS(ReplicationEditorPlugin, EditorPlugin);
-
-public:
-	virtual void edit(Object *p_object) override {}
-	virtual bool handles(Object *p_object) const override { return false; }
-	virtual void make_visible(bool p_visible) override {}
-
-	ReplicationEditorPlugin() {}
-	~ReplicationEditorPlugin() {}
 };
 
 #endif // REPLICATION_EDITOR_PLUGIN_H

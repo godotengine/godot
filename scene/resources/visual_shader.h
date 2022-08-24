@@ -132,7 +132,7 @@ private:
 	Shader::Mode shader_mode = Shader::MODE_SPATIAL;
 	mutable String previous_code;
 
-	Array _get_node_connections(Type p_type) const;
+	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
 	Vector2 graph_offset;
 
@@ -428,7 +428,7 @@ public:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual int get_input_port_count() const override;

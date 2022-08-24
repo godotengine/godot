@@ -45,14 +45,11 @@ class BoneMap : public Resource {
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
-	int get_profile_type() const;
-	void set_profile_type(const int p_profile_type);
-
 	Ref<SkeletonProfile> get_profile() const;
 	void set_profile(const Ref<SkeletonProfile> &p_profile);
 
@@ -60,6 +57,7 @@ public:
 
 	StringName get_skeleton_bone_name(StringName p_profile_bone_name) const;
 	void set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name);
+	void _set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name); // Avoid to emit signal for editor.
 
 	StringName find_profile_bone_name(StringName p_skeleton_bone_name) const;
 

@@ -1,0 +1,8 @@
+[**/Generated/**.cs]
+# Validate parameter is non-null before using it
+# Useful for generated code, as it disables nullable
+dotnet_diagnostic.CA1062.severity = error
+# CA1069: Enums should not have duplicate values
+dotnet_diagnostic.CA1069.severity = none
+# CA1708: Identifiers should differ by more than case
+dotnet_diagnostic.CA1708.severity = none

@@ -36,6 +36,7 @@
 #include "core/object/object.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
 #include "gdscript.h"
 
 #ifdef DEBUG_ENABLED
@@ -468,12 +469,12 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void get_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
 		if (Thread::get_caller_id() != Thread::get_main_id()) {
-			*r_ret = Array();
+			*r_ret = TypedArray<Dictionary>();
 			return;
 		}
 
 		ScriptLanguage *script = GDScriptLanguage::get_singleton();
-		Array ret;
+		TypedArray<Dictionary> ret;
 		for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
 			Dictionary frame;
 			frame["source"] = script->debug_get_stack_level_source(i);

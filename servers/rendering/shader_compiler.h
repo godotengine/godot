@@ -80,6 +80,7 @@ public:
 		bool uses_global_textures;
 		bool uses_fragment_time;
 		bool uses_vertex_time;
+		bool uses_screen_texture_mipmaps;
 	};
 
 	struct DefaultIdentifierActions {

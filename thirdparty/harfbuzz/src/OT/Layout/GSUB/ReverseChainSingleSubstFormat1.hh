@@ -131,7 +131,23 @@ struct ReverseChainSingleSubstFormat1
                          c->buffer->idx + 1, &end_index))
     {
       c->buffer->unsafe_to_break_from_outbuffer (start_index, end_index);
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "replacing glyph at %d (reverse chaining substitution)",
+			    c->buffer->idx);
+      }
+
       c->replace_glyph_inplace (substitute[index]);
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "replaced glyph at %d (reverse chaining substitution)",
+			    c->buffer->idx);
+      }
+
       /* Note: We DON'T decrease buffer->idx.  The main loop does it
        * for us.  This is useful for preventing surprises if someone
        * calls us through a Context lookup. */

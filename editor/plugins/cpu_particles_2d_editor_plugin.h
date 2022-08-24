@@ -39,6 +39,7 @@
 class EditorPlugin;
 class SpinBox;
 class EditorFileDialog;
+class EditorUndoRedoManager;
 
 class CPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(CPUParticles2DEditorPlugin, EditorPlugin);
@@ -70,7 +71,7 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 
 	String source_emission_file;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_emission_mask();

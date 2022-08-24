@@ -37,17 +37,26 @@
 #include "core/string/ustring.h"
 
 class ProjectConverter3To4 {
+public:
+	class RegExContainer;
+
+private:
 	void rename_enums(String &file_content);
 	Vector<String> check_for_rename_enums(Vector<String> &file_content);
 
 	void rename_classes(String &file_content);
 	Vector<String> check_for_rename_classes(Vector<String> &file_content);
 
-	void rename_gdscript_functions(String &file_content);
-	Vector<String> check_for_rename_gdscript_functions(Vector<String> &file_content);
+	void rename_gdscript_functions(String &file_content, const RegExContainer &reg_container, bool builtin);
+	Vector<String> check_for_rename_gdscript_functions(Vector<String> &file_content, const RegExContainer &reg_container, bool builtin);
+	void process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin);
 
 	void rename_csharp_functions(String &file_content);
 	Vector<String> check_for_rename_csharp_functions(Vector<String> &file_content);
+	void process_csharp_line(String &line);
+
+	void rename_csharp_attributes(String &file_content);
+	Vector<String> check_for_rename_csharp_attributes(Vector<String> &file_content);
 
 	void rename_gdscript_keywords(String &file_content);
 	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &file_content);
@@ -71,9 +80,10 @@ class ProjectConverter3To4 {
 
 	bool test_single_array(const char *array[][2], bool ignore_second_check = false);
 	bool test_conversion_single_additional(String name, String expected, void (ProjectConverter3To4::*func)(String &), String what);
+	bool test_conversion_single_additional_builtin(String name, String expected, void (ProjectConverter3To4::*func)(String &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin);
 	bool test_conversion_single_normal(String name, String expected, const char *array[][2], String what);
 	bool test_array_names();
-	bool test_conversion();
+	bool test_conversion(const RegExContainer &reg_container);
 
 public:
 	int validate_conversion();

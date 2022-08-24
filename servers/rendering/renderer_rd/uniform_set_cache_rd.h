@@ -163,7 +163,7 @@ public:
 			const Cache *c = hash_table[table_idx];
 
 			while (c) {
-				if (c->hash == h && c->set == p_set && c->shader == p_shader && _compare_args(0, c->uniforms, args...)) {
+				if (c->hash == h && c->set == p_set && c->shader == p_shader && sizeof...(Args) == c->uniforms.size() && _compare_args(0, c->uniforms, args...)) {
 					return c->cache;
 				}
 				c = c->next;
@@ -193,7 +193,7 @@ public:
 			const Cache *c = hash_table[table_idx];
 
 			while (c) {
-				if (c->hash == h && c->set == p_set && c->shader == p_shader) {
+				if (c->hash == h && c->set == p_set && c->shader == p_shader && (uint32_t)p_uniforms.size() == c->uniforms.size()) {
 					bool all_ok = true;
 					for (int i = 0; i < p_uniforms.size(); i++) {
 						if (!_compare_uniform(p_uniforms[i], c->uniforms[i])) {

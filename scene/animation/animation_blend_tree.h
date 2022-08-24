@@ -67,7 +67,7 @@ public:
 	AnimationNodeAnimation();
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 private:
@@ -297,14 +297,15 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	StringName current = PNAME("current");
 	StringName prev_current = "prev_current";
 
-	float xfade = 0.0;
+	float xfade_time = 0.0;
+	Ref<Curve> xfade_curve;
 	bool from_start = true;
 
 	void _update_inputs();
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -321,8 +322,11 @@ public:
 	void set_input_caption(int p_input, const String &p_name);
 	String get_input_caption(int p_input) const;
 
-	void set_cross_fade_time(float p_fade);
-	float get_cross_fade_time() const;
+	void set_xfade_time(float p_fade);
+	float get_xfade_time() const;
+
+	void set_xfade_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_xfade_curve() const;
 
 	void set_from_start(bool p_from_start);
 	bool is_from_start() const;

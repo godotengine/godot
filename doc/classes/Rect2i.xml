@@ -21,32 +21,32 @@
 		</constructor>
 		<constructor name="Rect2i">
 			<return type="Rect2i" />
-			<argument index="0" name="from" type="Rect2i" />
+			<param index="0" name="from" type="Rect2i" />
 			<description>
 				Constructs a [Rect2i] as a copy of the given [Rect2i].
 			</description>
 		</constructor>
 		<constructor name="Rect2i">
 			<return type="Rect2i" />
-			<argument index="0" name="from" type="Rect2" />
+			<param index="0" name="from" type="Rect2" />
 			<description>
 				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
 			</description>
 		</constructor>
 		<constructor name="Rect2i">
 			<return type="Rect2i" />
-			<argument index="0" name="position" type="Vector2i" />
-			<argument index="1" name="size" type="Vector2i" />
+			<param index="0" name="position" type="Vector2i" />
+			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Constructs a [Rect2i] by position and size.
 			</description>
 		</constructor>
 		<constructor name="Rect2i">
 			<return type="Rect2i" />
-			<argument index="0" name="x" type="int" />
-			<argument index="1" name="y" type="int" />
-			<argument index="2" name="width" type="int" />
-			<argument index="3" name="height" type="int" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="width" type="int" />
+			<param index="3" name="height" type="int" />
 			<description>
 				Constructs a [Rect2i] by x, y, width, and height.
 			</description>
@@ -61,14 +61,14 @@
 		</method>
 		<method name="encloses" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="b" type="Rect2i" />
+			<param index="0" name="b" type="Rect2i" />
 			<description>
 				Returns [code]true[/code] if this [Rect2i] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="to" type="Vector2i" />
+			<param index="0" name="to" type="Vector2i" />
 			<description>
 				Returns a copy of this [Rect2i] expanded so that the borders align with the given point.
 				[codeblocks]
@@ -102,27 +102,27 @@
 		</method>
 		<method name="grow" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="amount" type="int" />
+			<param index="0" name="amount" type="int" />
 			<description>
-				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on all sides.
+				Returns a copy of the [Rect2i] grown by the specified [param amount] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="left" type="int" />
-			<argument index="1" name="top" type="int" />
-			<argument index="2" name="right" type="int" />
-			<argument index="3" name="bottom" type="int" />
+			<param index="0" name="left" type="int" />
+			<param index="1" name="top" type="int" />
+			<param index="2" name="right" type="int" />
+			<param index="3" name="bottom" type="int" />
 			<description>
 				Returns a copy of the [Rect2i] grown by the specified amount on each side individually.
 			</description>
 		</method>
 		<method name="grow_side" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="side" type="int" />
-			<argument index="1" name="amount" type="int" />
+			<param index="0" name="side" type="int" />
+			<param index="1" name="amount" type="int" />
 			<description>
-				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on the specified [enum Side].
+				Returns a copy of the [Rect2i] grown by the specified [param amount] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area" qualifiers="const">
@@ -134,7 +134,7 @@
 		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="point" type="Vector2i" />
+			<param index="0" name="point" type="Vector2i" />
 			<description>
 				Returns [code]true[/code] if the [Rect2i] contains a point. By convention, the right and bottom edges of the [Rect2i] are considered exclusive, so points on these edges are [b]not[/b] included.
 				[b]Note:[/b] This method is not reliable for [Rect2i] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.
@@ -142,7 +142,7 @@
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="b" type="Rect2i" />
+			<param index="0" name="b" type="Rect2i" />
 			<description>
 				Returns the intersection of this [Rect2i] and [code]b[/code].
 				If the rectangles do not intersect, an empty [Rect2i] is returned.
@@ -150,16 +150,16 @@
 		</method>
 		<method name="intersects" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="b" type="Rect2i" />
+			<param index="0" name="b" type="Rect2i" />
 			<description>
 				Returns [code]true[/code] if the [Rect2i] overlaps with [code]b[/code] (i.e. they have at least one point in common).
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
 			<return type="Rect2i" />
-			<argument index="0" name="b" type="Rect2i" />
+			<param index="0" name="b" type="Rect2i" />
 			<description>
-				Returns a larger [Rect2i] that contains this [Rect2i] and [code]b[/code].
+				Returns a larger [Rect2i] that contains this [Rect2i] and [param b].
 			</description>
 		</method>
 	</methods>
@@ -178,14 +178,14 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Rect2i" />
+			<param index="0" name="right" type="Rect2i" />
 			<description>
 				Returns [code]true[/code] if the rectangles are not equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Rect2i" />
+			<param index="0" name="right" type="Rect2i" />
 			<description>
 				Returns [code]true[/code] if the rectangles are equal.
 			</description>

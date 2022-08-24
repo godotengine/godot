@@ -15,21 +15,21 @@
 	<methods>
 		<method name="add_blend_point">
 			<return type="void" />
-			<argument index="0" name="node" type="AnimationRootNode" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="at_index" type="int" default="-1" />
+			<param index="0" name="node" type="AnimationRootNode" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="at_index" type="int" default="-1" />
 			<description>
-				Adds a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
+				Adds a new point that represents a [param node] at the position set by [param pos]. You can insert it at a specific index using the [param at_index] argument. If you use the default value for [param at_index], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="add_triangle">
 			<return type="void" />
-			<argument index="0" name="x" type="int" />
-			<argument index="1" name="y" type="int" />
-			<argument index="2" name="z" type="int" />
-			<argument index="3" name="at_index" type="int" default="-1" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="z" type="int" />
+			<param index="3" name="at_index" type="int" default="-1" />
 			<description>
-				Creates a new triangle using three points [code]x[/code], [code]y[/code], and [code]z[/code]. Triangles can overlap. You can insert the triangle at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
+				Creates a new triangle using three points [param x], [param y], and [param z]. Triangles can overlap. You can insert the triangle at a specific index using the [param at_index] argument. If you use the default value for [param at_index], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
@@ -40,16 +40,16 @@
 		</method>
 		<method name="get_blend_point_node" qualifiers="const">
 			<return type="AnimationRootNode" />
-			<argument index="0" name="point" type="int" />
+			<param index="0" name="point" type="int" />
 			<description>
-				Returns the [AnimationRootNode] referenced by the point at index [code]point[/code].
+				Returns the [AnimationRootNode] referenced by the point at index [param point].
 			</description>
 		</method>
 		<method name="get_blend_point_position" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="point" type="int" />
+			<param index="0" name="point" type="int" />
 			<description>
-				Returns the position of the point at index [code]point[/code].
+				Returns the position of the point at index [param point].
 			</description>
 		</method>
 		<method name="get_triangle_count" qualifiers="const">
@@ -60,40 +60,40 @@
 		</method>
 		<method name="get_triangle_point">
 			<return type="int" />
-			<argument index="0" name="triangle" type="int" />
-			<argument index="1" name="point" type="int" />
+			<param index="0" name="triangle" type="int" />
+			<param index="1" name="point" type="int" />
 			<description>
-				Returns the position of the point at index [code]point[/code] in the triangle of index [code]triangle[/code].
+				Returns the position of the point at index [param point] in the triangle of index [param triangle].
 			</description>
 		</method>
 		<method name="remove_blend_point">
 			<return type="void" />
-			<argument index="0" name="point" type="int" />
+			<param index="0" name="point" type="int" />
 			<description>
-				Removes the point at index [code]point[/code] from the blend space.
+				Removes the point at index [param point] from the blend space.
 			</description>
 		</method>
 		<method name="remove_triangle">
 			<return type="void" />
-			<argument index="0" name="triangle" type="int" />
+			<param index="0" name="triangle" type="int" />
 			<description>
-				Removes the triangle at index [code]triangle[/code] from the blend space.
+				Removes the triangle at index [param triangle] from the blend space.
 			</description>
 		</method>
 		<method name="set_blend_point_node">
 			<return type="void" />
-			<argument index="0" name="point" type="int" />
-			<argument index="1" name="node" type="AnimationRootNode" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="node" type="AnimationRootNode" />
 			<description>
-				Changes the [AnimationNode] referenced by the point at index [code]point[/code].
+				Changes the [AnimationNode] referenced by the point at index [param point].
 			</description>
 		</method>
 		<method name="set_blend_point_position">
 			<return type="void" />
-			<argument index="0" name="point" type="int" />
-			<argument index="1" name="pos" type="Vector2" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="pos" type="Vector2" />
 			<description>
-				Updates the position of the point at index [code]point[/code] on the blend axis.
+				Updates the position of the point at index [param point] on the blend axis.
 			</description>
 		</method>
 	</methods>

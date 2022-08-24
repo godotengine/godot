@@ -78,9 +78,9 @@ public:
 		float energy = 1.0;
 		float bias = 1.4;
 		float normal_bias = 0.0;
-		float propagation = 0.7;
+		float propagation = 0.5;
 		bool interior = false;
-		bool use_two_bounces = false;
+		bool use_two_bounces = true;
 
 		uint32_t version = 1;
 		uint32_t data_version = 1;
@@ -232,16 +232,13 @@ private:
 			uint32_t max_cascades;
 
 			int32_t screen_size[2];
-			uint32_t use_occlusion;
 			float y_mult;
 
-			uint32_t probe_axis_size;
 			float z_near;
-			float reserved1;
-			float reserved2;
 
-			float cam_transform[16];
-			float inv_projection[16];
+			float inv_projection[3][4];
+			float cam_basis[3][3];
+			float cam_origin[3];
 		};
 
 		SdfgiDebugShaderRD debug;
@@ -472,6 +469,7 @@ public:
 
 		void update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
 		void debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+		void free_resources();
 	};
 
 	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
@@ -485,6 +483,12 @@ public:
 		ERR_FAIL_COND_V(!voxel_gi, RID());
 		return voxel_gi->texture;
 	};
+
+	bool voxel_gi_instance_owns(RID p_rid) const {
+		return voxel_gi_instance_owner.owns(p_rid);
+	}
+
+	void voxel_gi_instance_free(RID p_rid);
 
 	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 

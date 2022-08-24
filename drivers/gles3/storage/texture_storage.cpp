@@ -115,6 +115,17 @@ TextureStorage::TextureStorage() {
 			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK], images, RS::TEXTURE_LAYERED_CUBEMAP);
 		}
 
+		{ // transparent black
+			Ref<Image> image;
+			image.instantiate();
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			image->fill(Color(0, 0, 0, 0));
+			image->generate_mipmaps();
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT] = texture_allocate();
+			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT], image);
+		}
+
 		{
 			Ref<Image> image;
 			image.instantiate();

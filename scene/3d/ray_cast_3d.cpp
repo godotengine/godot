@@ -88,6 +88,10 @@ Object *RayCast3D::get_collider() const {
 	return ObjectDB::get_instance(against);
 }
 
+RID RayCast3D::get_collider_rid() const {
+	return against_rid;
+}
+
 int RayCast3D::get_collider_shape() const {
 	return against_shape;
 }
@@ -224,12 +228,14 @@ void RayCast3D::_update_raycast_state() {
 	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;
+		against_rid = rr.rid;
 		collision_point = rr.position;
 		collision_normal = rr.normal;
 		against_shape = rr.shape;
 	} else {
 		collided = false;
 		against = ObjectID();
+		against_rid = RID();
 		against_shape = 0;
 	}
 }
@@ -302,6 +308,7 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_raycast_update"), &RayCast3D::force_raycast_update);
 
 	ClassDB::bind_method(D_METHOD("get_collider"), &RayCast3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &RayCast3D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &RayCast3D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_point"), &RayCast3D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal"), &RayCast3D::get_collision_normal);

@@ -34,6 +34,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
@@ -79,12 +85,13 @@ class BoneMapperItem : public VBoxContainer {
 	int button_id = -1;
 	StringName profile_bone_name;
 
-	PackedStringArray skeleton_bone_names;
 	Ref<BoneMap> bone_map;
 
-	EditorPropertyTextEnum *skeleton_bone_selector;
+	EditorPropertyText *skeleton_bone_selector;
+	Button *picker_button;
 
 	void _update_property();
+	void _open_picker();
 
 protected:
 	void _notification(int p_what);
@@ -95,8 +102,34 @@ protected:
 public:
 	void assign_button_id(int p_button_id);
 
-	BoneMapperItem(Ref<BoneMap> &p_bone_map, PackedStringArray p_skeleton_bone_names, const StringName &p_profile_bone_name = StringName());
+	BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_profile_bone_name = StringName());
 	~BoneMapperItem();
+};
+
+class BonePicker : public AcceptDialog {
+	GDCLASS(BonePicker, AcceptDialog);
+
+	Skeleton3D *skeleton = nullptr;
+	Tree *bones = nullptr;
+
+public:
+	void popup_bones_tree(const Size2i &p_minsize = Size2i());
+	bool has_selected_bone();
+	StringName get_selected_bone();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+	void _confirm();
+
+private:
+	void create_editors();
+	void create_bones_tree(Skeleton3D *p_skeleton);
+
+public:
+	BonePicker(Skeleton3D *p_skeleton);
+	~BonePicker();
 };
 
 class BoneMapper : public VBoxContainer {
@@ -105,10 +138,13 @@ class BoneMapper : public VBoxContainer {
 	Skeleton3D *skeleton;
 	Ref<BoneMap> bone_map;
 
+	EditorPropertyResource *profile_selector;
+
 	Vector<BoneMapperItem *> bone_mapper_items;
 
+	Button *clear_mapping_button;
+
 	VBoxContainer *mapper_item_vbox;
-	HSeparator *separator;
 
 	int current_group_idx = 0;
 	int current_bone_idx = -1;
@@ -126,10 +162,31 @@ class BoneMapper : public VBoxContainer {
 	void update_group_idx();
 	void _update_state();
 
+	/* Bone picker */
+	BonePicker *picker = nullptr;
+	StringName picker_key_name;
+	void _pick_bone(const StringName &p_bone_name);
+	void _apply_picker_selection();
+	void _clear_mapping_current_group();
+
+#ifdef MODULE_REGEX_ENABLED
+	/* For auto mapping */
+	enum BoneSegregation {
+		BONE_SEGREGATION_NONE,
+		BONE_SEGREGATION_LEFT,
+		BONE_SEGREGATION_RIGHT
+	};
+	int search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_picklist, BoneSegregation p_segregation = BONE_SEGREGATION_NONE, int p_parent = -1, int p_child = -1, int p_children_count = -1);
+	BoneSegregation guess_bone_segregation(String p_bone_name);
+	void auto_mapping_process(Ref<BoneMap> &p_bone_map);
+	void _run_auto_mapping();
+#endif // MODULE_REGEX_ENABLED
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
+	virtual void _profile_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 
 public:
 	void set_current_group_idx(int p_group_idx);

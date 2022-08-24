@@ -31,12 +31,13 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
-#include "core/object/undo_redo.h"
 #include "editor/editor_data.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class EditorUndoRedoManager;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
@@ -98,7 +99,7 @@ class SceneTreeEditor : public Control {
 	bool show_enabled_subscene = false;
 
 	void _renamed();
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	HashSet<Node *> marked;
 	bool marked_selectable = false;
@@ -139,7 +140,7 @@ public:
 	void set_filter(const String &p_filter);
 	String get_filter() const;
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; };
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_display_foreign_nodes(bool p_display);
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);

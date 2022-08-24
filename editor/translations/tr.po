@@ -77,13 +77,14 @@
 # Deleted User <noreply+46833@weblate.org>, 2022.
 # Emre <mr.inkaya@gmail.com>, 2022.
 # Deleted User <noreply+46858@weblate.org>, 2022.
+# Ümid Quliyev <lucifer25x@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-23 03:57+0000\n"
-"Last-Translator: Deleted User <noreply+46858@weblate.org>\n"
+"PO-Revision-Date: 2022-08-05 01:04+0000\n"
+"Last-Translator: Ümid Quliyev <lucifer25x@protonmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -360,7 +361,7 @@ msgstr "Veri Dizisi"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "Tokalaşmayı blokla"
 
 #: core/io/udp_server.cpp
 msgid "Max Pending Connections"
@@ -411,7 +412,6 @@ msgstr "'%s' çağrıldığında:"
 
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
-#, fuzzy
 msgid "Seed"
 msgstr "Tohum"
 
@@ -449,7 +449,6 @@ msgid "Shift"
 msgstr "Shift"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Control"
 msgstr "Kontrol Tuşu"
 
@@ -2833,7 +2832,7 @@ msgstr "Platform için proje dışa aktarımı:"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed with errors."
+msgid "Completed with warnings."
 msgstr "Hatalarla tamamlandı."
 
 #: editor/editor_export.cpp
@@ -4459,8 +4458,9 @@ msgid "Restore Scenes On Load"
 msgstr "Sahne Düğümünü Al"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
 msgid "Show Thumbnail On Hover"
-msgstr ""
+msgstr "Fareyle üzerine gelindiğinde  küçük resmi  göster"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Inspector"
@@ -4486,11 +4486,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector2 Editing"
-msgstr ""
+msgstr "Yatay Vector2 Düzenleme"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector Types Editing"
-msgstr ""
+msgstr "Yatay Vector tipleri düzenleme"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4503,8 +4503,9 @@ msgid "Resources To Open In New Inspector"
 msgstr "Gözetmen Bölümünde Aç"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Default Color Picker Mode"
-msgstr ""
+msgstr "Varsayılan renk seçme modu"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
@@ -5380,19 +5381,19 @@ msgstr "Hepsini Görüntüle"
 
 #: editor/editor_settings.cpp
 msgid "Custom Display Scale"
-msgstr ""
+msgstr "Özel Ekran Ölçeği"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Size"
-msgstr ""
+msgstr "Ana font ölçüsü"
 
 #: editor/editor_settings.cpp
 msgid "Code Font Size"
-msgstr ""
+msgstr "Kod font'u ölçüsü"
 
 #: editor/editor_settings.cpp
 msgid "Font Antialiased"
-msgstr ""
+msgstr "Kenarı yumuşatılmış font"
 
 #: editor/editor_settings.cpp
 msgid "Font Hinting"
@@ -5405,7 +5406,7 @@ msgstr "Ana Sahne"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Bold"
-msgstr ""
+msgstr "Ana font kalınlığı"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5413,8 +5414,9 @@ msgid "Code Font"
 msgstr "Düğüm Noktası Ekle"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Dim Editor On Dialog Popup"
-msgstr ""
+msgstr "İletişim penceresinde Dim Editörü"
 
 #: editor/editor_settings.cpp main/main.cpp
 msgid "Low Processor Mode Sleep (µsec)"
@@ -5431,11 +5433,12 @@ msgstr "Dikkat Dağıtmayan Kip"
 
 #: editor/editor_settings.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Otomatik olarak ekran görüntülerini aç"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Max Array Dictionary Items Per Page"
-msgstr ""
+msgstr "Her sayfada maks dizi sözlüğü öğesi"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
@@ -5449,7 +5452,7 @@ msgstr "Ön ayar"
 
 #: editor/editor_settings.cpp
 msgid "Icon And Font Color"
-msgstr ""
+msgstr "Simge ve Font rengi"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5463,7 +5466,7 @@ msgstr "Renk Seç"
 
 #: editor/editor_settings.cpp scene/resources/environment.cpp
 msgid "Contrast"
-msgstr ""
+msgstr "Kontrast"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
@@ -5561,8 +5564,9 @@ msgid "Property Editor"
 msgstr "Grup Düzenleyici"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Auto Refresh Interval"
-msgstr ""
+msgstr "Otomatik yenileme intervalı"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5577,7 +5581,7 @@ msgstr "Editör Teması"
 #: editor/editor_settings.cpp scene/3d/label_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
-msgstr ""
+msgstr "Satır aralığı"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: modules/gdscript/editor/gdscript_highlighter.cpp
@@ -5596,7 +5600,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight Current Line"
-msgstr ""
+msgstr "Geçerli satırı vurgula"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Highlight Type Safe Lines"
@@ -5635,11 +5639,11 @@ msgstr "Gezinim"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Smooth Scrolling"
-msgstr ""
+msgstr "Pürüzsüz kaydırma"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "V Scroll Speed"
-msgstr ""
+msgstr "V kaydırma hızı"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5648,7 +5652,7 @@ msgstr "Başlatımı Göster"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Width"
-msgstr ""
+msgstr "Küçük Harita Genişliği"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
@@ -5660,12 +5664,13 @@ msgid "Drag And Drop Selection"
 msgstr "GridMap Seçimi"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Stay In Script Editor On Node Selected"
-msgstr ""
+msgstr "Seçilmiş Düğümde Script Editöründe Kal"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
-msgstr ""
+msgstr "Dış görünüş"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 #, fuzzy
@@ -5691,12 +5696,14 @@ msgid "Show Info Gutter"
 msgstr ""
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Code Folding"
-msgstr ""
+msgstr "Kod katlama"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Word Wrap"
-msgstr ""
+msgstr "Kelime Paketle"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
@@ -5717,7 +5724,7 @@ msgstr "Kod Düzenleyici"
 
 #: editor/editor_settings.cpp
 msgid "Show Members Overview"
-msgstr ""
+msgstr "Üyelerin Genel Bakışını Göster"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -5734,16 +5741,19 @@ msgid "Autosave Interval Secs"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Restore Scripts On Load"
-msgstr ""
+msgstr "Script'leri Yüklemede Eski Haline Getir"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Auto Reload And Parse Scripts On Save"
-msgstr ""
+msgstr "Kaydederken Script'leri Otomatik Tekrar yükle ve Ayrıştır"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Auto Reload Scripts On External Change"
-msgstr ""
+msgstr "Dış Değişiklikte Otomatik Olarak Script'i Geri Yükle"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5756,11 +5766,11 @@ msgstr ""
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
-msgstr ""
+msgstr "İmleç"
 
 #: editor/editor_settings.cpp
 msgid "Scroll Past End Of File"
-msgstr ""
+msgstr "Dosyanın Sonunu Kaydır"
 
 #: editor/editor_settings.cpp
 msgid "Block Caret"
@@ -5796,7 +5806,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Code Complete Delay"
-msgstr ""
+msgstr "Kod Tamamlama Gecikme Süresi"
 
 #: editor/editor_settings.cpp
 msgid "Put Callhint Tooltip Below Current Line"
@@ -5853,12 +5863,14 @@ msgid "Preview Size"
 msgstr "Önizleme"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Primary Grid Color"
-msgstr ""
+msgstr "Birincil Izgara Rengi"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Secondary Grid Color"
-msgstr ""
+msgstr "İkincil Izgara Rengi"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5895,7 +5907,7 @@ msgstr "Nokta"
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
-msgstr ""
+msgstr "Şekil"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6007,7 +6019,7 @@ msgstr "Gezinim Kipi"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Sensitivity"
-msgstr ""
+msgstr "Yörünge Hassasiyeti"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Inertia"
@@ -20660,15 +20672,15 @@ msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Geçersiz uzantı."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20692,15 +20704,15 @@ msgstr "Geçersiz ad."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Geçersiz uzantı."
 
 #: platform/windows/export/export.cpp
 #, fuzzy

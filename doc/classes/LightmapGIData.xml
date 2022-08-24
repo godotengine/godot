@@ -11,10 +11,10 @@
 	<methods>
 		<method name="add_user">
 			<return type="void" />
-			<argument index="0" name="path" type="NodePath" />
-			<argument index="1" name="uv_scale" type="Rect2" />
-			<argument index="2" name="slice_index" type="int" />
-			<argument index="3" name="sub_instance" type="int" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="uv_scale" type="Rect2" />
+			<param index="2" name="slice_index" type="int" />
+			<param index="3" name="sub_instance" type="int" />
 			<description>
 				Adds an object that is considered baked within this [LightmapGIData].
 			</description>
@@ -33,9 +33,9 @@
 		</method>
 		<method name="get_user_path" qualifiers="const">
 			<return type="NodePath" />
-			<argument index="0" name="user_idx" type="int" />
+			<param index="0" name="user_idx" type="int" />
 			<description>
-				Returns the [NodePath] of the baked object at index [code]user_idx[/code].
+				Returns the [NodePath] of the baked object at index [param user_idx].
 			</description>
 		</method>
 		<method name="is_using_spherical_harmonics" qualifiers="const">
@@ -46,9 +46,9 @@
 		</method>
 		<method name="set_uses_spherical_harmonics">
 			<return type="void" />
-			<argument index="0" name="uses_spherical_harmonics" type="bool" />
+			<param index="0" name="uses_spherical_harmonics" type="bool" />
 			<description>
-				If [code]uses_spherical_harmonics[/code] is [code]true[/code], tells the engine to treat the lightmap data as if it was baked with directional information.
+				If [param uses_spherical_harmonics] is [code]true[/code], tells the engine to treat the lightmap data as if it was baked with directional information.
 				[b]Note:[/b] Changing this value on already baked lightmaps will not cause them to be baked again. This means the material appearance will look incorrect until lightmaps are baked again, in which case the value set here is discarded as the entire [LightmapGIData] resource is replaced by the lightmapper.
 			</description>
 		</method>

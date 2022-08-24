@@ -57,8 +57,8 @@ void Texture3DEditor::_texture_changed() {
 }
 
 void Texture3DEditor::_update_material() {
-	material->set_shader_param("layer", (layer->get_value() + 0.5) / texture->get_depth());
-	material->set_shader_param("tex", texture->get_rid());
+	material->set_shader_uniform("layer", (layer->get_value() + 0.5) / texture->get_depth());
+	material->set_shader_uniform("tex", texture->get_rid());
 
 	String format = Image::get_format_name(texture->get_format());
 

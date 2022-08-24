@@ -39,6 +39,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 
+class EditorUndoRedoManager;
 class Node3DEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {
@@ -62,7 +63,7 @@ class GridMapEditor : public VBoxContainer {
 		DISPLAY_LIST
 	};
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	InputAction input_action = INPUT_NONE;
 	Panel *panel = nullptr;
 	MenuButton *options = nullptr;

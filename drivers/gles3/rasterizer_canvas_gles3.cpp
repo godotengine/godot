@@ -201,6 +201,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	bool material_screen_texture_found = false;
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
+	bool backbuffer_gen_mipmaps = false;
 
 	Item *ci = p_item_list;
 	Item *canvas_group_owner = nullptr;
@@ -225,6 +226,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 					if (!material_screen_texture_found) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
+						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
 					}
 				}
 
@@ -282,7 +284,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
-			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
+			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
 
 			backbuffer_copy = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
@@ -1607,6 +1609,8 @@ void fragment() {
 
 RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
+	memdelete_arr(state.instance_data_array);
 
 	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_free(state.canvas_shader_default_version);
 	material_storage->material_free(default_canvas_group_material);

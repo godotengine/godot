@@ -149,9 +149,6 @@ struct _NO_DISCARD_ Basis {
 	_FORCE_INLINE_ void operator*=(const real_t p_val);
 	_FORCE_INLINE_ Basis operator*(const real_t p_val) const;
 
-	int get_orthogonal_index() const;
-	void set_orthogonal_index(int p_index);
-
 	bool is_orthogonal() const;
 	bool is_diagonal() const;
 	bool is_rotation() const;

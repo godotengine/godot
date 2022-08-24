@@ -1564,21 +1564,20 @@ public:
 /// REFRACT
 ///////////////////////////////////////
 
-class VisualShaderNodeVectorRefract : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorRefract, VisualShaderNode);
+class VisualShaderNodeVectorRefract : public VisualShaderNodeVectorBase {
+	GDCLASS(VisualShaderNodeVectorRefract, VisualShaderNodeVectorBase);
 
 public:
 	virtual String get_caption() const override;
 
 	virtual int get_input_port_count() const override;
-	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
 
 	virtual int get_output_port_count() const override;
-	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual void set_op_type(OpType p_op_type) override;
 
 	VisualShaderNodeVectorRefract();
 };
@@ -2131,6 +2130,7 @@ public:
 	enum ColorDefault {
 		COLOR_DEFAULT_WHITE,
 		COLOR_DEFAULT_BLACK,
+		COLOR_DEFAULT_TRANSPARENT,
 		COLOR_DEFAULT_MAX,
 	};
 

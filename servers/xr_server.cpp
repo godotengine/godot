@@ -226,7 +226,7 @@ Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 	return interfaces[idx];
 };
 
-Array XRServer::get_interfaces() const {
+TypedArray<Dictionary> XRServer::get_interfaces() const {
 	Array ret;
 
 	for (int i = 0; i < interfaces.size(); i++) {

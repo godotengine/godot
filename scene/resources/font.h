@@ -230,7 +230,7 @@ public:
 	virtual void clear_cache();
 	virtual void remove_cache(int p_cache_index);
 
-	virtual Array get_size_cache_list(int p_cache_index) const;
+	virtual TypedArray<Vector2i> get_size_cache_list(int p_cache_index) const;
 	virtual void clear_size_cache(int p_cache_index);
 	virtual void remove_size_cache(int p_cache_index, const Vector2i &p_size);
 
@@ -271,7 +271,7 @@ public:
 	virtual void set_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset);
 	virtual PackedInt32Array get_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index) const;
 
-	virtual Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
+	virtual PackedInt32Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
 	virtual void clear_glyphs(int p_cache_index, const Vector2i &p_size);
 	virtual void remove_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_glyph);
 
@@ -290,7 +290,7 @@ public:
 	virtual void set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx);
 	virtual int get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
 
-	virtual Array get_kerning_list(int p_cache_index, int p_size) const;
+	virtual TypedArray<Vector2i> get_kerning_list(int p_cache_index, int p_size) const;
 	virtual void clear_kerning_map(int p_cache_index, int p_size);
 	virtual void remove_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair);
 
@@ -404,6 +404,7 @@ class SystemFont : public Font {
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	real_t oversampling = 0.f;
+	bool msdf = false;
 
 protected:
 	static void _bind_methods();
@@ -433,6 +434,9 @@ public:
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
+
+	virtual void set_multichannel_signed_distance_field(bool p_msdf);
+	virtual bool is_multichannel_signed_distance_field() const;
 
 	virtual void set_font_names(const PackedStringArray &p_names);
 	virtual PackedStringArray get_font_names() const;

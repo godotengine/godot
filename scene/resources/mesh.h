@@ -63,7 +63,7 @@ protected:
 	GDVIRTUAL1RC(int, _surface_get_array_len, int)
 	GDVIRTUAL1RC(int, _surface_get_array_index_len, int)
 	GDVIRTUAL1RC(Array, _surface_get_arrays, int)
-	GDVIRTUAL1RC(Array, _surface_get_blend_shape_arrays, int)
+	GDVIRTUAL1RC(TypedArray<Array>, _surface_get_blend_shape_arrays, int)
 	GDVIRTUAL1RC(Dictionary, _surface_get_lods, int)
 	GDVIRTUAL1RC(uint32_t, _surface_get_format, int)
 	GDVIRTUAL1RC(uint32_t, _surface_get_primitive_type, int)
@@ -144,13 +144,14 @@ public:
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE,
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS,
 
+		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY,
 	};
 
 	virtual int get_surface_count() const;
 	virtual int surface_get_array_len(int p_idx) const;
 	virtual int surface_get_array_index_len(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const;
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const;
+	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const;
 	virtual Dictionary surface_get_lods(int p_surface) const;
 	virtual uint32_t surface_get_format(int p_idx) const;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const;
@@ -167,9 +168,6 @@ public:
 	Ref<TriangleMesh> generate_surface_triangle_mesh(int p_surface) const;
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
-
-	Ref<Shape3D> create_trimesh_shape() const;
-	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
@@ -213,6 +211,8 @@ public:
 	static ConvexDecompositionFunc convex_decomposition_function;
 
 	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
+	Ref<Shape3D> create_trimesh_shape() const;
 
 	virtual int get_builtin_bind_pose_count() const;
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;
@@ -270,7 +270,7 @@ public:
 	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const override;
-	Array surface_get_blend_shape_arrays(int p_surface) const override;
+	TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
 	Dictionary surface_get_lods(int p_surface) const override;
 
 	void add_blend_shape(const StringName &p_name);
@@ -345,7 +345,7 @@ public:
 	virtual int surface_get_array_len(int p_idx) const override { return 0; }
 	virtual int surface_get_array_index_len(int p_idx) const override { return 0; }
 	virtual Array surface_get_arrays(int p_surface) const override { return Array(); }
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const override { return Array(); }
+	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override { return TypedArray<Array>(); }
 	virtual Dictionary surface_get_lods(int p_surface) const override { return Dictionary(); }
 	virtual uint32_t surface_get_format(int p_idx) const override { return 0; }
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const override { return PRIMITIVE_TRIANGLES; }

@@ -39,86 +39,80 @@
 
 namespace RendererRD {
 
-/* LIGHT */
-
-struct Light {
-	RS::LightType type;
-	float param[RS::LIGHT_PARAM_MAX];
-	Color color = Color(1, 1, 1, 1);
-	RID projector;
-	bool shadow = false;
-	bool negative = false;
-	bool reverse_cull = false;
-	RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
-	uint32_t max_sdfgi_cascade = 2;
-	uint32_t cull_mask = 0xFFFFFFFF;
-	bool distance_fade = false;
-	real_t distance_fade_begin = 40.0;
-	real_t distance_fade_shadow = 50.0;
-	real_t distance_fade_length = 10.0;
-	RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
-	RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
-	bool directional_blend_splits = false;
-	RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
-	uint64_t version = 0;
-
-	Dependency dependency;
-};
-
-/* REFLECTION PROBE */
-
-struct ReflectionProbe {
-	RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
-	int resolution = 256;
-	float intensity = 1.0;
-	RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
-	Color ambient_color;
-	float ambient_color_energy = 1.0;
-	float max_distance = 0;
-	Vector3 extents = Vector3(1, 1, 1);
-	Vector3 origin_offset;
-	bool interior = false;
-	bool box_projection = false;
-	bool enable_shadows = false;
-	uint32_t cull_mask = (1 << 20) - 1;
-	float mesh_lod_threshold = 0.01;
-
-	Dependency dependency;
-};
-
-/* LIGHTMAP */
-
-struct Lightmap {
-	RID light_texture;
-	bool uses_spherical_harmonics = false;
-	bool interior = false;
-	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
-	int32_t array_index = -1; //unassigned
-	PackedVector3Array points;
-	PackedColorArray point_sh;
-	PackedInt32Array tetrahedra;
-	PackedInt32Array bsp_tree;
-
-	struct BSP {
-		static const int32_t EMPTY_LEAF = INT32_MIN;
-		float plane[4];
-		int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
-	};
-
-	Dependency dependency;
-};
-
 class LightStorage : public RendererLightStorage {
 private:
 	static LightStorage *singleton;
 
 	/* LIGHT */
+	struct Light {
+		RS::LightType type;
+		float param[RS::LIGHT_PARAM_MAX];
+		Color color = Color(1, 1, 1, 1);
+		RID projector;
+		bool shadow = false;
+		bool negative = false;
+		bool reverse_cull = false;
+		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
+		uint32_t max_sdfgi_cascade = 2;
+		uint32_t cull_mask = 0xFFFFFFFF;
+		bool distance_fade = false;
+		real_t distance_fade_begin = 40.0;
+		real_t distance_fade_shadow = 50.0;
+		real_t distance_fade_length = 10.0;
+		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
+		bool directional_blend_splits = false;
+		RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
+		uint64_t version = 0;
+
+		Dependency dependency;
+	};
+
 	mutable RID_Owner<Light, true> light_owner;
 
 	/* REFLECTION PROBE */
+
+	struct ReflectionProbe {
+		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
+		int resolution = 256;
+		float intensity = 1.0;
+		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
+		Color ambient_color;
+		float ambient_color_energy = 1.0;
+		float max_distance = 0;
+		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 origin_offset;
+		bool interior = false;
+		bool box_projection = false;
+		bool enable_shadows = false;
+		uint32_t cull_mask = (1 << 20) - 1;
+		float mesh_lod_threshold = 0.01;
+
+		Dependency dependency;
+	};
 	mutable RID_Owner<ReflectionProbe, true> reflection_probe_owner;
 
 	/* LIGHTMAP */
+
+	struct Lightmap {
+		RID light_texture;
+		bool uses_spherical_harmonics = false;
+		bool interior = false;
+		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
+		int32_t array_index = -1; //unassigned
+		PackedVector3Array points;
+		PackedColorArray point_sh;
+		PackedInt32Array tetrahedra;
+		PackedInt32Array bsp_tree;
+
+		struct BSP {
+			static const int32_t EMPTY_LEAF = INT32_MIN;
+			float plane[4];
+			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
+		};
+
+		Dependency dependency;
+	};
 
 	bool using_lightmap_array;
 	Vector<RID> lightmap_textures;
@@ -135,7 +129,6 @@ public:
 
 	/* LIGHT */
 
-	Light *get_light(RID p_rid) { return light_owner.get_or_null(p_rid); };
 	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
@@ -268,9 +261,10 @@ public:
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override;
 	virtual uint64_t light_get_version(RID p_light) const override;
 
+	Dependency *light_get_dependency(RID p_light) const;
+
 	/* REFLECTION PROBE */
 
-	ReflectionProbe *get_reflection_probe(RID p_rid) { return reflection_probe_owner.get_or_null(p_rid); };
 	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); };
 
 	virtual RID reflection_probe_allocate() override;
@@ -310,9 +304,10 @@ public:
 	Color reflection_probe_get_ambient_color(RID p_probe) const;
 	float reflection_probe_get_ambient_color_energy(RID p_probe) const;
 
+	Dependency *reflection_probe_get_dependency(RID p_probe) const;
+
 	/* LIGHTMAP */
 
-	Lightmap *get_lightmap(RID p_rid) { return lightmap_owner.get_or_null(p_rid); };
 	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); };
 
 	virtual RID lightmap_allocate() override;
@@ -331,6 +326,8 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const override;
 	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) override;
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
+
+	Dependency *lightmap_get_dependency(RID p_lightmap) const;
 
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;

@@ -850,12 +850,12 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		bool use_optimizer = node_settings["optimizer/enabled"];
-		float anim_optimizer_linerr = node_settings["optimizer/max_linear_error"];
+		float anim_optimizer_linerr = node_settings["optimizer/max_velocity_error"];
 		float anim_optimizer_angerr = node_settings["optimizer/max_angular_error"];
-		float anim_optimizer_maxang = node_settings["optimizer/max_angle"];
+		int anim_optimizer_preerr = node_settings["optimizer/max_precision_error"];
 
 		if (use_optimizer) {
-			_optimize_animations(ap, anim_optimizer_linerr, anim_optimizer_angerr, anim_optimizer_maxang);
+			_optimize_animations(ap, anim_optimizer_linerr, anim_optimizer_angerr, anim_optimizer_preerr);
 		}
 
 		bool use_compression = node_settings["compression/enabled"];
@@ -1386,12 +1386,12 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 	al->remove_animation("default"); // Remove default (no longer needed).
 }
 
-void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_lin_error, float p_max_ang_error, float p_max_angle) {
+void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_vel_error, float p_max_ang_error, int p_prc_error) {
 	List<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
 	for (const StringName &E : anim_names) {
 		Ref<Animation> a = anim->get_animation(E);
-		a->optimize(p_max_lin_error, p_max_ang_error, Math::deg2rad(p_max_angle));
+		a->optimize(p_max_vel_error, p_max_ang_error, p_prc_error);
 	}
 }
 
@@ -1467,9 +1467,9 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_linear_error"), 0.05));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_angular_error"), 0.01));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_angle"), 22));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_velocity_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_angular_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "optimizer/max_precision_error", PROPERTY_HINT_NONE, "1,6,1"), 3));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compression/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compression/page_size", PROPERTY_HINT_RANGE, "4,512,1,suffix:kb"), 8));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/position", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));

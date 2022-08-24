@@ -70,9 +70,23 @@ struct SinglePosFormat2
 
     if (likely (index >= valueCount)) return_trace (false);
 
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "positioning glyph at %d",
+			  c->buffer->idx);
+    }
+
     valueFormat.apply_value (c, this,
                              &values[index * valueFormat.get_len ()],
                              buffer->cur_pos());
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "positioned glyph at %d",
+			  c->buffer->idx);
+    }
 
     buffer->idx++;
     return_trace (true);

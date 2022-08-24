@@ -66,43 +66,6 @@ static void DetachThreadLinux(void *)
 }
 
 //
-// Registers cleanup handler, sets cancel type and state, and executes the thread specific
-// cleanup handler.  This function will be called in the Standalone.cpp for regression
-// testing.  When OpenGL applications are run with the driver code, Linux OS does the
-// thread cleanup.
-//
-void OS_CleanupThreadData(void)
-{
-#if defined(__ANDROID__) || defined(__Fuchsia__)
-    DetachThreadLinux(NULL);
-#else
-    int old_cancel_state, old_cancel_type;
-    void *cleanupArg = NULL;
-
-    //
-    // Set thread cancel state and push cleanup handler.
-    //
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel_state);
-    pthread_cleanup_push(DetachThreadLinux, (void *) cleanupArg);
-
-    //
-    // Put the thread in deferred cancellation mode.
-    //
-    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &old_cancel_type);
-
-    //
-    // Pop cleanup handler and execute it prior to unregistering the cleanup handler.
-    //
-    pthread_cleanup_pop(1);
-
-    //
-    // Restore the thread's previous cancellation mode.
-    //
-    pthread_setcanceltype(old_cancel_state, NULL);
-#endif
-}
-
-//
 // Thread Local Storage Operations
 //
 inline OS_TLSIndex PthreadKeyToTLSIndex(pthread_key_t key)

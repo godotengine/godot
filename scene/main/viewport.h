@@ -709,7 +709,7 @@ public:
 	bool is_using_xr();
 #endif // _3D_DISABLED
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	Viewport();
 	~Viewport();
 };

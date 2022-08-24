@@ -9,7 +9,7 @@
 	<methods>
 		<method name="navigate_to_path">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>
@@ -20,34 +20,34 @@
 			</description>
 		</signal>
 		<signal name="file_removed">
-			<argument index="0" name="file" type="String" />
+			<param index="0" name="file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="files_moved">
-			<argument index="0" name="old_file" type="String" />
-			<argument index="1" name="new_file" type="String" />
+			<param index="0" name="old_file" type="String" />
+			<param index="1" name="new_file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="folder_moved">
-			<argument index="0" name="old_folder" type="String" />
-			<argument index="1" name="new_file" type="String" />
+			<param index="0" name="old_folder" type="String" />
+			<param index="1" name="new_file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="folder_removed">
-			<argument index="0" name="folder" type="String" />
+			<param index="0" name="folder" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="inherit">
-			<argument index="0" name="file" type="String" />
+			<param index="0" name="file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="instance">
-			<argument index="0" name="files" type="PackedStringArray" />
+			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 			</description>
 		</signal>

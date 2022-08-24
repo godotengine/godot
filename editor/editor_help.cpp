@@ -1785,7 +1785,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -1801,6 +1801,21 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
+			pos = brk_end + 1;
+
+		} else if (tag.begins_with("param ")) {
+			const int tag_end = tag.find(" ");
+			const String param_name = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+
+			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			p_rt->push_font(doc_code_font);
+			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_color(code_color);
+			p_rt->add_text(param_name);
+			p_rt->pop();
+			p_rt->pop();
+			p_rt->pop();
+
 			pos = brk_end + 1;
 
 		} else if (doc->class_list.has(tag)) {

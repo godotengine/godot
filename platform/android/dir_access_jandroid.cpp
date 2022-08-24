@@ -135,6 +135,20 @@ String DirAccessJAndroid::get_drive(int p_drive) {
 	}
 }
 
+String DirAccessJAndroid::get_current_dir(bool p_include_drive) const {
+	String base = _get_root_path();
+	String bd = current_dir;
+	if (!base.is_empty()) {
+		bd = current_dir.replace_first(base, "");
+	}
+
+	if (bd.begins_with("/")) {
+		return _get_root_string() + bd.substr(1, bd.length());
+	} else {
+		return _get_root_string() + bd;
+	}
+}
+
 Error DirAccessJAndroid::change_dir(String p_dir) {
 	String new_dir = get_absolute_path(p_dir);
 	if (new_dir == current_dir) {

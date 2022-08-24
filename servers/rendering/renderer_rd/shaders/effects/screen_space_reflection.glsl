@@ -182,17 +182,18 @@ void main() {
 	if (found) {
 		float margin_blend = 1.0;
 
-		vec2 margin = vec2((params.screen_size.x + params.screen_size.y) * 0.5 * 0.05); // make a uniform margin
-		if (any(bvec4(lessThan(pos, -margin), greaterThan(pos, params.screen_size + margin)))) {
-			// clip outside screen + margin
+		vec2 margin = vec2((params.screen_size.x + params.screen_size.y) * 0.05); // make a uniform margin
+		if (any(bvec4(lessThan(pos, vec2(0.0, 0.0)), greaterThan(pos, params.screen_size)))) {
+			// clip at the screen edges
 			imageStore(ssr_image, ssC, vec4(0.0));
 			return;
 		}
 
 		{
-			//blend fading out towards external margin
-			vec2 margin_grad = mix(pos - params.screen_size, -pos, lessThan(pos, vec2(0.0)));
-			margin_blend = 1.0 - smoothstep(0.0, margin.x, max(margin_grad.x, margin_grad.y));
+			//blend fading out towards inner margin
+			// 0.5 = midpoint of reflection
+			vec2 margin_grad = mix(params.screen_size - pos, pos, lessThan(pos, params.screen_size * 0.5));
+			margin_blend = smoothstep(0.0, margin.x * margin.y, margin_grad.x * margin_grad.y);
 			//margin_blend = 1.0;
 		}
 

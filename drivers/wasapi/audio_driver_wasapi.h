@@ -91,7 +91,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit);
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
-	Array audio_device_get_list(bool p_capture);
+	PackedStringArray audio_device_get_list(bool p_capture);
 
 public:
 	virtual const char *get_name() const {
@@ -103,7 +103,7 @@ public:
 	virtual int get_mix_rate() const;
 	virtual float get_latency();
 	virtual SpeakerMode get_speaker_mode() const;
-	virtual Array get_device_list();
+	virtual PackedStringArray get_device_list();
 	virtual String get_device();
 	virtual void set_device(String device);
 	virtual void lock();
@@ -112,7 +112,7 @@ public:
 
 	virtual Error capture_start();
 	virtual Error capture_stop();
-	virtual Array capture_get_device_list();
+	virtual PackedStringArray capture_get_device_list();
 	virtual void capture_set_device(const String &p_name);
 	virtual String capture_get_device();
 

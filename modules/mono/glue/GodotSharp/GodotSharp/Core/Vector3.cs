@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -74,7 +69,7 @@ namespace Godot
                     case 2:
                         return z;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -91,7 +86,7 @@ namespace Godot
                         z = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -515,7 +510,7 @@ namespace Godot
         /// <param name="axis">The vector to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate by, in radians.</param>
         /// <returns>The rotated vector.</returns>
-        public Vector3 Rotated(Vector3 axis, real_t phi)
+        public Vector3 Rotated(Vector3 axis, real_t angle)
         {
 #if DEBUG
             if (!axis.IsNormalized())
@@ -523,7 +518,7 @@ namespace Godot
                 throw new ArgumentException("Argument is not normalized", nameof(axis));
             }
 #endif
-            return new Basis(axis, phi).Xform(this);
+            return new Basis(axis, angle) * this;
         }
 
         /// <summary>
@@ -574,7 +569,7 @@ namespace Godot
         ///
         /// This method also handles interpolating the lengths if the input vectors
         /// have different lengths. For the special case of one or both input vectors
-        /// having zero length, this method behaves like <see cref="Lerp"/>.
+        /// having zero length, this method behaves like <see cref="Lerp(Vector3, real_t)"/>.
         /// </summary>
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
@@ -617,22 +612,6 @@ namespace Godot
                 Mathf.Snapped(x, step.x),
                 Mathf.Snapped(y, step.y),
                 Mathf.Snapped(z, step.z)
-            );
-        }
-
-        /// <summary>
-        /// Returns a diagonal matrix with the vector as main diagonal.
-        ///
-        /// This is equivalent to a <see cref="Basis"/> with no rotation or shearing and
-        /// this vector's components set as the scale.
-        /// </summary>
-        /// <returns>A <see cref="Basis"/> with the vector as its main diagonal.</returns>
-        public Basis ToDiagonalMatrix()
-        {
-            return new Basis(
-                x, 0, 0,
-                0, y, 0,
-                0, 0, z
             );
         }
 
@@ -710,17 +689,6 @@ namespace Godot
             this.x = x;
             this.y = y;
             this.z = z;
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="Vector3"/> from an existing <see cref="Vector3"/>.
-        /// </summary>
-        /// <param name="v">The existing <see cref="Vector3"/>.</param>
-        public Vector3(Vector3 v)
-        {
-            x = v.x;
-            y = v.y;
-            z = v.z;
         }
 
         /// <summary>

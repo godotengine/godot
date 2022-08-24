@@ -54,7 +54,7 @@ private:
 	HorizontalAlignment icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	float _internal_margin[4] = {};
 
-	void _shape();
+	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
 
 protected:
 	void _set_internal_margin(Side p_side, float p_value);
@@ -63,6 +63,8 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
+
+	Size2 get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const;
 
 	void set_text(const String &p_text);
 	String get_text() const;

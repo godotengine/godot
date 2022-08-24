@@ -85,11 +85,6 @@ private:
 		EditorProgress *ep = nullptr;
 	};
 
-	struct FeatureContainers {
-		HashSet<String> features;
-		Vector<String> features_pv;
-	};
-
 	Vector<ExportMessage> messages;
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
@@ -110,7 +105,7 @@ protected:
 		~ExportNotifier();
 	};
 
-	FeatureContainers get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
+	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
 	bool exists_export_template(String template_file_name, String *err) const;
 	String find_export_template(String template_file_name, String *err = nullptr) const;
@@ -205,7 +200,9 @@ public:
 	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 
 	String test_etc2() const;
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
+	bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const = 0;
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;

@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import glob
 import subprocess
 from collections import OrderedDict
@@ -336,7 +337,20 @@ def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
 
-def module_check_dependencies(self, module, dependencies, silent=False):
+def module_add_dependencies(self, module, dependencies, optional=False):
+    """
+    Adds dependencies for a given module.
+    Meant to be used in module `can_build` methods.
+    """
+    if module not in self.module_dependencies:
+        self.module_dependencies[module] = [[], []]
+    if optional:
+        self.module_dependencies[module][1].extend(dependencies)
+    else:
+        self.module_dependencies[module][0].extend(dependencies)
+
+
+def module_check_dependencies(self, module):
     """
     Checks if module dependencies are enabled for a given module,
     and prints a warning if they aren't.
@@ -344,21 +358,39 @@ def module_check_dependencies(self, module, dependencies, silent=False):
     Returns a boolean (True if dependencies are satisfied).
     """
     missing_deps = []
-    for dep in dependencies:
+    required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
+    for dep in required_deps:
         opt = "module_{}_enabled".format(dep)
         if not opt in self or not self[opt]:
             missing_deps.append(dep)
 
     if missing_deps != []:
-        if not silent:
-            print(
-                "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
-                    module, ", ".join(missing_deps)
-                )
+        print(
+            "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
+                module, ", ".join(missing_deps)
             )
+        )
         return False
     else:
         return True
+
+
+def sort_module_list(env):
+    out = OrderedDict()
+    deps = {k: v[0] + list(filter(lambda x: x in env.module_list, v[1])) for k, v in env.module_dependencies.items()}
+
+    frontier = list(env.module_list.keys())
+    explored = []
+    while len(frontier):
+        cur = frontier.pop()
+        deps_list = deps[cur] if cur in deps else []
+        if len(deps_list) and any([d not in explored for d in deps_list]):
+            # Will explore later, after its dependencies
+            frontier.insert(0, cur)
+            continue
+        explored.append(cur)
+    for k in explored:
+        env.module_list.move_to_end(k)
 
 
 def use_windows_spawn_fix(self, platform=None):
@@ -388,6 +420,7 @@ def use_windows_spawn_fix(self, platform=None):
             startupinfo=startupinfo,
             shell=False,
             env=env,
+            text=True,
         )
         _, err = proc.communicate()
         rv = proc.wait()
@@ -607,8 +640,18 @@ def find_visual_c_batch_file(env):
         find_batch_file,
     )
 
+    # Syntax changed in SCons 4.4.0.
+    from SCons import __version__ as scons_raw_version
+
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+
     version = get_default_version(env)
-    (host_platform, target_platform, _) = get_host_target(env)
+
+    if scons_ver >= (4, 4, 0):
+        (host_platform, target_platform, _) = get_host_target(env, version)
+    else:
+        (host_platform, target_platform, _) = get_host_target(env)
+
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
 
@@ -775,18 +818,21 @@ def generate_vs_project(env, num_jobs):
         module_configs = ModuleConfigs()
 
         if env.get("module_mono_enabled"):
-            import modules.mono.build_scripts.mono_reg_utils as mono_reg
+            import modules.mono.build_scripts.mono_configure as mono_configure
 
-            mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
-            if mono_root:
+            app_host_dir = mono_configure.find_dotnet_app_host_dir(env)
+            if app_host_dir and os.path.isdir(app_host_dir):
+                mono_defines = [("NETHOST_USE_AS_STATIC",)]
+                if env["tools"]:
+                    mono_defines += [("GD_MONO_HOT_RELOAD",)]
                 module_configs.add_mode(
                     "mono",
-                    includes=os.path.join(mono_root, "include", "mono-2.0"),
-                    cli_args="module_mono_enabled=yes mono_glue=yes",
-                    defines=[("MONO_GLUE_ENABLED",)],
+                    includes=app_host_dir,
+                    cli_args="module_mono_enabled=yes",
+                    defines=mono_defines,
                 )
             else:
-                print("Mono installation directory not found. Generated project will not have build variants for Mono.")
+                print(".NET App Host directory not found. Generated project will not have build variants for .NET.")
 
         env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
         env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")

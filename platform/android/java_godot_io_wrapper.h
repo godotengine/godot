@@ -38,7 +38,7 @@
 #include <jni.h>
 
 #include "core/math/rect2i.h"
-#include "core/variant/array.h"
+#include "core/variant/typed_array.h"
 #include "string_android.h"
 
 // Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
@@ -78,11 +78,11 @@ public:
 	int get_screen_dpi();
 	float get_scaled_density();
 	float get_screen_refresh_rate(float fallback);
-	Array get_display_cutouts();
+	TypedArray<Rect2> get_display_cutouts();
 	Rect2i get_display_safe_area();
 	String get_unique_id();
 	bool has_vk();
-	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);
+	void show_vk(const String &p_existing, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end);
 	void hide_vk();
 	int get_vk_height();
 	void set_vk_height(int p_height);

@@ -3,7 +3,7 @@ namespace Godot
     /// <summary>
     /// Represents a signal defined in an object.
     /// </summary>
-    public struct SignalInfo
+    public readonly struct SignalInfo
     {
         private readonly Object _owner;
         private readonly StringName _signalName;
@@ -18,7 +18,7 @@ namespace Godot
         public StringName Name => _signalName;
 
         /// <summary>
-        /// Creates a new <see cref="Signal"/> with the name <paramref name="name"/>
+        /// Creates a new <see cref="SignalInfo"/> with the name <paramref name="name"/>
         /// in the specified <paramref name="owner"/>.
         /// </summary>
         /// <param name="owner">Object that contains the signal.</param>

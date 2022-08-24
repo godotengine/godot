@@ -109,12 +109,28 @@ struct PairSet
                                                 record_size);
     if (record)
     {
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "kerning glyphs at %d,%d",
+			    c->buffer->idx, pos);
+      }
+
       bool applied_first = valueFormats[0].apply_value (c, this, &record->values[0], buffer->cur_pos());
       bool applied_second = valueFormats[1].apply_value (c, this, &record->values[len1], buffer->pos[pos]);
+
+      if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+      {
+	c->buffer->message (c->font,
+			    "kerned glyphs at %d,%d",
+			    c->buffer->idx, pos);
+      }
+
       if (applied_first || applied_second)
         buffer->unsafe_to_break (buffer->idx, pos + 1);
       if (len2)
         pos++;
+
       buffer->idx = pos;
       return_trace (true);
     }

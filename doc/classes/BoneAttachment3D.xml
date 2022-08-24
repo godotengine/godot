@@ -36,35 +36,35 @@
 		</method>
 		<method name="on_bone_pose_update">
 			<return type="void" />
-			<argument index="0" name="bone_index" type="int" />
+			<param index="0" name="bone_index" type="int" />
 			<description>
 				A function that is called automatically when the [Skeleton3D] the BoneAttachment3D node is using has a bone that has changed its pose. This function is where the BoneAttachment3D node updates its position so it is correctly bound when it is [i]not[/i] set to override the bone pose.
 			</description>
 		</method>
 		<method name="set_external_skeleton">
 			<return type="void" />
-			<argument index="0" name="external_skeleton" type="NodePath" />
+			<param index="0" name="external_skeleton" type="NodePath" />
 			<description>
 				Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. The external [Skeleton3D] node is only used when [code]use_external_skeleton[/code] is set to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_override_mode">
 			<return type="void" />
-			<argument index="0" name="override_mode" type="int" />
+			<param index="0" name="override_mode" type="int" />
 			<description>
 				Sets the override mode for the BoneAttachment3D node. The override mode defines which of the bone poses the BoneAttachment3D node will override.
 			</description>
 		</method>
 		<method name="set_override_pose">
 			<return type="void" />
-			<argument index="0" name="override_pose" type="bool" />
+			<param index="0" name="override_pose" type="bool" />
 			<description>
 				Sets whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone.
 			</description>
 		</method>
 		<method name="set_use_external_skeleton">
 			<return type="void" />
-			<argument index="0" name="use_external_skeleton" type="bool" />
+			<param index="0" name="use_external_skeleton" type="bool" />
 			<description>
 				Sets whether the BoneAttachment3D node will use an extenral [Skeleton3D] node rather than attenpting to use its parent node as the [Skeleton3D]. When set to [code]true[/code], the BoneAttachment3D node will use the external [Skeleton3D] node set in [code]set_external_skeleton[/code].
 			</description>

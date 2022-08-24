@@ -59,15 +59,15 @@
 		</method>
 		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
-			<argument index="0" name="quadrant" type="int" />
+			<param index="0" name="quadrant" type="int" />
 			<description>
 				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_render_info">
 			<return type="int" />
-			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
-			<argument index="1" name="info" type="int" enum="Viewport.RenderInfo" />
+			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
+			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
 			</description>
 		</method>
@@ -133,22 +133,21 @@
 		</method>
 		<method name="push_input">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="push_text_input">
 			<return type="void" />
-			<argument index="0" name="text" type="String" />
+			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if the viewport is currently embedding windows.
 			</description>
 		</method>
 		<method name="push_unhandled_input">
 			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -160,15 +159,15 @@
 		</method>
 		<method name="set_positional_shadow_atlas_quadrant_subdiv">
 			<return type="void" />
-			<argument index="0" name="quadrant" type="int" />
-			<argument index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
+			<param index="0" name="quadrant" type="int" />
+			<param index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
@@ -268,7 +267,7 @@
 		</member>
 		<member name="texture_mipmap_bias" type="float" setter="set_texture_mipmap_bias" getter="get_texture_mipmap_bias" default="0.0">
 			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member ProjectSettings.rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
-			[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
+			[b]Note:[/b] If [member scaling_3d_scale] is lower than [code]1.0[/code] (exclusive), [member texture_mipmap_bias] is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]log2(scaling_3d_scale) + mipmap_bias[/code].
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/textures/default_filters/texture_mipmap_bias] project setting.
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
@@ -302,7 +301,7 @@
 	</members>
 	<signals>
 		<signal name="gui_focus_changed">
-			<argument index="0" name="node" type="Control" />
+			<param index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
 			</description>

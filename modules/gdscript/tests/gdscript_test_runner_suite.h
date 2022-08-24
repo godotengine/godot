@@ -69,6 +69,40 @@ func _init():
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
 }
 
+TEST_CASE("[Modules][GDScript] Validate built-in API") {
+	GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+
+	// Validate methods.
+	List<MethodInfo> builtin_methods;
+	lang->get_public_functions(&builtin_methods);
+
+	SUBCASE("[Modules][GDScript] Validate built-in methods") {
+		for (const MethodInfo &mi : builtin_methods) {
+			for (int j = 0; j < mi.arguments.size(); j++) {
+				PropertyInfo arg = mi.arguments[j];
+
+				TEST_COND((arg.name.is_empty() || arg.name.begins_with("_unnamed_arg")),
+						vformat("Unnamed argument in position %d of built-in method '%s'.", j, mi.name));
+			}
+		}
+	}
+
+	// Validate annotations.
+	List<MethodInfo> builtin_annotations;
+	lang->get_public_annotations(&builtin_annotations);
+
+	SUBCASE("[Modules][GDScript] Validate built-in annotations") {
+		for (const MethodInfo &ai : builtin_annotations) {
+			for (int j = 0; j < ai.arguments.size(); j++) {
+				PropertyInfo arg = ai.arguments[j];
+
+				TEST_COND((arg.name.is_empty() || arg.name.begins_with("_unnamed_arg")),
+						vformat("Unnamed argument in position %d of built-in annotation '%s'.", j, ai.name));
+			}
+		}
+	}
+}
+
 } // namespace GDScriptTests
 
 #endif // GDSCRIPT_TEST_RUNNER_SUITE_H

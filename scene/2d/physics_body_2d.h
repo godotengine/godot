@@ -216,7 +216,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState2D *)
 
@@ -450,7 +450,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 };
 
 VARIANT_ENUM_CAST(CharacterBody2D::MotionMode);
@@ -473,6 +473,7 @@ public:
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
 	real_t get_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
+	real_t get_depth() const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;

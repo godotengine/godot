@@ -593,6 +593,20 @@ uint32_t GodotPhysicsServer3D::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
+void GodotPhysicsServer3D::body_set_collision_priority(RID p_body, real_t p_priority) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_priority(p_priority);
+}
+
+real_t GodotPhysicsServer3D::body_get_collision_priority(RID p_body) const {
+	const GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_collision_priority();
+}
+
 void GodotPhysicsServer3D::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	if (body) {

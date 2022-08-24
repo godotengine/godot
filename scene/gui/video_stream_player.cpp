@@ -208,6 +208,10 @@ Size2 VideoStreamPlayer::get_minimum_size() const {
 }
 
 void VideoStreamPlayer::set_expand(bool p_expand) {
+	if (expand == p_expand) {
+		return;
+	}
+
 	expand = p_expand;
 	update();
 	update_minimum_size();
@@ -306,6 +310,10 @@ bool VideoStreamPlayer::is_playing() const {
 }
 
 void VideoStreamPlayer::set_paused(bool p_paused) {
+	if (paused == p_paused) {
+		return;
+	}
+
 	paused = p_paused;
 	if (!p_paused && !can_process()) {
 		paused_from_tree = true;

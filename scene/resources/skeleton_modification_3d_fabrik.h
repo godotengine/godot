@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef SKELETON_MODIFICATION_3D_FABRIK_H
+#define SKELETON_MODIFICATION_3D_FABRIK_H
+
 #include "core/templates/local_vector.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-
-#ifndef SKELETON_MODIFICATION_3D_FABRIK_H
-#define SKELETON_MODIFICATION_3D_FABRIK_H
 
 class SkeletonModification3DFABRIK : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DFABRIK, SkeletonModification3D);

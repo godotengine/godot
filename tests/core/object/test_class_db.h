@@ -71,6 +71,7 @@ struct ArgumentData {
 	String name;
 	bool has_defval = false;
 	Variant defval;
+	int position;
 };
 
 struct MethodData {
@@ -371,6 +372,39 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 	}
 }
 
+void validate_argument(const Context &p_context, const ExposedClass &p_class, const String &p_owner_name, const String &p_owner_type, const ArgumentData &p_arg) {
+	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
+			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
+
+	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
+	if (arg_class) {
+		TEST_COND(arg_class->is_singleton,
+				vformat("Argument type is a singleton: '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
+
+		if (p_class.api_type == ClassDB::API_CORE) {
+			TEST_COND(arg_class->api_type == ClassDB::API_EDITOR,
+					vformat("Argument '%s' of %s '%s.%s' has type '%s' from the editor API. Core API cannot have dependencies on the editor API.",
+							p_arg.name, p_owner_type, p_class.name, p_owner_name, arg_class->name));
+		}
+	} else {
+		// Look for types that don't inherit Object.
+		TEST_FAIL_COND(!p_context.has_type(p_arg.type),
+				vformat("Argument type '%s' not found: '%s' of %s '%s.%s'.", p_arg.type.name, p_arg.name, p_owner_type, p_class.name, p_owner_name));
+	}
+
+	if (p_arg.has_defval) {
+		String type_error_msg;
+		bool arg_defval_assignable_to_type = arg_default_value_is_assignable_to_type(p_context, p_arg.defval, p_arg.type, &type_error_msg);
+
+		String err_msg = vformat("Invalid default value for parameter '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name);
+		if (!type_error_msg.is_empty()) {
+			err_msg += " " + type_error_msg;
+		}
+
+		TEST_COND(!arg_defval_assignable_to_type, err_msg.utf8().get_data());
+	}
+}
+
 void validate_method(const Context &p_context, const ExposedClass &p_class, const MethodData &p_method) {
 	if (p_method.return_type.name != StringName()) {
 		const ExposedClass *return_class = p_context.find_exposed_class(p_method.return_type);
@@ -392,54 +426,14 @@ void validate_method(const Context &p_context, const ExposedClass &p_class, cons
 
 	for (const ArgumentData &F : p_method.arguments) {
 		const ArgumentData &arg = F;
-
-		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
-		if (arg_class) {
-			TEST_COND(arg_class->is_singleton,
-					"Argument type is a singleton: '", arg.name, "' of method '", p_class.name, ".", p_method.name, "'.");
-
-			if (p_class.api_type == ClassDB::API_CORE) {
-				TEST_COND(arg_class->api_type == ClassDB::API_EDITOR,
-						"Argument '", arg.name, "' of method '", p_class.name, ".", p_method.name, "' has type '",
-						arg_class->name, "' from the editor API. Core API cannot have dependencies on the editor API.");
-			}
-		} else {
-			// Look for types that don't inherit Object
-			TEST_FAIL_COND(!p_context.has_type(arg.type),
-					"Argument type '", arg.type.name, "' not found: '", arg.name, "' of method", p_class.name, ".", p_method.name, "'.");
-		}
-
-		if (arg.has_defval) {
-			String type_error_msg;
-			bool arg_defval_assignable_to_type = arg_default_value_is_assignable_to_type(p_context, arg.defval, arg.type, &type_error_msg);
-			String err_msg = vformat("Invalid default value for parameter '%s' of method '%s.%s'.", arg.name, p_class.name, p_method.name);
-			if (!type_error_msg.is_empty()) {
-				err_msg += " " + type_error_msg;
-			}
-			TEST_COND(!arg_defval_assignable_to_type, err_msg.utf8().get_data());
-		}
+		validate_argument(p_context, p_class, p_method.name, "method", arg);
 	}
 }
 
 void validate_signal(const Context &p_context, const ExposedClass &p_class, const SignalData &p_signal) {
 	for (const ArgumentData &F : p_signal.arguments) {
 		const ArgumentData &arg = F;
-
-		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
-		if (arg_class) {
-			TEST_COND(arg_class->is_singleton,
-					"Argument class is a singleton: '", arg.name, "' of signal '", p_class.name, ".", p_signal.name, "'.");
-
-			if (p_class.api_type == ClassDB::API_CORE) {
-				TEST_COND(arg_class->api_type == ClassDB::API_EDITOR,
-						"Argument '", arg.name, "' of signal '", p_class.name, ".", p_signal.name, "' has type '",
-						arg_class->name, "' from the editor API. Core API cannot have dependencies on the editor API.");
-			}
-		} else {
-			// Look for types that don't inherit Object
-			TEST_FAIL_COND(!p_context.has_type(arg.type),
-					"Argument type '", arg.type.name, "' not found: '", arg.name, "' of signal", p_class.name, ".", p_signal.name, "'.");
-		}
+		validate_argument(p_context, p_class, p_signal.name, "signal", arg);
 	}
 }
 
@@ -493,13 +487,13 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not exposed.", class_name).utf8().get_data());
+			MESSAGE(vformat("Ignoring class '%s' because it's not exposed.", class_name));
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not enabled.", class_name).utf8().get_data());
+			MESSAGE(vformat("Ignoring class '%s' because it's not enabled.", class_name));
 			class_list.pop_front();
 			continue;
 		}
@@ -625,6 +619,7 @@ void add_exposed_classes(Context &r_context) {
 
 				ArgumentData arg;
 				arg.name = orig_arg_name;
+				arg.position = i;
 
 				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
@@ -693,6 +688,7 @@ void add_exposed_classes(Context &r_context) {
 
 				ArgumentData arg;
 				arg.name = orig_arg_name;
+				arg.position = i;
 
 				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
@@ -841,7 +837,7 @@ TEST_SUITE("[ClassDB]") {
 		add_builtin_types(context);
 		add_global_enums(context);
 
-		SUBCASE("[ClassDB] Find exposed class") {
+		SUBCASE("[ClassDB] Validate exposed classes") {
 			const ExposedClass *object_class = context.find_exposed_class(context.names_cache.object_class);
 			TEST_FAIL_COND(!object_class, "Object class not found.");
 			TEST_FAIL_COND(object_class->base != StringName(),

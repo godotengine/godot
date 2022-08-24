@@ -340,7 +340,7 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void GPUParticles2D::_validate_property(PropertyInfo &property) const {
+void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -660,7 +660,7 @@ GPUParticles2D::GPUParticles2D() {
 	set_explosiveness_ratio(0);
 	set_randomness_ratio(0);
 	set_visibility_rect(Rect2(Vector2(-100, -100), Vector2(200, 200)));
-	set_use_local_coordinates(true);
+	set_use_local_coordinates(false);
 	set_draw_order(DRAW_ORDER_LIFETIME);
 	set_speed_scale(1);
 	set_fixed_fps(30);

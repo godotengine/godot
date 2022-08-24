@@ -608,7 +608,7 @@ private:
 			float inv_spot_attenuation;
 			float cos_spot_angle;
 			float specular_amount;
-			uint32_t shadow_enabled;
+			float shadow_opacity;
 
 			float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
 			float shadow_matrix[16];
@@ -633,7 +633,7 @@ private:
 			float softshadow_angle;
 			float soft_shadow_scale;
 			uint32_t blend_splits;
-			uint32_t shadow_enabled;
+			float shadow_opacity;
 			float fade_from;
 			float fade_to;
 			uint32_t pad[2];

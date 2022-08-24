@@ -22,7 +22,7 @@ namespace GodotTools.Ides.Rider
         public static void Initialize()
         {
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var editor = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
+            var editor = (ExternalEditorId)(int)editorSettings.GetSetting("mono/editor/external_editor");
             if (editor == ExternalEditorId.Rider)
             {
                 if (!editorSettings.HasSetting(EditorPathSettingName))
@@ -30,9 +30,9 @@ namespace GodotTools.Ides.Rider
                     Globals.EditorDef(EditorPathSettingName, "Optional");
                     editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
                     {
-                        ["type"] = Variant.Type.String,
+                        ["type"] = (int)Variant.Type.String,
                         ["name"] = EditorPathSettingName,
-                        ["hint"] = PropertyHint.File,
+                        ["hint"] = (int)PropertyHint.File,
                         ["hint_string"] = ""
                     });
                 }
@@ -64,6 +64,9 @@ namespace GodotTools.Ides.Rider
         public static bool IsRider(string path)
         {
             if (string.IsNullOrEmpty(path))
+                return false;
+
+            if (path.IndexOfAny(Path.GetInvalidPathChars()) != -1)
                 return false;
 
             var fileInfo = new FileInfo(path);

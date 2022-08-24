@@ -14,95 +14,95 @@
 		<method name="_get_caption" qualifiers="virtual const">
 			<return type="String" />
 			<description>
-				Gets the text caption for this node (used by some editors).
+				When inheriting from [AnimationRootNode], implement this virtual method to override the text caption for this node.
 			</description>
 		</method>
 		<method name="_get_child_by_name" qualifiers="virtual const">
 			<return type="AnimationNode" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
+				When inheriting from [AnimationRootNode], implement this virtual method to return a child node by its [param name].
 			</description>
 		</method>
 		<method name="_get_child_nodes" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
-				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
+				When inheriting from [AnimationRootNode], implement this virtual method to return all children nodes in order as a [code]name: node[/code] dictionary.
 			</description>
 		</method>
 		<method name="_get_parameter_default_value" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="parameter" type="StringName" />
+			<param index="0" name="parameter" type="StringName" />
 			<description>
-				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+				When inheriting from [AnimationRootNode], implement this virtual method to return the default value of a [param parameter]. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
 		<method name="_get_parameter_list" qualifiers="virtual const">
 			<return type="Array" />
 			<description>
-				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
+				When inheriting from [AnimationRootNode], implement this virtual method to return a list of the properties on this node. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="_has_filter" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns whether you want the blend tree editor to display filter editing on this node.
+				When inheriting from [AnimationRootNode], implement this virtual method to return whether the blend tree editor should display filter editing on this node.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual const">
 			<return type="float" />
-			<argument index="0" name="time" type="float" />
-			<argument index="1" name="seek" type="bool" />
-			<argument index="2" name="seek_root" type="bool" />
+			<param index="0" name="time" type="float" />
+			<param index="1" name="seek" type="bool" />
+			<param index="2" name="seek_root" type="bool" />
 			<description>
-				User-defined callback called when a custom node is processed. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute.
+				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this node is processed. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute.
 				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
 				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
 			</description>
 		</method>
 		<method name="add_input">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree].
 			</description>
 		</method>
 		<method name="blend_animation">
 			<return type="void" />
-			<argument index="0" name="animation" type="StringName" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="delta" type="float" />
-			<argument index="3" name="seeked" type="bool" />
-			<argument index="4" name="seek_root" type="bool" />
-			<argument index="5" name="blend" type="float" />
-			<argument index="6" name="pingponged" type="int" default="0" />
+			<param index="0" name="animation" type="StringName" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="delta" type="float" />
+			<param index="3" name="seeked" type="bool" />
+			<param index="4" name="seek_root" type="bool" />
+			<param index="5" name="blend" type="float" />
+			<param index="6" name="pingponged" type="int" default="0" />
 			<description>
-				Blend an animation by [code]blend[/code] amount (name must be valid in the linked [AnimationPlayer]). A [code]time[/code] and [code]delta[/code] may be passed, as well as whether [code]seek[/code] happened.
+				Blend an animation by [param blend] amount (name must be valid in the linked [AnimationPlayer]). A [param time] and [param delta] may be passed, as well as whether [param seeked] happened.
 			</description>
 		</method>
 		<method name="blend_input">
 			<return type="float" />
-			<argument index="0" name="input_index" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="seek" type="bool" />
-			<argument index="3" name="seek_root" type="bool" />
-			<argument index="4" name="blend" type="float" />
-			<argument index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
-			<argument index="6" name="sync" type="bool" default="true" />
+			<param index="0" name="input_index" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="seek" type="bool" />
+			<param index="3" name="seek_root" type="bool" />
+			<param index="4" name="blend" type="float" />
+			<param index="5" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
+			<param index="6" name="sync" type="bool" default="true" />
 			<description>
-				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed (see [enum FilterAction] for options).
+				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed (see [enum FilterAction] for options).
 			</description>
 		</method>
 		<method name="blend_node">
 			<return type="float" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="node" type="AnimationNode" />
-			<argument index="2" name="time" type="float" />
-			<argument index="3" name="seek" type="bool" />
-			<argument index="4" name="seek_root" type="bool" />
-			<argument index="5" name="blend" type="float" />
-			<argument index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
-			<argument index="7" name="sync" type="bool" default="true" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="node" type="AnimationNode" />
+			<param index="2" name="time" type="float" />
+			<param index="3" name="seek" type="bool" />
+			<param index="4" name="seek_root" type="bool" />
+			<param index="5" name="blend" type="float" />
+			<param index="6" name="filter" type="int" enum="AnimationNode.FilterAction" default="0" />
+			<param index="7" name="sync" type="bool" default="true" />
 			<description>
 				Blend another animation node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
 			</description>
@@ -115,44 +115,44 @@
 		</method>
 		<method name="get_input_name">
 			<return type="String" />
-			<argument index="0" name="input" type="int" />
+			<param index="0" name="input" type="int" />
 			<description>
 				Gets the name of an input by index.
 			</description>
 		</method>
 		<method name="get_parameter" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Gets the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
 		<method name="is_path_filtered" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="path" type="NodePath" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
 				Returns whether the given path is filtered.
 			</description>
 		</method>
 		<method name="remove_input">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Removes an input, call this only when inactive.
 			</description>
 		</method>
 		<method name="set_filter_path">
 			<return type="void" />
-			<argument index="0" name="path" type="NodePath" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Adds or removes a path for the filter.
 			</description>
 		</method>
 		<method name="set_parameter">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Sets a custom parameter. These are used as local memory, because resources can be reused across the tree or scenes.
 			</description>

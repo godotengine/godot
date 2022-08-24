@@ -35,7 +35,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
@@ -91,6 +93,12 @@ void EditorLog::_update_theme() {
 	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
 	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
+	theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+	theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
+	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+	theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
+	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_notification(int p_what) {
@@ -216,6 +224,10 @@ void EditorLog::set_tool_button(Button *p_tool_button) {
 	tool_button = p_tool_button;
 }
 
+void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
+	p_undo_redo->set_commit_notify_callback(_undo_redo_cbk, this);
+}
+
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
@@ -262,22 +274,22 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_STD_RICH: {
 		} break;
 		case MSG_TYPE_ERROR: {
-			log->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
-			Ref<Texture2D> icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
+			log->push_color(theme_cache.error_color);
+			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
-			log->push_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-			Ref<Texture2D> icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
+			log->push_color(theme_cache.warning_color);
+			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
-			log->push_color(get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6));
+			log->push_color(theme_cache.message_color);
 		} break;
 	}
 
@@ -450,8 +462,6 @@ EditorLog::EditorLog() {
 	add_error_handler(&eh);
 
 	current = Thread::get_caller_id();
-
-	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }
 
 void EditorLog::deinit() {

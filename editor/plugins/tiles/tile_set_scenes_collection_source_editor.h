@@ -97,7 +97,7 @@ private:
 	TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 	int tile_set_source_id = -1;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool tile_set_scenes_collection_source_changed_needs_update = false;
 

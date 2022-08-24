@@ -52,7 +52,7 @@ protected:
 	virtual void _stage_file(String p_file_path);
 	virtual void _unstage_file(String p_file_path);
 	virtual void _commit(String p_msg);
-	virtual Array _get_file_diff(String p_file_path);
+	virtual TypedArray<Dictionary> _get_file_diff(String p_file_path);
 	virtual bool _shut_down();
 	virtual String _get_project_name();
 	virtual String _get_vcs_name();
@@ -76,7 +76,7 @@ public:
 	void stage_file(String p_file_path);
 	void unstage_file(String p_file_path);
 	void commit(String p_msg);
-	Array get_file_diff(String p_file_path);
+	TypedArray<Dictionary> get_file_diff(String p_file_path);
 	bool shut_down();
 	String get_project_name();
 	String get_vcs_name();

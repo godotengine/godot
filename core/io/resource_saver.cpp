@@ -70,7 +70,7 @@ void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resou
 }
 
 void ResourceFormatSaver::_bind_methods() {
-	GDVIRTUAL_BIND(_save, "path", "resource", "flags");
+	GDVIRTUAL_BIND(_save, "resource", "path", "flags");
 	GDVIRTUAL_BIND(_recognize, "resource");
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }

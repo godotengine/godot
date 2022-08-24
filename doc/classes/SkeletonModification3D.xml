@@ -12,14 +12,14 @@
 	<methods>
 		<method name="_execute" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Executes the given modification. This is where the modification performs whatever function it is designed to do.
 			</description>
 		</method>
 		<method name="_setup_modification" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="modification_stack" type="SkeletonModificationStack3D" />
+			<param index="0" name="modification_stack" type="SkeletonModificationStack3D" />
 			<description>
 				Sets up the modification so it can be executed. This function should be called automatically by the [SkeletonModificationStack3D] containing this modification.
 				If you need to initialize a modification before use, this is the place to do it!
@@ -27,12 +27,12 @@
 		</method>
 		<method name="clamp_angle">
 			<return type="float" />
-			<argument index="0" name="angle" type="float" />
-			<argument index="1" name="min" type="float" />
-			<argument index="2" name="max" type="float" />
-			<argument index="3" name="invert" type="bool" />
+			<param index="0" name="angle" type="float" />
+			<param index="1" name="min" type="float" />
+			<param index="2" name="max" type="float" />
+			<param index="3" name="invert" type="bool" />
 			<description>
-				Takes a angle and clamps it so it is within the passed-in [code]min[/code] and [code]max[/code] range. [code]invert[/code] will inversely clamp the angle, clamping it to the range outside of the given bounds.
+				Takes a angle and clamps it so it is within the passed-in [param min] and [param max] range. [param invert] will inversely clamp the angle, clamping it to the range outside of the given bounds.
 			</description>
 		</method>
 		<method name="get_is_setup" qualifiers="const">
@@ -49,7 +49,7 @@
 		</method>
 		<method name="set_is_setup">
 			<return type="void" />
-			<argument index="0" name="is_setup" type="bool" />
+			<param index="0" name="is_setup" type="bool" />
 			<description>
 				Manually allows you to set the setup state of the modification. This function should only rarely be used, as the [SkeletonModificationStack3D] the modification is bound to should handle setting the modification up.
 			</description>

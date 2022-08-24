@@ -323,8 +323,8 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 }
 
 Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material) {
-	//this way of obtaining materials is inaccurate and also does not support some compressed formats very well
-	Ref<StandardMaterial3D> mat = p_material;
+	// This way of obtaining materials is inaccurate and also does not support some compressed formats very well.
+	Ref<BaseMaterial3D> mat = p_material;
 
 	Ref<Material> material = mat; //hack for now
 
@@ -335,7 +335,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	MaterialCache mc;
 
 	if (mat.is_valid()) {
-		Ref<Texture2D> albedo_tex = mat->get_texture(StandardMaterial3D::TEXTURE_ALBEDO);
+		Ref<Texture2D> albedo_tex = mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
@@ -345,7 +345,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
 		}
 
-		Ref<Texture2D> emission_tex = mat->get_texture(StandardMaterial3D::TEXTURE_EMISSION);
+		Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 
 		Color emission_col = mat->get_emission();
 		float emission_energy = mat->get_emission_energy();
@@ -356,7 +356,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 			img_emission = emission_tex->get_image();
 		}
 
-		if (mat->get_emission_operator() == StandardMaterial3D::EMISSION_OP_ADD) {
+		if (mat->get_emission_operator() == BaseMaterial3D::EMISSION_OP_ADD) {
 			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
 		} else {
 			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));

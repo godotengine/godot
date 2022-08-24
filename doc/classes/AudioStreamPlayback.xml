@@ -27,21 +27,21 @@
 		</method>
 		<method name="_mix" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="buffer" type="AudioFrame*" />
-			<argument index="1" name="rate_scale" type="float" />
-			<argument index="2" name="frames" type="int" />
+			<param index="0" name="buffer" type="AudioFrame*" />
+			<param index="1" name="rate_scale" type="float" />
+			<param index="2" name="frames" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_seek" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="position" type="float" />
+			<param index="0" name="position" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="_start" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="from_pos" type="float" />
+			<param index="0" name="from_pos" type="float" />
 			<description>
 			</description>
 		</method>

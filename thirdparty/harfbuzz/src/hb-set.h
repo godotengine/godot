@@ -77,7 +77,7 @@ hb_set_set_user_data (hb_set_t           *set,
 		      hb_bool_t           replace);
 
 HB_EXTERN void *
-hb_set_get_user_data (hb_set_t           *set,
+hb_set_get_user_data (const hb_set_t     *set,
 		      hb_user_data_key_t *key);
 
 
