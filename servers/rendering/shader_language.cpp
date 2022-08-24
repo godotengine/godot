@@ -5377,6 +5377,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 						_set_tkpos(prev_pos);
 
+						ShaderNode::Varying &var = shader->varyings[identifier];
 						String error;
 						if (is_token_operator_assign(next_token.type)) {
 							if (!_validate_varying_assign(shader->varyings[identifier], &error)) {
@@ -5384,8 +5385,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								return nullptr;
 							}
 						} else {
-							ShaderNode::Varying &var = shader->varyings[identifier];
-
 							switch (var.stage) {
 								case ShaderNode::Varying::STAGE_VERTEX:
 									if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
@@ -5400,6 +5399,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								default:
 									break;
 							}
+						}
+
+						if ((var.stage != ShaderNode::Varying::STAGE_FRAGMENT && var.stage != ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT) && var.type < TYPE_FLOAT && var.interpolation != INTERPOLATION_FLAT) {
+							_set_tkpos(var.tkpos);
+							_set_error(RTR("Varying with integer data type must be declared with `flat` interpolation qualifier."));
+							return nullptr;
 						}
 					}
 
@@ -8299,8 +8304,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					return ERR_PARSE_ERROR;
 				}
 
-				if (!is_uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
-					_set_error(RTR("Invalid type for varying, only 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', or arrays of these types are allowed."));
+				if (!is_uniform && type > TYPE_MAT4) {
+					_set_error(RTR("Invalid data type for varying."));
 					return ERR_PARSE_ERROR;
 				}
 

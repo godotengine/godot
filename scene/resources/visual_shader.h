@@ -79,10 +79,11 @@ public:
 
 	enum VaryingType {
 		VARYING_TYPE_FLOAT,
+		VARYING_TYPE_INT,
 		VARYING_TYPE_VECTOR_2D,
 		VARYING_TYPE_VECTOR_3D,
 		VARYING_TYPE_VECTOR_4D,
-		VARYING_TYPE_COLOR,
+		VARYING_TYPE_BOOLEAN,
 		VARYING_TYPE_TRANSFORM,
 		VARYING_TYPE_MAX,
 	};
@@ -828,7 +829,6 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeVaryingSetter();
