@@ -158,6 +158,22 @@ namespace Godot
             return (x * b.x) + (y * b.y) + (z * b.z) + (w * b.w);
         }
 
+        public real_t GetAngle()
+        {
+            return 2 * Mathf.Acos(w);
+        }
+
+        public Vector3 GetAxis()
+        {
+            if (Mathf.Abs(w) > 1 - Mathf.Epsilon)
+            {
+                return new Vector3(x, y, z);
+            }
+
+            real_t r = 1 / Mathf.Sqrt(1 - w * w);
+            return new Vector3(x * r, y * r, z * r);
+        }
+
         /// <summary>
         /// Returns Euler angles (in the YXZ convention: when decomposing,
         /// first Z, then X, and Y last) corresponding to the rotation
