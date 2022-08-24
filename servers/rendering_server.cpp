@@ -1230,6 +1230,10 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 			} break;
 			case RS::ARRAY_WEIGHTS: {
+				if (sr == nullptr) {
+					ERR_PRINT_ONCE("Invalid skin data for array weights.");
+					break;
+				}
 				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 
 				Vector<float> arr;
@@ -1249,6 +1253,10 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 			} break;
 			case RS::ARRAY_BONES: {
+				if (sr == nullptr) {
+					ERR_PRINT_ONCE("Invalid skin data for array bones.");
+					break;
+				}
 				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
 
 				Vector<int> arr;
