@@ -145,7 +145,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	return -1;
 }
 
-void PopupMenu::_activate_submenu(int over) {
+void PopupMenu::_activate_submenu(int over, bool p_by_keyboard) {
 	Node *n = get_node(items[over].submenu);
 	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[over].submenu + ".");
 	Popup *pm = Object::cast_to<Popup>(n);
@@ -172,7 +172,7 @@ void PopupMenu::_activate_submenu(int over) {
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
 		// If not triggered by the mouse, start the popup with its first item selected.
-		if (pum->get_item_count() > 0 && Input::get_singleton()->is_action_just_pressed("ui_accept")) {
+		if (pum->get_item_count() > 0 && p_by_keyboard) {
 			pum->set_current_index(0);
 		}
 
@@ -299,13 +299,13 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
 		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-			_activate_submenu(mouse_over);
+			_activate_submenu(mouse_over, true);
 			accept_event();
 		}
 	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 			if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-				_activate_submenu(mouse_over);
+				_activate_submenu(mouse_over, true);
 			} else {
 				activate_item(mouse_over);
 			}
@@ -1476,6 +1476,8 @@ void PopupMenu::popup(const Rect2 &p_bounds) {
 }
 
 PopupMenu::PopupMenu() {
+	activated_by_keyboard = false;
+
 	mouse_over = -1;
 	submenu_over = -1;
 	initial_button_mask = 0;
