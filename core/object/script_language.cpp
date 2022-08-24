@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/variant/typed_array.h"
 
 #include <stdint.h>
 
@@ -61,8 +62,8 @@ Variant Script::_get_property_default_value(const StringName &p_property) {
 	return ret;
 }
 
-Array Script::_get_script_property_list() {
-	Array ret;
+TypedArray<Dictionary> Script::_get_script_property_list() {
+	TypedArray<Dictionary> ret;
 	List<PropertyInfo> list;
 	get_script_property_list(&list);
 	for (const PropertyInfo &E : list) {
@@ -71,8 +72,8 @@ Array Script::_get_script_property_list() {
 	return ret;
 }
 
-Array Script::_get_script_method_list() {
-	Array ret;
+TypedArray<Dictionary> Script::_get_script_method_list() {
+	TypedArray<Dictionary> ret;
 	List<MethodInfo> list;
 	get_script_method_list(&list);
 	for (const MethodInfo &E : list) {
@@ -81,8 +82,8 @@ Array Script::_get_script_method_list() {
 	return ret;
 }
 
-Array Script::_get_script_signal_list() {
-	Array ret;
+TypedArray<Dictionary> Script::_get_script_signal_list() {
+	TypedArray<Dictionary> ret;
 	List<MethodInfo> list;
 	get_script_signal_list(&list);
 	for (const MethodInfo &E : list) {
@@ -100,6 +101,31 @@ Dictionary Script::_get_script_constant_map() {
 	}
 	return ret;
 }
+
+#ifdef TOOLS_ENABLED
+
+PropertyInfo Script::get_class_category() const {
+	String path = get_path();
+	String name;
+
+	if (is_built_in()) {
+		if (get_name().is_empty()) {
+			name = TTR("Built-in script");
+		} else {
+			name = vformat("%s (%s)", get_name(), TTR("Built-in"));
+		}
+	} else {
+		if (get_name().is_empty()) {
+			name = path.get_file();
+		} else {
+			name = get_name();
+		}
+	}
+
+	return PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
+}
+
+#endif // TOOLS_ENABLED
 
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);

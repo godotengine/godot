@@ -289,7 +289,7 @@ MONO_AOT_MODE_LAST = 1000,
             // Archive the AOT object files into a static library
 
             var arFilePathsForAllArchs = new List<string>();
-            string projectAssemblyName = GodotSharpEditor.ProjectAssemblyName;
+            string projectAssemblyName = GodotSharpDirs.ProjectAssemblyName;
 
             foreach (var archPathsPair in objFilePathsForiOSArch)
             {

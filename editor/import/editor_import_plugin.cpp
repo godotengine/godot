@@ -115,7 +115,7 @@ void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceI
 	Array needed;
 	needed.push_back("name");
 	needed.push_back("default_value");
-	Array options;
+	TypedArray<Dictionary> options;
 	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
 		for (int i = 0; i < options.size(); i++) {
 			Dictionary d = options[i];

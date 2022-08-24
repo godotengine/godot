@@ -227,6 +227,10 @@ double Slider::get_custom_step() const {
 }
 
 void Slider::set_ticks(int p_count) {
+	if (ticks == p_count) {
+		return;
+	}
+
 	ticks = p_count;
 	update();
 }
@@ -240,11 +244,19 @@ bool Slider::get_ticks_on_borders() const {
 }
 
 void Slider::set_ticks_on_borders(bool _tob) {
+	if (ticks_on_borders == _tob) {
+		return;
+	}
+
 	ticks_on_borders = _tob;
 	update();
 }
 
 void Slider::set_editable(bool p_editable) {
+	if (editable == p_editable) {
+		return;
+	}
+
 	editable = p_editable;
 	update();
 }

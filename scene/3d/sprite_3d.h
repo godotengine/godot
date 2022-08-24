@@ -174,7 +174,7 @@ protected:
 	virtual void _draw() override;
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_texture(const Ref<Texture2D> &p_texture);
@@ -229,7 +229,7 @@ protected:
 	virtual void _draw() override;
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);

@@ -93,7 +93,7 @@ protected:
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void set_tracker(const StringName p_tracker_name);
 	StringName get_tracker() const;
 

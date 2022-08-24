@@ -821,17 +821,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			off.y += line_spacing;
 		}
 
-		RID rid = l.text_buf->get_line_rid(line);
 		if (p_ofs.y + off.y >= ctrl_size.height) {
 			break;
 		}
-		if (p_ofs.y + off.y + TS->shaped_text_get_size(rid).y <= 0) {
-			off.y += TS->shaped_text_get_size(rid).y;
+
+		const Size2 line_size = l.text_buf->get_line_size(line);
+		if (p_ofs.y + off.y + line_size.y <= 0) {
+			off.y += line_size.y;
 			continue;
 		}
 
 		float width = l.text_buf->get_width();
-		float length = TS->shaped_text_get_width(rid);
+		float length = line_size.x;
 
 		// Draw line.
 		line_count++;
@@ -874,6 +875,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
+		RID rid = l.text_buf->get_line_rid(line);
 		//draw_rect(Rect2(p_ofs + off, TS->shaped_text_get_size(rid)), Color(1,0,0), false, 2); //DEBUG_RECTS
 
 		off.y += TS->shaped_text_get_ascent(rid);
@@ -1344,7 +1346,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	return line_count;
 }
 
-void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside) {
+void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside, bool p_meta) {
 	if (r_click_item) {
 		*r_click_item = nullptr;
 	}
@@ -1367,7 +1369,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 	while (ofs.y < size.height && from_line < to_line) {
 		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
-		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char);
+		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char, false, p_meta);
 		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
@@ -1379,7 +1381,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	}
 }
 
-float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table) {
+float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table, bool p_meta) {
 	Vector2 off;
 
 	bool line_clicked = false;
@@ -1477,7 +1479,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									}
 									if (crect.has_point(p_click)) {
 										for (int j = 0; j < (int)frame->lines.size(); j++) {
-											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true);
+											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
@@ -1510,7 +1512,15 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
 			if ((!rtl && p_click.x >= rect.position.x) || (rtl && p_click.x <= rect.position.x + rect.size.x)) {
-				char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+				if (p_meta) {
+					int64_t glyph_idx = TS->shaped_text_hit_test_grapheme(rid, p_click.x - rect.position.x);
+					if (glyph_idx >= 0) {
+						const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+						char_pos = glyphs[glyph_idx].start;
+					}
+				} else {
+					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+				}
 			}
 			line_clicked = true;
 			text_rect_begin = rtl ? rect.position.x + rect.size.x : rect.position.x;
@@ -1823,7 +1833,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 
 	Item *item = nullptr;
 	bool outside = true;
-	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &item, nullptr, &outside);
+	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &item, nullptr, &outside, true);
 
 	if (item && !outside && const_cast<RichTextLabel *>(this)->_find_meta(item, nullptr)) {
 		return CURSOR_POINTING_HAND;
@@ -1848,7 +1858,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 				selection.drag_attempt = false;
 
-				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
+				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
 				if (c_item != nullptr) {
 					if (selection.enabled) {
 						selection.click_frame = c_frame;
@@ -1886,7 +1896,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 				selection.drag_attempt = false;
 
-				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
+				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
 
 				if (c_frame) {
 					const Line &l = c_frame->lines[c_line];
@@ -1936,7 +1946,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					Item *c_item = nullptr;
 
 					bool outside = true;
-					_find_click(main, b->get_position(), nullptr, nullptr, &c_item, nullptr, &outside);
+					_find_click(main, b->get_position(), nullptr, nullptr, &c_item, nullptr, &outside, true);
 
 					if (c_item) {
 						Variant meta;
@@ -2042,7 +2052,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		int c_index = 0;
 		bool outside;
 
-		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
+		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
 		if (selection.click_item && c_item) {
 			selection.from_frame = selection.click_frame;
 			selection.from_line = selection.click_line;
@@ -2100,7 +2110,7 @@ String RichTextLabel::get_tooltip(const Point2 &p_pos) const {
 	Item *c_item = nullptr;
 	bool outside;
 
-	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &c_item, nullptr, &outside);
+	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
 
 	String description;
 	if (c_item && !outside && const_cast<RichTextLabel *>(this)->_find_hint(c_item, &description)) {
@@ -3368,6 +3378,10 @@ void RichTextLabel::clear() {
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {
+	if (tab_size == p_spaces) {
+		return;
+	}
+
 	_stop_thread();
 
 	tab_size = p_spaces;
@@ -3391,6 +3405,10 @@ bool RichTextLabel::is_fit_content_height_enabled() const {
 }
 
 void RichTextLabel::set_meta_underline(bool p_underline) {
+	if (underline_meta == p_underline) {
+		return;
+	}
+
 	underline_meta = p_underline;
 	update();
 }
@@ -4318,6 +4336,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 }
 
 void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
+	_validate_line_caches();
+
 	if (p_paragraph <= 0) {
 		vscroll->set_value(0);
 	} else if (p_paragraph >= main->first_invalid_line.load()) {
@@ -4339,6 +4359,8 @@ int RichTextLabel::get_visible_paragraph_count() const {
 }
 
 void RichTextLabel::scroll_to_line(int p_line) {
+	_validate_line_caches();
+
 	if (p_line <= 0) {
 		vscroll->set_value(0);
 		return;
@@ -4403,6 +4425,10 @@ int RichTextLabel::get_visible_line_count() const {
 }
 
 void RichTextLabel::set_selection_enabled(bool p_enabled) {
+	if (selection.enabled == p_enabled) {
+		return;
+	}
+
 	selection.enabled = p_enabled;
 	if (!p_enabled) {
 		if (selection.active) {
@@ -4415,6 +4441,10 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 }
 
 void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	if (deselect_on_focus_loss_enabled == p_enabled) {
+		return;
+	}
+
 	deselect_on_focus_loss_enabled = p_enabled;
 	if (p_enabled && selection.active && !has_focus()) {
 		deselect();
@@ -4782,6 +4812,10 @@ int RichTextLabel::get_selection_to() const {
 }
 
 void RichTextLabel::set_text(const String &p_bbcode) {
+	if (text == p_bbcode) {
+		return;
+	}
+
 	text = p_bbcode;
 	if (use_bbcode) {
 		parse_bbcode(p_bbcode);
@@ -4910,15 +4944,19 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 	if (percent_visible != p_percent) {
 		_stop_thread();
 
-		if (p_percent < 0 || p_percent >= 1) {
+		if (percent_visible >= 1.0) {
 			visible_characters = -1;
-			percent_visible = 1;
+			percent_visible = 1.0;
+		} else if (percent_visible < 0.0) {
+			visible_characters = 0;
+			percent_visible = 0.0;
 		} else {
 			visible_characters = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
+
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			main->first_invalid_line.store(0); //invalidate ALL
+			main->first_invalid_line.store(0); // Invalidate ALL.
 			_validate_line_caches();
 		}
 		update();
@@ -4952,6 +4990,8 @@ void RichTextLabel::install_effect(const Variant effect) {
 }
 
 int RichTextLabel::get_content_height() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	int total_height = 0;
 	int to_line = main->first_invalid_line.load();
 	if (to_line) {
@@ -4962,6 +5002,8 @@ int RichTextLabel::get_content_height() const {
 }
 
 int RichTextLabel::get_content_width() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	int total_width = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
@@ -5310,6 +5352,10 @@ int RichTextLabel::get_total_glyph_count() const {
 }
 
 void RichTextLabel::set_fixed_size_to_width(int p_width) {
+	if (fixed_width == p_width) {
+		return;
+	}
+
 	fixed_width = p_width;
 	update_minimum_size();
 }

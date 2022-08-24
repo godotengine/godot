@@ -34,6 +34,7 @@
 #include "core/io/image_loader.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/separator.h"
@@ -111,7 +112,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_process_mode(particles->get_process_mode());
 			cpu_particles->set_z_index(particles->get_z_index());
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);

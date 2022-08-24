@@ -12,33 +12,33 @@
 	<methods>
 		<method name="convert_from_particles">
 			<return type="void" />
-			<argument index="0" name="particles" type="Node" />
+			<param index="0" name="particles" type="Node" />
 			<description>
 				Sets this node's properties to match a given [GPUParticles3D] node with an assigned [ParticlesMaterial].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
 			<return type="Curve" />
-			<argument index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
 				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_max" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
+			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
 			<description>
 				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
 			</description>
@@ -51,32 +51,32 @@
 		</method>
 		<method name="set_param_curve">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
-			<argument index="1" name="curve" type="Curve" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="1" name="curve" type="Curve" />
 			<description>
 				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_max">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="1" name="value" type="float" />
 			<description>
 				Sets the maximum value for the given parameter
 			</description>
 		</method>
 		<method name="set_param_min">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="1" name="value" type="float" />
 			<description>
 				Sets the minimum value for the given parameter
 			</description>
 		</method>
 		<method name="set_particle_flag">
 			<return type="void" />
-			<argument index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
-			<argument index="1" name="enable" type="bool" />
+			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
+			<param index="1" name="enable" type="bool" />
 			<description>
 				Enables or disables the given particle flag (see [enum ParticleFlags] for options).
 			</description>
@@ -224,8 +224,8 @@
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum linear acceleration.
 		</member>
-		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="true">
-			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates.
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated.
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] used for each particle. If [code]null[/code], particles will be spheres.

@@ -605,6 +605,10 @@ bool EditorSpinSlider::is_flat() const {
 	return flat;
 }
 
+bool EditorSpinSlider::is_grabbing() const {
+	return grabbing_grabber || grabbing_spinner;
+}
+
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
 	Rect2 gr = get_screen_rect();

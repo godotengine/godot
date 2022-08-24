@@ -106,12 +106,12 @@ void main() {
 	T[2] = N;
 
 	for (int sample_num = 0; sample_num < sample_count; sample_num++) {
-		vec4 sample = sample_directions_mip[sample_num];
-		vec3 L = T * sample.xyz;
-		vec3 val = textureLod(source_cube, L, sample.w).rgb;
+		vec4 sample_direction_mip = sample_directions_mip[sample_num];
+		vec3 L = T * sample_direction_mip.xyz;
+		vec3 val = textureLod(source_cube, L, sample_direction_mip.w).rgb;
 		// Mix using linear
 		val = srgb_to_linear(val);
-		sum.rgb += val * sample.z;
+		sum.rgb += val * sample_direction_mip.z;
 	}
 
 	sum /= weight;

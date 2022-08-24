@@ -9,9 +9,9 @@
 	<methods>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="src_buffer" type="const void*" />
-			<argument index="1" name="dst_buffer" type="AudioFrame*" />
-			<argument index="2" name="frame_count" type="int" />
+			<param index="0" name="src_buffer" type="const void*" />
+			<param index="1" name="dst_buffer" type="AudioFrame*" />
+			<param index="2" name="frame_count" type="int" />
 			<description>
 			</description>
 		</method>

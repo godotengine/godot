@@ -46,6 +46,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -1386,25 +1387,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
 			case MouseButton::WHEEL_UP: {
-				if (b->is_alt_pressed()) {
-					scale_fov(-0.05);
+				if (is_freelook_active()) {
+					scale_freelook_speed(zoom_factor);
 				} else {
-					if (is_freelook_active()) {
-						scale_freelook_speed(zoom_factor);
-					} else {
-						scale_cursor_distance(1.0 / zoom_factor);
-					}
+					scale_cursor_distance(1.0 / zoom_factor);
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				if (b->is_alt_pressed()) {
-					scale_fov(0.05);
+				if (is_freelook_active()) {
+					scale_freelook_speed(1.0 / zoom_factor);
 				} else {
-					if (is_freelook_active()) {
-						scale_freelook_speed(1.0 / zoom_factor);
-					} else {
-						scale_cursor_distance(zoom_factor);
-					}
+					scale_cursor_distance(zoom_factor);
 				}
 			} break;
 			case MouseButton::RIGHT: {
@@ -2980,6 +2973,13 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					xform.scale_basis(sp->get_scale());
 				}
 
+				if (Object::cast_to<Decal>(E)) {
+					// Adjust rotation to match Decal's default orientation.
+					// This makes the decal "look" in the same direction as the camera,
+					// rather than pointing down relative to the camera orientation.
+					xform.basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
+				}
+
 				undo_redo->add_do_method(sp, "set_global_transform", xform);
 				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
 			}
@@ -3007,7 +3007,16 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(sp, "set_rotation", camera_transform.basis.get_euler_normalized());
+				Basis basis = camera_transform.basis;
+
+				if (Object::cast_to<Decal>(E)) {
+					// Adjust rotation to match Decal's default orientation.
+					// This makes the decal "look" in the same direction as the camera,
+					// rather than pointing down relative to the camera orientation.
+					basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
+				}
+
+				undo_redo->add_do_method(sp, "set_rotation", basis.get_euler_normalized());
 				undo_redo->add_undo_method(sp, "set_rotation", sp->get_rotation());
 			}
 			undo_redo->commit_action();
@@ -4011,15 +4020,15 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene, true);
-	editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
-	editor_data->get_undo_redo().add_do_reference(instantiated_scene);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instantiated_scene);
+	editor_data->get_undo_redo()->add_do_method(parent, "add_child", instantiated_scene, true);
+	editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	editor_data->get_undo_redo()->add_do_reference(instantiated_scene);
+	editor_data->get_undo_redo()->add_undo_method(parent, "remove_child", instantiated_scene);
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
-	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	editor_data->get_undo_redo()->add_do_method(ed, "live_debug_instance_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
+	editor_data->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
@@ -4032,7 +4041,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 		global_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_global_transform", global_transform);
+		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", global_transform);
 	}
 
 	return true;
@@ -4043,15 +4052,15 @@ void Node3DEditorViewport::_perform_drop_data() {
 		GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
 		if (mesh_instance && spatial_editor->get_preview_material_surface() != -1) {
-			editor_data->get_undo_redo().create_action(vformat(TTR("Set Surface %d Override Material"), spatial_editor->get_preview_material_surface()));
-			editor_data->get_undo_redo().add_do_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_material());
-			editor_data->get_undo_redo().add_undo_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
-			editor_data->get_undo_redo().commit_action();
+			editor_data->get_undo_redo()->create_action(vformat(TTR("Set Surface %d Override Material"), spatial_editor->get_preview_material_surface()));
+			editor_data->get_undo_redo()->add_do_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_material());
+			editor_data->get_undo_redo()->add_undo_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
+			editor_data->get_undo_redo()->commit_action();
 		} else if (geometry_instance) {
-			editor_data->get_undo_redo().create_action(TTR("Set Material Override"));
-			editor_data->get_undo_redo().add_do_method(geometry_instance, "set_material_override", spatial_editor->get_preview_material());
-			editor_data->get_undo_redo().add_undo_method(geometry_instance, "set_material_override", spatial_editor->get_preview_reset_material());
-			editor_data->get_undo_redo().commit_action();
+			editor_data->get_undo_redo()->create_action(TTR("Set Material Override"));
+			editor_data->get_undo_redo()->add_do_method(geometry_instance, "set_material_override", spatial_editor->get_preview_material());
+			editor_data->get_undo_redo()->add_undo_method(geometry_instance, "set_material_override", spatial_editor->get_preview_reset_material());
+			editor_data->get_undo_redo()->commit_action();
 		}
 
 		_remove_preview_material();
@@ -4062,7 +4071,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 	Vector<String> error_files;
 
-	editor_data->get_undo_redo().create_action(TTR("Create Node"));
+	editor_data->get_undo_redo()->create_action(TTR("Create Node"));
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
@@ -4080,7 +4089,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 		}
 	}
 
-	editor_data->get_undo_redo().commit_action();
+	editor_data->get_undo_redo()->commit_action();
 
 	if (error_files.size() > 0) {
 		String files_str;
@@ -4121,6 +4130,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						continue;
 					}
 					Ref<PackedScene> scn = res;
+					Ref<Mesh> mesh = res;
 					Ref<Material> mat = res;
 					Ref<Texture2D> tex = res;
 					if (scn.is_valid()) {
@@ -4139,6 +4149,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 
 						spatial_editor->set_preview_material(mat);
 						break;
+					} else if (mesh.is_valid()) {
+						// Let the mesh pass.
 					} else if (tex.is_valid()) {
 						Ref<StandardMaterial3D> new_mat = memnew(StandardMaterial3D);
 						new_mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
@@ -6408,7 +6420,7 @@ void fragment() {
 				Ref<ShaderMaterial> rotate_mat = memnew(ShaderMaterial);
 				rotate_mat->set_render_priority(Material::RENDER_PRIORITY_MAX);
 				rotate_mat->set_shader(rotate_shader);
-				rotate_mat->set_shader_param("albedo", col);
+				rotate_mat->set_shader_uniform("albedo", col);
 				rotate_gizmo_color[i] = rotate_mat;
 
 				Array arrays = surftool->commit_to_arrays();
@@ -6416,7 +6428,7 @@ void fragment() {
 				rotate_gizmo[i]->surface_set_material(0, rotate_mat);
 
 				Ref<ShaderMaterial> rotate_mat_hl = rotate_mat->duplicate();
-				rotate_mat_hl->set_shader_param("albedo", albedo);
+				rotate_mat_hl->set_shader_uniform("albedo", albedo);
 				rotate_gizmo_color_hl[i] = rotate_mat_hl;
 
 				if (i == 2) { // Rotation white outline
@@ -6457,7 +6469,7 @@ void fragment() {
 )");
 
 					border_mat->set_shader(border_shader);
-					border_mat->set_shader_param("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
+					border_mat->set_shader_uniform("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
 
 					rotate_gizmo[3] = Ref<ArrayMesh>(memnew(ArrayMesh));
 					rotate_gizmo[3]->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
@@ -6710,8 +6722,8 @@ void Node3DEditor::_init_grid() {
 		fade_size = CLAMP(fade_size, min_fade_size, max_fade_size);
 
 		real_t grid_fade_size = (grid_size - primary_grid_steps) * fade_size;
-		grid_mat[c]->set_shader_param("grid_size", grid_fade_size);
-		grid_mat[c]->set_shader_param("orthogonal", orthogonal);
+		grid_mat[c]->set_shader_uniform("grid_size", grid_fade_size);
+		grid_mat[c]->set_shader_uniform("orthogonal", orthogonal);
 
 		// Cache these so we don't have to re-access memory.
 		Vector<Vector3> &ref_grid = grid_points[c];
@@ -7255,6 +7267,14 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 	return ret;
 }
 
+void Node3DEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
+}
+
+Ref<EditorUndoRedoManager> Node3DEditor::get_undo_redo() {
+	return undo_redo;
+}
+
 void Node3DEditor::add_control_to_menu_panel(Control *p_control) {
 	context_menu_hbox->add_child(p_control);
 }
@@ -7495,7 +7515,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<SoftDynamicBody3DGizmoPlugin>(memnew(SoftDynamicBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Position3DGizmoPlugin>(memnew(Position3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
@@ -7559,9 +7579,9 @@ void Node3DEditor::_sun_direction_draw() {
 	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_size()), Color(1, 1, 1, 1));
 	Vector3 z_axis = preview_sun->get_transform().basis.get_column(Vector3::AXIS_Z);
 	z_axis = get_editor_viewport(0)->camera->get_camera_transform().basis.xform_inv(z_axis);
-	sun_direction_material->set_shader_param("sun_direction", Vector3(z_axis.x, -z_axis.y, z_axis.z));
+	sun_direction_material->set_shader_uniform("sun_direction", Vector3(z_axis.x, -z_axis.y, z_axis.z));
 	Color color = sun_color->get_pick_color() * sun_energy->get_value();
-	sun_direction_material->set_shader_param("sun_color", Vector3(color.r, color.g, color.b));
+	sun_direction_material->set_shader_uniform("sun_color", Vector3(color.r, color.g, color.b));
 }
 
 void Node3DEditor::_preview_settings_changed() {
@@ -7615,7 +7635,7 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_tonemap_button->set_pressed(true);
 	environ_ao_button->set_pressed(false);
 	environ_gi_button->set_pressed(false);
-	sun_max_distance->set_value(250);
+	sun_max_distance->set_value(100);
 
 	sun_color->set_pick_color(Color(1, 1, 1));
 	sun_energy->set_value(1.0);
@@ -7796,7 +7816,7 @@ Node3DEditor::Node3DEditor() {
 	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	tool_button[TOOL_GROUP_SELECTED]->set_flat(true);
 	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
-	tool_button[TOOL_GROUP_SELECTED]->set_tooltip(TTR("Makes sure the object's children are not selectable."));
+	tool_button[TOOL_GROUP_SELECTED]->set_tooltip(TTR("Make selected node's children not selectable."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD | Key::G));
 
@@ -7804,7 +7824,7 @@ Node3DEditor::Node3DEditor() {
 	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_flat(true);
 	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
-	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip(TTR("Restores the object's children's ability to be selected."));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip(TTR("Make selected node's children selectable."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::G));
 
@@ -8162,8 +8182,8 @@ void fragment() {
 )");
 		sun_direction_material.instantiate();
 		sun_direction_material->set_shader(sun_direction_shader);
-		sun_direction_material->set_shader_param("sun_direction", Vector3(0, 0, 1));
-		sun_direction_material->set_shader_param("sun_color", Vector3(1, 1, 1));
+		sun_direction_material->set_shader_uniform("sun_direction", Vector3(0, 0, 1));
+		sun_direction_material->set_shader_uniform("sun_color", Vector3(1, 1, 1));
 		sun_direction->set_material(sun_direction_material);
 
 		HBoxContainer *sun_angle_hbox = memnew(HBoxContainer);

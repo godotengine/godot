@@ -170,6 +170,9 @@ private:
 
 		// Positioning and sizing.
 
+		LayoutMode stored_layout_mode = LayoutMode::LAYOUT_MODE_POSITION;
+		bool stored_use_custom_anchors = false;
+
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
@@ -229,6 +232,13 @@ private:
 		Theme::ThemeColorMap color_override;
 		Theme::ThemeConstantMap constant_override;
 
+		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
+		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
+		mutable HashMap<StringName, Theme::ThemeFontMap> theme_font_cache;
+		mutable HashMap<StringName, Theme::ThemeFontSizeMap> theme_font_size_cache;
+		mutable HashMap<StringName, Theme::ThemeColorMap> theme_color_cache;
+		mutable HashMap<StringName, Theme::ThemeConstantMap> theme_constant_cache;
+
 		// Internationalization.
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
@@ -268,6 +278,7 @@ private:
 
 	void _set_layout_mode(LayoutMode p_mode);
 	LayoutMode _get_layout_mode() const;
+	LayoutMode _get_default_layout_mode() const;
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
@@ -291,6 +302,7 @@ private:
 	void _theme_changed();
 	void _theme_property_override_changed();
 	void _notify_theme_changed();
+	void _invalidate_theme_cache();
 
 	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
 
@@ -309,11 +321,14 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
+
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	// Internationalization.
 
-	virtual Array structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	virtual TypedArray<Vector2i> structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	// Base object overrides.
 
@@ -326,7 +341,7 @@ protected:
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
-	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL2RC(TypedArray<Vector2i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 
 	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)

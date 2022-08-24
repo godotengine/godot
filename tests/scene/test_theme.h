@@ -101,18 +101,24 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Good theme type names") {
 
 	SUBCASE("set_type_variation") {
 		for (const StringName &name : names) {
+			if (name == StringName()) { // Skip empty here, not allowed.
+				continue;
+			}
 			Ref<Theme> theme = memnew(Theme);
 
 			ErrorDetector ed;
 			theme->set_type_variation(valid_type_name, name);
-			CHECK(ed.has_error == (name == StringName()));
+			CHECK_FALSE(ed.has_error);
 		}
 		for (const StringName &name : names) {
+			if (name == StringName()) { // Skip empty here, not allowed.
+				continue;
+			}
 			Ref<Theme> theme = memnew(Theme);
 
 			ErrorDetector ed;
 			theme->set_type_variation(name, valid_type_name);
-			CHECK(ed.has_error == (name == StringName()));
+			CHECK_FALSE(ed.has_error);
 		}
 	}
 }
@@ -124,6 +130,8 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme type names") {
 		"With@various$symbols!",
 		String::utf8("contains_汉字"),
 	};
+
+	ERR_PRINT_OFF; // All these rightfully print errors.
 
 	SUBCASE("add_type") {
 		for (const StringName &name : names) {
@@ -175,6 +183,8 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme type names") {
 			CHECK(ed.has_error);
 		}
 	}
+
+	ERR_PRINT_ON;
 }
 
 TEST_CASE_FIXTURE(Fixture, "[Theme] Good theme item names") {
@@ -223,6 +233,8 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme item names") {
 		String::utf8("contains_汉字"),
 	};
 
+	ERR_PRINT_OFF; // All these rightfully print errors.
+
 	SUBCASE("set_theme_item") {
 		for (const StringName &name : names) {
 			for (const DataEntry &entry : valid_data) {
@@ -250,6 +262,8 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme item names") {
 			}
 		}
 	}
+
+	ERR_PRINT_ON;
 }
 
 } // namespace TestTheme

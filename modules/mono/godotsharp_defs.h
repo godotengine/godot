@@ -33,14 +33,10 @@
 
 #define BINDINGS_NAMESPACE "Godot"
 #define BINDINGS_NAMESPACE_COLLECTIONS BINDINGS_NAMESPACE ".Collections"
-#define BINDINGS_GLOBAL_SCOPE_CLASS "GD"
-#define BINDINGS_PTR_FIELD "ptr"
-#define BINDINGS_NATIVE_NAME_FIELD "nativeName"
 #define API_SOLUTION_NAME "GodotSharp"
 #define CORE_API_ASSEMBLY_NAME "GodotSharp"
 #define EDITOR_API_ASSEMBLY_NAME "GodotSharpEditor"
 #define TOOLS_ASM_NAME "GodotTools"
-#define TOOLS_PROJECT_EDITOR_ASM_NAME "GodotTools.ProjectEditor"
 
 #define BINDINGS_CLASS_NATIVECALLS "NativeCalls"
 #define BINDINGS_CLASS_NATIVECALLS_EDITOR "EditorNativeCalls"

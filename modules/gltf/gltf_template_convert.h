@@ -46,8 +46,8 @@ static Array to_array(const Vector<T> &p_inp) {
 }
 
 template <class T>
-static Array to_array(const HashSet<T> &p_inp) {
-	Array ret;
+static TypedArray<T> to_array(const HashSet<T> &p_inp) {
+	TypedArray<T> ret;
 	typename HashSet<T>::Iterator elem = p_inp.begin();
 	while (elem) {
 		ret.push_back(*elem);
@@ -65,7 +65,7 @@ static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
 }
 
 template <class T>
-static void set_from_array(HashSet<T> &r_out, const Array &p_inp) {
+static void set_from_array(HashSet<T> &r_out, const TypedArray<T> &p_inp) {
 	r_out.clear();
 	for (int i = 0; i < p_inp.size(); i++) {
 		r_out.insert(p_inp[i]);

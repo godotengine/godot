@@ -138,6 +138,7 @@ env_base.__class__.CommandNoCache = methods.CommandNoCache
 env_base.__class__.Run = methods.Run
 env_base.__class__.disable_warnings = methods.disable_warnings
 env_base.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
+env_base.__class__.module_add_dependencies = methods.module_add_dependencies
 env_base.__class__.module_check_dependencies = methods.module_check_dependencies
 
 env_base["x86_libtheora_opt_gcc"] = False
@@ -337,21 +338,27 @@ for path in module_search_paths:
 
 # Add module options.
 for name, path in modules_detected.items():
+    sys.path.insert(0, path)
+    import config
+
     if env_base["modules_enabled_by_default"]:
         enabled = True
-
-        sys.path.insert(0, path)
-        import config
-
         try:
             enabled = config.is_enabled()
         except AttributeError:
             pass
-        sys.path.remove(path)
-        sys.modules.pop("config")
     else:
         enabled = False
 
+    # Add module-specific options.
+    try:
+        for opt in config.get_opts(selected_platform):
+            opts.Add(opt)
+    except AttributeError:
+        pass
+
+    sys.path.remove(path)
+    sys.modules.pop("config")
     opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
@@ -699,6 +706,7 @@ if selected_platform in platform_list:
     sys.modules.pop("detect")
 
     modules_enabled = OrderedDict()
+    env.module_dependencies = {}
     env.module_icons_paths = []
     env.doc_class_path = {}
 
@@ -710,6 +718,10 @@ if selected_platform in platform_list:
         import config
 
         if config.can_build(env, selected_platform):
+            # Disable it if a required dependency is missing.
+            if not env.module_check_dependencies(name):
+                continue
+
             config.configure(env)
             # Get doc classes paths (if present)
             try:
@@ -732,6 +744,7 @@ if selected_platform in platform_list:
         sys.modules.pop("config")
 
     env.module_list = modules_enabled
+    methods.sort_module_list(env)
 
     methods.update_version(env.module_version_string)
 
@@ -793,15 +806,6 @@ if selected_platform in platform_list:
             env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-
-    editor_module_list = []
-    if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
-        print(
-            "Build option 'module_"
-            + x
-            + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template)."
-        )
-        Exit(255)
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)

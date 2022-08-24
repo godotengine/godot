@@ -66,17 +66,24 @@ static void _editor_init() {
 
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
-	EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
+	String blender3_path = EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
 			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_DIR));
 	if (blend_enabled) {
-		Ref<EditorSceneFormatImporterBlend> importer;
-		importer.instantiate();
-		ResourceImporterScene::add_importer(importer);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (blender3_path.is_empty()) {
+			WARN_PRINT("Blend file import is enabled in the project settings, but no Blender path is configured in the editor settings. Blend files will not be imported.");
+		} else if (!da->file_exists(blender3_path)) {
+			WARN_PRINT("Blend file import is enabled, but the Blender path doesn't point to an accessible file. Blend files will not be imported.");
+		} else {
+			Ref<EditorSceneFormatImporterBlend> importer;
+			importer.instantiate();
+			ResourceImporterScene::add_importer(importer);
 
-		Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
-		blend_import_query.instantiate();
-		EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
+			Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
+			blend_import_query.instantiate();
+			EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
+		}
 	}
 
 	// FBX to glTF importer.
@@ -89,9 +96,9 @@ static void _editor_init() {
 	if (fbx_enabled) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (fbx2gltf_path.is_empty()) {
-			WARN_PRINT("FBX file import is enabled, but no FBX2glTF path is configured. FBX files will not be imported.");
+			WARN_PRINT("FBX file import is enabled in the project settings, but no FBX2glTF path is configured in the editor settings. FBX files will not be imported.");
 		} else if (!da->file_exists(fbx2gltf_path)) {
-			WARN_PRINT("FBX file import is enabled, but the FBX2glTF path doesn't point to a valid FBX2glTF executable. FBX files will not be imported.");
+			WARN_PRINT("FBX file import is enabled, but the FBX2glTF path doesn't point to an accessible file. FBX files will not be imported.");
 		} else {
 			Ref<EditorSceneFormatImporterFBX> importer;
 			importer.instantiate();

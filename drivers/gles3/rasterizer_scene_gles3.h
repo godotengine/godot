@@ -165,7 +165,7 @@ private:
 		float inv_spot_attenuation;
 		float cos_spot_angle;
 		float specular_amount;
-		uint32_t shadow_enabled;
+		float shadow_opacity;
 	};
 	static_assert(sizeof(LightData) % 16 == 0, "LightData size must be a multiple of 16 bytes");
 

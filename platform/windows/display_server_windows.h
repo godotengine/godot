@@ -331,6 +331,8 @@ class DisplayServerWindows : public DisplayServer {
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
 	bool app_focused = false;
+	bool keep_screen_on = false;
+	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
 
@@ -476,7 +478,7 @@ public:
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
-	virtual Array tts_get_voices() const override;
+	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
 	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;

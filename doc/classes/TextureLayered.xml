@@ -21,7 +21,7 @@
 		</method>
 		<method name="_get_layer_data" qualifiers="virtual const">
 			<return type="Image" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -59,9 +59,9 @@
 		</method>
 		<method name="get_layer_data" qualifiers="const">
 			<return type="Image" />
-			<argument index="0" name="layer" type="int" />
+			<param index="0" name="layer" type="int" />
 			<description>
-				Returns an [Image] resource with the data from specified [code]layer[/code].
+				Returns an [Image] resource with the data from specified [param layer].
 			</description>
 		</method>
 		<method name="get_layered_type" qualifiers="const">

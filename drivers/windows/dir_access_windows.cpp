@@ -402,6 +402,8 @@ DirAccessWindows::DirAccessWindows() {
 }
 
 DirAccessWindows::~DirAccessWindows() {
+	list_dir_end();
+
 	memdelete(p);
 }
 

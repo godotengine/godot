@@ -496,7 +496,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 
 	while (sky) {
 		if (sky->radiance == 0) {
-			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) - 2;
+			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) - 1;
 			// Left uninitialized, will attach a texture at render time
 			glGenFramebuffers(1, &sky->radiance_framebuffer);
 
@@ -523,7 +523,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
 
 			glGenTextures(1, &sky->raw_radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->raw_radiance);
@@ -544,7 +544,8 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
+
 			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		}
 
@@ -701,6 +702,7 @@ void RasterizerSceneGLES3::_setup_sky(RID p_env, RID p_render_buffers, const Pag
 		}
 
 		if (!sky->radiance) {
+			_invalidate_sky(sky);
 			_update_dirty_skys();
 		}
 	}
@@ -865,7 +867,6 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, cm.matrix[2][0], cm.matrix[0][0], cm.matrix[2][1], cm.matrix[1][1], shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 
-		// Bind a vertex array or else OpenGL complains. We won't actually use it
 		glBindVertexArray(sky_globals.screen_triangle_array);
 
 		glViewport(0, 0, sky->radiance_size, sky->radiance_size);
@@ -879,7 +880,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		}
 
 		if (update_single_frame) {
-			for (int i = 0; i <= max_processing_layer; i++) {
+			for (int i = 0; i < max_processing_layer; i++) {
 				_filter_sky_radiance(sky, i);
 			}
 		} else {
@@ -889,7 +890,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 
 		sky->reflection_dirty = false;
 	} else {
-		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer <= max_processing_layer) {
+		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
 			_filter_sky_radiance(sky, sky->processing_layer);
 			sky->processing_layer++;
 		}
@@ -1005,7 +1006,9 @@ void RasterizerSceneGLES3::_filter_sky_radiance(Sky *p_sky, int p_base_layer) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, p_sky->radiance, p_base_layer);
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			WARN_PRINT("Could not bind sky radiance face: " + itos(i) + ", status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+		}
 #endif
 		material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::FACE_ID, i, scene_globals.cubemap_filter_shader_version, mode);
 
@@ -1646,23 +1649,23 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 
 		light_data.specular_amount = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
 
-		light_data.shadow_enabled = false;
+		light_data.shadow_opacity = 0.0;
 	}
 
 	// TODO, to avoid stalls, should rotate between 3 buffers based on frame index.
 	// TODO, consider mapping the buffer as in 2D
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_OMNILIGHT_UNIFORM_LOCATION, scene_state.omni_light_buffer);
 	if (r_omni_light_count) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_OMNILIGHT_UNIFORM_LOCATION, scene_state.omni_light_buffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData) * r_omni_light_count, scene_state.omni_lights);
 	}
 
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_SPOTLIGHT_UNIFORM_LOCATION, scene_state.spot_light_buffer);
 	if (r_spot_light_count) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_SPOTLIGHT_UNIFORM_LOCATION, scene_state.spot_light_buffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData) * r_spot_light_count, scene_state.spot_lights);
 	}
 
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, scene_state.directional_light_buffer);
 	if (r_directional_light_count) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, scene_state.directional_light_buffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirectionalLightData) * r_directional_light_count, scene_state.directional_lights);
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -2146,7 +2149,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		index_array_gl = mesh_storage->mesh_surface_get_index_buffer(mesh_surface, surf->lod_index);
 
 		if (prev_vertex_array_gl != vertex_array_gl) {
-			glBindVertexArray(vertex_array_gl);
+			if (vertex_array_gl != 0) {
+				glBindVertexArray(vertex_array_gl);
+			}
 			prev_vertex_array_gl = vertex_array_gl;
 		}
 
@@ -2303,7 +2308,7 @@ void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_
 	glGenTextures(1, &rb->depth_texture);
 	glBindTexture(GL_TEXTURE_2D, rb->depth_texture);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -2421,6 +2426,8 @@ void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter 
 }
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
+	singleton = this;
+
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 
@@ -2620,6 +2627,8 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	glDeleteBuffers(1, &sky_globals.directional_light_buffer);
 	memdelete_arr(sky_globals.directional_lights);
 	memdelete_arr(sky_globals.last_frame_directional_lights);
+
+	singleton = nullptr;
 }
 
 #endif // GLES3_ENABLED

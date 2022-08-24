@@ -274,24 +274,24 @@ void InputEventWithModifiers::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_pressed"), "set_command_pressed", "is_command_pressed");
 }
 
-void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
+void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const {
 	if (store_command) {
 		// If we only want to Store "Command".
 #ifdef APPLE_STYLE_KEYS
 		// Don't store "Meta" on Mac.
-		if (property.name == "meta_pressed") {
-			property.usage ^= PROPERTY_USAGE_STORAGE;
+		if (p_property.name == "meta_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 #else
 		// Don't store "Ctrl".
-		if (property.name == "ctrl_pressed") {
-			property.usage ^= PROPERTY_USAGE_STORAGE;
+		if (p_property.name == "ctrl_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 #endif
 	} else {
 		// We don't want to store command, only ctrl or meta (on mac).
-		if (property.name == "command_pressed") {
-			property.usage ^= PROPERTY_USAGE_STORAGE;
+		if (p_property.name == "command_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 	}
 }
@@ -816,7 +816,7 @@ String InputEventMouseMotion::to_string() {
 
 	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.
 	String mask_and_position_and_relative = vformat("button_mask=%s, position=(%s), relative=(%s)", button_mask_string, String(get_position()), String(get_relative()));
-	return vformat("InputEventMouseMotion: %s, velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%d)", mask_and_position_and_relative, String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
+	return vformat("InputEventMouseMotion: %s, velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%s)", mask_and_position_and_relative, String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {

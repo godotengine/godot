@@ -34,6 +34,7 @@
 #include "core/io/image_loader.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/particles_material.h"

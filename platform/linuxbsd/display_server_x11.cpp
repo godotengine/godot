@@ -322,8 +322,8 @@ bool DisplayServerX11::tts_is_paused() const {
 	return tts->is_paused();
 }
 
-Array DisplayServerX11::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+TypedArray<Dictionary> DisplayServerX11::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 
@@ -4991,7 +4991,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #ifdef DBUS_ENABLED
 	screensaver = memnew(FreeDesktopScreenSaver);
-	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 #endif
 
 	r_error = OK;

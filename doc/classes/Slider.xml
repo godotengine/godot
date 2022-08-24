@@ -25,9 +25,9 @@
 	</members>
 	<signals>
 		<signal name="drag_ended">
-			<argument index="0" name="value_changed" type="bool" />
+			<param index="0" name="value_changed" type="bool" />
 			<description>
-				Emitted when dragging stops. If [code]value_changed[/code] is true, [member Range.value] is different from the value when you started the dragging.
+				Emitted when dragging stops. If [param value_changed] is true, [member Range.value] is different from the value when you started the dragging.
 			</description>
 		</signal>
 		<signal name="drag_started">

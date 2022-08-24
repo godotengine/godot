@@ -498,6 +498,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
 				if (SL::is_sampler_type(E.value.type)) {
+					if (E.value.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+							E.value.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+						continue; // Don't create uniforms in the generated code for these.
+					}
 					max_texture_uniforms++;
 				} else {
 					if (E.value.scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
@@ -537,6 +542,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					p_actions.uniforms->insert(uniform_name, uniform);
 					continue; // Instances are indexed directly, don't need index uniforms.
 				}
+
+				if (uniform.hint == SL::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+						uniform.hint == SL::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+					continue; // Don't create uniforms in the generated code for these.
+				}
+
 				if (SL::is_sampler_type(uniform.type)) {
 					// Texture layouts are different for OpenGL GLSL and Vulkan GLSL
 					if (!RS::get_singleton()->is_low_end()) {
@@ -892,12 +904,39 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
+				if (vnode->name == "SCREEN_TEXTURE") {
+					r_gen_code.uses_screen_texture_mipmaps = true;
+				}
 			} else {
 				if (shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.texture_order >= 0) {
-						code = _mkid(vnode->name); //texture, use as is
+						StringName name = vnode->name;
+						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+							name = "SCREEN_TEXTURE";
+							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {
+								r_gen_code.uses_screen_texture_mipmaps = true;
+							}
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+							name = "NORMAL_ROUGHNESS_TEXTURE";
+						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+							name = "DEPTH_TEXTURE";
+						} else {
+							name = _mkid(vnode->name); //texture, use as is
+						}
+
+						if (p_default_actions.renames.has(name)) {
+							code = p_default_actions.renames[name];
+						} else {
+							code = name;
+						}
+
+						if (p_actions.usage_flag_pointers.has(name) && !used_flag_pointers.has(name)) {
+							*p_actions.usage_flag_pointers[name] = true;
+							used_flag_pointers.insert(name);
+						}
+
 					} else {
 						//a scalar or vector
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
@@ -1155,6 +1194,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							}
 
 							if (correct_texture_uniform) {
+								//TODO Needs to detect screen_texture hint as well
 								is_screen_texture = (texture_uniform == "SCREEN_TEXTURE");
 
 								String sampler_name;
@@ -1404,6 +1444,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	r_gen_code.uses_fragment_time = false;
 	r_gen_code.uses_vertex_time = false;
 	r_gen_code.uses_global_textures = false;
+	r_gen_code.uses_screen_texture_mipmaps = false;
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
@@ -1434,8 +1475,11 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("textureLod");
 	texture_functions.insert("textureProjLod");
 	texture_functions.insert("textureGrad");
+	texture_functions.insert("textureProjGrad");
 	texture_functions.insert("textureGather");
 	texture_functions.insert("textureSize");
+	texture_functions.insert("textureQueryLod");
+	texture_functions.insert("textureQueryLevels");
 	texture_functions.insert("texelFetch");
 }
 

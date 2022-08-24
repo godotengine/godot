@@ -9,89 +9,89 @@
 	<methods>
 		<method name="_cast_motion" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="shape_rid" type="RID" />
-			<argument index="1" name="transform" type="Transform3D" />
-			<argument index="2" name="motion" type="Vector3" />
-			<argument index="3" name="margin" type="float" />
-			<argument index="4" name="collision_mask" type="int" />
-			<argument index="5" name="collide_with_bodies" type="bool" />
-			<argument index="6" name="collide_with_areas" type="bool" />
-			<argument index="7" name="closest_safe" type="float*" />
-			<argument index="8" name="closest_unsafe" type="float*" />
-			<argument index="9" name="info" type="PhysicsServer3DExtensionShapeRestInfo*" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="motion" type="Vector3" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="closest_safe" type="float*" />
+			<param index="8" name="closest_unsafe" type="float*" />
+			<param index="9" name="info" type="PhysicsServer3DExtensionShapeRestInfo*" />
 			<description>
 			</description>
 		</method>
 		<method name="_collide_shape" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="shape_rid" type="RID" />
-			<argument index="1" name="transform" type="Transform3D" />
-			<argument index="2" name="motion" type="Vector3" />
-			<argument index="3" name="margin" type="float" />
-			<argument index="4" name="collision_mask" type="int" />
-			<argument index="5" name="collide_with_bodies" type="bool" />
-			<argument index="6" name="collide_with_areas" type="bool" />
-			<argument index="7" name="results" type="void*" />
-			<argument index="8" name="max_results" type="int" />
-			<argument index="9" name="result_count" type="int32_t*" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="motion" type="Vector3" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="results" type="void*" />
+			<param index="8" name="max_results" type="int" />
+			<param index="9" name="result_count" type="int32_t*" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_closest_point_to_object_volume" qualifiers="virtual const">
 			<return type="Vector3" />
-			<argument index="0" name="object" type="RID" />
-			<argument index="1" name="point" type="Vector3" />
+			<param index="0" name="object" type="RID" />
+			<param index="1" name="point" type="Vector3" />
 			<description>
 			</description>
 		</method>
 		<method name="_intersect_point" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="position" type="Vector3" />
-			<argument index="1" name="collision_mask" type="int" />
-			<argument index="2" name="collide_with_bodies" type="bool" />
-			<argument index="3" name="collide_with_areas" type="bool" />
-			<argument index="4" name="results" type="PhysicsServer3DExtensionShapeResult*" />
-			<argument index="5" name="max_results" type="int" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="collision_mask" type="int" />
+			<param index="2" name="collide_with_bodies" type="bool" />
+			<param index="3" name="collide_with_areas" type="bool" />
+			<param index="4" name="results" type="PhysicsServer3DExtensionShapeResult*" />
+			<param index="5" name="max_results" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_intersect_ray" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="from" type="Vector3" />
-			<argument index="1" name="to" type="Vector3" />
-			<argument index="2" name="collision_mask" type="int" />
-			<argument index="3" name="collide_with_bodies" type="bool" />
-			<argument index="4" name="collide_with_areas" type="bool" />
-			<argument index="5" name="hit_from_inside" type="bool" />
-			<argument index="6" name="hit_back_faces" type="bool" />
-			<argument index="7" name="result" type="PhysicsServer3DExtensionRayResult*" />
+			<param index="0" name="from" type="Vector3" />
+			<param index="1" name="to" type="Vector3" />
+			<param index="2" name="collision_mask" type="int" />
+			<param index="3" name="collide_with_bodies" type="bool" />
+			<param index="4" name="collide_with_areas" type="bool" />
+			<param index="5" name="hit_from_inside" type="bool" />
+			<param index="6" name="hit_back_faces" type="bool" />
+			<param index="7" name="result" type="PhysicsServer3DExtensionRayResult*" />
 			<description>
 			</description>
 		</method>
 		<method name="_intersect_shape" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="shape_rid" type="RID" />
-			<argument index="1" name="transform" type="Transform3D" />
-			<argument index="2" name="motion" type="Vector3" />
-			<argument index="3" name="margin" type="float" />
-			<argument index="4" name="collision_mask" type="int" />
-			<argument index="5" name="collide_with_bodies" type="bool" />
-			<argument index="6" name="collide_with_areas" type="bool" />
-			<argument index="7" name="result_count" type="PhysicsServer3DExtensionShapeResult*" />
-			<argument index="8" name="max_results" type="int" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="motion" type="Vector3" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="result_count" type="PhysicsServer3DExtensionShapeResult*" />
+			<param index="8" name="max_results" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_rest_info" qualifiers="virtual">
 			<return type="bool" />
-			<argument index="0" name="shape_rid" type="RID" />
-			<argument index="1" name="transform" type="Transform3D" />
-			<argument index="2" name="motion" type="Vector3" />
-			<argument index="3" name="margin" type="float" />
-			<argument index="4" name="collision_mask" type="int" />
-			<argument index="5" name="collide_with_bodies" type="bool" />
-			<argument index="6" name="collide_with_areas" type="bool" />
-			<argument index="7" name="rest_info" type="PhysicsServer3DExtensionShapeRestInfo*" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="motion" type="Vector3" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="rest_info" type="PhysicsServer3DExtensionShapeRestInfo*" />
 			<description>
 			</description>
 		</method>

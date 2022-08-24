@@ -36,6 +36,7 @@
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/editor_settings.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/center_container.h"

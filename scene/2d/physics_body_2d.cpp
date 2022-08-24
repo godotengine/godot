@@ -849,7 +849,7 @@ RigidDynamicBody2D::CCDMode RigidDynamicBody2D::get_continuous_collision_detecti
 }
 
 TypedArray<Node2D> RigidDynamicBody2D::get_colliding_bodies() const {
-	ERR_FAIL_COND_V(!contact_monitor, Array());
+	ERR_FAIL_COND_V(!contact_monitor, TypedArray<Node2D>());
 
 	TypedArray<Node2D> ret;
 	ret.resize(contact_monitor->body_map.size());
@@ -1062,10 +1062,10 @@ void RigidDynamicBody2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_SHAPE);
 }
 
-void RigidDynamicBody2D::_validate_property(PropertyInfo &property) const {
+void RigidDynamicBody2D::_validate_property(PropertyInfo &p_property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
-		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name == "center_of_mass") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }
@@ -1702,7 +1702,7 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody2D::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &CharacterBody2D::get_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &CharacterBody2D::set_safe_margin);
+	ClassDB::bind_method(D_METHOD("set_safe_margin", "margin"), &CharacterBody2D::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody2D::get_safe_margin);
 	ClassDB::bind_method(D_METHOD("is_floor_stop_on_slope_enabled"), &CharacterBody2D::is_floor_stop_on_slope_enabled);
 	ClassDB::bind_method(D_METHOD("set_floor_stop_on_slope_enabled", "enabled"), &CharacterBody2D::set_floor_stop_on_slope_enabled);
@@ -1756,17 +1756,21 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
+
 	ADD_GROUP("Floor", "floor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_stop_on_slope"), "set_floor_stop_on_slope_enabled", "is_floor_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_constant_speed"), "set_floor_constant_speed_enabled", "is_floor_constant_speed_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_block_on_wall"), "set_floor_block_on_wall_enabled", "is_floor_block_on_wall_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater,suffix:px"), "set_floor_snap_length", "get_floor_snap_length");
+
 	ADD_GROUP("Moving Platform", "moving_platform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:px"), "set_safe_margin", "get_safe_margin");
+
+	ADD_GROUP("Collision", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:px"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
 	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);
@@ -1776,14 +1780,14 @@ void CharacterBody2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
 }
 
-void CharacterBody2D::_validate_property(PropertyInfo &property) const {
+void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
 	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else {
-		if (property.name == "wall_min_slide_angle") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name == "wall_min_slide_angle") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }
@@ -1821,6 +1825,10 @@ Vector2 KinematicCollision2D::get_remainder() const {
 real_t KinematicCollision2D::get_angle(const Vector2 &p_up_direction) const {
 	ERR_FAIL_COND_V(p_up_direction == Vector2(), 0);
 	return result.get_angle(p_up_direction);
+}
+
+real_t KinematicCollision2D::get_depth() const {
+	return result.collision_depth;
 }
 
 Object *KinematicCollision2D::get_local_shape() const {
@@ -1874,6 +1882,7 @@ void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision2D::get_travel);
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision2D::get_remainder);
 	ClassDB::bind_method(D_METHOD("get_angle", "up_direction"), &KinematicCollision2D::get_angle, DEFVAL(Vector2(0.0, -1.0)));
+	ClassDB::bind_method(D_METHOD("get_depth"), &KinematicCollision2D::get_depth);
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision2D::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision2D::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision2D::get_collider_id);

@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -93,7 +88,7 @@ namespace Godot
                     case 2:
                         return origin;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -110,7 +105,7 @@ namespace Godot
                         origin = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }
@@ -297,17 +292,33 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform by <paramref name="angle"/> (in radians), using matrix multiplication.
+        /// Rotates the transform by <paramref name="angle"/> (in radians).
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform2D Rotated(real_t phi)
+        public Transform2D Rotated(real_t angle)
         {
-            return this * new Transform2D(phi, new Vector2());
+            return this * new Transform2D(angle, new Vector2());
         }
 
         /// <summary>
-        /// Scales the transform by the given scaling factor, using matrix multiplication.
+        /// Rotates the transform by <paramref name="angle"/> (in radians).
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="angle">The angle to rotate, in radians.</param>
+        /// <returns>The rotated transformation matrix.</returns>
+        public Transform2D RotatedLocal(real_t angle)
+        {
+            return new Transform2D(angle, new Vector2()) * this;
+        }
+
+        /// <summary>
+        /// Scales the transform by the given scaling factor.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
@@ -320,12 +331,19 @@ namespace Godot
             return copy;
         }
 
-        private void ScaleBasis(Vector2 scale)
+        /// <summary>
+        /// Scales the transform by the given scaling factor.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled transformation matrix.</returns>
+        public Transform2D ScaledLocal(Vector2 scale)
         {
-            x.x *= scale.x;
-            x.y *= scale.y;
-            y.x *= scale.x;
-            y.y *= scale.y;
+            Transform2D copy = this;
+            copy.x *= scale;
+            copy.y *= scale;
+            return copy;
         }
 
         private real_t Tdotx(Vector2 with)
@@ -339,11 +357,23 @@ namespace Godot
         }
 
         /// <summary>
-        /// Translates the transform by the given <paramref name="offset"/>,
-        /// relative to the transform's basis vectors.
-        ///
-        /// Unlike <see cref="Rotated"/> and <see cref="Scaled"/>,
-        /// this does not use matrix multiplication.
+        /// Translates the transform by the given <paramref name="offset"/>.
+        /// The operation is done in the parent/global frame, equivalent to
+        /// multiplying the matrix from the left.
+        /// </summary>
+        /// <param name="offset">The offset to translate by.</param>
+        /// <returns>The translated matrix.</returns>
+        public Transform2D Translated(Vector2 offset)
+        {
+            Transform2D copy = this;
+            copy.origin += offset;
+            return copy;
+        }
+
+        /// <summary>
+        /// Translates the transform by the given <paramref name="offset"/>.
+        /// The operation is done in the local frame, equivalent to
+        /// multiplying the matrix from the right.
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
@@ -352,31 +382,6 @@ namespace Godot
             Transform2D copy = this;
             copy.origin += copy.BasisXform(offset);
             return copy;
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by this transformation matrix.
-        /// </summary>
-        /// <seealso cref="XformInv(Vector2)"/>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        [Obsolete("Xform is deprecated. Use the multiplication operator (Transform2D * Vector2) instead.")]
-        public Vector2 Xform(Vector2 v)
-        {
-            return new Vector2(Tdotx(v), Tdoty(v)) + origin;
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by the inverse transformation matrix.
-        /// </summary>
-        /// <seealso cref="Xform(Vector2)"/>
-        /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transformed vector.</returns>
-        [Obsolete("XformInv is deprecated. Use the multiplication operator (Vector2 * Transform2D) instead.")]
-        public Vector2 XformInv(Vector2 v)
-        {
-            Vector2 vInv = v - origin;
-            return new Vector2(x.Dot(vInv), y.Dot(vInv));
         }
 
         // Constants
@@ -472,7 +477,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector2 transformed (multiplied) by transformation matrix.
+        /// Returns a Vector2 transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="vector">A Vector2 to transform.</param>
@@ -495,7 +500,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Rect2 transformed (multiplied) by transformation matrix.
+        /// Returns a Rect2 transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="rect">A Rect2 to transform.</param>
@@ -506,7 +511,7 @@ namespace Godot
             Vector2 toX = transform.x * rect.Size.x;
             Vector2 toY = transform.y * rect.Size.y;
 
-            return new Rect2(pos, rect.Size).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
+            return new Rect2(pos, new Vector2()).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
         }
 
         /// <summary>
@@ -522,11 +527,11 @@ namespace Godot
             Vector2 to2 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y + rect.Size.y) * transform;
             Vector2 to3 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y) * transform;
 
-            return new Rect2(pos, rect.Size).Expand(to1).Expand(to2).Expand(to3);
+            return new Rect2(pos, new Vector2()).Expand(to1).Expand(to2).Expand(to3);
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector2[] transformed (multiplied) by transformation matrix.
+        /// Returns a copy of the given Vector2[] transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="array">A Vector2[] to transform.</param>

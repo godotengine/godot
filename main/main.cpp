@@ -31,6 +31,7 @@
 #include "main.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
@@ -142,6 +143,7 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
+static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
 static bool cmdline_tool = false;
@@ -152,7 +154,11 @@ static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+
+HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
+bool use_startup_benchmark = false;
+String startup_benchmark_file;
 
 // Display
 
@@ -160,7 +166,7 @@ static DisplayServer::WindowMode window_mode = DisplayServer::WINDOW_MODE_WINDOW
 static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCREEN_LANDSCAPE;
 static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED;
 static uint32_t window_flags = 0;
-static Size2i window_size = Size2i(1024, 600);
+static Size2i window_size = Size2i(1152, 648);
 
 static int init_screen = -1;
 static bool init_fullscreen = false;
@@ -194,6 +200,12 @@ bool profile_gpu = false;
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
 }
+
+#ifdef TOOLS_ENABLED
+const Vector<String> &Main::get_forwardable_cli_arguments(Main::CLIScope p_scope) {
+	return forwardable_cli_arguments[p_scope];
+}
+#endif
 
 static String unescape_cmdline(const String &p_str) {
 	return p_str.replace("%20", " ");
@@ -285,6 +297,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
+	OS::get_singleton()->print("  --                                           Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                                 Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager                        Start the project manager, even if a project is auto-detected.\n");
@@ -384,6 +397,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 	OS::get_singleton()->print("  --dump-extension-api                         Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
+	OS::get_singleton()->print("  --startup-benchmark                          Benchmark the startup time and print it to console.\n");
+	OS::get_singleton()->print("  --startup-benchmark-file <path>              Benchmark the startup time and save it to a given file in JSON format.\n");
 #ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test [--help]                              Run unit tests. Use --test --help for more information.\n");
 #endif
@@ -429,6 +444,7 @@ Error Main::test_setup() {
 
 	/** INITIALIZE SERVERS **/
 	register_server_types();
+	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
@@ -591,6 +607,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
+	engine->startup_begin();
+	engine->startup_benchmark_begin_measure("core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -623,6 +641,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> user_args;
+	bool adding_user_args = false;
 	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
 	// Add command line arguments.
@@ -695,9 +715,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
+
 		List<String>::Element *N = I->next();
 
-		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
+#ifdef TOOLS_ENABLED
+		if (I->get() == "--debug" ||
+				I->get() == "--verbose" ||
+				I->get() == "--disable-crash-handler") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
+		}
+		if (I->get() == "--single-window" ||
+				I->get() == "--audio-driver" ||
+				I->get() == "--display-driver" ||
+				I->get() == "--rendering-driver") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+		}
+#endif
+
+		if (adding_user_args) {
+			user_args.push_back(I->get());
+		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
 			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
@@ -873,7 +911,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--single-window") { // force single window
 
-			OS::get_singleton()->_single_window = true;
+			single_window = true;
 		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -1201,6 +1239,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (I->get() == "--startup-benchmark") {
+			use_startup_benchmark = true;
+		} else if (I->get() == "--startup-benchmark-file") {
+			if (I->next()) {
+				use_startup_benchmark = true;
+				startup_benchmark_file = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing <path> argument for --startup-benchmark-file <path>.\n");
+				goto error;
+			}
+
+		} else if (I->get() == "--") {
+			adding_user_args = true;
 		} else {
 			main_args.push_back(I->get());
 		}
@@ -1368,16 +1420,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		quiet_stdout = true;
 	}
 	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
-		_print_error_enabled = false;
+		CoreGlobals::print_error_enabled = false;
 	};
 
 	if (quiet_stdout) {
-		_print_line_enabled = false;
+		CoreGlobals::print_line_enabled = false;
 	}
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
-	OS::get_singleton()->set_cmdline(execpath, main_args);
+	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
@@ -1472,7 +1524,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_layered = false;
 	}
 
-	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
@@ -1616,6 +1667,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
+	engine->startup_benchmark_end_measure(); // core
+
 	if (p_second_phase) {
 		return setup2();
 	}
@@ -1670,6 +1723,7 @@ error:
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 
 	if (message_queue) {
 		memdelete(message_queue);
@@ -1681,6 +1735,8 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+	engine->startup_benchmark_begin_measure("servers");
+
 	tsman = memnew(TextServerManager);
 
 	if (tsman) {
@@ -1988,10 +2044,16 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
-		if (i > 0) {
+		const String driver_name = TextServerManager::get_singleton()->get_interface(i)->get_name();
+		if (driver_name == "Dummy") {
+			// Dummy text driver cannot draw any text, making the editor unusable if selected.
+			continue;
+		}
+		if (!text_driver_options.is_empty() && text_driver_options.find(",") == -1) {
+			// Not the first option; add a comma before it as a separator for the property hint.
 			text_driver_options += ",";
 		}
-		text_driver_options += TextServerManager::get_singleton()->get_interface(i)->get_name();
+		text_driver_options += driver_name;
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 
@@ -2032,7 +2094,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
+	engine->startup_benchmark_end_measure(); // servers
+
 	MAIN_PRINT("Main: Load Scene Types");
+
+	engine->startup_benchmark_begin_measure("scene");
 
 	register_scene_types();
 	register_driver_types();
@@ -2108,6 +2174,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	print_verbose("CORE API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_CORE)));
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
+
+	engine->startup_benchmark_end_measure(); // scene
 
 	return OK;
 }
@@ -2239,18 +2307,6 @@ bool Main::start() {
 			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
 			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
-
-#ifndef MODULE_MONO_ENABLED
-		// Hack to define Mono-specific project settings even on non-Mono builds,
-		// so that we don't lose their descriptions and default values in DocData.
-		// Default values should be synced with mono_gd/gd_mono.cpp.
-		GLOBAL_DEF("mono/debugger_agent/port", 23685);
-		GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
-		GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
-		GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
-		GLOBAL_DEF("mono/profiler/enabled", false);
-		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
-#endif
 
 		Error err;
 		DocTools doc;
@@ -2437,7 +2493,7 @@ bool Main::start() {
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
-		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+		if (single_window || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 			sml->get_root()->set_embedding_subwindows(true);
 		}
 
@@ -2447,6 +2503,7 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
+				Engine::get_singleton()->startup_benchmark_begin_measure("load_autoloads");
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				//first pass, add the constants so they exist before any script is loaded
@@ -2501,12 +2558,14 @@ bool Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
+				Engine::get_singleton()->startup_benchmark_end_measure(); // load autoloads
 			}
 		}
 
 #ifdef TOOLS_ENABLED
 		EditorNode *editor_node = nullptr;
 		if (editor) {
+			Engine::get_singleton()->startup_benchmark_begin_measure("editor");
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
@@ -2514,6 +2573,13 @@ bool Main::start() {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
+
+			Engine::get_singleton()->startup_benchmark_end_measure();
+
+			editor_node->set_use_startup_benchmark(use_startup_benchmark, startup_benchmark_file);
+			// Editor takes over
+			use_startup_benchmark = false;
+			startup_benchmark_file = String();
 		}
 #endif
 
@@ -2678,6 +2744,8 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 
+			Engine::get_singleton()->startup_benchmark_begin_measure("game_load");
+
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
 
@@ -2717,16 +2785,20 @@ bool Main::start() {
 					}
 				}
 			}
+
+			Engine::get_singleton()->startup_benchmark_end_measure(); // game_load
 		}
 
 #ifdef TOOLS_ENABLED
 		if (project_manager) {
+			Engine::get_singleton()->startup_benchmark_begin_measure("project_manager");
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
+			Engine::get_singleton()->startup_benchmark_end_measure();
 		}
 
 		if (project_manager || editor) {
@@ -2754,6 +2826,11 @@ bool Main::start() {
 		if (elapsed_time < minimum_time) {
 			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
 		}
+	}
+
+	if (use_startup_benchmark) {
+		Engine::get_singleton()->startup_dump(startup_benchmark_file);
+		startup_benchmark_file = String();
 	}
 
 	return true;
@@ -3001,6 +3078,7 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->delete_main_loop();
 
 	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
 

@@ -41,12 +41,13 @@
 # Fabio Moura de Oliveira <ccmaismais@yahoo.com>, 2022.
 # Daniel Abrante <danielabrante@protonmail.com>, 2022.
 # lucas rossy brasil coelho <lucasrossy270@gmail.com>, 2022.
+# Felipe Kinoshita <kinofhek@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-16 18:58+0000\n"
-"Last-Translator: lucas rossy brasil coelho <lucasrossy270@gmail.com>\n"
+"PO-Revision-Date: 2022-08-04 06:40+0000\n"
+"Last-Translator: Felipe Kinoshita <kinofhek@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -54,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -76754,6 +76755,13 @@ msgid ""
 "the same space as the parent YSort, allowing to better organize a scene or "
 "divide it in multiple ones, yet keep the unique sorting."
 msgstr ""
+"Classifique todos os nós filhos com base em suas posições Y. O nó filho deve "
+"herdar de [CanvasItem] para ser classificado. Os nós que têm uma posição Y "
+"mais alta serão desenhados mais tarde, então eles aparecerão no topo dos nós "
+"que têm uma posição Y mais baixa. O aninhamento de nós YSort é possível. Os "
+"nós YSort filhos serão classificados no mesmo espaço que o YSort pai, "
+"permitindo organizar melhor uma cena ou dividi-la em várias outras, mas "
+"manter a classificação única."
 
 #: doc/classes/YSort.xml
 msgid ""

@@ -479,12 +479,8 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 		case Variant::QUATERNION: {
 			Quaternion i = p_initial_val;
 			Quaternion d = p_delta_val;
-			Quaternion r;
-
-			APPLY_EQUATION(x);
-			APPLY_EQUATION(y);
-			APPLY_EQUATION(z);
-			APPLY_EQUATION(w);
+			Quaternion r = i * d;
+			r = i.slerp(r, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
 			return r;
 		}
 

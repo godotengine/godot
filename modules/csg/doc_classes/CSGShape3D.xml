@@ -13,14 +13,14 @@
 	<methods>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_number" type="int" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -39,16 +39,16 @@
 		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer_number" type="int" />
-			<argument index="1" name="value" type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
@@ -65,6 +65,8 @@
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The physics layers this CSG shape scans for collisions. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
 		</member>
 		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape3D.Operation" default="0">
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.

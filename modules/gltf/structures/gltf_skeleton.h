@@ -75,8 +75,8 @@ public:
 	// 	this->godot_skeleton = p_godot_skeleton;
 	// }
 
-	Array get_unique_names();
-	void set_unique_names(Array p_unique_names);
+	TypedArray<String> get_unique_names();
+	void set_unique_names(TypedArray<String> p_unique_names);
 
 	//RBMap<int32_t, GLTFNodeIndex> get_godot_bone_node() {
 	//	return this->godot_bone_node;

@@ -37,8 +37,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
 

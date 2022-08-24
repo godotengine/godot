@@ -35,6 +35,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"

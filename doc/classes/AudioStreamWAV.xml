@@ -12,10 +12,10 @@
 	<methods>
 		<method name="save_to_wav">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Saves the AudioStreamWAV as a WAV file to [code]path[/code]. Samples with IMA ADPCM format can't be saved.
-				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [code]path[/code] if it is missing.
+				Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM format can't be saved.
+				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [param path] if it is missing.
 			</description>
 		</method>
 	</methods>

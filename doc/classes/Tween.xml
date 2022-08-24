@@ -45,9 +45,9 @@
 	<methods>
 		<method name="bind_node">
 			<return type="Tween" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
-				Binds this [Tween] with the given [code]node[/code]. [Tween]s are processed directly by the [SceneTree], so they run independently of the animated nodes. When you bind a [Node] with the [Tween], the [Tween] will halt the animation when the object is not inside tree and the [Tween] will be automatically killed when the bound object is freed. Also [constant TWEEN_PAUSE_BOUND] will make the pausing behavior dependent on the bound node.
+				Binds this [Tween] with the given [param node]. [Tween]s are processed directly by the [SceneTree], so they run independently of the animated nodes. When you bind a [Node] with the [Tween], the [Tween] will halt the animation when the object is not inside tree and the [Tween] will be automatically killed when the bound object is freed. Also [constant TWEEN_PAUSE_BOUND] will make the pausing behavior dependent on the bound node.
 				For a shorter way to create and bind a [Tween], you can use [method Node.create_tween].
 			</description>
 		</method>
@@ -65,9 +65,9 @@
 		</method>
 		<method name="custom_step">
 			<return type="bool" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
-				Processes the [Tween] by the given [code]delta[/code] value, in seconds. This is mostly useful for manual control when the [Tween] is paused. It can also be used to end the [Tween] animation immediately, by setting [code]delta[/code] longer than the whole duration of the [Tween] animation.
+				Processes the [Tween] by the given [param delta] value, in seconds. This is mostly useful for manual control when the [Tween] is paused. It can also be used to end the [Tween] animation immediately, by setting [param delta] longer than the whole duration of the [Tween] animation.
 				Returns [code]true[/code] if the [Tween] still has [Tweener]s that haven't finished.
 				[b]Note:[/b] The [Tween] will become invalid in the next processing frame after its animation finishes. Calling [method stop] after performing [method custom_step] instead keeps and resets the [Tween].
 			</description>
@@ -81,19 +81,19 @@
 		</method>
 		<method name="interpolate_value" qualifiers="static">
 			<return type="Variant" />
-			<argument index="0" name="initial_value" type="Variant" />
-			<argument index="1" name="delta_value" type="Variant" />
-			<argument index="2" name="elapsed_time" type="float" />
-			<argument index="3" name="duration" type="float" />
-			<argument index="4" name="trans_type" type="int" enum="Tween.TransitionType" />
-			<argument index="5" name="ease_type" type="int" enum="Tween.EaseType" />
+			<param index="0" name="initial_value" type="Variant" />
+			<param index="1" name="delta_value" type="Variant" />
+			<param index="2" name="elapsed_time" type="float" />
+			<param index="3" name="duration" type="float" />
+			<param index="4" name="trans_type" type="int" enum="Tween.TransitionType" />
+			<param index="5" name="ease_type" type="int" enum="Tween.EaseType" />
 			<description>
 				This method can be used for manual interpolation of a value, when you don't want [Tween] to do animating for you. It's similar to [method @GlobalScope.lerp], but with support for custom transition and easing.
-				[code]initial_value[/code] is the starting value of the interpolation.
-				[code]delta_value[/code] is the change of the value in the interpolation, i.e. it's equal to [code]final_value - initial_value[/code].
-				[code]elapsed_time[/code] is the time in seconds that passed after the interpolation started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [code]duration[/code], the interpolated value will be halfway between initial and final values. This value can also be greater than [code]duration[/code] or lower than 0, which will extrapolate the value.
-				[code]duration[/code] is the total time of the interpolation.
-				[b]Note:[/b] If [code]duration[/code] is equal to [code]0[/code], the method will always return the final value, regardless of [code]elapsed_time[/code] provided.
+				[param initial_value] is the starting value of the interpolation.
+				[param delta_value] is the change of the value in the interpolation, i.e. it's equal to [code]final_value - initial_value[/code].
+				[param elapsed_time] is the time in seconds that passed after the interpolation started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [param duration], the interpolated value will be halfway between initial and final values. This value can also be greater than [param duration] or lower than 0, which will extrapolate the value.
+				[param duration] is the total time of the interpolation.
+				[b]Note:[/b] If [param duration] is equal to [code]0[/code], the method will always return the final value, regardless of [param elapsed_time] provided.
 			</description>
 		</method>
 		<method name="is_running">
@@ -142,14 +142,14 @@
 		</method>
 		<method name="set_ease">
 			<return type="Tween" />
-			<argument index="0" name="ease" type="int" enum="Tween.EaseType" />
+			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
 			</description>
 		</method>
 		<method name="set_loops">
 			<return type="Tween" />
-			<argument index="0" name="loops" type="int" default="0" />
+			<param index="0" name="loops" type="int" default="0" />
 			<description>
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
 				Calling this method without arguments will make the [Tween] run infinitely, until either it is killed with [method kill], the [Tween]'s bound node is freed, or all the animated objects have been freed (which makes further animation impossible).
@@ -158,14 +158,14 @@
 		</method>
 		<method name="set_parallel">
 			<return type="Tween" />
-			<argument index="0" name="parallel" type="bool" default="true" />
+			<param index="0" name="parallel" type="bool" default="true" />
 			<description>
-				If [code]parallel[/code] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
+				If [param parallel] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
 			</description>
 		</method>
 		<method name="set_pause_mode">
 			<return type="Tween" />
-			<argument index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
+			<param index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
 			<description>
 				Determines the behavior of the [Tween] when the [SceneTree] is paused. Check [enum TweenPauseMode] for options.
 				Default value is [constant TWEEN_PAUSE_BOUND].
@@ -173,7 +173,7 @@
 		</method>
 		<method name="set_process_mode">
 			<return type="Tween" />
-			<argument index="0" name="mode" type="int" enum="Tween.TweenProcessMode" />
+			<param index="0" name="mode" type="int" enum="Tween.TweenProcessMode" />
 			<description>
 				Determines whether the [Tween] should run during idle frame (see [method Node._process]) or physics frame (see [method Node._physics_process].
 				Default value is [constant TWEEN_PROCESS_IDLE].
@@ -181,14 +181,14 @@
 		</method>
 		<method name="set_speed_scale">
 			<return type="Tween" />
-			<argument index="0" name="speed" type="float" />
+			<param index="0" name="speed" type="float" />
 			<description>
 				Scales the speed of tweening. This affects all [Tweener]s and their delays.
 			</description>
 		</method>
 		<method name="set_trans">
 			<return type="Tween" />
-			<argument index="0" name="trans" type="int" enum="Tween.TransitionType" />
+			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
 			</description>
@@ -201,7 +201,7 @@
 		</method>
 		<method name="tween_callback">
 			<return type="CallbackTweener" />
-			<argument index="0" name="callback" type="Callable" />
+			<param index="0" name="callback" type="Callable" />
 			<description>
 				Creates and appends a [CallbackTweener]. This method can be used to call an arbitrary method in any object. Use [method Callable.bind] to bind additional arguments for the call.
 				Example: object that keeps shooting every 1 second.
@@ -219,9 +219,9 @@
 		</method>
 		<method name="tween_interval">
 			<return type="IntervalTweener" />
-			<argument index="0" name="time" type="float" />
+			<param index="0" name="time" type="float" />
 			<description>
-				Creates and appends an [IntervalTweener]. This method can be used to create delays in the tween animation, as an alternative to using the delay in other [Tweener]s, or when there's no animation (in which case the [Tween] acts as a timer). [code]time[/code] is the length of the interval, in seconds.
+				Creates and appends an [IntervalTweener]. This method can be used to create delays in the tween animation, as an alternative to using the delay in other [Tweener]s, or when there's no animation (in which case the [Tween] acts as a timer). [param time] is the length of the interval, in seconds.
 				Example: creating an interval in code execution.
 				[codeblock]
 				# ... some code
@@ -242,12 +242,12 @@
 		</method>
 		<method name="tween_method">
 			<return type="MethodTweener" />
-			<argument index="0" name="method" type="Callable" />
-			<argument index="1" name="from" type="Variant" />
-			<argument index="2" name="to" type="Variant" />
-			<argument index="3" name="duration" type="float" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="from" type="Variant" />
+			<param index="2" name="to" type="Variant" />
+			<param index="3" name="duration" type="float" />
 			<description>
-				Creates and appends a [MethodTweener]. This method is similar to a combination of [method tween_callback] and [method tween_property]. It calls a method over time with a tweened value provided as an argument. The value is tweened between [code]from[/code] and [code]to[/code] over the time specified by [code]duration[/code], in seconds. Use [method Callable.bind] to bind additional arguments for the call. You can use [method MethodTweener.set_ease] and [method MethodTweener.set_trans] to tweak the easing and transition of the value or [method MethodTweener.set_delay] to delay the tweening.
+				Creates and appends a [MethodTweener]. This method is similar to a combination of [method tween_callback] and [method tween_property]. It calls a method over time with a tweened value provided as an argument. The value is tweened between [param from] and [param to] over the time specified by [param duration], in seconds. Use [method Callable.bind] to bind additional arguments for the call. You can use [method MethodTweener.set_ease] and [method MethodTweener.set_trans] to tweak the easing and transition of the value or [method MethodTweener.set_delay] to delay the tweening.
 				Example: making a 3D object look from one point to another point.
 				[codeblock]
 				var tween = create_tween()
@@ -266,12 +266,12 @@
 		</method>
 		<method name="tween_property">
 			<return type="PropertyTweener" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="property" type="NodePath" />
-			<argument index="2" name="final_val" type="Variant" />
-			<argument index="3" name="duration" type="float" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="NodePath" />
+			<param index="2" name="final_val" type="Variant" />
+			<param index="3" name="duration" type="float" />
 			<description>
-				Creates and appends a [PropertyTweener]. This method tweens a [code]property[/code] of an [code]object[/code] between an initial value and [code]final_val[/code] in a span of time equal to [code]duration[/code], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts. For example:
+				Creates and appends a [PropertyTweener]. This method tweens a [param property] of an [param object] between an initial value and [param final_val] in a span of time equal to [param duration], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts. For example:
 				[codeblock]
 				var tween = create_tween()
 				tween.tween_property($Sprite, "position", Vector2(100, 200), 1)
@@ -296,13 +296,13 @@
 			</description>
 		</signal>
 		<signal name="loop_finished">
-			<argument index="0" name="loop_count" type="int" />
+			<param index="0" name="loop_count" type="int" />
 			<description>
 				Emitted when a full loop is complete (see [method set_loops]), providing the loop index. This signal is not emitted after the final loop, use [signal finished] instead for this case.
 			</description>
 		</signal>
 		<signal name="step_finished">
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Emitted when one step of the [Tween] is complete, providing the step index. One step is either a single [Tweener] or a group of [Tweener]s running in parallel.
 			</description>

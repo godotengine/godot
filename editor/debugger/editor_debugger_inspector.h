@@ -50,6 +50,7 @@ public:
 	HashMap<StringName, Variant> prop_values;
 
 	ObjectID get_remote_object_id() { return remote_object_id; };
+	bool _is_read_only() { return true; };
 	String get_title();
 
 	Variant get_variant(const StringName &p_name);

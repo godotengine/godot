@@ -33,6 +33,7 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/typed_array.h"
 
 VARIANT_ENUM_CAST(IP::ResolverStatus);
 
@@ -124,11 +125,11 @@ struct _IP_ResolverPrivate {
 };
 
 IPAddress IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
-	const Array addresses = resolve_hostname_addresses(p_hostname, p_type);
-	return addresses.size() ? addresses[0].operator IPAddress() : IPAddress();
+	const PackedStringArray addresses = resolve_hostname_addresses(p_hostname, p_type);
+	return addresses.size() ? (IPAddress)addresses[0] : IPAddress();
 }
 
-Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
+PackedStringArray IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 	List<IPAddress> res;
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 
@@ -148,7 +149,7 @@ Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 	}
 	resolver->mutex.unlock();
 
-	Array result;
+	PackedStringArray result;
 	for (int i = 0; i < res.size(); ++i) {
 		result.push_back(String(res[i]));
 	}
@@ -254,8 +255,8 @@ void IP::clear_cache(const String &p_hostname) {
 	}
 }
 
-Array IP::_get_local_addresses() const {
-	Array addresses;
+PackedStringArray IP::_get_local_addresses() const {
+	PackedStringArray addresses;
 	List<IPAddress> ip_addresses;
 	get_local_addresses(&ip_addresses);
 	for (const IPAddress &E : ip_addresses) {
@@ -265,8 +266,8 @@ Array IP::_get_local_addresses() const {
 	return addresses;
 }
 
-Array IP::_get_local_interfaces() const {
-	Array results;
+TypedArray<Dictionary> IP::_get_local_interfaces() const {
+	TypedArray<Dictionary> results;
 	HashMap<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
 	for (KeyValue<String, Interface_Info> &E : interfaces) {

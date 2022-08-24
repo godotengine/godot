@@ -291,8 +291,10 @@ TEST_CASE("[Vector] Slice") {
 	CHECK(slice6[1] == 3);
 	CHECK(slice6[2] == 4);
 
+	ERR_PRINT_OFF;
 	Vector<int> slice7 = vector.slice(5, 1);
-	CHECK(slice7.size() == 0);
+	CHECK(slice7.size() == 0); // Expected to fail.
+	ERR_PRINT_ON;
 }
 
 TEST_CASE("[Vector] Find, has") {

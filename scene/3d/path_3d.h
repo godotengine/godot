@@ -85,7 +85,7 @@ private:
 	void _update_transform(bool p_update_xyz_rot = true);
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();

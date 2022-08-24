@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -167,7 +162,7 @@ namespace Godot
                     case 2:
                         return Column2;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -184,7 +179,7 @@ namespace Godot
                         Column2 = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }
@@ -386,7 +381,7 @@ namespace Godot
                 case 2:
                     return Row2;
                 default:
-                    throw new IndexOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(index));
             }
         }
 
@@ -413,7 +408,7 @@ namespace Godot
                     Row2 = value;
                     return;
                 default:
-                    throw new IndexOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(index));
             }
         }
 
@@ -531,9 +526,9 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated basis matrix.</returns>
-        public Basis Rotated(Vector3 axis, real_t phi)
+        public Basis Rotated(Vector3 axis, real_t angle)
         {
-            return new Basis(axis, phi) * this;
+            return new Basis(axis, angle) * this;
         }
 
         /// <summary>
@@ -621,41 +616,6 @@ namespace Godot
             tr.Row2[1] = temp;
 
             return tr;
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by the basis matrix.
-        /// </summary>
-        /// <seealso cref="XformInv(Vector3)"/>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        public Vector3 Xform(Vector3 v)
-        {
-            return new Vector3
-            (
-                Row0.Dot(v),
-                Row1.Dot(v),
-                Row2.Dot(v)
-            );
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by the transposed basis matrix.
-        ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// basis matrix only if it represents a rotation-reflection.
-        /// </summary>
-        /// <seealso cref="Xform(Vector3)"/>
-        /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transformed vector.</returns>
-        public Vector3 XformInv(Vector3 v)
-        {
-            return new Vector3
-            (
-                Row0[0] * v.x + Row1[0] * v.y + Row2[0] * v.z,
-                Row0[1] * v.x + Row1[1] * v.y + Row2[1] * v.z,
-                Row0[2] * v.x + Row1[2] * v.y + Row2[2] * v.z
-            );
         }
 
         private static readonly Basis[] _orthoBases = {
@@ -774,15 +734,15 @@ namespace Godot
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="angle">The angle to rotate, in radians.</param>
-        public Basis(Vector3 axis, real_t phi)
+        public Basis(Vector3 axis, real_t angle)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
-            real_t cosine = Mathf.Cos(phi);
+            real_t cosine = Mathf.Cos(angle);
             Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
             Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
             Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
 
-            real_t sine = Mathf.Sin(phi);
+            real_t sine = Mathf.Sin(angle);
             real_t t = 1.0f - cosine;
 
             real_t xyzt = axis.x * axis.y * t;
@@ -828,6 +788,22 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a pure scale basis matrix with no rotation or shearing.
+        /// The scale values are set as the main diagonal of the matrix,
+        /// and all of the other parts of the matrix are zero.
+        /// </summary>
+        /// <param name="scale">The scale Vector3.</param>
+        /// <returns>A pure scale Basis matrix.</returns>
+        public static Basis FromScale(Vector3 scale)
+        {
+            return new Basis(
+                scale.x, 0, 0,
+                0, scale.y, 0,
+                0, 0, scale.z
+            );
+        }
+
+        /// <summary>
         /// Composes these two basis matrices by multiplying them
         /// together. This has the effect of transforming the second basis
         /// (the child) by the first basis (the parent).
@@ -842,6 +818,41 @@ namespace Godot
                 right.Tdotx(left.Row0), right.Tdoty(left.Row0), right.Tdotz(left.Row0),
                 right.Tdotx(left.Row1), right.Tdoty(left.Row1), right.Tdotz(left.Row1),
                 right.Tdotx(left.Row2), right.Tdoty(left.Row2), right.Tdotz(left.Row2)
+            );
+        }
+
+        /// <summary>
+        /// Returns a Vector3 transformed (multiplied) by the basis matrix.
+        /// </summary>
+        /// <param name="basis">The basis matrix transformation to apply.</param>
+        /// <param name="vector">A Vector3 to transform.</param>
+        /// <returns>The transformed Vector3.</returns>
+        public static Vector3 operator *(Basis basis, Vector3 vector)
+        {
+            return new Vector3
+            (
+                basis.Row0.Dot(vector),
+                basis.Row1.Dot(vector),
+                basis.Row2.Dot(vector)
+            );
+        }
+
+        /// <summary>
+        /// Returns a Vector3 transformed (multiplied) by the transposed basis matrix.
+        ///
+        /// Note: This results in a multiplication by the inverse of the
+        /// basis matrix only if it represents a rotation-reflection.
+        /// </summary>
+        /// <param name="vector">A Vector3 to inversely transform.</param>
+        /// <param name="basis">The basis matrix transformation to apply.</param>
+        /// <returns>The inversely transformed vector.</returns>
+        public static Vector3 operator *(Vector3 vector, Basis basis)
+        {
+            return new Vector3
+            (
+                basis.Row0[0] * vector.x + basis.Row1[0] * vector.y + basis.Row2[0] * vector.z,
+                basis.Row0[1] * vector.x + basis.Row1[1] * vector.y + basis.Row2[1] * vector.z,
+                basis.Row0[2] * vector.x + basis.Row1[2] * vector.y + basis.Row2[2] * vector.z
             );
         }
 

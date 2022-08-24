@@ -32,9 +32,13 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector_dock.h"
+#include "editor/scene_tree_editor.h"
 #include "modules/multiplayer/multiplayer_synchronizer.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
 void ReplicationEditor::_pick_node_filter_text_changed(const String &p_newtext) {
@@ -136,7 +140,7 @@ void ReplicationEditor::_add_sync_property(String p_path) {
 		return;
 	}
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Add property to synchronizer"));
 
 	if (config.is_null()) {
@@ -252,8 +256,6 @@ void ReplicationEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_checked", "property", "column", "checked"), &ReplicationEditor::_update_checked);
 	ClassDB::bind_method("_can_drop_data_fw", &ReplicationEditor::_can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &ReplicationEditor::_drop_data_fw);
-
-	ADD_SIGNAL(MethodInfo("keying_changed"));
 }
 
 bool ReplicationEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -319,10 +321,6 @@ void ReplicationEditor::_notification(int p_what) {
 			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			pin->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
 		} break;
-
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			update_keying();
-		} break;
 	}
 }
 
@@ -338,28 +336,15 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 	String np_text = np_line_edit->get_text();
-	if (np_text.find(":") == -1) {
-		np_text = ":" + np_text;
+	int idx = np_text.find(":");
+	if (idx == -1) {
+		np_text = ".:" + np_text;
+	} else if (idx == 0) {
+		np_text = "." + np_text;
 	}
-	NodePath prop = NodePath(np_text);
-	if (prop.is_empty()) {
-		return;
-	}
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-	undo_redo->create_action(TTR("Add property"));
-	config = current->get_replication_config();
-	if (config.is_null()) {
-		config.instantiate();
-		current->set_replication_config(config);
-		undo_redo->add_do_method(current, "set_replication_config", config);
-		undo_redo->add_undo_method(current, "set_replication_config", Ref<SceneReplicationConfig>());
-		_update_config();
-	}
-	undo_redo->add_do_method(config.ptr(), "add_property", prop);
-	undo_redo->add_undo_method(config.ptr(), "remove_property", prop);
-	undo_redo->add_do_method(this, "_update_config");
-	undo_redo->add_undo_method(this, "_update_config");
-	undo_redo->commit_action();
+	NodePath path = NodePath(np_text);
+
+	_add_sync_property(path);
 }
 
 void ReplicationEditor::_tree_item_edited() {
@@ -370,7 +355,7 @@ void ReplicationEditor::_tree_item_edited() {
 	int column = tree->get_edited_column();
 	ERR_FAIL_COND(column < 1 || column > 2);
 	const NodePath prop = ti->get_metadata(0);
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 	bool value = ti->is_checked(column);
 	String method;
 	if (column == 1) {
@@ -410,7 +395,7 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 		int idx = config->property_get_index(prop);
 		bool spawn = config->property_get_spawn(prop);
 		bool sync = config->property_get_sync(prop);
-		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove Property"));
 		undo_redo->add_do_method(config.ptr(), "remove_property", prop);
 		undo_redo->add_undo_method(config.ptr(), "add_property", prop, idx);
@@ -437,32 +422,12 @@ void ReplicationEditor::_update_checked(const NodePath &p_prop, int p_column, bo
 	}
 }
 
-void ReplicationEditor::update_keying() {
-	/// TODO make keying usable.
-#if 0
-	bool keying_enabled = false;
-	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
-	if (is_visible_in_tree() && config.is_valid() && editor_history->get_path_size() > 0) {
-		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
-		keying_enabled = Object::cast_to<Node>(obj) != nullptr;
-	}
-
-	if (keying_enabled == keying) {
-		return;
-	}
-
-	keying = keying_enabled;
-	emit_signal(SNAME("keying_changed"));
-#endif
-}
-
 void ReplicationEditor::_update_config() {
 	deleting = NodePath();
 	tree->clear();
 	tree->create_item();
 	drop_label->set_visible(true);
 	if (!config.is_valid()) {
-		update_keying();
 		return;
 	}
 	TypedArray<NodePath> props = config->get_properties();
@@ -473,7 +438,6 @@ void ReplicationEditor::_update_config() {
 		const NodePath path = props[i];
 		_add_property(path, config->property_get_spawn(path), config->property_get_sync(path));
 	}
-	update_keying();
 }
 
 void ReplicationEditor::edit(MultiplayerSynchronizer *p_sync) {
@@ -529,43 +493,6 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_editable(2, true);
 }
 
-void ReplicationEditor::property_keyed(const String &p_property) {
-	ERR_FAIL_COND(!current || config.is_null());
-	Node *root = current->get_node(current->get_root_path());
-	ERR_FAIL_COND(!root);
-	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
-	ERR_FAIL_COND(history->get_path_size() == 0);
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(history->get_path_object(0)));
-	ERR_FAIL_COND(!node);
-	if (node->is_class("MultiplayerSynchronizer")) {
-		error_dialog->set_text(TTR("Properties of 'MultiplayerSynchronizer' cannot be configured for replication."));
-		error_dialog->popup_centered();
-		return;
-	}
-	if (history->get_path_size() > 1 || p_property.get_slice_count(":") > 1) {
-		error_dialog->set_text(TTR("Subresources cannot yet be configured for replication."));
-		error_dialog->popup_centered();
-		return;
-	}
-
-	String path = root->get_path_to(node);
-	for (int i = 1; i < history->get_path_size(); i++) {
-		String prop = history->get_path_property(i);
-		ERR_FAIL_COND(prop == "");
-		path += ":" + prop;
-	}
-	path += ":" + p_property;
-
-	NodePath prop = path;
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-	undo_redo->create_action(TTR("Add property"));
-	undo_redo->add_do_method(config.ptr(), "add_property", prop);
-	undo_redo->add_undo_method(config.ptr(), "remove_property", prop);
-	undo_redo->add_do_method(this, "_update_config");
-	undo_redo->add_undo_method(this, "_update_config");
-	undo_redo->commit_action();
-}
-
 /// ReplicationEditorPlugin
 ReplicationEditorPlugin::ReplicationEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
@@ -577,26 +504,9 @@ ReplicationEditorPlugin::ReplicationEditorPlugin() {
 ReplicationEditorPlugin::~ReplicationEditorPlugin() {
 }
 
-void ReplicationEditorPlugin::_keying_changed() {
-	// TODO make lock usable.
-	//InspectorDock::get_inspector_singleton()->set_keying(repl_editor->has_keying(), this);
-}
-
-void ReplicationEditorPlugin::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	if (!repl_editor->has_keying()) {
-		return;
-	}
-	repl_editor->property_keyed(p_keyed);
-}
-
 void ReplicationEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			//Node3DEditor::get_singleton()->connect("transform_key_request", callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
-			InspectorDock::get_inspector_singleton()->connect("property_keyed", callable_mp(this, &ReplicationEditorPlugin::_property_keyed));
-			repl_editor->connect("keying_changed", callable_mp(this, &ReplicationEditorPlugin::_keying_changed));
-			// TODO make lock usable.
-			//InspectorDock::get_inspector_singleton()->connect("object_inspected", callable_mp(repl_editor, &ReplicationEditor::update_keying));
 			get_tree()->connect("node_removed", callable_mp(this, &ReplicationEditorPlugin::_node_removed));
 		} break;
 	}
@@ -632,8 +542,6 @@ bool ReplicationEditorPlugin::handles(Object *p_object) const {
 
 void ReplicationEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		//editor->hide_animation_player_editors();
-		//editor->animation_panel_make_visible(true);
 		button->show();
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(repl_editor);
 	} else if (!repl_editor->get_pin()->is_pressed()) {

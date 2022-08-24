@@ -446,12 +446,11 @@ void GraphNode::_edit_set_position(const Point2 &p_position) {
 	set_position(p_position);
 }
 
-void GraphNode::_validate_property(PropertyInfo &property) const {
-	Control::_validate_property(property);
+void GraphNode::_validate_property(PropertyInfo &p_property) const {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
-		if (property.name == "rect_position") {
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		if (p_property.name == "position") {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }
@@ -506,6 +505,10 @@ bool GraphNode::is_slot_enabled_left(int p_idx) const {
 void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable_left) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set enable_left for the slot with p_idx (%d) lesser than zero.", p_idx));
 
+	if (slot_info[p_idx].enable_left == p_enable_left) {
+		return;
+	}
+
 	slot_info[p_idx].enable_left = p_enable_left;
 	update();
 	connpos_dirty = true;
@@ -515,6 +518,10 @@ void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable_left) {
 
 void GraphNode::set_slot_type_left(int p_idx, int p_type_left) {
 	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set type_left for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	if (slot_info[p_idx].type_left == p_type_left) {
+		return;
+	}
 
 	slot_info[p_idx].type_left = p_type_left;
 	update();
@@ -532,6 +539,10 @@ int GraphNode::get_slot_type_left(int p_idx) const {
 
 void GraphNode::set_slot_color_left(int p_idx, const Color &p_color_left) {
 	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set color_left for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	if (slot_info[p_idx].color_left == p_color_left) {
+		return;
+	}
 
 	slot_info[p_idx].color_left = p_color_left;
 	update();
@@ -557,6 +568,10 @@ bool GraphNode::is_slot_enabled_right(int p_idx) const {
 void GraphNode::set_slot_enabled_right(int p_idx, bool p_enable_right) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set enable_right for the slot with p_idx (%d) lesser than zero.", p_idx));
 
+	if (slot_info[p_idx].enable_right == p_enable_right) {
+		return;
+	}
+
 	slot_info[p_idx].enable_right = p_enable_right;
 	update();
 	connpos_dirty = true;
@@ -566,6 +581,10 @@ void GraphNode::set_slot_enabled_right(int p_idx, bool p_enable_right) {
 
 void GraphNode::set_slot_type_right(int p_idx, int p_type_right) {
 	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set type_right for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	if (slot_info[p_idx].type_right == p_type_right) {
+		return;
+	}
 
 	slot_info[p_idx].type_right = p_type_right;
 	update();
@@ -583,6 +602,10 @@ int GraphNode::get_slot_type_right(int p_idx) const {
 
 void GraphNode::set_slot_color_right(int p_idx, const Color &p_color_right) {
 	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set color_right for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	if (slot_info[p_idx].color_right == p_color_right) {
+		return;
+	}
 
 	slot_info[p_idx].color_right = p_color_right;
 	update();
@@ -701,6 +724,10 @@ String GraphNode::get_language() const {
 }
 
 void GraphNode::set_position_offset(const Vector2 &p_offset) {
+	if (position_offset == p_offset) {
+		return;
+	}
+
 	position_offset = p_offset;
 	emit_signal(SNAME("position_offset_changed"));
 	update();
@@ -711,6 +738,10 @@ Vector2 GraphNode::get_position_offset() const {
 }
 
 void GraphNode::set_selected(bool p_selected) {
+	if (selected == p_selected) {
+		return;
+	}
+
 	selected = p_selected;
 	update();
 }
@@ -732,6 +763,10 @@ Vector2 GraphNode::get_drag_from() {
 }
 
 void GraphNode::set_show_close_button(bool p_enable) {
+	if (show_close == p_enable) {
+		return;
+	}
+
 	show_close = p_enable;
 	update();
 }
@@ -932,6 +967,10 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
 }
 
 void GraphNode::set_overlay(Overlay p_overlay) {
+	if (overlay == p_overlay) {
+		return;
+	}
+
 	overlay = p_overlay;
 	update();
 }
@@ -941,6 +980,10 @@ GraphNode::Overlay GraphNode::get_overlay() const {
 }
 
 void GraphNode::set_comment(bool p_enable) {
+	if (comment == p_enable) {
+		return;
+	}
+
 	comment = p_enable;
 	update();
 }
@@ -950,6 +993,10 @@ bool GraphNode::is_comment() const {
 }
 
 void GraphNode::set_resizable(bool p_enable) {
+	if (resizable == p_enable) {
+		return;
+	}
+
 	resizable = p_enable;
 	update();
 }
@@ -1051,6 +1098,7 @@ void GraphNode::_bind_methods() {
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
+	ADD_GROUP("", "");
 
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));

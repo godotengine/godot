@@ -64,6 +64,8 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 
 	bool button_masked = mouse_button.is_valid() && (mouse_button_to_mask(mouse_button->get_button_index()) & button_mask) != MouseButton::NONE;
 	if (button_masked || ui_accept) {
+		was_mouse_pressed = button_masked;
+
 		on_action_event(p_event);
 		return;
 	}
@@ -417,6 +419,10 @@ bool BaseButton::_is_focus_owner_in_shortcut_context() const {
 	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
 }
 
+bool BaseButton::_was_pressed_by_mouse() const {
+	return was_mouse_pressed;
+}
+
 void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
@@ -490,8 +496,8 @@ void ButtonGroup::get_buttons(List<BaseButton *> *r_buttons) {
 	}
 }
 
-Array ButtonGroup::_get_buttons() {
-	Array btns;
+TypedArray<BaseButton> ButtonGroup::_get_buttons() {
+	TypedArray<BaseButton> btns;
 	for (const BaseButton *E : buttons) {
 		btns.push_back(E);
 	}

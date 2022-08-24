@@ -288,7 +288,8 @@ struct hb_buffer_t
 
   HB_INTERNAL void guess_segment_properties ();
 
-  HB_INTERNAL void sync ();
+  HB_INTERNAL bool sync ();
+  HB_INTERNAL int sync_so_far ();
   HB_INTERNAL void clear_output ();
   HB_INTERNAL void clear_positions ();
 
@@ -461,6 +462,17 @@ struct hb_buffer_t
 		      start, end,
 		      true);
   }
+  void safe_to_insert_tatweel (unsigned int start = 0, unsigned int end = -1)
+  {
+    if ((flags & HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL) == 0)
+    {
+      unsafe_to_break (start, end);
+      return;
+    }
+    _set_glyph_flags (HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL,
+		      start, end,
+		      true);
+  }
   void unsafe_to_concat (unsigned int start = 0, unsigned int end = -1)
   {
     if (likely ((flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0))
@@ -555,14 +567,10 @@ struct hb_buffer_t
     if (likely (!messaging ()))
       return true;
 
-    message_depth++;
-
     va_list ap;
     va_start (ap, fmt);
     bool ret = message_impl (font, fmt, ap);
     va_end (ap);
-
-    message_depth--;
 
     return ret;
 #endif

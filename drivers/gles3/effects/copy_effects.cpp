@@ -111,6 +111,7 @@ CopyEffects::~CopyEffects() {
 	glDeleteVertexArrays(1, &screen_triangle_array);
 	glDeleteBuffers(1, &quad);
 	glDeleteVertexArrays(1, &quad_array);
+	copy.shader.version_free(copy.shader_version);
 }
 
 void CopyEffects::copy_to_rect(const Rect2i &p_rect) {

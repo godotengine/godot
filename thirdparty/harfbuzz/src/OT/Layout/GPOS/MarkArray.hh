@@ -39,12 +39,26 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
     mark_anchor.get_anchor (c, buffer->cur().codepoint, &mark_x, &mark_y);
     glyph_anchor.get_anchor (c, buffer->info[glyph_pos].codepoint, &base_x, &base_y);
 
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "attaching mark glyph at %d to glyph at %d",
+			  c->buffer->idx, glyph_pos);
+    }
+
     hb_glyph_position_t &o = buffer->cur_pos();
     o.x_offset = roundf (base_x - mark_x);
     o.y_offset = roundf (base_y - mark_y);
     o.attach_type() = ATTACH_TYPE_MARK;
     o.attach_chain() = (int) glyph_pos - (int) buffer->idx;
     buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "attached mark glyph at %d to glyph at %d",
+			  c->buffer->idx, glyph_pos);
+    }
 
     buffer->idx++;
     return_trace (true);
@@ -83,10 +97,11 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
   }
 };
 
-static void Markclass_closure_and_remap_indexes (const Coverage  &mark_coverage,
-                                                 const MarkArray &mark_array,
-                                                 const hb_set_t  &glyphset,
-                                                 hb_map_t*        klass_mapping /* INOUT */)
+HB_INTERNAL inline
+void Markclass_closure_and_remap_indexes (const Coverage  &mark_coverage,
+                                          const MarkArray &mark_array,
+                                          const hb_set_t  &glyphset,
+                                          hb_map_t*        klass_mapping /* INOUT */)
 {
   hb_set_t orig_classes;
 

@@ -422,7 +422,7 @@ real_t NavigationRegion2D::get_enter_cost() const {
 void NavigationRegion2D::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
 	travel_cost = MAX(p_travel_cost, 0.0);
-	NavigationServer2D::get_singleton()->region_set_enter_cost(region, travel_cost);
+	NavigationServer2D::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
 real_t NavigationRegion2D::get_travel_cost() const {
@@ -494,7 +494,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 					// Generate the polygon color, slightly randomly modified from the settings one.
 					Color random_variation_color;
-					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.1, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 					random_variation_color.a = color.a;
 					Vector<Color> colors;
 					colors.push_back(random_variation_color);

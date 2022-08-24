@@ -98,12 +98,20 @@ NodePath AnimationNodeStateMachineTransition::get_advance_expression_base_node()
 
 void AnimationNodeStateMachineTransition::set_xfade_time(float p_xfade) {
 	ERR_FAIL_COND(p_xfade < 0);
-	xfade = p_xfade;
+	xfade_time = p_xfade;
 	emit_changed();
 }
 
 float AnimationNodeStateMachineTransition::get_xfade_time() const {
-	return xfade;
+	return xfade_time;
+}
+
+void AnimationNodeStateMachineTransition::set_xfade_curve(const Ref<Curve> &p_curve) {
+	xfade_curve = p_curve;
+}
+
+Ref<Curve> AnimationNodeStateMachineTransition::get_xfade_curve() const {
+	return xfade_curve;
 }
 
 void AnimationNodeStateMachineTransition::set_disabled(bool p_disabled) {
@@ -137,6 +145,9 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_xfade_time", "secs"), &AnimationNodeStateMachineTransition::set_xfade_time);
 	ClassDB::bind_method(D_METHOD("get_xfade_time"), &AnimationNodeStateMachineTransition::get_xfade_time);
 
+	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeStateMachineTransition::set_xfade_curve);
+	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeStateMachineTransition::get_xfade_curve);
+
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &AnimationNodeStateMachineTransition::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &AnimationNodeStateMachineTransition::is_disabled);
 
@@ -150,6 +161,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationNodeStateMachineTransition::get_advance_expression_base_node);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_GROUP("Switch", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
@@ -420,6 +432,9 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 	}
 
+	if (current_curve.is_valid()) {
+		fade_blend = current_curve->interpolate(fade_blend);
+	}
 	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_seek_root, fade_blend, AnimationNode::FILTER_IGNORE, true);
 
 	if (fading_from != StringName()) {
@@ -450,6 +465,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 
 			if (p_state_machine->transitions[i].local_from == current && p_state_machine->transitions[i].local_to == path[0]) {
 				next_xfade = p_state_machine->transitions[i].transition->get_xfade_time();
+				current_curve = p_state_machine->transitions[i].transition->get_xfade_curve();
 				switch_mode = p_state_machine->transitions[i].transition->get_switch_mode();
 				next = path[0];
 			}
@@ -504,6 +520,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			tr.to = String(p_state_machine->transitions[auto_advance_to].to).replace_first("../", "");
 			tr.next = p_state_machine->transitions[auto_advance_to].to;
 			current_transition = tr;
+			current_curve = p_state_machine->transitions[auto_advance_to].transition->get_xfade_curve();
 			next_xfade = p_state_machine->transitions[auto_advance_to].transition->get_xfade_time();
 			switch_mode = p_state_machine->transitions[auto_advance_to].transition->get_switch_mode();
 		}
@@ -830,20 +847,12 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 		anodesm->state_machine_name = p_new_name;
 	}
 
-	for (int i = 0; i < transitions.size(); i++) {
-		if (transitions[i].local_from == p_name) {
-			_rename_transition(transitions[i].from, String(transitions[i].from).replace_first(p_name, p_new_name));
-		}
-
-		if (transitions[i].local_to == p_name) {
-			_rename_transition(transitions[i].to, String(transitions[i].to).replace_first(p_name, p_new_name));
-		}
-	}
+	_rename_transitions(p_name, p_new_name);
 
 	emit_signal("tree_changed");
 }
 
-void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, const StringName &p_new_name) {
+void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, const StringName &p_new_name) {
 	if (updating_transitions) {
 		return;
 	}
@@ -854,10 +863,14 @@ void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, con
 			Vector<String> path = String(transitions[i].to).split("/");
 			if (path.size() > 1) {
 				if (path[0] == "..") {
-					prev_state_machine->_rename_transition(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
+					prev_state_machine->_rename_transitions(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
 				} else {
-					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_to].node)->_rename_transition("../" + p_name, "../" + p_new_name);
+					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_to].node)->_rename_transitions("../" + p_name, "../" + p_new_name);
 				}
+			}
+
+			if (transitions[i].local_from == p_name) {
+				transitions.write[i].local_from = p_new_name;
 			}
 
 			transitions.write[i].from = p_new_name;
@@ -867,10 +880,14 @@ void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, con
 			Vector<String> path = String(transitions[i].from).split("/");
 			if (path.size() > 1) {
 				if (path[0] == "..") {
-					prev_state_machine->_rename_transition(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
+					prev_state_machine->_rename_transitions(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
 				} else {
-					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_from].node)->_rename_transition("../" + p_name, "../" + p_new_name);
+					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_from].node)->_rename_transitions("../" + p_name, "../" + p_new_name);
 				}
+			}
+
+			if (transitions[i].local_to == p_name) {
+				transitions.write[i].local_to = p_new_name;
 			}
 
 			transitions.write[i].to = p_new_name;

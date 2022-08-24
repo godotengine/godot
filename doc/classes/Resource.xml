@@ -19,11 +19,11 @@
 		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Resource" />
-			<argument index="0" name="subresources" type="bool" default="false" />
+			<param index="0" name="subresources" type="bool" default="false" />
 			<description>
 				Duplicates the resource, returning a new resource with the exported members copied. [b]Note:[/b] To duplicate the resource the constructor is called without arguments. This method will error when the constructor doesn't have default values.
-				By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing [code]true[/code] to the [code]subresources[/code] argument which will copy the subresources.
-				[b]Note:[/b] If [code]subresources[/code] is [code]true[/code], this method will only perform a shallow copy. Nested resources within subresources will not be duplicated and will still be shared.
+				By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing [code]true[/code] to the [param subresources] argument which will copy the subresources.
+				[b]Note:[/b] If [param subresources] is [code]true[/code], this method will only perform a shallow copy. Nested resources within subresources will not be duplicated and will still be shared.
 				[b]Note:[/b] When duplicating a resource, only [code]export[/code]ed properties are copied. Other properties will be set to their default value in the new resource.
 			</description>
 		</method>
@@ -60,7 +60,7 @@
 		</method>
 		<method name="take_over_path">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Sets the path of the resource, potentially overriding an existing cache entry for this path. This differs from setting [member resource_path], as the latter would error out if another resource was already cached for the given path.
 			</description>

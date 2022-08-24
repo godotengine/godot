@@ -65,6 +65,7 @@ private:
 	bool use_collision = false;
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
 
@@ -117,7 +118,7 @@ protected:
 	friend class CSGCombiner3D;
 	CSGBrush *_get_brush();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Array get_meshes() const;
@@ -143,6 +144,9 @@ public:
 
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
+
+	void set_collision_priority(real_t p_priority);
+	real_t get_collision_priority() const;
 
 	void set_snap(float p_snap);
 	float get_snap() const;
@@ -383,7 +387,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 
 public:

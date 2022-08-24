@@ -44,40 +44,49 @@ DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[Displa
 
 int DisplayServer::server_create_count = 1;
 
-void DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServer::global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index) {
+int DisplayServer::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
-void DisplayServer::global_menu_add_separator(const String &p_menu_root, int p_index) {
+int DisplayServer::global_menu_add_separator(const String &p_menu_root, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
+	return -1;
 }
 
 int DisplayServer::global_menu_get_item_index_from_text(const String &p_menu_root, const String &p_text) const {
@@ -159,6 +168,11 @@ Ref<Texture2D> DisplayServer::global_menu_get_item_icon(const String &p_menu_roo
 	return Ref<Texture2D>();
 }
 
+int DisplayServer::global_menu_get_item_indentation_level(const String &p_menu_root, int p_idx) const {
+	WARN_PRINT("Global menus not supported by this display server.");
+	return 0;
+}
+
 void DisplayServer::global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked) {
 	WARN_PRINT("Global menus not supported by this display server.");
 }
@@ -207,6 +221,10 @@ void DisplayServer::global_menu_set_item_icon(const String &p_menu_root, int p_i
 	WARN_PRINT("Global menus not supported by this display server.");
 }
 
+void DisplayServer::global_menu_set_item_indentation_level(const String &p_menu_root, int p_idx, int p_level) {
+	WARN_PRINT("Global menus not supported by this display server.");
+}
+
 int DisplayServer::global_menu_get_item_count(const String &p_menu_root) const {
 	WARN_PRINT("Global menus not supported by this display server.");
 	return 0;
@@ -238,14 +256,14 @@ void DisplayServer::tts_resume() {
 	WARN_PRINT("TTS is not supported by this display server.");
 }
 
-Array DisplayServer::tts_get_voices() const {
+TypedArray<Dictionary> DisplayServer::tts_get_voices() const {
 	WARN_PRINT("TTS is not supported by this display server.");
-	return Array();
+	return TypedArray<Dictionary>();
 }
 
 PackedStringArray DisplayServer::tts_get_voices_for_language(const String &p_language) const {
 	PackedStringArray ret;
-	Array voices = tts_get_voices();
+	TypedArray<Dictionary> voices = tts_get_voices();
 	for (int i = 0; i < voices.size(); i++) {
 		const Dictionary &voice = voices[i];
 		if (voice.has("id") && voice.has("language") && voice["language"].operator String().begins_with(p_language)) {
@@ -400,7 +418,7 @@ String DisplayServer::ime_get_text() const {
 	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
 }
 
-void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	WARN_PRINT("Virtual keyboard not supported by this display server.");
 }
 
@@ -494,11 +512,11 @@ int64_t DisplayServer::window_get_native_handle(HandleType p_handle_type, Window
 }
 
 void DisplayServer::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	WARN_PRINT("Changing the V-Sync mode is not supported by this display server.");
 }
 
 DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window) const {
-	WARN_PRINT("Changing the VSync mode is not supported by this display server.");
+	WARN_PRINT("Changing the V-Sync mode is not supported by this display server.");
 	return VSyncMode::VSYNC_ENABLED;
 }
 
@@ -535,6 +553,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_get_item_state", "menu_root", "idx"), &DisplayServer::global_menu_get_item_state);
 	ClassDB::bind_method(D_METHOD("global_menu_get_item_max_states", "menu_root", "idx"), &DisplayServer::global_menu_get_item_max_states);
 	ClassDB::bind_method(D_METHOD("global_menu_get_item_icon", "menu_root", "idx"), &DisplayServer::global_menu_get_item_icon);
+	ClassDB::bind_method(D_METHOD("global_menu_get_item_indentation_level", "menu_root", "idx"), &DisplayServer::global_menu_get_item_indentation_level);
 
 	ClassDB::bind_method(D_METHOD("global_menu_set_item_checked", "menu_root", "idx", "checked"), &DisplayServer::global_menu_set_item_checked);
 	ClassDB::bind_method(D_METHOD("global_menu_set_item_checkable", "menu_root", "idx", "checkable"), &DisplayServer::global_menu_set_item_checkable);
@@ -549,6 +568,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_set_item_state", "menu_root", "idx", "state"), &DisplayServer::global_menu_set_item_state);
 	ClassDB::bind_method(D_METHOD("global_menu_set_item_max_states", "menu_root", "idx", "max_states"), &DisplayServer::global_menu_set_item_max_states);
 	ClassDB::bind_method(D_METHOD("global_menu_set_item_icon", "menu_root", "idx", "icon"), &DisplayServer::global_menu_set_item_icon);
+	ClassDB::bind_method(D_METHOD("global_menu_set_item_indentation_level", "menu_root", "idx", "level"), &DisplayServer::global_menu_set_item_indentation_level);
 
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu_root", "idx"), &DisplayServer::global_menu_remove_item);
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
@@ -660,7 +680,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
-	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "type", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2()), DEFVAL(KEYBOARD_TYPE_DEFAULT), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
@@ -731,6 +751,15 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR_LANDSCAPE);
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR);
+
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_MULTILINE);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER_DECIMAL);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PHONE);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_EMAIL_ADDRESS);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PASSWORD);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_URL);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);

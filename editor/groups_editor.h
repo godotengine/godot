@@ -31,7 +31,6 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -39,6 +38,8 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+
+class EditorUndoRedoManager;
 
 class GroupDialog : public AcceptDialog {
 	GDCLASS(GroupDialog, AcceptDialog);
@@ -68,7 +69,7 @@ class GroupDialog : public AcceptDialog {
 
 	String selected_group;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _group_selected();
 
@@ -103,7 +104,7 @@ public:
 	};
 
 	void edit();
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 
 	GroupDialog();
 };
@@ -119,7 +120,7 @@ class GroupsEditor : public VBoxContainer {
 	Button *add = nullptr;
 	Tree *tree = nullptr;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	void update_tree();
 	void _add_group(const String &p_group = "");
@@ -137,7 +138,7 @@ public:
 		COPY_GROUP,
 	};
 
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_current(Node *p_node);
 
 	GroupsEditor();

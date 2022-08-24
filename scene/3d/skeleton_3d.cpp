@@ -176,39 +176,37 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void Skeleton3D::_validate_property(PropertyInfo &property) const {
-	PackedStringArray split = property.name.split("/");
+void Skeleton3D::_validate_property(PropertyInfo &p_property) const {
+	PackedStringArray split = p_property.name.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		if (split[2] == "rest") {
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 		if (is_show_rest_only()) {
 			if (split[2] == "enabled") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "position") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "rotation") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		} else if (!is_bone_enabled(split[1].to_int())) {
 			if (split[2] == "position") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "rotation") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		}
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void Skeleton3D::_update_process_order() {
@@ -762,6 +760,20 @@ Vector3 Skeleton3D::get_bone_pose_scale(int p_bone) const {
 	return bones[p_bone].pose_scale;
 }
 
+void Skeleton3D::reset_bone_pose(int p_bone) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+	set_bone_pose_position(p_bone, bones[p_bone].rest.origin);
+	set_bone_pose_rotation(p_bone, bones[p_bone].rest.basis.get_rotation_quaternion());
+	set_bone_pose_scale(p_bone, bones[p_bone].rest.basis.get_scale());
+}
+
+void Skeleton3D::reset_bone_poses() {
+	for (int i = 0; i < bones.size(); i++) {
+		reset_bone_pose(i);
+	}
+}
+
 Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
@@ -1251,6 +1263,9 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_pose_position", "bone_idx"), &Skeleton3D::get_bone_pose_position);
 	ClassDB::bind_method(D_METHOD("get_bone_pose_rotation", "bone_idx"), &Skeleton3D::get_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("get_bone_pose_scale", "bone_idx"), &Skeleton3D::get_bone_pose_scale);
+
+	ClassDB::bind_method(D_METHOD("reset_bone_pose", "bone_idx"), &Skeleton3D::reset_bone_pose);
+	ClassDB::bind_method(D_METHOD("reset_bone_poses"), &Skeleton3D::reset_bone_poses);
 
 	ClassDB::bind_method(D_METHOD("is_bone_enabled", "bone_idx"), &Skeleton3D::is_bone_enabled);
 	ClassDB::bind_method(D_METHOD("set_bone_enabled", "bone_idx", "enabled"), &Skeleton3D::set_bone_enabled, DEFVAL(true));

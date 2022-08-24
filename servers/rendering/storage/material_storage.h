@@ -63,7 +63,7 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
@@ -94,7 +94,7 @@ public:
 		Variant default_value;
 	};
 
-	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
+	virtual void material_get_instance_shader_uniforms(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 };

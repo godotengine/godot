@@ -3,10 +3,9 @@
 Import("env")
 Import("env_modules")
 
-# Godot's own source files
 env_csg = env_modules.Clone()
 
-# Godot's own source files
+# Godot source files
 env_csg.add_source_files(env.modules_sources, "*.cpp")
 if env["tools"]:
     env_csg.add_source_files(env.modules_sources, "editor/*.cpp")

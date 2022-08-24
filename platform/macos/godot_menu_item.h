@@ -46,7 +46,6 @@ enum GlobalMenuCheckType {
 @public
 	Callable callback;
 	Variant meta;
-	int id;
 	GlobalMenuCheckType checkable_type;
 	int max_states;
 	int state;

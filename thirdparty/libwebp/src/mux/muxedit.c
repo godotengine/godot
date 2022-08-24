@@ -70,6 +70,7 @@ void WebPMuxDelete(WebPMux* mux) {
     err = ChunkAssignData(&chunk, data, copy_data, tag);                       \
     if (err == WEBP_MUX_OK) {                                                  \
       err = ChunkSetHead(&chunk, (LIST));                                      \
+      if (err != WEBP_MUX_OK) ChunkRelease(&chunk);                            \
     }                                                                          \
     return err;                                                                \
   }

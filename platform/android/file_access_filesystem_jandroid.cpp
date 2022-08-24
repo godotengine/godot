@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "file_access_filesystem_jandroid.h"
+
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "thread_jandroid.h"
+
 #include <unistd.h>
 
 jobject FileAccessFilesystemJAndroid::file_access_handler = nullptr;
@@ -44,6 +46,7 @@ jmethodID FileAccessFilesystemJAndroid::_file_seek_end = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_read = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_tell = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_eof = nullptr;
+jmethodID FileAccessFilesystemJAndroid::_file_set_eof = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_close = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_write = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_flush = nullptr;
@@ -160,6 +163,16 @@ bool FileAccessFilesystemJAndroid::eof_reached() const {
 	}
 }
 
+void FileAccessFilesystemJAndroid::_set_eof(bool eof) {
+	if (_file_set_eof) {
+		ERR_FAIL_COND_MSG(!is_open(), "File must be opened before use.");
+
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+		env->CallVoidMethod(file_access_handler, _file_set_eof, id, eof);
+	}
+}
+
 uint8_t FileAccessFilesystemJAndroid::get_8() const {
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	uint8_t byte;
@@ -182,6 +195,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 	while (true) {
 		size_t line_buffer_size = MIN(buffer_size_limit, file_size - get_position());
 		if (line_buffer_size <= 0) {
+			const_cast<FileAccessFilesystemJAndroid *>(this)->_set_eof(true);
 			break;
 		}
 
@@ -198,7 +212,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 			if (elem == '\n' || elem == '\0') {
 				// Found the end of the line
 				const_cast<FileAccessFilesystemJAndroid *>(this)->seek(start_position + line_buffer_position + 1);
-				if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position)) {
+				if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
 					return String();
 				}
 				return result;
@@ -206,7 +220,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 		}
 	}
 
-	if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position)) {
+	if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
 		return String();
 	}
 	return result;
@@ -308,6 +322,7 @@ void FileAccessFilesystemJAndroid::setup(jobject p_file_access_handler) {
 	_file_get_size = env->GetMethodID(cls, "fileGetSize", "(I)J");
 	_file_tell = env->GetMethodID(cls, "fileGetPosition", "(I)J");
 	_file_eof = env->GetMethodID(cls, "isFileEof", "(I)Z");
+	_file_set_eof = env->GetMethodID(cls, "setFileEof", "(IZ)V");
 	_file_seek = env->GetMethodID(cls, "fileSeek", "(IJ)V");
 	_file_seek_end = env->GetMethodID(cls, "fileSeekFromEnd", "(IJ)V");
 	_file_read = env->GetMethodID(cls, "fileRead", "(ILjava/nio/ByteBuffer;)I");

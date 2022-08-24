@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -60,7 +61,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
 			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
@@ -147,7 +148,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = get_tree()->get_edited_scene_root();
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 
 			ur->create_action(TTR("Create Trimesh Static Shape"));
 
@@ -177,7 +178,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 
 			if (simplify) {
 				ur->create_action(TTR("Create Simplified Convex Shape"));
@@ -217,7 +218,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 
 			ur->create_action(TTR("Create Multiple Convex Shapes"));
 
@@ -254,7 +255,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = get_tree()->get_edited_scene_root();
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Navigation Mesh"));
 
 			ur->add_do_method(node, "add_child", nmi, true);
@@ -311,7 +312,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Unwrap UV2"));
 
 			ur->add_do_method(node, "set_mesh", unwrapped_mesh);
@@ -470,7 +471,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	mi->set_mesh(mesho);
 	Node *owner = get_tree()->get_edited_scene_root();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 
 	ur->create_action(TTR("Create Outline"));
 

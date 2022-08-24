@@ -34,13 +34,10 @@
 #include "core/io/image_loader.h"
 
 class ImageLoaderSVG : public ImageFormatLoader {
-	Dictionary replace_colors;
-	void _replace_color_property(const String &p_prefix, String &r_string);
+	void _replace_color_property(const HashMap<Color, Color> &p_color_map, const String &p_prefix, String &r_string);
 
 public:
-	// Called by the editor to handle theme icon colors.
-	void set_replace_colors(Dictionary p_replace_colors) { replace_colors = p_replace_colors; }
-	void create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, bool p_convert_color);
+	void create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map);
 
 	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, bool p_force_linear, float p_scale) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;

@@ -53,6 +53,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 		set_collision_layer(collision_layer);
 		set_collision_mask(collision_mask);
+		set_collision_priority(collision_priority);
 		_make_dirty(); //force update
 	} else {
 		PhysicsServer3D::get_singleton()->free(root_collision_instance);
@@ -122,6 +123,17 @@ bool CSGShape3D::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
 	return get_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+void CSGShape3D::set_collision_priority(real_t p_priority) {
+	collision_priority = p_priority;
+	if (root_collision_instance.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(root_collision_instance, p_priority);
+	}
+}
+
+real_t CSGShape3D::get_collision_priority() const {
+	return collision_priority;
 }
 
 bool CSGShape3D::is_root_shape() const {
@@ -545,6 +557,7 @@ void CSGShape3D::_notification(int p_what) {
 				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 				set_collision_layer(collision_layer);
 				set_collision_mask(collision_mask);
+				set_collision_priority(collision_priority);
 				_update_collision_faces();
 			}
 		} break;
@@ -584,15 +597,14 @@ bool CSGShape3D::is_calculating_tangents() const {
 	return calculate_tangents;
 }
 
-void CSGShape3D::_validate_property(PropertyInfo &property) const {
-	bool is_collision_prefixed = property.name.begins_with("collision_");
-	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
+void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
+	bool is_collision_prefixed = p_property.name.begins_with("collision_");
+	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
-	GeometryInstance3D::_validate_property(property);
 }
 
 Array CSGShape3D::get_meshes() const {
@@ -632,6 +644,9 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &CSGShape3D::set_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CSGShape3D::get_collision_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CSGShape3D::set_collision_priority);
+	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CSGShape3D::get_collision_priority);
+
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape3D::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape3D::is_calculating_tangents);
 
@@ -645,6 +660,7 @@ void CSGShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
@@ -2058,18 +2074,16 @@ void CSGPolygon3D::_notification(int p_what) {
 	}
 }
 
-void CSGPolygon3D::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("spin") && mode != MODE_SPIN) {
-		property.usage = PROPERTY_USAGE_NONE;
+void CSGPolygon3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("spin") && mode != MODE_SPIN) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name.begins_with("path") && mode != MODE_PATH) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("path") && mode != MODE_PATH) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name == "depth" && mode != MODE_DEPTH) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "depth" && mode != MODE_DEPTH) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	CSGShape3D::_validate_property(property);
 }
 
 void CSGPolygon3D::_path_changed() {

@@ -3,15 +3,16 @@
 Import("env")
 Import("env_modules")
 
-freetype_enabled = env.module_check_dependencies("text_server_fb", ["freetype"], True)
-msdfgen_enabled = env.module_check_dependencies("text_server_fb", ["msdfgen"], True)
+freetype_enabled = "freetype" in env.module_list
+msdfgen_enabled = "msdfgen" in env.module_list
 
 env_text_server_fb = env_modules.Clone()
 
 if env["builtin_msdfgen"] and msdfgen_enabled:
-    env_text_server_fb.Append(CPPPATH=["#thirdparty/msdfgen"])
+    env_text_server_fb.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
 if env["builtin_freetype"] and freetype_enabled:
-    env_text_server_fb.Append(CPPPATH=["#thirdparty/freetype/include"])
+    env_text_server_fb.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+    env_text_server_fb.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
 env_text_server_fb.add_source_files(env.modules_sources, "*.cpp")

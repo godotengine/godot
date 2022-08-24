@@ -19,7 +19,7 @@
 		</method>
 		<method name="initialize_library">
 			<return type="void" />
-			<argument index="0" name="level" type="int" enum="NativeExtension.InitializationLevel" />
+			<param index="0" name="level" type="int" enum="NativeExtension.InitializationLevel" />
 			<description>
 			</description>
 		</method>
@@ -30,8 +30,8 @@
 		</method>
 		<method name="open_library">
 			<return type="int" enum="Error" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="entry_symbol" type="String" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="entry_symbol" type="String" />
 			<description>
 			</description>
 		</method>

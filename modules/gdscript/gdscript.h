@@ -287,6 +287,9 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 
+	virtual bool property_can_revert(const StringName &p_name) const;
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
+
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -423,6 +426,8 @@ public:
 		StringName _set;
 		StringName _get;
 		StringName _get_property_list;
+		StringName _property_can_revert;
+		StringName _property_get_revert;
 		StringName _script_source;
 
 	} strings;

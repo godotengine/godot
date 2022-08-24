@@ -145,23 +145,23 @@ Fog::FogMaterialData::~FogMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-RendererRD::ShaderData *Fog::_create_fog_shader_func() {
+RendererRD::MaterialStorage::ShaderData *Fog::_create_fog_shader_func() {
 	FogShaderData *shader_data = memnew(FogShaderData);
 	return shader_data;
 }
 
-RendererRD::ShaderData *Fog::_create_fog_shader_funcs() {
+RendererRD::MaterialStorage::ShaderData *Fog::_create_fog_shader_funcs() {
 	return Fog::get_singleton()->_create_fog_shader_func();
 };
 
-RendererRD::MaterialData *Fog::_create_fog_material_func(FogShaderData *p_shader) {
+RendererRD::MaterialStorage::MaterialData *Fog::_create_fog_material_func(FogShaderData *p_shader) {
 	FogMaterialData *material_data = memnew(FogMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
 
-RendererRD::MaterialData *Fog::_create_fog_material_funcs(RendererRD::ShaderData *p_shader) {
+RendererRD::MaterialStorage::MaterialData *Fog::_create_fog_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader) {
 	return Fog::get_singleton()->_create_fog_material_func(static_cast<FogShaderData *>(p_shader));
 };
 
@@ -190,8 +190,8 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		volumetric_fog_modes.push_back("");
 		volumetric_fog.shader.initialize(volumetric_fog_modes);
 
-		material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_FOG, _create_fog_shader_funcs);
-		material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_FOG, _create_fog_material_funcs);
+		material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_shader_funcs);
+		material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_material_funcs);
 		volumetric_fog.volume_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(VolumetricFogShader::VolumeUBO));
 	}
 
@@ -246,7 +246,7 @@ ALBEDO = vec3(1.0);
 		material_storage->material_initialize(volumetric_fog.default_material);
 		material_storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
 
-		FogMaterialData *md = static_cast<FogMaterialData *>(material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG));
+		FogMaterialData *md = static_cast<FogMaterialData *>(material_storage->material_get_data(volumetric_fog.default_material, RendererRD::MaterialStorage::SHADER_TYPE_FOG));
 		volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, 0);
 
 		Vector<RD::Uniform> uniforms;
@@ -378,7 +378,7 @@ void Fog::FogShaderData::set_default_texture_param(const StringName &p_name, RID
 	}
 }
 
-void Fog::FogShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void Fog::FogShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	RBMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
@@ -500,7 +500,7 @@ Fog::VolumetricFog::VolumetricFog(const Vector3i &fog_size, RID p_sky_shader) {
 	fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->set_resource_name(fog_map, "Fog map");
 
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	Vector<uint8_t> dm;
 	dm.resize(fog_size.x * fog_size.y * fog_size.z * 4);
 	dm.fill(0);
@@ -643,7 +643,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			{
 				RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -663,7 +663,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			{
 				RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -675,7 +675,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			{
 				RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -701,7 +701,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			FogMaterialData *material = nullptr;
 
 			if (fog_material.is_valid()) {
-				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::MaterialStorage::SHADER_TYPE_FOG));
 				if (!material || !material->shader_data->valid) {
 					material = nullptr;
 				}
@@ -709,7 +709,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			if (!material) {
 				fog_material = volumetric_fog.default_material;
-				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::MaterialStorage::SHADER_TYPE_FOG));
 			}
 
 			ERR_FAIL_COND(!material);
@@ -805,7 +805,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
 			if (p_settings.shadow_atlas_depth.is_null()) {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 			} else {
 				u.append_id(p_settings.shadow_atlas_depth);
 			}
@@ -821,7 +821,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			if (p_settings.directional_shadow_depth.is_valid()) {
 				u.append_id(p_settings.directional_shadow_depth);
 			} else {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 			}
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -949,7 +949,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		}
 		{
 			RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -960,7 +960,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		}
 		{
 			RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -972,7 +972,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		{
 			RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -986,7 +986,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 19;
-			RID radiance_texture = texture_storage->texture_rd_get_default(p_settings.is_using_radiance_cubemap_array ? RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			RID radiance_texture = texture_storage->texture_rd_get_default(p_settings.is_using_radiance_cubemap_array ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 			RID sky_texture = RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env).is_valid() ? p_settings.sky->sky_get_radiance_texture_rd(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env)) : RID();
 			u.append_id(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);

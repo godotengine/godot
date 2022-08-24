@@ -2058,14 +2058,16 @@ void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what)
 }
 
 void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
-	ERR_FAIL_COND(!undo_redo);
+	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(!undo_redo.is_valid());
 
 #define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
 
-	undo_redo->start_force_keep_in_merge_ends();
 	AtlasTileProxyObject *tile_data_proxy = Object::cast_to<AtlasTileProxyObject>(p_edited);
 	if (tile_data_proxy) {
+		UndoRedo *internal_undo_redo = undo_redo->get_history_for_object(tile_data_proxy).undo_redo;
+		internal_undo_redo->start_force_keep_in_merge_ends();
+
 		Vector<String> components = String(p_property).split("/", true, 2);
 		if (components.size() == 2 && components[1] == "polygons_count") {
 			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
@@ -2088,12 +2090,16 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				}
 			}
 		}
+		internal_undo_redo->end_force_keep_in_merge_ends();
 	}
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy = Object::cast_to<TileSetAtlasSourceProxyObject>(p_edited);
 	if (atlas_source_proxy) {
 		TileSetAtlasSource *atlas_source = atlas_source_proxy->get_edited();
 		ERR_FAIL_COND(!atlas_source);
+
+		UndoRedo *internal_undo_redo = undo_redo->get_history_for_object(atlas_source).undo_redo;
+		internal_undo_redo->start_force_keep_in_merge_ends();
 
 		PackedVector2Array arr;
 		if (p_property == "texture") {
@@ -2121,8 +2127,8 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				}
 			}
 		}
+		internal_undo_redo->end_force_keep_in_merge_ends();
 	}
-	undo_redo->end_force_keep_in_merge_ends();
 
 #undef ADD_UNDO
 }

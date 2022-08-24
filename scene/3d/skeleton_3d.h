@@ -156,7 +156,7 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -226,6 +226,9 @@ public:
 	Vector3 get_bone_pose_position(int p_bone) const;
 	Quaternion get_bone_pose_rotation(int p_bone) const;
 	Vector3 get_bone_pose_scale(int p_bone) const;
+
+	void reset_bone_pose(int p_bone);
+	void reset_bone_poses();
 
 	void clear_bones_global_pose_override();
 	Transform3D get_bone_global_pose_override(int p_bone) const;

@@ -297,8 +297,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(percent_sign, "language");
 
 	GDVIRTUAL_BIND(strip_diacritics, "string");
+	GDVIRTUAL_BIND(is_valid_identifier, "string");
 
 	GDVIRTUAL_BIND(string_get_word_breaks, "string", "language");
+
+	GDVIRTUAL_BIND(is_confusable, "string", "dict");
+	GDVIRTUAL_BIND(spoof_check, "string");
 
 	GDVIRTUAL_BIND(string_to_upper, "string", "language");
 	GDVIRTUAL_BIND(string_to_lower, "string", "language");
@@ -630,12 +634,12 @@ double TextServerExtension::font_get_oversampling(const RID &p_font_rid) const {
 	return 0.0;
 }
 
-Array TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(font_get_size_cache_list, p_font_rid, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 void TextServerExtension::font_clear_size_cache(const RID &p_font_rid) {
@@ -746,12 +750,12 @@ PackedInt32Array TextServerExtension::font_get_texture_offsets(const RID &p_font
 	return PackedInt32Array();
 }
 
-Array TextServerExtension::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
-	Array ret;
+PackedInt32Array TextServerExtension::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
+	PackedInt32Array ret;
 	if (GDVIRTUAL_CALL(font_get_glyph_list, p_font_rid, p_size, ret)) {
 		return ret;
 	}
-	return Array();
+	return PackedInt32Array();
 }
 
 void TextServerExtension::font_clear_glyphs(const RID &p_font_rid, const Vector2i &p_size) {
@@ -846,12 +850,12 @@ Dictionary TextServerExtension::font_get_glyph_contours(const RID &p_font_rid, i
 	return Dictionary();
 }
 
-Array TextServerExtension::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(font_get_kerning_list, p_font_rid, p_size, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 void TextServerExtension::font_clear_kerning_map(const RID &p_font_rid, int64_t p_size) {
@@ -1498,6 +1502,14 @@ String TextServerExtension::percent_sign(const String &p_language) const {
 	return "%";
 }
 
+bool TextServerExtension::is_valid_identifier(const String &p_string) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(is_valid_identifier, p_string, ret)) {
+		return ret;
+	}
+	return TextServer::is_valid_identifier(p_string);
+}
+
 String TextServerExtension::strip_diacritics(const String &p_string) const {
 	String ret;
 	if (GDVIRTUAL_CALL(strip_diacritics, p_string, ret)) {
@@ -1522,12 +1534,12 @@ String TextServerExtension::string_to_lower(const String &p_string, const String
 	return p_string;
 }
 
-Array TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(parse_structured_text, p_parser_type, p_args, p_text, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_string, const String &p_language) const {
@@ -1536,6 +1548,22 @@ PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_str
 		return ret;
 	}
 	return PackedInt32Array();
+}
+
+int TextServerExtension::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	int ret;
+	if (GDVIRTUAL_CALL(is_confusable, p_string, p_dict, ret)) {
+		return ret;
+	}
+	return TextServer::is_confusable(p_string, p_dict);
+}
+
+bool TextServerExtension::spoof_check(const String &p_string) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(spoof_check, p_string, ret)) {
+		return ret;
+	}
+	return TextServer::spoof_check(p_string);
 }
 
 TextServerExtension::TextServerExtension() {

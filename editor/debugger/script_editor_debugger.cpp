@@ -50,7 +50,6 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/property_editor.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
@@ -1960,15 +1959,18 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		info_left->set_columns(2);
 		misc->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
+		clicked_ctrl->set_editable(false);
 		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
 		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
 		info_left->add_child(clicked_ctrl);
 		clicked_ctrl_type = memnew(LineEdit);
+		clicked_ctrl_type->set_editable(false);
 		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
 		info_left->add_child(clicked_ctrl_type);
 
 		scene_tree = memnew(SceneDebuggerTree);
 		live_edit_root = memnew(LineEdit);
+		live_edit_root->set_editable(false);
 		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		{

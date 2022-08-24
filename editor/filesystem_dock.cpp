@@ -1531,14 +1531,13 @@ void FileSystemDock::_folder_removed(String p_folder) {
 
 void FileSystemDock::_rename_operation_confirm() {
 	String new_name = rename_dialog_text->get_text().strip_edges();
-	String old_name = tree->get_selected()->get_text(0);
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
 	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
-	} else if (to_rename.is_file && old_name.get_extension() != new_name.get_extension()) {
+	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
 		if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
 			EditorNode::get_singleton()->show_warning(TTR("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore."));
 			return;

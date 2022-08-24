@@ -72,10 +72,6 @@ using OT::Layout::MediumTypes;
 #define HB_MAX_LANGSYS_FEATURE_COUNT 50000
 #endif
 
-#ifndef HB_MAX_FEATURES
-#define HB_MAX_FEATURES 750
-#endif
-
 #ifndef HB_MAX_FEATURE_INDICES
 #define HB_MAX_FEATURE_INDICES	1500
 #endif
@@ -1337,7 +1333,7 @@ struct Lookup
     return_trace (true);
   }
 
-  private:
+  protected:
   HBUINT16	lookupType;		/* Different enumerations for GSUB and GPOS */
   HBUINT16	lookupFlag;		/* Lookup qualifiers */
   Array16Of<Offset16>

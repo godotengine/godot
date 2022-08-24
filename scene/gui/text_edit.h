@@ -195,6 +195,9 @@ private:
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_hidden(int p_line, bool p_hidden) {
+			if (text[p_line].hidden == p_hidden) {
+				return;
+			}
 			text.write[p_line].hidden = p_hidden;
 			if (!p_hidden && text[p_line].width > max_width) {
 				max_width = text[p_line].width;

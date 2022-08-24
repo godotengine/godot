@@ -11,14 +11,14 @@
 	<methods>
 		<method name="get_param" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="param" type="int" enum="SliderJoint3D.Param" />
+			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param">
 			<return type="void" />
-			<argument index="0" name="param" type="int" enum="SliderJoint3D.Param" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
@@ -28,7 +28,7 @@
 			The amount of damping of the rotation when the limit is surpassed.
 			A lower damping value allows a rotation initiated by body A to travel to body B slower.
 		</member>
-		<member name="angular_limit/lower_angle" type="float" setter="_set_lower_limit_angular" getter="_get_lower_limit_angular" default="0.0">
+		<member name="angular_limit/lower_angle" type="float" setter="set_param" getter="get_param" default="0.0">
 			The lower limit of rotation in the slider.
 		</member>
 		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
@@ -39,7 +39,7 @@
 			A factor applied to the all rotation once the limit is surpassed.
 			Makes all rotation slower when between 0 and 1.
 		</member>
-		<member name="angular_limit/upper_angle" type="float" setter="_set_upper_limit_angular" getter="_get_upper_limit_angular" default="0.0">
+		<member name="angular_limit/upper_angle" type="float" setter="set_param" getter="get_param" default="0.0">
 			The upper limit of rotation in the slider.
 		</member>
 		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param" default="1.0">

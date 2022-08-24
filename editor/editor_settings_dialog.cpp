@@ -40,6 +40,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {
@@ -124,9 +125,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
-			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
-			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
+			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
+			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
+			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -680,7 +681,7 @@ void EditorSettingsDialog::_bind_methods() {
 EditorSettingsDialog::EditorSettingsDialog() {
 	set_title(TTR("Editor Settings"));
 
-	undo_redo = memnew(UndoRedo);
+	undo_redo = EditorNode::get_undo_redo();
 
 	tabs = memnew(TabContainer);
 	tabs->set_theme_type_variation("TabContainerOdd");
@@ -776,5 +777,4 @@ EditorSettingsDialog::EditorSettingsDialog() {
 }
 
 EditorSettingsDialog::~EditorSettingsDialog() {
-	memdelete(undo_redo);
 }
