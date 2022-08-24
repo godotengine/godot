@@ -588,7 +588,6 @@ MONO_AOT_MODE_LAST = 1000,
                     return $"{platform}-{arch}";
                 }
                 case OS.Platforms.LinuxBSD:
-                case OS.Platforms.Server:
                 {
                     string arch = bits == "64" ? "x86_64" : "i686";
                     return $"linux-{arch}";
