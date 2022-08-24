@@ -32,9 +32,7 @@
 
 #include "core/string/translation.h"
 
-#ifdef TOOLS_ENABLED
 #include "graph_edit.h"
-#endif
 
 struct _MinSizeCache {
 	int min_size;
@@ -445,6 +443,7 @@ void GraphNode::_edit_set_position(const Point2 &p_position) {
 	}
 	set_position(p_position);
 }
+#endif
 
 void GraphNode::_validate_property(PropertyInfo &p_property) const {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
@@ -454,7 +453,6 @@ void GraphNode::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 }
-#endif
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right, bool p_draw_stylebox) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));

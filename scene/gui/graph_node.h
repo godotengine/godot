@@ -101,7 +101,6 @@ private:
 
 #ifdef TOOLS_ENABLED
 	void _edit_set_position(const Point2 &p_position) override;
-	void _validate_property(PropertyInfo &p_property) const;
 #endif
 
 protected:
@@ -112,6 +111,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	bool has_point(const Point2 &p_point) const override;
