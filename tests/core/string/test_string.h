@@ -619,7 +619,7 @@ TEST_CASE("[String] sprintf") {
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish % frog"));
-	//////// INTS
+	///// Ints
 
 	// Int
 	format = "fish %d frog";
@@ -727,7 +727,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish 143 frog"));
 
-	////// REALS
+	///// Reals
 
 	// Real
 	format = "fish %f frog";
@@ -737,7 +737,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish 99.990000 frog"));
 
-	// Real left-padded
+	// Real left-padded.
 	format = "fish %11f frog";
 	args.clear();
 	args.push_back(99.99);
@@ -745,7 +745,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish   99.990000 frog"));
 
-	// Real right-padded
+	// Real right-padded.
 	format = "fish %-11f frog";
 	args.clear();
 	args.push_back(99.99);
@@ -769,7 +769,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish +99.990000 frog"));
 
-	// Real with 1 decimals.
+	// Real with 1 decimal.
 	format = "fish %.1f frog";
 	args.clear();
 	args.push_back(99.99);
@@ -803,7 +803,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish -99.990000  frog"));
 
-	////// VECTORS
+	///// Vectors
 
 	// Vector2
 	format = "fish %v frog";
@@ -829,7 +829,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.990000, 1.000000, -2.050000, 5.500000) frog"));
 
-	// Vector with negative values
+	// Vector with negative values.
 	format = "fish %v frog";
 	args.clear();
 	args.push_back(Variant(Vector2(-19.99, -1.00)));
@@ -837,7 +837,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (-19.990000, -1.000000) frog"));
 
-	// Vector left-padded
+	// Vector left-padded.
 	format = "fish %11v frog";
 	args.clear();
 	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
@@ -845,7 +845,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (  19.990000,    1.000000,   -2.050000) frog"));
 
-	// Vector right-padded
+	// Vector right-padded.
 	format = "fish %-11v frog";
 	args.clear();
 	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
@@ -853,7 +853,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.990000  , 1.000000   , -2.050000  ) frog"));
 
-	// Vector left-padded with zeros
+	// Vector left-padded with zeros.
 	format = "fish %011v frog";
 	args.clear();
 	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
@@ -869,7 +869,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (19.000000, 1.000000, -2.000000) frog"));
 
-	// Vector with 1 decimals.
+	// Vector with 1 decimal.
 	format = "fish %.1v frog";
 	args.clear();
 	args.push_back(Variant(Vector3(19.99, 1.00, -2.05)));
@@ -893,7 +893,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (20, 1, -2) frog"));
 
-	/////// Strings.
+	///// Strings
 
 	// String
 	format = "fish %s frog";
@@ -903,7 +903,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish cheese frog"));
 
-	// String left-padded
+	// String left-padded.
 	format = "fish %10s frog";
 	args.clear();
 	args.push_back("cheese");
@@ -911,7 +911,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish     cheese frog"));
 
-	// String right-padded
+	// String right-padded.
 	format = "fish %-10s frog";
 	args.clear();
 	args.push_back("cheese");
@@ -939,7 +939,7 @@ TEST_CASE("[String] sprintf") {
 
 	///// Dynamic width
 
-	// String dynamic width
+	// String dynamic width.
 	format = "fish %*s frog";
 	args.clear();
 	args.push_back(10);
@@ -948,7 +948,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	REQUIRE(output == String("fish     cheese frog"));
 
-	// Int dynamic width
+	// Int dynamic width.
 	format = "fish %*d frog";
 	args.clear();
 	args.push_back(10);
@@ -957,7 +957,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	REQUIRE(output == String("fish         99 frog"));
 
-	// Float dynamic width
+	// Float dynamic width.
 	format = "fish %*.*f frog";
 	args.clear();
 	args.push_back(10);
@@ -994,7 +994,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error);
 	CHECK(output == "incomplete format");
 
-	// Bad character in format string
+	// Bad character in format string.
 	format = "fish %&f frog";
 	args.clear();
 	args.push_back("cheese");
@@ -1010,7 +1010,7 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error);
 	CHECK(output == "too many decimal points in format");
 
-	// * not a number or vector
+	// * not a number or vector.
 	format = "fish %*f frog";
 	args.clear();
 	args.push_back("cheese");
