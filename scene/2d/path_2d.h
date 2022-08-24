@@ -66,8 +66,7 @@ public:
 private:
 	Path2D *path = nullptr;
 	real_t progress = 0.0;
-	real_t h_offset = 0.0;
-	real_t v_offset = 0.0;
+	Vector2 relative_offset = Vector2();
 	real_t lookahead = 4.0;
 	bool cubic = true;
 	bool loop = true;
@@ -85,11 +84,8 @@ public:
 	void set_progress(real_t p_progress);
 	real_t get_progress() const;
 
-	void set_h_offset(real_t p_h_offset);
-	real_t get_h_offset() const;
-
-	void set_v_offset(real_t p_v_offset);
-	real_t get_v_offset() const;
+	void set_relative_offset(Vector2 p_offset);
+	Vector2 get_relative_offset() const;
 
 	void set_progress_ratio(real_t p_ratio);
 	real_t get_progress_ratio() const;

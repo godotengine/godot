@@ -209,14 +209,13 @@ void PathFollow2D::_update_transform() {
 
 		Vector2 normal_of_curve = -tangent_to_curve.orthogonal();
 
-		pos += tangent_to_curve * h_offset;
-		pos += normal_of_curve * v_offset;
+		pos += tangent_to_curve * relative_offset.x;
+		pos += normal_of_curve * relative_offset.y;
 
 		set_rotation(tangent_to_curve.angle());
 
 	} else {
-		pos.x += h_offset;
-		pos.y += v_offset;
+		pos += relative_offset;
 	}
 
 	set_position(pos);
@@ -246,7 +245,7 @@ bool PathFollow2D::get_cubic_interpolation() const {
 }
 
 void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "offset") {
+	if (p_property.name == "progress") {
 		real_t max = 10000.0;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
@@ -272,11 +271,8 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow2D::set_progress);
 	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow2D::get_progress);
 
-	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow2D::set_h_offset);
-	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow2D::get_h_offset);
-
-	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow2D::set_v_offset);
-	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow2D::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_relative_offset", "offset"), &PathFollow2D::set_relative_offset);
+	ClassDB::bind_method(D_METHOD("get_relative_offset"), &PathFollow2D::get_relative_offset);
 
 	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow2D::set_progress_ratio);
 	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow2D::get_progress_ratio);
@@ -295,8 +291,7 @@ void PathFollow2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:px"), "set_progress", "get_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative_offset"), "set_relative_offset", "get_relative_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
@@ -324,26 +319,15 @@ void PathFollow2D::set_progress(real_t p_progress) {
 	}
 }
 
-void PathFollow2D::set_h_offset(real_t p_h_offset) {
-	h_offset = p_h_offset;
+void PathFollow2D::set_relative_offset(Vector2 p_offset) {
+	relative_offset = p_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow2D::get_h_offset() const {
-	return h_offset;
-}
-
-void PathFollow2D::set_v_offset(real_t p_v_offset) {
-	v_offset = p_v_offset;
-	if (path) {
-		_update_transform();
-	}
-}
-
-real_t PathFollow2D::get_v_offset() const {
-	return v_offset;
+Vector2 PathFollow2D::get_relative_offset() const {
+	return relative_offset;
 }
 
 real_t PathFollow2D::get_progress() const {

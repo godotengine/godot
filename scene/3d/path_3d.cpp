@@ -239,7 +239,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		t.basis.set_columns(sideways, up, forward);
 		t.basis.scale_local(scale);
 
-		t.origin = pos + sideways * h_offset + up * v_offset;
+		t.origin = pos + sideways * relative_offset.x + up * relative_offset.y + forward * relative_offset.z;
 	} else if (rotation_mode != ROTATION_NONE) {
 		// perform parallel transport
 		//
@@ -296,9 +296,9 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			}
 		}
 
-		t.translate_local(Vector3(h_offset, v_offset, 0));
+		t.translate_local(relative_offset);
 	} else {
-		t.origin = pos + Vector3(h_offset, v_offset, 0);
+		t.origin = pos + relative_offset;
 	}
 
 	set_transform(t);
@@ -331,7 +331,7 @@ bool PathFollow3D::get_cubic_interpolation() const {
 }
 
 void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "offset") {
+	if (p_property.name == "progress") {
 		real_t max = 10000;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
@@ -362,11 +362,8 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow3D::set_progress);
 	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow3D::get_progress);
 
-	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow3D::set_h_offset);
-	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow3D::get_h_offset);
-
-	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow3D::set_v_offset);
-	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow3D::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_relative_offset", "offset"), &PathFollow3D::set_relative_offset);
+	ClassDB::bind_method(D_METHOD("get_relative_offset"), &PathFollow3D::get_relative_offset);
 
 	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow3D::set_progress_ratio);
 	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow3D::get_progress_ratio);
@@ -382,8 +379,7 @@ void PathFollow3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:m"), "set_progress", "get_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "relative_offset"), "set_relative_offset", "get_relative_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
@@ -418,26 +414,15 @@ void PathFollow3D::set_progress(real_t p_progress) {
 	}
 }
 
-void PathFollow3D::set_h_offset(real_t p_h_offset) {
-	h_offset = p_h_offset;
+void PathFollow3D::set_relative_offset(Vector3 p_offset) {
+	relative_offset = p_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow3D::get_h_offset() const {
-	return h_offset;
-}
-
-void PathFollow3D::set_v_offset(real_t p_v_offset) {
-	v_offset = p_v_offset;
-	if (path) {
-		_update_transform();
-	}
-}
-
-real_t PathFollow3D::get_v_offset() const {
-	return v_offset;
+Vector3 PathFollow3D::get_relative_offset() const {
+	return relative_offset;
 }
 
 real_t PathFollow3D::get_progress() const {
