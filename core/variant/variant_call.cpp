@@ -2403,6 +2403,14 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2(0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "WEST", Vector2(-1, 0)); // Alternative to LEFT
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "EAST", Vector2(1, 0)); // Alternative to RIGHT
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "NORTH", Vector2(0, -1)); // Alternative to UP
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "SOUTH", Vector2(0, 1)); // Alternative to DOWN
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "NORTHWEST", Vector2(-1, -1)); // UP + LEFT (Diagonal)
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "NORTHEAST", Vector2(1, -1)); // UP + RIGHT (Diagonal)
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "SOUTHWEST", Vector2(-1, 1)); // DOWN + LEFT (Diagonal)
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "SOUTHEAST", Vector2(1, 1)); // DOWN + RIGHT (Diagonal)
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
@@ -2410,6 +2418,14 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i(0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "WEST", Vector2(-1, 0)); // Alternative to LEFT
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "EAST", Vector2(1, 0)); // Alternative to RIGHT
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "NORTH", Vector2(0, -1)); // Alternative to UP
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "SOUTH", Vector2(0, 1)); // Alternative to DOWN
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "NORTHWEST", Vector2(-1, -1)); // UP + LEFT (Diagonal)
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "NORTHEAST", Vector2(1, -1)); // UP + RIGHT (Diagonal)
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "SOUTHWEST", Vector2(-1, 1)); // DOWN + LEFT (Diagonal)
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "SOUTHEAST", Vector2(1, 1)); // DOWN + RIGHT (Diagonal)
 
 	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_XYZ", Basis::EULER_ORDER_XYZ);
 	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_XZY", Basis::EULER_ORDER_XZY);
