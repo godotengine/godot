@@ -725,6 +725,17 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array methods;
 				List<MethodInfo> method_list;
 				ClassDB::get_method_list(class_name, &method_list, true);
+
+				HashSet<StringName> property_accessors;
+				{
+					List<PropertyInfo> property_list;
+					ClassDB::get_property_list(class_name, &property_list, true);
+					for (const PropertyInfo &F : property_list) {
+						property_accessors.insert(ClassDB::get_property_setter(class_name, F.name));
+						property_accessors.insert(ClassDB::get_property_getter(class_name, F.name));
+					}
+				}
+
 				for (const MethodInfo &F : method_list) {
 					StringName method_name = F.name;
 					if ((F.flags & METHOD_FLAG_VIRTUAL) && !(F.flags & METHOD_FLAG_OBJECT_CORE)) {
@@ -736,6 +747,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
+						d2["is_property_accessor"] = property_accessors.has(method_name);
 						// virtual functions have no hash since no MethodBind is involved
 						bool has_return = mi.return_val.type != Variant::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 						Array arguments;
@@ -775,6 +787,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						d2["is_vararg"] = method->is_vararg();
 						d2["is_static"] = method->is_static();
 						d2["is_virtual"] = false;
+						d2["is_property_accessor"] = property_accessors.has(method_name);
 						d2["hash"] = method->get_hash();
 
 						Vector<Variant> default_args = method->get_default_arguments();
