@@ -59,18 +59,18 @@ Ref<MultiplayerAPI> MultiplayerAPI::create_default_interface() {
 
 // The variant is compressed and encoded; The first byte contains all the meta
 // information and the format is:
-// - The first LSB 5 bits are used for the variant type.
+// - The first LSB 6 bits are used for the variant type.
 // - The next two bits are used to store the encoding mode.
-// - The most significant is used to store the boolean value.
-#define VARIANT_META_TYPE_MASK 0x1F
-#define VARIANT_META_EMODE_MASK 0x60
+// - Boolean values uses the encoding mode to store the value.
+#define VARIANT_META_TYPE_MASK 0x3F
+#define VARIANT_META_EMODE_MASK 0xC0
 #define VARIANT_META_BOOL_MASK 0x80
-#define ENCODE_8 0 << 5
-#define ENCODE_16 1 << 5
-#define ENCODE_32 2 << 5
-#define ENCODE_64 3 << 5
+#define ENCODE_8 0 << 6
+#define ENCODE_16 1 << 6
+#define ENCODE_32 2 << 6
+#define ENCODE_64 3 << 6
 Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_allow_object_decoding) {
-	// Unreachable because `VARIANT_MAX` == 27 and `ENCODE_VARIANT_MASK` == 31
+	// Unreachable because `VARIANT_MAX` == 38 and `ENCODE_VARIANT_MASK` == 77
 	CRASH_COND(p_variant.get_type() > VARIANT_META_TYPE_MASK);
 
 	uint8_t *buf = r_buffer;
@@ -80,9 +80,9 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 	switch (p_variant.get_type()) {
 		case Variant::BOOL: {
 			if (buf) {
-				// We still have 1 free bit in the meta, so let's use it.
+				// We don't use encode_mode for booleans, so we can use it to store the value.
 				buf[0] = (p_variant.operator bool()) ? (1 << 7) : 0;
-				buf[0] |= encode_mode | p_variant.get_type();
+				buf[0] |= p_variant.get_type();
 			}
 			r_len += 1;
 		} break;
