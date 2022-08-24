@@ -129,6 +129,30 @@
 		<constant name="DOWN" value="Vector2i(0, 1)">
 			Down unit vector. Y is down in 2D, so this vector points +Y.
 		</constant>
+		<constant name="WEST" value="Vector2i(-1, 0)">
+			Left unit vector. Represents the direction of left. Alternative to LEFT.
+		</constant>
+		<constant name="EAST" value="Vector2i(1, 0)">
+			Right unit vector. Represents the direction of right. Alternative to RIGHT.
+		</constant>
+		<constant name="NORTH" value="Vector2i(0, -1)">
+			Up unit vector. Y is down in 2D, so this vector points -Y. Alternative to UP.
+		</constant>
+		<constant name="SOUTH" value="Vector2i(0, 1)">
+			Down unit vector. Y is down in 2D, so this vector points +Y. Alternative to DOWN.
+		</constant>
+		<constant name="NORTHWEST" value="Vector2i(-1, -1)">
+			Up and left unit vector. Represents a diagonal vector. Combination of UP/NORTH and LEFT/WEST.
+		</constant>
+		<constant name="NORTHEAST" value="Vector2i(1, -1)">
+			Up and right unit vector. Represents a diagonal vector. Combination of UP/NORTH and RIGHT/EAST.
+		</constant>
+		<constant name="SOUTHWEST" value="Vector2i(-1, 1)">
+			Down and left unit vector. Represents a diagonal vector. Combination of DOWN/SOUTH and LEFT/WEST.
+		</constant>
+		<constant name="SOUTHEAST" value="Vector2i(1, 1)">
+			Down and right unit vector. Represents a diagonal vector. Combination of DOWN/SOUTH and RIGHT/EAST.
+		</constant>
 	</constants>
 	<operators>
 		<operator name="operator !=">
