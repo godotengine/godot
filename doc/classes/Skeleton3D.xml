@@ -20,15 +20,6 @@
 				Adds a bone, with name [param name]. [method get_bone_count] will become the bone index.
 			</description>
 		</method>
-		<method name="add_bone_child">
-			<return type="void" />
-			<param index="0" name="bone_idx" type="int" />
-			<param index="1" name="child_bone_idx" type="int" />
-			<description>
-				Takes the given bone pose/transform and converts it to a world transform, relative to the [Skeleton3D] node.
-				This is useful for using the bone transform in calculations with transforms from [Node3D]-based nodes.
-			</description>
-		</method>
 		<method name="clear_bones">
 			<return type="void" />
 			<description>
@@ -272,15 +263,6 @@
 				Binds the given Skin to the Skeleton.
 			</description>
 		</method>
-		<method name="remove_bone_child">
-			<return type="void" />
-			<param index="0" name="bone_idx" type="int" />
-			<param index="1" name="child_bone_idx" type="int" />
-			<description>
-				Removes the passed in child bone index, [param child_bone_idx], from the passed-in bone, [param bone_idx], if it exists.
-				[b]Note:[/b] This does not remove the child bone, but instead it removes the connection it has to the parent bone.
-			</description>
-		</method>
 		<method name="reset_bone_pose">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
@@ -292,14 +274,6 @@
 			<return type="void" />
 			<description>
 				Sets all bone poses to rests.
-			</description>
-		</method>
-		<method name="set_bone_children">
-			<return type="void" />
-			<param index="0" name="bone_idx" type="int" />
-			<param index="1" name="bone_children" type="PackedInt32Array" />
-			<description>
-				Sets the children for the passed in bone, [param bone_idx], to the passed-in array of bone indexes, [param bone_children].
 			</description>
 		</method>
 		<method name="set_bone_enabled">
