@@ -158,7 +158,6 @@ public:
 };
 
 static PoolVector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float p_quality) {
-
 	ERR_FAIL_COND_V(p_img.is_null() || p_img->empty(), PoolVector<uint8_t>());
 
 	Ref<Image> image = p_img->duplicate();
@@ -192,7 +191,6 @@ static PoolVector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float
 }
 
 static Error _jpgd_save_func(const String &p_path, const Ref<Image> &p_img, float p_quality) {
-
 	PoolVector<uint8_t> buffer = _jpgd_buffer_save_func(p_img, p_quality);
 	Error err;
 	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);

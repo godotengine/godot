@@ -363,7 +363,7 @@
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="quality" type="float" default="0.75" />
 			<description>
-                Saves the image as a JPG file to [code]path[/code]. Compression level (from 0.01 to 1.0 -- highest quality) can be set with [code]quality[/code].
+				Saves the image as a JPG file to [code]path[/code]. Compression level (from 0.01 to 1.0 -- highest quality) can be set with [code]quality[/code].
 			</description>
 		</method>
 		<method name="save_jpg_to_buffer" qualifiers="const">
