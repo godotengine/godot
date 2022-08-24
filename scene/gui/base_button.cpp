@@ -64,6 +64,8 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 
 	bool button_masked = mouse_button.is_valid() && (mouse_button_to_mask(mouse_button->get_button_index()) & button_mask) != MouseButton::NONE;
 	if (button_masked || ui_accept) {
+		was_mouse_pressed = button_masked;
+
 		on_action_event(p_event);
 		return;
 	}
@@ -415,6 +417,10 @@ bool BaseButton::_is_focus_owner_in_shortcut_context() const {
 
 	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
 	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
+}
+
+bool BaseButton::_was_pressed_by_mouse() const {
+	return was_mouse_pressed;
 }
 
 void BaseButton::_bind_methods() {

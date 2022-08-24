@@ -204,8 +204,7 @@ void OptionButton::pressed() {
 
 	// If not triggered by the mouse, start the popup with the checked item selected.
 	if (popup->get_item_count() > 0) {
-		if ((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
-				(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept"))) {
+		if (!_was_pressed_by_mouse()) {
 			popup->set_current_index(current > -1 ? current : 0);
 		} else {
 			popup->scroll_to_item(current > -1 ? current : 0);
