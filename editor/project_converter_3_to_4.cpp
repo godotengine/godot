@@ -1362,6 +1362,8 @@ static const char *class_renames[][2] = {
 	{ "PinJoint", "PinJoint3D" },
 	{ "PlaneShape", "WorldBoundaryShape3D" },
 	{ "PopupDialog", "Popup" },
+	{ "Position2D", "Marker2D" },
+	{ "Position3D", "Marker3D" },
 	{ "ProceduralSky", "Sky" },
 	{ "RayCast", "RayCast3D" },
 	{ "RayShape", "SeparationRayShape3D" },

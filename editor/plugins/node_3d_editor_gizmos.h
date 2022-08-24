@@ -334,8 +334,8 @@ public:
 	Label3DGizmoPlugin();
 };
 
-class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(Position3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class Marker3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Marker3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
 	Vector<Vector3> cursor_points;
@@ -346,7 +346,7 @@ public:
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	Position3DGizmoPlugin();
+	Marker3DGizmoPlugin();
 };
 
 class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {

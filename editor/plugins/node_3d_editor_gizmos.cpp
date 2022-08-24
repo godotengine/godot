@@ -52,10 +52,10 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
+#include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
-#include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/shape_cast_3d.h"
@@ -2292,7 +2292,7 @@ void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ///
 
-Position3DGizmoPlugin::Position3DGizmoPlugin() {
+Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	cursor_points = Vector<Vector3>();
 
@@ -2316,7 +2316,7 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 
 	// Use the axis color which is brighter for the positive axis.
 	// Use a darkened axis color for the negative axis.
-	// This makes it possible to see in which direction the Position3D node is rotated
+	// This makes it possible to see in which direction the Marker3D node is rotated
 	// (which can be important depending on how it's used).
 	const Color color_x = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_x_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_x);
@@ -2352,19 +2352,19 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 	pos3d_mesh->surface_set_material(0, mat);
 }
 
-bool Position3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Position3D>(p_spatial) != nullptr;
+bool Marker3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Marker3D>(p_spatial) != nullptr;
 }
 
-String Position3DGizmoPlugin::get_gizmo_name() const {
-	return "Position3D";
+String Marker3DGizmoPlugin::get_gizmo_name() const {
+	return "Marker3D";
 }
 
-int Position3DGizmoPlugin::get_priority() const {
+int Marker3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void Position3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+void Marker3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 	p_gizmo->add_mesh(pos3d_mesh);
 	p_gizmo->add_collision_segments(cursor_points);

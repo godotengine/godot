@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  position_3d.h                                                        */
+/*  marker_3d.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POSITION_3D_H
-#define POSITION_3D_H
+#include "marker_3d.h"
 
-#include "scene/3d/node_3d.h"
-
-class Position3D : public Node3D {
-	GDCLASS(Position3D, Node3D);
-
-public:
-	Position3D();
-};
-
-#endif // POSITION_3D_H
+Marker3D::Marker3D() {
+}

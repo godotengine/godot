@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  position_2d.h                                                        */
+/*  marker_2d.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POSITION_2D_H
-#define POSITION_2D_H
+#ifndef MARKER_2D_H
+#define MARKER_2D_H
 
 #include "scene/2d/node_2d.h"
 
-class Position2D : public Node2D {
-	GDCLASS(Position2D, Node2D);
+class Marker2D : public Node2D {
+	GDCLASS(Marker2D, Node2D);
 
 	real_t gizmo_extents = 10.0;
 
@@ -53,7 +53,7 @@ public:
 	void set_gizmo_extents(real_t p_extents);
 	real_t get_gizmo_extents() const;
 
-	Position2D();
+	Marker2D();
 };
 
-#endif // POSITION_2D_H
+#endif // MARKER_2D_H
