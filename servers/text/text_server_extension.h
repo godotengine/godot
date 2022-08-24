@@ -505,8 +505,8 @@ public:
 	GDVIRTUAL2RC(String, string_to_upper, const String &, const String &);
 	GDVIRTUAL2RC(String, string_to_lower, const String &, const String &);
 
-	Array parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
-	GDVIRTUAL3RC(Array, parse_structured_text, StructuredTextParser, const Array &, const String &);
+	TypedArray<Vector2i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	GDVIRTUAL3RC(TypedArray<Vector2i>, parse_structured_text, StructuredTextParser, const Array &, const String &);
 
 	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
 	virtual bool spoof_check(const String &p_string) const override;

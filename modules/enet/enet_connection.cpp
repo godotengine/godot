@@ -34,6 +34,7 @@
 
 #include "core/io/compression.h"
 #include "core/io/ip.h"
+#include "core/variant/typed_array.h"
 
 void ENetConnection::broadcast(enet_uint8 p_channel, ENetPacket *p_packet) {
 	ERR_FAIL_COND_MSG(!host, "The ENetConnection instance isn't currently active.");
@@ -263,9 +264,9 @@ void ENetConnection::get_peers(List<Ref<ENetPacketPeer>> &r_peers) {
 	}
 }
 
-Array ENetConnection::_get_peers() {
+TypedArray<ENetPacketPeer> ENetConnection::_get_peers() {
 	ERR_FAIL_COND_V_MSG(!host, Array(), "The ENetConnection instance isn't currently active.");
-	Array out;
+	TypedArray<ENetPacketPeer> out;
 	for (const Ref<ENetPacketPeer> &I : peers) {
 		out.push_back(I);
 	}

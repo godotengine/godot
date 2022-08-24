@@ -31,6 +31,7 @@
 #include "gltf_skin.h"
 
 #include "../gltf_template_convert.h"
+#include "core/variant/typed_array.h"
 #include "scene/resources/skin.h"
 
 void GLTFSkin::_bind_methods() {
@@ -83,11 +84,11 @@ void GLTFSkin::set_joints_original(Vector<GLTFNodeIndex> p_joints_original) {
 	joints_original = p_joints_original;
 }
 
-Array GLTFSkin::get_inverse_binds() {
+TypedArray<Transform3D> GLTFSkin::get_inverse_binds() {
 	return GLTFTemplateConvert::to_array(inverse_binds);
 }
 
-void GLTFSkin::set_inverse_binds(Array p_inverse_binds) {
+void GLTFSkin::set_inverse_binds(TypedArray<Transform3D> p_inverse_binds) {
 	GLTFTemplateConvert::set_from_array(inverse_binds, p_inverse_binds);
 }
 

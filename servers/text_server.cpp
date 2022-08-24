@@ -104,8 +104,8 @@ Ref<TextServer> TextServerManager::find_interface(const String &p_name) const {
 	return interfaces[idx];
 }
 
-Array TextServerManager::get_interfaces() const {
-	Array ret;
+TypedArray<Dictionary> TextServerManager::get_interfaces() const {
+	TypedArray<Dictionary> ret;
 
 	for (int i = 0; i < interfaces.size(); i++) {
 		Dictionary iface_info;
@@ -1663,8 +1663,8 @@ TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_pa
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
-	Array ret;
+TypedArray<Dictionary> TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
+	TypedArray<Dictionary> ret;
 
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	int gl_size = shaped_text_get_glyph_count(p_shaped);
@@ -1688,7 +1688,7 @@ Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
 	return ret;
 }
 
-Array TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
+TypedArray<Dictionary> TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
 	Array ret;
 
 	const Glyph *glyphs = shaped_text_sort_logical(p_shaped);
@@ -1713,8 +1713,8 @@ Array TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const {
-	Array ret;
+TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const {
+	TypedArray<Dictionary> ret;
 
 	const Glyph *glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
 	int gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);

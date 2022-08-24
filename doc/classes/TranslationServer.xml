@@ -65,7 +65,7 @@
 			</description>
 		</method>
 		<method name="get_loaded_locales" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Returns an array of all loaded locales of the project.
 			</description>

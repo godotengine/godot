@@ -70,44 +70,44 @@ Array RenderingServer::_texture_debug_usage_bind() {
 	return arr;
 }
 
-static Array to_array(const Vector<ObjectID> &ids) {
-	Array a;
+static PackedInt64Array to_int_array(const Vector<ObjectID> &ids) {
+	PackedInt64Array a;
 	a.resize(ids.size());
 	for (int i = 0; i < ids.size(); ++i) {
-		a[i] = ids[i];
+		a.write[i] = ids[i];
 	}
 	return a;
 }
 
-Array RenderingServer::_instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<ObjectID> ids = instances_cull_aabb(p_aabb, p_scenario);
-	return to_array(ids);
+	return to_int_array(ids);
 }
 
-Array RenderingServer::_instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<ObjectID> ids = instances_cull_ray(p_from, p_to, p_scenario);
-	return to_array(ids);
+	return to_int_array(ids);
 }
 
-Array RenderingServer::_instances_cull_convex_bind(const Array &p_convex, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_convex_bind(const Array &p_convex, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
 		Variant v = p_convex[i];
-		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, Array());
+		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
 		planes.push_back(v);
 	}
 
 	Vector<ObjectID> ids = instances_cull_convex(planes, p_scenario);
-	return to_array(ids);
+	return to_int_array(ids);
 }
 
 RID RenderingServer::get_test_texture() {
@@ -1626,7 +1626,7 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 	return d;
 }
 
-Array RenderingServer::_instance_geometry_get_shader_uniform_list(RID p_instance) const {
+TypedArray<Dictionary> RenderingServer::_instance_geometry_get_shader_uniform_list(RID p_instance) const {
 	List<PropertyInfo> params;
 	instance_geometry_get_shader_uniform_list(p_instance, &params);
 	return convert_property_list(&params);
