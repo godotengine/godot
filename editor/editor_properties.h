@@ -496,7 +496,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link = false, const String &p_suffix = String());
-	EditorPropertyVector2(bool p_force_wide = false);
+	EditorPropertyVector2(bool p_wide = false);
 };
 
 class EditorPropertyRect2 : public EditorProperty {
@@ -513,7 +513,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyRect2(bool p_force_wide = false);
+	EditorPropertyRect2(bool p_wide = false);
 };
 
 class EditorPropertyVector3 : public EditorProperty {
@@ -541,7 +541,7 @@ public:
 	virtual void update_using_vector(Vector3 p_vector);
 	virtual Vector3 get_vector();
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link = false, const String &p_suffix = String(), bool p_angle_in_radians = false);
-	EditorPropertyVector3(bool p_force_wide = false);
+	EditorPropertyVector3(bool p_wide = false);
 };
 
 class EditorPropertyVector2i : public EditorProperty {
@@ -561,7 +561,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(int p_min, int p_max, bool p_no_slider, bool p_link = false, const String &p_suffix = String());
-	EditorPropertyVector2i(bool p_force_wide = false);
+	EditorPropertyVector2i(bool p_wide = false);
 };
 
 class EditorPropertyRect2i : public EditorProperty {
@@ -578,7 +578,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyRect2i(bool p_force_wide = false);
+	EditorPropertyRect2i(bool p_wide = false);
 };
 
 class EditorPropertyVector3i : public EditorProperty {
@@ -603,7 +603,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(int p_min, int p_max, bool p_no_slider, bool p_link = false, const String &p_suffix = String());
-	EditorPropertyVector3i(bool p_force_wide = false);
+	EditorPropertyVector3i(bool p_wide = false);
 };
 
 class EditorPropertyPlane : public EditorProperty {
@@ -620,7 +620,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyPlane(bool p_force_wide = false);
+	EditorPropertyPlane(bool p_wide = false);
 };
 
 class EditorPropertyQuaternion : public EditorProperty {
@@ -637,7 +637,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyQuaternion();
+	EditorPropertyQuaternion(bool p_wide = false);
 };
 
 class EditorPropertyVector4 : public EditorProperty {
@@ -654,7 +654,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyVector4();
+	EditorPropertyVector4(bool p_wide = false);
 };
 
 class EditorPropertyVector4i : public EditorProperty {
@@ -671,7 +671,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyVector4i();
+	EditorPropertyVector4i(bool p_wide = false);
 };
 
 class EditorPropertyAABB : public EditorProperty {
@@ -688,7 +688,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyAABB();
+	EditorPropertyAABB(bool p_wide = false);
 };
 
 class EditorPropertyTransform2D : public EditorProperty {
@@ -705,7 +705,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyTransform2D(bool p_include_origin = true);
+	EditorPropertyTransform2D(bool p_wide = false);
 };
 
 class EditorPropertyBasis : public EditorProperty {
@@ -722,7 +722,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyBasis();
+	EditorPropertyBasis(bool p_wide = false);
 };
 
 class EditorPropertyTransform3D : public EditorProperty {
@@ -740,7 +740,7 @@ public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Transform3D p_transform);
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyTransform3D();
+	EditorPropertyTransform3D(bool p_wide = false);
 };
 
 class EditorPropertyProjection : public EditorProperty {
@@ -758,7 +758,7 @@ public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Projection p_transform);
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyProjection();
+	EditorPropertyProjection(bool p_wide = false);
 };
 
 class EditorPropertyColor : public EditorProperty {
@@ -834,6 +834,7 @@ class EditorPropertyResource : public EditorProperty {
 	VBoxContainer *sub_inspector_vbox = nullptr;
 	bool updating_theme = false;
 	bool opened_editor = false;
+	bool wide = false;
 
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
@@ -864,7 +865,7 @@ public:
 
 	void set_use_sub_inspector(bool p_enable);
 
-	EditorPropertyResource();
+	EditorPropertyResource(bool p_wide = false);
 };
 
 ///////////////////////////////////////////////////
