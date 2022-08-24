@@ -168,6 +168,8 @@ private:
 
 	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width = 2.0, float p_bezier_ratio = 1.0);
 
+	void _graph_node_selected(Node *p_gn);
+	void _graph_node_unselected(Node *p_gn);
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
 	void _graph_node_slot_updated(int p_index, Node *p_gn);

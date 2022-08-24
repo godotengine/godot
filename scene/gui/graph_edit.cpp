@@ -372,7 +372,20 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 
 	move_child(connections_layer, first_not_comment);
 	top_layer->raise();
-	emit_signal("node_selected", p_gn);
+}
+
+void GraphEdit::_graph_node_selected(Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	ERR_FAIL_COND(!gn);
+
+	emit_signal("node_selected", gn);
+}
+
+void GraphEdit::_graph_node_unselected(Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	ERR_FAIL_COND(!gn);
+
+	emit_signal("node_unselected", gn);
 }
 
 void GraphEdit::_graph_node_moved(Node *p_gn) {
@@ -402,6 +415,8 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("offset_changed", this, "_graph_node_moved", varray(gn));
+		gn->connect("selected", this, "_graph_node_selected", varray(gn));
+		gn->connect("unselected", this, "_graph_node_unselected", varray(gn));
 		gn->connect("slot_updated", this, "_graph_node_slot_updated", varray(gn));
 		gn->connect("raise_request", this, "_graph_node_raised", varray(gn));
 		gn->connect("item_rect_changed", connections_layer, "update");
@@ -428,6 +443,8 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("offset_changed", this, "_graph_node_moved");
+		gn->disconnect("selected", this, "_graph_node_selected");
+		gn->disconnect("unselected", this, "_graph_node_unselected");
 		gn->disconnect("slot_updated", this, "_graph_node_slot_updated");
 		gn->disconnect("raise_request", this, "_graph_node_raised");
 
@@ -1132,20 +1149,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box) {
-				if (!gn->is_selected() && box_selection_mode_additive) {
-					emit_signal("node_selected", gn);
-				} else if (gn->is_selected() && !box_selection_mode_additive) {
-					emit_signal("node_unselected", gn);
-				}
 				gn->set_selected(box_selection_mode_additive);
 			} else {
-				bool select = (previous_selected.find(gn) != nullptr);
-				if (gn->is_selected() && !select) {
-					emit_signal("node_unselected", gn);
-				} else if (!gn->is_selected() && select) {
-					emit_signal("node_selected", gn);
-				}
-				gn->set_selected(select);
+				gn->set_selected(previous_selected.find(gn) != nullptr);
 			}
 		}
 
@@ -1164,13 +1170,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						continue;
 					}
 
-					bool select = (previous_selected.find(gn) != nullptr);
-					if (gn->is_selected() && !select) {
-						emit_signal("node_unselected", gn);
-					} else if (!gn->is_selected() && select) {
-						emit_signal("node_selected", gn);
-					}
-					gn->set_selected(select);
+					gn->set_selected(previous_selected.find(gn) != nullptr);
 				}
 				top_layer->update();
 				minimap->update();
@@ -1195,7 +1195,6 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						Rect2 r = gn->get_rect();
 						r.size *= zoom;
 						if (r.has_point(b->get_position())) {
-							emit_signal("node_unselected", gn);
 							gn->set_selected(false);
 						}
 					}
@@ -1227,18 +1226,21 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			GraphNode *gn = nullptr;
 
+			// Find node which was clicked on.
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *gn_selected = Object::cast_to<GraphNode>(get_child(i));
 
-				if (gn_selected) {
-					if (gn_selected->is_resizing()) {
-						continue;
-					}
+				if (!gn_selected) {
+					continue;
+				}
 
-					if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
-						gn = gn_selected;
-						break;
-					}
+				if (gn_selected->is_resizing()) {
+					continue;
+				}
+
+				if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
+					gn = gn_selected;
+					break;
 				}
 			}
 
@@ -1247,22 +1249,18 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					return;
 				}
 
+				// Left-clicked on a node, select it.
 				dragging = true;
 				drag_accum = Vector2();
 				just_selected = !gn->is_selected();
 				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
-						if (o_gn) {
-							if (o_gn == gn) {
-								o_gn->set_selected(true);
-							} else {
-								if (o_gn->is_selected()) {
-									emit_signal("node_unselected", o_gn);
-								}
-								o_gn->set_selected(false);
-							}
+						if (!o_gn) {
+							continue;
 						}
+
+						o_gn->set_selected(o_gn == gn);
 					}
 				}
 
@@ -1285,6 +1283,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					return;
 				}
 
+				// Left-clicked on empty space, start box select.
 				box_selecting = true;
 				box_selecting_from = b->get_position();
 				if (b->get_control()) {
@@ -1317,9 +1316,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						if (!gn2) {
 							continue;
 						}
-						if (gn2->is_selected()) {
-							emit_signal("node_unselected", gn2);
-						}
+
 						gn2->set_selected(false);
 					}
 				}
@@ -1327,6 +1324,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == BUTTON_LEFT && !b->is_pressed() && box_selecting) {
+			// Box selection ended. Nodes were selected during mouse movement.
 			box_selecting = false;
 			box_selecting_rect = Rect2();
 			previous_selected.clear();
@@ -1710,6 +1708,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
 	ClassDB::bind_method(D_METHOD("_graph_node_moved"), &GraphEdit::_graph_node_moved);
+	ClassDB::bind_method(D_METHOD("_graph_node_selected"), &GraphEdit::_graph_node_selected);
+	ClassDB::bind_method(D_METHOD("_graph_node_unselected"), &GraphEdit::_graph_node_unselected);
 	ClassDB::bind_method(D_METHOD("_graph_node_raised"), &GraphEdit::_graph_node_raised);
 	ClassDB::bind_method(D_METHOD("_graph_node_slot_updated"), &GraphEdit::_graph_node_slot_updated);
 
