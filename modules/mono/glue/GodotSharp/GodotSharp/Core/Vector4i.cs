@@ -258,31 +258,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Vector4i"/> from an existing <see cref="Vector4i"/>.
-        /// </summary>
-        /// <param name="vi">The existing <see cref="Vector4i"/>.</param>
-        public Vector4i(Vector4i vi)
-        {
-            this.x = vi.x;
-            this.y = vi.y;
-            this.z = vi.z;
-            this.w = vi.w;
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="Vector4i"/> from an existing <see cref="Vector4"/>
-        /// by rounding the components via <see cref="Mathf.RoundToInt(real_t)"/>.
-        /// </summary>
-        /// <param name="v">The <see cref="Vector4"/> to convert.</param>
-        public Vector4i(Vector4 v)
-        {
-            this.x = Mathf.RoundToInt(v.x);
-            this.y = Mathf.RoundToInt(v.y);
-            this.z = Mathf.RoundToInt(v.z);
-            this.w = Mathf.RoundToInt(v.w);
-        }
-
-        /// <summary>
         /// Adds each component of the <see cref="Vector4i"/>
         /// with the components of the given <see cref="Vector4i"/>.
         /// </summary>
@@ -638,7 +613,12 @@ namespace Godot
         /// <param name="value">The vector to convert.</param>
         public static explicit operator Vector4i(Vector4 value)
         {
-            return new Vector4i(value);
+            return new Vector4i(
+                Mathf.RoundToInt(value.x),
+                Mathf.RoundToInt(value.y),
+                Mathf.RoundToInt(value.z),
+                Mathf.RoundToInt(value.w)
+            );
         }
 
         /// <summary>

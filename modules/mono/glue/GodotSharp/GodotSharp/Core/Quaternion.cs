@@ -340,15 +340,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Quaternion"/> from the given <see cref="Quaternion"/>.
-        /// </summary>
-        /// <param name="q">The existing quaternion.</param>
-        public Quaternion(Quaternion q)
-        {
-            this = q;
-        }
-
-        /// <summary>
         /// Constructs a <see cref="Quaternion"/> from the given <see cref="Basis"/>.
         /// </summary>
         /// <param name="basis">The <see cref="Basis"/> to construct from.</param>
