@@ -15,6 +15,9 @@ namespace GodotTools.Utils
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class OS
     {
+        /// <summary>
+        /// Display names for the OS platforms.
+        /// </summary>
         private static class Names
         {
             public const string Windows = "Windows";
@@ -30,6 +33,9 @@ namespace GodotTools.Utils
             public const string HTML5 = "HTML5";
         }
 
+        /// <summary>
+        /// Godot platform identifiers.
+        /// </summary>
         public static class Platforms
         {
             public const string Windows = "windows";
@@ -42,6 +48,10 @@ namespace GodotTools.Utils
             public const string HTML5 = "javascript";
         }
 
+        /// <summary>
+        /// OS name part of the .NET runtime identifier (RID).
+        /// See https://docs.microsoft.com/en-us/dotnet/core/rid-catalog.
+        /// </summary>
         public static class DotNetOS
         {
             public const string Win = "win";

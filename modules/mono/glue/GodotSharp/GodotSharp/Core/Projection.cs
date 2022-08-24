@@ -39,22 +39,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// The projections's X column. Also accessible by using the index position <c>[0]</c>.
+        /// The projection's X column. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
         public Vector4 x;
 
         /// <summary>
-        /// The projections's Y column. Also accessible by using the index position <c>[1]</c>.
+        /// The projection's Y column. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
         public Vector4 y;
 
         /// <summary>
-        /// The projections's Z column. Also accessible by using the index position <c>[2]</c>.
+        /// The projection's Z column. Also accessible by using the index position <c>[2]</c>.
         /// </summary>
         public Vector4 z;
 
         /// <summary>
-        /// The projections's W column. Also accessible by using the index position <c>[3]</c>.
+        /// The projection's W column. Also accessible by using the index position <c>[3]</c>.
         /// </summary>
         public Vector4 w;
 
