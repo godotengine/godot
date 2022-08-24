@@ -26,8 +26,8 @@
 		</method>
 		<method name="_save" qualifiers="virtual">
 			<return type="int" />
-			<param index="0" name="path" type="Resource" />
-			<param index="1" name="resource" type="String" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
 			<param index="2" name="flags" type="int" />
 			<description>
 				Saves the given resource object to a file at the target [param path]. [param flags] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
