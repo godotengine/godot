@@ -287,6 +287,10 @@ def find_dotnet_executable(arch):
             os.path.join(dir, "arm32"),
         ]  # search subfolders for cross compiling
 
+    # `dotnet --info` may not specify architecture. In such cases,
+    # we fallback to the first one we find without architecture.
+    sdk_path_unknown_arch = ""
+
     for dir in search_dirs:
         path = os.path.join(dir, "dotnet")
 
@@ -298,10 +302,14 @@ def find_dotnet_executable(arch):
                     sdk_arch = find_dotnet_arch(path_with_ext)
                     if sdk_arch == arch or arch == "":
                         return path_with_ext
+                    elif sdk_arch == "":
+                        sdk_path_unknown_arch = path_with_ext
         else:
             if os.path.isfile(path) and os.access(path, os.X_OK):
                 sdk_arch = find_dotnet_arch(path)
                 if sdk_arch == arch or arch == "":
                     return path
+                elif sdk_arch == "":
+                    sdk_path_unknown_arch = path
 
-    return ""
+    return sdk_path_unknown_arch
