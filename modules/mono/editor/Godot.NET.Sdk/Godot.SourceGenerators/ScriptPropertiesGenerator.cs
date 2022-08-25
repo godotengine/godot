@@ -225,28 +225,21 @@ namespace Godot.SourceGenerators
                     .Append(dictionaryType)
                     .Append("();\n");
 
-                foreach (var property in godotClassProperties)
+                // To retain the definition order (and display categories correctly), we want to
+                //  iterate over fields and properties at the same time, sorted by line number.
+                var godotClassPropertiesAndFields = Enumerable.Empty<GodotPropertyOrFieldData>()
+                    .Concat(godotClassProperties.Select(propertyData => new GodotPropertyOrFieldData(propertyData)))
+                    .Concat(godotClassFields.Select(fieldData => new GodotPropertyOrFieldData(fieldData)))
+                    .OrderBy(data => data.Symbol.Locations[0].Path())
+                    .ThenBy(data => data.Symbol.Locations[0].StartLine());
+
+                foreach (var member in godotClassPropertiesAndFields)
                 {
-                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(property.PropertySymbol))
+                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(member.Symbol))
                         AppendGroupingPropertyInfo(source, groupingInfo);
 
                     var propertyInfo = DeterminePropertyInfo(context, typeCache,
-                        property.PropertySymbol, property.Type);
-
-                    if (propertyInfo == null)
-                        continue;
-
-                    AppendPropertyInfo(source, propertyInfo.Value);
-                }
-
-                foreach (var field in godotClassFields)
-                {
-
-                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(field.FieldSymbol))
-                        AppendGroupingPropertyInfo(source, groupingInfo);
-
-                    var propertyInfo = DeterminePropertyInfo(context, typeCache,
-                        field.FieldSymbol, field.Type);
+                        member.Symbol, member.Type);
 
                     if (propertyInfo == null)
                         continue;
