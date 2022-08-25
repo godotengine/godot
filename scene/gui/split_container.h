@@ -45,6 +45,7 @@ public:
 
 private:
 	bool should_clamp_split_offset = false;
+	int prev_split_offset_origin = INT_MAX;
 	int split_offset = 0;
 	int middle_sep = 0;
 	bool vertical = false;

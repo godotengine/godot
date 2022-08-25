@@ -6330,6 +6330,7 @@ EditorNode::EditorNode() {
 	left_l_vsplit->add_child(dock_slot[DOCK_SLOT_LEFT_BL]);
 
 	left_r_hsplit = memnew(HSplitContainer);
+	left_r_hsplit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	left_l_hsplit->add_child(left_r_hsplit);
 	left_r_vsplit = memnew(VSplitContainer);
 	left_r_hsplit->add_child(left_r_vsplit);
@@ -6339,6 +6340,7 @@ EditorNode::EditorNode() {
 	left_r_vsplit->add_child(dock_slot[DOCK_SLOT_LEFT_BR]);
 
 	main_hsplit = memnew(HSplitContainer);
+	main_hsplit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	left_r_hsplit->add_child(main_hsplit);
 	VBoxContainer *center_vb = memnew(VBoxContainer);
 	main_hsplit->add_child(center_vb);
@@ -6444,7 +6446,6 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_drag_to_rearrange_enabled(true);
 		dock_slot[i]->set_tabs_rearrange_group(1);
 		dock_slot[i]->connect("tab_changed", callable_mp(this, &EditorNode::_dock_tab_changed));
-		dock_slot[i]->set_use_hidden_tabs_for_min_size(true);
 	}
 
 	dock_drag_timer = memnew(Timer);

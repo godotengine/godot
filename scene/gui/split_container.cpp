@@ -86,23 +86,50 @@ void SplitContainer::_resort() {
 
 	// Compute the separator position without the split offset
 	float ratio = first->get_stretch_ratio() / (first->get_stretch_ratio() + second->get_stretch_ratio());
-	int no_offset_middle_sep = 0;
-	if (first_expanded && second_expanded) {
-		no_offset_middle_sep = get_size()[axis] * ratio - sep / 2;
-	} else if (first_expanded) {
-		no_offset_middle_sep = get_size()[axis] - ms_second[axis] - sep;
-	} else {
-		no_offset_middle_sep = ms_first[axis];
+
+	// For split_offset_origin, 0 means relative to the middle of the container rect, a positive number means
+	// relative to the left, a negative number means relative to the right.
+	int split_offset_origin = 0;
+	if (first_expanded && !second_expanded) {
+		split_offset_origin = -ms_second[axis] - sep - 1; // Make sure not 0.
+	} else if (!first_expanded) {
+		split_offset_origin = ms_first[axis] + 1; // Make sure not 0.
 	}
 
-	// Compute the final middle separation.
-	middle_sep = no_offset_middle_sep;
+	// Converts to an offset relative to the left side of the container.
+	int prev_split_offset_origin_to_left;
+	if (split_offset_origin == 0) {
+		middle_sep = get_size()[axis] * ratio - sep / 2;
+	} else if (split_offset_origin < 0) {
+		middle_sep = get_size()[axis] + split_offset_origin + 1;
+	} else {
+		middle_sep = split_offset_origin - 1;
+	}
+	// Calculate the absolute offset of the previous origin using the current size of the container.
+	if (prev_split_offset_origin == 0) {
+		prev_split_offset_origin_to_left = get_size()[axis] * ratio - sep / 2;
+	} else if (prev_split_offset_origin < 0) {
+		prev_split_offset_origin_to_left = get_size()[axis] + prev_split_offset_origin + 1;
+	} else {
+		prev_split_offset_origin_to_left = prev_split_offset_origin - 1;
+	}
+
+	if (prev_split_offset_origin != INT_MAX) {
+		split_offset -= middle_sep - prev_split_offset_origin_to_left;
+	}
+
+	if ((split_offset_origin > prev_split_offset_origin && prev_split_offset_origin > 0) ||
+			(split_offset_origin < prev_split_offset_origin && prev_split_offset_origin < 0)) {
+		should_clamp_split_offset = true; // The minimum size of the child control becomes larger.
+	}
+
+	prev_split_offset_origin = split_offset_origin;
+
 	if (!collapsed) {
-		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
+		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - middle_sep, (get_size()[axis] - ms_second[axis] - sep) - middle_sep);
 		middle_sep += clamped_split_offset;
 		if (should_clamp_split_offset) {
 			split_offset = clamped_split_offset;
-
 			should_clamp_split_offset = false;
 		}
 	}
