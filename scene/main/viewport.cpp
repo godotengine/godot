@@ -798,6 +798,7 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 		RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 	}
 	_update_global_transform();
+	update_configuration_warnings();
 
 	update_canvas_items();
 
@@ -2853,8 +2854,8 @@ Variant Viewport::gui_get_drag_data() const {
 TypedArray<String> Viewport::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (size.x == 0 || size.y == 0) {
-		warnings.push_back(RTR("Viewport size must be greater than 0 to render anything."));
+	if (size.x <= 1 || size.y <= 1) {
+		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));
 	}
 	return warnings;
 }
