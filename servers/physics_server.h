@@ -807,6 +807,7 @@ class PhysicsServerManager {
 
 public:
 	static const String setting_property_name;
+	static int current_server_id;
 
 private:
 	static void on_servers_changed();
