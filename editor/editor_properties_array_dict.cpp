@@ -1111,7 +1111,7 @@ void EditorPropertyDictionary::update_property() {
 			if (i < amount) {
 				String cs = key.get_construct_string();
 				prop->set_label(key.get_construct_string());
-				prop->set_tooltip(cs);
+				prop->set_tooltip_text(cs);
 				change_index = i + offset;
 			} else if (i == amount) {
 				prop->set_label(TTR("New Key:"));
@@ -1361,7 +1361,7 @@ void EditorPropertyLocalizableString::update_property() {
 
 			String cs = key.get_construct_string();
 			prop->set_label(cs);
-			prop->set_tooltip(cs);
+			prop->set_tooltip_text(cs);
 			remove_index = i + offset;
 
 			prop->set_selectable(false);

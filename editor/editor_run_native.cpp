@@ -77,9 +77,9 @@ void EditorRunNative::_notification(int p_what) {
 						mb->get_popup()->clear();
 						mb->show();
 						if (dc == 1) {
-							mb->set_tooltip(eep->get_option_tooltip(0));
+							mb->set_tooltip_text(eep->get_option_tooltip(0));
 						} else {
-							mb->set_tooltip(eep->get_options_tooltip());
+							mb->set_tooltip_text(eep->get_options_tooltip());
 							for (int i = 0; i < dc; i++) {
 								mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
 								mb->get_popup()->set_item_tooltip(-1, eep->get_option_tooltip(i));

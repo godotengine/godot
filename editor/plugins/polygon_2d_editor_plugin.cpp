@@ -1237,7 +1237,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	button_uv = memnew(Button);
 	button_uv->set_flat(true);
 	add_child(button_uv);
-	button_uv->set_tooltip(TTR("Open Polygon 2D UV editor."));
+	button_uv->set_tooltip_text(TTR("Open Polygon 2D UV editor."));
 	button_uv->connect("pressed", callable_mp(this, &Polygon2DEditor::_menu_option).bind(MODE_EDIT_UV));
 
 	uv_mode = UV_MODE_EDIT_POINT;
@@ -1293,17 +1293,17 @@ Polygon2DEditor::Polygon2DEditor() {
 		uv_button[i]->set_focus_mode(FOCUS_NONE);
 	}
 
-	uv_button[UV_MODE_CREATE]->set_tooltip(TTR("Create Polygon"));
-	uv_button[UV_MODE_CREATE_INTERNAL]->set_tooltip(TTR("Create Internal Vertex"));
-	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip(TTR("Remove Internal Vertex"));
-	uv_button[UV_MODE_EDIT_POINT]->set_tooltip(TTR("Move Points") + "\n" + TTR("Ctrl: Rotate") + "\n" + TTR("Shift: Move All") + "\n" + TTR("Shift+Ctrl: Scale"));
-	uv_button[UV_MODE_MOVE]->set_tooltip(TTR("Move Polygon"));
-	uv_button[UV_MODE_ROTATE]->set_tooltip(TTR("Rotate Polygon"));
-	uv_button[UV_MODE_SCALE]->set_tooltip(TTR("Scale Polygon"));
-	uv_button[UV_MODE_ADD_POLYGON]->set_tooltip(TTR("Create a custom polygon. Enables custom polygon rendering."));
-	uv_button[UV_MODE_REMOVE_POLYGON]->set_tooltip(TTR("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
-	uv_button[UV_MODE_PAINT_WEIGHT]->set_tooltip(TTR("Paint weights with specified intensity."));
-	uv_button[UV_MODE_CLEAR_WEIGHT]->set_tooltip(TTR("Unpaint weights with specified intensity."));
+	uv_button[UV_MODE_CREATE]->set_tooltip_text(TTR("Create Polygon"));
+	uv_button[UV_MODE_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
+	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
+	uv_button[UV_MODE_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + TTR("Ctrl: Rotate") + "\n" + TTR("Shift: Move All") + "\n" + TTR("Shift+Ctrl: Scale"));
+	uv_button[UV_MODE_MOVE]->set_tooltip_text(TTR("Move Polygon"));
+	uv_button[UV_MODE_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
+	uv_button[UV_MODE_SCALE]->set_tooltip_text(TTR("Scale Polygon"));
+	uv_button[UV_MODE_ADD_POLYGON]->set_tooltip_text(TTR("Create a custom polygon. Enables custom polygon rendering."));
+	uv_button[UV_MODE_REMOVE_POLYGON]->set_tooltip_text(TTR("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
+	uv_button[UV_MODE_PAINT_WEIGHT]->set_tooltip_text(TTR("Paint weights with specified intensity."));
+	uv_button[UV_MODE_CLEAR_WEIGHT]->set_tooltip_text(TTR("Unpaint weights with specified intensity."));
 
 	uv_button[UV_MODE_CREATE]->hide();
 	uv_button[UV_MODE_CREATE_INTERNAL]->hide();
@@ -1368,7 +1368,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_enable->set_focus_mode(FOCUS_NONE);
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
-	b_snap_enable->set_tooltip(TTR("Enable Snap"));
+	b_snap_enable->set_tooltip_text(TTR("Enable Snap"));
 	b_snap_enable->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_use_snap));
 
 	b_snap_grid = memnew(Button);
@@ -1378,7 +1378,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_grid->set_focus_mode(FOCUS_NONE);
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
-	b_snap_grid->set_tooltip(TTR("Show Grid"));
+	b_snap_grid->set_tooltip_text(TTR("Show Grid"));
 	b_snap_grid->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_show_grid));
 
 	grid_settings = memnew(AcceptDialog);

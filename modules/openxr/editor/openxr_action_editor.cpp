@@ -104,7 +104,7 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	// maybe add dropdown to edit our toplevel paths, or do we deduce them from our suggested bindings?
 
 	rem_action = memnew(Button);
-	rem_action->set_tooltip(TTR("Remove action"));
+	rem_action->set_tooltip_text(TTR("Remove action"));
 	rem_action->connect("pressed", callable_mp(this, &OpenXRActionEditor::_on_remove_action));
 	rem_action->set_flat(true);
 	add_child(rem_action);

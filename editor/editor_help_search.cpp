@@ -206,7 +206,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	case_sensitive_button = memnew(Button);
 	case_sensitive_button->set_flat(true);
-	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
+	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
 	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
@@ -214,7 +214,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	hierarchy_button = memnew(Button);
 	hierarchy_button->set_flat(true);
-	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
+	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
 	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);

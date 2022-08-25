@@ -536,7 +536,7 @@ void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	btn_preset->set_preset_color(p_color);
 	btn_preset->set_custom_minimum_size(Size2(p_size, p_size));
 	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input).bind(p_color));
-	btn_preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
+	btn_preset->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
 	preset_container->add_child(btn_preset);
 }
 
@@ -1236,7 +1236,7 @@ ColorPicker::ColorPicker() :
 	btn_pick->set_flat(true);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip(RTR("Pick a color from the editor window."));
+	btn_pick->set_tooltip_text(RTR("Pick a color from the editor window."));
 	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
@@ -1276,7 +1276,7 @@ ColorPicker::ColorPicker() :
 	text_type = memnew(Button);
 	hhb->add_child(text_type);
 	text_type->set_text("#");
-	text_type->set_tooltip(RTR("Switch between hexadecimal and code values."));
+	text_type->set_tooltip_text(RTR("Switch between hexadecimal and code values."));
 	if (Engine::get_singleton()->is_editor_hint()) {
 		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
@@ -1337,7 +1337,7 @@ ColorPicker::ColorPicker() :
 
 	btn_add_preset = memnew(Button);
 	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	btn_add_preset->set_tooltip(RTR("Add current color as a preset."));
+	btn_add_preset->set_tooltip_text(RTR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 }

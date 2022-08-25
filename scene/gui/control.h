@@ -312,7 +312,7 @@ private:
 
 	// Extra properties.
 
-	String _get_tooltip() const;
+	String get_tooltip_text() const;
 
 protected:
 	// Dynamic properties.
@@ -604,7 +604,7 @@ public:
 
 	// Extra properties.
 
-	void set_tooltip(const String &p_tooltip);
+	void set_tooltip_text(const String &text);
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 

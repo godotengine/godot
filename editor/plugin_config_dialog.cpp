@@ -111,32 +111,32 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 	name_validation->set_texture(valid_icon);
 	subfolder_validation->set_texture(valid_icon);
 	script_validation->set_texture(valid_icon);
-	name_validation->set_tooltip("");
-	subfolder_validation->set_tooltip("");
-	script_validation->set_tooltip("");
+	name_validation->set_tooltip_text("");
+	subfolder_validation->set_tooltip_text("");
+	script_validation->set_tooltip_text("");
 
 	// Change valid status to invalid depending on conditions.
 	Vector<String> errors;
 	if (name_edit->get_text().is_empty()) {
 		is_valid = false;
 		name_validation->set_texture(invalid_icon);
-		name_validation->set_tooltip(TTR("Plugin name cannot be blank."));
+		name_validation->set_tooltip_text(TTR("Plugin name cannot be blank."));
 	}
 	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
 		is_valid = false;
 		script_validation->set_texture(invalid_icon);
-		script_validation->set_tooltip(vformat(TTR("Script extension must match chosen language extension (.%s)."), ext));
+		script_validation->set_tooltip_text(vformat(TTR("Script extension must match chosen language extension (.%s)."), ext));
 	}
 	if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
 		is_valid = false;
 		subfolder_validation->set_texture(invalid_icon);
-		subfolder_validation->set_tooltip(TTR("Subfolder name is not a valid folder name."));
+		subfolder_validation->set_tooltip_text(TTR("Subfolder name is not a valid folder name."));
 	} else {
 		String path = "res://addons/" + _get_subfolder();
 		if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
 			is_valid = false;
 			subfolder_validation->set_texture(invalid_icon);
-			subfolder_validation->set_tooltip(TTR("Subfolder cannot be one which already exists."));
+			subfolder_validation->set_tooltip_text(TTR("Subfolder cannot be one which already exists."));
 		}
 	}
 

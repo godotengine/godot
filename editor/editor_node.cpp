@@ -845,7 +845,7 @@ void EditorNode::_update_update_spinner() {
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_WHEN_CHANGED), !update_continuously);
 
 	if (update_continuously) {
-		update_spinner->set_tooltip(TTR("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
+		update_spinner->set_tooltip_text(TTR("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
 
 		// Use a different color for the update spinner when Update Continuously is enabled,
 		// as this feature should only be enabled for troubleshooting purposes.
@@ -855,7 +855,7 @@ void EditorNode::_update_update_spinner() {
 		update_spinner->set_self_modulate(
 				gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
 	} else {
-		update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
+		update_spinner->set_tooltip_text(TTR("Spins when the editor window redraws."));
 		update_spinner->set_self_modulate(Color(1, 1, 1));
 	}
 
@@ -2497,16 +2497,16 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		run_current_filename = run_filename;
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_scene_button->set_tooltip(TTR("Reload the played scene."));
+		play_scene_button->set_tooltip_text(TTR("Reload the played scene."));
 	} else if (!p_custom.is_empty()) {
 		run_custom_filename = p_custom;
 		play_custom_scene_button->set_pressed(true);
 		play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_custom_scene_button->set_tooltip(TTR("Reload the played scene."));
+		play_custom_scene_button->set_tooltip_text(TTR("Reload the played scene."));
 	} else {
 		play_button->set_pressed(true);
 		play_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-		play_button->set_tooltip(TTR("Reload the played scene."));
+		play_button->set_tooltip_text(TTR("Reload the played scene."));
 	}
 	stop_button->set_disabled(false);
 
@@ -2534,13 +2534,13 @@ void EditorNode::_run_native(const Ref<EditorExportPreset> &p_preset) {
 void EditorNode::_reset_play_buttons() {
 	play_button->set_pressed(false);
 	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_button->set_tooltip(TTR("Play the project."));
+	play_button->set_tooltip_text(TTR("Play the project."));
 	play_scene_button->set_pressed(false);
 	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_scene_button->set_tooltip(TTR("Play the edited scene."));
+	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
 	play_custom_scene_button->set_pressed(false);
 	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_tooltip(TTR("Play a custom scene."));
+	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
 }
 
 void EditorNode::_android_build_source_selected(const String &p_file) {
@@ -6503,7 +6503,7 @@ EditorNode::EditorNode() {
 
 	scene_tab_add = memnew(Button);
 	scene_tab_add->set_flat(true);
-	scene_tab_add->set_tooltip(TTR("Add a new scene."));
+	scene_tab_add->set_tooltip_text(TTR("Add a new scene."));
 	scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
 	scene_tabs->add_child(scene_tab_add);
@@ -6519,7 +6519,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTR("Distraction Free Mode"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::CMD | KeyModifierMask::CTRL | Key::D);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
-	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
+	distraction_free->set_tooltip_text(TTR("Toggle distraction-free mode."));
 	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 	distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
 	distraction_free->set_toggle_mode(true);
@@ -6571,7 +6571,7 @@ EditorNode::EditorNode() {
 	prev_scene = memnew(Button);
 	prev_scene->set_flat(true);
 	prev_scene->set_icon(gui_base->get_theme_icon(SNAME("PrevScene"), SNAME("EditorIcons")));
-	prev_scene->set_tooltip(TTR("Go to previously opened scene."));
+	prev_scene->set_tooltip_text(TTR("Go to previously opened scene."));
 	prev_scene->set_disabled(true);
 	prev_scene->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(FILE_OPEN_PREV));
 	gui_base->add_child(prev_scene);
@@ -6829,7 +6829,7 @@ EditorNode::EditorNode() {
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->set_tooltip(TTR("Pause the scene execution for debugging."));
+	pause_button->set_tooltip_text(TTR("Pause the scene execution for debugging."));
 	pause_button->set_disabled(true);
 	play_hb->add_child(pause_button);
 
@@ -6843,7 +6843,7 @@ EditorNode::EditorNode() {
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_STOP));
-	stop_button->set_tooltip(TTR("Stop the scene."));
+	stop_button->set_tooltip_text(TTR("Stop the scene."));
 	stop_button->set_disabled(true);
 
 	ED_SHORTCUT("editor/stop", TTR("Stop"), Key::F8);
@@ -6885,7 +6885,7 @@ EditorNode::EditorNode() {
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
-	write_movie_button->set_tooltip(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
+	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 
 	// This button behaves differently, so color it as such.
 	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
@@ -7072,7 +7072,7 @@ EditorNode::EditorNode() {
 	// Fade out the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	version_btn->set_tooltip(TTR("Click to copy."));
+	version_btn->set_tooltip_text(TTR("Click to copy."));
 	version_btn->connect("pressed", callable_mp(this, &EditorNode::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 

@@ -1362,7 +1362,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
-	hb->set_tooltip(item.description);
+	hb->set_tooltip_text(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_name("FavoriteBox");
@@ -1445,9 +1445,9 @@ void ProjectList::create_project_item_control(int p_index) {
 
 		if (!item.missing) {
 			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
-			show->set_tooltip(TTR("Show in File Manager"));
+			show->set_tooltip_text(TTR("Show in File Manager"));
 		} else {
-			show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
+			show->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 		}
 
 		Label *fpath = memnew(Label(item.path));
@@ -2570,7 +2570,7 @@ ProjectManager::ProjectManager() {
 
 		search_box = memnew(LineEdit);
 		search_box->set_placeholder(TTR("Filter Projects"));
-		search_box->set_tooltip(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+		search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(search_box);
@@ -2710,7 +2710,7 @@ ProjectManager::ProjectManager() {
 		// Fade the version label to be less prominent, but still readable.
 		version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
 		version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		version_btn->set_tooltip(TTR("Click to copy."));
+		version_btn->set_tooltip_text(TTR("Click to copy."));
 		version_btn->connect("pressed", callable_mp(this, &ProjectManager::_version_button_pressed));
 		spacer_vb->add_child(version_btn);
 

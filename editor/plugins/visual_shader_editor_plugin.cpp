@@ -754,7 +754,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
+					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
 					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
@@ -781,7 +781,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 				if (is_group) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
+					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
 					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_output_port).bind(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 
@@ -4826,7 +4826,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
 	preview_shader->set_toggle_mode(true);
-	preview_shader->set_tooltip(TTR("Show generated shader code."));
+	preview_shader->set_tooltip_text(TTR("Show generated shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);
 	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
@@ -4896,7 +4896,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
-	tools->set_tooltip(TTR("Options"));
+	tools->set_tooltip_text(TTR("Options"));
 	tools->get_popup()->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
@@ -4928,7 +4928,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	highend_label->set_visible(false);
 	highend_label->set_text("Vulkan");
 	highend_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	highend_label->set_tooltip(TTR("High-end node"));
+	highend_label->set_tooltip_text(TTR("High-end node"));
 
 	node_desc = memnew(RichTextLabel);
 	members_vb->add_child(node_desc);

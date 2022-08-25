@@ -154,9 +154,9 @@
 			<return type="Object" />
 			<param index="0" name="for_text" type="String" />
 			<description>
-				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [param for_text] includes the contents of the [member hint_tooltip] property.
+				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [param for_text] includes the contents of the [member tooltip_text] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance). When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
-				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
+				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member tooltip_text] for an example).
 				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member custom_minimum_size] to some non-zero value.
 				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise, the viewport that instantiates it will not be able to calculate its minimum size reliably.
 				Example of usage with a custom-constructed node:
@@ -527,7 +527,8 @@
 			<return type="String" />
 			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
+				Returns the tooltip text [param at_position] in local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
+				[b]Note:[/b] This method can be overriden to customise its behaviour. If this method returns an empty [String], no tooltip is displayed.
 			</description>
 		</method>
 		<method name="grab_click_focus">
@@ -1005,28 +1006,6 @@
 		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the vertical axis in which the control should grow if its vertical minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
 		</member>
-		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
-			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
-			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
-			[codeblocks]
-			[gdscript]
-			var style_box = StyleBoxFlat.new()
-			style_box.set_bg_color(Color(1, 1, 0))
-			style_box.set_border_width_all(2)
-			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
-			theme.set_stylebox("panel", "TooltipPanel", style_box)
-			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
-			[/gdscript]
-			[csharp]
-			var styleBox = new StyleBoxFlat();
-			styleBox.SetBgColor(new Color(1, 1, 0));
-			styleBox.SetBorderWidthAll(2);
-			// We assume here that the `Theme` property has been assigned a custom Theme beforehand.
-			Theme.SetStyleBox("panel", "TooltipPanel", styleBox);
-			Theme.SetColor("font_color", "TooltipLabel", new Color(0, 1, 1));
-			[/csharp]
-			[/codeblocks]
-		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 		</member>
@@ -1067,7 +1046,7 @@
 			The node's rotation around its pivot, in radians. See [member pivot_offset] to change the pivot's position.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
-			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
+			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member tooltip_text] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
 			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member scale] property.
 		</member>
@@ -1091,6 +1070,28 @@
 			When set, this property gives the highest priority to the type of the specified name. This type can in turn extend another type, forming a dependency chain. See [method Theme.set_type_variation]. If the theme item cannot be found using this type or its base types, lookup falls back on the class names.
 			[b]Note:[/b] To look up [Control]'s own items use various [code]get_theme_*[/code] methods without specifying [code]theme_type[/code].
 			[b]Note:[/b] Theme items are looked for in the tree order, from branch to root, where each [Control] node is checked for its [member theme] property. The earliest match against any type/class name is returned. The project-level Theme and the default Theme are checked last.
+		</member>
+		<member name="tooltip_text" type="String" setter="set_tooltip_text" getter="get_tooltip_text" default="&quot;&quot;">
+			The default tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. The time required for the tooltip to appear can be changed with the [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings. See also [method get_tooltip].
+			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
+			[codeblocks]
+			[gdscript]
+			var style_box = StyleBoxFlat.new()
+			style_box.set_bg_color(Color(1, 1, 0))
+			style_box.set_border_width_all(2)
+			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
+			theme.set_stylebox("panel", "TooltipPanel", style_box)
+			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
+			[/gdscript]
+			[csharp]
+			var styleBox = new StyleBoxFlat();
+			styleBox.SetBgColor(new Color(1, 1, 0));
+			styleBox.SetBorderWidthAll(2);
+			// We assume here that the `Theme` property has been assigned a custom Theme beforehand.
+			Theme.SetStyleBox("panel", "TooltipPanel", styleBox);
+			Theme.SetColor("font_color", "TooltipLabel", new Color(0, 1, 1));
+			[/csharp]
+			[/codeblocks]
 		</member>
 	</members>
 	<signals>

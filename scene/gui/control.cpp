@@ -3062,12 +3062,12 @@ bool Control::is_auto_translating() const {
 
 // Extra properties.
 
-void Control::set_tooltip(const String &p_tooltip) {
-	data.tooltip = p_tooltip;
+void Control::set_tooltip_text(const String &p_hint) {
+	data.tooltip = p_hint;
 	update_configuration_warnings();
 }
 
-String Control::_get_tooltip() const {
+String Control::get_tooltip_text() const {
 	return data.tooltip;
 }
 
@@ -3383,9 +3383,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_grow_direction", "direction"), &Control::set_v_grow_direction);
 	ClassDB::bind_method(D_METHOD("get_v_grow_direction"), &Control::get_v_grow_direction);
 
-	ClassDB::bind_method(D_METHOD("set_tooltip", "tooltip"), &Control::set_tooltip);
+	ClassDB::bind_method(D_METHOD("set_tooltip_text", "hint"), &Control::set_tooltip_text);
+	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &Control::get_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
-	ClassDB::bind_method(D_METHOD("_get_tooltip"), &Control::_get_tooltip);
 
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
@@ -3475,8 +3475,8 @@ void Control::_bind_methods() {
 	ADD_GROUP("Auto Translate", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
-	ADD_GROUP("Hint", "hint_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
+	ADD_GROUP("Tooltip", "tooltip_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip_text", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip_text", "get_tooltip_text");
 
 	ADD_GROUP("Focus", "focus_");
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_LEFT);
