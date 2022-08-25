@@ -284,6 +284,7 @@ public:
 
 	void set_max_contacts_reported(int p_amount);
 	int get_max_contacts_reported() const;
+	int get_contact_count() const;
 
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;

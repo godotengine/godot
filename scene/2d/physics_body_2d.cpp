@@ -787,6 +787,12 @@ int RigidDynamicBody2D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+int RigidDynamicBody2D::get_contact_count() const {
+	PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(bs, 0);
+	return bs->get_contact_count();
+}
+
 void RigidDynamicBody2D::apply_central_impulse(const Vector2 &p_impulse) {
 	PhysicsServer2D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
@@ -966,6 +972,7 @@ void RigidDynamicBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidDynamicBody2D::set_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidDynamicBody2D::get_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("get_contact_count"), &RigidDynamicBody2D::get_contact_count);
 
 	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidDynamicBody2D::set_use_custom_integrator);
 	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidDynamicBody2D::is_using_custom_integrator);
@@ -1023,7 +1030,7 @@ void RigidDynamicBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "continuous_cd", PROPERTY_HINT_ENUM, "Disabled,Cast Ray,Cast Shape"), "set_continuous_collision_detection_mode", "get_continuous_collision_detection_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "contact_monitor"), "set_contact_monitor", "is_contact_monitor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
