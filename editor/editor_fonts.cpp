@@ -258,10 +258,12 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_BOLD_FONT(df_doc_bold, int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 	MAKE_BOLD_FONT(df_doc_title, int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
 	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
+	MAKE_SOURCE_FONT(df_doc_kbd, (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_bold", "EditorFonts", df_doc_bold);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
+	p_theme->set_font("doc_keyboard", "EditorFonts", df_doc_kbd);
 
 	// Ruler font
 	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
