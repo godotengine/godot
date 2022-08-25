@@ -82,7 +82,7 @@ def find_dotnet_app_host_dir(env):
     dotnet_root = env["dotnet_root"]
 
     if not dotnet_root:
-        dotnet_cmd = find_executable("dotnet")
+        dotnet_cmd = find_dotnet_executable(env["arch"])
         if dotnet_cmd:
             sdk_path = find_dotnet_sdk(dotnet_cmd, dotnet_version)
             if sdk_path:
@@ -185,6 +185,35 @@ def find_app_host_version(dotnet_cmd, search_version_str):
     return ""
 
 
+def find_dotnet_arch(dotnet_cmd):
+    import subprocess
+
+    try:
+        env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
+        lines = subprocess.check_output([dotnet_cmd, "--info"], env=env).splitlines()
+
+        for line_bytes in lines:
+            line = line_bytes.decode("utf-8")
+
+            parts = line.split(":", 1)
+            if len(parts) < 2:
+                continue
+
+            arch_str = parts[0].strip()
+            if arch_str != "Architecture":
+                continue
+
+            arch_value = parts[1].strip()
+            arch_map = {"x64": "x86_64", "x86": "x86_32", "arm64": "arm64", "arm32": "arm32"}
+            return arch_map[arch_value]
+    except (subprocess.CalledProcessError, OSError) as e:
+        import sys
+
+        print(e, file=sys.stderr)
+
+    return ""
+
+
 def find_dotnet_sdk(dotnet_cmd, search_version_str):
     import subprocess
     from distutils.version import LooseVersion
@@ -247,24 +276,36 @@ def find_dotnet_cli_rid(dotnet_cmd):
 ENV_PATH_SEP = ";" if os.name == "nt" else ":"
 
 
-def find_executable(name):
+def find_dotnet_executable(arch):
     is_windows = os.name == "nt"
     windows_exts = os.environ["PATHEXT"].split(ENV_PATH_SEP) if is_windows else None
     path_dirs = os.environ["PATH"].split(ENV_PATH_SEP)
 
     search_dirs = path_dirs + [os.getcwd()]  # cwd is last in the list
 
+    for dir in path_dirs:
+        search_dirs += [
+            os.path.join(dir, "x64"),
+            os.path.join(dir, "x86"),
+            os.path.join(dir, "arm64"),
+            os.path.join(dir, "arm32"),
+        ]  # search subfolders for cross compiling
+
     for dir in search_dirs:
-        path = os.path.join(dir, name)
+        path = os.path.join(dir, "dotnet")
 
         if is_windows:
             for extension in windows_exts:
                 path_with_ext = path + extension
 
                 if os.path.isfile(path_with_ext) and os.access(path_with_ext, os.X_OK):
-                    return path_with_ext
+                    sdk_arch = find_dotnet_arch(path_with_ext)
+                    if sdk_arch == arch or arch == "":
+                        return path_with_ext
         else:
             if os.path.isfile(path) and os.access(path, os.X_OK):
-                return path
+                sdk_arch = find_dotnet_arch(path)
+                if sdk_arch == arch or arch == "":
+                    return path
 
     return ""
