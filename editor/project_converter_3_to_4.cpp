@@ -1009,6 +1009,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "gravity_vec", "gravity_direction" }, // Area2D
 	{ "hseparation", "h_separation" }, // Theme
 	{ "iterations_per_second", "physics_ticks_per_second" }, // Engine
+	{ "invert_enable", "invert_enabled" }, // Polygon2D
 	{ "margin_bottom", "offset_bottom" }, // Control broke NinePatchRect, StyleBox
 	{ "margin_left", "offset_left" }, // Control broke NinePatchRect, StyleBox
 	{ "margin_right", "offset_right" }, // Control broke NinePatchRect, StyleBox
@@ -1090,6 +1091,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "GravityVec", "GravityDirection" }, // Area2D
 	{ "Hseparation", "HSeparation" }, // Theme
 	{ "IterationsPerSecond", "PhysicsTicksPerSecond" }, // Engine
+	{ "InvertEnable", "InvertEnabled" }, // Polygon2D
 	{ "MarginBottom", "OffsetBottom" }, // Control broke NinePatchRect, StyleBox
 	{ "MarginLeft", "OffsetLeft" }, // Control broke NinePatchRect, StyleBox
 	{ "MarginRight", "OffsetRight" }, // Control broke NinePatchRect, StyleBox
