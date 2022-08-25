@@ -4341,15 +4341,18 @@ String String::sprintf(const Array &values, bool *error) const {
 					double value = values[value_index];
 					bool is_negative = (value < 0);
 					String str = String::num(ABS(value), min_decimals);
+					bool not_numeric = isinf(value) || isnan(value);
 
 					// Pad decimals out.
-					str = str.pad_decimals(min_decimals);
+					if (!not_numeric) {
+						str = str.pad_decimals(min_decimals);
+					}
 
 					int initial_len = str.length();
 
 					// Padding. Leave room for sign later if required.
 					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = pad_with_zeros ? String("0") : String(" ");
+					String pad_char = (pad_with_zeros && !not_numeric) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
 					} else {
