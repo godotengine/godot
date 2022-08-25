@@ -453,11 +453,11 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	}
 }
 
-COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist) {
+COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance) {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	agent->get_agent()->neighborDist_ = p_dist;
+	agent->get_agent()->neighborDist_ = p_distance;
 }
 
 COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {

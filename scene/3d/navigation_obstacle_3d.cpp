@@ -141,7 +141,7 @@ TypedArray<String> NavigationObstacle3D::get_configuration_warnings() const {
 }
 
 void NavigationObstacle3D::initialize_agent() {
-	NavigationServer3D::get_singleton()->agent_set_neighbor_dist(agent, 0.0);
+	NavigationServer3D::get_singleton()->agent_set_neighbor_distance(agent, 0.0);
 	NavigationServer3D::get_singleton()->agent_set_max_neighbors(agent, 0);
 	NavigationServer3D::get_singleton()->agent_set_time_horizon(agent, 0.0);
 	NavigationServer3D::get_singleton()->agent_set_max_speed(agent, 0.0);
