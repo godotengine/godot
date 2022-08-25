@@ -19,6 +19,7 @@ env = SConscript("./godot-cpp/SConstruct")
 env.__class__.disable_warnings = methods.disable_warnings
 
 opts = Variables([], ARGUMENTS)
+opts.Add(BoolVariable("brotli_enabled", "Use Brotli library", True))
 opts.Add(BoolVariable("freetype_enabled", "Use FreeType library", True))
 opts.Add(BoolVariable("msdfgen_enabled", "Use MSDFgen library (require FreeType)", True))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
@@ -156,6 +157,25 @@ if env["freetype_enabled"]:
         "zutil.c",
     ]
     thirdparty_freetype_sources += [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
+
+    if env["brotli_enabled"]:
+        thirdparty_brotli_dir = "../../../thirdparty/brotli/"
+        thirdparty_brotli_sources = [
+            "common/constants.c",
+            "common/context.c",
+            "common/dictionary.c",
+            "common/platform.c",
+            "common/shared_dictionary.c",
+            "common/transform.c",
+            "dec/bit_reader.c",
+            "dec/decode.c",
+            "dec/huffman.c",
+            "dec/state.c",
+        ]
+        thirdparty_freetype_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+        env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+        env.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
 
     env_freetype.Append(CPPPATH=[thirdparty_freetype_dir + "/include", thirdparty_zlib_dir, thirdparty_png_dir])
     env.Append(CPPPATH=[thirdparty_freetype_dir + "/include"])

@@ -485,7 +485,7 @@ public:
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const = 0;
 
-	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
+	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
 	virtual bool spoof_check(const String &p_string) const { return false; };
 
 	virtual String strip_diacritics(const String &p_string) const;
