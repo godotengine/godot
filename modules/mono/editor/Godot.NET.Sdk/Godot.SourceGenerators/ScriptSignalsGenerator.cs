@@ -117,10 +117,6 @@ namespace Godot.SourceGenerators
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n");
 
-            // TODO:
-            // The delegate name already needs to end with 'Signal' to avoid collision with the event name.
-            // Requiring SignalAttribute is redundant. Should we remove it to make declaration shorter?
-
             var members = symbol.GetMembers();
 
             var signalDelegateSymbols = members

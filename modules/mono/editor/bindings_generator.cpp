@@ -2257,7 +2257,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		String delegate_name = p_isignal.proxy_name;
-		delegate_name += "Handler"; // Delegate name is [SignalName]Handler
+		delegate_name += "EventHandler"; // Delegate name is [SignalName]EventHandler
 
 		// Generate delegate
 		p_output.append(MEMBER_BEGIN "public delegate void ");
@@ -2271,7 +2271,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		// If so, we could store the pointer we get from `data_unique_pointer()` instead of allocating StringName here.
 
 		// Generate event
-		p_output.append(MEMBER_BEGIN "[Signal]" MEMBER_BEGIN "public ");
+		p_output.append(MEMBER_BEGIN "public ");
 
 		if (p_itype.is_singleton) {
 			p_output.append("static ");
