@@ -79,7 +79,7 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 	int expected_size = 255;
 	int bytes = 0;
 
-	while (!md->exit_thread) {
+	while (!md->exit_thread.is_set()) {
 		int ret;
 
 		md->lock();
@@ -149,14 +149,14 @@ Error MIDIDriverALSAMidi::open() {
 	}
 	snd_device_name_free_hint(hints);
 
-	exit_thread = false;
+	exit_thread.clear();
 	thread.start(MIDIDriverALSAMidi::thread_func, this);
 
 	return OK;
 }
 
 void MIDIDriverALSAMidi::close() {
-	exit_thread = true;
+	exit_thread.set();
 	thread.wait_to_finish();
 
 	for (int i = 0; i < connected_inputs.size(); i++) {
@@ -193,7 +193,7 @@ PoolStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 }
 
 MIDIDriverALSAMidi::MIDIDriverALSAMidi() {
-	exit_thread = false;
+	exit_thread.clear();
 }
 
 MIDIDriverALSAMidi::~MIDIDriverALSAMidi() {
