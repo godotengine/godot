@@ -506,7 +506,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		if (instance->mesh_instance.is_valid()) {
-			RSG::mesh_storage->mesh_free(instance->mesh_instance);
+			RSG::mesh_storage->mesh_instance_free(instance->mesh_instance);
 			instance->mesh_instance = RID();
 			// no need to set instance data flag here, as it was freed above
 		}
