@@ -189,8 +189,6 @@ namespace Godot
         /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
         ///
         /// Note: Errors printed this way will not pause project execution.
-        /// To print an error message and pause project execution in debug builds,
-        /// use [code]assert(false, "test error")[/code] instead.
         /// </summary>
         /// <example>
         /// <code>

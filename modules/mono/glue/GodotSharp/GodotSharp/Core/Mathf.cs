@@ -754,9 +754,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code].
-        /// If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave).
-        /// If [code]length[/code] is less than zero, it becomes positive.
+        /// Returns the <paramref name="value"/> wrapped between <c>0</c> and the <paramref name="length"/>.
+        /// If the limit is reached, the next value the function returned is decreased to the <c>0</c> side
+        /// or increased to the <paramref name="length"/> side (like a triangle wave).
+        /// If <paramref name="length"/> is less than zero, it becomes positive.
         /// </summary>
         /// <param name="value">The value to pingpong.</param>
         /// <param name="length">The maximum value of the function.</param>
