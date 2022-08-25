@@ -638,6 +638,14 @@ bool test_28() {
 	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
 	state = state && success;
 
+	// Real (infinity) left-padded
+	format = "fish %11f frog";
+	args.clear();
+	args.push_back(INFINITY);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish         inf frog") && !error);
+	state = state && success;
+
 	// Real right-padded
 	format = "fish %-11f frog";
 	args.clear();
