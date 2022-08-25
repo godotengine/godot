@@ -86,7 +86,7 @@ private:
 
 	enum LuminanceReduceMode {
 		LUMINANCE_REDUCE_READ,
-		LUMINANCE_REDUCE,
+		//LUMINANCE_REDUCE,
 		LUMINANCE_REDUCE_WRITE,
 		LUMINANCE_REDUCE_MAX
 	};
@@ -233,7 +233,7 @@ public:
 	void fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness);
 	void taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
 
-	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
+	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, RID p_target, RID p_prev_luminance, RID p_histogram, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
