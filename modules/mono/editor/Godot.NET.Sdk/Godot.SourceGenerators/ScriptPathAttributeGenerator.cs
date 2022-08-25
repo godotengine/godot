@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,52 +11,87 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators
 {
     [Generator]
-    public class ScriptPathAttributeGenerator : ISourceGenerator
+    public class ScriptPathAttributeGenerator : IIncrementalGenerator
     {
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            if (context.IsGodotSourceGeneratorDisabled("ScriptPathAttribute"))
-                return;
+            var areGodotSourceGeneratorsDisabled = context.AnalyzerConfigOptionsProvider.Select(static (provider, _) => provider.IsGodotSourceGeneratorDisabled("ScriptPathAttribute"));
 
-            if (context.IsGodotToolsProject())
-                return;
+            var isGodotToolsProject = context.AnalyzerConfigOptionsProvider.Select(static (provider, _) => provider.IsGodotToolsProject());
 
-            // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
-            // ReSharper disable once ReplaceWithStringIsNullOrEmpty
-            if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDirBase64", out string? godotProjectDir) || godotProjectDir!.Length == 0)
+            var godotProjectDir = context.AnalyzerConfigOptionsProvider.Select(static (provider, _) =>
             {
-                if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out godotProjectDir) || godotProjectDir!.Length == 0)
+                if (!provider.TryGetGlobalAnalyzerProperty("GodotProjectDirBase64", out string? godotProjectDir) || godotProjectDir!.Length == 0)
+                {
+                    provider.TryGetGlobalAnalyzerProperty("GodotProjectDir", out godotProjectDir);
+                }
+                else
+                {
+                    // Workaround for https://github.com/dotnet/roslyn/issues/51692
+                    godotProjectDir = Encoding.UTF8.GetString(Convert.FromBase64String(godotProjectDir));
+                }
+                return godotProjectDir;
+            });
+
+            var godotClasses = context.SyntaxProvider.CreateValuesProviderForGodotClasses(
+                // Select class declarations that inherit from something
+                // since Godot classes must at least inherit from Godot.Object
+                customPredicate: static (s, _) => s is ClassDeclarationSyntax { BaseList.Types.Count: > 0 } cds &&
+                    // Ignore inner classes
+                    !cds.IsNested());
+
+            var configValues = areGodotSourceGeneratorsDisabled
+                .Combine(isGodotToolsProject)
+                .Combine(godotProjectDir);
+
+            var values = configValues.Combine(godotClasses.Collect());
+
+            context.RegisterSourceOutput(values, static (spc, source) =>
+            {
+                var configValues = source.Left;
+                var godotClasses = source.Right;
+
+                ((bool areGodotSourceGeneratorsDisabled, bool isGodotToolsProject), string? godotProjectDir) = configValues;
+
+                if (areGodotSourceGeneratorsDisabled)
+                    return;
+
+                if (isGodotToolsProject)
+                    return;
+
+                // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
+                // ReSharper disable once ReplaceWithStringIsNullOrEmpty
+                if (string.IsNullOrEmpty(godotProjectDir) || godotProjectDir!.Length == 0)
                 {
                     throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
                 }
-            }
-            else
-            {
-                // Workaround for https://github.com/dotnet/roslyn/issues/51692
-                godotProjectDir = Encoding.UTF8.GetString(Convert.FromBase64String(godotProjectDir));
-            }
 
-            Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = context
-                .Compilation.SyntaxTrees
-                .SelectMany(tree =>
-                    tree.GetRoot().DescendantNodes()
-                        .OfType<ClassDeclarationSyntax>()
-                        // Ignore inner classes
-                        .Where(cds => !cds.IsNested())
-                        .SelectGodotScriptClasses(context.Compilation)
-                        // Report and skip non-partial classes
-                        .Where(x =>
-                        {
-                            if (x.cds.IsPartial())
-                                return true;
-                            return false;
-                        })
-                )
-                .Where(x =>
-                    // Ignore classes whose name is not the same as the file name
-                    Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
-                .GroupBy<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol), INamedTypeSymbol>(x => x.symbol, SymbolEqualityComparer.Default)
-                .ToDictionary<IGrouping<INamedTypeSymbol, (ClassDeclarationSyntax cds, INamedTypeSymbol symbol)>, INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>>(g => g.Key, g => g.Select(x => x.cds), SymbolEqualityComparer.Default);
+                Execute(spc, godotClasses, godotProjectDir);
+            });
+        }
+
+        private static void Execute(SourceProductionContext context, ImmutableArray<GodotClassData> godotClassDatas, string godotProjectDir)
+        {
+            Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = godotClassDatas.Where(x =>
+            {
+                // Report and skip non-partial classes
+                if (!x.DeclarationSyntax.IsPartial())
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ClassPartialModifierRule,
+                        x.DeclarationSyntax.Identifier.GetLocation(),
+                        x.Symbol.ToDisplayString()
+                    ));
+                    return false;
+                }
+
+                // Ignore classes whose name is not the same as the file name
+                if (Path.GetFileNameWithoutExtension(x.DeclarationSyntax.SyntaxTree.FilePath) != x.Symbol.Name)
+                    return false;
+
+                return true;
+            }).GroupBy<GodotClassData, INamedTypeSymbol>(x => x.Symbol, SymbolEqualityComparer.Default)
+                .ToDictionary<IGrouping<INamedTypeSymbol, GodotClassData>, INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>>(g => g.Key, g => g.Select(x => x.DeclarationSyntax), SymbolEqualityComparer.Default);
 
             var usedPaths = new HashSet<string>();
             foreach (var godotClass in godotClasses)
@@ -72,7 +108,7 @@ namespace Godot.SourceGenerators
         }
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
             string godotProjectDir,
             HashSet<string> usedPaths,
             INamedTypeSymbol symbol,
@@ -149,7 +185,7 @@ namespace Godot.SourceGenerators
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
-        private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,
+        private static void AddScriptTypesAssemblyAttr(SourceProductionContext context,
             Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses)
         {
             var sourceBuilder = new StringBuilder();
@@ -179,10 +215,6 @@ namespace Godot.SourceGenerators
 
             context.AddSource("AssemblyScriptTypes.generated",
                 SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
-        }
-
-        public void Initialize(GeneratorInitializationContext context)
-        {
         }
 
         private static string RelativeToDir(string path, string dir)
