@@ -246,7 +246,6 @@ public:
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
 
-	virtual void dump_memory_to_file(const char *p_file);
 	virtual void dump_resources_to_file(const char *p_file);
 	virtual void print_resources_in_use(bool p_short = false);
 	virtual void print_all_resources(String p_to_file = "");

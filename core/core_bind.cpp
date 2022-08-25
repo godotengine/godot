@@ -437,10 +437,6 @@ bool OS::is_stdout_verbose() const {
 	return ::OS::get_singleton()->is_stdout_verbose();
 }
 
-void OS::dump_memory_to_file(const String &p_file) {
-	::OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
-}
-
 struct OSCoreBindImg {
 	String path;
 	Size2 size;
@@ -667,7 +663,6 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_debug_build"), &OS::is_debug_build);
 
-	ClassDB::bind_method(D_METHOD("dump_memory_to_file", "file"), &OS::dump_memory_to_file);
 	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &OS::dump_resources_to_file);
 	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &OS::print_resources_in_use, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &OS::print_all_resources, DEFVAL(""));
