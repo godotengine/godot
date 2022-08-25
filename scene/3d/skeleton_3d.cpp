@@ -613,42 +613,6 @@ Vector<int> Skeleton3D::get_bone_children(int p_bone) {
 	return bones[p_bone].child_bones;
 }
 
-void Skeleton3D::set_bone_children(int p_bone, Vector<int> p_children) {
-	const int bone_size = bones.size();
-	ERR_FAIL_INDEX(p_bone, bone_size);
-	bones.write[p_bone].child_bones = p_children;
-
-	process_order_dirty = true;
-	rest_dirty = true;
-	_make_dirty();
-}
-
-void Skeleton3D::add_bone_child(int p_bone, int p_child) {
-	const int bone_size = bones.size();
-	ERR_FAIL_INDEX(p_bone, bone_size);
-	bones.write[p_bone].child_bones.push_back(p_child);
-
-	process_order_dirty = true;
-	rest_dirty = true;
-	_make_dirty();
-}
-
-void Skeleton3D::remove_bone_child(int p_bone, int p_child) {
-	const int bone_size = bones.size();
-	ERR_FAIL_INDEX(p_bone, bone_size);
-
-	int child_idx = bones[p_bone].child_bones.find(p_child);
-	if (child_idx >= 0) {
-		bones.write[p_bone].child_bones.remove_at(child_idx);
-	} else {
-		WARN_PRINT("Cannot remove child bone: Child bone not found.");
-	}
-
-	process_order_dirty = true;
-	rest_dirty = true;
-	_make_dirty();
-}
-
 Vector<int> Skeleton3D::get_parentless_bones() {
 	_update_process_order();
 	return parentless_bones;
@@ -1238,9 +1202,6 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unparent_bone_and_rest", "bone_idx"), &Skeleton3D::unparent_bone_and_rest);
 
 	ClassDB::bind_method(D_METHOD("get_bone_children", "bone_idx"), &Skeleton3D::get_bone_children);
-	ClassDB::bind_method(D_METHOD("set_bone_children", "bone_idx", "bone_children"), &Skeleton3D::set_bone_children);
-	ClassDB::bind_method(D_METHOD("add_bone_child", "bone_idx", "child_bone_idx"), &Skeleton3D::add_bone_child);
-	ClassDB::bind_method(D_METHOD("remove_bone_child", "bone_idx", "child_bone_idx"), &Skeleton3D::remove_bone_child);
 
 	ClassDB::bind_method(D_METHOD("get_parentless_bones"), &Skeleton3D::get_parentless_bones);
 
