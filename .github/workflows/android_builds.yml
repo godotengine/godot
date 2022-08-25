@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 # Global Settings
 env:
+  # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: 3.x
   SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
 
@@ -13,11 +14,10 @@ concurrency:
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
-
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
@@ -27,8 +27,9 @@ jobs:
           sudo apt-get update
 
       - name: Set up Java 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: temurin
           java-version: 11
 
       - name: Setup Godot build cache

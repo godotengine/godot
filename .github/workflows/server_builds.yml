@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 # Global Settings
 env:
+  # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: 3.x
   SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no module_mono_enabled=yes mono_static=yes mono_glue=no
 
@@ -29,7 +30,7 @@ jobs:
             tools: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Linux dependencies
         shell: bash
