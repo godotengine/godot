@@ -36,7 +36,7 @@
 
 #include <string.h>
 
-Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale) {
+Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
 	Error err = file_buffer.resize(buffer_size);
@@ -48,7 +48,7 @@ Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_f
 		f->get_buffer(writer, buffer_size);
 	}
 	const uint8_t *reader = file_buffer.ptr();
-	return PNGDriverCommon::png_to_image(reader, buffer_size, p_force_linear, p_image);
+	return PNGDriverCommon::png_to_image(reader, buffer_size, p_flags & FLAG_FORCE_LINEAR, p_image);
 }
 
 void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {

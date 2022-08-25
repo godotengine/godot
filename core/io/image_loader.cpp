@@ -44,7 +44,7 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 	return false;
 }
 
-Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, bool p_force_linear, float p_scale) {
+Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, uint32_t p_flags, float p_scale) {
 	ERR_FAIL_COND_V_MSG(p_image.is_null(), ERR_INVALID_PARAMETER, "It's not a reference to a valid Image object.");
 
 	Ref<FileAccess> f = p_custom;
@@ -60,7 +60,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess>
 		if (!loader[i]->recognize(extension)) {
 			continue;
 		}
-		Error err = loader[i]->load_image(p_image, f, p_force_linear, p_scale);
+		Error err = loader[i]->load_image(p_image, f, p_flags, p_scale);
 		if (err != OK) {
 			ERR_PRINT("Error loading image: " + p_file);
 		}
@@ -152,7 +152,7 @@ Ref<Resource> ResourceFormatLoaderImage::load(const String &p_path, const String
 	Ref<Image> image;
 	image.instantiate();
 
-	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
+	Error err = ImageLoader::loader[idx]->load_image(image, f);
 
 	if (err != OK) {
 		if (r_error) {
