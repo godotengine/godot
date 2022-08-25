@@ -299,18 +299,18 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	return static_body;
 }
 
-Array MeshInstance3D::create_convex_collisions_array() {
+TypedArray<Ref<Shape3D>> MeshInstance3D::create_convex_collisions_array() {
 	if (mesh.is_null()) {
-		return Array();
+		return TypedArray<Ref<Shape3D>>();
 	}
 
 	Mesh::ConvexDecompositionSettings settings;
 	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 	if (!shapes.size()) {
-		return Array();
+		return TypedArray<Ref<Shape3D>>();
 	}
 
-	Array arr;
+	TypedArray<Ref<Shape3D>> arr;
 	for (int i = 0; i < shapes.size(); i++) {
 		arr.push_back(*shapes[i]);
 	}

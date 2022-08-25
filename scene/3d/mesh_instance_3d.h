@@ -32,6 +32,7 @@
 #define MESH_INSTANCE_3D_H
 
 #include "core/templates/local_vector.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
 class Skin;
 class SkinReference;
@@ -90,7 +91,7 @@ public:
 	Node *create_multiple_convex_collisions_node();
 	void create_multiple_convex_collisions();
 
-	Array create_convex_collisions_array();
+	TypedArray<Ref<Shape3D>> create_convex_collisions_array();
 
 	void create_debug_tangents();
 
