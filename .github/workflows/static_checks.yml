@@ -1,13 +1,17 @@
 name: 📊 Static Checks
 on: [push, pull_request]
 
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
+  cancel-in-progress: true
+
 jobs:
   static-checks:
     name: Static Checks (clang-format, black format, file format, documentation checks)
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Azure repositories are not reliable, we need to prevent Azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
@@ -23,15 +27,11 @@ jobs:
           sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils
           sudo update-alternatives --remove-all clang-format
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
-          sudo pip3 install black==21.10b0 pygments
+          sudo pip3 install black==22.3.0 pygments
 
       - name: File formatting checks (file_format.sh)
         run: |
           bash ./misc/scripts/file_format.sh
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          bash ./misc/scripts/clang_format.sh
 
       - name: Python style checks via black (black_format.sh)
         run: |
@@ -51,3 +51,7 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/make_rst.py --dry-run doc/classes modules
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./misc/scripts/clang_format.sh
