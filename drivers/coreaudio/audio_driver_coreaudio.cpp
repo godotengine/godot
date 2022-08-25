@@ -215,6 +215,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	}
 
 	ad->lock();
+	ad->start_counting_ticks();
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
@@ -237,6 +238,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
 
+	ad->stop_counting_ticks();
 	ad->unlock();
 
 	return result;

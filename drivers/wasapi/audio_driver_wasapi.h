@@ -35,6 +35,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include <audioclient.h>
@@ -48,7 +49,7 @@ class AudioDriverWASAPI : public AudioDriver {
 		IAudioClient *audio_client = nullptr;
 		IAudioRenderClient *render_client = nullptr;
 		IAudioCaptureClient *capture_client = nullptr;
-		bool active = false;
+		SafeFlag active;
 
 		WORD format_tag = 0;
 		WORD bits_per_sample = 0;
@@ -76,8 +77,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	float real_latency = 0.0;
 	bool using_audio_client_3 = false;
 
-	bool thread_exited = false;
-	mutable bool exit_thread = false;
+	SafeFlag exit_thread;
 
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
