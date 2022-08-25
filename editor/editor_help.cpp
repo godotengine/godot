@@ -525,6 +525,8 @@ void EditorHelp::_update_doc() {
 	method_line.clear();
 	section_line.clear();
 
+	class_desc->set_meta_underline(EditorSettings::get_singleton()->get_setting("text_editor/help/show_meta_underline"));
+
 	_update_theme();
 	String link_color_text = title_color.to_html(false);
 
@@ -1985,6 +1987,14 @@ void EditorHelp::_toggle_scripts_pressed() {
 	update_toggle_scripts_button();
 }
 
+void EditorHelp::_meta_hover_started(Variant p_meta) {
+	// TODO: Very cool meta tooltips.
+	class_desc->set_default_cursor_shape(CURSOR_POINTING_HAND);
+}
+void EditorHelp::_meta_hover_ended(Variant p_meta) {
+	class_desc->set_default_cursor_shape(CURSOR_ARROW);
+}
+
 void EditorHelp::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
@@ -2105,6 +2115,11 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
 	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
+
+	// Change cursor shape, even if meta_underline is disabled.
+	class_desc->connect("meta_hover_started", callable_mp(this, &EditorHelp::_meta_hover_started)); //.unbind(1));
+	class_desc->connect("meta_hover_ended", callable_mp(this, &EditorHelp::_meta_hover_ended)); //.unbind(1));
+
 	_class_desc_resized(false);
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.

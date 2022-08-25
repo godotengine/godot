@@ -175,6 +175,8 @@ class EditorHelp : public VBoxContainer {
 
 	String _fix_constant(const String &p_constant) const;
 	void _toggle_scripts_pressed();
+	void _meta_hover_started(Variant p_meta);
+	void _meta_hover_ended(Variant p_meta);
 
 	static Thread thread;
 
