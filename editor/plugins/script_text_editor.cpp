@@ -596,7 +596,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
+	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
@@ -751,7 +751,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 
-	Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
+	PackedInt32Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
 	if (breakpoint_list.size() == 0) {
 		return;
 	}
@@ -1264,7 +1264,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
-			Array bpoints = tx->get_breakpointed_lines();
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 
 			for (int i = 0; i < bpoints.size(); i++) {
 				int line = bpoints[i];
@@ -1274,7 +1274,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
-			Array bpoints = tx->get_breakpointed_lines();
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 			if (bpoints.size() <= 0) {
 				return;
 			}
@@ -1300,7 +1300,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
-			Array bpoints = tx->get_breakpointed_lines();
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 			if (bpoints.size() <= 0) {
 				return;
 			}
@@ -1420,7 +1420,9 @@ Control *ScriptTextEditor::get_edit_menu() {
 }
 
 void ScriptTextEditor::clear_edit_menu() {
-	memdelete(edit_hb);
+	if (editor_enabled) {
+		memdelete(edit_hb);
+	}
 }
 
 void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
@@ -1439,7 +1441,7 @@ void ScriptTextEditor::reload(bool p_soft) {
 	scr->get_language()->reload_tool_script(scr, soft);
 }
 
-Array ScriptTextEditor::get_breakpoints() {
+PackedInt32Array ScriptTextEditor::get_breakpoints() {
 	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 
@@ -1454,7 +1456,7 @@ void ScriptTextEditor::clear_breakpoints() {
 void ScriptTextEditor::set_tooltip_request_func(const Callable &p_toolip_callback) {
 	Variant args[1] = { this };
 	const Variant *argp[] = { &args[0] };
-	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bind(argp, 1));
+	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bindp(argp, 1));
 }
 
 void ScriptTextEditor::set_debugger_active(bool p_active) {
@@ -1821,7 +1823,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
-	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
@@ -1860,15 +1862,9 @@ void ScriptTextEditor::_enable_code_editor() {
 	color_picker = memnew(ColorPicker);
 	color_picker->set_deferred_mode(true);
 	color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_color_changed));
+	color_panel->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(color_picker));
 
 	color_panel->add_child(color_picker);
-
-	// get default color picker mode from editor settings
-	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	color_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
-
-	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-	color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
@@ -1958,7 +1954,7 @@ void ScriptTextEditor::_enable_code_editor() {
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->add_theme_constant_override("separation", 2);
-	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 

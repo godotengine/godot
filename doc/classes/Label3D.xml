@@ -17,15 +17,15 @@
 		</method>
 		<method name="get_draw_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
+			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="set_draw_flag">
 			<return type="void" />
-			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the specified flag will be enabled. See [enum Label3D.DrawFlags] for a list of flags.
 			</description>
@@ -53,8 +53,9 @@
 		<member name="font" type="Font" setter="set_font" getter="get_font">
 			Font configuration used to display text.
 		</member>
-		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
-			Font size of the [Label3D]'s text.
+		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="32">
+			Font size of the [Label3D]'s text. To make the font look more detailed when up close, increase [member font_size] while decreasing [member pixel_size] at the same time.
+			Higher font sizes require more time to render new characters, which can cause stuttering during gameplay.
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
@@ -79,18 +80,18 @@
 		</member>
 		<member name="outline_render_priority" type="int" setter="set_outline_render_priority" getter="get_outline_render_priority" default="-1">
 			Sets the render priority for the text outline. Higher priority objects will be sorted in front of lower priority objects.
-			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
-		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
+		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="12">
 			Text outline size.
 		</member>
-		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
-			The size of one pixel's width on the label to scale it in 3D.
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.005">
+			The size of one pixel's width on the label to scale it in 3D. To make the font look more detailed when up close, increase [member font_size] while decreasing [member pixel_size] at the same time.
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 			Sets the render priority for the text. Higher priority objects will be sorted in front of lower priority objects.
-			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
@@ -126,7 +127,7 @@
 			If set, lights in the environment affect the label.
 		</constant>
 		<constant name="FLAG_DOUBLE_SIDED" value="1" enum="DrawFlags">
-			If set, text can be seen from the back as well. If not, the texture is invisible when looking at it from behind.
+			If set, text can be seen from the back as well. If not, the text is invisible when looking at it from behind.
 		</constant>
 		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2" enum="DrawFlags">
 			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
@@ -138,7 +139,7 @@
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
-			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping.
+			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping. [member GeometryInstance3D.cast_shadow] has no effect when this transparency mode is used; the [Label3D] will never cast shadows.
 		</constant>
 		<constant name="ALPHA_CUT_DISCARD" value="1" enum="AlphaCutMode">
 			This mode only allows fully transparent or fully opaque pixels. Harsh edges will be visible unless some form of screen-space antialiasing is enabled (see [member ProjectSettings.rendering/anti_aliasing/quality/screen_space_aa]). This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].

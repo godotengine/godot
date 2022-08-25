@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_EDITOR_PLUGIN_H
-#define PARTICLES_2D_EDITOR_PLUGIN_H
+#ifndef GPU_PARTICLES_2D_EDITOR_PLUGIN_H
+#define GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
@@ -38,6 +38,7 @@
 #include "scene/gui/spin_box.h"
 
 class EditorFileDialog;
+class EditorUndoRedoManager;
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
@@ -75,7 +76,7 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 
 	String source_emission_file;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_visibility_rect();
@@ -97,4 +98,4 @@ public:
 	~GPUParticles2DEditorPlugin();
 };
 
-#endif // PARTICLES_2D_EDITOR_PLUGIN_H
+#endif // GPU_PARTICLES_2D_EDITOR_PLUGIN_H

@@ -100,13 +100,15 @@ protected:
 	static HashMap<StringName, Capture> captures;
 	static HashMap<String, CreatePeerFunc> protocols;
 
+	static void (*allow_focus_steal_fn)();
+
 public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
 	_FORCE_INLINE_ static bool is_active() { return singleton != nullptr && script_debugger != nullptr; }
 
 	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; };
 
-	static void initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints);
+	static void initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)());
 	static void deinitialize();
 	static void register_profiler(const StringName &p_name, const Profiler &p_profiler);
 	static void unregister_profiler(const StringName &p_name);

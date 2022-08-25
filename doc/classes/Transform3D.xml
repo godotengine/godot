@@ -24,25 +24,31 @@
 		</constructor>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
-			<argument index="0" name="from" type="Transform3D" />
+			<param index="0" name="from" type="Transform3D" />
 			<description>
 				Constructs a [Transform3D] as a copy of the given [Transform3D].
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
-			<argument index="0" name="basis" type="Basis" />
-			<argument index="1" name="origin" type="Vector3" />
+			<param index="0" name="basis" type="Basis" />
+			<param index="1" name="origin" type="Vector3" />
 			<description>
 				Constructs a Transform3D from a [Basis] and [Vector3].
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
-			<argument index="0" name="x_axis" type="Vector3" />
-			<argument index="1" name="y_axis" type="Vector3" />
-			<argument index="2" name="z_axis" type="Vector3" />
-			<argument index="3" name="origin" type="Vector3" />
+			<param index="0" name="from" type="Projection" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Transform3D">
+			<return type="Transform3D" />
+			<param index="0" name="x_axis" type="Vector3" />
+			<param index="1" name="y_axis" type="Vector3" />
+			<param index="2" name="z_axis" type="Vector3" />
+			<param index="3" name="origin" type="Vector3" />
 			<description>
 				Constructs a Transform3D from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
@@ -57,10 +63,10 @@
 		</method>
 		<method name="interpolate_with" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="xform" type="Transform3D" />
-			<argument index="1" name="weight" type="float" />
+			<param index="0" name="xform" type="Transform3D" />
+			<param index="1" name="weight" type="float" />
 			<description>
-				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
+				Returns a transform interpolated between this transform and another by a given [param weight] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
@@ -71,18 +77,18 @@
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="xform" type="Transform3D" />
+			<param index="0" name="xform" type="Transform3D" />
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="target" type="Vector3" />
-			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="0" name="target" type="Vector3" />
+			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
-				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [code]target[/code] position.
-				The up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [code]target[/code] and [code]up[/code] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
+				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [param target] position.
+				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [param target] and [param up] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
@@ -93,33 +99,74 @@
 		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="angle" type="float" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians), using matrix multiplication. The [code]axis[/code] must be a normalized vector.
+				Returns a copy of the transform rotated around the given [param axis] by the given [param angle] (in radians).
+				The [param axis] must be a normalized vector.
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="rotated_local" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Returns a copy of the transform rotated around the given [param axis] by the given [param angle] (in radians).
+				The [param axis] must be a normalized vector.
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
+				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="scale" type="Vector3" />
+			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Returns a copy of the transform with its basis and origin scaled by the given [code]scale[/code] factor, using matrix multiplication.
+				Returns a copy of the transform scaled by the given [param scale] factor.
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
 			</description>
 		</method>
-		<method name="sphere_interpolate_with" qualifiers="const">
+		<method name="scaled_local" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="xform" type="Transform3D" />
-			<argument index="1" name="weight" type="float" />
+			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Returns a transform spherically interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
+				Returns a copy of the transform scaled by the given [param scale] factor.
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
+				This can be seen as transforming with respect to the local frame.
+			</description>
+		</method>
+		<method name="spherical_interpolate_with" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="xform" type="Transform3D" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Returns a transform spherically interpolated between this transform and another by a given [param weight] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="offset" type="Vector3" />
+			<param index="0" name="offset" type="Vector3" />
 			<description>
-				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
-				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
+				Returns a copy of the transform translated by the given [param offset].
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="translated_local" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="offset" type="Vector3" />
+			<description>
+				Returns a copy of the transform translated by the given [param offset].
+				This method is an optimized version of multiplying the given transform [code]X[/code]
+				with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
+				This can be seen as transforming with respect to the local frame.
 			</description>
 		</method>
 	</methods>
@@ -148,7 +195,7 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Transform3D" />
+			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Returns [code]true[/code] if the transforms are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -156,49 +203,56 @@
 		</operator>
 		<operator name="operator *">
 			<return type="AABB" />
-			<argument index="0" name="right" type="AABB" />
+			<param index="0" name="right" type="AABB" />
 			<description>
 				Transforms (multiplies) the [AABB] by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="PackedVector3Array" />
-			<argument index="0" name="right" type="PackedVector3Array" />
+			<param index="0" name="right" type="PackedVector3Array" />
 			<description>
 				Transforms (multiplies) each element of the [Vector3] array by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
+			<return type="Plane" />
+			<param index="0" name="right" type="Plane" />
+			<description>
+				Transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="Transform3D" />
-			<argument index="0" name="right" type="Transform3D" />
+			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
 			<description>
 				Transforms (multiplies) the [Vector3] by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
-			<argument index="0" name="right" type="float" />
+			<param index="0" name="right" type="float" />
 			<description>
 				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
-			<argument index="0" name="right" type="int" />
+			<param index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Transform3D" />
+			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Returns [code]true[/code] if the transforms are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.

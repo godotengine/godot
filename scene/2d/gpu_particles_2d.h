@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_H
-#define PARTICLES_2D_H
+#ifndef GPU_PARTICLES_2D_H
+#define GPU_PARTICLES_2D_H
 
 #include "scene/2d/node_2d.h"
 
@@ -84,7 +84,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	void _update_collision_size();
 
@@ -167,4 +167,4 @@ public:
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
 
-#endif // PARTICLES_2D_H
+#endif // GPU_PARTICLES_2D_H

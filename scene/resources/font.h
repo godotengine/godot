@@ -41,7 +41,7 @@ class TextLine;
 class TextParagraph;
 
 /*************************************************************************/
-/*  Font                                                             */
+/*  Font                                                                 */
 /*************************************************************************/
 
 class Font : public Resource {
@@ -230,7 +230,7 @@ public:
 	virtual void clear_cache();
 	virtual void remove_cache(int p_cache_index);
 
-	virtual Array get_size_cache_list(int p_cache_index) const;
+	virtual TypedArray<Vector2i> get_size_cache_list(int p_cache_index) const;
 	virtual void clear_size_cache(int p_cache_index);
 	virtual void remove_size_cache(int p_cache_index, const Vector2i &p_size);
 
@@ -271,7 +271,7 @@ public:
 	virtual void set_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset);
 	virtual PackedInt32Array get_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index) const;
 
-	virtual Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
+	virtual PackedInt32Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
 	virtual void clear_glyphs(int p_cache_index, const Vector2i &p_size);
 	virtual void remove_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_glyph);
 
@@ -290,7 +290,7 @@ public:
 	virtual void set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx);
 	virtual int get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
 
-	virtual Array get_kerning_list(int p_cache_index, int p_size) const;
+	virtual TypedArray<Vector2i> get_kerning_list(int p_cache_index, int p_size) const;
 	virtual void clear_kerning_map(int p_cache_index, int p_size);
 	virtual void remove_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair);
 
@@ -381,4 +381,78 @@ public:
 	~FontVariation();
 };
 
-#endif /* FONT_H */
+/*************************************************************************/
+/*  SystemFont                                                           */
+/*************************************************************************/
+
+class SystemFont : public Font {
+	GDCLASS(SystemFont, Font);
+
+	PackedStringArray names;
+	BitField<TextServer::FontStyle> style = 0;
+
+	mutable Ref<Font> theme_font;
+
+	Ref<FontFile> base_font;
+	Vector<int> face_indeces;
+	int ftr_weight = 0;
+	int ftr_italic = 0;
+
+	bool antialiased = true;
+	bool mipmaps = false;
+	bool force_autohinter = false;
+	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
+	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	real_t oversampling = 0.f;
+	bool msdf = false;
+
+protected:
+	static void _bind_methods();
+
+	virtual void _update_base_font();
+	virtual void _update_rids() const override;
+
+	virtual void reset_state() override;
+
+public:
+	virtual Ref<Font> _get_base_font_or_default() const;
+
+	virtual void set_antialiased(bool p_antialiased);
+	virtual bool is_antialiased() const;
+
+	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
+	virtual bool get_generate_mipmaps() const;
+
+	virtual void set_force_autohinter(bool p_force_autohinter);
+	virtual bool is_force_autohinter() const;
+
+	virtual void set_hinting(TextServer::Hinting p_hinting);
+	virtual TextServer::Hinting get_hinting() const;
+
+	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
+	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_oversampling(real_t p_oversampling);
+	virtual real_t get_oversampling() const;
+
+	virtual void set_multichannel_signed_distance_field(bool p_msdf);
+	virtual bool is_multichannel_signed_distance_field() const;
+
+	virtual void set_font_names(const PackedStringArray &p_names);
+	virtual PackedStringArray get_font_names() const;
+
+	virtual void set_font_style(BitField<TextServer::FontStyle> p_style);
+	virtual BitField<TextServer::FontStyle> get_font_style() const override;
+
+	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
+
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID _get_rid() const override;
+
+	int64_t get_face_count() const override;
+
+	SystemFont();
+	~SystemFont();
+};
+
+#endif // FONT_H

@@ -824,12 +824,15 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
 				_zoom_in();
+				accept_event();
 			}
 			if (ED_IS_SHORTCUT("script_editor/zoom_out", p_event)) {
 				_zoom_out();
+				accept_event();
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_reset_zoom();
+				accept_event();
 			}
 		}
 	}
@@ -1042,6 +1045,8 @@ void CodeTextEditor::update_editor_settings() {
 			guideline_cols.append(EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/line_length_guideline_soft_column"));
 		}
 		text_editor->set_line_length_guidelines(guideline_cols);
+	} else {
+		text_editor->set_line_length_guidelines(TypedArray<int>());
 	}
 }
 
@@ -1594,6 +1599,10 @@ void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 	error_column = p_column;
 }
 
+Point2i CodeTextEditor::get_error_pos() const {
+	return Point2i(error_line, error_column);
+}
+
 void CodeTextEditor::goto_error() {
 	if (!error->get_text().is_empty()) {
 		if (text_editor->get_line_count() != error_line) {
@@ -1780,7 +1789,7 @@ void CodeTextEditor::toggle_bookmark() {
 }
 
 void CodeTextEditor::goto_next_bookmark() {
-	Array bmarks = text_editor->get_bookmarked_lines();
+	PackedInt32Array bmarks = text_editor->get_bookmarked_lines();
 	if (bmarks.size() <= 0) {
 		return;
 	}
@@ -1804,7 +1813,7 @@ void CodeTextEditor::goto_next_bookmark() {
 }
 
 void CodeTextEditor::goto_prev_bookmark() {
-	Array bmarks = text_editor->get_bookmarked_lines();
+	PackedInt32Array bmarks = text_editor->get_bookmarked_lines();
 	if (bmarks.size() <= 0) {
 		return;
 	}
@@ -1860,7 +1869,8 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS);
-	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KeyModifierMask::CMD | Key::KEY_0);
+	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTR("Reset Zoom"),
+			{ int32_t(KeyModifierMask::CMD | Key::KEY_0), int32_t(KeyModifierMask::CMD | Key::KP_0) });
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);

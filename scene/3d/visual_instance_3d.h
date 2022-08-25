@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_INSTANCE_H
-#define VISUAL_INSTANCE_H
+#ifndef VISUAL_INSTANCE_3D_H
+#define VISUAL_INSTANCE_3D_H
 
 #include "scene/3d/node_3d.h"
 
@@ -178,8 +178,8 @@ public:
 	void set_lightmap_scale(LightmapScale p_scale);
 	LightmapScale get_lightmap_scale() const;
 
-	void set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value);
-	Variant get_shader_instance_uniform(const StringName &p_uniform) const;
+	void set_instance_shader_uniform(const StringName &p_uniform, const Variant &p_value);
+	Variant get_instance_shader_uniform(const StringName &p_uniform) const;
 
 	void set_custom_aabb(AABB aabb);
 
@@ -196,4 +196,4 @@ VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
 VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
 
-#endif
+#endif // VISUAL_INSTANCE_3D_H

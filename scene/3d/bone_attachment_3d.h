@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_ATTACHMENT_H
-#define BONE_ATTACHMENT_H
+#ifndef BONE_ATTACHMENT_3D_H
+#define BONE_ATTACHMENT_3D_H
 
 #include "scene/3d/skeleton_3d.h"
 #ifdef TOOLS_ENABLED
@@ -64,7 +64,7 @@ class BoneAttachment3D : public Node3D {
 	Skeleton3D *_get_skeleton3d();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -99,4 +99,4 @@ public:
 	BoneAttachment3D();
 };
 
-#endif // BONE_ATTACHMENT_H
+#endif // BONE_ATTACHMENT_3D_H

@@ -57,12 +57,12 @@ private:
 	real_t upper_fade = 0.3;
 	real_t lower_fade = 0.3;
 	bool distance_fade_enabled = false;
-	real_t distance_fade_begin = 10.0;
-	real_t distance_fade_length = 1.0;
+	real_t distance_fade_begin = 40.0;
+	real_t distance_fade_length = 10.0;
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	virtual TypedArray<String> get_configuration_warnings() const override;

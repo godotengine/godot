@@ -766,7 +766,7 @@ void GodotBody3D::call_queries() {
 			Callable::CallError ce;
 			int argc = (fi_callback_data->udata.get_type() == Variant::NIL) ? 1 : 2;
 			Variant rv;
-			fi_callback_data->callable.call(vp, argc, rv, ce);
+			fi_callback_data->callable.callp(vp, argc, rv, ce);
 		}
 	}
 

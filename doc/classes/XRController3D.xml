@@ -10,14 +10,14 @@
 		As many XR runtimes now use a configurable action map all inputs are named.
 	</description>
 	<tutorials>
-		<link title="VR documentation index">$DOCS_URL/tutorials/vr/index.html</link>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_axis" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a [Vector2] for the input with the given [code]name[/code]. This is used for thumbsticks and thumbpads found on many controllers.
+				Returns a [Vector2] for the input with the given [param name]. This is used for thumbsticks and thumbpads found on many controllers.
 			</description>
 		</method>
 		<method name="get_tracker_hand" qualifiers="const">
@@ -28,42 +28,42 @@
 		</method>
 		<method name="get_value" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a numeric value for the input with the given [code]name[/code]. This is used for triggers and grip sensors.
+				Returns a numeric value for the input with the given [param name]. This is used for triggers and grip sensors.
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the button with the given [code]name[/code] is pressed.
+				Returns [code]true[/code] if the button with the given [param name] is pressed.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
 		<signal name="button_released">
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Emitted when a button on this controller is released.
 			</description>
 		</signal>
 		<signal name="input_axis_changed">
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="value" type="Vector2" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Vector2" />
 			<description>
 				Emitted when a thumbstick or thumbpad on this controller is moved.
 			</description>
 		</signal>
 		<signal name="input_value_changed">
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="float" />
 			<description>
 				Emitted when a trigger or similar input on this controller changes value.
 			</description>

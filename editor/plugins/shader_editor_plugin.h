@@ -40,12 +40,28 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
+#include "scene/resources/shader_include.h"
 #include "servers/rendering/shader_warnings.h"
 
 class ItemList;
 class VisualShaderEditor;
 class HSplitContainer;
 class ShaderCreateDialog;
+
+class GDShaderSyntaxHighlighter : public CodeHighlighter {
+	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
+
+private:
+	Vector<Point2i> disabled_branch_regions;
+	Color disabled_branch_color;
+
+public:
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
+
+	void add_disabled_branch_region(const Point2i &p_region);
+	void clear_disabled_branch_regions();
+	void set_disabled_branch_color(const Color &p_color);
+};
 
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
@@ -56,14 +72,20 @@ class ShaderTextEditor : public CodeTextEditor {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
 	};
 
-	Ref<CodeHighlighter> syntax_highlighter;
+	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
+	Ref<ShaderInclude> shader_inc;
 	List<ShaderWarning> warnings;
 	Error last_compile_result = Error::OK;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
+
+	bool block_shader_changed = false;
+	void _shader_changed();
+
+	uint32_t dependencies_version = 0; // Incremented if deps changed
 
 protected:
 	void _notification(int p_what);
@@ -73,13 +95,23 @@ protected:
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
 
 public:
+	void set_block_shader_changed(bool p_block) { block_shader_changed = p_block; }
+	uint32_t get_dependencies_version() const { return dependencies_version; }
+
 	virtual void _validate_script() override;
 
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);
 
 	Ref<Shader> get_edited_shader() const;
+	Ref<ShaderInclude> get_edited_shader_include() const;
+
 	void set_edited_shader(const Ref<Shader> &p_shader);
+	void set_edited_shader(const Ref<Shader> &p_shader, const String &p_code);
+	void set_edited_shader_include(const Ref<ShaderInclude> &p_include);
+	void set_edited_shader_include(const Ref<ShaderInclude> &p_include, const String &p_code);
+	void set_edited_code(const String &p_code);
+
 	ShaderTextEditor();
 };
 
@@ -126,38 +158,51 @@ class ShaderEditor : public PanelContainer {
 	ConfirmationDialog *disk_changed = nullptr;
 
 	ShaderTextEditor *shader_editor = nullptr;
+	bool compilation_success = true;
 
 	void _menu_option(int p_option);
 	mutable Ref<Shader> shader;
+	mutable Ref<ShaderInclude> shader_inc;
 
 	void _editor_settings_changed();
 	void _project_settings_changed();
 
 	void _check_for_external_edit();
 	void _reload_shader_from_disk();
+	void _reload_shader_include_from_disk();
+	void _reload();
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 	void _update_warnings(bool p_validate);
+
+	void _script_validated(bool p_valid) {
+		compilation_success = p_valid;
+		emit_signal(SNAME("validation_changed"));
+	}
+
+	uint32_t dependencies_version = 0xFFFFFFFF;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	void _make_context_menu(bool p_selection, Vector2 p_position);
-	void _text_edit_gui_input(const Ref<InputEvent> &ev);
+	void _text_edit_gui_input(const Ref<InputEvent> &p_ev);
 
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	bool was_compilation_successful() const { return compilation_success; }
 	void apply_shaders();
-
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
-
+	void edit(const Ref<ShaderInclude> &p_shader_inc);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void save_external_data(const String &p_str = "");
+	void validate_script();
+	bool is_unsaved() const;
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
-	void save_external_data(const String &p_str = "");
 
 	ShaderEditor();
 };
@@ -167,6 +212,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	struct EditedShader {
 		Ref<Shader> shader;
+		Ref<ShaderInclude> shader_inc;
 		ShaderEditor *shader_editor = nullptr;
 		VisualShaderEditor *visual_shader_editor = nullptr;
 	};
@@ -175,7 +221,9 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	enum {
 		FILE_NEW,
+		FILE_NEW_INCLUDE,
 		FILE_OPEN,
+		FILE_OPEN_INCLUDE,
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_INSPECT,
@@ -194,15 +242,16 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	void _update_shader_list();
 	void _shader_selected(int p_index);
+	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _menu_item_pressed(int p_index);
 	void _resource_saved(Object *obj);
 	void _close_shader(int p_index);
 
 	void _shader_created(Ref<Shader> p_shader);
+	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
+	void _update_shader_list_status();
 
 public:
-	virtual String get_name() const override { return "Shader"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -218,4 +267,4 @@ public:
 	~ShaderEditorPlugin();
 };
 
-#endif
+#endif // SHADER_EDITOR_PLUGIN_H

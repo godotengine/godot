@@ -31,16 +31,19 @@
 #include "label.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
 #include "servers/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
-	if (autowrap_mode != p_mode) {
-		autowrap_mode = p_mode;
-		lines_dirty = true;
+	if (autowrap_mode == p_mode) {
+		return;
 	}
+
+	autowrap_mode = p_mode;
+	lines_dirty = true;
 	update();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
@@ -53,6 +56,10 @@ TextServer::AutowrapMode Label::get_autowrap_mode() const {
 }
 
 void Label::set_uppercase(bool p_uppercase) {
+	if (uppercase == p_uppercase) {
+		return;
+	}
+
 	uppercase = p_uppercase;
 	dirty = true;
 
@@ -64,7 +71,7 @@ bool Label::is_uppercase() const {
 }
 
 int Label::get_line_height(int p_line) const {
-	Ref<Font> font = get_theme_font(SNAME("font"));
+	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : get_theme_font(SNAME("font"));
 	if (p_line >= 0 && p_line < lines_rid.size()) {
 		return TS->shaped_text_get_size(lines_rid[p_line]).y;
 	} else if (lines_rid.size() > 0) {
@@ -74,7 +81,8 @@ int Label::get_line_height(int p_line) const {
 		}
 		return h;
 	} else {
-		return font->get_height(get_theme_font_size(SNAME("font_size")));
+		int font_size = settings.is_valid() ? settings->get_font_size() : get_theme_font_size(SNAME("font_size"));
+		return font->get_height(font_size);
 	}
 }
 
@@ -91,8 +99,8 @@ void Label::_shape() {
 		} else {
 			TS->shaped_text_set_direction(text_rid, (TextServer::Direction)text_direction);
 		}
-		const Ref<Font> &font = get_theme_font(SNAME("font"));
-		int font_size = get_theme_font_size(SNAME("font_size"));
+		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : get_theme_font(SNAME("font"));
+		int font_size = settings.is_valid() ? settings->get_font_size() : get_theme_font_size(SNAME("font_size"));
 		ERR_FAIL_COND(font.is_null());
 		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
@@ -223,9 +231,8 @@ void Label::_shape() {
 }
 
 void Label::_update_visible() {
-	int line_spacing = get_theme_constant(SNAME("line_spacing"), SNAME("Label"));
+	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : get_theme_constant(SNAME("line_spacing"), SNAME("Label"));
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"), SNAME("Label"));
-	Ref<Font> font = get_theme_font(SNAME("font"));
 	int lines_visible = lines_rid.size();
 
 	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
@@ -295,17 +302,19 @@ void Label::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
+			bool has_settings = settings.is_valid();
+
 			Size2 string_size;
 			Size2 size = get_size();
 			Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
-			Ref<Font> font = get_theme_font(SNAME("font"));
-			Color font_color = get_theme_color(SNAME("font_color"));
-			Color font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
-			Point2 shadow_ofs(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
-			int line_spacing = get_theme_constant(SNAME("line_spacing"));
-			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-			int outline_size = get_theme_constant(SNAME("outline_size"));
-			int shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
+			Ref<Font> font = (has_settings && settings->get_font().is_valid()) ? settings->get_font() : get_theme_font(SNAME("font"));
+			Color font_color = has_settings ? settings->get_font_color() : get_theme_color(SNAME("font_color"));
+			Color font_shadow_color = has_settings ? settings->get_shadow_color() : get_theme_color(SNAME("font_shadow_color"));
+			Point2 shadow_ofs = has_settings ? settings->get_shadow_offset() : Point2(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
+			int line_spacing = has_settings ? settings->get_line_spacing() : get_theme_constant(SNAME("line_spacing"));
+			Color font_outline_color = has_settings ? settings->get_outline_color() : get_theme_color(SNAME("font_outline_color"));
+			int outline_size = has_settings ? settings->get_outline_size() : get_theme_constant(SNAME("outline_size"));
+			int shadow_outline_size = has_settings ? settings->get_shadow_size() : get_theme_constant(SNAME("shadow_outline_size"));
 			bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 			bool rtl_layout = is_layout_rtl();
 
@@ -552,8 +561,10 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_size = minsize;
 
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size(SNAME("font_size"))));
+	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : get_theme_font(SNAME("font"));
+	int font_size = settings.is_valid() ? settings->get_font_size() : get_theme_font_size(SNAME("font_size"));
+
+	min_size.height = MAX(min_size.height, font->get_height(font_size) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
 
 	Size2 min_style = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
 	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
@@ -578,9 +589,8 @@ int Label::get_line_count() const {
 }
 
 int Label::get_visible_line_count() const {
-	Ref<Font> font = get_theme_font(SNAME("font"));
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
-	int line_spacing = get_theme_constant(SNAME("line_spacing"));
+	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : get_theme_constant(SNAME("line_spacing"));
 	int lines_visible = 0;
 	float total_h = 0.0;
 	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
@@ -604,12 +614,15 @@ int Label::get_visible_line_count() const {
 
 void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (horizontal_alignment != p_alignment) {
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			lines_dirty = true; // Reshape lines.
-		}
-		horizontal_alignment = p_alignment;
+	if (horizontal_alignment == p_alignment) {
+		return;
 	}
+
+	if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		lines_dirty = true; // Reshape lines.
+	}
+	horizontal_alignment = p_alignment;
+
 	update();
 }
 
@@ -619,6 +632,11 @@ HorizontalAlignment Label::get_horizontal_alignment() const {
 
 void Label::set_vertical_alignment(VerticalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
+
+	if (vertical_alignment == p_alignment) {
+		return;
+	}
+
 	vertical_alignment = p_alignment;
 	update();
 }
@@ -639,6 +657,28 @@ void Label::set_text(const String &p_string) {
 	}
 	update();
 	update_minimum_size();
+}
+
+void Label::_invalidate() {
+	font_dirty = true;
+	update();
+}
+
+void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
+	if (settings != p_settings) {
+		if (settings.is_valid()) {
+			settings->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate));
+		}
+		settings = p_settings;
+		if (settings.is_valid()) {
+			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
+		}
+		_invalidate();
+	}
+}
+
+Ref<LabelSettings> Label::get_label_settings() const {
+	return settings;
 }
 
 void Label::set_text_direction(Control::TextDirection p_text_direction) {
@@ -663,6 +703,10 @@ TextServer::StructuredTextParser Label::get_structured_text_bidi_override() cons
 }
 
 void Label::set_structured_text_bidi_override_options(Array p_args) {
+	if (st_args == p_args) {
+		return;
+	}
+
 	st_args = p_args;
 	dirty = true;
 	update();
@@ -689,6 +733,10 @@ String Label::get_language() const {
 }
 
 void Label::set_clip_text(bool p_clip) {
+	if (clip == p_clip) {
+		return;
+	}
+
 	clip = p_clip;
 	update();
 	update_minimum_size();
@@ -699,10 +747,12 @@ bool Label::is_clipping_text() const {
 }
 
 void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
-	if (overrun_behavior != p_behavior) {
-		overrun_behavior = p_behavior;
-		lines_dirty = true;
+	if (overrun_behavior == p_behavior) {
+		return;
 	}
+
+	overrun_behavior = p_behavior;
+	lines_dirty = true;
 	update();
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -738,13 +788,17 @@ int Label::get_visible_characters() const {
 
 void Label::set_percent_visible(float p_percent) {
 	if (percent_visible != p_percent) {
-		if (p_percent < 0 || p_percent >= 1) {
+		if (percent_visible >= 1.0) {
 			visible_chars = -1;
-			percent_visible = 1;
+			percent_visible = 1.0;
+		} else if (percent_visible < 0.0) {
+			visible_chars = 0;
+			percent_visible = 0.0;
 		} else {
 			visible_chars = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
+
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
 		}
@@ -770,6 +824,11 @@ void Label::set_visible_characters_behavior(TextServer::VisibleCharactersBehavio
 
 void Label::set_lines_skipped(int p_lines) {
 	ERR_FAIL_COND(p_lines < 0);
+
+	if (lines_skipped == p_lines) {
+		return;
+	}
+
 	lines_skipped = p_lines;
 	_update_visible();
 	update();
@@ -780,6 +839,10 @@ int Label::get_lines_skipped() const {
 }
 
 void Label::set_max_lines_visible(int p_lines) {
+	if (max_lines_visible == p_lines) {
+		return;
+	}
+
 	max_lines_visible = p_lines;
 	_update_visible();
 	update();
@@ -804,6 +867,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vertical_alignment"), &Label::get_vertical_alignment);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Label::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Label::get_text);
+	ClassDB::bind_method(D_METHOD("set_label_settings", "settings"), &Label::set_label_settings);
+	ClassDB::bind_method(D_METHOD("get_label_settings"), &Label::get_label_settings);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Label::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Label::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Label::set_language);
@@ -836,6 +901,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");

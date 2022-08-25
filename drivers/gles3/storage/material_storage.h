@@ -54,7 +54,7 @@ namespace GLES3 {
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
 	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
-	virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
+	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const = 0;
 
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const = 0;
 	virtual bool is_param_texture(const StringName &p_param) const = 0;
@@ -73,6 +73,7 @@ struct Material;
 struct Shader {
 	ShaderData *data = nullptr;
 	String code;
+	String path_hint;
 	RS::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 	HashSet<Material *> owners;
@@ -158,12 +159,13 @@ struct CanvasShaderData : public ShaderData {
 	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	bool uses_screen_texture = false;
+	bool uses_screen_texture_mipmaps = false;
 	bool uses_sdf = false;
 	bool uses_time = false;
 
 	virtual void set_code(const String &p_Code);
 	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
-	virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 
 	virtual bool is_param_texture(const StringName &p_param) const;
@@ -214,7 +216,7 @@ struct SkyShaderData : public ShaderData {
 
 	virtual void set_code(const String &p_Code);
 	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
-	virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 	virtual bool is_param_texture(const StringName &p_param) const;
 	virtual bool is_animated() const;
@@ -311,6 +313,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_sss;
 	bool uses_transmittance;
 	bool uses_screen_texture;
+	bool uses_screen_texture_mipmaps;
 	bool uses_depth_texture;
 	bool uses_normal_texture;
 	bool uses_time;
@@ -334,7 +337,7 @@ struct SceneShaderData : public ShaderData {
 
 	virtual void set_code(const String &p_Code);
 	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
-	virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 
 	virtual bool is_param_texture(const StringName &p_param) const;
@@ -364,15 +367,15 @@ struct SceneMaterialData : public MaterialData {
 
 MaterialData *_create_scene_material_func(ShaderData *p_shader);
 
-/* Global variable structs */
-struct GlobalVariables {
+/* Global shader uniform structs */
+struct GlobalShaderUniforms {
 	enum {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {
 		HashSet<RID> texture_materials; // materials using this
 
-		RS::GlobalVariableType type;
+		RS::GlobalShaderUniformType type;
 		Variant value;
 		Variant override;
 		int32_t buffer_index; //for vectors
@@ -428,13 +431,13 @@ private:
 	friend struct MaterialData;
 	static MaterialStorage *singleton;
 
-	/* GLOBAL VARIABLE API */
+	/* GLOBAL SHADER UNIFORM API */
 
-	GlobalVariables global_variables;
+	GlobalShaderUniforms global_shader_uniforms;
 
-	int32_t _global_variable_allocate(uint32_t p_elements);
-	void _global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value);
-	void _global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
+	int32_t _global_shader_uniform_allocate(uint32_t p_elements);
+	void _global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderUniformType p_type, const Variant &p_value);
+	void _global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
 
 	/* SHADER API */
 
@@ -487,7 +490,7 @@ public:
 		p_array[11] = 0;
 	}
 
-	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_camera(const Projection &p_mtx, float *p_array) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				p_array[i * 4 + j] = p_mtx.matrix[i][j];
@@ -507,28 +510,28 @@ public:
 		ShaderCompiler compiler_sky;
 	} shaders;
 
-	/* GLOBAL VARIABLE API */
+	/* GLOBAL SHADER UNIFORM API */
 
-	void _update_global_variables();
+	void _update_global_shader_uniforms();
 
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) override;
-	virtual void global_variable_remove(const StringName &p_name) override;
-	virtual Vector<StringName> global_variable_get_list() const override;
+	virtual void global_shader_uniform_add(const StringName &p_name, RS::GlobalShaderUniformType p_type, const Variant &p_value) override;
+	virtual void global_shader_uniform_remove(const StringName &p_name) override;
+	virtual Vector<StringName> global_shader_uniform_get_list() const override;
 
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) override;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) override;
-	virtual Variant global_variable_get(const StringName &p_name) const override;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const override;
-	RS::GlobalVariableType global_variable_get_type_internal(const StringName &p_name) const;
+	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) override;
+	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) override;
+	virtual Variant global_shader_uniform_get(const StringName &p_name) const override;
+	virtual RS::GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const override;
+	RS::GlobalShaderUniformType global_shader_uniform_get_type_internal(const StringName &p_name) const;
 
-	virtual void global_variables_load_settings(bool p_load_textures = true) override;
-	virtual void global_variables_clear() override;
+	virtual void global_shader_uniforms_load_settings(bool p_load_textures = true) override;
+	virtual void global_shader_uniforms_clear() override;
 
-	virtual int32_t global_variables_instance_allocate(RID p_instance) override;
-	virtual void global_variables_instance_free(RID p_instance) override;
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) override;
+	virtual int32_t global_shader_uniforms_instance_allocate(RID p_instance) override;
+	virtual void global_shader_uniforms_instance_free(RID p_instance) override;
+	virtual void global_shader_uniforms_instance_update(RID p_instance, int p_index, const Variant &p_value) override;
 
-	GLuint global_variables_get_uniform_buffer() const;
+	GLuint global_shader_uniforms_get_uniform_buffer() const;
 
 	/* SHADER API */
 
@@ -542,8 +545,9 @@ public:
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
+	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
+	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override;
@@ -574,7 +578,7 @@ public:
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
 
-	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
+	virtual void material_get_instance_shader_uniforms(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override;
 
@@ -597,4 +601,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !MATERIAL_STORAGE_GLES3_H
+#endif // MATERIAL_STORAGE_GLES3_H

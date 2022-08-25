@@ -64,16 +64,25 @@ protected:
 		bool require = false;
 	};
 
+	StringName root_bone;
+	StringName scale_base_bone;
+
 	Vector<SkeletonProfileGroup> groups;
 	Vector<SkeletonProfileBone> bones;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
+	StringName get_root_bone();
+	void set_root_bone(StringName p_bone_name);
+
+	StringName get_scale_base_bone();
+	void set_scale_base_bone(StringName p_bone_name);
+
 	int get_group_size();
 	void set_group_size(int p_size);
 

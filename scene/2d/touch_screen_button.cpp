@@ -131,7 +131,7 @@ void TouchScreenButton::_notification(int p_what) {
 					pos = texture_normal->get_size() * 0.5;
 				}
 
-				draw_set_transform_matrix(get_canvas_transform().translated(pos));
+				draw_set_transform_matrix(get_canvas_transform().translated_local(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
 		} break;
@@ -258,7 +258,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 			pos = texture_normal->get_size() * 0.5;
 		}
 
-		touched = shape->collide(Transform2D().translated(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
+		touched = shape->collide(Transform2D().translated_local(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
 	if (bitmask.is_valid()) {

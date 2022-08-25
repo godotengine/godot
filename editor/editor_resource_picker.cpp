@@ -30,14 +30,16 @@
 
 #include "editor_resource_picker.h"
 
+#include "editor/audio_stream_preview.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/quick_open.h"
 #include "editor/scene_tree_dock.h"
 
 HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
@@ -47,33 +49,40 @@ void EditorResourcePicker::clear_caches() {
 }
 
 void EditorResourcePicker::_update_resource() {
-	preview_rect->set_texture(Ref<Texture2D>());
-	assign_button->set_custom_minimum_size(Size2(1, 1));
-
-	if (edited_resource == Ref<Resource>()) {
-		assign_button->set_icon(Ref<Texture2D>());
-		assign_button->set_text(TTR("[empty]"));
-		assign_button->set_tooltip("");
-	} else {
-		assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
-
-		if (!edited_resource->get_name().is_empty()) {
-			assign_button->set_text(edited_resource->get_name());
-		} else if (edited_resource->get_path().is_resource_file()) {
-			assign_button->set_text(edited_resource->get_path().get_file());
-		} else {
-			assign_button->set_text(edited_resource->get_class());
-		}
-
-		String resource_path;
-		if (edited_resource->get_path().is_resource_file()) {
-			resource_path = edited_resource->get_path() + "\n";
-		}
-		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
-
-		// Preview will override the above, so called at the end.
-		EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
+	String resource_path;
+	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
+		resource_path = edited_resource->get_path() + "\n";
 	}
+
+	if (preview_rect) {
+		preview_rect->set_texture(Ref<Texture2D>());
+
+		assign_button->set_custom_minimum_size(assign_button_min_size);
+
+		if (edited_resource == Ref<Resource>()) {
+			assign_button->set_icon(Ref<Texture2D>());
+			assign_button->set_text(TTR("[empty]"));
+			assign_button->set_tooltip("");
+		} else {
+			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
+
+			if (!edited_resource->get_name().is_empty()) {
+				assign_button->set_text(edited_resource->get_name());
+			} else if (edited_resource->get_path().is_resource_file()) {
+				assign_button->set_text(edited_resource->get_path().get_file());
+			} else {
+				assign_button->set_text(edited_resource->get_class());
+			}
+			assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+
+			// Preview will override the above, so called at the end.
+			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
+		}
+	} else if (edited_resource.is_valid()) {
+		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+	}
+
+	assign_button->set_disabled(!editable && !edited_resource.is_valid());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
@@ -81,28 +90,30 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		return;
 	}
 
-	Ref<Script> script = edited_resource;
-	if (script.is_valid()) {
-		assign_button->set_text(script->get_path().get_file());
-		return;
-	}
-
-	if (p_preview.is_valid()) {
-		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
-
-		// Resource-specific stretching.
-		if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
-			preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
-			assign_button->set_custom_minimum_size(Size2(1, 1));
-		} else {
-			preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-			thumbnail_size *= EDSCALE;
-			assign_button->set_custom_minimum_size(Size2(1, thumbnail_size));
+	if (preview_rect) {
+		Ref<Script> script = edited_resource;
+		if (script.is_valid()) {
+			assign_button->set_text(script->get_path().get_file());
+			return;
 		}
 
-		preview_rect->set_texture(p_preview);
-		assign_button->set_text("");
+		if (p_preview.is_valid()) {
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+
+			// Resource-specific stretching.
+			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
+				preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
+				assign_button->set_custom_minimum_size(assign_button_min_size);
+			} else {
+				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+				thumbnail_size *= EDSCALE;
+				assign_button->set_custom_minimum_size(Size2(MIN(1, assign_button_min_size.x), MIN(thumbnail_size, assign_button_min_size.y)));
+			}
+
+			preview_rect->set_texture(p_preview);
+			assign_button->set_text("");
+		}
 	}
 }
 
@@ -162,20 +173,50 @@ void EditorResourcePicker::_update_menu_items() {
 	edit_menu->clear();
 
 	// Add options for creating specific subtypes of the base resource type.
-	set_create_options(edit_menu);
+	if (is_editable()) {
+		set_create_options(edit_menu);
 
-	// Add an option to load a resource from a file using the QuickOpen dialog.
-	edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+		// Add an option to load a resource from a file using the QuickOpen dialog.
+		edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
 
-	// Add an option to load a resource from a file using the regular file dialog.
-	edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Load"), OBJ_MENU_LOAD);
+		// Add an option to load a resource from a file using the regular file dialog.
+		edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Load"), OBJ_MENU_LOAD);
+	}
 
 	// Add options for changing existing value of the resource.
 	if (edited_resource.is_valid()) {
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), TTR("Edit"), OBJ_MENU_EDIT);
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), TTR("Clear"), OBJ_MENU_CLEAR);
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")), TTR("Save"), OBJ_MENU_SAVE);
+		// Determine if the edited resource is part of another scene (foreign) which was imported
+		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource);
+
+		// If the resource is determined to be foreign and imported, change the menu entry's description to 'inspect' rather than 'edit'
+		// since will only be able to view its properties in read-only mode.
+		if (is_edited_resource_foreign_import) {
+			// The 'Search' icon is a magnifying glass, which seems appropriate, but maybe a bespoke icon is preferred here.
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")), TTR("Inspect"), OBJ_MENU_INSPECT);
+		} else {
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), TTR("Edit"), OBJ_MENU_INSPECT);
+		}
+
+		if (is_editable()) {
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), TTR("Clear"), OBJ_MENU_CLEAR);
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+
+			// Check whether the resource has subresources.
+			List<PropertyInfo> property_list;
+			edited_resource->get_property_list(&property_list);
+			bool has_subresources = false;
+			for (PropertyInfo &p : property_list) {
+				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script")) {
+					has_subresources = true;
+					break;
+				}
+			}
+			if (has_subresources) {
+				edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+			}
+
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")), TTR("Save"), OBJ_MENU_SAVE);
+		}
 
 		if (edited_resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
@@ -186,14 +227,16 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options to copy/paste resource.
 	Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
-	if (cb.is_valid()) {
-		if (base_type.is_empty()) {
-			paste_valid = true;
-		} else {
-			for (int i = 0; i < base_type.get_slice_count(","); i++) {
-				if (ClassDB::is_parent_class(cb->get_class(), base_type.get_slice(",", i))) {
-					paste_valid = true;
-					break;
+	if (is_editable()) {
+		if (cb.is_valid()) {
+			if (base_type.is_empty()) {
+				paste_valid = true;
+			} else {
+				for (int i = 0; i < base_type.get_slice_count(","); i++) {
+					if (ClassDB::is_parent_class(cb->get_class(), base_type.get_slice(",", i))) {
+						paste_valid = true;
+						break;
+					}
 				}
 			}
 		}
@@ -212,7 +255,7 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options to convert existing resource to another type of resource.
-	if (edited_resource.is_valid()) {
+	if (is_editable() && edited_resource.is_valid()) {
 		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
 		if (conversions.size()) {
 			edit_menu->add_separator();
@@ -271,7 +314,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			quick_open->set_title(TTR("Resource"));
 		} break;
 
-		case OBJ_MENU_EDIT: {
+		case OBJ_MENU_INSPECT: {
 			if (edited_resource.is_valid()) {
 				emit_signal(SNAME("resource_selected"), edited_resource, true);
 			}
@@ -288,27 +331,21 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				return;
 			}
 
-			List<PropertyInfo> property_list;
-			edited_resource->get_property_list(&property_list);
-			List<Pair<String, Variant>> propvalues;
-			for (const PropertyInfo &pi : property_list) {
-				Pair<String, Variant> p;
-				if (pi.usage & PROPERTY_USAGE_STORAGE) {
-					p.first = pi.name;
-					p.second = edited_resource->get(pi.name);
-				}
-
-				propvalues.push_back(p);
-			}
-
-			String orig_type = edited_resource->get_class();
-			Object *inst = ClassDB::instantiate(orig_type);
-			Ref<Resource> unique_resource = Ref<Resource>(Object::cast_to<Resource>(inst));
+			Ref<Resource> unique_resource = edited_resource->duplicate();
 			ERR_FAIL_COND(unique_resource.is_null());
 
-			for (const Pair<String, Variant> &p : propvalues) {
-				unique_resource->set(p.first, p.second);
+			edited_resource = unique_resource;
+			emit_signal(SNAME("resource_changed"), edited_resource);
+			_update_resource();
+		} break;
+
+		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
+			if (edited_resource.is_null()) {
+				return;
 			}
+
+			Ref<Resource> unique_resource = edited_resource->duplicate(true);
+			ERR_FAIL_COND(unique_resource.is_null());
 
 			edited_resource = unique_resource;
 			emit_signal(SNAME("resource_changed"), edited_resource);
@@ -473,20 +510,21 @@ void EditorResourcePicker::_button_draw() {
 }
 
 void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
-	if (!editable) {
-		return;
-	}
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-			_update_menu_items();
+			// Only attempt to update and show the menu if we have
+			// a valid resource or the Picker is editable, as
+			// there will otherwise be nothing to display.
+			if (edited_resource.is_valid() || is_editable()) {
+				_update_menu_items();
 
-			Vector2 pos = get_screen_position() + mb->get_position();
-			edit_menu->reset_size();
-			edit_menu->set_position(pos);
-			edit_menu->popup();
+				Vector2 pos = get_screen_position() + mb->get_position();
+				edit_menu->reset_size();
+				edit_menu->set_position(pos);
+				edit_menu->popup();
+			}
 		}
 	}
 }
@@ -716,7 +754,7 @@ void EditorResourcePicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "edit")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "inspect")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
@@ -848,7 +886,7 @@ void EditorResourcePicker::set_toggle_pressed(bool p_pressed) {
 
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
-	assign_button->set_disabled(!editable);
+	assign_button->set_disabled(!editable && !edited_resource.is_valid());
 	edit_button->set_visible(editable);
 }
 
@@ -863,10 +901,10 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu = memnew(PopupMenu);
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
+	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 
-EditorResourcePicker::EditorResourcePicker() {
+EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -877,13 +915,15 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
 	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
-	preview_rect = memnew(TextureRect);
-	preview_rect->set_ignore_texture_size(true);
-	preview_rect->set_anchors_and_offsets_preset(PRESET_WIDE);
-	preview_rect->set_offset(SIDE_TOP, 1);
-	preview_rect->set_offset(SIDE_BOTTOM, -1);
-	preview_rect->set_offset(SIDE_RIGHT, -1);
-	assign_button->add_child(preview_rect);
+	if (!p_hide_assign_button_controls) {
+		preview_rect = memnew(TextureRect);
+		preview_rect->set_ignore_texture_size(true);
+		preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+		preview_rect->set_offset(SIDE_TOP, 1);
+		preview_rect->set_offset(SIDE_BOTTOM, -1);
+		preview_rect->set_offset(SIDE_RIGHT, -1);
+		assign_button->add_child(preview_rect);
+	}
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
@@ -992,4 +1032,177 @@ void EditorShaderPicker::set_preferred_mode(int p_mode) {
 }
 
 EditorShaderPicker::EditorShaderPicker() {
+}
+
+//////////////
+
+void EditorAudioStreamPicker::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY:
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_resource();
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Ref<AudioStream> audio_stream = get_edited_resource();
+			if (audio_stream.is_valid()) {
+				if (audio_stream->get_length() > 0) {
+					Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
+					if (preview.is_valid()) {
+						if (preview->get_version() != last_preview_version) {
+							stream_preview_rect->update();
+							last_preview_version = preview->get_version();
+						}
+					}
+				}
+
+				uint64_t tagged_frame = audio_stream->get_tagged_frame();
+				uint64_t diff_frames = AudioServer::get_singleton()->get_mixed_frames() - tagged_frame;
+				uint64_t diff_msec = diff_frames * 1000 / AudioServer::get_singleton()->get_mix_rate();
+
+				if (diff_msec < 300) {
+					uint32_t count = audio_stream->get_tagged_frame_count();
+
+					bool differ = false;
+
+					if (count != tagged_frame_offset_count) {
+						differ = true;
+					}
+					float offsets[MAX_TAGGED_FRAMES];
+
+					for (uint32_t i = 0; i < MIN(count, uint32_t(MAX_TAGGED_FRAMES)); i++) {
+						offsets[i] = audio_stream->get_tagged_frame_offset(i);
+						if (offsets[i] != tagged_frame_offsets[i]) {
+							differ = true;
+						}
+					}
+
+					if (differ) {
+						tagged_frame_offset_count = count;
+						for (uint32_t i = 0; i < count; i++) {
+							tagged_frame_offsets[i] = offsets[i];
+						}
+					}
+
+					stream_preview_rect->update();
+				} else {
+					if (tagged_frame_offset_count != 0) {
+						stream_preview_rect->update();
+					}
+					tagged_frame_offset_count = 0;
+				}
+			}
+		} break;
+	}
+}
+
+void EditorAudioStreamPicker::_update_resource() {
+	EditorResourcePicker::_update_resource();
+
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<AudioStream> audio_stream = get_edited_resource();
+	if (audio_stream.is_valid() && audio_stream->get_length() > 0.0) {
+		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 3));
+	} else {
+		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 1.5));
+	}
+
+	stream_preview_rect->update();
+}
+
+void EditorAudioStreamPicker::_preview_draw() {
+	Ref<AudioStream> audio_stream = get_edited_resource();
+	if (!audio_stream.is_valid()) {
+		get_assign_button()->set_text(TTR("[empty]"));
+		return;
+	}
+
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+
+	get_assign_button()->set_text("");
+
+	Size2i size = stream_preview_rect->get_size();
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+
+	Rect2 rect(Point2(), size);
+
+	if (audio_stream->get_length() > 0) {
+		rect.size.height *= 0.5;
+
+		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
+
+		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
+		float preview_len = preview->get_length();
+
+		Vector<Vector2> lines;
+		lines.resize(size.width * 2);
+
+		for (int i = 0; i < size.width; i++) {
+			float ofs = i * preview_len / size.width;
+			float ofs_n = (i + 1) * preview_len / size.width;
+			float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
+			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
+
+			int idx = i;
+			lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+			lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+		}
+
+		Vector<Color> color;
+		color.push_back(get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")));
+
+		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), lines, color);
+
+		if (tagged_frame_offset_count) {
+			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+
+			for (uint32_t i = 0; i < tagged_frame_offset_count; i++) {
+				int x = CLAMP(tagged_frame_offsets[i] * size.width / preview_len, 0, size.width);
+				if (x == 0) {
+					continue; // Because some may always return 0, ignore offset 0.
+				}
+				stream_preview_rect->draw_rect(Rect2i(x, 0, 2, rect.size.height), accent);
+			}
+		}
+		rect.position.y += rect.size.height;
+	}
+
+	Ref<Texture2D> icon;
+	Color icon_modulate(1, 1, 1, 1);
+
+	if (tagged_frame_offset_count > 0) {
+		icon = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
+		if ((OS::get_singleton()->get_ticks_msec() % 500) > 250) {
+			icon_modulate = Color(1, 0.5, 0.5, 1); // get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		}
+	} else {
+		icon = EditorNode::get_singleton()->get_object_icon(audio_stream.operator->(), "Object");
+	}
+	String text;
+	if (!audio_stream->get_name().is_empty()) {
+		text = audio_stream->get_name();
+	} else if (audio_stream->get_path().is_resource_file()) {
+		text = audio_stream->get_path().get_file();
+	} else {
+		text = audio_stream->get_class().replace_first("AudioStream", "");
+	}
+
+	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 2, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
+	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 2 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width());
+}
+
+EditorAudioStreamPicker::EditorAudioStreamPicker() :
+		EditorResourcePicker(true) {
+	stream_preview_rect = memnew(Control);
+
+	stream_preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	stream_preview_rect->set_offset(SIDE_TOP, 1);
+	stream_preview_rect->set_offset(SIDE_BOTTOM, -1);
+	stream_preview_rect->set_offset(SIDE_RIGHT, -1);
+	stream_preview_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	stream_preview_rect->connect("draw", callable_mp(this, &EditorAudioStreamPicker::_preview_draw));
+
+	get_assign_button()->add_child(stream_preview_rect);
+	get_assign_button()->move_child(stream_preview_rect, 0);
+	set_process_internal(true);
 }

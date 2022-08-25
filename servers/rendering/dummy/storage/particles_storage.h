@@ -123,4 +123,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !PARTICLES_STORAGE_DUMMY_H
+#endif // PARTICLES_STORAGE_DUMMY_H

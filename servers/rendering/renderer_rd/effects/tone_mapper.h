@@ -149,4 +149,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !TONE_MAPPER_RD_H
+#endif // TONE_MAPPER_RD_H

@@ -1037,46 +1037,46 @@ void Environment::_update_adjustment() {
 
 // Private methods, constructor and destructor
 
-void Environment::_validate_property(PropertyInfo &property) const {
-	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
+void Environment::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation" || p_property.name == "ambient_light_sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "fog_aerial_perspective") {
+	if (p_property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (p_property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "background_color") {
+	if (p_property.name == "background_color") {
 		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "background_canvas_max_layer") {
+	if (p_property.name == "background_canvas_max_layer") {
 		if (bg_mode != BG_CANVAS) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "background_camera_feed_id") {
+	if (p_property.name == "background_camera_feed_id") {
 		if (bg_mode != BG_CAMERA_FEED) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
@@ -1107,8 +1107,8 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		String prefix = String(*prefixes);
 
 		String enabled = prefix + "enabled";
-		if (property.name.begins_with(prefix) && property.name != enabled && !bool(get(enabled))) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get(enabled))) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			return;
 		}
 
@@ -1120,8 +1120,8 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		while (*prefixes) {
 			String prefix = String(*prefixes);
 
-			if (property.name.begins_with(prefix)) {
-				property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			if (p_property.name.begins_with(prefix)) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 				return;
 			}
 
@@ -1249,8 +1249,8 @@ void Environment::_bind_methods() {
 	ADD_GROUP("SSR", "ssr_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssr_enabled"), "set_ssr_enabled", "is_ssr_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssr_max_steps", PROPERTY_HINT_RANGE, "1,512,1"), "set_ssr_max_steps", "get_ssr_max_steps");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_in", PROPERTY_HINT_EXP_EASING), "set_ssr_fade_in", "get_ssr_fade_in");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_out", PROPERTY_HINT_EXP_EASING), "set_ssr_fade_out", "get_ssr_fade_out");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_in", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssr_fade_in", "get_ssr_fade_in");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_out", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssr_fade_out", "get_ssr_fade_out");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_depth_tolerance", PROPERTY_HINT_RANGE, "0.01,128,0.1"), "set_ssr_depth_tolerance", "get_ssr_depth_tolerance");
 
 	// SSAO
@@ -1277,7 +1277,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssao_enabled"), "set_ssao_enabled", "is_ssao_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_radius", PROPERTY_HINT_RANGE, "0.01,16,0.01,or_greater"), "set_ssao_radius", "get_ssao_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_intensity", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_ssao_intensity", "get_ssao_intensity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_power", PROPERTY_HINT_EXP_EASING), "set_ssao_power", "get_ssao_power");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_power", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssao_power", "get_ssao_power");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_detail", PROPERTY_HINT_RANGE, "0,5,0.01"), "set_ssao_detail", "get_ssao_detail");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_horizon", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_horizon", "get_ssao_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_sharpness", "get_ssao_sharpness");
@@ -1337,8 +1337,10 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_bounce_feedback", PROPERTY_HINT_RANGE, "0,1.99,0.01"), "set_sdfgi_bounce_feedback", "get_sdfgi_bounce_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_RANGE, "1,8,1"), "set_sdfgi_cascades", "get_sdfgi_cascades");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
+	// Don't store the values of `sdfgi_cascade0_distance` and `sdfgi_max_distance`
+	// as they're derived from `sdfgi_min_cell_size`.
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater", PROPERTY_USAGE_EDITOR), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater", PROPERTY_USAGE_EDITOR), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_y_scale", PROPERTY_HINT_ENUM, "50% (Compact),75% (Balanced),100% (Sparse)"), "set_sdfgi_y_scale", "get_sdfgi_y_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_energy"), "set_sdfgi_energy", "get_sdfgi_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_normal_bias"), "set_sdfgi_normal_bias", "get_sdfgi_normal_bias");
@@ -1423,7 +1425,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_fog_light_energy", "get_fog_light_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sun_scatter", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_fog_sun_scatter", "get_fog_sun_scatter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,16,0.0001"), "set_fog_density", "get_fog_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_fog_density", "get_fog_density");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_lesser,or_greater"), "set_fog_height_density", "get_fog_height_density");
@@ -1462,7 +1464,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_anisotropy", PROPERTY_HINT_RANGE, "-0.9,0.9,0.01"), "set_volumetric_fog_anisotropy", "get_volumetric_fog_anisotropy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_ambient_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_ambient_inject", "get_volumetric_fog_ambient_inject");
 	ADD_SUBGROUP("Temporal Reprojection", "volumetric_fog_temporal_reprojection_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_temporal_reprojection_enabled"), "set_volumetric_fog_temporal_reprojection_enabled", "is_volumetric_fog_temporal_reprojection_enabled");

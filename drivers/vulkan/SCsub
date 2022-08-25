@@ -15,11 +15,11 @@ if env["use_volk"]:
 
 if env["platform"] == "android":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
-elif env["platform"] == "iphone":
+elif env["platform"] == "ios":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK"])
-elif env["platform"] == "linuxbsd":
+elif env["platform"] == "linuxbsd" and env["x11"]:
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
-elif env["platform"] == "osx":
+elif env["platform"] == "macos":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK"])
 elif env["platform"] == "windows":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WIN32_KHR"])
@@ -40,7 +40,7 @@ elif env["platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
-elif env["platform"] == "osx" or env["platform"] == "iphone":
+elif env["platform"] == "macos" or env["platform"] == "ios":
     # MoltenVK supports only Vulkan 1.1 API, limit VMA to the same version.
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1001000"])
 

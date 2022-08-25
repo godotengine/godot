@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CPU_PARTICLES_H
-#define CPU_PARTICLES_H
+#ifndef CPU_PARTICLES_3D_H
+#define CPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -138,7 +138,7 @@ private:
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
 	double speed_scale = 1.0;
-	bool local_coords = true;
+	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
 
@@ -198,7 +198,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	AABB get_aabb() const override;
@@ -317,4 +317,4 @@ VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
 
-#endif // CPU_PARTICLES_H
+#endif // CPU_PARTICLES_3D_H

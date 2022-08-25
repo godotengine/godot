@@ -39,6 +39,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/variant/typed_array.h"
 
 namespace core_bind {
 
@@ -46,8 +47,8 @@ namespace core_bind {
 
 ResourceLoader *ResourceLoader::singleton = nullptr;
 
-Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads) {
-	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads);
+Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
+	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
@@ -121,7 +122,7 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 }
 
 void ResourceLoader::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads"), &ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
 
@@ -147,9 +148,9 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
-	return ::ResourceSaver::save(p_path, p_resource, p_flags);
+Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + p_path + "'.");
+	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
@@ -174,7 +175,7 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
@@ -229,6 +230,14 @@ void OS::alert(const String &p_alert, const String &p_title) {
 
 void OS::crash(const String &p_message) {
 	CRASH_NOW_MSG(p_message);
+}
+
+Vector<String> OS::get_system_fonts() const {
+	return ::OS::get_singleton()->get_system_fonts();
+}
+
+String OS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_bold, p_italic);
 }
 
 String OS::get_executable_path() const {
@@ -321,6 +330,39 @@ Vector<String> OS::get_cmdline_args() {
 	}
 
 	return cmdlinev;
+}
+
+Vector<String> OS::get_cmdline_user_args() {
+	List<String> cmdline = ::OS::get_singleton()->get_cmdline_user_args();
+	Vector<String> cmdlinev;
+	for (const String &E : cmdline) {
+		cmdlinev.push_back(E);
+	}
+
+	return cmdlinev;
+}
+
+void OS::set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments) {
+	List<String> args_list;
+	for (const String &restart_argument : p_restart_arguments) {
+		args_list.push_back(restart_argument);
+	}
+
+	::OS::get_singleton()->set_restart_on_exit(p_restart, args_list);
+}
+
+bool OS::is_restart_on_exit_set() const {
+	return ::OS::get_singleton()->is_restart_on_exit_set();
+}
+
+Vector<String> OS::get_restart_on_exit_arguments() const {
+	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
+	Vector<String> args_vector;
+	for (List<String>::Element *E = args.front(); E; E = E->next()) {
+		args_vector.push_back(E->get());
+	}
+
+	return args_vector;
 }
 
 String OS::get_locale() const {
@@ -589,6 +631,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
+	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
@@ -604,6 +648,11 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
+	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
+
+	ClassDB::bind_method(D_METHOD("set_restart_on_exit", "restart", "arguments"), &OS::set_restart_on_exit, DEFVAL(Vector<String>()));
+	ClassDB::bind_method(D_METHOD("is_restart_on_exit_set"), &OS::is_restart_on_exit_set);
+	ClassDB::bind_method(D_METHOD("get_restart_on_exit_arguments"), &OS::get_restart_on_exit_arguments);
 
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
@@ -770,7 +819,7 @@ Vector<Point2> Geometry2D::convex_hull(const Vector<Point2> &p_points) {
 	return ::Geometry2D::convex_hull(p_points);
 }
 
-Array Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -781,10 +830,10 @@ Array Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vecto
 	return ret;
 }
 
-Array Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b);
 
-	Array ret;
+	TypedArray<PackedVector2Array> ret;
 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
@@ -792,7 +841,7 @@ Array Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector
 	return ret;
 }
 
-Array Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -803,7 +852,7 @@ Array Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const V
 	return ret;
 }
 
-Array Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -814,7 +863,7 @@ Array Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vec
 	return ret;
 }
 
-Array Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
 
 	Array ret;
@@ -825,7 +874,7 @@ Array Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, 
 	return ret;
 }
 
-Array Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
 
 	Array ret;
@@ -836,7 +885,7 @@ Array Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyl
 	return ret;
 }
 
-Array Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polygon(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type));
 
 	Array ret;
@@ -847,7 +896,7 @@ Array Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delt
 	return ret;
 }
 
-Array Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+TypedArray<PackedVector2Array> Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polyline(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type), ::Geometry2D::PolyEndType(p_end_type));
 
 	Array ret;
@@ -885,6 +934,7 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 
 void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_in_circle", "point", "circle_position", "circle_radius"), &Geometry2D::is_point_in_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_position", "circle_radius"), &Geometry2D::segment_intersects_circle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_segment", "from_a", "to_a", "from_b", "to_b"), &Geometry2D::segment_intersects_segment);
 	ClassDB::bind_method(D_METHOD("line_intersects_line", "from_a", "dir_a", "from_b", "dir_b"), &Geometry2D::line_intersects_line);
 
@@ -939,16 +989,19 @@ Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
 
-Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
-	return ::Geometry3D::build_box_planes(p_extents);
+TypedArray<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
+	Variant ret = ::Geometry3D::build_box_planes(p_extents);
+	return ret;
 }
 
-Vector<Plane> Geometry3D::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
-	return ::Geometry3D::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
+TypedArray<Plane> Geometry3D::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+	Variant ret = ::Geometry3D::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
+	return ret;
 }
 
-Vector<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
-	return ::Geometry3D::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
+TypedArray<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	Variant ret = ::Geometry3D::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
+	return ret;
 }
 
 Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
@@ -1217,19 +1270,13 @@ Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 	return data;
 }
 
-String File::get_as_text() const {
+String File::get_as_text(bool p_skip_cr) const {
 	ERR_FAIL_COND_V_MSG(f.is_null(), String(), "File must be opened before use, or is lacking read-write permission.");
 
-	String text;
 	uint64_t original_pos = f->get_position();
 	const_cast<FileAccess *>(*f)->seek(0);
 
-	String l = get_line();
-	while (!eof_reached()) {
-		text += l + "\n";
-		l = get_line();
-	}
-	text += l;
+	String text = f->get_as_utf8_string(p_skip_cr);
 
 	const_cast<FileAccess *>(*f)->seek(original_pos);
 
@@ -1426,7 +1473,7 @@ void File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer", "length"), &File::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &File::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &File::get_csv_line, DEFVAL(","));
-	ClassDB::bind_method(D_METHOD("get_as_text"), &File::get_as_text);
+	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &File::get_as_text, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_md5", "path"), &File::get_md5);
 	ClassDB::bind_method(D_METHOD("get_sha256", "path"), &File::get_sha256);
 	ClassDB::bind_method(D_METHOD("is_big_endian"), &File::is_big_endian);
@@ -1844,7 +1891,7 @@ void Thread::_start_func(void *ud) {
 	::Thread::set_name(func_name);
 
 	Callable::CallError ce;
-	t->target_callable.call(nullptr, 0, t->ret, ce);
+	t->target_callable.callp(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
 		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
@@ -1979,10 +2026,10 @@ Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 	}
 }
 
-Array ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
-	Array ret;
+	TypedArray<Dictionary> ret;
 
 	for (const MethodInfo &E : signals) {
 		ret.push_back(E.operator Dictionary());
@@ -1991,10 +2038,10 @@ Array ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const 
 	return ret;
 }
 
-Array ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
-	Array ret;
+	TypedArray<Dictionary> ret;
 	for (const PropertyInfo &E : plist) {
 		ret.push_back(E.operator Dictionary());
 	}
@@ -2023,10 +2070,10 @@ bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inhe
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-Array ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
-	Array ret;
+	TypedArray<Dictionary> ret;
 
 	for (const MethodInfo &E : methods) {
 #ifdef DEBUG_METHODS_ENABLED
@@ -2211,7 +2258,7 @@ Dictionary Engine::get_author_info() const {
 	return ::Engine::get_singleton()->get_author_info();
 }
 
-Array Engine::get_copyright_info() const {
+TypedArray<Dictionary> Engine::get_copyright_info() const {
 	return ::Engine::get_singleton()->get_copyright_info();
 }
 
@@ -2225,6 +2272,10 @@ Dictionary Engine::get_license_info() const {
 
 String Engine::get_license_text() const {
 	return ::Engine::get_singleton()->get_license_text();
+}
+
+String Engine::get_architecture_name() const {
+	return ::Engine::get_singleton()->get_architecture_name();
 }
 
 bool Engine::is_in_physics_frame() const {
@@ -2286,6 +2337,10 @@ bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
 }
 
+String Engine::get_write_movie_path() const {
+	return ::Engine::get_singleton()->get_write_movie_path();
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	::Engine::get_singleton()->set_print_error_messages(p_enabled);
 }
@@ -2320,6 +2375,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_license_info"), &Engine::get_license_info);
 	ClassDB::bind_method(D_METHOD("get_license_text"), &Engine::get_license_text);
 
+	ClassDB::bind_method(D_METHOD("get_architecture_name"), &Engine::get_architecture_name);
+
 	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &Engine::is_in_physics_frame);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
@@ -2334,6 +2391,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+
+	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
@@ -2418,7 +2477,7 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	const Variant *args[2] = { &cmd, &data };
 	Variant retval;
 	Callable::CallError err;
-	capture.call(args, 2, retval, err);
+	capture.callp(args, 2, retval, err);
 	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, FAILED, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(capture, args, 2, err));
 	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, "Error calling 'capture' to callable: " + String(capture) + ". Return type is not bool.");
 	r_captured = retval;

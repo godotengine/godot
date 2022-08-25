@@ -281,7 +281,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			if (setplay.get() >= 0 && stream.is_valid()) {
 				active.set();
-				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+				Ref<AudioStreamPlayback> new_playback = stream->instantiate_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
@@ -648,8 +648,8 @@ bool AudioStreamPlayer3D::_is_active() const {
 	return active.is_set();
 }
 
-void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "bus") {
+void AudioStreamPlayer3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			if (i > 0) {
@@ -659,10 +659,8 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
 			options += name;
 		}
 
-		property.hint_string = options;
+		p_property.hint_string = options;
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void AudioStreamPlayer3D::_bus_layout_changed() {

@@ -96,7 +96,7 @@
 	<methods>
 		<method name="get_controller" qualifiers="const">
 			<return type="XRPositionalTracker" />
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Gets an [XRPositionalTracker] for the given [code]controller_id[/code].
 				In the context of WebXR, a "controller" can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional controller is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
@@ -111,7 +111,7 @@
 		</method>
 		<method name="is_session_supported">
 			<return type="void" />
-			<argument index="0" name="session_mode" type="String" />
+			<param index="0" name="session_mode" type="String" />
 			<description>
 				Checks if the given [code]session_mode[/code] is supported by the user's browser.
 				Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
@@ -166,21 +166,21 @@
 			</description>
 		</signal>
 		<signal name="select">
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Emitted after one of the "controllers" has finished its "primary action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="selectend">
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has finished its "primary action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="selectstart">
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has started its "primary action".
 				Use [method get_controller] to get more information about the controller.
@@ -193,7 +193,7 @@
 			</description>
 		</signal>
 		<signal name="session_failed">
-			<argument index="0" name="message" type="String" />
+			<param index="0" name="message" type="String" />
 			<description>
 				Emitted by [method XRInterface.initialize] if the session fails to start.
 				[code]message[/code] may optionally contain an error message from WebXR, or an empty string if no message is available.
@@ -206,28 +206,28 @@
 			</description>
 		</signal>
 		<signal name="session_supported">
-			<argument index="0" name="session_mode" type="String" />
-			<argument index="1" name="supported" type="bool" />
+			<param index="0" name="session_mode" type="String" />
+			<param index="1" name="supported" type="bool" />
 			<description>
 				Emitted by [method is_session_supported] to indicate if the given [code]session_mode[/code] is supported or not.
 			</description>
 		</signal>
 		<signal name="squeeze">
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Emitted after one of the "controllers" has finished its "primary squeeze action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="squeezeend">
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has finished its "primary squeeze action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="squeezestart">
-			<argument index="0" name="controller_id" type="int" />
+			<param index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has started its "primary squeeze action".
 				Use [method get_controller] to get more information about the controller.

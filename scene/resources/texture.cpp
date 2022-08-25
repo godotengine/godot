@@ -35,8 +35,8 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/os.h"
-#include "mesh.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/mesh.h"
 #include "servers/camera/camera_feed.h"
 int Texture2D::get_width() const {
 	int ret;
@@ -300,8 +300,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void ImageTexture::set_size_override(const Size2 &p_size) {
-	Size2 s = p_size;
+void ImageTexture::set_size_override(const Size2i &p_size) {
+	Size2i s = p_size;
 	if (s.x != 0) {
 		w = s.x;
 	}
@@ -323,6 +323,7 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
+	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 }
@@ -1037,7 +1038,7 @@ void CompressedTexture2D::reload_from_file() {
 	load(path);
 }
 
-void CompressedTexture2D::_validate_property(PropertyInfo &property) const {
+void CompressedTexture2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void CompressedTexture2D::_bind_methods() {
@@ -1393,7 +1394,7 @@ void CompressedTexture3D::reload_from_file() {
 	load(path);
 }
 
-void CompressedTexture3D::_validate_property(PropertyInfo &property) const {
+void CompressedTexture3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void CompressedTexture3D::_bind_methods() {
@@ -2008,7 +2009,7 @@ void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 		}
 		_curve_x = p_curve;
 		if (_curve_x.is_valid()) {
-			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -2021,7 +2022,7 @@ void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 		}
 		_curve_y = p_curve;
 		if (_curve_y.is_valid()) {
-			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -2034,7 +2035,7 @@ void CurveXYZTexture::set_curve_z(Ref<Curve> p_curve) {
 		}
 		_curve_z = p_curve;
 		if (_curve_z.is_valid()) {
-			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -2536,13 +2537,6 @@ void GradientTexture2D::_bind_methods() {
 
 //////////////////////////////////////
 
-void ProxyTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
-	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_base", "get_base");
-}
-
 void ProxyTexture::set_base(const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(p_texture == this);
 
@@ -2795,12 +2789,12 @@ bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void AnimatedTexture::_validate_property(PropertyInfo &property) const {
-	String prop = property.name;
+void AnimatedTexture::_validate_property(PropertyInfo &p_property) const {
+	String prop = p_property.name;
 	if (prop.begins_with("frame_")) {
 		int frame = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
 		if (frame >= frame_count) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -3220,7 +3214,7 @@ void CompressedTextureLayered::reload_from_file() {
 	load(path);
 }
 
-void CompressedTextureLayered::_validate_property(PropertyInfo &property) const {
+void CompressedTextureLayered::_validate_property(PropertyInfo &p_property) const {
 }
 
 void CompressedTextureLayered::_bind_methods() {

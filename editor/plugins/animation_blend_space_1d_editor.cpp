@@ -34,6 +34,8 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/animation/animation_blend_tree.h"
 
 StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {
@@ -612,7 +614,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(tool_blend);
 	tool_blend->set_pressed(true);
 	tool_blend->set_tooltip(TTR("Set the blending position within the space"));
-	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(3));
+	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
 	tool_select->set_flat(true);
@@ -620,7 +622,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
 	tool_select->set_tooltip(TTR("Select and move points, create points with RMB."));
-	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(0));
+	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
 	tool_create->set_flat(true);
@@ -628,7 +630,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip(TTR("Create points."));
-	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(1));
+	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(1));
 
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
@@ -675,7 +677,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
 	open_editor->set_text(TTR("Open Editor"));
-	open_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_open_editor), varray(), CONNECT_DEFERRED);
+	open_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_open_editor), CONNECT_DEFERRED);
 
 	edit_hb->hide();
 	open_editor->hide();

@@ -130,7 +130,7 @@ public:
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
-	void set_size_override(const Size2 &p_size);
+	void set_size_override(const Size2i &p_size);
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 
@@ -251,7 +251,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file, int p_size_limit);
@@ -506,7 +506,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Image::Format get_format() const override;
@@ -651,7 +651,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Image::Format get_format() const override;
@@ -883,8 +883,6 @@ VARIANT_ENUM_CAST(GradientTexture2D::Fill);
 VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
 
 class ProxyTexture : public Texture2D {
-	GDCLASS(ProxyTexture, Texture2D);
-
 private:
 	mutable RID proxy_ph;
 	mutable RID proxy;
@@ -942,7 +940,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_frames(int p_frames);
@@ -1106,4 +1104,4 @@ public:
 			PlaceholderTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
 };
 
-#endif
+#endif // TEXTURE_H

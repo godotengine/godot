@@ -17,7 +17,7 @@
 			Translates [code]uv[/code] by using [code]scale[/code] and [code]offset[/code] values using the following formula: [code]uv = uv + offset * scale[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
 		</constant>
 		<constant name="FUNC_SCALING" value="1" enum="Function">
-			Scales [code]uv[/uv] by using [code]scale[/code] and [code]pivot[/code] values using the following formula: [code]uv = (uv - pivot) * scale + pivot[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
+			Scales [code]uv[/code] by using [code]scale[/code] and [code]pivot[/code] values using the following formula: [code]uv = (uv - pivot) * scale + pivot[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
 		</constant>
 		<constant name="FUNC_MAX" value="2" enum="Function">
 			Represents the size of the [enum Function] enum.

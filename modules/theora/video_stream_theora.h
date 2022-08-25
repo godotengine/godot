@@ -170,7 +170,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<VideoStreamPlayback> instance_playback() override {
+	Ref<VideoStreamPlayback> instantiate_playback() override {
 		Ref<VideoStreamPlaybackTheora> pb = memnew(VideoStreamPlaybackTheora);
 		pb->set_audio_track(audio_track);
 		pb->set_file(file);
@@ -192,4 +192,4 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+#endif // VIDEO_STREAM_THEORA_H

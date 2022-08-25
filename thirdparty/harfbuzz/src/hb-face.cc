@@ -315,7 +315,7 @@ hb_face_destroy (hb_face_t *face)
  *
  * Attaches a user-data key/data pair to the given face object.
  *
- * Return value: %true if success, %false otherwise
+ * Return value: `true` if success, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -342,7 +342,7 @@ hb_face_set_user_data (hb_face_t          *face,
  * Since: 0.9.2
  **/
 void *
-hb_face_get_user_data (hb_face_t          *face,
+hb_face_get_user_data (const hb_face_t    *face,
 		       hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (face, key);
@@ -371,7 +371,7 @@ hb_face_make_immutable (hb_face_t *face)
  *
  * Tests whether the given face object is immutable.
  *
- * Return value: %true is @face is immutable, %false otherwise
+ * Return value: `true` is @face is immutable, `false` otherwise
  *
  * Since: 0.9.2
  **/

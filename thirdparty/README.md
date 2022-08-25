@@ -44,7 +44,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (8b263a18fca98ea371e54227837321c5cdaa1ba7, 2021)
+- Version: git (7f33e7eb8472dbcf31fdcf50cd216c89a282825d, 2022)
 - License: MPL 2.0
 
 
@@ -195,6 +195,7 @@ Files extracted from upstream source:
   to `glslang/build_info.h`
 - `LICENSE.txt`
 - Unnecessary files like `CMakeLists.txt`, `*.m4` and `updateGrammar` removed.
+- Patch in `patches/unused_cleanup.diff` must be applied.
 
 
 ## graphite
@@ -213,7 +214,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 4.4.1 (096aaa62a6e0d07c02a4894fc036efc927e5aaf9, 2022)
+- Version: 5.1.0 (f1f2be776bcd994fa9262622e1a7098a066e5cf7, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -231,6 +232,8 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - the `common` folder
+- `scriptset.*`, `ucln_in.*`, `uspoof.cpp"` and `uspoof_impl.cpp` from the `i18n` folder
+- `uspoof.h` from the `i18n/unicode` folder
 - `LICENSE`
 
 Files generated from upstream source:
@@ -317,12 +320,12 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.2.2 (b0a860891dcd4c0c2d7c6149e5cccb6eb881cc21, 2022)
+- Version: 1.2.4 (0d1f12546bd803099a60c070517a552483f3790e, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*` except from: `.am`, `.rc` and `.in` files
+- `src/` and `sharpyuv/` except from: `.am`, `.rc` and `.in` files
 - `AUTHORS`, `COPYING`, `PATENTS`
 
 
@@ -597,7 +600,7 @@ Godot. See the patch in the `patches` folder for details.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (1aceb6af56e74b92a00378842dda5c5a73f49a4b, 2022)
+- Version: git (1ef99b09fa7ce5aee2c5cf70c61a4f7458d27e09, 2022)
 - License: Apache 2.0
 
 Does not track Vulkan SDK releases closely, but try to package a commit newer

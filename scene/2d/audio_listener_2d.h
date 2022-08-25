@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LISTENER_2D_H
-#define LISTENER_2D_H
+#ifndef AUDIO_LISTENER_2D_H
+#define AUDIO_LISTENER_2D_H
 
 #include "scene/2d/node_2d.h"
 #include "scene/main/window.h"
@@ -56,4 +56,4 @@ public:
 	bool is_current() const;
 };
 
-#endif
+#endif // AUDIO_LISTENER_2D_H

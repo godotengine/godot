@@ -50,7 +50,7 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	Size2 child_max_size;
+	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
 	void update_scrollbars();
 
@@ -75,7 +75,7 @@ protected:
 	Size2 get_minimum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);
-	void _update_dimensions();
+	void _reposition_children();
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
@@ -116,4 +116,4 @@ public:
 
 VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
 
-#endif
+#endif // SCROLL_CONTAINER_H

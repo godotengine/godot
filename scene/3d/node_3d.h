@@ -155,10 +155,10 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
-	bool property_can_revert(const String &p_name);
-	Variant property_get_revert(const String &p_name);
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
 	enum {
@@ -216,7 +216,7 @@ public:
 	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void clear_subgizmo_selection();
 	Vector<Ref<Node3DGizmo>> get_gizmos() const;
-	Array get_gizmos_bind() const;
+	TypedArray<Node3DGizmo> get_gizmos_bind() const;
 	void add_gizmo(Ref<Node3DGizmo> p_gizmo);
 	void remove_gizmo(Ref<Node3DGizmo> p_gizmo);
 	void clear_gizmos();

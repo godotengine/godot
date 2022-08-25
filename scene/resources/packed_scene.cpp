@@ -434,10 +434,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			for (int j = 0; j < binds.size(); j++) {
 				argptrs[j] = &binds[j];
 			}
-			callable = callable.bind(argptrs, binds.size());
+			callable = callable.bindp(argptrs, binds.size());
 		}
 
-		cfrom->connect(snames[c.signal], callable, varray(), CONNECT_PERSIST | c.flags);
+		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags);
 	}
 
 	//Node *s = ret_nodes[0];
@@ -892,9 +892,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			cd.signal = _nm_get_string(c.signal.get_name(), name_map);
 			cd.flags = c.flags;
 			cd.unbinds = unbinds;
-			for (int i = 0; i < c.binds.size(); i++) { // TODO: This could be removed now.
-				cd.binds.push_back(_vm_get_variant(c.binds[i], variant_map));
-			}
+
 			for (int i = 0; i < binds.size(); i++) {
 				cd.binds.push_back(_vm_get_variant(binds[i], variant_map));
 			}
@@ -1781,7 +1779,7 @@ void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	ClassDB::bind_method(D_METHOD("instantiate", "edit_state"), &PackedScene::instantiate, DEFVAL(GEN_EDIT_STATE_DISABLED));
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &PackedScene::can_instantiate);
-	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
+	ClassDB::bind_method(D_METHOD("_set_bundled_scene", "scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);
 

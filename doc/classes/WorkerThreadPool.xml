@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WorkerThreadPool" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_group_task">
+			<return type="int" />
+			<param index="0" name="action" type="Callable" />
+			<param index="1" name="elements" type="int" />
+			<param index="2" name="tasks_needed" type="int" default="-1" />
+			<param index="3" name="high_priority" type="bool" default="false" />
+			<param index="4" name="description" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="add_task">
+			<return type="int" />
+			<param index="0" name="action" type="Callable" />
+			<param index="1" name="high_priority" type="bool" default="false" />
+			<param index="2" name="description" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="get_group_processed_element_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="group_id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_group_task_completed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="group_id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_task_completed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="task_id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="wait_for_group_task_completion">
+			<return type="void" />
+			<param index="0" name="group_id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="wait_for_task_completion">
+			<return type="void" />
+			<param index="0" name="task_id" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

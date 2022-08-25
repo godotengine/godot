@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef SKELETON_MODIFICATION_3D_STACKHOLDER_H
+#define SKELETON_MODIFICATION_3D_STACKHOLDER_H
+
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-
-#ifndef SKELETONMODIFICATION3DSTACKHOLDER_H
-#define SKELETONMODIFICATION3DSTACKHOLDER_H
 
 class SkeletonModification3DStackHolder : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DStackHolder, SkeletonModification3D);
@@ -56,4 +56,4 @@ public:
 	~SkeletonModification3DStackHolder();
 };
 
-#endif //SKELETONMODIFICATION3DSTACKHOLDER_H
+#endif // SKELETON_MODIFICATION_3D_STACKHOLDER_H

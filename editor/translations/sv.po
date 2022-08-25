@@ -14,7 +14,7 @@
 # Mattias Münster <mattiasmun@gmail.com>, 2019.
 # Anonymous <noreply@weblate.org>, 2020.
 # Joakim Lundberg <joakim@joakimlundberg.com>, 2020.
-# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021.
+# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022.
 # Jonas Robertsson <jonas.robertsson@posteo.net>, 2020, 2021.
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
@@ -22,16 +22,18 @@
 # Shaggy <anton_christoffersson@hotmail.com>, 2020.
 # Marcus Toftedahl <marcus.toftedahl@his.se>, 2020.
 # Alex25820 <Alexander_sjogren@hotmail.se>, 2021.
-# Leon <joel.lundborg@gmail.com>, 2021.
+# Leon <joel.lundborg@gmail.com>, 2021, 2022.
 # Kent Jofur <kent.jofur@gmail.com>, 2021.
 # Alex25820 <alexs25820@gmail.com>, 2021.
+# Björn Åkesson <bjorn.akesson@gmail.com>, 2022.
+# Kenny Andersson <kenny@ordinary.se>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-20 18:53+0000\n"
-"Last-Translator: Alex25820 <alexs25820@gmail.com>\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
+"Last-Translator: Kenny Andersson <kenny@ordinary.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -39,11 +41,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
+#, fuzzy
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Drivrutin för surfplatta"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -51,18 +54,16 @@ msgid "Clipboard"
 msgstr "Klippbordet är tomt!"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Nuvarande Scen"
+msgstr "Nuvarande Skärm"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Aktivera"
+msgstr "V-Synk Aktivt"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -73,9 +74,8 @@ msgid "Delta Smoothing"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Exportera Projekt"
+msgstr "Läge för låg processoranvändning"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -86,9 +86,8 @@ msgid "Keep Screen On"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Storlek:"
+msgstr "Minsta fönsterstorlek"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -108,11 +107,11 @@ msgstr "Nytt Fönster"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
-msgstr ""
+msgstr "Kantlös"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Genomskinlighet per pixel aktiverad"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 #, fuzzy
@@ -121,16 +120,16 @@ msgstr "Växla Fullskärm"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr ""
+msgstr "Maximerad"
 
 #: core/bind/core_bind.cpp
 msgid "Minimized"
-msgstr ""
+msgstr "Minimerad"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Anpassningsbar"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -150,36 +149,32 @@ msgstr "Dockposition"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Storlek:"
+msgstr "Storlek"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Editor Hint"
-msgstr "Redigera Tema"
+msgstr "Redigeringsförslag"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Skriv ut felmeddelanden"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "Interpolationsläge"
+msgstr "Upprepningar per sekund"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
-msgstr ""
+msgstr "Mål FPS"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Skala"
+msgstr "Tidsskala"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -201,13 +196,12 @@ msgid "Error Line"
 msgstr "Fel vid sparande"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Result"
-msgstr "Sök Hjälp"
+msgstr "Resultat"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Minne"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -218,7 +212,7 @@ msgstr ""
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Begränsningar"
 
 #: core/command_queue_mt.cpp
 #, fuzzy
@@ -227,68 +221,63 @@ msgstr "Ctrl: Rotera"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
-msgstr ""
+msgstr "Flertrådsköstorlek (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Funktioner"
+msgstr "Funktion"
 
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Data"
-msgstr ""
+msgstr "Data"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Network"
-msgstr "Nätverksprofilerare"
+msgstr "Nätverk"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Ta bort"
+msgstr "Fjärr FS"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Sida: "
+msgstr "Sidstorlek"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "Sida läs framåt"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Blockeringsläge Aktiverat"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "Anslut"
+msgstr "Anslutning"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
-msgstr ""
+msgstr "Läs segmentstorlek"
 
 #: core/io/marshalls.cpp
 msgid "Object ID"
-msgstr ""
+msgstr "Objekt ID"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 msgid "Allow Object Decoding"
-msgstr ""
+msgstr "Tillåt objekt avkodning"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Neka nya nätverksanslutningar"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 #, fuzzy
@@ -312,36 +301,35 @@ msgstr "Transformera"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
-msgstr ""
+msgstr "Maxstorlek för kodningsbufferten"
 
 #: core/io/packet_peer.cpp
 msgid "Input Buffer Max Size"
-msgstr ""
+msgstr "Maximal storlek på inmatningsbufferten"
 
 #: core/io/packet_peer.cpp
 msgid "Output Buffer Max Size"
-msgstr ""
+msgstr "Maxstorlek för utgångsbuffert"
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
-msgstr ""
+msgstr "Strömningsenhet"
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
-msgstr ""
+msgstr "Big Endian"
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Datamatris"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "Blockering av handskakning"
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "Redigera Koppling:"
+msgstr "Max väntande anslutningar"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -356,12 +344,11 @@ msgstr "Förväntade en sträng av längden 1 (ett tecken)."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Inte nog med bytes för att avkoda, eller ogiltigt format."
+msgstr "Otillräckligt antal bytes för att avkoda, eller ogiltigt format."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Ogiltig indata %i (ej överförd) i uttrycket"
+msgstr "Ogiltig inmatning %d (ej överförd) i uttrycket"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -390,7 +377,7 @@ msgstr "I anrop till '%s':"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Seed"
 
 #: core/math/random_number_generator.cpp
 #, fuzzy
@@ -399,11 +386,11 @@ msgstr "Status"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Meddelandekö"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Maxstorlek (KB)"
 
 #: core/os/input.cpp
 #, fuzzy
@@ -412,7 +399,7 @@ msgstr "Växla Läge"
 
 #: core/os/input.cpp
 msgid "Use Accumulated Input"
-msgstr ""
+msgstr "Använd ackumulerad input"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -420,13 +407,12 @@ msgid "Device"
 msgstr "Enhet"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Alla"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -435,7 +421,7 @@ msgstr "Versionshantering"
 
 #: core/os/input_event.cpp
 msgid "Meta"
-msgstr ""
+msgstr "Meta"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -455,9 +441,8 @@ msgid "Pressed"
 msgstr "Återställ Zoom"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Skanna"
+msgstr "Scancode"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -465,7 +450,7 @@ msgstr ""
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -482,9 +467,8 @@ msgid "Global Position"
 msgstr "Konstant"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Factor"
-msgstr "Vektor"
+msgstr "Faktor"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -493,25 +477,23 @@ msgstr "Automatisk Indentering"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Dubbelklick"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Återställ Zoom"
+msgstr "Tryck"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
-msgstr ""
+msgstr "Invertera penna"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "GDNative"
+msgstr "Relativ"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
@@ -527,9 +509,8 @@ msgid "Axis"
 msgstr "Axel"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "Värde"
+msgstr "Axelvärde"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -545,21 +526,19 @@ msgstr "Åtgärd"
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Styrka"
 
 #: core/os/input_event.cpp
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Ändra"
+msgstr "Kanal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Synkronisera Skript-ändringar"
+msgstr "Meddelande"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -570,11 +549,11 @@ msgstr "Växla"
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
 msgid "Velocity"
-msgstr ""
+msgstr "Hastighet"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
-msgstr ""
+msgstr "Instrument"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -588,13 +567,13 @@ msgstr ""
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Åtgärd"
+msgstr "Applikation"
 
 #: core/project_settings.cpp main/main.cpp
+#, fuzzy
 msgid "Config"
-msgstr ""
+msgstr "Konfigurera"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -630,7 +609,7 @@ msgstr "Kör"
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/run_settings_dialog.cpp main/main.cpp
 msgid "Main Scene"
-msgstr ""
+msgstr "Huvudscen"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -644,15 +623,15 @@ msgstr "Avaktiverad"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Använda dold projektdatakatalog"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Använd anpassad användarkatalog"
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Anpassad användarkatalognamn"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
@@ -665,7 +644,7 @@ msgstr "Ersätt Alla"
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Bredd"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -673,13 +652,12 @@ msgstr ""
 #: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Height"
-msgstr "Höger"
+msgstr "Höjd"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Alltid överst"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -706,11 +684,11 @@ msgstr "Ladda standard Buss-Layouten."
 #: editor/editor_settings.cpp editor/script_create_dialog.cpp
 #: scene/2d/camera_2d.cpp scene/3d/light.cpp scene/main/node.cpp
 msgid "Editor"
-msgstr ""
+msgstr "Redigerare"
 
 #: core/project_settings.cpp
 msgid "Main Run Args"
-msgstr ""
+msgstr "Huvudkörnings arg"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -719,11 +697,12 @@ msgstr "Scen Filsökväg:"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "Sök i filändelser"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Sökväg för skriptmallar"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -738,16 +717,16 @@ msgstr "Versionshantering"
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
 msgid "Input"
-msgstr ""
-
-#: core/project_settings.cpp
-msgid "UI Accept"
-msgstr ""
+msgstr "Input"
 
 #: core/project_settings.cpp
 #, fuzzy
+msgid "UI Accept"
+msgstr "UI Acceptera"
+
+#: core/project_settings.cpp
 msgid "UI Select"
-msgstr "Välj"
+msgstr "Ui Välj"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -779,9 +758,8 @@ msgid "UI Up"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Ladda ner"
+msgstr "UI Ner"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -790,11 +768,11 @@ msgstr "Sida: "
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
-msgstr ""
+msgstr "UI sida ner"
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "UI hem"
 
 #: core/project_settings.cpp
 msgid "UI End"
@@ -931,7 +909,7 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 #, fuzzy
@@ -944,11 +922,12 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "Max buffer (2 potenser)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
+#, fuzzy
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
 #, fuzzy
@@ -964,7 +943,7 @@ msgstr "Resurs"
 #: core/resource.cpp
 #, fuzzy
 msgid "Local To Scene"
-msgstr "Stäng Scen"
+msgstr "Lokalt till scenen"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -983,12 +962,13 @@ msgid "Locale"
 msgstr ""
 
 #: core/translation.cpp
+#, fuzzy
 msgid "Test"
-msgstr ""
+msgstr "Test"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
-msgstr ""
+msgstr "Reserv"
 
 #: core/ustring.cpp scene/resources/segment_shape_2d.cpp
 msgid "B"
@@ -1023,18 +1003,21 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
+#, fuzzy
 msgid "Buffers"
-msgstr ""
+msgstr "Buffertar"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#, fuzzy
 msgid "Canvas Polygon Buffer Size (KB)"
-msgstr ""
+msgstr "Buffertstorlek för canvaspolygon (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#, fuzzy
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "Buffertstorlek för Canvas Polygon Index (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -1045,8 +1028,9 @@ msgstr ""
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1057,42 +1041,47 @@ msgstr "Alternativ"
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Use GPU Pixel Snap"
-msgstr ""
+msgstr "Använd GPU pixel vidhäftning"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Immediate Buffer Size (KB)"
-msgstr ""
+msgstr "Omedelbar buffertstorlek (KB)"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
+#, fuzzy
 msgid "Lightmapping"
-msgstr ""
+msgstr "Ljusmappning"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
+#, fuzzy
 msgid "Use Bicubic Sampling"
-msgstr ""
+msgstr "Använd bikubisk sampling"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Max återgivningsbara element"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Max renderbara ljuskällor"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Max Renderable Reflections"
-msgstr ""
+msgstr "Max renderingsbara reflektioner"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Max antal ljuskällor per objekt"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "Subsurface Scattering"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1116,16 +1105,19 @@ msgid "Weight Samples"
 msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Voxel Cone Tracing"
-msgstr ""
+msgstr "Voxel Kon Spårning"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
+#, fuzzy
 msgid "High Quality"
-msgstr ""
+msgstr "Hög kvalitet"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
+#, fuzzy
 msgid "Blend Shape Max Buffer Size (KB)"
-msgstr ""
+msgstr "Mixform Max buffertstorlek (KB)"
 
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
@@ -1178,7 +1170,7 @@ msgstr "Anim Ta Bort Nycklar"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Ändra Nyckelbildstid"
+msgstr "Anim Ändra Tidsnyckelns Tid"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -1236,7 +1228,7 @@ msgstr "Välj Färg"
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Argument"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
@@ -1247,23 +1239,25 @@ msgstr "Typ"
 
 #: editor/animation_track_editor.cpp
 msgid "In Handle"
-msgstr ""
+msgstr "Handtag in"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Out Handle"
-msgstr ""
+msgstr "Handtag ut"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
+#, fuzzy
 msgid "Stream"
-msgstr ""
+msgstr "Ström"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Start Offset"
-msgstr "Icon Läge"
+msgstr "Startförskjutning"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1282,7 +1276,7 @@ msgstr "Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Easing"
-msgstr ""
+msgstr "Lätta"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1435,7 +1429,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Out-Handle:"
-msgstr ""
+msgstr "Handtag ut:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1448,8 +1442,9 @@ msgid "Start (s):"
 msgstr "Starta"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "End (s):"
-msgstr ""
+msgstr "Slut (s):"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1509,7 +1504,7 @@ msgstr "Duplicera Nycklar"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
-msgstr ""
+msgstr "Lägg till RESET-värde(n)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -1591,7 +1586,7 @@ msgstr ""
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
 msgid "property '%s'"
-msgstr "egenskapen '%s'"
+msgstr "egenskap '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -1824,9 +1819,8 @@ msgid "Go to Previous Step"
 msgstr "Gå till Föregående Steg"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "Återställ Zoom"
+msgstr "Verkställ återställning"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -2209,14 +2203,15 @@ msgstr "Favoriter:"
 msgid "Recent:"
 msgstr "Senaste:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Sök:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Matchar:"
@@ -2276,8 +2271,8 @@ msgstr "Sök Ersättningsresurs:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2286,17 +2281,17 @@ msgstr "Öppna"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "Ägare av: %s (Totalt: %d)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"Ta bort valda filer från projektet? (Kan ej återställas)\n"
-"Du kan hitta de borttagna filerna i systemets papperskorg."
+"Ta bort de valda filerna från projektet? (Kan ej ångras.)\n"
+"Beroende på hur ditt filsystem är konfigurerat så kommer filerna antingen "
+"flyttas till systemets papperskorg eller tas bort permanent."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2381,7 +2376,7 @@ msgstr "Tack från Godot-gemenskapen!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr "Klicka för att kopiera."
+msgstr "Klicka för att kopiera"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2479,30 +2474,32 @@ msgid "Licenses"
 msgstr "Licenser"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "Fel vid öppning av paketetfil, inte i zip-format."
+msgstr "Fel vid öppning av tillgångsfilen för \"%s\" (inte i ZIP-format)."
 
 #: editor/editor_asset_installer.cpp
 msgid "%s (already exists)"
 msgstr "%s (existerar redan)"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
 msgstr ""
+"Innehållet i resursen \"%s\" - %d fil(er) står i konflikt med ditt projekt:"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
 msgstr ""
+"Innehållet i resursen \"%s\" - Inga filer står i konflikt med ditt projekt:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Dekomprimerar Tillgångar"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "Följande filer misslyckades att packas upp från paketet:"
+msgstr "Följande filer misslyckades att packas upp från paketet \"%s\":"
 
 #: editor/editor_asset_installer.cpp
 msgid "(and %s more files)"
@@ -2510,7 +2507,7 @@ msgstr "(och %s fler filer)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Paketet \"%s\" har installerats!"
+msgstr "Installation av tillgången \"%s\" lyckades!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2522,9 +2519,8 @@ msgid "Install"
 msgstr "Installera"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "Paketinstallerare"
+msgstr "Tillgångsinstallerare"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -2705,8 +2701,9 @@ msgid "Invalid name."
 msgstr "Ogiltigt namn."
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Kan inte börja med en siffra."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2771,7 +2768,7 @@ msgstr "%s är en ogiltig genväg. Filen existerar inte."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s är en ogiltig genväg. Inte i resurs-genväg (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2851,11 +2848,11 @@ msgstr "Välj"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Projektexport för plattformen:"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed with errors."
+msgid "Completed with warnings."
 msgstr "Kopiera Nod-Sökväg"
 
 #: editor/editor_export.cpp
@@ -2938,8 +2935,8 @@ msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"Målplattformen kräver 'PVRTC'-texturkomprimering för GLES2. Aktivera 'Import "
-"Pvrtc' i projektinställningarna."
+"Målplattformen kräver 'PVRTC' texturkomprimering för GLES2. Aktivera "
+"'Importera Pvrtc' i Projektinställningarna."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2971,7 +2968,7 @@ msgstr "Redigera Tema"
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/export/export.cpp
 msgid "Release"
-msgstr ""
+msgstr "Släpp"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2980,11 +2977,12 @@ msgstr "Färg enhetlig."
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 bitar"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "Embed PCK"
-msgstr ""
+msgstr "Bädda in PCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -3046,7 +3044,7 @@ msgstr "Hantera exportmallar..."
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
 msgid "PCK Embedding"
-msgstr ""
+msgstr "PCK Inbäddning"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3054,7 +3052,7 @@ msgstr "Den inbäddade PCK får inte vara större än 4 GiB på 32 bitars export
 
 #: editor/editor_export.cpp
 msgid "Convert Text Resources To Binary On Export"
-msgstr ""
+msgstr "Konvertera textresurser till binära vid export"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3083,9 +3081,8 @@ msgid "FileSystem Dock"
 msgstr "FilSystem"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "Importera"
+msgstr "Importera Brygga"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
@@ -3097,17 +3094,19 @@ msgstr "Tillåter att redigera skript via den integrerade skript-redigeraren."
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
-msgstr ""
+msgstr "Ger inbyggd tillgång till tillgångsbiblioteket."
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr ""
+msgstr "Tillåter redigering av nodhierarkin i scendockan."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene "
 "dock."
 msgstr ""
+"Tillåter arbete med signaler och grupper av noden som valts i Scendockan."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
@@ -3145,19 +3144,16 @@ msgid "(Editor Disabled, Properties Disabled)"
 msgstr "(Editor inaktiverad, Egenskaper inaktiverad)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Properties Disabled)"
-msgstr "Egenskaper"
+msgstr "(Egenskaper avstängda)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Editor Disabled)"
-msgstr "Redigera Variabel"
+msgstr "(Redigeraren är avstängd)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options:"
-msgstr "Beskrivning:"
+msgstr "Klassalternativ:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enable Contextual Editor"
@@ -3194,9 +3190,8 @@ msgid "Error saving profile to path: '%s'."
 msgstr "Fel vid laddning av mall '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
-msgstr "Ladda Standard"
+msgstr "Återställ till Standard"
 
 #: editor/editor_feature_profile.cpp
 msgid "Current Profile:"
@@ -3249,18 +3244,16 @@ msgid "Create or import a profile to edit available classes and properties."
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "New profile name:"
-msgstr "Nytt namn:"
+msgstr "Nytt profilnamn:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
 msgstr "Godot funktions profil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Profile(s)"
-msgstr "%d fler filer"
+msgstr "Importera profil(er)"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -3294,9 +3287,8 @@ msgid "Copy Path"
 msgstr "Kopiera Sökväg"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
-msgstr "Visa I Filhanteraren"
+msgstr "Öppna i filhanteraren"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
@@ -5556,7 +5548,7 @@ msgstr "Miniatyr..."
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr ""
+msgstr "Anslutningar"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5672,6 +5664,10 @@ msgstr ""
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Alla urval"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11301,7 +11297,7 @@ msgstr "Spela"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr ""
+msgstr "Ortogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_camera.cpp
 msgid "Perspective"
@@ -11468,7 +11464,7 @@ msgstr "Partiklar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS: %d (%s ms)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -12047,6 +12043,11 @@ msgstr "Animationer:"
 #, fuzzy
 msgid "New Animation"
 msgstr "Animation"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Filtrera noder"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -20722,15 +20723,15 @@ msgstr "Det gick inte att hitta nyckellager, det gick inte att exportera."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Måste använda en giltigt filändelse."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20754,15 +20755,15 @@ msgstr "Ogiltigt namn."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Måste använda en giltigt filändelse."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -24738,8 +24739,9 @@ msgid "Alpha"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#, fuzzy
 msgid "Caret"
-msgstr ""
+msgstr "Markör"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Blink"
@@ -25397,9 +25399,8 @@ msgid "Draw 2D Outlines"
 msgstr ""
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "Riktningar"
+msgstr "Reflektioner"
 
 #: scene/main/scene_tree.cpp
 msgid "Atlas Size"
@@ -28332,12 +28333,13 @@ msgid "UV Contract Amount"
 msgstr ""
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Use Simple PVS"
-msgstr ""
+msgstr "Använd enkel PVS"
 
 #: servers/visual_server.cpp
 msgid "PVS Logging"
-msgstr ""
+msgstr "PVS loggning"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28350,8 +28352,9 @@ msgid "Remove Danglers"
 msgstr "Ta Bort Mall"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Flip Imported Portals"
-msgstr ""
+msgstr "Vänd importerade portaler"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28359,8 +28362,9 @@ msgid "Occlusion Culling"
 msgstr "Redigera Polygon"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Max Active Spheres"
-msgstr ""
+msgstr "Max aktiva sfärer"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28373,13 +28377,15 @@ msgid "Shader Compilation Mode"
 msgstr "Interpolationsläge"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Max Simultaneous Compiles"
-msgstr ""
+msgstr "Max samtidiga kompileringar"
 
 #: servers/visual_server.cpp
 msgid "Log Active Async Compiles Count"
 msgstr ""
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Shader Cache Size (MB)"
-msgstr ""
+msgstr "Shader Cache Storlek (MB)"

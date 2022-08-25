@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_IK_H
-#define SKELETON_IK_H
+#ifndef SKELETON_IK_3D_H
+#define SKELETON_IK_3D_H
 
 #ifndef _3D_DISABLED
 
@@ -137,7 +137,7 @@ class SkeletonIK3D : public Node {
 	FabrikInverseKinematic::Task *task = nullptr;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 	virtual void _notification(int p_what);
@@ -192,4 +192,4 @@ private:
 
 #endif // _3D_DISABLED
 
-#endif // SKELETON_IK_H
+#endif // SKELETON_IK_3D_H

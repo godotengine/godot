@@ -93,8 +93,12 @@ namespace Godot
         /// Negative indices access the children from the last one.
         /// To access a child node via its name, use <see cref="GetNode"/>.
         /// </summary>
-        /// <seealso cref="GetChildOrNull{T}(int)"/>
+        /// <seealso cref="GetChildOrNull{T}(int, bool)"/>
         /// <param name="idx">Child index.</param>
+        /// <param name="includeInternal">
+        /// If <see langword="false"/>, internal children are skipped (see <c>internal</c>
+        /// parameter in <see cref="AddChild(Node, bool, InternalMode)"/>).
+        /// </param>
         /// <exception cref="InvalidCastException">
         /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
@@ -102,9 +106,9 @@ namespace Godot
         /// <returns>
         /// The child <see cref="Node"/> at the given index <paramref name="idx"/>.
         /// </returns>
-        public T GetChild<T>(int idx) where T : class
+        public T GetChild<T>(int idx, bool includeInternal = false) where T : class
         {
-            return (T)(object)GetChild(idx);
+            return (T)(object)GetChild(idx, includeInternal);
         }
 
         /// <summary>
@@ -113,15 +117,20 @@ namespace Godot
         /// Negative indices access the children from the last one.
         /// To access a child node via its name, use <see cref="GetNode"/>.
         /// </summary>
-        /// <seealso cref="GetChild{T}(int)"/>
+        /// <seealso cref="GetChild{T}(int, bool)"/>
         /// <param name="idx">Child index.</param>
+        /// <param name="includeInternal">
+        /// If <see langword="false"/>, internal children are skipped (see <c>internal</c>
+        /// parameter in <see cref="AddChild(Node, bool, InternalMode)"/>).
+        /// </param>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>
         /// The child <see cref="Node"/> at the given index <paramref name="idx"/>, or <see langword="null"/> if not found.
         /// </returns>
-        public T GetChildOrNull<T>(int idx) where T : class
+        public T GetChildOrNull<T>(int idx, bool includeInternal = false) where T : class
         {
-            return GetChild(idx) as T;
+            int count = GetChildCount(includeInternal);
+            return idx >= -count && idx < count ? GetChild(idx, includeInternal) as T : null;
         }
 
         /// <summary>

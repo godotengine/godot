@@ -201,24 +201,21 @@ collect_features_arabic (hb_ot_shape_planner_t *plan)
    * work.  However, testing shows that rlig and calt are applied
    * together for Mongolian in Uniscribe.  As such, we only add a
    * pause for Arabic, not other scripts.
-   *
-   * A pause after calt is required to make KFGQPC Uthmanic Script HAFS
-   * work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
    */
 
 
   map->enable_feature (HB_TAG('s','t','c','h'));
   map->add_gsub_pause (record_stch);
 
-  map->enable_feature (HB_TAG('c','c','m','p'));
-  map->enable_feature (HB_TAG('l','o','c','l'));
+  map->enable_feature (HB_TAG('c','c','m','p'), F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('l','o','c','l'), F_MANUAL_ZWJ);
 
   map->add_gsub_pause (nullptr);
 
   for (unsigned int i = 0; i < ARABIC_NUM_FEATURES; i++)
   {
     bool has_fallback = plan->props.script == HB_SCRIPT_ARABIC && !FEATURE_IS_SYRIAC (arabic_features[i]);
-    map->add_feature (arabic_features[i], has_fallback ? F_HAS_FALLBACK : F_NONE);
+    map->add_feature (arabic_features[i], F_MANUAL_ZWJ | (has_fallback ? F_HAS_FALLBACK : F_NONE));
     map->add_gsub_pause (nullptr);
   }
    map->add_gsub_pause (deallocate_buffer_var);
@@ -232,10 +229,16 @@ collect_features_arabic (hb_ot_shape_planner_t *plan)
   if (plan->props.script == HB_SCRIPT_ARABIC)
     map->add_gsub_pause (arabic_fallback_shape);
 
-  /* No pause after rclt.  See 98460779bae19e4d64d29461ff154b3527bf8420. */
-  map->enable_feature (HB_TAG('r','c','l','t'), F_MANUAL_ZWJ);
-  map->enable_feature (HB_TAG('c','a','l','t'), F_MANUAL_ZWJ);
-  map->add_gsub_pause (nullptr);
+   map->enable_feature (HB_TAG('c','a','l','t'), F_MANUAL_ZWJ);
+   /* https://github.com/harfbuzz/harfbuzz/issues/1573 */
+   if (!map->has_feature (HB_TAG('r','c','l','t')))
+   {
+     map->add_gsub_pause (nullptr);
+     map->enable_feature (HB_TAG('r','c','l','t'), F_MANUAL_ZWJ);
+   }
+
+   map->enable_feature (HB_TAG('l','i','g','a'), F_MANUAL_ZWJ);
+   map->enable_feature (HB_TAG('c','l','i','g'), F_MANUAL_ZWJ);
 
   /* The spec includes 'cswh'.  Earlier versions of Windows
    * used to enable this by default, but testing suggests
@@ -245,8 +248,8 @@ collect_features_arabic (hb_ot_shape_planner_t *plan)
    * Note that IranNastaliq uses this feature extensively
    * to fixup broken glyph sequences.  Oh well...
    * Test case: U+0643,U+0640,U+0631. */
-  //map->enable_feature (HB_TAG('c','s','w','h'));
-  map->enable_feature (HB_TAG('m','s','e','t'));
+  //map->enable_feature (HB_TAG('c','s','w','h'), F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('m','s','e','t'), F_MANUAL_ZWJ);
 }
 
 #include "hb-ot-shaper-arabic-fallback.hh"
@@ -328,7 +331,7 @@ arabic_joining (hb_buffer_t *buffer)
     if (entry->prev_action != NONE && prev != UINT_MAX)
     {
       info[prev].arabic_shaping_action() = entry->prev_action;
-      buffer->unsafe_to_break (prev, i + 1);
+      buffer->safe_to_insert_tatweel (prev, i + 1);
     }
     else
     {
@@ -362,7 +365,7 @@ arabic_joining (hb_buffer_t *buffer)
     if (entry->prev_action != NONE && prev != UINT_MAX)
     {
       info[prev].arabic_shaping_action() = entry->prev_action;
-      buffer->unsafe_to_break (prev, buffer->len);
+      buffer->safe_to_insert_tatweel (prev, buffer->len);
     }
     else if (2 <= state && state <= 5) /* States that have a possible prev_action. */
     {
@@ -735,12 +738,12 @@ const hb_ot_shaper_t _hb_ot_shaper_arabic =
   data_destroy_arabic,
   nullptr, /* preprocess_text */
   postprocess_glyphs_arabic,
-  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
   nullptr, /* decompose */
   nullptr, /* compose */
   setup_masks_arabic,
-  HB_TAG_NONE, /* gpos_tag */
   reorder_marks_arabic,
+  HB_TAG_NONE, /* gpos_tag */
+  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
   true, /* fallback_position */
 };

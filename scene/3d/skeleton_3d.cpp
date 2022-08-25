@@ -176,39 +176,37 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void Skeleton3D::_validate_property(PropertyInfo &property) const {
-	PackedStringArray split = property.name.split("/");
+void Skeleton3D::_validate_property(PropertyInfo &p_property) const {
+	PackedStringArray split = p_property.name.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		if (split[2] == "rest") {
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 		if (is_show_rest_only()) {
 			if (split[2] == "enabled") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "position") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "rotation") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		} else if (!is_bone_enabled(split[1].to_int())) {
 			if (split[2] == "position") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "rotation") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		}
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void Skeleton3D::_update_process_order() {
@@ -493,6 +491,19 @@ int Skeleton3D::get_bone_axis_forward_enum(int p_bone) {
 	return bones[p_bone].rest_bone_forward_axis;
 }
 
+void Skeleton3D::set_motion_scale(float p_motion_scale) {
+	if (p_motion_scale <= 0) {
+		motion_scale = 1;
+		ERR_FAIL_MSG("Motion scale must be larger than 0.");
+	}
+	motion_scale = p_motion_scale;
+}
+
+float Skeleton3D::get_motion_scale() const {
+	ERR_FAIL_COND_V(motion_scale <= 0, 1);
+	return motion_scale;
+}
+
 // Skeleton creation api
 
 void Skeleton3D::add_bone(const String &p_name) {
@@ -747,6 +758,20 @@ Vector3 Skeleton3D::get_bone_pose_scale(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector3());
 	return bones[p_bone].pose_scale;
+}
+
+void Skeleton3D::reset_bone_pose(int p_bone) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+	set_bone_pose_position(p_bone, bones[p_bone].rest.origin);
+	set_bone_pose_rotation(p_bone, bones[p_bone].rest.basis.get_rotation_quaternion());
+	set_bone_pose_scale(p_bone, bones[p_bone].rest.basis.get_scale());
+}
+
+void Skeleton3D::reset_bone_poses() {
+	for (int i = 0; i < bones.size(); i++) {
+		reset_bone_pose(i);
+	}
 }
 
 Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
@@ -1239,6 +1264,9 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_pose_rotation", "bone_idx"), &Skeleton3D::get_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("get_bone_pose_scale", "bone_idx"), &Skeleton3D::get_bone_pose_scale);
 
+	ClassDB::bind_method(D_METHOD("reset_bone_pose", "bone_idx"), &Skeleton3D::reset_bone_pose);
+	ClassDB::bind_method(D_METHOD("reset_bone_poses"), &Skeleton3D::reset_bone_poses);
+
 	ClassDB::bind_method(D_METHOD("is_bone_enabled", "bone_idx"), &Skeleton3D::is_bone_enabled);
 	ClassDB::bind_method(D_METHOD("set_bone_enabled", "bone_idx", "enabled"), &Skeleton3D::set_bone_enabled, DEFVAL(true));
 
@@ -1254,6 +1282,9 @@ void Skeleton3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_update_all_bone_transforms"), &Skeleton3D::force_update_all_bone_transforms);
 	ClassDB::bind_method(D_METHOD("force_update_bone_child_transform", "bone_idx"), &Skeleton3D::force_update_bone_children_transforms);
+
+	ClassDB::bind_method(D_METHOD("set_motion_scale", "motion_scale"), &Skeleton3D::set_motion_scale);
+	ClassDB::bind_method(D_METHOD("get_motion_scale"), &Skeleton3D::get_motion_scale);
 
 	// Helper functions
 	ClassDB::bind_method(D_METHOD("global_pose_to_world_transform", "global_pose"), &Skeleton3D::global_pose_to_world_transform);
@@ -1278,15 +1309,13 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton3D::get_modification_stack);
 	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton3D::execute_modifications);
 
-#ifndef _3D_DISABLED
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_scale", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater"), "set_motion_scale", "get_motion_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");
+#ifndef _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
 #endif // _3D_DISABLED
 
-#ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("pose_updated"));
-#endif // TOOLS_ENABLED
-
 	ADD_SIGNAL(MethodInfo("bone_pose_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("show_rest_only_changed"));

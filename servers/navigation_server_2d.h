@@ -53,7 +53,7 @@ public:
 	/// MUST be used in single thread!
 	static NavigationServer2D *get_singleton_mut() { return singleton; }
 
-	virtual Array get_maps() const;
+	virtual TypedArray<RID> get_maps() const;
 
 	/// Create a new map.
 	virtual RID map_create() const;
@@ -82,8 +82,8 @@ public:
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
 
-	virtual Array map_get_regions(RID p_map) const;
-	virtual Array map_get_agents(RID p_map) const;
+	virtual TypedArray<RID> map_get_regions(RID p_map) const;
+	virtual TypedArray<RID> map_get_agents(RID p_map) const;
 
 	virtual void map_force_update(RID p_map);
 
@@ -184,6 +184,23 @@ public:
 
 	NavigationServer2D();
 	virtual ~NavigationServer2D();
+
+#ifdef DEBUG_ENABLED
+	void set_debug_enabled(bool p_enabled);
+	bool get_debug_enabled() const;
+
+	void set_debug_navigation_edge_connection_color(const Color &p_color);
+	Color get_debug_navigation_edge_connection_color() const;
+
+	void set_debug_navigation_geometry_face_color(const Color &p_color);
+	Color get_debug_navigation_geometry_face_color() const;
+
+	void set_debug_navigation_geometry_face_disabled_color(const Color &p_color);
+	Color get_debug_navigation_geometry_face_disabled_color() const;
+
+	void set_debug_navigation_enable_edge_connections(const bool p_value);
+	bool get_debug_navigation_enable_edge_connections() const;
+#endif // DEBUG_ENABLED
 };
 
 #endif // NAVIGATION_SERVER_2D_H

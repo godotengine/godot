@@ -52,6 +52,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef FONTCONFIG_ENABLED
+#include "fontconfig-so_wrap.h"
+#endif
+
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
@@ -325,6 +329,101 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 	memfree(strings);
 
 	return off;
+}
+
+Vector<String> OS_LinuxBSD::get_system_fonts() const {
+#ifdef FONTCONFIG_ENABLED
+	if (!font_config_initialized) {
+		ERR_FAIL_V_MSG(Vector<String>(), "Unable to load fontconfig, system font support is disabled.");
+	}
+	HashSet<String> font_names;
+	Vector<String> ret;
+
+	FcConfig *config = FcInitLoadConfigAndFonts();
+	ERR_FAIL_COND_V(!config, ret);
+
+	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, nullptr);
+	ERR_FAIL_COND_V(!object_set, ret);
+
+	static const char *allowed_formats[] = { "TrueType", "CFF" };
+	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+		FcPattern *pattern = FcPatternCreate();
+		ERR_CONTINUE(!pattern);
+
+		FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+		FcPatternAddString(pattern, FC_FONTFORMAT, reinterpret_cast<const FcChar8 *>(allowed_formats[i]));
+
+		FcFontSet *font_set = FcFontList(config, pattern, object_set);
+		if (font_set) {
+			for (int j = 0; j < font_set->nfont; j++) {
+				char *family_name = nullptr;
+				if (FcPatternGetString(font_set->fonts[j], FC_FAMILY, 0, reinterpret_cast<FcChar8 **>(&family_name)) == FcResultMatch) {
+					if (family_name) {
+						font_names.insert(String::utf8(family_name));
+					}
+				}
+			}
+			FcFontSetDestroy(font_set);
+		}
+		FcPatternDestroy(pattern);
+	}
+	FcObjectSetDestroy(object_set);
+	FcConfigDestroy(config);
+
+	for (const String &E : font_names) {
+		ret.push_back(E);
+	}
+	return ret;
+#else
+	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
+#endif
+}
+
+String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+#ifdef FONTCONFIG_ENABLED
+	if (!font_config_initialized) {
+		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
+	}
+
+	String ret;
+
+	FcConfig *config = FcInitLoadConfigAndFonts();
+	ERR_FAIL_COND_V(!config, ret);
+
+	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_FILE, nullptr);
+	ERR_FAIL_COND_V(!object_set, ret);
+
+	FcPattern *pattern = FcPatternCreate();
+	if (pattern) {
+		FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+		FcPatternAddString(pattern, FC_FAMILY, reinterpret_cast<const FcChar8 *>(p_font_name.utf8().get_data()));
+		FcPatternAddInteger(pattern, FC_WEIGHT, p_bold ? FC_WEIGHT_BOLD : FC_WEIGHT_NORMAL);
+		FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+
+		FcConfigSubstitute(0, pattern, FcMatchPattern);
+		FcDefaultSubstitute(pattern);
+
+		FcResult result;
+		FcPattern *match = FcFontMatch(0, pattern, &result);
+		if (match) {
+			char *file_name = nullptr;
+			if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
+				if (file_name) {
+					ret = String::utf8(file_name);
+				}
+			}
+
+			FcPatternDestroy(match);
+		}
+		FcPatternDestroy(pattern);
+	}
+	FcObjectSetDestroy(object_set);
+	FcConfigDestroy(config);
+
+	return ret;
+#else
+	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
+#endif
 }
 
 String OS_LinuxBSD::get_config_path() const {
@@ -644,4 +743,13 @@ OS_LinuxBSD::OS_LinuxBSD() {
 #ifdef X11_ENABLED
 	DisplayServerX11::register_x11_driver();
 #endif
+
+#ifdef FONTCONFIG_ENABLED
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
+#endif // FONTCONFIG_ENABLED
 }

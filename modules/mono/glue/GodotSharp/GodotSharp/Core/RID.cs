@@ -1,5 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -9,99 +11,32 @@ namespace Godot
     /// resource by themselves. They are used by and with the low-level Server
     /// classes such as <see cref="RenderingServer"/>.
     /// </summary>
-    public sealed partial class RID : IDisposable
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RID
     {
-        private bool _disposed = false;
+        private ulong _id; // Default is 0
 
-        internal IntPtr ptr;
-
-        internal static IntPtr GetPtr(RID instance)
+        internal RID(ulong id)
         {
-            if (instance == null)
-                throw new NullReferenceException($"The instance of type {nameof(RID)} is null.");
-
-            if (instance._disposed)
-                throw new ObjectDisposedException(instance.GetType().FullName);
-
-            return instance.ptr;
-        }
-
-        ~RID()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// Disposes of this <see cref="RID"/>.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (ptr != IntPtr.Zero)
-            {
-                godot_icall_RID_Dtor(ptr);
-                ptr = IntPtr.Zero;
-            }
-
-            _disposed = true;
-        }
-
-        internal RID(IntPtr ptr)
-        {
-            this.ptr = ptr;
-        }
-
-        /// <summary>
-        /// The pointer to the native instance of this <see cref="RID"/>.
-        /// </summary>
-        public IntPtr NativeInstance
-        {
-            get { return ptr; }
-        }
-
-        internal RID()
-        {
-            this.ptr = IntPtr.Zero;
+            _id = id;
         }
 
         /// <summary>
         /// Constructs a new <see cref="RID"/> for the given <see cref="Object"/> <paramref name="from"/>.
         /// </summary>
         public RID(Object from)
-        {
-            this.ptr = godot_icall_RID_Ctor(Object.GetPtr(from));
-        }
+            => _id = from is Resource res ? res.GetRid()._id : default;
 
         /// <summary>
         /// Returns the ID of the referenced resource.
         /// </summary>
         /// <returns>The ID of the referenced resource.</returns>
-        public int GetId()
-        {
-            return godot_icall_RID_get_id(GetPtr(this));
-        }
+        public ulong Id => _id;
 
         /// <summary>
         /// Converts this <see cref="RID"/> to a string.
         /// </summary>
         /// <returns>A string representation of this RID.</returns>
-        public override string ToString() => "[RID]";
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_RID_Ctor(IntPtr from);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_RID_Dtor(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_RID_get_id(IntPtr ptr);
+        public override string ToString() => $"RID({Id})";
     }
 }

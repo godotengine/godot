@@ -25,12 +25,13 @@
 # Andrea Leganza <neogene@gmail.com>, 2021.
 # Federico Caprini <caprinifede@gmail.com>, 2022.
 # Alessandro Casalino <alessandro.casalino93@gmail.com>, 2022.
+# AndreWharn <andrewharnofficial@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-04-25 15:12+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2022-07-31 16:43+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/it/>\n"
 "Language: it\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -61,6 +62,7 @@ msgid "Theme Properties"
 msgstr "Proprietà del tema"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Signals"
 msgstr "Segnali"
 
@@ -101,18 +103,16 @@ msgid "Default"
 msgstr "Predefinito"
 
 #: doc/tools/make_rst.py
-#, fuzzy
 msgid "Setter"
-msgstr "Impostatore"
+msgstr "Setter"
 
 #: doc/tools/make_rst.py
 msgid "value"
 msgstr "valore"
 
 #: doc/tools/make_rst.py
-#, fuzzy
 msgid "Getter"
-msgstr "Acchiappatore"
+msgstr "Getter"
 
 #: doc/tools/make_rst.py
 msgid ""
@@ -137,9 +137,8 @@ msgstr ""
 "qui."
 
 #: doc/tools/make_rst.py
-#, fuzzy
 msgid "This method is used to construct a type."
-msgstr "Questo metodo viene utilizzato per creare un tipo di variabile."
+msgstr "Questo metodo viene utilizzato per creare un tipo."
 
 #: doc/tools/make_rst.py
 msgid ""
@@ -1372,10 +1371,22 @@ msgstr ""
 "messaggi di debug ed errore che vengono mostrati con la stack trace."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-msgid "Like [method print], but prints only when used in debug mode."
+#, fuzzy
+msgid ""
+"Like [method print], but includes the current stack frame when running with "
+"the debugger turned on.\n"
+"Output in the console would look something like this:\n"
+"[codeblock]\n"
+"Test print\n"
+"   At: res://test.gd:15:_process()\n"
+"[/codeblock]"
 msgstr ""
-"Come [method print], ma stampa solo quando viene utilizzato in modalità "
-"debug."
+"Stampa un stack trace nella posizione del codice, funziona solo quando il "
+"debugger è attivato.\n"
+"L'output nella console apparirà come:\n"
+"[codeblock]\n"
+"Frame 0 - res://test.gd:16 in function '_process'\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -8702,8 +8713,8 @@ msgstr ""
 #: doc/classes/ARVRController.xml
 msgid ""
 "The degree to which the controller vibrates. Ranges from [code]0.0[/code] to "
-"[code]1.0[/code] with precision [code].01[/code]. If changed, updates "
-"[member ARVRPositionalTracker.rumble] accordingly.\n"
+"[code]1.0[/code]. If changed, updates [member ARVRPositionalTracker.rumble] "
+"accordingly.\n"
 "This is a useful property to animate if you want the controller to vibrate "
 "for a limited duration."
 msgstr ""
@@ -12783,7 +12794,12 @@ msgstr ""
 
 #: doc/classes/Camera.xml
 msgid ""
-"If [code]true[/code], the ancestor [Viewport] is currently using this camera."
+"If [code]true[/code], the ancestor [Viewport] is currently using this "
+"camera.\n"
+"If multiple cameras are in the scene, one will always be made current. For "
+"example, if two [Camera] nodes are present in the scene and only one is "
+"current, setting one camera's [member current] to [code]false[/code] will "
+"cause the other camera to be made current."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -21303,7 +21319,7 @@ msgstr ""
 msgid ""
 "Saves the editor feature profile to a file in JSON format. It can then be "
 "imported using the feature profile manager's [b]Import[/b] button or the "
-"[method load_from_file] button."
+"[method load_from_file] method."
 msgstr ""
 
 #: doc/classes/EditorFeatureProfile.xml
@@ -24703,7 +24719,7 @@ msgstr ""
 #: doc/classes/Environment.xml
 msgid ""
 "The tonemapping mode to use. Tonemapping is the process that \"converts\" "
-"HDR values to be suitable for rendering on a LDR display. (Godot doesn't "
+"HDR values to be suitable for rendering on a SDR display. (Godot doesn't "
 "support rendering on HDR displays yet.)"
 msgstr ""
 
@@ -26543,7 +26559,7 @@ msgstr ""
 #: doc/classes/Geometry.xml
 msgid ""
 "Given an array of [Vector2]s representing tiles, builds an atlas. The "
-"returned dictionary has two keys: [code]points[/code] is a vector of "
+"returned dictionary has two keys: [code]points[/code] is an array of "
 "[Vector2] that specifies the positions of each tile, [code]size[/code] "
 "contains the overall size of the whole atlas as [Vector2]."
 msgstr ""
@@ -33683,7 +33699,7 @@ msgstr ""
 msgid ""
 "Sets the render priority for the text outline. Higher priority objects will "
 "be sorted in front of lower priority objects.\n"
-"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant "
 "ALPHA_CUT_DISABLED] (default value).\n"
 "[b]Note:[/b] This only applies to sorting of transparent objects. This will "
 "not impact how transparent objects are sorted relative to opaque objects. "
@@ -33699,7 +33715,7 @@ msgstr ""
 msgid ""
 "Sets the render priority for the text. Higher priority objects will be "
 "sorted in front of lower priority objects.\n"
-"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant "
 "ALPHA_CUT_DISABLED] (default value).\n"
 "[b]Note:[/b] This only applies to sorting of transparent objects. This will "
 "not impact how transparent objects are sorted relative to opaque objects. "
@@ -33732,7 +33748,7 @@ msgstr ""
 
 #: doc/classes/Label3D.xml
 msgid ""
-"If set, text can be seen from the back as well. If not, the texture is "
+"If set, text can be seen from the back as well. If not, the text is "
 "invisible when looking at it from behind."
 msgstr ""
 
@@ -37884,7 +37900,7 @@ msgid ""
 "two regions. They must share a similar edge.\n"
 "The cost of entering this region from another region can be controlled with "
 "the [member enter_cost] value.\n"
-"[b]Note[/b]: This value is not added to the path cost when the start "
+"[b]Note:[/b] This value is not added to the path cost when the start "
 "position is already inside this region.\n"
 "The cost of traveling distances inside this region can be controlled with "
 "the [member travel_cost] multiplier."
@@ -38148,7 +38164,7 @@ msgid ""
 "two regions. They must share a similar edge.\n"
 "The pathfinding cost of entering this region from another region can be "
 "controlled with the [member enter_cost] value.\n"
-"[b]Note[/b]: This value is not added to the path cost when the start "
+"[b]Note:[/b] This value is not added to the path cost when the start "
 "position is already inside this region.\n"
 "The pathfinding cost of traveling distances inside this region can be "
 "controlled with the [member travel_cost] multiplier."
@@ -38265,6 +38281,52 @@ msgstr ""
 
 #: doc/classes/NavigationServer.xml
 msgid "Control activation of this server."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"A [NetworkedMultiplayerPeer] implementation that can be controlled from a "
+"script."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"A [NetworkedMultiplayerPeer] implementation that can be used as a [member "
+"MultiplayerAPI.network_peer] and controlled from a script.\n"
+"Its purpose is to allow adding a new backend for the high-Level multiplayer "
+"API without needing to use GDNative."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Deliver a packet to the local [MultiplayerAPI].\n"
+"When your script receives a packet from other peers over the network "
+"(originating from the [signal packet_generated] signal on the sending peer), "
+"passing it to this method will deliver it locally."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Initialize the peer with the given [code]peer_id[/code] (must be between 1 "
+"and 2147483647)."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Set the state of the connection. See [enum NetworkedMultiplayerPeer."
+"ConnectionStatus]."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid "Set the max packet size that this peer can handle."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Emitted when the local [MultiplayerAPI] generates a packet.\n"
+"Your script should take this packet and send it to the requested peer over "
+"the network (which should call [method deliver_packet] with the data when "
+"it's received)."
 msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
@@ -40972,7 +41034,13 @@ msgid "See [enum ShadowDetail]."
 msgstr ""
 
 #: doc/classes/OmniLight.xml
-msgid "See [enum ShadowMode]."
+msgid ""
+"The shadow rendering mode to use for this [OmniLight]. See [enum "
+"ShadowMode].\n"
+"[b]Note:[/b] In GLES2, [constant SHADOW_CUBE] is only supported on GPUs that "
+"feature support for depth cubemaps. Old GPUs such as the Radeon HD 4000 "
+"series don't support cubemap shadows and will fall back to dual paraboloid "
+"shadows as a result."
 msgstr ""
 
 #: doc/classes/OmniLight.xml
@@ -40984,7 +41052,8 @@ msgstr ""
 #: doc/classes/OmniLight.xml
 msgid ""
 "Shadows are rendered to a cubemap. Slower than [constant "
-"SHADOW_DUAL_PARABOLOID], but higher-quality."
+"SHADOW_DUAL_PARABOLOID], but higher-quality. Only supported on GPUs that "
+"feature support for depth cubemaps."
 msgstr ""
 
 #: doc/classes/OmniLight.xml
@@ -56892,7 +56961,7 @@ msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid "Introduction to 3D"
-msgstr ""
+msgstr "Introduzione al 3D"
 
 #: doc/classes/Spatial.xml doc/classes/Vector3.xml
 msgid "All 3D Demos"
@@ -58807,7 +58876,7 @@ msgstr ""
 msgid ""
 "Sets the render priority for the sprite. Higher priority objects will be "
 "sorted in front of lower priority objects.\n"
-"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant "
 "ALPHA_CUT_DISABLED] (default value).\n"
 "[b]Note:[/b] This only applies to sorting of transparent objects. This will "
 "not impact how transparent objects are sorted relative to opaque objects. "
@@ -61723,8 +61792,8 @@ msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid ""
-"Bookmarks the [code]line[/code] if [code]bookmark[/code] is true. Deletes "
-"the bookmark if [code]bookmark[/code] is false.\n"
+"Bookmarks the [code]line[/code] if [code]bookmark[/code] is [code]true[/"
+"code]. Deletes the bookmark if [code]bookmark[/code] is [code]false[/code].\n"
 "Bookmarks are shown in the [member breakpoint_gutter]."
 msgstr ""
 
@@ -65387,13 +65456,14 @@ msgstr ""
 
 #: doc/classes/TreeItem.xml
 msgid ""
-"Returns the next TreeItem in the tree or a null object if there is none."
+"Returns the next sibling TreeItem in the tree or a null object if there is "
+"none."
 msgstr ""
 
 #: doc/classes/TreeItem.xml
 msgid ""
-"Returns the next visible TreeItem in the tree or a null object if there is "
-"none.\n"
+"Returns the next visible sibling TreeItem in the tree or a null object if "
+"there is none.\n"
 "If [code]wrap[/code] is enabled, the method will wrap around to the first "
 "visible element in the tree when called on the last visible element, "
 "otherwise it returns [code]null[/code]."
@@ -65405,13 +65475,14 @@ msgstr ""
 
 #: doc/classes/TreeItem.xml
 msgid ""
-"Returns the previous TreeItem in the tree or a null object if there is none."
+"Returns the previous sibling TreeItem in the tree or a null object if there "
+"is none."
 msgstr ""
 
 #: doc/classes/TreeItem.xml
 msgid ""
-"Returns the previous visible TreeItem in the tree or a null object if there "
-"is none.\n"
+"Returns the previous visible sibling TreeItem in the tree or a null object "
+"if there is none.\n"
 "If [code]wrap[/code] is enabled, the method will wrap around to the last "
 "visible element in the tree when called on the first visible element, "
 "otherwise it returns [code]null[/code]."
@@ -72367,11 +72438,12 @@ msgid "Sets the viewport's global transformation matrix."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
-msgid "If [code]true[/code], the viewport renders to hdr."
+msgid ""
+"If [code]true[/code], the viewport renders to high dynamic range (HDR) "
+"instead of standard dynamic range (SDR). See also [method "
+"viewport_set_use_32_bpc_depth].\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
-"Se [code] vero [/code], i nodi figli sono ordinati, altrimenti l'ordinamento "
-"è disabilitato."
 
 #: doc/classes/VisualServer.xml
 msgid "If [code]true[/code], the viewport's canvas is not rendered."
@@ -72451,6 +72523,15 @@ msgstr ""
 msgid ""
 "Sets the viewport's 2D/3D mode. See [enum ViewportUsage] constants for "
 "options."
+msgstr ""
+
+#: doc/classes/VisualServer.xml
+msgid ""
+"If [code]true[/code], allocates the viewport's framebuffer with full "
+"floating-point precision (32-bit) instead of half floating-point precision "
+"(16-bit). Only effective if [method viewport_set_use_32_bpc_depth] is used "
+"on the same [Viewport] to set HDR to [code]true[/code].\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/VisualServer.xml

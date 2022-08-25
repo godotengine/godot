@@ -140,7 +140,14 @@ struct CursivePosFormat1
     unsigned int i = skippy_iter.idx;
     unsigned int j = buffer->idx;
 
-    buffer->unsafe_to_break (i, j);
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "cursive attaching glyph at %d to glyph at %d",
+			  i, j);
+    }
+
+    buffer->unsafe_to_break (i, j + 1);
     float entry_x, entry_y, exit_x, exit_y;
     (this+prev_record.exitAnchor).get_anchor (c, buffer->info[i].codepoint, &exit_x, &exit_y);
     (this+this_record.entryAnchor).get_anchor (c, buffer->info[j].codepoint, &entry_x, &entry_y);
@@ -223,7 +230,20 @@ struct CursivePosFormat1
      * https://github.com/harfbuzz/harfbuzz/issues/2469
      */
     if (unlikely (pos[parent].attach_chain() == -pos[child].attach_chain()))
+    {
       pos[parent].attach_chain() = 0;
+      if (likely (HB_DIRECTION_IS_HORIZONTAL (c->direction)))
+	pos[parent].y_offset = 0;
+      else
+	pos[parent].x_offset = 0;
+    }
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      c->buffer->message (c->font,
+			  "cursive attached glyph at %d to glyph at %d",
+			  i, j);
+    }
 
     buffer->idx++;
     return_trace (true);

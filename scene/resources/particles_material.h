@@ -58,6 +58,9 @@ public:
 		PARAM_HUE_VARIATION,
 		PARAM_ANIM_SPEED,
 		PARAM_ANIM_OFFSET,
+		PARAM_TURB_INFLUENCE_OVER_LIFE,
+		PARAM_TURB_VEL_INFLUENCE,
+		PARAM_TURB_INIT_DISPLACEMENT,
 		PARAM_MAX
 	};
 
@@ -90,6 +93,14 @@ public:
 		SUB_EMITTER_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
+	enum CollisionMode {
+		COLLISION_DISABLED,
+		COLLISION_RIGID,
+		COLLISION_HIDE_ON_CONTACT,
+		COLLISION_MAX
+	};
+
 private:
 	union MaterialKey {
 		// The bit size of the struct must be kept below or equal to 32 bits.
@@ -103,11 +114,12 @@ private:
 			uint32_t has_emission_color : 1;
 			uint32_t sub_emitter : 2;
 			uint32_t attractor_enabled : 1;
-			uint32_t collision_enabled : 1;
+			uint32_t collision_mode : 2;
 			uint32_t collision_scale : 1;
+			uint32_t turbulence_enabled : 1;
 		};
 
-		uint32_t key = 0;
+		uint64_t key = 0;
 
 		static uint32_t hash(const MaterialKey &p_key) {
 			return hash_murmur3_one_32(p_key.key);
@@ -149,9 +161,10 @@ private:
 		mk.emission_shape = emission_shape;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
 		mk.sub_emitter = sub_emitter_mode;
-		mk.collision_enabled = collision_enabled;
+		mk.collision_mode = collision_mode;
 		mk.attractor_enabled = attractor_interaction_enabled;
 		mk.collision_scale = collision_scale;
+		mk.turbulence_enabled = turbulence_enabled;
 
 		return mk;
 	}
@@ -216,6 +229,17 @@ private:
 		StringName emission_ring_radius;
 		StringName emission_ring_inner_radius;
 
+		StringName turbulence_enabled;
+		StringName turbulence_noise_strength;
+		StringName turbulence_noise_scale;
+		StringName turbulence_noise_speed;
+		StringName turbulence_noise_speed_random;
+		StringName turbulence_influence_over_life;
+		StringName turbulence_influence_min;
+		StringName turbulence_influence_max;
+		StringName turbulence_initial_displacement_min;
+		StringName turbulence_initial_displacement_max;
+
 		StringName gravity;
 
 		StringName lifetime_randomness;
@@ -243,6 +267,7 @@ private:
 
 	float params_min[PARAM_MAX];
 	float params_max[PARAM_MAX];
+	float params[PARAM_MAX];
 
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
@@ -265,6 +290,13 @@ private:
 
 	bool anim_loop = false;
 
+	bool turbulence_enabled;
+	Vector3 turbulence_noise_speed;
+	Ref<Texture2D> turbulence_color_ramp;
+	float turbulence_noise_strength = 0.0f;
+	float turbulence_noise_scale = 0.0f;
+	float turbulence_noise_speed_random = 0.0f;
+
 	Vector3 gravity;
 
 	double lifetime_randomness = 0.0;
@@ -276,14 +308,14 @@ private:
 	//do not save emission points here
 
 	bool attractor_interaction_enabled = false;
-	bool collision_enabled = false;
+	CollisionMode collision_mode;
 	bool collision_scale = false;
 	float collision_friction = 0.0f;
 	float collision_bounce = 0.0f;
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_direction(Vector3 p_direction);
@@ -340,6 +372,18 @@ public:
 	real_t get_emission_ring_inner_radius() const;
 	int get_emission_point_count() const;
 
+	void set_turbulence_enabled(bool p_turbulence_enabled);
+	void set_turbulence_noise_strength(float p_turbulence_noise_strength);
+	void set_turbulence_noise_scale(float p_turbulence_noise_scale);
+	void set_turbulence_noise_speed_random(float p_turbulence_noise_speed_random);
+	void set_turbulence_noise_speed(const Vector3 &p_turbulence_noise_speed);
+
+	bool get_turbulence_enabled() const;
+	float get_turbulence_noise_strength() const;
+	float get_turbulence_noise_scale() const;
+	float get_turbulence_noise_speed_random() const;
+	Vector3 get_turbulence_noise_speed() const;
+
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
@@ -349,8 +393,8 @@ public:
 	void set_attractor_interaction_enabled(bool p_enable);
 	bool is_attractor_interaction_enabled() const;
 
-	void set_collision_enabled(bool p_enabled);
-	bool is_collision_enabled() const;
+	void set_collision_mode(CollisionMode p_collision_mode);
+	CollisionMode get_collision_mode() const;
 
 	void set_collision_use_scale(bool p_scale);
 	bool is_collision_using_scale() const;
@@ -389,5 +433,6 @@ VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
 VARIANT_ENUM_CAST(ParticlesMaterial::ParticleFlags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
 VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
+VARIANT_ENUM_CAST(ParticlesMaterial::CollisionMode)
 
 #endif // PARTICLES_MATERIAL_H

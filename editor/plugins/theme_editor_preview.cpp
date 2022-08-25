@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"
@@ -246,7 +247,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	preview_bg = memnew(ColorRect);
-	preview_bg->set_anchors_and_offsets_preset(PRESET_WIDE);
+	preview_bg->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	preview_root->add_child(preview_bg);
 

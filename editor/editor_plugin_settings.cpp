@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/tree.h"
 
 void EditorPluginSettings::_notification(int p_what) {
 	switch (p_what) {

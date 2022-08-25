@@ -291,7 +291,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Button *b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(false));
+	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(false));
 
 	vbc->add_margin_child(TTR("Target Surface:"), hbc);
 
@@ -303,7 +303,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	hbc->add_child(b);
 	b->set_text("..");
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(true));
+	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(true));
 
 	populate_axis = memnew(OptionButton);
 	populate_axis->add_item(TTR("X-Axis"));

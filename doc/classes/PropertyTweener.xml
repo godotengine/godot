@@ -22,7 +22,7 @@
 		</method>
 		<method name="from">
 			<return type="PropertyTweener" />
-			<argument index="0" name="value" type="Variant" />
+			<param index="0" name="value" type="Variant" />
 			<description>
 				Sets a custom initial value to the [PropertyTweener]. Example:
 				[codeblock]
@@ -43,21 +43,21 @@
 		</method>
 		<method name="set_delay">
 			<return type="PropertyTweener" />
-			<argument index="0" name="delay" type="float" />
+			<param index="0" name="delay" type="float" />
 			<description>
 				Sets the time in seconds after which the [PropertyTweener] will start interpolating. By default there's no delay.
 			</description>
 		</method>
 		<method name="set_ease">
 			<return type="PropertyTweener" />
-			<argument index="0" name="ease" type="int" enum="Tween.EaseType" />
+			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [Tween] that contains this Tweener.
 			</description>
 		</method>
 		<method name="set_trans">
 			<return type="PropertyTweener" />
-			<argument index="0" name="trans" type="int" enum="Tween.TransitionType" />
+			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
 			</description>

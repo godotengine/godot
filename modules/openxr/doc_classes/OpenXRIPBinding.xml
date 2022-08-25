@@ -11,7 +11,7 @@
 	<methods>
 		<method name="add_path">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Add an input/output path to this binding.
 			</description>
@@ -24,14 +24,14 @@
 		</method>
 		<method name="has_path" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="arg0" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Returns [code]true[/code] if this input/output path is part of this binding.
 			</description>
 		</method>
 		<method name="remove_path">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Removes this input/output path from this binding.
 			</description>

@@ -90,4 +90,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !CONFIG_GLES3_H
+#endif // CONFIG_GLES3_H

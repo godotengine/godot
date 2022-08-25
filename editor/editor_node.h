@@ -32,12 +32,11 @@
 #define EDITOR_NODE_H
 
 #include "core/templates/safe_refcount.h"
-#include "editor/editor_export.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/export/editor_export.h"
 #include "editor/inspector_dock.h"
-#include "editor/property_editor.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -48,6 +47,7 @@ class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class Button;
 class CenterContainer;
+class ColorPicker;
 class ConfirmationDialog;
 class Control;
 class DependencyEditor;
@@ -67,16 +67,19 @@ class EditorPlugin;
 class EditorPluginList;
 class EditorQuickOpen;
 class EditorResourcePreview;
+class EditorResourceConversionPlugin;
 class EditorRun;
 class EditorRunNative;
 class EditorSettingsDialog;
 class EditorToaster;
+class EditorUndoRedoManager;
 class ExportTemplateManager;
 class FileDialog;
 class FileSystemDock;
 class HSplitContainer;
 class ImportDock;
 class LinkButton;
+class MenuBar;
 class MenuButton;
 class NodeDock;
 class OrphanResourcesDialog;
@@ -88,6 +91,7 @@ class ProjectExportDialog;
 class ProjectSettingsEditor;
 class RunSettingsDialog;
 class SceneImportSettings;
+class AudioStreamImportSettings;
 class ScriptCreateDialog;
 class SubViewport;
 class TabBar;
@@ -95,6 +99,7 @@ class TabContainer;
 class TextureProgressBar;
 class VSplitContainer;
 class Window;
+class EditorBuildProfileManager;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -138,6 +143,7 @@ private:
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_AND_RUN,
+		FILE_SAVE_AND_RUN_MAIN_SCENE,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
@@ -163,6 +169,7 @@ private:
 		EDIT_REDO,
 		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
+		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -317,11 +324,12 @@ private:
 
 	HBoxContainer *menu_hb = nullptr;
 	Control *main_control = nullptr;
-	MenuButton *file_menu = nullptr;
-	MenuButton *project_menu = nullptr;
-	MenuButton *debug_menu = nullptr;
-	MenuButton *settings_menu = nullptr;
-	MenuButton *help_menu = nullptr;
+	MenuBar *main_menu = nullptr;
+	PopupMenu *file_menu = nullptr;
+	PopupMenu *project_menu = nullptr;
+	PopupMenu *debug_menu = nullptr;
+	PopupMenu *settings_menu = nullptr;
+	PopupMenu *help_menu = nullptr;
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
@@ -377,6 +385,7 @@ private:
 	EditorFileDialog *file = nullptr;
 	ExportTemplateManager *export_template_manager = nullptr;
 	EditorFeatureProfileManager *feature_profile_manager = nullptr;
+	EditorBuildProfileManager *build_profile_manager = nullptr;
 	EditorFileDialog *file_templates = nullptr;
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
@@ -463,11 +472,9 @@ private:
 	String open_navigate;
 	String run_custom_filename;
 
-	uint64_t saved_version = 1;
-	uint64_t last_checked_version = 0;
-
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
+	AudioStreamImportSettings *audio_stream_import_settings = nullptr;
 
 	String import_reload_fn;
 
@@ -673,6 +680,10 @@ private:
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 	void _bottom_panel_raise_toggled(bool);
 
+	void _begin_first_scan();
+	bool use_startup_benchmark = false;
+	String startup_benchmark_file;
+
 protected:
 	friend class FileSystemDock;
 
@@ -696,7 +707,7 @@ public:
 	static EditorLog *get_log() { return singleton->log; }
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
+	static Ref<EditorUndoRedoManager> &get_undo_redo();
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
@@ -765,6 +776,8 @@ public:
 	void open_request(const String &p_path);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
+	bool is_resource_read_only(Ref<Resource> p_resource);
+
 	bool is_changing_scene() const;
 
 	Control *get_main_control();
@@ -780,8 +793,9 @@ public:
 
 	bool is_scene_open(const String &p_path);
 
-	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);
+
+	void setup_color_picker(ColorPicker *picker);
 
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -805,6 +819,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
+	void set_use_startup_benchmark(bool p_use_startup_benchmark, const String &p_startup_benchmark_file);
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	Control *get_gui_base() { return gui_base; }

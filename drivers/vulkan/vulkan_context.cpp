@@ -237,7 +237,7 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 		{ "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects" }
 	};
 
-	// Clear out-arguments
+	// Clear out-arguments.
 	*count = 0;
 	if (names != nullptr) {
 		*names = nullptr;
@@ -441,7 +441,7 @@ String VulkanContext::SubgroupCapabilities::supported_stages_desc() const {
 		res += ", STAGE_MESH_NV";
 	}
 
-	return res.substr(2); // Remove first ", "
+	return res.substr(2); // Remove first ", ".
 }
 
 uint32_t VulkanContext::SubgroupCapabilities::supported_operations_flags_rd() const {
@@ -506,7 +506,7 @@ String VulkanContext::SubgroupCapabilities::supported_operations_desc() const {
 		res += ", FEATURE_PARTITIONED_NV";
 	}
 
-	return res.substr(2); // Remove first ", "
+	return res.substr(2); // Remove first ", ".
 }
 
 Error VulkanContext::_check_capabilities() {
@@ -641,12 +641,12 @@ Error VulkanContext::_check_capabilities() {
 		subgroup_capabilities.supportedStages = subgroupProperties.supportedStages;
 		subgroup_capabilities.supportedOperations = subgroupProperties.supportedOperations;
 		// Note: quadOperationsInAllStages will be true if:
-		// - supportedStages has VK_SHADER_STAGE_ALL_GRAPHICS + VK_SHADER_STAGE_COMPUTE_BIT
-		// - supportedOperations has VK_SUBGROUP_FEATURE_QUAD_BIT
+		// - supportedStages has VK_SHADER_STAGE_ALL_GRAPHICS + VK_SHADER_STAGE_COMPUTE_BIT.
+		// - supportedOperations has VK_SUBGROUP_FEATURE_QUAD_BIT.
 		subgroup_capabilities.quadOperationsInAllStages = subgroupProperties.quadOperationsInAllStages;
 
 		if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-			print_verbose("- Vulkan Varying Shading Rates supported:");
+			print_verbose("- Vulkan Variable Rate Shading supported:");
 			if (vrs_capabilities.pipeline_vrs_supported) {
 				print_verbose("  Pipeline fragment shading rate");
 			}
@@ -654,7 +654,7 @@ Error VulkanContext::_check_capabilities() {
 				print_verbose("  Primitive fragment shading rate");
 			}
 			if (vrs_capabilities.attachment_vrs_supported) {
-				// TODO expose these somehow to the end user
+				// TODO expose these somehow to the end user.
 				vrs_capabilities.min_texel_size.x = vrsProperties.minFragmentShadingRateAttachmentTexelSize.width;
 				vrs_capabilities.min_texel_size.y = vrsProperties.minFragmentShadingRateAttachmentTexelSize.height;
 				vrs_capabilities.max_texel_size.x = vrsProperties.maxFragmentShadingRateAttachmentTexelSize.width;
@@ -664,7 +664,7 @@ Error VulkanContext::_check_capabilities() {
 			}
 
 		} else {
-			print_verbose("- Vulkan Varying Shading Rates not supported");
+			print_verbose("- Vulkan Variable Rate Shading not supported");
 		}
 
 		if (multiview_capabilities.is_supported) {
@@ -731,7 +731,7 @@ Error VulkanContext::_create_instance() {
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
 	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info{};
 	if (enabled_debug_utils) {
-		// VK_EXT_debug_utils style
+		// VK_EXT_debug_utils style.
 		dbg_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		dbg_messenger_create_info.pNext = nullptr;
 		dbg_messenger_create_info.flags = 0;
@@ -902,8 +902,8 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 		}
 	} else {
 		// TODO: At least on Linux Laptops integrated GPUs fail with Vulkan in many instances.
-		//   The device should really be a preference, but for now choosing a discrete GPU over the
-		//   integrated one is better than the default.
+		// The device should really be a preference, but for now choosing a discrete GPU over the
+		// integrated one is better than the default.
 
 		int type_selected = -1;
 		print_verbose("Vulkan devices:");
@@ -1175,7 +1175,7 @@ Error VulkanContext::_create_device() {
 
 	VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features;
 	if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-		// insert into our chain to enable these features if they are available
+		// Insert into our chain to enable these features if they are available.
 		vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
 		vrs_features.pNext = nextptr;
 		vrs_features.pipelineFragmentShadingRate = vrs_capabilities.pipeline_vrs_supported;
@@ -1611,17 +1611,17 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	// The FIFO present mode is guaranteed by the spec to be supported
 	// and to have no tearing.  It's a great default present mode to use.
 
-	//  There are times when you may wish to use another present mode.  The
-	//  following code shows how to select them, and the comments provide some
-	//  reasons you may wish to use them.
+	// There are times when you may wish to use another present mode.  The
+	// following code shows how to select them, and the comments provide some
+	// reasons you may wish to use them.
 	//
 	// It should be noted that Vulkan 1.0 doesn't provide a method for
-	// synchronizing rendering with the presentation engine's display.  There
+	// synchronizing rendering with the presentation engine's display. There
 	// is a method provided for throttling rendering with the display, but
 	// there are some presentation engines for which this method will not work.
 	// If an application doesn't throttle its rendering, and if it renders much
 	// faster than the refresh rate of the display, this can waste power on
-	// mobile devices.  That is because power is being spent rendering images
+	// mobile devices. That is because power is being spent rendering images
 	// that may never be seen.
 
 	// VK_PRESENT_MODE_IMMEDIATE_KHR is for applications that don't care about
@@ -1666,7 +1666,22 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	if (present_mode_available) {
 		window->presentMode = requested_present_mode;
 	} else {
-		WARN_PRINT("Requested VSync mode is not available!");
+		String present_mode_string;
+		switch (window->vsync_mode) {
+			case DisplayServer::VSYNC_MAILBOX:
+				present_mode_string = "Mailbox";
+				break;
+			case DisplayServer::VSYNC_ADAPTIVE:
+				present_mode_string = "Adaptive";
+				break;
+			case DisplayServer::VSYNC_ENABLED:
+				present_mode_string = "Enabled";
+				break;
+			case DisplayServer::VSYNC_DISABLED:
+				present_mode_string = "Disabled";
+				break;
+		}
+		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_string));
 		window->vsync_mode = DisplayServer::VSYNC_ENABLED; // Set to default.
 	}
 
@@ -1684,7 +1699,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	// If maxImageCount is 0, we can ask for as many images as we want;
 	// otherwise we're limited to maxImageCount.
 	if ((surfCapabilities.maxImageCount > 0) && (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount)) {
-		// Application must settle for fewer images than desired:
+		// Application must settle for fewer images than desired.
 		desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
 	}
 
@@ -1827,7 +1842,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pNext*/ nullptr,
 			/*flags*/ 0,
 			/*pipelineBindPoint*/ VK_PIPELINE_BIND_POINT_GRAPHICS,
-			/*viewMask*/ 1,
+			/*viewMask*/ 0,
 			/*inputAttachmentCount*/ 0,
 			/*pInputAttachments*/ nullptr,
 			/*colorAttachmentCount*/ 1,
@@ -1838,7 +1853,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pPreserveAttachments*/ nullptr,
 		};
 
-		uint32_t view_masks = 1;
 		const VkRenderPassCreateInfo2KHR rp_info = {
 			/*sType*/ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR,
 			/*pNext*/ nullptr,
@@ -1849,8 +1863,8 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pSubpasses*/ &subpass,
 			/*dependencyCount*/ 0,
 			/*pDependencies*/ nullptr,
-			/*correlatedViewMaskCount*/ 1,
-			/*pCorrelatedViewMasks*/ &view_masks,
+			/*correlatedViewMaskCount*/ 0,
+			/*pCorrelatedViewMasks*/ nullptr,
 		};
 
 		err = vkCreateRenderPass2KHR(device, &rp_info, nullptr, &window->render_pass);
@@ -2029,14 +2043,14 @@ Error VulkanContext::prepare_buffers() {
 		}
 
 		do {
-			// Get the index of the next available swapchain image:
+			// Get the index of the next available swapchain image.
 			err =
 					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
 							w->image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
 
 			if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 				// Swapchain is out of date (e.g. the window was resized) and
-				// must be recreated:
+				// must be recreated.
 				print_verbose("Vulkan: Early out of date swapchain, recreating.");
 				// resize_notify();
 				_update_swap_chain(w);
@@ -2069,7 +2083,7 @@ Error VulkanContext::swap_buffers() {
 #if 0
 	if (VK_GOOGLE_display_timing_enabled) {
 		// Look at what happened to previous presents, and make appropriate
-		// adjustments in timing:
+		// adjustments in timing.
 		DemoUpdateTargetIPD(demo);
 
 		// Note: a real application would position its geometry to that it's in
@@ -2232,7 +2246,7 @@ Error VulkanContext::swap_buffers() {
 			uint64_t curtime = getTimeInNanoseconds();
 			if (curtime == 0) {
 				// Since we didn't find out the current time, don't give a
-				// desiredPresentTime:
+				// desiredPresentTime.
 				ptime.desiredPresentTime = 0;
 			} else {
 				ptime.desiredPresentTime = curtime + (target_IPD >> 1);
@@ -2264,7 +2278,7 @@ Error VulkanContext::swap_buffers() {
 
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Swapchain is out of date (e.g. the window was resized) and
-		// must be recreated:
+		// must be recreated.
 		print_verbose("Vulkan: Swapchain is out of date, recreating.");
 		resize_notify();
 	} else if (err == VK_SUBOPTIMAL_KHR) {
@@ -2402,7 +2416,7 @@ void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String
 		return;
 	}
 
-	CharString cs = p_label_name.utf8().get_data();
+	CharString cs = p_label_name.utf8();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -2418,7 +2432,7 @@ void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, Strin
 	if (!enabled_debug_utils) {
 		return;
 	}
-	CharString cs = p_label_name.utf8().get_data();
+	CharString cs = p_label_name.utf8();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -2472,12 +2486,12 @@ String VulkanContext::get_device_pipeline_cache_uuid() const {
 }
 
 DisplayServer::VSyncMode VulkanContext::get_vsync_mode(DisplayServer::WindowID p_window) const {
-	ERR_FAIL_COND_V_MSG(!windows.has(p_window), DisplayServer::VSYNC_ENABLED, "Could not get VSync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
+	ERR_FAIL_COND_V_MSG(!windows.has(p_window), DisplayServer::VSYNC_ENABLED, "Could not get V-Sync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
 	return windows[p_window].vsync_mode;
 }
 
 void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode) {
-	ERR_FAIL_COND_MSG(!windows.has(p_window), "Could not set VSync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
+	ERR_FAIL_COND_MSG(!windows.has(p_window), "Could not set V-Sync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
 	windows[p_window].vsync_mode = p_mode;
 	_update_swap_chain(&windows[p_window]);
 }

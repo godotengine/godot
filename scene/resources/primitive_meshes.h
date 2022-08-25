@@ -75,7 +75,7 @@ public:
 	virtual int surface_get_array_len(int p_idx) const override;
 	virtual int surface_get_array_index_len(int p_idx) const override;
 	virtual Array surface_get_arrays(int p_surface) const override;
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const override;
+	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
 	virtual Dictionary surface_get_lods(int p_surface) const override;
 	virtual uint32_t surface_get_format(int p_idx) const override;
 	virtual Mesh::PrimitiveType surface_get_primitive_type(int p_idx) const override;
@@ -217,17 +217,25 @@ public:
 	CylinderMesh();
 };
 
-/**
-	Similar to quadmesh but with tessellation support
+/*
+	A flat rectangle, can be used as quad or heightmap.
 */
 class PlaneMesh : public PrimitiveMesh {
 	GDCLASS(PlaneMesh, PrimitiveMesh);
+
+public:
+	enum Orientation {
+		FACE_X,
+		FACE_Y,
+		FACE_Z,
+	};
 
 private:
 	Size2 size = Size2(2.0, 2.0);
 	int subdivide_w = 0;
 	int subdivide_d = 0;
 	Vector3 center_offset;
+	Orientation orientation = FACE_Y;
 
 protected:
 	static void _bind_methods();
@@ -246,8 +254,13 @@ public:
 	void set_center_offset(const Vector3 p_offset);
 	Vector3 get_center_offset() const;
 
+	void set_orientation(const Orientation p_orientation);
+	Orientation get_orientation() const;
+
 	PlaneMesh();
 };
+
+VARIANT_ENUM_CAST(PlaneMesh::Orientation)
 
 /**
 	A prism shapen, handy for ramps, triangles, etc.
@@ -286,33 +299,6 @@ public:
 };
 
 /**
-	Our original quadmesh...
-*/
-
-class QuadMesh : public PrimitiveMesh {
-	GDCLASS(QuadMesh, PrimitiveMesh);
-
-private:
-	Size2 size = Size2(1.0, 1.0);
-	Vector3 center_offset;
-
-protected:
-	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr) const override;
-
-public:
-	virtual uint32_t surface_get_format(int p_idx) const override;
-
-	QuadMesh();
-
-	void set_size(const Size2 &p_size);
-	Size2 get_size() const;
-
-	void set_center_offset(const Vector3 p_offset);
-	Vector3 get_center_offset() const;
-};
-
-/**
 	A sphere..
 */
 class SphereMesh : public PrimitiveMesh {
@@ -348,6 +334,38 @@ public:
 	bool get_is_hemisphere() const;
 
 	SphereMesh();
+};
+
+/**
+	Big donut
+*/
+class TorusMesh : public PrimitiveMesh {
+	GDCLASS(TorusMesh, PrimitiveMesh);
+
+private:
+	float inner_radius = 0.5;
+	float outer_radius = 1.0;
+	int rings = 64;
+	int ring_segments = 32;
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+public:
+	void set_inner_radius(const float p_inner_radius);
+	float get_inner_radius() const;
+
+	void set_outer_radius(const float p_outer_radius);
+	float get_outer_radius() const;
+
+	void set_rings(const int p_rings);
+	int get_rings() const;
+
+	void set_ring_segments(const int p_ring_segments);
+	int get_ring_segments() const;
+
+	TorusMesh();
 };
 
 /**
@@ -595,4 +613,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(RibbonTrailMesh::Shape)
-#endif
+
+#endif // PRIMITIVE_MESHES_H

@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "scene/resources/texture.h"
+#include "shader_include.h"
 
 class Shader : public Resource {
 	GDCLASS(Shader, Resource);
@@ -53,6 +54,8 @@ public:
 private:
 	RID shader;
 	Mode mode = MODE_SPATIAL;
+	HashSet<Ref<ShaderInclude>> include_dependencies;
+	String code;
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> RenderingServer name translations, to make
@@ -61,6 +64,7 @@ private:
 	mutable HashMap<StringName, StringName> params_cache; //map a shader param to a material param..
 	HashMap<StringName, HashMap<int, Ref<Texture2D>>> default_textures;
 
+	void _dependency_changed();
 	virtual void _update_shader() const; //used for visual shader
 protected:
 	static void _bind_methods();
@@ -69,24 +73,26 @@ public:
 	//void set_mode(Mode p_mode);
 	virtual Mode get_mode() const;
 
+	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+
 	void set_code(const String &p_code);
 	String get_code() const;
 
-	void get_param_list(List<PropertyInfo> *p_params) const;
-	bool has_param(const StringName &p_param) const;
+	void get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
+	bool has_uniform(const StringName &p_param) const;
 
-	void set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index = 0);
-	Ref<Texture2D> get_default_texture_param(const StringName &p_param, int p_index = 0) const;
+	void set_default_texture_param(const StringName &p_uniform, const Ref<Texture2D> &p_texture, int p_index = 0);
+	Ref<Texture2D> get_default_texture_param(const StringName &p_uniform, int p_index = 0) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
 
 	virtual bool is_text_shader() const;
 
-	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
+	_FORCE_INLINE_ StringName remap_uniform(const StringName &p_uniform) const {
 		if (params_cache_dirty) {
-			get_param_list(nullptr);
+			get_shader_uniform_list(nullptr);
 		}
 
-		const HashMap<StringName, StringName>::Iterator E = params_cache.find(p_param);
+		const HashMap<StringName, StringName>::Iterator E = params_cache.find(p_uniform);
 		if (E) {
 			return E->value;
 		}
@@ -111,7 +117,7 @@ public:
 
 class ResourceFormatSaverShader : public ResourceFormatSaver {
 public:
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 };

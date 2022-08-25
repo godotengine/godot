@@ -46,6 +46,7 @@ def get_opts():
 
 def get_flags():
     return [
+        ("arch", "wasm32"),
         ("tools", False),
         ("builtin_pcre2_with_jit", False),
         ("vulkan", False),
@@ -53,6 +54,15 @@ def get_flags():
 
 
 def configure(env):
+    # Validate arch.
+    supported_arches = ["wasm32"]
+    if env["arch"] not in supported_arches:
+        print(
+            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
+        )
+        sys.exit()
+
     try:
         env["initial_memory"] = int(env["initial_memory"])
     except Exception:

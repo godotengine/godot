@@ -24,66 +24,66 @@
 	<methods>
 		<method name="add_custom_data_layer">
 			<return type="void" />
-			<argument index="0" name="to_position" type="int" default="-1" />
+			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a custom data layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a custom data layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Custom data layers allow assigning custom properties to atlas tiles.
 			</description>
 		</method>
 		<method name="add_navigation_layer">
 			<return type="void" />
-			<argument index="0" name="to_position" type="int" default="-1" />
+			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a navigation layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a navigation layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Navigation layers allow assigning a navigable area to atlas tiles.
 			</description>
 		</method>
 		<method name="add_occlusion_layer">
 			<return type="void" />
-			<argument index="0" name="to_position" type="int" default="-1" />
+			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds an occlusion layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds an occlusion layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Occlusion layers allow assigning occlusion polygons to atlas tiles.
 			</description>
 		</method>
 		<method name="add_pattern">
 			<return type="int" />
-			<argument index="0" name="pattern" type="TileMapPattern" />
-			<argument index="1" name="index" type="int" default="-1" />
+			<param index="0" name="pattern" type="TileMapPattern" />
+			<param index="1" name="index" type="int" default="-1" />
 			<description>
-				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [code]index[/code].
+				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [param index].
 			</description>
 		</method>
 		<method name="add_physics_layer">
 			<return type="void" />
-			<argument index="0" name="to_position" type="int" default="-1" />
+			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a physics layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a physics layer to the TileSet at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 				Physics layers allow assigning collision polygons to atlas tiles.
 			</description>
 		</method>
 		<method name="add_source">
 			<return type="int" />
-			<argument index="0" name="source" type="TileSetSource" />
-			<argument index="1" name="atlas_source_id_override" type="int" default="-1" />
+			<param index="0" name="source" type="TileSetSource" />
+			<param index="1" name="atlas_source_id_override" type="int" default="-1" />
 			<description>
-				Adds a [TileSetSource] to the TileSet. If [code]atlas_source_id_override[/code] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
+				Adds a [TileSetSource] to the TileSet. If [param atlas_source_id_override] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
 				The function returns the added source source ID or -1 if the source could not be added.
 			</description>
 		</method>
 		<method name="add_terrain">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="to_position" type="int" default="-1" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a new terrain to the given terrain set [code]terrain_set[/code] at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a new terrain to the given terrain set [param terrain_set] at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 			</description>
 		</method>
 		<method name="add_terrain_set">
 			<return type="void" />
-			<argument index="0" name="to_position" type="int" default="-1" />
+			<param index="0" name="to_position" type="int" default="-1" />
 			<description>
-				Adds a new terrain set at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
+				Adds a new terrain set at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
 			</description>
 		</method>
 		<method name="cleanup_invalid_tile_proxies">
@@ -100,9 +100,9 @@
 		</method>
 		<method name="get_alternative_level_tile_proxy">
 			<return type="Array" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
-			<argument index="2" name="alternative_from" type="int" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
+			<param index="2" name="alternative_from" type="int" />
 			<description>
 				Returns the alternative-level proxy for the given identifiers. The returned array contains the three proxie's target identifiers (source ID, atlas coords ID and alternative tile ID).
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
@@ -110,11 +110,32 @@
 		</method>
 		<method name="get_coords_level_tile_proxy">
 			<return type="Array" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
 			<description>
 				Returns the coordinate-level proxy for the given identifiers. The returned array contains the two target identifiers of the proxy (source ID and atlas coordinates ID).
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_by_name" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="layer_name" type="String" />
+			<description>
+				Returns the index of the custom data layer identified by the given name.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the name of the custom data layer identified by the given index.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_type" qualifiers="const">
+			<return type="int" enum="Variant.Type" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the type of the custom data layer identified by the given index.
 			</description>
 		</method>
 		<method name="get_custom_data_layers_count" qualifiers="const">
@@ -125,7 +146,7 @@
 		</method>
 		<method name="get_navigation_layer_layers" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the navigation layers (as in the Navigation server) of the gives TileSet navigation layer.
 			</description>
@@ -144,14 +165,14 @@
 		</method>
 		<method name="get_occlusion_layer_light_mask" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the light mask of the occlusion layer.
 			</description>
 		</method>
 		<method name="get_occlusion_layer_sdf_collision" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns if the occluders from this layer use [code]sdf_collision[/code].
 			</description>
@@ -164,9 +185,9 @@
 		</method>
 		<method name="get_pattern">
 			<return type="TileMapPattern" />
-			<argument index="0" name="index" type="int" default="-1" />
+			<param index="0" name="index" type="int" default="-1" />
 			<description>
-				Returns the [TileMapPattern] at the given [code]index[/code].
+				Returns the [TileMapPattern] at the given [param index].
 			</description>
 		</method>
 		<method name="get_patterns_count">
@@ -177,21 +198,21 @@
 		</method>
 		<method name="get_physics_layer_collision_layer" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the collision layer (as in the physics server) bodies on the given TileSet's physics layer are in.
 			</description>
 		</method>
 		<method name="get_physics_layer_collision_mask" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the collision mask of bodies on the given TileSet's physics layer.
 			</description>
 		</method>
 		<method name="get_physics_layer_physics_material" qualifiers="const">
 			<return type="PhysicsMaterial" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the physics material of bodies on the given TileSet's physics layer.
 			</description>
@@ -204,9 +225,9 @@
 		</method>
 		<method name="get_source" qualifiers="const">
 			<return type="TileSetSource" />
-			<argument index="0" name="source_id" type="int" />
+			<param index="0" name="source_id" type="int" />
 			<description>
-				Returns the [TileSetSource] with ID [code]source_id[/code].
+				Returns the [TileSetSource] with ID [param source_id].
 			</description>
 		</method>
 		<method name="get_source_count" qualifiers="const">
@@ -217,14 +238,14 @@
 		</method>
 		<method name="get_source_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the source ID for source with index [code]index[/code].
+				Returns the source ID for source with index [param index].
 			</description>
 		</method>
 		<method name="get_source_level_tile_proxy">
 			<return type="int" />
-			<argument index="0" name="source_from" type="int" />
+			<param index="0" name="source_from" type="int" />
 			<description>
 				Returns the source-level proxy for the given source identifier.
 				If the TileSet has no proxy for the given identifier, returns -1.
@@ -232,23 +253,23 @@
 		</method>
 		<method name="get_terrain_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrain_index" type="int" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="terrain_index" type="int" />
 			<description>
 				Returns a terrain's color.
 			</description>
 		</method>
 		<method name="get_terrain_name" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrain_index" type="int" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="terrain_index" type="int" />
 			<description>
 				Returns a terrain's name.
 			</description>
 		</method>
 		<method name="get_terrain_set_mode" qualifiers="const">
 			<return type="int" enum="TileSet.TerrainMode" />
-			<argument index="0" name="terrain_set" type="int" />
+			<param index="0" name="terrain_set" type="int" />
 			<description>
 				Returns a terrain set mode.
 			</description>
@@ -261,47 +282,47 @@
 		</method>
 		<method name="get_terrains_count" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="terrain_set" type="int" />
+			<param index="0" name="terrain_set" type="int" />
 			<description>
 				Returns the number of terrains in the given terrain set.
 			</description>
 		</method>
 		<method name="has_alternative_level_tile_proxy">
 			<return type="bool" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
-			<argument index="2" name="alternative_from" type="int" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
+			<param index="2" name="alternative_from" type="int" />
 			<description>
 				Returns if there is and alternative-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_coords_level_tile_proxy">
 			<return type="bool" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
 			<description>
 				Returns if there is a coodinates-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_source" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="source_id" type="int" />
+			<param index="0" name="source_id" type="int" />
 			<description>
 				Returns if this TileSet has a source for the given source ID.
 			</description>
 		</method>
 		<method name="has_source_level_tile_proxy">
 			<return type="bool" />
-			<argument index="0" name="source_from" type="int" />
+			<param index="0" name="source_from" type="int" />
 			<description>
 				Returns if there is a source-level proxy for the given source ID.
 			</description>
 		</method>
 		<method name="map_tile_proxy" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
-			<argument index="2" name="alternative_from" type="int" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
+			<param index="2" name="alternative_from" type="int" />
 			<description>
 				According to the configured proxies, maps the provided indentifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
 				This function first look for matching alternative-level proxies, then coordinates-level proxies, then source-level proxies.
@@ -310,142 +331,142 @@
 		</method>
 		<method name="move_custom_data_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="to_position" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the custom data layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the custom data layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_navigation_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="to_position" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the navigation layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the navigation layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_occlusion_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="to_position" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the occlusion layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the occlusion layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_physics_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="to_position" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the physics layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the physics layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_terrain">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrain_index" type="int" />
-			<argument index="2" name="to_position" type="int" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="terrain_index" type="int" />
+			<param index="2" name="to_position" type="int" />
 			<description>
-				Moves the terrain at index [code]terrain_index[/code] for terrain set [code]terrain_set[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the terrain at index [param terrain_index] for terrain set [param terrain_set] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="move_terrain_set">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="to_position" type="int" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves the terrain set at index [code]terrain_set[/code] to the given position [code]to_position[/code] in the array. Also updates the atlas tiles accordingly.
+				Moves the terrain set at index [param terrain_set] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_alternative_level_tile_proxy">
 			<return type="void" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
-			<argument index="2" name="alternative_from" type="int" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
+			<param index="2" name="alternative_from" type="int" />
 			<description>
 				Removes an alternative-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="remove_coords_level_tile_proxy">
 			<return type="void" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
 			<description>
 				Removes a coordinates-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="remove_custom_data_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the custom data layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the custom data layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_navigation_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the navigation layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the navigation layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_occlusion_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the occlusion layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the occlusion layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_pattern">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Remove the [TileMapPattern] at the given index.
 			</description>
 		</method>
 		<method name="remove_physics_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
+			<param index="0" name="layer_index" type="int" />
 			<description>
-				Removes the physics layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+				Removes the physics layer at index [param layer_index]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_source">
 			<return type="void" />
-			<argument index="0" name="source_id" type="int" />
+			<param index="0" name="source_id" type="int" />
 			<description>
 				Removes the source with the given source ID.
 			</description>
 		</method>
 		<method name="remove_source_level_tile_proxy">
 			<return type="void" />
-			<argument index="0" name="source_from" type="int" />
+			<param index="0" name="source_from" type="int" />
 			<description>
 				Removes a source-level tile proxy.
 			</description>
 		</method>
 		<method name="remove_terrain">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrain_index" type="int" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="terrain_index" type="int" />
 			<description>
-				Removes the terrain at index [code]terrain_index[/code] in the given terrain set [code]terrain_set[/code]. Also updates the atlas tiles accordingly.
+				Removes the terrain at index [param terrain_index] in the given terrain set [param terrain_set]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="remove_terrain_set">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
+			<param index="0" name="terrain_set" type="int" />
 			<description>
-				Removes the terrain set at index [code]terrain_set[/code]. Also updates the atlas tiles accordingly.
+				Removes the terrain set at index [param terrain_set]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
 		<method name="set_alternative_level_tile_proxy">
 			<return type="void" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
-			<argument index="2" name="alternative_from" type="int" />
-			<argument index="3" name="source_to" type="int" />
-			<argument index="4" name="coords_to" type="Vector2i" />
-			<argument index="5" name="alternative_to" type="int" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
+			<param index="2" name="alternative_from" type="int" />
+			<param index="3" name="source_to" type="int" />
+			<param index="4" name="coords_to" type="Vector2i" />
+			<param index="5" name="alternative_to" type="int" />
 			<description>
 				Create an alternative-level proxy for the given identifiers. A proxy will map set of tile identifiers to another set of identifiers.
 				This can be used to replace a tile in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target tile when one is available.
@@ -454,76 +475,92 @@
 		</method>
 		<method name="set_coords_level_tile_proxy">
 			<return type="void" />
-			<argument index="0" name="p_source_from" type="int" />
-			<argument index="1" name="coords_from" type="Vector2i" />
-			<argument index="2" name="source_to" type="int" />
-			<argument index="3" name="coords_to" type="Vector2i" />
+			<param index="0" name="p_source_from" type="int" />
+			<param index="1" name="coords_from" type="Vector2i" />
+			<param index="2" name="source_to" type="int" />
+			<param index="3" name="coords_to" type="Vector2i" />
 			<description>
 				Creates a coordinates-level proxy for the given identifiers. A proxy will map set of tile identifiers to another set of identifiers. The alternative tile ID is kept the same when using coordinates-level proxies.
 				This can be used to replace a tile in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target tile when one is available.
 				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
 			</description>
 		</method>
+		<method name="set_custom_data_layer_name">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_name" type="String" />
+			<description>
+				Sets the name of the custom data layer identified by the given index. Names are identifiers of the layer therefore if the name is already taken it will fail and raise an error.
+			</description>
+		</method>
+		<method name="set_custom_data_layer_type">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_type" type="int" enum="Variant.Type" />
+			<description>
+				Sets the type of the custom data layer identified by the given index.
+			</description>
+		</method>
 		<method name="set_navigation_layer_layers">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="layers" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layers" type="int" />
 			<description>
 				Sets the navigation layers (as in the navigation server) for navigation regions is the given TileSet navigation layer.
 			</description>
 		</method>
 		<method name="set_occlusion_layer_light_mask">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="light_mask" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="light_mask" type="int" />
 			<description>
 				Sets the occlusion layer (as in the rendering server) for occluders in the given TileSet occlusion layer.
 			</description>
 		</method>
 		<method name="set_occlusion_layer_sdf_collision">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="sdf_collision" type="bool" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="sdf_collision" type="bool" />
 			<description>
 				Enables or disables sdf collision for occluders in the given TileSet occlusion layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_layer">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="layer" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer" type="int" />
 			<description>
 				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_mask">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="mask" type="int" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="mask" type="int" />
 			<description>
 				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_physics_material">
 			<return type="void" />
-			<argument index="0" name="layer_index" type="int" />
-			<argument index="1" name="physics_material" type="PhysicsMaterial" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="physics_material" type="PhysicsMaterial" />
 			<description>
 				Sets the physics material for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_source_id">
 			<return type="void" />
-			<argument index="0" name="source_id" type="int" />
-			<argument index="1" name="new_source_id" type="int" />
+			<param index="0" name="source_id" type="int" />
+			<param index="1" name="new_source_id" type="int" />
 			<description>
 				Changes a source's ID.
 			</description>
 		</method>
 		<method name="set_source_level_tile_proxy">
 			<return type="void" />
-			<argument index="0" name="source_from" type="int" />
-			<argument index="1" name="source_to" type="int" />
+			<param index="0" name="source_from" type="int" />
+			<param index="1" name="source_to" type="int" />
 			<description>
 				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlac coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
 				This can be used to replace a source in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target source when one is available.
@@ -532,26 +569,26 @@
 		</method>
 		<method name="set_terrain_color">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrain_index" type="int" />
-			<argument index="2" name="color" type="Color" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="terrain_index" type="int" />
+			<param index="2" name="color" type="Color" />
 			<description>
 				Sets a terrain's color. This color is used for identifying the different terrains in the TileSet editor.
 			</description>
 		</method>
 		<method name="set_terrain_name">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="terrain_index" type="int" />
-			<argument index="2" name="name" type="String" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="terrain_index" type="int" />
+			<param index="2" name="name" type="String" />
 			<description>
 				Sets a terrain's name.
 			</description>
 		</method>
 		<method name="set_terrain_set_mode">
 			<return type="void" />
-			<argument index="0" name="terrain_set" type="int" />
-			<argument index="1" name="mode" type="int" enum="TileSet.TerrainMode" />
+			<param index="0" name="terrain_set" type="int" />
+			<param index="1" name="mode" type="int" enum="TileSet.TerrainMode" />
 			<description>
 				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighbouring tiles' terrains.
 			</description>
@@ -591,7 +628,7 @@
 			Tile coordinates layout where both axis stay consistent with their respective local horizontal and vertical axis.
 		</constant>
 		<constant name="TILE_LAYOUT_STACKED_OFFSET" value="1" enum="TileLayout">
-			Same as [code]TILE_LAYOUT_STAKED[/code], but the first half-offset is negative instead of positive.
+			Same as [constant TILE_LAYOUT_STACKED], but the first half-offset is negative instead of positive.
 		</constant>
 		<constant name="TILE_LAYOUT_STAIRS_RIGHT" value="2" enum="TileLayout">
 			Tile coordinates layout where the horizontal axis stay horizontal, and the vertical one goes down-right.

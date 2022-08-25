@@ -9,52 +9,52 @@
 		The [XRController3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDExtension-based interfaces can interact with them.
 	</description>
 	<tutorials>
-		<link title="VR documentation index">$DOCS_URL/tutorials/vr/index.html</link>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_input" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns an input for this tracker. It can return a boolean, float or [Vector2] value depending on whether the input is a button, trigger or thumbstick/thumbpad.
 			</description>
 		</method>
 		<method name="get_pose" qualifiers="const">
 			<return type="XRPose" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the current [XRPose] state object for the bound [code]pose[/code].
+				Returns the current [XRPose] state object for the bound [param name] pose.
 			</description>
 		</method>
 		<method name="has_pose" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the bound [code]tracker[/code] is available and is currently tracking the bound [code]pose[/code].
+				Returns [code]true[/code] if the tracker is available and is currently tracking the bound [param name] pose.
 			</description>
 		</method>
 		<method name="invalidate_pose">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Marks this pose as invalid, we don't clear the last reported state but it allows users to decide if trackers need to be hidden if we loose tracking or just remain at their last known position.
 			</description>
 		</method>
 		<method name="set_input">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="value" type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Changes the value for the given input. This method is called by a [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 		<method name="set_pose">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="transform" type="Transform3D" />
-			<argument index="2" name="linear_velocity" type="Vector3" />
-			<argument index="3" name="angular_velocity" type="Vector3" />
-			<argument index="4" name="tracking_confidence" type="int" enum="XRPose.TrackingConfidence" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="linear_velocity" type="Vector3" />
+			<param index="3" name="angular_velocity" type="Vector3" />
+			<param index="4" name="tracking_confidence" type="int" enum="XRPose.TrackingConfidence" />
 			<description>
 				Sets the transform, linear velocity, angular velocity and tracking confidence for the given pose. This method is called by a [XRInterface] implementation and should not be used directly.
 			</description>
@@ -81,39 +81,39 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Emitted when a button on this tracker is pressed. Note that many XR runtimes allow other inputs to be mapped to buttons.
 			</description>
 		</signal>
 		<signal name="button_released">
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				Emitted when a button on this tracker is released.
 			</description>
 		</signal>
 		<signal name="input_axis_changed">
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="vector" type="Vector2" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="vector" type="Vector2" />
 			<description>
 				Emitted when a thumbstick or thumbpad on this tracker moves.
 			</description>
 		</signal>
 		<signal name="input_value_changed">
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="value" type="float" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="float" />
 			<description>
 				Emitted when a trigger or similar input on this tracker changes value.
 			</description>
 		</signal>
 		<signal name="pose_changed">
-			<argument index="0" name="pose" type="XRPose" />
+			<param index="0" name="pose" type="XRPose" />
 			<description>
 				Emitted when the state of a pose tracked by this tracker changes.
 			</description>
 		</signal>
 		<signal name="profile_changed">
-			<argument index="0" name="role" type="String" />
+			<param index="0" name="role" type="String" />
 			<description>
 				Emitted when the profile of our tracker changes.
 			</description>

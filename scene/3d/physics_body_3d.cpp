@@ -439,8 +439,8 @@ void RigidDynamicBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p
 			//E->value.rc=0;
 			E->value.in_tree = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree), make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree).bind(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree).bind(objid));
 				if (E->value.in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
@@ -865,6 +865,12 @@ int RigidDynamicBody3D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+int RigidDynamicBody3D::get_contact_count() const {
+	PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(bs, 0);
+	return bs->get_contact_count();
+}
+
 void RigidDynamicBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
@@ -960,10 +966,10 @@ bool RigidDynamicBody3D::is_contact_monitor_enabled() const {
 	return contact_monitor != nullptr;
 }
 
-Array RigidDynamicBody3D::get_colliding_bodies() const {
-	ERR_FAIL_COND_V(!contact_monitor, Array());
+TypedArray<Node3D> RigidDynamicBody3D::get_colliding_bodies() const {
+	ERR_FAIL_COND_V(!contact_monitor, TypedArray<Node3D>());
 
-	Array ret;
+	TypedArray<Node3D> ret;
 	ret.resize(contact_monitor->body_map.size());
 	int idx = 0;
 	for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
@@ -1031,6 +1037,7 @@ void RigidDynamicBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidDynamicBody3D::set_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidDynamicBody3D::get_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("get_contact_count"), &RigidDynamicBody3D::get_contact_count);
 
 	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidDynamicBody3D::set_use_custom_integrator);
 	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidDynamicBody3D::is_using_custom_integrator);
@@ -1089,7 +1096,7 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "set_use_continuous_collision_detection", "is_using_continuous_collision_detection");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "contact_monitor"), "set_contact_monitor", "is_contact_monitor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
@@ -1124,13 +1131,12 @@ void RigidDynamicBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 }
 
-void RigidDynamicBody3D::_validate_property(PropertyInfo &property) const {
+void RigidDynamicBody3D::_validate_property(PropertyInfo &p_property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
-		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name == "center_of_mass") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
-	PhysicsBody3D::_validate_property(property);
 }
 
 RigidDynamicBody3D::RigidDynamicBody3D() :
@@ -1177,9 +1183,9 @@ bool CharacterBody3D::move_and_slide() {
 	if ((collision_state.floor || collision_state.wall) && platform_rid.is_valid()) {
 		bool excluded = false;
 		if (collision_state.floor) {
-			excluded = (moving_platform_floor_layers & platform_layer) == 0;
+			excluded = (platform_floor_layers & platform_layer) == 0;
 		} else if (collision_state.wall) {
-			excluded = (moving_platform_wall_layers & platform_layer) == 0;
+			excluded = (platform_wall_layers & platform_layer) == 0;
 		}
 		if (!excluded) {
 			//this approach makes sure there is less delay between the actual body velocity and the one we saved
@@ -1231,10 +1237,10 @@ bool CharacterBody3D::move_and_slide() {
 	// Compute real velocity.
 	real_velocity = get_position_delta() / delta;
 
-	if (moving_platform_apply_velocity_on_leave != PLATFORM_VEL_ON_LEAVE_NEVER) {
+	if (platform_on_leave != PLATFORM_ON_LEAVE_DO_NOTHING) {
 		// Add last platform velocity when just left a moving platform.
 		if (!collision_state.floor && !collision_state.wall) {
-			if (moving_platform_apply_velocity_on_leave == PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY && current_platform_velocity.dot(up_direction) < 0) {
+			if (platform_on_leave == PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY && current_platform_velocity.dot(up_direction) < 0) {
 				current_platform_velocity = current_platform_velocity.slide(up_direction);
 			}
 			velocity += current_platform_velocity;
@@ -1854,20 +1860,20 @@ void CharacterBody3D::set_slide_on_ceiling_enabled(bool p_enabled) {
 	slide_on_ceiling = p_enabled;
 }
 
-uint32_t CharacterBody3D::get_moving_platform_floor_layers() const {
-	return moving_platform_floor_layers;
+uint32_t CharacterBody3D::get_platform_floor_layers() const {
+	return platform_floor_layers;
 }
 
-void CharacterBody3D::set_moving_platform_floor_layers(uint32_t p_exclude_layers) {
-	moving_platform_floor_layers = p_exclude_layers;
+void CharacterBody3D::set_platform_floor_layers(uint32_t p_exclude_layers) {
+	platform_floor_layers = p_exclude_layers;
 }
 
-uint32_t CharacterBody3D::get_moving_platform_wall_layers() const {
-	return moving_platform_wall_layers;
+uint32_t CharacterBody3D::get_platform_wall_layers() const {
+	return platform_wall_layers;
 }
 
-void CharacterBody3D::set_moving_platform_wall_layers(uint32_t p_exclude_layers) {
-	moving_platform_wall_layers = p_exclude_layers;
+void CharacterBody3D::set_platform_wall_layers(uint32_t p_exclude_layers) {
+	platform_wall_layers = p_exclude_layers;
 }
 
 void CharacterBody3D::set_motion_mode(MotionMode p_mode) {
@@ -1878,12 +1884,12 @@ CharacterBody3D::MotionMode CharacterBody3D::get_motion_mode() const {
 	return motion_mode;
 }
 
-void CharacterBody3D::set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_apply_velocity) {
-	moving_platform_apply_velocity_on_leave = p_on_leave_apply_velocity;
+void CharacterBody3D::set_platform_on_leave(PlatformOnLeave p_on_leave_apply_velocity) {
+	platform_on_leave = p_on_leave_apply_velocity;
 }
 
-CharacterBody3D::MovingPlatformApplyVelocityOnLeave CharacterBody3D::get_moving_platform_apply_velocity_on_leave() const {
-	return moving_platform_apply_velocity_on_leave;
+CharacterBody3D::PlatformOnLeave CharacterBody3D::get_platform_on_leave() const {
+	return platform_on_leave;
 }
 
 int CharacterBody3D::get_max_slides() const {
@@ -1948,7 +1954,7 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody3D::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &CharacterBody3D::get_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &CharacterBody3D::set_safe_margin);
+	ClassDB::bind_method(D_METHOD("set_safe_margin", "margin"), &CharacterBody3D::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody3D::get_safe_margin);
 	ClassDB::bind_method(D_METHOD("is_floor_stop_on_slope_enabled"), &CharacterBody3D::is_floor_stop_on_slope_enabled);
 	ClassDB::bind_method(D_METHOD("set_floor_stop_on_slope_enabled", "enabled"), &CharacterBody3D::set_floor_stop_on_slope_enabled);
@@ -1959,10 +1965,10 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slide_on_ceiling_enabled", "enabled"), &CharacterBody3D::set_slide_on_ceiling_enabled);
 	ClassDB::bind_method(D_METHOD("is_slide_on_ceiling_enabled"), &CharacterBody3D::is_slide_on_ceiling_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_moving_platform_floor_layers", "exclude_layer"), &CharacterBody3D::set_moving_platform_floor_layers);
-	ClassDB::bind_method(D_METHOD("get_moving_platform_floor_layers"), &CharacterBody3D::get_moving_platform_floor_layers);
-	ClassDB::bind_method(D_METHOD("set_moving_platform_wall_layers", "exclude_layer"), &CharacterBody3D::set_moving_platform_wall_layers);
-	ClassDB::bind_method(D_METHOD("get_moving_platform_wall_layers"), &CharacterBody3D::get_moving_platform_wall_layers);
+	ClassDB::bind_method(D_METHOD("set_platform_floor_layers", "exclude_layer"), &CharacterBody3D::set_platform_floor_layers);
+	ClassDB::bind_method(D_METHOD("get_platform_floor_layers"), &CharacterBody3D::get_platform_floor_layers);
+	ClassDB::bind_method(D_METHOD("set_platform_wall_layers", "exclude_layer"), &CharacterBody3D::set_platform_wall_layers);
+	ClassDB::bind_method(D_METHOD("get_platform_wall_layers"), &CharacterBody3D::get_platform_wall_layers);
 
 	ClassDB::bind_method(D_METHOD("get_max_slides"), &CharacterBody3D::get_max_slides);
 	ClassDB::bind_method(D_METHOD("set_max_slides", "max_slides"), &CharacterBody3D::set_max_slides);
@@ -1976,8 +1982,8 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_up_direction", "up_direction"), &CharacterBody3D::set_up_direction);
 	ClassDB::bind_method(D_METHOD("set_motion_mode", "mode"), &CharacterBody3D::set_motion_mode);
 	ClassDB::bind_method(D_METHOD("get_motion_mode"), &CharacterBody3D::get_motion_mode);
-	ClassDB::bind_method(D_METHOD("set_moving_platform_apply_velocity_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_moving_platform_apply_velocity_on_leave);
-	ClassDB::bind_method(D_METHOD("get_moving_platform_apply_velocity_on_leave"), &CharacterBody3D::get_moving_platform_apply_velocity_on_leave);
+	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_platform_on_leave);
+	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody3D::get_platform_on_leave);
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody3D::is_on_floor_only);
@@ -2002,33 +2008,36 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "suffix:m/s", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
+
 	ADD_GROUP("Floor", "floor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_stop_on_slope"), "set_floor_stop_on_slope_enabled", "is_floor_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_constant_speed"), "set_floor_constant_speed_enabled", "is_floor_constant_speed_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_block_on_wall"), "set_floor_block_on_wall_enabled", "is_floor_block_on_wall_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,suffix:m"), "set_floor_snap_length", "get_floor_snap_length");
-	ADD_GROUP("Moving Platform", "moving_platform");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
+
+	ADD_GROUP("Moving Platform", "platform_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_on_leave", PROPERTY_HINT_ENUM, "Add Velocity,Add Upward Velocity,Do Nothing", PROPERTY_USAGE_DEFAULT), "set_platform_on_leave", "get_platform_on_leave");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
+
+	ADD_GROUP("Collision", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
 	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);
 
-	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_ALWAYS);
-	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY);
-	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
+	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_ADD_VELOCITY);
+	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY);
+	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_DO_NOTHING);
 }
 
-void CharacterBody3D::_validate_property(PropertyInfo &property) const {
+void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
 	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
-	PhysicsBody3D::_validate_property(property);
 }
 
 CharacterBody3D::CharacterBody3D() :
@@ -2055,6 +2064,10 @@ Vector3 KinematicCollision3D::get_remainder() const {
 
 int KinematicCollision3D::get_collision_count() const {
 	return result.collision_count;
+}
+
+real_t KinematicCollision3D::get_depth() const {
+	return result.collision_depth;
 }
 
 Vector3 KinematicCollision3D::get_position(int p_collision_index) const {
@@ -2127,6 +2140,7 @@ Vector3 KinematicCollision3D::get_collider_velocity(int p_collision_index) const
 void KinematicCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision3D::get_travel);
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision3D::get_remainder);
+	ClassDB::bind_method(D_METHOD("get_depth"), &KinematicCollision3D::get_depth);
 	ClassDB::bind_method(D_METHOD("get_collision_count"), &KinematicCollision3D::get_collision_count);
 	ClassDB::bind_method(D_METHOD("get_position", "collision_index"), &KinematicCollision3D::get_position, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_normal", "collision_index"), &KinematicCollision3D::get_normal, DEFVAL(0));
@@ -3412,6 +3426,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
+	PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
 	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
@@ -3425,10 +3440,12 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
 	} else {
 		set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), 0);
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), 1.0);
 	}
 	if (_internal_simulate_physics) {
 		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);

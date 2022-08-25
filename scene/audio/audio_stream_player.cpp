@@ -136,7 +136,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream->is_monophonic() && is_playing()) {
 		stop();
 	}
-	Ref<AudioStreamPlayback> stream_playback = stream->instance_playback();
+	Ref<AudioStreamPlayback> stream_playback = stream->instantiate_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
 
 	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
@@ -283,8 +283,8 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	return volume_vector;
 }
 
-void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
-	if (property.name == "bus") {
+void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			if (i > 0) {
@@ -294,10 +294,8 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 			options += name;
 		}
 
-		property.hint_string = options;
+		p_property.hint_string = options;
 	}
-
-	Node::_validate_property(property);
 }
 
 void AudioStreamPlayer::_bus_layout_changed() {

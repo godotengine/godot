@@ -35,7 +35,11 @@ if env["platform"] == "android":
 
     # may need to include java parts of the openxr loader
 elif env["platform"] == "linuxbsd":
-    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_LINUX", "XR_USE_PLATFORM_XLIB"])
+    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_LINUX"])
+
+    if env["x11"]:
+        env_thirdparty.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
+
     # FIXME: Review what needs to be set for Android and macOS.
     env_thirdparty.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":

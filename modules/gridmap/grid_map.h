@@ -263,6 +263,9 @@ public:
 	void set_cell_item(const Vector3i &p_position, int p_item, int p_rot = 0);
 	int get_cell_item(const Vector3i &p_position) const;
 	int get_cell_item_orientation(const Vector3i &p_position) const;
+	Basis get_cell_item_basis(const Vector3i &p_position) const;
+	Basis get_basis_with_orthogonal_index(int p_index) const;
+	int get_orthogonal_index_from_basis(const Basis &p_basis) const;
 
 	Vector3i world_to_map(const Vector3 &p_world_position) const;
 	Vector3 map_to_world(const Vector3i &p_map_position) const;
@@ -270,8 +273,8 @@ public:
 	void set_cell_scale(float p_scale);
 	float get_cell_scale() const;
 
-	Array get_used_cells() const;
-	Array get_used_cells_by_item(int p_item) const;
+	TypedArray<Vector3i> get_used_cells() const;
+	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
 
 	Array get_meshes() const;
 

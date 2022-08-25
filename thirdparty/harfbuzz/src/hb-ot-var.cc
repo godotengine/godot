@@ -56,7 +56,7 @@
  *
  * Tests whether a face includes any OpenType variation data in the `fvar` table.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 1.4.2
  **/
@@ -162,7 +162,7 @@ hb_ot_var_get_axis_infos (hb_face_t             *face,
  * Fetches the variation-axis information corresponding to the specified axis tag
  * in the specified face.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.2.0
  **/

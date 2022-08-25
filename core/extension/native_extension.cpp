@@ -156,6 +156,8 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.get = p_extension_funcs->get_func;
 	extension->native_extension.get_property_list = p_extension_funcs->get_property_list_func;
 	extension->native_extension.free_property_list = p_extension_funcs->free_property_list_func;
+	extension->native_extension.property_can_revert = p_extension_funcs->property_can_revert_func;
+	extension->native_extension.property_get_revert = p_extension_funcs->property_get_revert_func;
 	extension->native_extension.notification = p_extension_funcs->notification_func;
 	extension->native_extension.to_string = p_extension_funcs->to_string_func;
 	extension->native_extension.reference = p_extension_funcs->reference_func;
@@ -372,7 +374,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	}
 
 	if (err != OK) {
-		ERR_PRINT("Error loading GDExtension config file: " + p_path);
+		ERR_PRINT("Error loading GDExtension configuration file: " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -380,7 +382,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_INVALID_DATA;
 		}
-		ERR_PRINT("GDExtension config file must contain 'configuration.entry_symbol' key: " + p_path);
+		ERR_PRINT("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -413,7 +415,8 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		ERR_PRINT("No GDExtension library found for current architecture; in config file " + p_path);
+		const String os_arch = OS::get_singleton()->get_name().to_lower() + "." + Engine::get_singleton()->get_architecture_name();
+		ERR_PRINT(vformat("No GDExtension library found for current OS and architecture (%s) in configuration file: %s", os_arch, p_path));
 		return Ref<Resource>();
 	}
 

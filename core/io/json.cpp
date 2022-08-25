@@ -528,11 +528,6 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	return err;
 }
 
-String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
-	HashSet<const void *> markers;
-	return _stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
-}
-
 Error JSON::parse(const String &p_json_string) {
 	Error err = _parse_string(p_json_string, data, err_str, err_line);
 	if (err == Error::OK) {
@@ -541,8 +536,24 @@ Error JSON::parse(const String &p_json_string) {
 	return err;
 }
 
+String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
+	Ref<JSON> jason;
+	jason.instantiate();
+	HashSet<const void *> markers;
+	return jason->_stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
+}
+
+Variant JSON::parse_string(const String &p_json_string) {
+	Ref<JSON> jason;
+	jason.instantiate();
+	Error error = jason->parse(p_json_string);
+	ERR_FAIL_COND_V_MSG(error != Error::OK, Variant(), vformat("Parse JSON failed. Error at line %d: %s", jason->get_error_line(), jason->get_error_message()));
+	return jason->get_data();
+}
+
 void JSON::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("stringify", "data", "indent", "sort_keys", "full_precision"), &JSON::stringify, DEFVAL(""), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_static_method("JSON", D_METHOD("stringify", "data", "indent", "sort_keys", "full_precision"), &JSON::stringify, DEFVAL(""), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_static_method("JSON", D_METHOD("parse_string", "json_string"), &JSON::parse_string);
 	ClassDB::bind_method(D_METHOD("parse", "json_string"), &JSON::parse);
 
 	ClassDB::bind_method(D_METHOD("get_data"), &JSON::get_data);

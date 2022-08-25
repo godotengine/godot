@@ -36,11 +36,11 @@
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
-void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
+void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
 	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
 }
 
-void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
+void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		r_call_error.argument = 0;
@@ -63,21 +63,23 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 	}
 }
 
-void Callable::rpc(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
+Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		r_call_error.argument = 0;
 		r_call_error.expected = 0;
+		return ERR_UNCONFIGURED;
 	} else if (!is_custom()) {
 		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
 		r_call_error.argument = 0;
 		r_call_error.expected = 0;
+		return ERR_UNCONFIGURED;
 	} else {
-		custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
+		return custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
 }
 
-Callable Callable::bind(const Variant **p_arguments, int p_argcount) const {
+Callable Callable::bindp(const Variant **p_arguments, int p_argcount) const {
 	Vector<Variant> args;
 	args.resize(p_argcount);
 	for (int i = 0; i < p_argcount; i++) {
@@ -316,10 +318,11 @@ StringName CallableCustom::get_method() const {
 	ERR_FAIL_V_MSG(StringName(), vformat("Can't get method on CallableCustom \"%s\".", get_as_text()));
 }
 
-void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
+Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	r_call_error.argument = 0;
 	r_call_error.expected = 0;
+	return ERR_UNCONFIGURED;
 }
 
 const Callable *CallableCustom::get_base_comparator() const {
@@ -387,7 +390,7 @@ Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *object = get_object();
 	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
 
-	return object->connect(name, p_callable, varray(), p_flags);
+	return object->connect(name, p_callable, p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {
@@ -435,8 +438,8 @@ bool CallableComparator::operator()(const Variant &p_l, const Variant &p_r) cons
 	const Variant *args[2] = { &p_l, &p_r };
 	Callable::CallError err;
 	Variant res;
-	func.call(args, 2, res, err);
+	func.callp(args, 2, res, err);
 	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
-			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 1, err));
+			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 2, err));
 	return res;
 }

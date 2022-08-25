@@ -145,11 +145,11 @@ void CameraEffects::_update_override_exposure() {
 
 // Private methods, constructor and destructor
 
-void CameraEffects::_validate_property(PropertyInfo &property) const {
-	if ((!dof_blur_far_enabled && (property.name == "dof_blur_far_distance" || property.name == "dof_blur_far_transition")) ||
-			(!dof_blur_near_enabled && (property.name == "dof_blur_near_distance" || property.name == "dof_blur_near_transition")) ||
-			(!override_exposure_enabled && property.name == "override_exposure")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void CameraEffects::_validate_property(PropertyInfo &p_property) const {
+	if ((!dof_blur_far_enabled && (p_property.name == "dof_blur_far_distance" || p_property.name == "dof_blur_far_transition")) ||
+			(!dof_blur_near_enabled && (p_property.name == "dof_blur_near_distance" || p_property.name == "dof_blur_near_transition")) ||
+			(!override_exposure_enabled && p_property.name == "override_exposure")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

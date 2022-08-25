@@ -67,11 +67,14 @@ typedef enum {
 	GDNATIVE_VARIANT_TYPE_VECTOR3,
 	GDNATIVE_VARIANT_TYPE_VECTOR3I,
 	GDNATIVE_VARIANT_TYPE_TRANSFORM2D,
+	GDNATIVE_VARIANT_TYPE_VECTOR4,
+	GDNATIVE_VARIANT_TYPE_VECTOR4I,
 	GDNATIVE_VARIANT_TYPE_PLANE,
 	GDNATIVE_VARIANT_TYPE_QUATERNION,
 	GDNATIVE_VARIANT_TYPE_AABB,
 	GDNATIVE_VARIANT_TYPE_BASIS,
 	GDNATIVE_VARIANT_TYPE_TRANSFORM3D,
+	GDNATIVE_VARIANT_TYPE_PROJECTION,
 
 	/* misc types */
 	GDNATIVE_VARIANT_TYPE_COLOR,
@@ -219,6 +222,8 @@ typedef struct {
 
 typedef const GDNativePropertyInfo *(*GDNativeExtensionClassGetPropertyList)(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
 typedef void (*GDNativeExtensionClassFreePropertyList)(GDExtensionClassInstancePtr p_instance, const GDNativePropertyInfo *p_list);
+typedef GDNativeBool (*GDNativeExtensionClassPropertyCanRevert)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name);
+typedef GDNativeBool (*GDNativeExtensionClassPropertyGetRevert)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
 typedef void (*GDNativeExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what);
 typedef void (*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDNativeStringPtr p_out);
 typedef void (*GDNativeExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
@@ -234,6 +239,8 @@ typedef struct {
 	GDNativeExtensionClassGet get_func;
 	GDNativeExtensionClassGetPropertyList get_property_list_func;
 	GDNativeExtensionClassFreePropertyList free_property_list_func;
+	GDNativeExtensionClassPropertyCanRevert property_can_revert_func;
+	GDNativeExtensionClassPropertyGetRevert property_get_revert_func;
 	GDNativeExtensionClassNotification notification_func;
 	GDNativeExtensionClassToString to_string_func;
 	GDNativeExtensionClassReference reference_func;
@@ -306,6 +313,9 @@ typedef const GDNativePropertyInfo *(*GDNativeExtensionScriptInstanceGetProperty
 typedef void (*GDNativeExtensionScriptInstanceFreePropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativePropertyInfo *p_list);
 typedef GDNativeVariantType (*GDNativeExtensionScriptInstanceGetPropertyType)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeBool *r_is_valid);
 
+typedef GDNativeBool (*GDNativeExtensionScriptInstancePropertyCanRevert)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name);
+typedef GDNativeBool (*GDNativeExtensionScriptInstancePropertyGetRevert)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
+
 typedef GDNativeObjectPtr (*GDNativeExtensionScriptInstanceGetOwner)(GDNativeExtensionScriptInstanceDataPtr p_instance);
 typedef void (*GDNativeExtensionScriptInstancePropertyStateAdd)(const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value, void *p_userdata);
 typedef void (*GDNativeExtensionScriptInstanceGetPropertyState)(GDNativeExtensionScriptInstanceDataPtr p_instance, GDNativeExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata);
@@ -339,6 +349,9 @@ typedef struct {
 	GDNativeExtensionScriptInstanceGetPropertyList get_property_list_func;
 	GDNativeExtensionScriptInstanceFreePropertyList free_property_list_func;
 	GDNativeExtensionScriptInstanceGetPropertyType get_property_type_func;
+
+	GDNativeExtensionScriptInstancePropertyCanRevert property_can_revert_func;
+	GDNativeExtensionScriptInstancePropertyGetRevert property_get_revert_func;
 
 	GDNativeExtensionScriptInstanceGetOwner get_owner_func;
 	GDNativeExtensionScriptInstanceGetPropertyState get_property_state_func;
@@ -579,4 +592,4 @@ typedef GDNativeBool (*GDNativeInitializationFunction)(const GDNativeInterface *
 }
 #endif
 
-#endif
+#endif // GDNATIVE_INTERFACE_H

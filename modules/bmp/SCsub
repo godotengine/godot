@@ -5,5 +5,5 @@ Import("env_modules")
 
 env_bmp = env_modules.Clone()
 
-# Godot's own source files
+# Godot source files
 env_bmp.add_source_files(env.modules_sources, "*.cpp")

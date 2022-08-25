@@ -114,6 +114,15 @@ private:
 
 	int mouse_from_touch_index = -1;
 
+	struct VibrationInfo {
+		float weak_magnitude;
+		float strong_magnitude;
+		float duration; // Duration in seconds
+		uint64_t timestamp;
+	};
+
+	HashMap<int, VibrationInfo> joy_vibration;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -226,15 +235,6 @@ private:
 	EventDispatchFunc event_dispatch_function = nullptr;
 
 protected:
-	struct VibrationInfo {
-		float weak_magnitude;
-		float strong_magnitude;
-		float duration; // Duration in seconds
-		uint64_t timestamp;
-	};
-
-	HashMap<int, VibrationInfo> joy_vibration;
-
 	static void _bind_methods();
 
 public:
@@ -294,8 +294,6 @@ public:
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
-
-	void iteration(float p_step);
 
 	void set_emulate_touch_from_mouse(bool p_emulate);
 	bool is_emulating_touch_from_mouse() const;

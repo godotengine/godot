@@ -441,7 +441,7 @@ Array Array::filter(const Callable &p_callable) const {
 
 		Variant result;
 		Callable::CallError ce;
-		p_callable.call(argptrs, 1, result, ce);
+		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(Array(), "Error calling method from 'filter': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}
@@ -467,7 +467,7 @@ Array Array::map(const Callable &p_callable) const {
 
 		Variant result;
 		Callable::CallError ce;
-		p_callable.call(argptrs, 1, result, ce);
+		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(Array(), "Error calling method from 'map': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}
@@ -493,7 +493,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 
 		Variant result;
 		Callable::CallError ce;
-		p_callable.call(argptrs, 2, result, ce);
+		p_callable.callp(argptrs, 2, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(Variant(), "Error calling method from 'reduce': " + Variant::get_callable_error_text(p_callable, argptrs, 2, ce));
 		}
@@ -510,7 +510,7 @@ bool Array::any(const Callable &p_callable) const {
 
 		Variant result;
 		Callable::CallError ce;
-		p_callable.call(argptrs, 1, result, ce);
+		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(false, "Error calling method from 'any': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}
@@ -532,7 +532,7 @@ bool Array::all(const Callable &p_callable) const {
 
 		Variant result;
 		Callable::CallError ce;
-		p_callable.call(argptrs, 1, result, ce);
+		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(false, "Error calling method from 'all': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
 		}

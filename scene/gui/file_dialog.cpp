@@ -685,6 +685,9 @@ void FileDialog::add_filter(const String &p_filter, const String &p_description)
 }
 
 void FileDialog::set_filters(const Vector<String> &p_filters) {
+	if (filters == p_filters) {
+		return;
+	}
 	filters = p_filters;
 	update_filters();
 	invalidate();
@@ -708,10 +711,14 @@ String FileDialog::get_current_path() const {
 
 void FileDialog::set_current_dir(const String &p_dir) {
 	_change_dir(p_dir);
+
 	_push_history();
 }
 
 void FileDialog::set_current_file(const String &p_file) {
+	if (file->get_text() == p_file) {
+		return;
+	}
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
@@ -764,7 +771,9 @@ bool FileDialog::is_mode_overriding_title() const {
 
 void FileDialog::set_file_mode(FileMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
-
+	if (mode == p_mode) {
+		return;
+	}
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
@@ -977,6 +986,9 @@ void FileDialog::_bind_methods() {
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {
+	if (show_hidden_files == p_show) {
+		return;
+	}
 	show_hidden_files = p_show;
 	invalidate();
 }
@@ -1060,7 +1072,7 @@ FileDialog::FileDialog() {
 
 	message = memnew(Label);
 	message->hide();
-	message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	message->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(message);
@@ -1083,9 +1095,9 @@ FileDialog::FileDialog() {
 	_update_drives();
 
 	connect("confirmed", callable_mp(this, &FileDialog::_action_pressed));
-	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), varray(), CONNECT_DEFERRED);
-	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), varray(), CONNECT_DEFERRED);
-	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated), varray());
+	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), CONNECT_DEFERRED);
+	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), CONNECT_DEFERRED);
+	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated));
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
 	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));

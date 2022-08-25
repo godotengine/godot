@@ -81,8 +81,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
 	Error parse(const String &p_json_string);
+	static String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
+	static Variant parse_string(const String &p_json_string);
 
 	inline Variant get_data() const { return data; }
 	inline int get_error_line() const { return err_line; }

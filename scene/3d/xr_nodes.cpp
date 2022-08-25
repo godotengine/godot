@@ -120,7 +120,7 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
@@ -143,7 +143,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -173,7 +173,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) co
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -202,7 +202,7 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
-	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
 };
 
@@ -244,27 +244,25 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRNode3D::trigger_haptic_pulse);
 };
 
-void XRNode3D::_validate_property(PropertyInfo &property) const {
+void XRNode3D::_validate_property(PropertyInfo &p_property) const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	if (property.name == "tracker") {
+	if (p_property.name == "tracker") {
 		PackedStringArray names = xr_server->get_suggested_tracker_names();
 		String hint_string;
 		for (const String &name : names) {
 			hint_string += name + ",";
 		}
-		property.hint_string = hint_string;
-	} else if (property.name == "pose") {
+		p_property.hint_string = hint_string;
+	} else if (p_property.name == "pose") {
 		PackedStringArray names = xr_server->get_suggested_pose_names(tracker_name);
 		String hint_string;
 		for (const String &name : names) {
 			hint_string += name + ",";
 		}
-		property.hint_string = hint_string;
+		p_property.hint_string = hint_string;
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void XRNode3D::set_tracker(const StringName p_tracker_name) {

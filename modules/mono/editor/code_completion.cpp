@@ -172,7 +172,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			}
 		} break;
 		case CompletionKind::SHADER_PARAMS: {
-			print_verbose("Shared params completion for C# not implemented.");
+			print_verbose("Shader uniforms completion for C# is not implemented yet.");
 		} break;
 		case CompletionKind::SIGNALS: {
 			Ref<Script> script = ResourceLoader::load(p_script_file.simplify_path());

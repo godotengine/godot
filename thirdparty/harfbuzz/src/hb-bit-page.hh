@@ -55,7 +55,7 @@ struct hb_bit_page_t
 
   void add (hb_codepoint_t g) { elt (g) |= mask (g); }
   void del (hb_codepoint_t g) { elt (g) &= ~mask (g); }
-  void set (hb_codepoint_t g, bool v) { if (v) add (g); else del (g); }
+  void set (hb_codepoint_t g, bool value) { if (value) add (g); else del (g); }
   bool get (hb_codepoint_t g) const { return elt (g) & mask (g); }
 
   void add_range (hb_codepoint_t a, hb_codepoint_t b)

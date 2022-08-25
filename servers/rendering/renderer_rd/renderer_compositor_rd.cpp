@@ -249,6 +249,7 @@ RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
 	uniform_set_cache = memnew(UniformSetCacheRD);
+	framebuffer_cache = memnew(FramebufferCacheRD);
 
 	{
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
@@ -316,5 +317,6 @@ RendererCompositorRD::RendererCompositorRD() {
 
 RendererCompositorRD::~RendererCompositorRD() {
 	memdelete(uniform_set_cache);
+	memdelete(framebuffer_cache);
 	ShaderRD::set_shader_cache_dir(String());
 }

@@ -17,14 +17,14 @@
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="state" type="PhysicsDirectBodyState3D" />
+			<param index="0" name="state" type="PhysicsDirectBodyState3D" />
 			<description>
 				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but the [member custom_integrator] property allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_constant_central_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
 			<description>
 				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
 				This is equivalent to using [method add_constant_force] at the body's center of mass.
@@ -32,23 +32,23 @@
 		</method>
 		<method name="add_constant_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="add_constant_torque">
 			<return type="void" />
-			<argument index="0" name="torque" type="Vector3" />
+			<param index="0" name="torque" type="Vector3" />
 			<description>
 				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = Vector3(0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="apply_central_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
+			<param index="0" name="force" type="Vector3" />
 			<description>
 				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
 				This is equivalent to using [method apply_force] at the body's center of mass.
@@ -56,7 +56,7 @@
 		</method>
 		<method name="apply_central_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
+			<param index="0" name="impulse" type="Vector3" />
 			<description>
 				Applies a directional impulse without affecting rotation.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
@@ -65,43 +65,50 @@
 		</method>
 		<method name="apply_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
-			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="0" name="impulse" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
 				Applies a positioned impulse to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
-				[code]position[/code] is the offset from the body origin in global coordinates.
+				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_torque">
 			<return type="void" />
-			<argument index="0" name="torque" type="Vector3" />
+			<param index="0" name="torque" type="Vector3" />
 			<description>
 				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
 			<return type="void" />
-			<argument index="0" name="impulse" type="Vector3" />
+			<param index="0" name="impulse" type="Vector3" />
 			<description>
 				Applies a rotational impulse to the body without affecting the position.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
-			<return type="Array" />
+			<return type="Node3D[]" />
 			<description>
-				Returns a list of the bodies colliding with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Returns a list of the bodies colliding with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+			</description>
+		</method>
+		<method name="get_contact_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of contacts this body has with other bodies. By default, this returns 0 unless bodies are configured to monitor contacts (see [member contact_monitor]).
+				[b]Note:[/b] To retrieve the colliding bodies, use [method get_colliding_bodies].
 			</description>
 		</method>
 		<method name="get_inverse_inertia_tensor" qualifiers="const">
@@ -112,7 +119,7 @@
 		</method>
 		<method name="set_axis_velocity">
 			<return type="void" />
-			<argument index="0" name="axis_velocity" type="Vector3" />
+			<param index="0" name="axis_velocity" type="Vector3" />
 			<description>
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
@@ -148,11 +155,8 @@
 			See [method add_constant_torque].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
-			If [code]true[/code], the RigidDynamicBody3D will emit signals when it collides with another RigidDynamicBody3D. See also [member contacts_reported].
-		</member>
-		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
-			The maximum number of contacts that will be recorded. Requires [member contact_monitor] to be set to [code]true[/code].
-			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
+			If [code]true[/code], the RigidDynamicBody3D will emit signals when it collides with another RigidDynamicBody3D.
+			[b]Note:[/b] By default the maximum contacts reported is set to 0, meaning nothing will be recorded, see [member max_contacts_reported].
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
 			If [code]true[/code], continuous collision detection is used.
@@ -193,6 +197,10 @@
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
 		</member>
+		<member name="max_contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
+			The maximum number of contacts that will be recorded. Requires a value greater than 0 and [member contact_monitor] to be set to [code]true[/code] to start to register contacts. Use [method get_contact_count] to retrieve the count or [method get_colliding_bodies] to retrieve bodies that have been collided with.
+			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
+		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
@@ -203,43 +211,43 @@
 	</members>
 	<signals>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
-				Emitted when a collision with another [PhysicsBody3D] or [GridMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				Emitted when a collision with another [PhysicsBody3D] or [GridMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Node" />
+			<param index="0" name="body" type="Node" />
 			<description>
-				Emitted when the collision with another [PhysicsBody3D] or [GridMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				Emitted when the collision with another [PhysicsBody3D] or [GridMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
-			<argument index="0" name="body_rid" type="RID" />
-			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape_index" type="int" />
-			<argument index="3" name="local_shape_index" type="int" />
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of this RigidDynamicBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when one of this RigidDynamicBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
-			<argument index="0" name="body_rid" type="RID" />
-			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape_index" type="int" />
-			<argument index="3" name="local_shape_index" type="int" />
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when the collision between one of this RigidDynamicBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
-				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when the collision between one of this RigidDynamicBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

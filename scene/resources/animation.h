@@ -56,7 +56,8 @@ public:
 	enum InterpolationType {
 		INTERPOLATION_NEAREST,
 		INTERPOLATION_LINEAR,
-		INTERPOLATION_CUBIC
+		INTERPOLATION_CUBIC,
+		INTERPOLATION_CUBIC_IN_TIME,
 	};
 
 	enum UpdateMode {
@@ -72,10 +73,19 @@ public:
 		LOOP_PINGPONG,
 	};
 
+#ifdef TOOLS_ENABLED
 	enum HandleMode {
 		HANDLE_MODE_FREE,
+		HANDLE_MODE_LINEAR,
 		HANDLE_MODE_BALANCED,
+		HANDLE_MODE_MIRRORED,
 	};
+	enum HandleSetMode {
+		HANDLE_SET_MODE_NONE,
+		HANDLE_SET_MODE_RESET,
+		HANDLE_SET_MODE_AUTO,
+	};
+#endif // TOOLS_ENABLED
 
 private:
 	struct Track {
@@ -165,8 +175,10 @@ private:
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
-		HandleMode handle_mode = HANDLE_MODE_BALANCED;
 		real_t value = 0.0;
+#ifdef TOOLS_ENABLED
+		HandleMode handle_mode = HANDLE_MODE_FREE;
+#endif // TOOLS_ENABLED
 	};
 
 	struct BezierTrack : public Track {
@@ -230,6 +242,11 @@ private:
 	_FORCE_INLINE_ Quaternion _cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c) const;
 	_FORCE_INLINE_ real_t _cubic_interpolate(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c) const;
+
+	_FORCE_INLINE_ Vector3 _cubic_interpolate_in_time(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
+	_FORCE_INLINE_ Quaternion _cubic_interpolate_in_time(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
+	_FORCE_INLINE_ Variant _cubic_interpolate_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
+	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
 	template <class T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
@@ -351,15 +368,14 @@ private:
 		return idxr;
 	}
 
-	bool _position_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_alowed_linear_err, real_t p_allowed_angular_error, const Vector3 &p_norm);
-	bool _rotation_track_optimize_key(const TKey<Quaternion> &t0, const TKey<Quaternion> &t1, const TKey<Quaternion> &t2, real_t p_allowed_angular_error, float p_max_optimizable_angle);
-	bool _scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_error);
-	bool _blend_shape_track_optimize_key(const TKey<float> &t0, const TKey<float> &t1, const TKey<float> &t2, real_t p_allowed_unit_error);
+	bool _vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
+	bool _quaternion_track_optimize_key(const TKey<Quaternion> t0, const TKey<Quaternion> t1, const TKey<Quaternion> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
+	bool _float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error);
 
-	void _position_track_optimize(int p_idx, real_t p_allowed_linear_err, real_t p_allowed_angular_err);
-	void _rotation_track_optimize(int p_idx, real_t p_allowed_angular_err, real_t p_max_optimizable_angle);
-	void _scale_track_optimize(int p_idx, real_t p_allowed_linear_err);
-	void _blend_shape_track_optimize(int p_idx, real_t p_allowed_unit_error);
+	void _position_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error);
+	void _rotation_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
+	void _scale_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error);
+	void _blend_shape_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_precision_error);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -392,7 +408,7 @@ public:
 	void track_set_enabled(int p_track, bool p_enabled);
 	bool track_is_enabled(int p_track) const;
 
-	void track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
+	int track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
@@ -424,15 +440,17 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const HandleMode p_handle_mode = HandleMode::HANDLE_MODE_BALANCED);
-	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, double p_balanced_value_time_ratio = 1.0);
+	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
-	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
-	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
 	real_t bezier_track_get_key_value(int p_track, int p_index) const;
-	int bezier_track_get_key_handle_mode(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
+#ifdef TOOLS_ENABLED
+	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, HandleSetMode p_set_mode = HANDLE_SET_MODE_NONE);
+	HandleMode bezier_track_get_key_handle_mode(int p_track, int p_index) const;
+#endif // TOOLS_ENABLED
 
 	real_t bezier_track_interpolate(int p_track, double p_time) const;
 
@@ -475,7 +493,7 @@ public:
 
 	void clear();
 
-	void optimize(real_t p_allowed_linear_err = 0.05, real_t p_allowed_angular_err = 0.01, real_t p_max_optimizable_angle = Math_PI * 0.125);
+	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests
 
 	Animation();
@@ -485,7 +503,10 @@ public:
 VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
-VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
+#ifdef TOOLS_ENABLED
+VARIANT_ENUM_CAST(Animation::HandleMode);
+VARIANT_ENUM_CAST(Animation::HandleSetMode);
+#endif // TOOLS_ENABLED
 
-#endif
+#endif // ANIMATION_H

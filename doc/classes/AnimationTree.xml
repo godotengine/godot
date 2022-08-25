@@ -14,7 +14,7 @@
 	<methods>
 		<method name="advance">
 			<return type="void" />
-			<argument index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Manually advance the animations by the specified time (in seconds).
 			</description>
@@ -27,8 +27,8 @@
 		</method>
 		<method name="rename_parameter">
 			<return type="void" />
-			<argument index="0" name="old_name" type="String" />
-			<argument index="1" name="new_name" type="String" />
+			<param index="0" name="old_name" type="String" />
+			<param index="1" name="new_name" type="String" />
 			<description>
 			</description>
 		</method>
@@ -38,7 +38,7 @@
 			If [code]true[/code], the [AnimationTree] will be processing.
 		</member>
 		<member name="advance_expression_base_node" type="NodePath" setter="set_advance_expression_base_node" getter="get_advance_expression_base_node" default="NodePath(&quot;.&quot;)">
-			The path to the [Node] used to evaluate the AnimationNode [Expression] if one is not explictly specified internally.
+			The path to the [Node] used to evaluate the AnimationNode [Expression] if one is not explicitly specified internally.
 		</member>
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.

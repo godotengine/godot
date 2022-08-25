@@ -32,6 +32,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 
@@ -199,7 +200,7 @@ void EditorCommandPalette::add_command(String p_command_name, String p_key_name,
 	}
 	Command command;
 	command.name = p_command_name;
-	command.callable = p_action.bind(argptrs, arguments.size());
+	command.callable = p_action.bindp(argptrs, arguments.size());
 	command.shortcut = p_shortcut_text;
 
 	commands[p_key_name] = command;
@@ -225,7 +226,7 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 void EditorCommandPalette::execute_command(String &p_command_key) {
 	ERR_FAIL_COND_MSG(!commands.has(p_command_key), p_command_key + " not found.");
 	commands[p_command_key].last_used = OS::get_singleton()->get_unix_time();
-	commands[p_command_key].callable.call_deferred(nullptr, 0);
+	commands[p_command_key].callable.call_deferredp(nullptr, 0);
 	_save_history();
 }
 
@@ -311,8 +312,8 @@ EditorCommandPalette::EditorCommandPalette() {
 
 	search_options = memnew(Tree);
 	search_options->connect("item_activated", callable_mp(this, &EditorCommandPalette::_confirmed));
-	search_options->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled), varray(false));
-	search_options->connect("nothing_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled), varray(true));
+	search_options->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
+	search_options->connect("nothing_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(true));
 	search_options->create_item();
 	search_options->set_hide_root(true);
 	search_options->set_columns(2);

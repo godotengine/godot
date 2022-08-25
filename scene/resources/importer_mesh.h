@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_IMPORTER_MESH_H
-#define SCENE_IMPORTER_MESH_H
+#ifndef IMPORTER_MESH_H
+#define IMPORTER_MESH_H
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
@@ -130,4 +130,5 @@ public:
 	Ref<ArrayMesh> get_mesh(const Ref<ArrayMesh> &p_base = Ref<ArrayMesh>());
 	void clear();
 };
-#endif // SCENE_IMPORTER_MESH_H
+
+#endif // IMPORTER_MESH_H

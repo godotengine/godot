@@ -65,12 +65,12 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
-
 	virtual Variant get_resource_metadata(const String &p_path) const;
 	virtual bool is_import_valid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual bool is_imported(const String &p_path) const { return recognize_path(p_path); }
 	virtual String get_import_group_file(const String &p_path) const;
+	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	virtual bool exists(const String &p_path) const;
 
 	virtual int get_import_order(const String &p_path) const;

@@ -29,18 +29,14 @@ uniform samplerCube source_cube; //texunit:0
 /* clang-format on */
 
 uniform int face_id;
-uniform float roughness;
-uniform float face_size;
-uniform int sample_count;
 
-//Todo, profile on low end hardware to see if fixed loop is faster
-#ifdef USE_FIXED_SAMPLES
-#define FIXED_SAMPLE_COUNT 32
+#ifndef MODE_DIRECT_WRITE
+uniform int sample_count;
+uniform vec4 sample_directions_mip[MAX_SAMPLE_COUNT];
+uniform float weight;
 #endif
 
 in highp vec2 uv_interp;
-
-uniform sampler2D radical_inverse_vdc_cache; // texunit:1
 
 layout(location = 0) out vec4 frag_color;
 
@@ -93,48 +89,6 @@ vec3 texelCoordToVec(vec2 uv, int faceID) {
 	return normalize(result);
 }
 
-vec3 ImportanceSampleGGX(vec2 xi, float roughness4) {
-	// Compute distribution direction
-	float Phi = 2.0 * M_PI * xi.x;
-	float CosTheta = sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
-	float SinTheta = sqrt(1.0 - CosTheta * CosTheta);
-
-	// Convert to spherical direction
-	vec3 H;
-	H.x = SinTheta * cos(Phi);
-	H.y = SinTheta * sin(Phi);
-	H.z = CosTheta;
-
-	return H;
-}
-
-float DistributionGGX(float NdotH, float roughness4) {
-	float NdotH2 = NdotH * NdotH;
-	float denom = (NdotH2 * (roughness4 - 1.0) + 1.0);
-	denom = M_PI * denom * denom;
-
-	return roughness4 / denom;
-}
-
-// https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
-float GGX(float NdotV, float a) {
-	float k = a / 2.0;
-	return NdotV / (NdotV * (1.0 - k) + k);
-}
-
-// https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
-float G_Smith(float a, float nDotV, float nDotL) {
-	return GGX(nDotL, a * a) * GGX(nDotV, a * a);
-}
-
-float radical_inverse_VdC(int i) {
-	return texture(radical_inverse_vdc_cache, vec2(float(i) / 512.0, 0.0)).x;
-}
-
-vec2 Hammersley(int i, int N) {
-	return vec2(float(i) / float(N), radical_inverse_VdC(i));
-}
-
 void main() {
 	vec3 color = vec3(0.0);
 	vec2 uv = uv_interp;
@@ -145,9 +99,6 @@ void main() {
 #else
 
 	vec4 sum = vec4(0.0);
-	float solid_angle_texel = 4.0 * M_PI / (6.0 * face_size * face_size);
-	float roughness2 = roughness * roughness;
-	float roughness4 = roughness2 * roughness2;
 	vec3 UpVector = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
 	mat3 T;
 	T[0] = normalize(cross(UpVector, N));
@@ -155,32 +106,15 @@ void main() {
 	T[2] = N;
 
 	for (int sample_num = 0; sample_num < sample_count; sample_num++) {
-		vec2 xi = Hammersley(sample_num, sample_count);
-
-		vec3 H = T * ImportanceSampleGGX(xi, roughness4);
-		float NdotH = dot(N, H);
-		vec3 L = (2.0 * NdotH * H - N);
-
-		float NdotL = clamp(dot(N, L), 0.0, 1.0);
-
-		if (NdotL > 0.0) {
-			float D = DistributionGGX(NdotH, roughness4);
-			float pdf = D * NdotH / (4.0 * NdotH) + 0.0001;
-
-			float solid_angle_sample = 1.0 / (float(sample_count) * pdf + 0.0001);
-
-			float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(solid_angle_sample / solid_angle_texel);
-
-			vec3 val = textureLod(source_cube, L, mipLevel).rgb;
-			// Mix using linear
-			val = srgb_to_linear(val);
-
-			sum.rgb += val * NdotL;
-			sum.a += NdotL;
-		}
+		vec4 sample_direction_mip = sample_directions_mip[sample_num];
+		vec3 L = T * sample_direction_mip.xyz;
+		vec3 val = textureLod(source_cube, L, sample_direction_mip.w).rgb;
+		// Mix using linear
+		val = srgb_to_linear(val);
+		sum.rgb += val * sample_direction_mip.z;
 	}
 
-	sum /= sum.a;
+	sum /= weight;
 
 	sum.rgb = linear_to_srgb(sum.rgb);
 	frag_color = vec4(sum.rgb, 1.0);

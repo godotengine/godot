@@ -368,19 +368,19 @@ Rect2 Sprite2D::get_rect() const {
 	return Rect2(ofs, s);
 }
 
-void Sprite2D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "frame") {
-		property.hint = PROPERTY_HINT_RANGE;
-		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+void Sprite2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "frame") {
+		p_property.hint = PROPERTY_HINT_RANGE;
+		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (property.name == "frame_coords") {
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	if (p_property.name == "frame_coords") {
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (!region_enabled && (property.name == "region_rect" || property.name == "region_filter_clip")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

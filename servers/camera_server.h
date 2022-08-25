@@ -43,6 +43,8 @@
 **/
 
 class CameraFeed;
+template <typename T>
+class TypedArray;
 
 class CameraServer : public Object {
 	GDCLASS(CameraServer, Object);
@@ -100,7 +102,7 @@ public:
 	// Get our feeds.
 	Ref<CameraFeed> get_feed(int p_index);
 	int get_feed_count();
-	Array get_feeds();
+	TypedArray<CameraFeed> get_feeds();
 
 	// Intended for use with custom CameraServer implementation.
 	RID feed_texture(int p_id, FeedImage p_texture);

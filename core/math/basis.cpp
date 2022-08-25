@@ -749,67 +749,6 @@ Quaternion Basis::get_quaternion() const {
 	return Quaternion(temp[0], temp[1], temp[2], temp[3]);
 }
 
-static const Basis _ortho_bases[24] = {
-	Basis(1, 0, 0, 0, 1, 0, 0, 0, 1),
-	Basis(0, -1, 0, 1, 0, 0, 0, 0, 1),
-	Basis(-1, 0, 0, 0, -1, 0, 0, 0, 1),
-	Basis(0, 1, 0, -1, 0, 0, 0, 0, 1),
-	Basis(1, 0, 0, 0, 0, -1, 0, 1, 0),
-	Basis(0, 0, 1, 1, 0, 0, 0, 1, 0),
-	Basis(-1, 0, 0, 0, 0, 1, 0, 1, 0),
-	Basis(0, 0, -1, -1, 0, 0, 0, 1, 0),
-	Basis(1, 0, 0, 0, -1, 0, 0, 0, -1),
-	Basis(0, 1, 0, 1, 0, 0, 0, 0, -1),
-	Basis(-1, 0, 0, 0, 1, 0, 0, 0, -1),
-	Basis(0, -1, 0, -1, 0, 0, 0, 0, -1),
-	Basis(1, 0, 0, 0, 0, 1, 0, -1, 0),
-	Basis(0, 0, -1, 1, 0, 0, 0, -1, 0),
-	Basis(-1, 0, 0, 0, 0, -1, 0, -1, 0),
-	Basis(0, 0, 1, -1, 0, 0, 0, -1, 0),
-	Basis(0, 0, 1, 0, 1, 0, -1, 0, 0),
-	Basis(0, -1, 0, 0, 0, 1, -1, 0, 0),
-	Basis(0, 0, -1, 0, -1, 0, -1, 0, 0),
-	Basis(0, 1, 0, 0, 0, -1, -1, 0, 0),
-	Basis(0, 0, 1, 0, -1, 0, 1, 0, 0),
-	Basis(0, 1, 0, 0, 0, 1, 1, 0, 0),
-	Basis(0, 0, -1, 0, 1, 0, 1, 0, 0),
-	Basis(0, -1, 0, 0, 0, -1, 1, 0, 0)
-};
-
-int Basis::get_orthogonal_index() const {
-	//could be sped up if i come up with a way
-	Basis orth = *this;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			real_t v = orth[i][j];
-			if (v > 0.5f) {
-				v = 1.0f;
-			} else if (v < -0.5f) {
-				v = -1.0f;
-			} else {
-				v = 0;
-			}
-
-			orth[i][j] = v;
-		}
-	}
-
-	for (int i = 0; i < 24; i++) {
-		if (_ortho_bases[i] == orth) {
-			return i;
-		}
-	}
-
-	return 0;
-}
-
-void Basis::set_orthogonal_index(int p_index) {
-	//there only exist 24 orthogonal bases in r3
-	ERR_FAIL_INDEX(p_index, 24);
-
-	*this = _ortho_bases[p_index];
-}
-
 void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	/* checking this is a bad idea, because obtaining from scaled transform is a valid use case
 #ifdef MATH_CHECKS
@@ -817,14 +756,13 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 #endif
 */
 	real_t angle, x, y, z; // variables for result
-	real_t epsilon = 0.01; // margin to allow for rounding errors
-	real_t epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
+	real_t angle_epsilon = 0.1; // margin to distinguish between 0 and 180 degrees
 
-	if ((Math::abs(rows[1][0] - rows[0][1]) < epsilon) && (Math::abs(rows[2][0] - rows[0][2]) < epsilon) && (Math::abs(rows[2][1] - rows[1][2]) < epsilon)) {
+	if ((Math::abs(rows[1][0] - rows[0][1]) < CMP_EPSILON) && (Math::abs(rows[2][0] - rows[0][2]) < CMP_EPSILON) && (Math::abs(rows[2][1] - rows[1][2]) < CMP_EPSILON)) {
 		// singularity found
 		// first check for identity matrix which must have +1 for all terms
 		// in leading diagonal and zero in other terms
-		if ((Math::abs(rows[1][0] + rows[0][1]) < epsilon2) && (Math::abs(rows[2][0] + rows[0][2]) < epsilon2) && (Math::abs(rows[2][1] + rows[1][2]) < epsilon2) && (Math::abs(rows[0][0] + rows[1][1] + rows[2][2] - 3) < epsilon2)) {
+		if ((Math::abs(rows[1][0] + rows[0][1]) < angle_epsilon) && (Math::abs(rows[2][0] + rows[0][2]) < angle_epsilon) && (Math::abs(rows[2][1] + rows[1][2]) < angle_epsilon) && (Math::abs(rows[0][0] + rows[1][1] + rows[2][2] - 3) < angle_epsilon)) {
 			// this singularity is identity matrix so angle = 0
 			r_axis = Vector3(0, 1, 0);
 			r_angle = 0;
@@ -839,7 +777,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		real_t xz = (rows[2][0] + rows[0][2]) / 4;
 		real_t yz = (rows[2][1] + rows[1][2]) / 4;
 		if ((xx > yy) && (xx > zz)) { // rows[0][0] is the largest diagonal term
-			if (xx < epsilon) {
+			if (xx < CMP_EPSILON) {
 				x = 0;
 				y = Math_SQRT12;
 				z = Math_SQRT12;
@@ -849,7 +787,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 				z = xz / x;
 			}
 		} else if (yy > zz) { // rows[1][1] is the largest diagonal term
-			if (yy < epsilon) {
+			if (yy < CMP_EPSILON) {
 				x = Math_SQRT12;
 				y = 0;
 				z = Math_SQRT12;
@@ -859,7 +797,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 				z = yz / y;
 			}
 		} else { // rows[2][2] is the largest diagonal term so base result on this
-			if (zz < epsilon) {
+			if (zz < CMP_EPSILON) {
 				x = Math_SQRT12;
 				y = Math_SQRT12;
 				z = 0;

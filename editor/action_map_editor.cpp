@@ -720,7 +720,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	for (int i = 0; i < MOD_MAX; i++) {
 		String name = mods[i];
 		mod_checkboxes[i] = memnew(CheckBox);
-		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled), varray(i));
+		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled).bind(i));
 		mod_checkboxes[i]->set_text(name);
 		mod_container->add_child(mod_checkboxes[i]);
 	}
@@ -1061,6 +1061,9 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			if (!actions_cache.is_empty()) {
+				update_action_list();
+			}
 		} break;
 	}
 }
@@ -1199,7 +1202,7 @@ void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 ActionMapEditor::ActionMapEditor() {
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
-	main_vbox->set_anchors_and_offsets_preset(PRESET_WIDE);
+	main_vbox->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(main_vbox);
 
 	HBoxContainer *top_hbox = memnew(HBoxContainer);

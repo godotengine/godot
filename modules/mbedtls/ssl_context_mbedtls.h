@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
+#ifndef SSL_CONTEXT_MBEDTLS_H
+#define SSL_CONTEXT_MBEDTLS_H
 
 #include "crypto_mbedtls.h"
 
@@ -90,4 +90,4 @@ public:
 	~SSLContextMbedTLS();
 };
 
-#endif // SSL_CONTEXT_MBED_TLS_H
+#endif // SSL_CONTEXT_MBEDTLS_H

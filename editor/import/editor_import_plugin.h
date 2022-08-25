@@ -32,6 +32,7 @@
 #define EDITOR_IMPORT_PLUGIN_H
 
 #include "core/io/resource_importer.h"
+#include "core/variant/typed_array.h"
 
 class EditorImportPlugin : public ResourceImporter {
 	GDCLASS(EditorImportPlugin, ResourceImporter);
@@ -44,7 +45,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_preset_count)
 	GDVIRTUAL1RC(String, _get_preset_name, int)
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
-	GDVIRTUAL2RC(Array, _get_import_options, String, int)
+	GDVIRTUAL2RC(TypedArray<Dictionary>, _get_import_options, String, int)
 	GDVIRTUAL0RC(String, _get_save_extension)
 	GDVIRTUAL0RC(String, _get_resource_type)
 	GDVIRTUAL0RC(float, _get_priority)
@@ -68,4 +69,4 @@ public:
 	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = nullptr) override;
 };
 
-#endif //EDITOR_IMPORT_PLUGIN_H
+#endif // EDITOR_IMPORT_PLUGIN_H

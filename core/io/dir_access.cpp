@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/templates/local_vector.h"
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
@@ -286,11 +287,16 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 		Ref<FileAccess> fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_to);
 
+		const size_t copy_buffer_limit = 65536; // 64 KB
+
 		fsrc->seek_end(0);
 		int size = fsrc->get_position();
 		fsrc->seek(0);
 		err = OK;
-		while (size--) {
+		size_t buffer_size = MIN(size * sizeof(uint8_t), copy_buffer_limit);
+		LocalVector<uint8_t> buffer;
+		buffer.resize(buffer_size);
+		while (size > 0) {
 			if (fsrc->get_error() != OK) {
 				err = fsrc->get_error();
 				break;
@@ -300,7 +306,14 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 				break;
 			}
 
-			fdst->store_8(fsrc->get_8());
+			int bytes_read = fsrc->get_buffer(buffer.ptr(), buffer_size);
+			if (bytes_read <= 0) {
+				err = FAILED;
+				break;
+			}
+			fdst->store_buffer(buffer.ptr(), bytes_read);
+
+			size -= bytes_read;
 		}
 	}
 

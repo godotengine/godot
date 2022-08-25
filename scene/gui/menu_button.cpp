@@ -99,13 +99,15 @@ void MenuButton::pressed() {
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
 
 	// If not triggered by the mouse, start the popup with its first item selected.
-	if (popup->get_item_count() > 0 &&
-			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
-					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+	if (popup->get_item_count() > 0 && !_was_pressed_by_mouse()) {
 		popup->set_current_index(0);
 	}
 
-	popup->popup();
+	if (popup->is_visible()) {
+		popup->hide();
+	} else {
+		popup->popup();
+	}
 }
 
 void MenuButton::gui_input(const Ref<InputEvent> &p_event) {
@@ -126,6 +128,11 @@ bool MenuButton::is_switch_on_hover() {
 
 void MenuButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
+
+	if (popup->get_item_count() == p_count) {
+		return;
+	}
+
 	popup->set_item_count(p_count);
 	notify_property_list_changed();
 }
@@ -239,8 +246,8 @@ MenuButton::MenuButton(const String &p_text) :
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup, false, INTERNAL_MODE_FRONT);
-	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(true));
-	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(false));
+	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed).bind(true));
+	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed).bind(false));
 }
 
 MenuButton::~MenuButton() {

@@ -26,16 +26,8 @@
     <None Include="Sdk\Sdk.props" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\Sdk.targets" Pack="true" PackagePath="Sdk" />
     <!-- SdkPackageVersions.props -->
-    <None Include="..\..\..\SdkPackageVersions.props" Pack="true" PackagePath="Sdk">
+    <None Include="$(GodotSdkPackageVersionsFilePath)" Pack="true" PackagePath="Sdk">
       <Link>Sdk\SdkPackageVersions.props</Link>
     </None>
   </ItemGroup>
-
-  <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack">
-    <PropertyGroup>
-      <GodotSourceRootPath>$(SolutionDir)\..\..\..\..\</GodotSourceRootPath>
-      <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
-    </PropertyGroup>
-    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
-  </Target>
 </Project>

@@ -182,16 +182,14 @@ def include_file_in_gles3_header(filename, header_data, depth):
     return header_data
 
 
-def build_gles3_header(filename, include, class_suffix, output_attribs):
-    header_data = GLES3HeaderStruct()
+def build_gles3_header(filename, include, class_suffix, header_data=None):
+    header_data = header_data or GLES3HeaderStruct()
     include_file_in_gles3_header(filename, header_data, 0)
 
     out_file = filename + ".gen.h"
     fd = open(out_file, "w")
     defspec = 0
     defvariant = ""
-
-    enum_constants = []
 
     fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
 
@@ -436,7 +434,7 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
         )
 
         fd.write(
-            """_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix,RID p_version,ShaderVariant p_variant"""
+            """_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const Projection& p_matrix,RID p_version,ShaderVariant p_variant"""
             + defvariant
             + """,uint64_t p_specialization="""
             + str(defspec)
@@ -552,7 +550,7 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
 
 def build_gles3_headers(target, source, env):
     for x in source:
-        build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
+        build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3")
 
 
 if __name__ == "__main__":

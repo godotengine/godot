@@ -35,6 +35,14 @@
 #include "hb-set.hh"
 #include "hb-bimap.hh"
 
+#include "OT/Layout/Common/Coverage.hh"
+#include "OT/Layout/types.hh"
+
+// TODO(garretrieger): cleanup these after migration.
+using OT::Layout::Common::Coverage;
+using OT::Layout::Common::RangeRecord;
+using OT::Layout::SmallTypes;
+using OT::Layout::MediumTypes;
 
 #ifndef HB_MAX_NESTING_LEVEL
 #define HB_MAX_NESTING_LEVEL	64
@@ -46,10 +54,10 @@
 /*
  * The maximum number of times a lookup can be applied during shaping.
  * Used to limit the number of iterations of the closure algorithm.
- * This must be larger than the number of times add_pause() is
+ * This must be larger than the number of times add_gsub_pause() is
  * called in a collect_features call of any shaper.
  */
-#define HB_CLOSURE_MAX_STAGES	32
+#define HB_CLOSURE_MAX_STAGES	12
 #endif
 
 #ifndef HB_MAX_SCRIPTS
@@ -64,10 +72,6 @@
 #define HB_MAX_LANGSYS_FEATURE_COUNT 50000
 #endif
 
-#ifndef HB_MAX_FEATURES
-#define HB_MAX_FEATURES 750
-#endif
-
 #ifndef HB_MAX_FEATURE_INDICES
 #define HB_MAX_FEATURE_INDICES	1500
 #endif
@@ -78,14 +82,6 @@
 
 
 namespace OT {
-
-
-#define NOT_COVERED		((unsigned int) -1)
-
-
-template<typename Iterator>
-static inline void Coverage_serialize (hb_serialize_context_t *c,
-				       Iterator it);
 
 template<typename Iterator>
 static inline void ClassDef_serialize (hb_serialize_context_t *c,
@@ -377,6 +373,51 @@ HB_FUNCOBJ (serialize_math_record_array);
  * Script, ScriptList, LangSys, Feature, FeatureList, Lookup, LookupList
  */
 
+struct IndexArray : Array16Of<Index>
+{
+  bool intersects (const hb_map_t *indexes) const
+  { return hb_any (*this, indexes); }
+
+  template <typename Iterator,
+	    hb_requires (hb_is_iterator (Iterator))>
+  void serialize (hb_serialize_context_t *c,
+		  hb_subset_layout_context_t *l,
+		  Iterator it)
+  {
+    if (!it) return;
+    if (unlikely (!c->extend_min ((*this)))) return;
+
+    for (const auto _ : it)
+    {
+      if (!l->visitLookupIndex()) break;
+
+      Index i;
+      i = _;
+      c->copy (i);
+      this->len++;
+    }
+  }
+
+  unsigned int get_indexes (unsigned int start_offset,
+			    unsigned int *_count /* IN/OUT */,
+			    unsigned int *_indexes /* OUT */) const
+  {
+    if (_count)
+    {
+      + this->sub_array (start_offset, _count)
+      | hb_sink (hb_array (_indexes, *_count))
+      ;
+    }
+    return this->len;
+  }
+
+  void add_indexes_to (hb_set_t* output /* OUT */) const
+  {
+    output->add_array (as_array ());
+  }
+};
+
+
 struct Record_sanitize_closure_t {
   hb_tag_t tag;
   const void *list_base;
@@ -464,363 +505,6 @@ struct RecordListOf : RecordArrayOf<Type>
     return_trace (RecordArrayOf<Type>::sanitize (c, this));
   }
 };
-
-struct Feature;
-
-struct RecordListOfFeature : RecordListOf<Feature>
-{
-  bool subset (hb_subset_context_t *c,
-	       hb_subset_layout_context_t *l) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
-
-    unsigned count = this->len;
-    + hb_zip (*this, hb_range (count))
-    | hb_filter (l->feature_index_map, hb_second)
-    | hb_map (hb_first)
-    | hb_apply (subset_record_array (l, out, this))
-    ;
-    return_trace (true);
-  }
-};
-
-struct Script;
-struct RecordListOfScript : RecordListOf<Script>
-{
-  bool subset (hb_subset_context_t *c,
-               hb_subset_layout_context_t *l) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
-
-    unsigned count = this->len;
-    for (auto _ : + hb_zip (*this, hb_range (count)))
-    {
-      auto snap = c->serializer->snapshot ();
-      l->cur_script_index = _.second;
-      bool ret = _.first.subset (l, this);
-      if (!ret) c->serializer->revert (snap);
-      else out->len++;
-    }
-
-    return_trace (true);
-  }
-};
-
-struct RangeRecord
-{
-  int cmp (hb_codepoint_t g) const
-  { return g < first ? -1 : g <= last ? 0 : +1; }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this));
-  }
-
-  bool intersects (const hb_set_t *glyphs) const
-  { return glyphs->intersects (first, last); }
-
-  template <typename set_t>
-  bool collect_coverage (set_t *glyphs) const
-  { return glyphs->add_range (first, last); }
-
-  HBGlyphID16	first;		/* First GlyphID in the range */
-  HBGlyphID16	last;		/* Last GlyphID in the range */
-  HBUINT16	value;		/* Value */
-  public:
-  DEFINE_SIZE_STATIC (6);
-};
-DECLARE_NULL_NAMESPACE_BYTES (OT, RangeRecord);
-
-
-struct IndexArray : Array16Of<Index>
-{
-  bool intersects (const hb_map_t *indexes) const
-  { return hb_any (*this, indexes); }
-
-  template <typename Iterator,
-	    hb_requires (hb_is_iterator (Iterator))>
-  void serialize (hb_serialize_context_t *c,
-		  hb_subset_layout_context_t *l,
-		  Iterator it)
-  {
-    if (!it) return;
-    if (unlikely (!c->extend_min ((*this)))) return;
-
-    for (const auto _ : it)
-    {
-      if (!l->visitLookupIndex()) break;
-
-      Index i;
-      i = _;
-      c->copy (i);
-      this->len++;
-    }
-  }
-
-  unsigned int get_indexes (unsigned int start_offset,
-			    unsigned int *_count /* IN/OUT */,
-			    unsigned int *_indexes /* OUT */) const
-  {
-    if (_count)
-    {
-      + this->sub_array (start_offset, _count)
-      | hb_sink (hb_array (_indexes, *_count))
-      ;
-    }
-    return this->len;
-  }
-
-  void add_indexes_to (hb_set_t* output /* OUT */) const
-  {
-    output->add_array (as_array ());
-  }
-};
-
-
-struct LangSys
-{
-  unsigned int get_feature_count () const
-  { return featureIndex.len; }
-  hb_tag_t get_feature_index (unsigned int i) const
-  { return featureIndex[i]; }
-  unsigned int get_feature_indexes (unsigned int start_offset,
-				    unsigned int *feature_count /* IN/OUT */,
-				    unsigned int *feature_indexes /* OUT */) const
-  { return featureIndex.get_indexes (start_offset, feature_count, feature_indexes); }
-  void add_feature_indexes_to (hb_set_t *feature_indexes) const
-  { featureIndex.add_indexes_to (feature_indexes); }
-
-  bool has_required_feature () const { return reqFeatureIndex != 0xFFFFu; }
-  unsigned int get_required_feature_index () const
-  {
-    if (reqFeatureIndex == 0xFFFFu)
-      return Index::NOT_FOUND_INDEX;
-   return reqFeatureIndex;
-  }
-
-  LangSys* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (c->embed (*this));
-  }
-
-  bool compare (const LangSys& o, const hb_map_t *feature_index_map) const
-  {
-    if (reqFeatureIndex != o.reqFeatureIndex)
-      return false;
-
-    auto iter =
-    + hb_iter (featureIndex)
-    | hb_filter (feature_index_map)
-    | hb_map (feature_index_map)
-    ;
-
-    auto o_iter =
-    + hb_iter (o.featureIndex)
-    | hb_filter (feature_index_map)
-    | hb_map (feature_index_map)
-    ;
-
-    for (; iter && o_iter; iter++, o_iter++)
-    {
-      unsigned a = *iter;
-      unsigned b = *o_iter;
-      if (a != b) return false;
-    }
-
-    if (iter || o_iter) return false;
-
-    return true;
-  }
-
-  void collect_features (hb_prune_langsys_context_t *c) const
-  {
-    if (!has_required_feature () && !get_feature_count ()) return;
-    if (has_required_feature () &&
-        c->duplicate_feature_map->has (reqFeatureIndex))
-      c->new_feature_indexes->add (get_required_feature_index ());
-
-    + hb_iter (featureIndex)
-    | hb_filter (c->duplicate_feature_map)
-    | hb_sink (c->new_feature_indexes)
-    ;
-  }
-
-  bool subset (hb_subset_context_t        *c,
-	       hb_subset_layout_context_t *l,
-	       const Tag                  *tag = nullptr) const
-  {
-    TRACE_SUBSET (this);
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
-
-    const unsigned *v;
-    out->reqFeatureIndex = l->feature_index_map->has (reqFeatureIndex, &v) ? *v : 0xFFFFu;
-
-    if (!l->visitFeatureIndex (featureIndex.len))
-      return_trace (false);
-
-    auto it =
-    + hb_iter (featureIndex)
-    | hb_filter (l->feature_index_map)
-    | hb_map (l->feature_index_map)
-    ;
-
-    bool ret = bool (it);
-    out->featureIndex.serialize (c->serializer, l, it);
-    return_trace (ret);
-  }
-
-  bool sanitize (hb_sanitize_context_t *c,
-		 const Record_sanitize_closure_t * = nullptr) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && featureIndex.sanitize (c));
-  }
-
-  Offset16	lookupOrderZ;	/* = Null (reserved for an offset to a
-				 * reordering table) */
-  HBUINT16	reqFeatureIndex;/* Index of a feature required for this
-				 * language system--if no required features
-				 * = 0xFFFFu */
-  IndexArray	featureIndex;	/* Array of indices into the FeatureList */
-  public:
-  DEFINE_SIZE_ARRAY_SIZED (6, featureIndex);
-};
-DECLARE_NULL_NAMESPACE_BYTES (OT, LangSys);
-
-struct Script
-{
-  unsigned int get_lang_sys_count () const
-  { return langSys.len; }
-  const Tag& get_lang_sys_tag (unsigned int i) const
-  { return langSys.get_tag (i); }
-  unsigned int get_lang_sys_tags (unsigned int start_offset,
-				  unsigned int *lang_sys_count /* IN/OUT */,
-				  hb_tag_t     *lang_sys_tags /* OUT */) const
-  { return langSys.get_tags (start_offset, lang_sys_count, lang_sys_tags); }
-  const LangSys& get_lang_sys (unsigned int i) const
-  {
-    if (i == Index::NOT_FOUND_INDEX) return get_default_lang_sys ();
-    return this+langSys[i].offset;
-  }
-  bool find_lang_sys_index (hb_tag_t tag, unsigned int *index) const
-  { return langSys.find_index (tag, index); }
-
-  bool has_default_lang_sys () const           { return defaultLangSys != 0; }
-  const LangSys& get_default_lang_sys () const { return this+defaultLangSys; }
-
-  void prune_langsys (hb_prune_langsys_context_t *c,
-                      unsigned script_index) const
-  {
-    if (!has_default_lang_sys () && !get_lang_sys_count ()) return;
-    if (!c->visitScript ()) return;
-
-    if (!c->script_langsys_map->has (script_index))
-    {
-      if (unlikely (!c->script_langsys_map->set (script_index, hb::unique_ptr<hb_set_t> {hb_set_create ()})))
-	return;
-    }
-
-    unsigned langsys_count = get_lang_sys_count ();
-    if (has_default_lang_sys ())
-    {
-      //only collect features from non-redundant langsys
-      const LangSys& d = get_default_lang_sys ();
-      if (c->visitLangsys (d.get_feature_count ())) {
-        d.collect_features (c);
-      }
-
-      for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
-      {
-        const LangSys& l = this+_.first.offset;
-        if (!c->visitLangsys (l.get_feature_count ())) continue;
-        if (l.compare (d, c->duplicate_feature_map)) continue;
-
-        l.collect_features (c);
-        c->script_langsys_map->get (script_index)->add (_.second);
-      }
-    }
-    else
-    {
-      for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
-      {
-        const LangSys& l = this+_.first.offset;
-        if (!c->visitLangsys (l.get_feature_count ())) continue;
-        l.collect_features (c);
-        c->script_langsys_map->get (script_index)->add (_.second);
-      }
-    }
-  }
-
-  bool subset (hb_subset_context_t         *c,
-	       hb_subset_layout_context_t  *l,
-	       const Tag                   *tag) const
-  {
-    TRACE_SUBSET (this);
-    if (!l->visitScript ()) return_trace (false);
-
-    auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
-
-    bool defaultLang = false;
-    if (has_default_lang_sys ())
-    {
-      c->serializer->push ();
-      const LangSys& ls = this+defaultLangSys;
-      bool ret = ls.subset (c, l);
-      if (!ret && tag && *tag != HB_TAG ('D', 'F', 'L', 'T'))
-      {
-	c->serializer->pop_discard ();
-	out->defaultLangSys = 0;
-      }
-      else
-      {
-	c->serializer->add_link (out->defaultLangSys, c->serializer->pop_pack ());
-	defaultLang = true;
-      }
-    }
-
-    const hb_set_t *active_langsys = l->script_langsys_map->get (l->cur_script_index);
-    if (active_langsys)
-    {
-      unsigned count = langSys.len;
-      + hb_zip (langSys, hb_range (count))
-      | hb_filter (active_langsys, hb_second)
-      | hb_map (hb_first)
-      | hb_filter ([=] (const Record<LangSys>& record) {return l->visitLangSys (); })
-      | hb_apply (subset_record_array (l, &(out->langSys), this))
-      ;
-    }
-
-    return_trace (bool (out->langSys.len) || defaultLang || l->table_tag == HB_OT_TAG_GSUB);
-  }
-
-  bool sanitize (hb_sanitize_context_t *c,
-		 const Record_sanitize_closure_t * = nullptr) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (defaultLangSys.sanitize (c, this) && langSys.sanitize (c, this));
-  }
-
-  protected:
-  Offset16To<LangSys>
-		defaultLangSys;	/* Offset to DefaultLangSys table--from
-				 * beginning of Script table--may be Null */
-  RecordArrayOf<LangSys>
-		langSys;	/* Array of LangSysRecords--listed
-				 * alphabetically by LangSysTag */
-  public:
-  DEFINE_SIZE_ARRAY_SIZED (4, langSys);
-};
-
-typedef RecordListOfScript ScriptList;
-
 
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#size */
 struct FeatureParamsSize
@@ -1104,6 +788,7 @@ struct FeatureParams
   DEFINE_SIZE_MIN (0);
 };
 
+
 struct Feature
 {
   unsigned int get_lookup_count () const
@@ -1199,7 +884,292 @@ struct Feature
   DEFINE_SIZE_ARRAY_SIZED (4, lookupIndex);
 };
 
+struct RecordListOfFeature : RecordListOf<Feature>
+{
+  bool subset (hb_subset_context_t *c,
+	       hb_subset_layout_context_t *l) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    unsigned count = this->len;
+    + hb_zip (*this, hb_range (count))
+    | hb_filter (l->feature_index_map, hb_second)
+    | hb_map (hb_first)
+    | hb_apply (subset_record_array (l, out, this))
+    ;
+    return_trace (true);
+  }
+};
+
 typedef RecordListOf<Feature> FeatureList;
+
+
+struct LangSys
+{
+  unsigned int get_feature_count () const
+  { return featureIndex.len; }
+  hb_tag_t get_feature_index (unsigned int i) const
+  { return featureIndex[i]; }
+  unsigned int get_feature_indexes (unsigned int start_offset,
+				    unsigned int *feature_count /* IN/OUT */,
+				    unsigned int *feature_indexes /* OUT */) const
+  { return featureIndex.get_indexes (start_offset, feature_count, feature_indexes); }
+  void add_feature_indexes_to (hb_set_t *feature_indexes) const
+  { featureIndex.add_indexes_to (feature_indexes); }
+
+  bool has_required_feature () const { return reqFeatureIndex != 0xFFFFu; }
+  unsigned int get_required_feature_index () const
+  {
+    if (reqFeatureIndex == 0xFFFFu)
+      return Index::NOT_FOUND_INDEX;
+   return reqFeatureIndex;
+  }
+
+  LangSys* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    return_trace (c->embed (*this));
+  }
+
+  bool compare (const LangSys& o, const hb_map_t *feature_index_map) const
+  {
+    if (reqFeatureIndex != o.reqFeatureIndex)
+      return false;
+
+    auto iter =
+    + hb_iter (featureIndex)
+    | hb_filter (feature_index_map)
+    | hb_map (feature_index_map)
+    ;
+
+    auto o_iter =
+    + hb_iter (o.featureIndex)
+    | hb_filter (feature_index_map)
+    | hb_map (feature_index_map)
+    ;
+
+    for (; iter && o_iter; iter++, o_iter++)
+    {
+      unsigned a = *iter;
+      unsigned b = *o_iter;
+      if (a != b) return false;
+    }
+
+    if (iter || o_iter) return false;
+
+    return true;
+  }
+
+  void collect_features (hb_prune_langsys_context_t *c) const
+  {
+    if (!has_required_feature () && !get_feature_count ()) return;
+    if (has_required_feature () &&
+        c->duplicate_feature_map->has (reqFeatureIndex))
+      c->new_feature_indexes->add (get_required_feature_index ());
+
+    + hb_iter (featureIndex)
+    | hb_filter (c->duplicate_feature_map)
+    | hb_sink (c->new_feature_indexes)
+    ;
+  }
+
+  bool subset (hb_subset_context_t        *c,
+	       hb_subset_layout_context_t *l,
+	       const Tag                  *tag = nullptr) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    const unsigned *v;
+    out->reqFeatureIndex = l->feature_index_map->has (reqFeatureIndex, &v) ? *v : 0xFFFFu;
+
+    if (!l->visitFeatureIndex (featureIndex.len))
+      return_trace (false);
+
+    auto it =
+    + hb_iter (featureIndex)
+    | hb_filter (l->feature_index_map)
+    | hb_map (l->feature_index_map)
+    ;
+
+    bool ret = bool (it);
+    out->featureIndex.serialize (c->serializer, l, it);
+    return_trace (ret);
+  }
+
+  bool sanitize (hb_sanitize_context_t *c,
+		 const Record_sanitize_closure_t * = nullptr) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && featureIndex.sanitize (c));
+  }
+
+  Offset16	lookupOrderZ;	/* = Null (reserved for an offset to a
+				 * reordering table) */
+  HBUINT16	reqFeatureIndex;/* Index of a feature required for this
+				 * language system--if no required features
+				 * = 0xFFFFu */
+  IndexArray	featureIndex;	/* Array of indices into the FeatureList */
+  public:
+  DEFINE_SIZE_ARRAY_SIZED (6, featureIndex);
+};
+DECLARE_NULL_NAMESPACE_BYTES (OT, LangSys);
+
+struct Script
+{
+  unsigned int get_lang_sys_count () const
+  { return langSys.len; }
+  const Tag& get_lang_sys_tag (unsigned int i) const
+  { return langSys.get_tag (i); }
+  unsigned int get_lang_sys_tags (unsigned int start_offset,
+				  unsigned int *lang_sys_count /* IN/OUT */,
+				  hb_tag_t     *lang_sys_tags /* OUT */) const
+  { return langSys.get_tags (start_offset, lang_sys_count, lang_sys_tags); }
+  const LangSys& get_lang_sys (unsigned int i) const
+  {
+    if (i == Index::NOT_FOUND_INDEX) return get_default_lang_sys ();
+    return this+langSys[i].offset;
+  }
+  bool find_lang_sys_index (hb_tag_t tag, unsigned int *index) const
+  { return langSys.find_index (tag, index); }
+
+  bool has_default_lang_sys () const           { return defaultLangSys != 0; }
+  const LangSys& get_default_lang_sys () const { return this+defaultLangSys; }
+
+  void prune_langsys (hb_prune_langsys_context_t *c,
+                      unsigned script_index) const
+  {
+    if (!has_default_lang_sys () && !get_lang_sys_count ()) return;
+    if (!c->visitScript ()) return;
+
+    if (!c->script_langsys_map->has (script_index))
+    {
+      if (unlikely (!c->script_langsys_map->set (script_index, hb::unique_ptr<hb_set_t> {hb_set_create ()})))
+	return;
+    }
+
+    unsigned langsys_count = get_lang_sys_count ();
+    if (has_default_lang_sys ())
+    {
+      //only collect features from non-redundant langsys
+      const LangSys& d = get_default_lang_sys ();
+      if (c->visitLangsys (d.get_feature_count ())) {
+        d.collect_features (c);
+      }
+
+      for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
+      {
+        const LangSys& l = this+_.first.offset;
+        if (!c->visitLangsys (l.get_feature_count ())) continue;
+        if (l.compare (d, c->duplicate_feature_map)) continue;
+
+        l.collect_features (c);
+        c->script_langsys_map->get (script_index)->add (_.second);
+      }
+    }
+    else
+    {
+      for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
+      {
+        const LangSys& l = this+_.first.offset;
+        if (!c->visitLangsys (l.get_feature_count ())) continue;
+        l.collect_features (c);
+        c->script_langsys_map->get (script_index)->add (_.second);
+      }
+    }
+  }
+
+  bool subset (hb_subset_context_t         *c,
+	       hb_subset_layout_context_t  *l,
+	       const Tag                   *tag) const
+  {
+    TRACE_SUBSET (this);
+    if (!l->visitScript ()) return_trace (false);
+    if (tag && !c->plan->layout_scripts->has (*tag))
+      return false;
+
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    bool defaultLang = false;
+    if (has_default_lang_sys ())
+    {
+      c->serializer->push ();
+      const LangSys& ls = this+defaultLangSys;
+      bool ret = ls.subset (c, l);
+      if (!ret && tag && *tag != HB_TAG ('D', 'F', 'L', 'T'))
+      {
+	c->serializer->pop_discard ();
+	out->defaultLangSys = 0;
+      }
+      else
+      {
+	c->serializer->add_link (out->defaultLangSys, c->serializer->pop_pack ());
+	defaultLang = true;
+      }
+    }
+
+    const hb_set_t *active_langsys = l->script_langsys_map->get (l->cur_script_index);
+    if (active_langsys)
+    {
+      unsigned count = langSys.len;
+      + hb_zip (langSys, hb_range (count))
+      | hb_filter (active_langsys, hb_second)
+      | hb_map (hb_first)
+      | hb_filter ([=] (const Record<LangSys>& record) {return l->visitLangSys (); })
+      | hb_apply (subset_record_array (l, &(out->langSys), this))
+      ;
+    }
+
+    return_trace (bool (out->langSys.len) || defaultLang || l->table_tag == HB_OT_TAG_GSUB);
+  }
+
+  bool sanitize (hb_sanitize_context_t *c,
+		 const Record_sanitize_closure_t * = nullptr) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (defaultLangSys.sanitize (c, this) && langSys.sanitize (c, this));
+  }
+
+  protected:
+  Offset16To<LangSys>
+		defaultLangSys;	/* Offset to DefaultLangSys table--from
+				 * beginning of Script table--may be Null */
+  RecordArrayOf<LangSys>
+		langSys;	/* Array of LangSysRecords--listed
+				 * alphabetically by LangSysTag */
+  public:
+  DEFINE_SIZE_ARRAY_SIZED (4, langSys);
+};
+
+struct RecordListOfScript : RecordListOf<Script>
+{
+  bool subset (hb_subset_context_t *c,
+               hb_subset_layout_context_t *l) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    unsigned count = this->len;
+    for (auto _ : + hb_zip (*this, hb_range (count)))
+    {
+      auto snap = c->serializer->snapshot ();
+      l->cur_script_index = _.second;
+      bool ret = _.first.subset (l, this);
+      if (!ret) c->serializer->revert (snap);
+      else out->len++;
+    }
+
+    return_trace (true);
+  }
+};
+
+typedef RecordListOfScript ScriptList;
+
 
 
 struct LookupFlag : HBUINT16
@@ -1343,7 +1313,7 @@ struct Lookup
     if (unlikely (!get_subtables<TSubTable> ().sanitize (c, this, get_type ())))
       return_trace (false);
 
-    if (unlikely (get_type () == TSubTable::Extension && subtables && !c->get_edit_count ()))
+    if (unlikely (get_type () == TSubTable::Extension && !c->get_edit_count ()))
     {
       /* The spec says all subtables of an Extension lookup should
        * have the same type, which shall not be the Extension type
@@ -1363,7 +1333,7 @@ struct Lookup
     return_trace (true);
   }
 
-  private:
+  protected:
   HBUINT16	lookupType;		/* Different enumerations for GSUB and GPOS */
   HBUINT16	lookupFlag;		/* Lookup qualifiers */
   Array16Of<Offset16>
@@ -1375,10 +1345,11 @@ struct Lookup
   DEFINE_SIZE_ARRAY (6, subTable);
 };
 
-typedef List16OfOffset16To<Lookup> LookupList;
+template <typename Types>
+using LookupList = List16OfOffsetTo<Lookup, typename Types::HBUINT>;
 
-template <typename TLookup>
-struct LookupOffsetList : List16OfOffset16To<TLookup>
+template <typename TLookup, typename OffsetType>
+struct LookupOffsetList : List16OfOffsetTo<TLookup, OffsetType>
 {
   bool subset (hb_subset_context_t        *c,
 	       hb_subset_layout_context_t *l) const
@@ -1408,470 +1379,6 @@ struct LookupOffsetList : List16OfOffset16To<TLookup>
  * Coverage Table
  */
 
-struct CoverageFormat1
-{
-  friend struct Coverage;
-
-  private:
-  unsigned int get_coverage (hb_codepoint_t glyph_id) const
-  {
-    unsigned int i;
-    glyphArray.bfind (glyph_id, &i, HB_NOT_FOUND_STORE, NOT_COVERED);
-    return i;
-  }
-
-  template <typename Iterator,
-      hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
-  bool serialize (hb_serialize_context_t *c, Iterator glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    return_trace (glyphArray.serialize (c, glyphs));
-  }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (glyphArray.sanitize (c));
-  }
-
-  bool intersects (const hb_set_t *glyphs) const
-  {
-    /* TODO Speed up, using hb_set_next() and bsearch()? */
-    for (const auto& g : glyphArray.as_array ())
-      if (glyphs->has (g))
-	return true;
-    return false;
-  }
-  bool intersects_coverage (const hb_set_t *glyphs, unsigned int index) const
-  { return glyphs->has (glyphArray[index]); }
-
-  void intersected_coverage_glyphs (const hb_set_t *glyphs, hb_set_t *intersect_glyphs) const
-  {
-    unsigned count = glyphArray.len;
-    for (unsigned i = 0; i < count; i++)
-      if (glyphs->has (glyphArray[i]))
-        intersect_glyphs->add (glyphArray[i]);
-  }
-
-  template <typename set_t>
-  bool collect_coverage (set_t *glyphs) const
-  { return glyphs->add_sorted_array (glyphArray.as_array ()); }
-
-  public:
-  /* Older compilers need this to be public. */
-  struct iter_t
-  {
-    void init (const struct CoverageFormat1 &c_) { c = &c_; i = 0; }
-    void fini () {}
-    bool more () const { return i < c->glyphArray.len; }
-    void next () { i++; }
-    hb_codepoint_t get_glyph () const { return c->glyphArray[i]; }
-    bool operator != (const iter_t& o) const
-    { return i != o.i; }
-    iter_t __end__ () const { iter_t it; it.init (*c); it.i = c->glyphArray.len; return it; }
-
-    private:
-    const struct CoverageFormat1 *c;
-    unsigned int i;
-  };
-  private:
-
-  protected:
-  HBUINT16	coverageFormat;	/* Format identifier--format = 1 */
-  SortedArray16Of<HBGlyphID16>
-		glyphArray;	/* Array of GlyphIDs--in numerical order */
-  public:
-  DEFINE_SIZE_ARRAY (4, glyphArray);
-};
-
-struct CoverageFormat2
-{
-  friend struct Coverage;
-
-  private:
-  unsigned int get_coverage (hb_codepoint_t glyph_id) const
-  {
-    const RangeRecord &range = rangeRecord.bsearch (glyph_id);
-    return likely (range.first <= range.last)
-	 ? (unsigned int) range.value + (glyph_id - range.first)
-	 : NOT_COVERED;
-  }
-
-  template <typename Iterator,
-      hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
-  bool serialize (hb_serialize_context_t *c, Iterator glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (this))) return_trace (false);
-
-    /* TODO(iter) Write more efficiently? */
-
-    unsigned num_ranges = 0;
-    hb_codepoint_t last = (hb_codepoint_t) -2;
-    for (auto g: glyphs)
-    {
-      if (last + 1 != g)
-	num_ranges++;
-      last = g;
-    }
-
-    if (unlikely (!rangeRecord.serialize (c, num_ranges))) return_trace (false);
-    if (!num_ranges) return_trace (true);
-
-    unsigned count = 0;
-    unsigned range = (unsigned) -1;
-    last = (hb_codepoint_t) -2;
-    for (auto g: glyphs)
-    {
-      if (last + 1 != g)
-      {
-	range++;
-	rangeRecord[range].first = g;
-	rangeRecord[range].value = count;
-      }
-      rangeRecord[range].last = g;
-      last = g;
-      count++;
-    }
-
-    return_trace (true);
-  }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (rangeRecord.sanitize (c));
-  }
-
-  bool intersects (const hb_set_t *glyphs) const
-  {
-    return hb_any (+ hb_iter (rangeRecord.as_array ())
-		   | hb_map ([glyphs] (const RangeRecord &range) { return range.intersects (glyphs); }));
-  }
-  bool intersects_coverage (const hb_set_t *glyphs, unsigned int index) const
-  {
-    auto cmp = [] (const void *pk, const void *pr) -> int
-    {
-      unsigned index = * (const unsigned *) pk;
-      const RangeRecord &range = * (const RangeRecord *) pr;
-      if (index < range.value) return -1;
-      if (index > (unsigned int) range.value + (range.last - range.first)) return +1;
-      return 0;
-    };
-
-    auto arr = rangeRecord.as_array ();
-    unsigned idx;
-    if (hb_bsearch_impl (&idx, index,
-			 arr.arrayZ, arr.length, sizeof (arr[0]),
-			 (int (*)(const void *_key, const void *_item)) cmp))
-      return arr.arrayZ[idx].intersects (glyphs);
-    return false;
-  }
-
-  void intersected_coverage_glyphs (const hb_set_t *glyphs, hb_set_t *intersect_glyphs) const
-  {
-    for (const auto& range : rangeRecord.as_array ())
-    {
-      if (!range.intersects (glyphs)) continue;
-      unsigned last = range.last;
-      for (hb_codepoint_t g = range.first - 1;
-	   glyphs->next (&g) && g <= last;)
-        intersect_glyphs->add (g);
-    }
-  }
-
-  template <typename set_t>
-  bool collect_coverage (set_t *glyphs) const
-  {
-    unsigned int count = rangeRecord.len;
-    for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!rangeRecord[i].collect_coverage (glyphs)))
-	return false;
-    return true;
-  }
-
-  public:
-  /* Older compilers need this to be public. */
-  struct iter_t
-  {
-    void init (const CoverageFormat2 &c_)
-    {
-      c = &c_;
-      coverage = 0;
-      i = 0;
-      j = c->rangeRecord.len ? c->rangeRecord[0].first : 0;
-      if (unlikely (c->rangeRecord[0].first > c->rangeRecord[0].last))
-      {
-	/* Broken table. Skip. */
-	i = c->rangeRecord.len;
-      }
-    }
-    void fini () {}
-    bool more () const { return i < c->rangeRecord.len; }
-    void next ()
-    {
-      if (j >= c->rangeRecord[i].last)
-      {
-	i++;
-	if (more ())
-	{
-	  unsigned int old = coverage;
-	  j = c->rangeRecord[i].first;
-	  coverage = c->rangeRecord[i].value;
-	  if (unlikely (coverage != old + 1))
-	  {
-	    /* Broken table. Skip. Important to avoid DoS.
-	     * Also, our callers depend on coverage being
-	     * consecutive and monotonically increasing,
-	     * ie. iota(). */
-	   i = c->rangeRecord.len;
-	   return;
-	  }
-	}
-	else
-	  j = 0;
-	return;
-      }
-      coverage++;
-      j++;
-    }
-    hb_codepoint_t get_glyph () const { return j; }
-    bool operator != (const iter_t& o) const
-    { return i != o.i || j != o.j; }
-    iter_t __end__ () const
-    {
-      iter_t it;
-      it.init (*c);
-      it.i = c->rangeRecord.len;
-      it.j = 0;
-      return it;
-    }
-
-    private:
-    const struct CoverageFormat2 *c;
-    unsigned int i, coverage;
-    hb_codepoint_t j;
-  };
-  private:
-
-  protected:
-  HBUINT16	coverageFormat;	/* Format identifier--format = 2 */
-  SortedArray16Of<RangeRecord>
-		rangeRecord;	/* Array of glyph ranges--ordered by
-				 * Start GlyphID. rangeCount entries
-				 * long */
-  public:
-  DEFINE_SIZE_ARRAY (4, rangeRecord);
-};
-
-struct Coverage
-{
-  /* Has interface. */
-  static constexpr unsigned SENTINEL = NOT_COVERED;
-  typedef unsigned int value_t;
-  value_t operator [] (hb_codepoint_t k) const { return get (k); }
-  bool has (hb_codepoint_t k) const { return (*this)[k] != SENTINEL; }
-  /* Predicate. */
-  bool operator () (hb_codepoint_t k) const { return has (k); }
-
-  unsigned int get (hb_codepoint_t k) const { return get_coverage (k); }
-  unsigned int get_coverage (hb_codepoint_t glyph_id) const
-  {
-    switch (u.format) {
-    case 1: return u.format1.get_coverage (glyph_id);
-    case 2: return u.format2.get_coverage (glyph_id);
-    default:return NOT_COVERED;
-    }
-  }
-
-  template <typename Iterator,
-      hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
-  bool serialize (hb_serialize_context_t *c, Iterator glyphs)
-  {
-    TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (this))) return_trace (false);
-
-    unsigned count = 0;
-    unsigned num_ranges = 0;
-    hb_codepoint_t last = (hb_codepoint_t) -2;
-    for (auto g: glyphs)
-    {
-      if (last + 1 != g)
-	num_ranges++;
-      last = g;
-      count++;
-    }
-    u.format = count <= num_ranges * 3 ? 1 : 2;
-
-    switch (u.format)
-    {
-    case 1: return_trace (u.format1.serialize (c, glyphs));
-    case 2: return_trace (u.format2.serialize (c, glyphs));
-    default:return_trace (false);
-    }
-  }
-
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    auto it =
-    + iter ()
-    | hb_filter (c->plan->glyph_map_gsub)
-    | hb_map_retains_sorting (c->plan->glyph_map_gsub)
-    ;
-
-    // Cache the iterator result as it will be iterated multiple times
-    // by the serialize code below.
-    hb_sorted_vector_t<hb_codepoint_t> glyphs (it);
-    Coverage_serialize (c->serializer, glyphs.iter ());
-    return_trace (bool (glyphs));
-  }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
-    switch (u.format)
-    {
-    case 1: return_trace (u.format1.sanitize (c));
-    case 2: return_trace (u.format2.sanitize (c));
-    default:return_trace (true);
-    }
-  }
-
-  bool intersects (const hb_set_t *glyphs) const
-  {
-    switch (u.format)
-    {
-    case 1: return u.format1.intersects (glyphs);
-    case 2: return u.format2.intersects (glyphs);
-    default:return false;
-    }
-  }
-  bool intersects_coverage (const hb_set_t *glyphs, unsigned int index) const
-  {
-    switch (u.format)
-    {
-    case 1: return u.format1.intersects_coverage (glyphs, index);
-    case 2: return u.format2.intersects_coverage (glyphs, index);
-    default:return false;
-    }
-  }
-
-  /* Might return false if array looks unsorted.
-   * Used for faster rejection of corrupt data. */
-  template <typename set_t>
-  bool collect_coverage (set_t *glyphs) const
-  {
-    switch (u.format)
-    {
-    case 1: return u.format1.collect_coverage (glyphs);
-    case 2: return u.format2.collect_coverage (glyphs);
-    default:return false;
-    }
-  }
-
-  void intersected_coverage_glyphs (const hb_set_t *glyphs, hb_set_t *intersect_glyphs) const
-  {
-    switch (u.format)
-    {
-    case 1: return u.format1.intersected_coverage_glyphs (glyphs, intersect_glyphs);
-    case 2: return u.format2.intersected_coverage_glyphs (glyphs, intersect_glyphs);
-    default:return ;
-    }
-  }
-
-  struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
-  {
-    static constexpr bool is_sorted_iterator = true;
-    iter_t (const Coverage &c_ = Null (Coverage))
-    {
-      memset (this, 0, sizeof (*this));
-      format = c_.u.format;
-      switch (format)
-      {
-      case 1: u.format1.init (c_.u.format1); return;
-      case 2: u.format2.init (c_.u.format2); return;
-      default:				     return;
-      }
-    }
-    bool __more__ () const
-    {
-      switch (format)
-      {
-      case 1: return u.format1.more ();
-      case 2: return u.format2.more ();
-      default:return false;
-      }
-    }
-    void __next__ ()
-    {
-      switch (format)
-      {
-      case 1: u.format1.next (); break;
-      case 2: u.format2.next (); break;
-      default:			 break;
-      }
-    }
-    typedef hb_codepoint_t __item_t__;
-    __item_t__ __item__ () const { return get_glyph (); }
-
-    hb_codepoint_t get_glyph () const
-    {
-      switch (format)
-      {
-      case 1: return u.format1.get_glyph ();
-      case 2: return u.format2.get_glyph ();
-      default:return 0;
-      }
-    }
-    bool operator != (const iter_t& o) const
-    {
-      if (unlikely (format != o.format)) return true;
-      switch (format)
-      {
-      case 1: return u.format1 != o.u.format1;
-      case 2: return u.format2 != o.u.format2;
-      default:return false;
-      }
-    }
-    iter_t __end__ () const
-    {
-      iter_t it = {};
-      it.format = format;
-      switch (format)
-      {
-      case 1: it.u.format1 = u.format1.__end__ (); break;
-      case 2: it.u.format2 = u.format2.__end__ (); break;
-      default: break;
-      }
-      return it;
-    }
-
-    private:
-    unsigned int format;
-    union {
-    CoverageFormat2::iter_t	format2; /* Put this one first since it's larger; helps shut up compiler. */
-    CoverageFormat1::iter_t	format1;
-    } u;
-  };
-  iter_t iter () const { return iter_t (*this); }
-
-  protected:
-  union {
-  HBUINT16		format;		/* Format identifier */
-  CoverageFormat1	format1;
-  CoverageFormat2	format2;
-  } u;
-  public:
-  DEFINE_SIZE_UNION (2, format);
-};
-
-template<typename Iterator>
-static inline void
-Coverage_serialize (hb_serialize_context_t *c,
-		    Iterator it)
-{ c->start_embed<Coverage> ()->serialize (c, it); }
 
 static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 					  const hb_set_t &klasses,
@@ -1913,7 +1420,8 @@ static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
  * Class Definition Table
  */
 
-struct ClassDefFormat1
+template <typename Types>
+struct ClassDefFormat1_3
 {
   friend struct ClassDef;
 
@@ -1924,7 +1432,7 @@ struct ClassDefFormat1
   }
 
   template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
+	   hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
   bool serialize (hb_serialize_context_t *c,
 		  Iterator it)
   {
@@ -2118,14 +1626,16 @@ struct ClassDefFormat1
 
   protected:
   HBUINT16	classFormat;	/* Format identifier--format = 1 */
-  HBGlyphID16	startGlyph;	/* First GlyphID of the classValueArray */
-  Array16Of<HBUINT16>
+  typename Types::HBGlyphID
+		 startGlyph;	/* First GlyphID of the classValueArray */
+  typename Types::template ArrayOf<HBUINT16>
 		classValue;	/* Array of Class Values--one per GlyphID */
   public:
-  DEFINE_SIZE_ARRAY (6, classValue);
+  DEFINE_SIZE_ARRAY (2 + 2 * Types::size, classValue);
 };
 
-struct ClassDefFormat2
+template <typename Types>
+struct ClassDefFormat2_4
 {
   friend struct ClassDef;
 
@@ -2136,7 +1646,7 @@ struct ClassDefFormat2
   }
 
   template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
+	   hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
   bool serialize (hb_serialize_context_t *c,
 		  Iterator it)
   {
@@ -2154,12 +1664,12 @@ struct ClassDefFormat2
     hb_codepoint_t prev_gid = (*it).first;
     unsigned prev_klass = (*it).second;
 
-    RangeRecord range_rec;
+    RangeRecord<Types> range_rec;
     range_rec.first = prev_gid;
     range_rec.last = prev_gid;
     range_rec.value = prev_klass;
 
-    RangeRecord *record = c->copy (range_rec);
+    auto *record = c->copy (range_rec);
     if (unlikely (!record)) return_trace (false);
 
     for (const auto gid_klass_pair : + (++it))
@@ -2202,13 +1712,14 @@ struct ClassDefFormat2
     hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> glyph_and_klass;
     hb_set_t orig_klasses;
 
+    unsigned num_source_glyphs = c->plan->source->get_num_glyphs ();
     unsigned count = rangeRecord.len;
     for (unsigned i = 0; i < count; i++)
     {
       unsigned klass = rangeRecord[i].value;
       if (!klass) continue;
       hb_codepoint_t start = rangeRecord[i].first;
-      hb_codepoint_t end   = rangeRecord[i].last + 1;
+      hb_codepoint_t end   = hb_min (rangeRecord[i].last + 1, num_source_glyphs);
       for (hb_codepoint_t g = start; g < end; g++)
       {
         hb_codepoint_t new_gid = glyph_map[g];
@@ -2272,7 +1783,7 @@ struct ClassDefFormat2
     for (unsigned int i = 0; i < count; i++)
     {
       const auto& range = rangeRecord[i];
-      if (range.intersects (glyphs) && range.value)
+      if (range.intersects (*glyphs) && range.value)
 	return true;
     }
     return false;
@@ -2296,11 +1807,8 @@ struct ClassDefFormat2
 	return true;
       /* Fall through. */
     }
-    /* TODO Speed up, using set overlap first? */
-    /* TODO(iter) Rewrite as dagger. */
-    const RangeRecord *arr = rangeRecord.arrayZ;
-    for (unsigned int i = 0; i < count; i++)
-      if (arr[i].value == klass && arr[i].intersects (glyphs))
+    for (const auto &range : rangeRecord)
+      if (range.value == klass && range.intersects (*glyphs))
 	return true;
     return false;
   }
@@ -2374,18 +1882,18 @@ struct ClassDefFormat2
     if (g != HB_SET_VALUE_INVALID && hb_set_next (glyphs, &g))
       intersect_classes->add (0);
 
-    for (const RangeRecord& record : rangeRecord.iter ())
-      if (record.intersects (glyphs))
+    for (const auto& record : rangeRecord.iter ())
+      if (record.intersects (*glyphs))
         intersect_classes->add (record.value);
   }
 
   protected:
   HBUINT16	classFormat;	/* Format identifier--format = 2 */
-  SortedArray16Of<RangeRecord>
+  typename Types::template SortedArrayOf<RangeRecord<Types>>
 		rangeRecord;	/* Array of glyph ranges--ordered by
 				 * Start GlyphID */
   public:
-  DEFINE_SIZE_ARRAY (4, rangeRecord);
+  DEFINE_SIZE_ARRAY (2 + Types::size, rangeRecord);
 };
 
 struct ClassDef
@@ -2404,12 +1912,16 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.get_class (glyph_id);
     case 2: return u.format2.get_class (glyph_id);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.get_class (glyph_id);
+    case 4: return u.format4.get_class (glyph_id);
+#endif
     default:return 0;
     }
   }
 
   template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
+	   hb_requires (hb_is_sorted_source_of (Iterator, hb_codepoint_t))>
   bool serialize (hb_serialize_context_t *c, Iterator it_with_class_zero)
   {
     TRACE_SERIALIZE (this);
@@ -2418,10 +1930,11 @@ struct ClassDef
     auto it = + it_with_class_zero | hb_filter (hb_second);
 
     unsigned format = 2;
+    hb_codepoint_t glyph_max = 0;
     if (likely (it))
     {
       hb_codepoint_t glyph_min = (*it).first;
-      hb_codepoint_t glyph_max = glyph_min;
+      glyph_max = glyph_min;
 
       unsigned num_glyphs = 0;
       unsigned num_ranges = 1;
@@ -2446,12 +1959,22 @@ struct ClassDef
       if (num_glyphs && 1 + (glyph_max - glyph_min + 1) <= num_ranges * 3)
 	format = 1;
     }
+
+#ifndef HB_NO_BEYOND_64K
+    if (glyph_max > 0xFFFFu)
+      format += 2;
+#endif
+
     u.format = format;
 
     switch (u.format)
     {
     case 1: return_trace (u.format1.serialize (c, it));
     case 2: return_trace (u.format2.serialize (c, it));
+#ifndef HB_NO_BEYOND_64K
+    case 3: return_trace (u.format3.serialize (c, it));
+    case 4: return_trace (u.format4.serialize (c, it));
+#endif
     default:return_trace (false);
     }
   }
@@ -2466,6 +1989,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return_trace (u.format1.subset (c, klass_map, keep_empty_table, use_class_zero, glyph_filter));
     case 2: return_trace (u.format2.subset (c, klass_map, keep_empty_table, use_class_zero, glyph_filter));
+#ifndef HB_NO_BEYOND_64K
+    case 3: return_trace (u.format3.subset (c, klass_map, keep_empty_table, use_class_zero, glyph_filter));
+    case 4: return_trace (u.format4.subset (c, klass_map, keep_empty_table, use_class_zero, glyph_filter));
+#endif
     default:return_trace (false);
     }
   }
@@ -2477,6 +2004,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
+#ifndef HB_NO_BEYOND_64K
+    case 3: return_trace (u.format3.sanitize (c));
+    case 4: return_trace (u.format4.sanitize (c));
+#endif
     default:return_trace (true);
     }
   }
@@ -2486,6 +2017,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.cost ();
     case 2: return u.format2.cost ();
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.cost ();
+    case 4: return u.format4.cost ();
+#endif
     default:return 0u;
     }
   }
@@ -2498,6 +2033,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.collect_coverage (glyphs);
     case 2: return u.format2.collect_coverage (glyphs);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.collect_coverage (glyphs);
+    case 4: return u.format4.collect_coverage (glyphs);
+#endif
     default:return false;
     }
   }
@@ -2510,6 +2049,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.collect_class (glyphs, klass);
     case 2: return u.format2.collect_class (glyphs, klass);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.collect_class (glyphs, klass);
+    case 4: return u.format4.collect_class (glyphs, klass);
+#endif
     default:return false;
     }
   }
@@ -2519,6 +2062,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.intersects (glyphs);
     case 2: return u.format2.intersects (glyphs);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.intersects (glyphs);
+    case 4: return u.format4.intersects (glyphs);
+#endif
     default:return false;
     }
   }
@@ -2527,6 +2074,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.intersects_class (glyphs, klass);
     case 2: return u.format2.intersects_class (glyphs, klass);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.intersects_class (glyphs, klass);
+    case 4: return u.format4.intersects_class (glyphs, klass);
+#endif
     default:return false;
     }
   }
@@ -2536,6 +2087,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.intersected_class_glyphs (glyphs, klass, intersect_glyphs);
     case 2: return u.format2.intersected_class_glyphs (glyphs, klass, intersect_glyphs);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.intersected_class_glyphs (glyphs, klass, intersect_glyphs);
+    case 4: return u.format4.intersected_class_glyphs (glyphs, klass, intersect_glyphs);
+#endif
     default:return;
     }
   }
@@ -2545,6 +2100,10 @@ struct ClassDef
     switch (u.format) {
     case 1: return u.format1.intersected_classes (glyphs, intersect_classes);
     case 2: return u.format2.intersected_classes (glyphs, intersect_classes);
+#ifndef HB_NO_BEYOND_64K
+    case 3: return u.format3.intersected_classes (glyphs, intersect_classes);
+    case 4: return u.format4.intersected_classes (glyphs, intersect_classes);
+#endif
     default:return;
     }
   }
@@ -2552,9 +2111,13 @@ struct ClassDef
 
   protected:
   union {
-  HBUINT16		format;		/* Format identifier */
-  ClassDefFormat1	format1;
-  ClassDefFormat2	format2;
+  HBUINT16			format;		/* Format identifier */
+  ClassDefFormat1_3<SmallTypes>	format1;
+  ClassDefFormat2_4<SmallTypes>	format2;
+#ifndef HB_NO_BEYOND_64K
+  ClassDefFormat1_3<MediumTypes>format3;
+  ClassDefFormat2_4<MediumTypes>format4;
+#endif
   } u;
   public:
   DEFINE_SIZE_UNION (2, format);
@@ -2940,6 +2503,9 @@ struct VariationStore
 
   cache_t *create_cache () const
   {
+#ifdef HB_NO_VAR
+    return nullptr;
+#endif
     auto &r = this+regions;
     unsigned count = r.regionCount;
 
@@ -3000,6 +2566,10 @@ struct VariationStore
 		  const hb_array_t <hb_inc_bimap_t> &inner_maps)
   {
     TRACE_SERIALIZE (this);
+#ifdef HB_NO_VAR
+    return_trace (false);
+#endif
+
     if (unlikely (!c->extend_min (this))) return_trace (false);
 
     unsigned int set_count = 0;
@@ -3051,6 +2621,9 @@ struct VariationStore
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
+#ifdef HB_NO_VAR
+    return_trace (false);
+#endif
 
     VariationStore *varstore_prime = c->serializer->start_embed<VariationStore> ();
     if (unlikely (!varstore_prime)) return_trace (false);
@@ -3078,7 +2651,12 @@ struct VariationStore
   }
 
   unsigned int get_region_index_count (unsigned int major) const
-  { return (this+dataSets[major]).get_region_index_count (); }
+  {
+#ifdef HB_NO_VAR
+    return 0;
+#endif
+    return (this+dataSets[major]).get_region_index_count ();
+  }
 
   void get_region_scalars (unsigned int major,
 			   const int *coords, unsigned int coord_count,
@@ -3096,7 +2674,13 @@ struct VariationStore
 					       &scalars[0], num_scalars);
   }
 
-  unsigned int get_sub_table_count () const { return dataSets.len; }
+  unsigned int get_sub_table_count () const
+   {
+#ifdef HB_NO_VAR
+     return 0;
+#endif
+     return dataSets.len;
+   }
 
   protected:
   HBUINT16				format;

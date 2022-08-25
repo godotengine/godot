@@ -34,8 +34,8 @@
 #include "nav_rid.h"
 
 #include "core/math/math_defs.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/rb_map.h"
-#include "core/templates/thread_work_pool.h"
 #include "nav_utils.h"
 
 #include <KdTree.h>
@@ -58,10 +58,10 @@ class NavMap : public NavRid {
 	bool regenerate_polygons = true;
 	bool regenerate_links = true;
 
-	std::vector<NavRegion *> regions;
+	LocalVector<NavRegion *> regions;
 
 	/// Map polygons
-	std::vector<gd::Polygon> polygons;
+	LocalVector<gd::Polygon> polygons;
 
 	/// Rvo world
 	RVO::KdTree rvo;
@@ -70,19 +70,16 @@ class NavMap : public NavRid {
 	bool agents_dirty = false;
 
 	/// All the Agents (even the controlled one)
-	std::vector<RvoAgent *> agents;
+	LocalVector<RvoAgent *> agents;
 
 	/// Controlled agents
-	std::vector<RvoAgent *> controlled_agents;
+	LocalVector<RvoAgent *> controlled_agents;
 
 	/// Physics delta time
 	real_t deltatime = 0.0;
 
 	/// Change the id each time the map is updated.
 	uint32_t map_update_id = 0;
-
-	/// Pooled threads for computing steps
-	ThreadWorkPool step_work_pool;
 
 public:
 	NavMap();
@@ -114,14 +111,14 @@ public:
 
 	void add_region(NavRegion *p_region);
 	void remove_region(NavRegion *p_region);
-	const std::vector<NavRegion *> &get_regions() const {
+	const LocalVector<NavRegion *> &get_regions() const {
 		return regions;
 	}
 
 	bool has_agent(RvoAgent *agent) const;
 	void add_agent(RvoAgent *agent);
 	void remove_agent(RvoAgent *agent);
-	const std::vector<RvoAgent *> &get_agents() const {
+	const LocalVector<RvoAgent *> &get_agents() const {
 		return agents;
 	}
 
@@ -138,7 +135,7 @@ public:
 
 private:
 	void compute_single_step(uint32_t index, RvoAgent **agent);
-	void clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const;
+	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const;
 };
 
 #endif // NAV_MAP_H

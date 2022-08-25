@@ -136,11 +136,11 @@ void Transform2D::scale_basis(const Size2 &p_scale) {
 	columns[1][1] *= p_scale.y;
 }
 
-void Transform2D::translate(const real_t p_tx, const real_t p_ty) {
-	translate(Vector2(p_tx, p_ty));
+void Transform2D::translate_local(const real_t p_tx, const real_t p_ty) {
+	translate_local(Vector2(p_tx, p_ty));
 }
 
-void Transform2D::translate(const Vector2 &p_translation) {
+void Transform2D::translate_local(const Vector2 &p_translation) {
 	columns[2] += basis_xform(p_translation);
 }
 
@@ -217,16 +217,22 @@ Transform2D Transform2D::operator*(const Transform2D &p_transform) const {
 	return t;
 }
 
+Transform2D Transform2D::basis_scaled(const Size2 &p_scale) const {
+	Transform2D copy = *this;
+	copy.scale_basis(p_scale);
+	return copy;
+}
+
 Transform2D Transform2D::scaled(const Size2 &p_scale) const {
+	// Equivalent to left multiplication
 	Transform2D copy = *this;
 	copy.scale(p_scale);
 	return copy;
 }
 
-Transform2D Transform2D::basis_scaled(const Size2 &p_scale) const {
-	Transform2D copy = *this;
-	copy.scale_basis(p_scale);
-	return copy;
+Transform2D Transform2D::scaled_local(const Size2 &p_scale) const {
+	// Equivalent to right multiplication
+	return Transform2D(columns[0] * p_scale.x, columns[1] * p_scale.y, columns[2]);
 }
 
 Transform2D Transform2D::untranslated() const {
@@ -236,15 +242,23 @@ Transform2D Transform2D::untranslated() const {
 }
 
 Transform2D Transform2D::translated(const Vector2 &p_offset) const {
-	Transform2D copy = *this;
-	copy.translate(p_offset);
-	return copy;
+	// Equivalent to left multiplication
+	return Transform2D(columns[0], columns[1], columns[2] + p_offset);
+}
+
+Transform2D Transform2D::translated_local(const Vector2 &p_offset) const {
+	// Equivalent to right multiplication
+	return Transform2D(columns[0], columns[1], columns[2] + basis_xform(p_offset));
 }
 
 Transform2D Transform2D::rotated(const real_t p_angle) const {
-	Transform2D copy = *this;
-	copy.rotate(p_angle);
-	return copy;
+	// Equivalent to left multiplication
+	return Transform2D(p_angle, Vector2()) * (*this);
+}
+
+Transform2D Transform2D::rotated_local(const real_t p_angle) const {
+	// Equivalent to right multiplication
+	return (*this) * Transform2D(p_angle, Vector2()); // Could be optimized, because origin transform can be skipped.
 }
 
 real_t Transform2D::basis_determinant() const {

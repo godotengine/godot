@@ -66,6 +66,30 @@ String EditorPaths::get_self_contained_file() const {
 	return self_contained_file;
 }
 
+String EditorPaths::get_export_templates_dir() const {
+	return get_data_dir().plus_file(export_templates_folder);
+}
+
+String EditorPaths::get_project_settings_dir() const {
+	return get_project_data_dir().plus_file("editor");
+}
+
+String EditorPaths::get_text_editor_themes_dir() const {
+	return get_config_dir().plus_file(text_editor_themes_folder);
+}
+
+String EditorPaths::get_script_templates_dir() const {
+	return get_config_dir().plus_file(script_templates_folder);
+}
+
+String EditorPaths::get_project_script_templates_dir() const {
+	return ProjectSettings::get_singleton()->get("editor/script/templates_search_path");
+}
+
+String EditorPaths::get_feature_profiles_dir() const {
+	return get_config_dir().plus_file(feature_profiles_folder);
+}
+
 void EditorPaths::create() {
 	ERR_FAIL_COND(singleton != nullptr);
 	memnew(EditorPaths());
@@ -82,6 +106,8 @@ void EditorPaths::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &EditorPaths::get_cache_dir);
 	ClassDB::bind_method(D_METHOD("is_self_contained"), &EditorPaths::is_self_contained);
 	ClassDB::bind_method(D_METHOD("get_self_contained_file"), &EditorPaths::get_self_contained_file);
+
+	ClassDB::bind_method(D_METHOD("get_project_settings_dir"), &EditorPaths::get_project_settings_dir);
 }
 
 EditorPaths::EditorPaths() {
@@ -153,8 +179,8 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		if (!dir->dir_exists("templates")) {
-			dir->make_dir("templates");
+		if (!dir->dir_exists(export_templates_folder)) {
+			dir->make_dir(export_templates_folder);
 		}
 	}
 
@@ -168,14 +194,14 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		if (!dir->dir_exists("text_editor_themes")) {
-			dir->make_dir("text_editor_themes");
+		if (!dir->dir_exists(text_editor_themes_folder)) {
+			dir->make_dir(text_editor_themes_folder);
 		}
-		if (!dir->dir_exists("script_templates")) {
-			dir->make_dir("script_templates");
+		if (!dir->dir_exists(script_templates_folder)) {
+			dir->make_dir(script_templates_folder);
 		}
-		if (!dir->dir_exists("feature_profiles")) {
-			dir->make_dir("feature_profiles");
+		if (!dir->dir_exists(feature_profiles_folder)) {
+			dir->make_dir(feature_profiles_folder);
 		}
 	}
 
@@ -192,7 +218,6 @@ EditorPaths::EditorPaths() {
 
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
-
 	if (Engine::get_singleton()->is_project_manager_hint() || Main::is_cmdline_tool()) {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);

@@ -174,4 +174,4 @@ public:
 };
 #endif
 
-#endif
+#endif // SCENE_DEBUGGER_H

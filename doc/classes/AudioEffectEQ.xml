@@ -19,15 +19,15 @@
 		</method>
 		<method name="get_band_gain_db" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="band_idx" type="int" />
+			<param index="0" name="band_idx" type="int" />
 			<description>
 				Returns the band's gain at the specified index, in dB.
 			</description>
 		</method>
 		<method name="set_band_gain_db">
 			<return type="void" />
-			<argument index="0" name="band_idx" type="int" />
-			<argument index="1" name="volume_db" type="float" />
+			<param index="0" name="band_idx" type="int" />
+			<param index="1" name="volume_db" type="float" />
 			<description>
 				Sets band's gain at the specified index, in dB.
 			</description>

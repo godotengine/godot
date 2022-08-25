@@ -8,7 +8,7 @@
 		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through [XRServer].
 	</description>
 	<tutorials>
-		<link title="VR documentation index">$DOCS_URL/tutorials/vr/index.html</link>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_camera_feed_id">
@@ -71,30 +71,30 @@
 		</method>
 		<method name="set_play_area_mode">
 			<return type="bool" />
-			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
 			</description>
 		</method>
 		<method name="supports_play_area_mode">
 			<return type="bool" />
-			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Call this to find out if a given play area mode is supported by this interface.
 			</description>
 		</method>
 		<method name="trigger_haptic_pulse">
 			<return type="void" />
-			<argument index="0" name="action_name" type="String" />
-			<argument index="1" name="tracker_name" type="StringName" />
-			<argument index="2" name="frequency" type="float" />
-			<argument index="3" name="amplitude" type="float" />
-			<argument index="4" name="duration_sec" type="float" />
-			<argument index="5" name="delay_sec" type="float" />
+			<param index="0" name="action_name" type="String" />
+			<param index="1" name="tracker_name" type="StringName" />
+			<param index="2" name="frequency" type="float" />
+			<param index="3" name="amplitude" type="float" />
+			<param index="4" name="duration_sec" type="float" />
+			<param index="5" name="delay_sec" type="float" />
 			<description>
 				Triggers a haptic pulse on a device associated with this interface.
-				[code]action_name[/code] is the name of the action for this pulse.
-				[code]tracker_name[/code] is optional and can be used to direct the pulse to a specific device provided that device is bound to this haptic.
+				[param action_name] is the name of the action for this pulse.
+				[param tracker_name] is optional and can be used to direct the pulse to a specific device provided that device is bound to this haptic.
 			</description>
 		</method>
 		<method name="uninitialize">
@@ -117,7 +117,7 @@
 	</members>
 	<signals>
 		<signal name="play_area_changed">
-			<argument index="0" name="mode" type="int" />
+			<param index="0" name="mode" type="int" />
 			<description>
 				Emitted when the play area is changed. This can be a result of the player resetting the boundary or entering a new play area, the player changing the play area mode, the world scale changing or the player resetting their headset orientation.
 			</description>

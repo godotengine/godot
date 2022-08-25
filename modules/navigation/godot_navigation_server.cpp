@@ -123,8 +123,8 @@ void GodotNavigationServer::add_command(SetCommand *command) const {
 	}
 }
 
-Array GodotNavigationServer::get_maps() const {
-	Array all_map_rids;
+TypedArray<RID> GodotNavigationServer::get_maps() const {
+	TypedArray<RID> all_map_rids;
 	List<RID> maps_owned;
 	map_owner.get_owned_list(&maps_owned);
 	if (maps_owned.size()) {
@@ -245,22 +245,26 @@ RID GodotNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 
 	return map->get_closest_point_owner(p_point);
 }
 
-Array GodotNavigationServer::map_get_regions(RID p_map) const {
-	Array regions_rids;
+TypedArray<RID> GodotNavigationServer::map_get_regions(RID p_map) const {
+	TypedArray<RID> regions_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, regions_rids);
-	for (NavRegion *region : map->get_regions()) {
-		regions_rids.push_back(region->get_self());
+	const LocalVector<NavRegion *> regions = map->get_regions();
+	regions_rids.resize(regions.size());
+	for (uint32_t i = 0; i < regions.size(); i++) {
+		regions_rids[i] = regions[i]->get_self();
 	}
 	return regions_rids;
 }
 
-Array GodotNavigationServer::map_get_agents(RID p_map) const {
-	Array agents_rids;
+TypedArray<RID> GodotNavigationServer::map_get_agents(RID p_map) const {
+	TypedArray<RID> agents_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, agents_rids);
-	for (RvoAgent *agent : map->get_agents()) {
-		agents_rids.push_back(agent->get_self());
+	const LocalVector<RvoAgent *> agents = map->get_agents();
+	agents_rids.resize(agents.size());
+	for (uint32_t i = 0; i < agents.size(); i++) {
+		agents_rids[i] = agents[i]->get_self();
 	}
 	return agents_rids;
 }
@@ -539,15 +543,15 @@ COMMAND_1(free, RID, p_object) {
 		NavMap *map = map_owner.get_or_null(p_object);
 
 		// Removes any assigned region
-		std::vector<NavRegion *> regions = map->get_regions();
-		for (size_t i(0); i < regions.size(); i++) {
+		LocalVector<NavRegion *> regions = map->get_regions();
+		for (uint32_t i = 0; i < regions.size(); i++) {
 			map->remove_region(regions[i]);
 			regions[i]->set_map(nullptr);
 		}
 
 		// Remove any assigned agent
-		std::vector<RvoAgent *> agents = map->get_agents();
-		for (size_t i(0); i < agents.size(); i++) {
+		LocalVector<RvoAgent *> agents = map->get_agents();
+		for (uint32_t i = 0; i < agents.size(); i++) {
 			map->remove_agent(agents[i]);
 			agents[i]->set_map(nullptr);
 		}

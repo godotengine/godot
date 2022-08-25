@@ -9,9 +9,9 @@
 	<methods>
 		<method name="_add_ice_candidate" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_sdp_mid_name" type="String" />
-			<argument index="1" name="p_sdp_mline_index" type="int" />
-			<argument index="2" name="p_sdp_name" type="String" />
+			<param index="0" name="p_sdp_mid_name" type="String" />
+			<param index="1" name="p_sdp_mline_index" type="int" />
+			<param index="2" name="p_sdp_name" type="String" />
 			<description>
 			</description>
 		</method>
@@ -22,8 +22,8 @@
 		</method>
 		<method name="_create_data_channel" qualifiers="virtual">
 			<return type="Object" />
-			<argument index="0" name="p_label" type="String" />
-			<argument index="1" name="p_config" type="Dictionary" />
+			<param index="0" name="p_label" type="String" />
+			<param index="1" name="p_config" type="Dictionary" />
 			<description>
 			</description>
 		</method>
@@ -39,7 +39,7 @@
 		</method>
 		<method name="_initialize" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_config" type="Dictionary" />
+			<param index="0" name="p_config" type="Dictionary" />
 			<description>
 			</description>
 		</method>
@@ -50,15 +50,15 @@
 		</method>
 		<method name="_set_local_description" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_type" type="String" />
-			<argument index="1" name="p_sdp" type="String" />
+			<param index="0" name="p_type" type="String" />
+			<param index="1" name="p_sdp" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_remote_description" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_type" type="String" />
-			<argument index="1" name="p_sdp" type="String" />
+			<param index="0" name="p_type" type="String" />
+			<param index="1" name="p_sdp" type="String" />
 			<description>
 			</description>
 		</method>

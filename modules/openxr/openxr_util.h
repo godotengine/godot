@@ -44,4 +44,4 @@ public:
 	static String make_xr_version_string(XrVersion p_version);
 };
 
-#endif // !OPENXR_UTIL_H
+#endif // OPENXR_UTIL_H

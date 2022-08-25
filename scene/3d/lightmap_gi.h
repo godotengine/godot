@@ -216,7 +216,7 @@ private:
 	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds);
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -271,4 +271,4 @@ VARIANT_ENUM_CAST(LightmapGI::GenerateProbes);
 VARIANT_ENUM_CAST(LightmapGI::BakeError);
 VARIANT_ENUM_CAST(LightmapGI::EnvironmentMode);
 
-#endif // BAKED_LIGHTMAP_H
+#endif // LIGHTMAP_GI_H

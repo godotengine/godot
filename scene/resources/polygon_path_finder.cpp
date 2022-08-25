@@ -553,7 +553,7 @@ void PolygonPathFinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_penalty", "idx"), &PolygonPathFinder::get_point_penalty);
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &PolygonPathFinder::get_bounds);
-	ClassDB::bind_method(D_METHOD("_set_data"), &PolygonPathFinder::_set_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &PolygonPathFinder::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &PolygonPathFinder::_get_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");

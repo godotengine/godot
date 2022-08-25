@@ -41,6 +41,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 
+class UndoRedo;
+
 class EditorLog : public HBoxContainer {
 	GDCLASS(EditorLog, HBoxContainer);
 
@@ -67,6 +69,16 @@ private:
 		}
 	};
 
+	struct {
+		Color error_color;
+		Ref<Texture2D> error_icon;
+
+		Color warning_color;
+		Ref<Texture2D> warning_icon;
+
+		Color message_color;
+	} theme_cache;
+
 	// Encapsulates all data and functionality regarding filters.
 	struct LogFilter {
 	private:
@@ -88,7 +100,7 @@ private:
 			toggle_button->add_theme_color_override("icon_color_pressed", Color(1, 1, 1, 1));
 			toggle_button->set_focus_mode(FOCUS_NONE);
 			// When toggled call the callback and pass the MessageType this button is for.
-			toggle_button->connect("toggled", p_toggled_callback, varray(type));
+			toggle_button->connect("toggled", p_toggled_callback.bind(type));
 		}
 
 		int get_message_count() {
@@ -172,6 +184,7 @@ protected:
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
 	void set_tool_button(Button *p_tool_button);
+	void register_undo_redo(UndoRedo *p_undo_redo);
 	void deinit();
 
 	void clear();

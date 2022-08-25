@@ -319,6 +319,9 @@ public:
 	EXBIND2(body_set_collision_mask, RID, uint32_t)
 	EXBIND1RC(uint32_t, body_get_collision_mask, RID)
 
+	EXBIND2(body_set_collision_priority, RID, real_t)
+	EXBIND1RC(real_t, body_get_collision_priority, RID)
+
 	EXBIND2(body_set_user_flags, RID, uint32_t)
 	EXBIND1RC(uint32_t, body_get_user_flags, RID)
 
@@ -545,4 +548,4 @@ public:
 	~PhysicsServer3DExtension();
 };
 
-#endif // PHYSICSSERVER3DEXTENSION_H
+#endif // PHYSICS_SERVER_3D_EXTENSION_H

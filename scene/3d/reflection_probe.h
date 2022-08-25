@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REFLECTIONPROBE_H
-#define REFLECTIONPROBE_H
+#ifndef REFLECTION_PROBE_H
+#define REFLECTION_PROBE_H
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -67,7 +67,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_intensity(float p_intensity);
@@ -121,4 +121,4 @@ public:
 VARIANT_ENUM_CAST(ReflectionProbe::AmbientMode);
 VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
 
-#endif // REFLECTIONPROBE_H
+#endif // REFLECTION_PROBE_H

@@ -72,6 +72,41 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 	return xf;
 }
 
+Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() {
+	// We need to sort the viewports in a "topological order",
+	// children first and parents last, we use the Kahn's algorithm to achieve that.
+
+	Vector<Viewport *> result;
+	List<Viewport *> nodes;
+
+	for (Viewport *viewport : active_viewports) {
+		if (viewport->parent.is_valid()) {
+			continue;
+		}
+
+		nodes.push_back(viewport);
+	}
+
+	while (!nodes.is_empty()) {
+		Viewport *node = nodes[0];
+		nodes.pop_front();
+
+		result.insert(0, node);
+
+		for (Viewport *child : active_viewports) {
+			if (child->parent != node->self) {
+				continue;
+			}
+
+			if (!nodes.find(child)) {
+				nodes.push_back(child);
+			}
+		}
+	}
+
+	return result;
+}
+
 void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 	if (p_viewport->render_buffers.is_valid()) {
 		if (p_viewport->size.width == 0 || p_viewport->size.height == 0) {
@@ -138,7 +173,11 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			p_viewport->internal_size = Size2(render_width, render_height);
 
-			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, p_viewport->fsr_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
+			// At resolution scales lower than 1.0, use negative texture mipmap bias
+			// to compensate for the loss of sharpness.
+			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
+
+			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
 		}
 	}
 }
@@ -154,7 +193,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	if (p_viewport->use_occlusion_culling) {
 		if (p_viewport->occlusion_buffer_dirty) {
 			float aspect = p_viewport->size.aspect();
-			int max_size = occlusion_rays_per_thread * RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+			int max_size = occlusion_rays_per_thread * WorkerThreadPool::get_singleton()->get_thread_count();
 
 			int viewport_size = p_viewport->size.width * p_viewport->size.height;
 			max_size = CLAMP(max_size, viewport_size / (32 * 32), viewport_size / (2 * 2)); // At least one depth pixel for every 16x16 region. At most one depth pixel for every 2x2 region.
@@ -544,8 +583,10 @@ void RendererViewport::draw_viewports() {
 		set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	}
 
-	//sort viewports
-	active_viewports.sort_custom<ViewportSort>();
+	if (sorted_active_viewports_dirty) {
+		sorted_active_viewports = _sort_active_viewports();
+		sorted_active_viewports_dirty = false;
+	}
 
 	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 	//draw viewports
@@ -554,9 +595,9 @@ void RendererViewport::draw_viewports() {
 	//determine what is visible
 	draw_viewports_pass++;
 
-	for (int i = active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
+	for (int i = sorted_active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
 
-		Viewport *vp = active_viewports[i];
+		Viewport *vp = sorted_active_viewports[i];
 
 		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
 			continue;
@@ -617,8 +658,8 @@ void RendererViewport::draw_viewports() {
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
 
-	for (int i = 0; i < active_viewports.size(); i++) {
-		Viewport *vp = active_viewports[i];
+	for (int i = 0; i < sorted_active_viewports.size(); i++) {
+		Viewport *vp = sorted_active_viewports[i];
 
 		if (vp->last_pass != draw_viewports_pass) {
 			continue; //should not draw
@@ -746,11 +787,11 @@ void RendererViewport::viewport_set_fsr_sharpness(RID p_viewport, float p_sharpn
 	_configure_3d_render_buffers(viewport);
 }
 
-void RendererViewport::viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
+void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	viewport->fsr_mipmap_bias = p_mipmap_bias;
+	viewport->texture_mipmap_bias = p_mipmap_bias;
 	_configure_3d_render_buffers(viewport);
 }
 
@@ -810,6 +851,8 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 	} else {
 		active_viewports.erase(viewport);
 	}
+
+	sorted_active_viewports_dirty = true;
 }
 
 void RendererViewport::viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) {
@@ -1239,6 +1282,7 @@ bool RendererViewport::free(RID p_rid) {
 
 		viewport_set_scenario(p_rid, RID());
 		active_viewports.erase(viewport);
+		sorted_active_viewports_dirty = true;
 
 		if (viewport->use_occlusion_culling) {
 			RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_rid);

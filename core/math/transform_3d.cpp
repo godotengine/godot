@@ -62,7 +62,15 @@ void Transform3D::rotate(const Vector3 &p_axis, real_t p_angle) {
 }
 
 Transform3D Transform3D::rotated(const Vector3 &p_axis, real_t p_angle) const {
-	return Transform3D(Basis(p_axis, p_angle), Vector3()) * (*this);
+	// Equivalent to left multiplication
+	Basis p_basis(p_axis, p_angle);
+	return Transform3D(p_basis * basis, p_basis.xform(origin));
+}
+
+Transform3D Transform3D::rotated_local(const Vector3 &p_axis, real_t p_angle) const {
+	// Equivalent to right multiplication
+	Basis p_basis(p_axis, p_angle);
+	return Transform3D(basis * p_basis, origin);
 }
 
 void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_angle) {
@@ -70,17 +78,23 @@ void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_angle) {
 }
 
 Transform3D Transform3D::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(origin.is_equal_approx(p_target), Transform3D(), "The transform's origin and target can't be equal.");
+#endif
 	Transform3D t = *this;
 	t.basis = Basis::looking_at(p_target - origin, p_up);
 	return t;
 }
 
 void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_MSG(p_eye.is_equal_approx(p_target), "The eye and target vectors can't be equal.");
+#endif
 	basis = Basis::looking_at(p_target - p_eye, p_up);
 	origin = p_eye;
 }
 
-Transform3D Transform3D::sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+Transform3D Transform3D::spherical_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
 	/* not sure if very "efficient" but good enough? */
 
 	Transform3D interp;
@@ -114,29 +128,37 @@ void Transform3D::scale(const Vector3 &p_scale) {
 }
 
 Transform3D Transform3D::scaled(const Vector3 &p_scale) const {
-	Transform3D t = *this;
-	t.scale(p_scale);
-	return t;
+	// Equivalent to left multiplication
+	return Transform3D(basis.scaled(p_scale), origin * p_scale);
+}
+
+Transform3D Transform3D::scaled_local(const Vector3 &p_scale) const {
+	// Equivalent to right multiplication
+	return Transform3D(basis.scaled_local(p_scale), origin);
 }
 
 void Transform3D::scale_basis(const Vector3 &p_scale) {
 	basis.scale(p_scale);
 }
 
-void Transform3D::translate(real_t p_tx, real_t p_ty, real_t p_tz) {
-	translate(Vector3(p_tx, p_ty, p_tz));
+void Transform3D::translate_local(real_t p_tx, real_t p_ty, real_t p_tz) {
+	translate_local(Vector3(p_tx, p_ty, p_tz));
 }
 
-void Transform3D::translate(const Vector3 &p_translation) {
+void Transform3D::translate_local(const Vector3 &p_translation) {
 	for (int i = 0; i < 3; i++) {
 		origin[i] += basis[i].dot(p_translation);
 	}
 }
 
 Transform3D Transform3D::translated(const Vector3 &p_translation) const {
-	Transform3D t = *this;
-	t.translate(p_translation);
-	return t;
+	// Equivalent to left multiplication
+	return Transform3D(basis, origin + p_translation);
+}
+
+Transform3D Transform3D::translated_local(const Vector3 &p_translation) const {
+	// Equivalent to right multiplication
+	return Transform3D(basis, origin + basis.xform(p_translation));
 }
 
 void Transform3D::orthonormalize() {

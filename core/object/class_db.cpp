@@ -305,6 +305,13 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 	compat_classes[p_class] = p_fallback;
 }
 
+StringName ClassDB::get_compatibility_class(const StringName &p_class) {
+	if (compat_classes.has(p_class)) {
+		return compat_classes[p_class];
+	}
+	return StringName();
+}
+
 Object *ClassDB::instantiate(const StringName &p_class) {
 	ClassInfo *ti;
 	{
@@ -956,8 +963,11 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 	ERR_FAIL_COND(!type->property_map.has(p_property));
 	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
 
-	PropertyInfo &pinfo = type->property_map[p_property];
-	pinfo.linked_properties.push_back(p_linked_property);
+	if (!type->linked_properties.has(p_property)) {
+		type->linked_properties.insert(p_property, List<StringName>());
+	}
+	type->linked_properties[p_property].push_back(p_linked_property);
+
 #endif
 }
 
@@ -971,7 +981,7 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 			if (p_validator) {
 				// Making a copy as we may modify it.
 				PropertyInfo pi_mut = pi;
-				p_validator->_validate_property(pi_mut);
+				p_validator->validate_property(pi_mut);
 				p_list->push_back(pi_mut);
 			} else {
 				p_list->push_back(pi);
@@ -985,6 +995,25 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 	}
 }
 
+void ClassDB::get_linked_properties_info(const StringName &p_class, const StringName &p_property, List<StringName> *r_properties, bool p_no_inheritance) {
+#ifdef TOOLS_ENABLED
+	ClassInfo *check = classes.getptr(p_class);
+	while (check) {
+		if (!check->linked_properties.has(p_property)) {
+			return;
+		}
+		for (const StringName &E : check->linked_properties[p_property]) {
+			r_properties->push_back(E);
+		}
+
+		if (p_no_inheritance) {
+			break;
+		}
+		check = check->inherits_ptr;
+	}
+#endif
+}
+
 bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 
@@ -993,7 +1022,7 @@ bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_p
 		if (check->property_map.has(p_property)) {
 			PropertyInfo pinfo = check->property_map[p_property];
 			if (p_validator) {
-				p_validator->_validate_property(pinfo);
+				p_validator->validate_property(pinfo);
 			}
 			if (r_info) {
 				*r_info = pinfo;

@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PATH_UTILS_H
-#define PATH_UTILS_H
+#ifndef MONO_PATH_UTILS_H
+#define MONO_PATH_UTILS_H
 
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
 
 namespace path {
+
+String find_executable(const String &p_name);
 
 String join(const String &p_a, const String &p_b);
 String join(const String &p_a, const String &p_b, const String &p_c);
@@ -58,4 +60,4 @@ String realpath(const String &p_path);
 String relative_to(const String &p_path, const String &p_relative_to);
 } // namespace path
 
-#endif // PATH_UTILS_H
+#endif // MONO_PATH_UTILS_H

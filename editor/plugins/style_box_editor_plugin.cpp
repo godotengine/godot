@@ -132,7 +132,7 @@ StyleBoxPreview::StyleBoxPreview() {
 	preview->set_clip_contents(true);
 	preview->connect("draw", callable_mp(this, &StyleBoxPreview::_redraw));
 	checkerboard->add_child(preview);
-	preview->set_anchors_and_offsets_preset(PRESET_WIDE);
+	preview->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	add_margin_child(TTR("Preview:"), checkerboard);
 	grid_preview = memnew(TextureButton);

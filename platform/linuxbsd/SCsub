@@ -12,7 +12,7 @@ common_linuxbsd = [
     "freedesktop_screensaver.cpp",
 ]
 
-if "x11" in env and env["x11"]:
+if env["x11"]:
     common_linuxbsd += [
         "gl_manager_x11.cpp",
         "detect_prime_x11.cpp",
@@ -20,14 +20,20 @@ if "x11" in env and env["x11"]:
         "key_mapping_x11.cpp",
     ]
 
-if "speechd" in env and env["speechd"]:
+    if env["vulkan"]:
+        common_linuxbsd.append("vulkan_context_x11.cpp")
+
+if env["speechd"]:
     common_linuxbsd.append(["speechd-so_wrap.c", "tts_linux.cpp"])
 
-if "vulkan" in env and env["vulkan"]:
-    common_linuxbsd.append("vulkan_context_x11.cpp")
+if env["fontconfig"]:
+    common_linuxbsd.append("fontconfig-so_wrap.c")
 
-if "udev" in env and env["udev"]:
+if env["udev"]:
     common_linuxbsd.append("libudev-so_wrap.c")
+
+if env["dbus"]:
+    common_linuxbsd.append("dbus-so_wrap.c")
 
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
 

@@ -38,7 +38,7 @@
 #define kOutputBus 0
 #define kInputBus 1
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
@@ -72,7 +72,7 @@ Error AudioDriverCoreAudio::init() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
 #else
 	desc.componentSubType = kAudioUnitSubType_RemoteIO;
@@ -85,7 +85,7 @@ Error AudioDriverCoreAudio::init() {
 	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
 	prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -135,7 +135,7 @@ Error AudioDriverCoreAudio::init() {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 #endif
@@ -215,6 +215,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	}
 
 	ad->lock();
+	ad->start_counting_ticks();
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
@@ -237,6 +238,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
 
+	ad->stop_counting_ticks();
 	ad->unlock();
 
 	return result;
@@ -313,7 +315,7 @@ void AudioDriverCoreAudio::finish() {
 			ERR_PRINT("AudioUnitUninitialize failed");
 		}
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -339,7 +341,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
 #else
 	desc.componentSubType = kAudioUnitSubType_RemoteIO;
@@ -352,7 +354,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
 	prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -370,7 +372,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	UInt32 size;
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	AudioDeviceID deviceId;
 	size = sizeof(AudioDeviceID);
 	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
@@ -447,7 +449,7 @@ void AudioDriverCoreAudio::capture_finish() {
 			ERR_PRINT("AudioUnitUninitialize failed");
 		}
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -491,10 +493,10 @@ Error AudioDriverCoreAudio::capture_stop() {
 	return OK;
 }
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 
-Array AudioDriverCoreAudio::_get_device_list(bool capture) {
-	Array list;
+PackedStringArray AudioDriverCoreAudio::_get_device_list(bool capture) {
+	PackedStringArray list;
 
 	list.push_back("Default");
 
@@ -637,7 +639,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 	}
 }
 
-Array AudioDriverCoreAudio::get_device_list() {
+PackedStringArray AudioDriverCoreAudio::get_device_list() {
 	return _get_device_list();
 }
 
@@ -659,7 +661,7 @@ void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
 	}
 }
 
-Array AudioDriverCoreAudio::capture_get_device_list() {
+PackedStringArray AudioDriverCoreAudio::capture_get_device_list() {
 	return _get_device_list(true);
 }
 

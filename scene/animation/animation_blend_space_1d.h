@@ -65,7 +65,7 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 protected:
 	bool sync = false;
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:

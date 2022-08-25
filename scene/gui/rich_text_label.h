@@ -178,6 +178,7 @@ private:
 
 	struct ItemFont : public Item {
 		Ref<Font> font;
+		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
@@ -443,7 +444,7 @@ private:
 	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	bool _is_click_inside_selection() const;
-	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
+	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
 	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
@@ -454,7 +455,7 @@ private:
 
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
-	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
+	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false, bool p_meta = false);
 
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
@@ -462,8 +463,8 @@ private:
 	Item *_find_indentable(Item *p_item);
 	Item *_get_item_at_pos(Item *p_item_from, Item *p_item_to, int p_position);
 	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);
-	int _find_font_size(Item *p_item);
-	Ref<Font> _find_font(Item *p_item);
+	ItemFontSize *_find_font_size(Item *p_item);
+	ItemFont *_find_font(Item *p_item);
 	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
@@ -518,7 +519,7 @@ public:
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
-	void push_font(const Ref<Font> &p_font);
+	void push_font(const Ref<Font> &p_font, int p_size = 0);
 	void push_font_size(int p_font_size);
 	void push_outline_size(int p_font_size);
 	void push_normal();

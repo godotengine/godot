@@ -74,8 +74,8 @@ struct _NO_DISCARD_ Transform2D {
 
 	void scale(const Size2 &p_scale);
 	void scale_basis(const Size2 &p_scale);
-	void translate(const real_t p_tx, const real_t p_ty);
-	void translate(const Vector2 &p_translation);
+	void translate_local(const real_t p_tx, const real_t p_ty);
+	void translate_local(const Vector2 &p_translation);
 
 	real_t basis_determinant() const;
 
@@ -85,10 +85,13 @@ struct _NO_DISCARD_ Transform2D {
 	_FORCE_INLINE_ const Vector2 &get_origin() const { return columns[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { columns[2] = p_origin; }
 
-	Transform2D scaled(const Size2 &p_scale) const;
 	Transform2D basis_scaled(const Size2 &p_scale) const;
+	Transform2D scaled(const Size2 &p_scale) const;
+	Transform2D scaled_local(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
+	Transform2D translated_local(const Vector2 &p_offset) const;
 	Transform2D rotated(const real_t p_angle) const;
+	Transform2D rotated_local(const real_t p_angle) const;
 
 	Transform2D untranslated() const;
 

@@ -22,45 +22,45 @@
 		</method>
 		<method name="get_instance_color" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="instance" type="int" />
+			<param index="0" name="instance" type="int" />
 			<description>
 				Gets a specific instance's color.
 			</description>
 		</method>
 		<method name="get_instance_custom_data" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="instance" type="int" />
+			<param index="0" name="instance" type="int" />
 			<description>
 				Returns the custom data that has been set for a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform" qualifiers="const">
 			<return type="Transform3D" />
-			<argument index="0" name="instance" type="int" />
+			<param index="0" name="instance" type="int" />
 			<description>
 				Returns the [Transform3D] of a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform_2d" qualifiers="const">
 			<return type="Transform2D" />
-			<argument index="0" name="instance" type="int" />
+			<param index="0" name="instance" type="int" />
 			<description>
 				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_color">
 			<return type="void" />
-			<argument index="0" name="instance" type="int" />
-			<argument index="1" name="color" type="Color" />
+			<param index="0" name="instance" type="int" />
+			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors.
-				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material.
+				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material. If the color doesn't look as expected, make sure the material's albedo color is set to pure white ([code]Color(1, 1, 1)[/code]).
 			</description>
 		</method>
 		<method name="set_instance_custom_data">
 			<return type="void" />
-			<argument index="0" name="instance" type="int" />
-			<argument index="1" name="custom_data" type="Color" />
+			<param index="0" name="instance" type="int" />
+			<param index="1" name="custom_data" type="Color" />
 			<description>
 				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 floating point numbers.
 				For the custom data to be used, ensure that [member use_custom_data] is [code]true[/code].
@@ -68,16 +68,16 @@
 		</method>
 		<method name="set_instance_transform">
 			<return type="void" />
-			<argument index="0" name="instance" type="int" />
-			<argument index="1" name="transform" type="Transform3D" />
+			<param index="0" name="instance" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
 			<description>
 				Sets the [Transform3D] for a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_transform_2d">
 			<return type="void" />
-			<argument index="0" name="instance" type="int" />
-			<argument index="1" name="transform" type="Transform2D" />
+			<param index="0" name="instance" type="int" />
+			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the [Transform2D] for a specific instance.
 			</description>
@@ -91,7 +91,8 @@
 		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array">
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count" default="0">
-			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default, all instances are drawn but you can limit this with [member visible_instance_count].
+			Number of instances that will get drawn. This clears and (re)sizes the buffers. Setting data format or flags afterwards will have no effect.
+			By default, all instances are drawn but you can limit this with [member visible_instance_count].
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.

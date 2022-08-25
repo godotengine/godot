@@ -35,6 +35,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include "pulse-so_wrap.h"
@@ -67,12 +68,11 @@ class AudioDriverPulseAudio : public AudioDriver {
 	int channels = 0;
 	int pa_ready = 0;
 	int pa_status = 0;
-	Array pa_devices;
-	Array pa_rec_devices;
+	PackedStringArray pa_devices;
+	PackedStringArray pa_rec_devices;
 
-	bool active = false;
-	bool thread_exited = false;
-	mutable bool exit_thread = false;
+	SafeFlag active;
+	SafeFlag exit_thread;
 
 	float latency = 0;
 
@@ -103,11 +103,11 @@ public:
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 
-	virtual Array get_device_list();
+	virtual PackedStringArray get_device_list();
 	virtual String get_device();
 	virtual void set_device(String device);
 
-	virtual Array capture_get_device_list();
+	virtual PackedStringArray capture_get_device_list();
 	virtual void capture_set_device(const String &p_name);
 	virtual String capture_get_device();
 

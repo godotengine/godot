@@ -95,7 +95,7 @@ void VRS::create_vrs_texture(const int p_base_width, const int p_base_height, co
 	// TODO find a way to skip this if VRS is not supported, but we don't have access to VulkanContext here, even though we're in vulkan.. hmmm
 
 	// TODO we should find some way to store this properly, we're assuming 16x16 as this seems to be the standard but in our vrs_capacities we
-	// obtain a minimum and maximum size, and we should choose something within this range and then make sure that is consistantly set when creating
+	// obtain a minimum and maximum size, and we should choose something within this range and then make sure that is consistently set when creating
 	// our frame buffer. Also it is important that we make the resulting size we calculate down below available to the end user so they know the size
 	// of the VRS buffer to supply.
 	Size2i texel_size = Size2i(16, 16);
@@ -146,10 +146,11 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 		if (vrs_mode == RS::VIEWPORT_VRS_TEXTURE) {
 			RID vrs_texture = texture_storage->render_target_get_vrs_texture(p_render_target);
 			if (vrs_texture.is_valid()) {
-				Texture *texture = texture_storage->get_texture(vrs_texture);
-				if (texture) {
+				RID rd_texture = texture_storage->texture_get_rd_texture(vrs_texture);
+				int layers = texture_storage->texture_get_layers(vrs_texture);
+				if (rd_texture.is_valid()) {
 					// Copy into our density buffer
-					copy_vrs(texture->rd_texture, p_vrs_fb, texture->layers > 1);
+					copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 				}
 			}
 		} else if (vrs_mode == RS::VIEWPORT_VRS_XR) {
@@ -157,10 +158,12 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 			if (interface.is_valid()) {
 				RID vrs_texture = interface->get_vrs_texture();
 				if (vrs_texture.is_valid()) {
-					Texture *texture = texture_storage->get_texture(vrs_texture);
-					if (texture) {
+					RID rd_texture = texture_storage->texture_get_rd_texture(vrs_texture);
+					int layers = texture_storage->texture_get_layers(vrs_texture);
+
+					if (rd_texture.is_valid()) {
 						// Copy into our density buffer
-						copy_vrs(texture->rd_texture, p_vrs_fb, texture->layers > 1);
+						copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 					}
 				}
 			}

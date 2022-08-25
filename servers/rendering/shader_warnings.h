@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_WARNINGS
-#define SHADER_WARNINGS
+#ifndef SHADER_WARNINGS_H
+#define SHADER_WARNINGS_H
 
 #ifdef DEBUG_ENABLED
 
@@ -90,4 +90,4 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#endif // SHADER_WARNINGS
+#endif // SHADER_WARNINGS_H

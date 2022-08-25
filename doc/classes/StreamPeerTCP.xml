@@ -12,17 +12,17 @@
 	<methods>
 		<method name="bind">
 			<return type="int" enum="Error" />
-			<argument index="0" name="port" type="int" />
-			<argument index="1" name="host" type="String" default="&quot;*&quot;" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="host" type="String" default="&quot;*&quot;" />
 			<description>
 				Opens the TCP socket, and binds it to the specified local address.
-				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [code]host[/code] and [code]port[/code] as source address. This can be desired in some NAT punchthrough techniques, or when forcing the source network interface.
+				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [param host] and [param port] as source address. This can be desired in some NAT punchthrough techniques, or when forcing the source network interface.
 			</description>
 		</method>
 		<method name="connect_to_host">
 			<return type="int" enum="Error" />
-			<argument index="0" name="host" type="String" />
-			<argument index="1" name="port" type="int" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
 			<description>
 				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success.
 			</description>
@@ -65,9 +65,9 @@
 		</method>
 		<method name="set_no_delay">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
-				If [code]enabled[/code] is [code]true[/code], packets will be sent immediately. If [code]enabled[/code] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
+				If [param enabled] is [code]true[/code], packets will be sent immediately. If [param enabled] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
 				[b]Note:[/b] It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.
 			</description>
 		</method>

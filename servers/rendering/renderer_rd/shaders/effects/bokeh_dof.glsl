@@ -30,7 +30,7 @@ layout(set = 1, binding = 0) uniform sampler2D source_bokeh;
 #ifdef MODE_GEN_BLUR_SIZE
 
 float get_depth_at_pos(vec2 uv) {
-	float depth = textureLod(source_depth, uv, 0.0).x;
+	float depth = textureLod(source_depth, uv, 0.0).x * 2.0 - 1.0;
 	if (params.orthogonal) {
 		depth = ((depth + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
 	} else {

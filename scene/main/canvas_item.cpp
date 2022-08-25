@@ -64,9 +64,6 @@ void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
 	if (!visible) {
 		return;
 	}
-	if (p_parent_visible_in_tree && first_draw) { // Avoid propagating it twice.
-		first_draw = false;
-	}
 
 	_handle_visibility_change(p_parent_visible_in_tree);
 }
@@ -133,10 +130,6 @@ void CanvasItem::_update_callback() {
 	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
 	if (is_visible_in_tree()) {
-		if (first_draw) {
-			notification(NOTIFICATION_VISIBILITY_CHANGED);
-			first_draw = false;
-		}
 		drawing = true;
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
@@ -230,16 +223,16 @@ void CanvasItem::_enter_canvas() {
 
 		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 
-		group = "root_canvas" + itos(canvas.get_id());
+		canvas_group = "root_canvas" + itos(canvas.get_id());
 
-		add_to_group(group);
+		add_to_group(canvas_group);
 		if (canvas_layer) {
 			canvas_layer->reset_sort_index();
 		} else {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, group, SNAME("_top_level_raise_self"));
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, canvas_group, SNAME("_top_level_raise_self"));
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -258,14 +251,16 @@ void CanvasItem::_exit_canvas() {
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
-	group = StringName();
+	if (canvas_group != StringName()) {
+		remove_from_group(canvas_group);
+		canvas_group = StringName();
+	}
 }
 
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
-			first_draw = true;
 
 			Node *parent = get_parent();
 			if (parent) {
@@ -304,6 +299,10 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
+			if (is_visible_in_tree()) {
+				notification(NOTIFICATION_VISIBILITY_CHANGED); // Considered invisible until entered.
+			}
 			_enter_canvas();
 
 			_update_texture_filter_changed(false);
@@ -319,8 +318,8 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != StringName()) {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, group, "_top_level_raise_self");
+			if (canvas_group != StringName()) {
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, canvas_group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
@@ -987,7 +986,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso.,Linear Mipmap Aniso."), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
 
 	ADD_GROUP("Material", "");
@@ -1327,7 +1326,7 @@ void CanvasTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular_shininess", "get_specular_shininess");
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso.,Linear Mipmap Aniso."), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
 }
 

@@ -54,14 +54,54 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
-vec4 decode_abgr_2_10_10_10(uint base) {
-	uvec4 abgr_2_10_10_10 = (uvec4(base) >> uvec4(0, 10, 20, 30)) & uvec4(0x3FF, 0x3FF, 0x3FF, 0x3);
-	return vec4(abgr_2_10_10_10) / vec4(1023.0, 1023.0, 1023.0, 3.0) * 2.0 - 1.0;
+vec2 uint_to_vec2(uint base) {
+	uvec2 decode = (uvec2(base) >> uvec2(0, 16)) & uvec2(0xFFFF, 0xFFFF);
+	return vec2(decode) / vec2(65535.0, 65535.0) * 2.0 - 1.0;
 }
 
-uint encode_abgr_2_10_10_10(vec4 base) {
-	uvec4 abgr_2_10_10_10 = uvec4(clamp(ivec4((base * 0.5 + 0.5) * vec4(1023.0, 1023.0, 1023.0, 3.0)), ivec4(0), ivec4(0x3FF, 0x3FF, 0x3FF, 0x3))) << uvec4(0, 10, 20, 30);
-	return abgr_2_10_10_10.x | abgr_2_10_10_10.y | abgr_2_10_10_10.z | abgr_2_10_10_10.w;
+vec3 oct_to_vec3(vec2 oct) {
+	vec3 v = vec3(oct.xy, 1.0 - abs(oct.x) - abs(oct.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return v;
+}
+
+vec3 decode_uint_oct_to_norm(uint base) {
+	return oct_to_vec3(uint_to_vec2(base));
+}
+
+vec4 decode_uint_oct_to_tang(uint base) {
+	vec2 oct_sign_encoded = uint_to_vec2(base);
+	// Binormal sign encoded in y component
+	vec2 oct = vec2(oct_sign_encoded.x, abs(oct_sign_encoded.y) * 2.0 - 1.0);
+	return vec4(oct_to_vec3(oct), sign(oct_sign_encoded.y));
+}
+
+vec2 signNotZero(vec2 v) {
+	return mix(vec2(-1.0), vec2(1.0), greaterThanEqual(v.xy, vec2(0.0)));
+}
+
+uint vec2_to_uint(vec2 base) {
+	uvec2 enc = uvec2(clamp(ivec2(base * vec2(65535, 65535)), ivec2(0), ivec2(0xFFFF, 0xFFFF))) << uvec2(0, 16);
+	return enc.x | enc.y;
+}
+
+vec2 vec3_to_oct(vec3 e) {
+	e /= abs(e.x) + abs(e.y) + abs(e.z);
+	vec2 oct = e.z >= 0.0f ? e.xy : (vec2(1.0f) - abs(e.yx)) * signNotZero(e.xy);
+	return oct * 0.5f + 0.5f;
+}
+
+uint encode_norm_to_uint_oct(vec3 base) {
+	return vec2_to_uint(vec3_to_oct(base));
+}
+
+uint encode_tang_to_uint_oct(vec4 base) {
+	vec2 oct = vec3_to_oct(base.xyz);
+	// Encode binormal sign in y component
+	oct.y = oct.y * 0.5f + 0.5f;
+	oct.y = base.w >= 0.0f ? oct.y : 1 - oct.y;
+	return vec2_to_uint(oct);
 }
 
 void main() {
@@ -131,12 +171,12 @@ void main() {
 	src_offset += 3;
 
 	if (params.has_normal) {
-		normal = decode_abgr_2_10_10_10(src_vertices.data[src_offset]).rgb;
+		normal = decode_uint_oct_to_norm(src_vertices.data[src_offset]);
 		src_offset++;
 	}
 
 	if (params.has_tangent) {
-		tangent = decode_abgr_2_10_10_10(src_vertices.data[src_offset]);
+		tangent = decode_uint_oct_to_tang(src_vertices.data[src_offset]);
 	}
 
 	if (params.has_blend_shape) {
@@ -155,12 +195,12 @@ void main() {
 				base_offset += 3;
 
 				if (params.has_normal) {
-					blend_normal += decode_abgr_2_10_10_10(src_blend_shapes.data[base_offset]).rgb * w;
+					blend_normal += decode_uint_oct_to_norm(src_blend_shapes.data[base_offset]) * w;
 					base_offset++;
 				}
 
 				if (params.has_tangent) {
-					blend_tangent += decode_abgr_2_10_10_10(src_blend_shapes.data[base_offset]).rgb * w;
+					blend_tangent += decode_uint_oct_to_tang(src_blend_shapes.data[base_offset]).rgb * w;
 				}
 
 				blend_total += w;
@@ -234,12 +274,12 @@ void main() {
 	dst_offset += 3;
 
 	if (params.has_normal) {
-		dst_vertices.data[dst_offset] = encode_abgr_2_10_10_10(vec4(normal, 0.0));
+		dst_vertices.data[dst_offset] = encode_norm_to_uint_oct(normal);
 		dst_offset++;
 	}
 
 	if (params.has_tangent) {
-		dst_vertices.data[dst_offset] = encode_abgr_2_10_10_10(tangent);
+		dst_vertices.data[dst_offset] = encode_tang_to_uint_oct(tangent);
 	}
 
 #endif

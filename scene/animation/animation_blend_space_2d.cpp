@@ -80,7 +80,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].node = p_node;
 	blend_points[p_at_index].position = p_position;
 
-	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), CONNECT_REFERENCE_COUNTED);
 	blend_points_used++;
 
 	_queue_auto_triangles();
@@ -102,7 +102,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 		blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed));
 	}
 	blend_points[p_point].node = p_node;
-	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), CONNECT_REFERENCE_COUNTED);
 
 	emit_signal(SNAME("tree_changed"));
 }
@@ -566,18 +566,17 @@ String AnimationNodeBlendSpace2D::get_caption() const {
 	return "BlendSpace2D";
 }
 
-void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const {
-	if (auto_triangles && property.name == "triangles") {
-		property.usage = PROPERTY_USAGE_NONE;
+void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &p_property) const {
+	if (auto_triangles && p_property.name == "triangles") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name.begins_with("blend_point_")) {
-		String left = property.name.get_slicec('/', 0);
+	if (p_property.name.begins_with("blend_point_")) {
+		String left = p_property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
-	AnimationRootNode::_validate_property(property);
 }
 
 void AnimationNodeBlendSpace2D::set_auto_triangles(bool p_enable) {

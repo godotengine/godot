@@ -69,7 +69,7 @@ class GodotNavigationServer : public NavigationServer3D {
 	/// Mutex used to make any operation threadsafe.
 	Mutex operations_mutex;
 
-	std::vector<SetCommand *> commands;
+	LocalVector<SetCommand *> commands;
 
 	mutable RID_Owner<NavMap> map_owner;
 	mutable RID_Owner<NavRegion> region_owner;
@@ -85,7 +85,7 @@ public:
 
 	void add_command(SetCommand *command) const;
 
-	virtual Array get_maps() const override;
+	virtual TypedArray<RID> get_maps() const override;
 
 	virtual RID map_create() const override;
 	COMMAND_2(map_set_active, RID, p_map, bool, p_active);
@@ -107,8 +107,8 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override;
 
-	virtual Array map_get_regions(RID p_map) const override;
-	virtual Array map_get_agents(RID p_map) const override;
+	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
+	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
 
 	virtual void map_force_update(RID p_map) override;
 

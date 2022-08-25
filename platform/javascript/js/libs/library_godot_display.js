@@ -73,7 +73,7 @@ const GodotDisplayVK = {
 			GodotDisplayVK.textarea = create('textarea');
 			GodotDisplayVK.updateSize();
 		},
-		show: function (text, multiline, start, end) {
+		show: function (text, type, start, end) {
 			if (!GodotDisplayVK.textinput || !GodotDisplayVK.textarea) {
 				return;
 			}
@@ -81,7 +81,46 @@ const GodotDisplayVK = {
 				GodotDisplayVK.hide();
 			}
 			GodotDisplayVK.updateSize();
-			const elem = multiline ? GodotDisplayVK.textarea : GodotDisplayVK.textinput;
+
+			let elem = GodotDisplayVK.textinput;
+			switch (type) {
+			case 0: // KEYBOARD_TYPE_DEFAULT
+				elem.type = 'text';
+				elem.inputmode = '';
+				break;
+			case 1: // KEYBOARD_TYPE_MULTILINE
+				elem = GodotDisplayVK.textarea;
+				break;
+			case 2: // KEYBOARD_TYPE_NUMBER
+				elem.type = 'text';
+				elem.inputmode = 'numeric';
+				break;
+			case 3: // KEYBOARD_TYPE_NUMBER_DECIMAL
+				elem.type = 'text';
+				elem.inputmode = 'decimal';
+				break;
+			case 4: // KEYBOARD_TYPE_PHONE
+				elem.type = 'tel';
+				elem.inputmode = '';
+				break;
+			case 5: // KEYBOARD_TYPE_EMAIL_ADDRESS
+				elem.type = 'email';
+				elem.inputmode = '';
+				break;
+			case 6: // KEYBOARD_TYPE_PASSWORD
+				elem.type = 'password';
+				elem.inputmode = '';
+				break;
+			case 7: // KEYBOARD_TYPE_URL
+				elem.type = 'url';
+				elem.inputmode = '';
+				break;
+			default:
+				elem.type = 'text';
+				elem.inputmode = '';
+				break;
+			}
+
 			elem.readonly = false;
 			elem.disabled = false;
 			elem.value = text;
@@ -297,26 +336,12 @@ const GodotDisplay = {
 	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotEventListeners', '$GodotDisplayScreen', '$GodotDisplayVK'],
 	$GodotDisplay: {
 		window_icon: '',
-		findDPI: function () {
-			function testDPI(dpi) {
-				return window.matchMedia(`(max-resolution: ${dpi}dpi)`).matches;
-			}
-			function bisect(low, high, func) {
-				const mid = parseInt(((high - low) / 2) + low, 10);
-				if (high - low <= 1) {
-					return func(high) ? high : low;
-				}
-				if (func(mid)) {
-					return bisect(low, mid, func);
-				}
-				return bisect(mid, high, func);
-			}
-			try {
-				const dpi = bisect(0, 800, testDPI);
-				return dpi >= 96 ? dpi : 96;
-			} catch (e) {
-				return 96;
-			}
+		getDPI: function () {
+			// devicePixelRatio is given in dppx
+			// https://drafts.csswg.org/css-values/#resolution
+			// > due to the 1:96 fixed ratio of CSS *in* to CSS *px*, 1dppx is equivalent to 96dpi.
+			const dpi = Math.round(window.devicePixelRatio * 96);
+			return dpi >= 96 ? dpi : 96;
 		},
 	},
 
@@ -422,7 +447,7 @@ const GodotDisplay = {
 
 	godot_js_display_screen_dpi_get__sig: 'i',
 	godot_js_display_screen_dpi_get: function () {
-		return GodotDisplay.findDPI();
+		return GodotDisplay.getDPI();
 	},
 
 	godot_js_display_pixel_ratio_get__sig: 'f',
@@ -694,11 +719,11 @@ const GodotDisplay = {
 	 * Virtual Keyboard
 	 */
 	godot_js_display_vk_show__sig: 'viiii',
-	godot_js_display_vk_show: function (p_text, p_multiline, p_start, p_end) {
+	godot_js_display_vk_show: function (p_text, p_type, p_start, p_end) {
 		const text = GodotRuntime.parseString(p_text);
 		const start = p_start > 0 ? p_start : 0;
 		const end = p_end > 0 ? p_end : start;
-		GodotDisplayVK.show(text, p_multiline, start, end);
+		GodotDisplayVK.show(text, p_type, start, end);
 	},
 
 	godot_js_display_vk_hide__sig: 'v',

@@ -34,6 +34,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
@@ -183,7 +184,9 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	if (root_uri.length() && is_same_workspace) {
 		workspace->root_uri = root_uri;
 	} else {
-		workspace->root_uri = "file://" + workspace->root;
+		String r_root = workspace->root;
+		r_root = r_root.lstrip("/");
+		workspace->root_uri = "file:///" + r_root;
 
 		Dictionary params;
 		params["path"] = workspace->root;

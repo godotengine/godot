@@ -33,11 +33,12 @@
 
 #include "core/doc_data.h"
 #include "core/io/resource.h"
-#include "core/multiplayer/multiplayer.h"
 #include "core/templates/pair.h"
 #include "core/templates/rb_map.h"
 
 class ScriptLanguage;
+template <typename T>
+class TypedArray;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
@@ -109,9 +110,9 @@ protected:
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
 
 	Variant _get_property_default_value(const StringName &p_property);
-	Array _get_script_property_list();
-	Array _get_script_method_list();
-	Array _get_script_signal_list();
+	TypedArray<Dictionary> _get_script_property_list();
+	TypedArray<Dictionary> _get_script_method_list();
+	TypedArray<Dictionary> _get_script_signal_list();
 	Dictionary _get_script_constant_map();
 
 public:
@@ -133,6 +134,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
+	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const = 0;
@@ -159,7 +161,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
+	virtual const Variant get_rpc_config() const = 0;
 
 	Script() {}
 };
@@ -170,6 +172,9 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const = 0;
+
+	virtual bool property_can_revert(const StringName &p_name) const = 0;
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const = 0;
 
 	virtual Object *get_owner() { return nullptr; }
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state);
@@ -213,7 +218,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return get_script()->get_rpc_methods(); }
+	virtual const Variant get_rpc_config() const { return get_script()->get_rpc_config(); }
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
@@ -447,6 +452,9 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
 
+	virtual bool property_can_revert(const StringName &p_name) const override { return false; };
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; };
+
 	virtual void get_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
 
@@ -469,7 +477,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr) override;
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr) override;
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override { return Vector<Multiplayer::RPCConfig>(); }
+	virtual const Variant get_rpc_config() const override { return Variant(); }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

@@ -6,12 +6,13 @@
 # Patik <patrikfs5@gmail.com>, 2019.
 # Nikola Bunjevac <nikola.bunjevac@gmail.com>, 2019, 2020.
 # LeoClose <leoclose575@gmail.com>, 2020, 2021.
+# Filip <fhomolka@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-08-13 19:05+0000\n"
-"Last-Translator: LeoClose <leoclose575@gmail.com>\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
+"Last-Translator: Filip <fhomolka@protonmail.com>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hr/>\n"
 "Language: hr\n"
@@ -19,11 +20,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Upravljački program za Tablet"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -39,73 +40,77 @@ msgid "Exit Code"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Omogući"
+msgstr "V-Sync Omogućen"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-Sync preko Kompozitora"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Delta Ublažavanje"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
-msgstr ""
+msgstr "Način niske upotrebe procesora"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Stanje mirovanja u načinu korištenja niskog procesora (μsec)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr ""
+msgstr "Zadrži zaslon uključenim"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Glavna skripta:"
+msgstr "Min. veličina prozora"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Glavna skripta:"
+msgstr "Maks. veličina prozora"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
-msgstr ""
+msgstr "Orijentacija zaslona"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
+#, fuzzy
 msgid "Window"
-msgstr ""
+msgstr "Prozor"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
+#, fuzzy
 msgid "Borderless"
-msgstr ""
+msgstr "Bez obruba"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Omogućena prozirnost po pikselu"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
+#, fuzzy
 msgid "Fullscreen"
-msgstr ""
+msgstr "Cijeli zaslon"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Maximized"
-msgstr ""
+msgstr "Maksimiziran"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Minimized"
-msgstr ""
+msgstr "Minimiziran"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
+#, fuzzy
 msgid "Resizable"
-msgstr ""
+msgstr "Mogućnost promjene veličine"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -114,7 +119,7 @@ msgstr ""
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Position"
-msgstr "Stvori"
+msgstr "Pozicija"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
 #: main/main.cpp modules/gridmap/grid_map.cpp
@@ -125,8 +130,9 @@ msgstr "Stvori"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
+#, fuzzy
 msgid "Size"
-msgstr ""
+msgstr "Veličina"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
@@ -135,25 +141,27 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Editor Hint"
-msgstr "(Editor Onemogućen)"
+msgstr "Savjet Urednika"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Ispis poruka o pogreškama"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Iterations Per Second"
-msgstr "Način Interpolacije"
+msgstr "Iteracije u sekundi"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Target FPS"
-msgstr ""
+msgstr "Ciljani FPS"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Time Scale"
-msgstr "Dubina"
+msgstr "Vremenska skala"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Physics Jitter Fix"
@@ -2125,14 +2133,15 @@ msgstr "Favoriti:"
 msgid "Recent:"
 msgstr "Nedavno:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Pretraga:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Podudaranja:"
@@ -2192,8 +2201,8 @@ msgstr "Traži zamjenu resursa:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2764,8 +2773,9 @@ msgid "Project export for platform:"
 msgstr ""
 
 #: editor/editor_export.cpp
-msgid "Completed with errors."
-msgstr ""
+#, fuzzy
+msgid "Completed with warnings."
+msgstr "Animacija"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -5393,6 +5403,10 @@ msgstr ""
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Izbriši Odabir"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11477,6 +11491,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Obrisati Animaciju?"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -19799,15 +19818,15 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Nevažeće ime."
 
 #: platform/windows/export/export.cpp
 msgid "Could not find signtool executable at \"%s\"."
@@ -19829,15 +19848,15 @@ msgstr "Nevažeće ime."
 
 #: platform/windows/export/export.cpp
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Nevažeće ime."
 
 #: platform/windows/export/export.cpp
 msgid "Failed to remove temporary file \"%s\"."

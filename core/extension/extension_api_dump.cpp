@@ -52,6 +52,9 @@ static String get_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_BITFIELD))) {
 		return String("bitfield::") + String(p_info.class_name);
 	}
+	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_ARRAY)) {
+		return "int";
+	}
 	if (p_info.class_name != StringName()) {
 		return p_info.class_name;
 	}
@@ -88,6 +91,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	}
 
 	const uint32_t vec3_elems = 3;
+	const uint32_t vec4_elems = 4;
 	const uint32_t ptrsize_32 = 4;
 	const uint32_t ptrsize_64 = 8;
 	static const char *build_config_name[4] = { "float_32", "float_64", "double_32", "double_64" };
@@ -131,11 +135,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::VECTOR3, vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
 			{ Variant::VECTOR3I, 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
 			{ Variant::TRANSFORM2D, 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
+			{ Variant::VECTOR4, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::VECTOR4I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
 			{ Variant::PLANE, (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(double), (vec3_elems + 1) * sizeof(double) },
 			{ Variant::QUATERNION, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
 			{ Variant::AABB, (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(double), (vec3_elems * 2) * sizeof(double) },
 			{ Variant::BASIS, (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
 			{ Variant::TRANSFORM3D, (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(double), (vec3_elems * 4) * sizeof(double) },
+			{ Variant::PROJECTION, (vec4_elems * 4) * sizeof(float), (vec4_elems * 4) * sizeof(float), (vec4_elems * 4) * sizeof(double), (vec4_elems * 4) * sizeof(double) },
 			{ Variant::COLOR, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float) },
 			{ Variant::STRING_NAME, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::NODE_PATH, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
@@ -169,11 +176,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		static_assert(type_size_array[Variant::VECTOR3][sizeof(void *)] == sizeof(Vector3), "Size of Vector3 mismatch");
 		static_assert(type_size_array[Variant::VECTOR3I][sizeof(void *)] == sizeof(Vector3i), "Size of Vector3i mismatch");
 		static_assert(type_size_array[Variant::TRANSFORM2D][sizeof(void *)] == sizeof(Transform2D), "Size of Transform2D mismatch");
+		static_assert(type_size_array[Variant::VECTOR4][sizeof(void *)] == sizeof(Vector4), "Size of Vector4 mismatch");
+		static_assert(type_size_array[Variant::VECTOR4I][sizeof(void *)] == sizeof(Vector4i), "Size of Vector4i mismatch");
 		static_assert(type_size_array[Variant::PLANE][sizeof(void *)] == sizeof(Plane), "Size of Plane mismatch");
 		static_assert(type_size_array[Variant::QUATERNION][sizeof(void *)] == sizeof(Quaternion), "Size of Quaternion mismatch");
 		static_assert(type_size_array[Variant::AABB][sizeof(void *)] == sizeof(AABB), "Size of AABB mismatch");
 		static_assert(type_size_array[Variant::BASIS][sizeof(void *)] == sizeof(Basis), "Size of Basis mismatch");
 		static_assert(type_size_array[Variant::TRANSFORM3D][sizeof(void *)] == sizeof(Transform3D), "Size of Transform3D mismatch");
+		static_assert(type_size_array[Variant::PROJECTION][sizeof(void *)] == sizeof(Projection), "Size of Projection mismatch");
 		static_assert(type_size_array[Variant::COLOR][sizeof(void *)] == sizeof(Color), "Size of Color mismatch");
 		static_assert(type_size_array[Variant::STRING_NAME][sizeof(void *)] == sizeof(StringName), "Size of StringName mismatch");
 		static_assert(type_size_array[Variant::NODE_PATH][sizeof(void *)] == sizeof(NodePath), "Size of NodePath mismatch");
@@ -256,6 +266,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::TRANSFORM2D, "x", 0, 0, 0, 0 },
 			{ Variant::TRANSFORM2D, "y", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
 			{ Variant::TRANSFORM2D, "origin", 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::VECTOR4, "x", 0, 0, 0, 0 },
+			{ Variant::VECTOR4, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
+			{ Variant::VECTOR4, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ Variant::VECTOR4, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
+			{ Variant::VECTOR4I, "x", 0, 0, 0, 0 },
+			{ Variant::VECTOR4I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
+			{ Variant::VECTOR4I, "z", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
+			{ Variant::VECTOR4I, "w", 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
 			{ Variant::PLANE, "normal", 0, 0, 0, 0 },
 			{ Variant::PLANE, "d", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
 			{ Variant::QUATERNION, "x", 0, 0, 0, 0 },
@@ -270,6 +288,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::BASIS, "z", vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(double), vec3_elems * 2 * sizeof(double) },
 			{ Variant::TRANSFORM3D, "basis", 0, 0, 0, 0 },
 			{ Variant::TRANSFORM3D, "origin", (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
+			{ Variant::PROJECTION, "x", 0, 0, 0, 0 },
+			{ Variant::PROJECTION, "y", vec4_elems * sizeof(float), vec4_elems * sizeof(float), vec4_elems * sizeof(double), vec4_elems * sizeof(double) },
+			{ Variant::PROJECTION, "z", vec4_elems * 2 * sizeof(float), vec4_elems * 2 * sizeof(float), vec4_elems * 2 * sizeof(double), vec4_elems * 2 * sizeof(double) },
+			{ Variant::PROJECTION, "w", vec4_elems * 3 * sizeof(float), vec4_elems * 3 * sizeof(float), vec4_elems * 3 * sizeof(double), vec4_elems * 3 * sizeof(double) },
 			{ Variant::COLOR, "r", 0, 0, 0, 0 },
 			{ Variant::COLOR, "g", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
 			{ Variant::COLOR, "b", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },
@@ -826,11 +848,15 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
 				for (const PropertyInfo &F : property_list) {
-					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP) {
+					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP || (F.type == Variant::NIL && F.usage & PROPERTY_USAGE_ARRAY)) {
 						continue; //not real properties
 					}
 					if (F.name.begins_with("_")) {
 						continue; //hidden property
+					}
+					if (F.name.find("/") >= 0) {
+						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
+						continue;
 					}
 					StringName property_name = F.name;
 					Dictionary d2;

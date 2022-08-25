@@ -30,6 +30,7 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_tree.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
@@ -83,8 +84,6 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
 
 	EditorNode *editor = EditorNode::get_singleton();
-	editor->get_undo_redo()->set_method_notify_callback(_method_changeds, this);
-	editor->get_undo_redo()->set_property_notify_callback(_property_changeds, this);
 	editor->get_pause_button()->connect("pressed", callable_mp(this, &EditorDebuggerNode::_paused));
 }
 
@@ -92,17 +91,17 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	ScriptEditorDebugger *node = memnew(ScriptEditorDebugger);
 
 	int id = tabs->get_tab_count();
-	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop), varray(id));
-	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped), varray(id));
-	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected), varray(id));
-	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected), varray(id));
-	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected), varray(id));
+	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop).bind(id));
+	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped).bind(id));
+	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected).bind(id));
+	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
+	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
 	node->connect("clear_execution", callable_mp(this, &EditorDebuggerNode::_clear_execution));
-	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked), varray(id));
-	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated), varray(id));
-	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated), varray(id));
-	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated), varray(id));
-	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested), varray(id));
+	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked).bind(id));
+	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated).bind(id));
+	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated).bind(id));
+	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated).bind(id));
+	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested).bind(id));
 	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
 
 	if (tabs->get_tab_count() > 0) {
@@ -179,6 +178,11 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
+}
+
+void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {
+	p_undo_redo->set_method_notify_callback(_method_changeds, this);
+	p_undo_redo->set_property_notify_callback(_property_changeds, this);
 }
 
 EditorDebuggerRemoteObject *EditorDebuggerNode::get_inspected_remote_object() {

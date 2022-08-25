@@ -130,7 +130,7 @@ public:
 		}
 
 		String to_string() const {
-			return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priotity:%d}", base_cell_coords, bit, terrain, priority);
+			return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain, priority);
 		}
 
 		Vector2i get_base_cell_coords() const {
@@ -343,6 +343,8 @@ public:
 	int get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	// Helper method to make accessing the data easier.
+	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);

@@ -55,7 +55,7 @@ public:
 	};
 
 private:
-	real_t pixel_size = 0.01;
+	real_t pixel_size = 0.005;
 	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	float alpha_scissor_threshold = 0.5;
@@ -109,7 +109,7 @@ private:
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	float width = 500.0;
 
-	int font_size = 16;
+	int font_size = 32;
 	Ref<Font> font_override;
 	mutable Ref<Font> theme_font;
 	Color modulate = Color(1, 1, 1, 1);
@@ -117,7 +117,7 @@ private:
 	int outline_render_priority = -1;
 	int render_priority = 0;
 
-	int outline_size = 0;
+	int outline_size = 12;
 	Color outline_modulate = Color(0, 0, 0, 1);
 
 	float line_spacing = 0.f;
@@ -149,7 +149,7 @@ protected:
 
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _im_update();
 	void _font_changed();

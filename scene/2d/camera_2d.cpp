@@ -247,8 +247,8 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(canvas_group_name);
 
 			_update_process_callback();
-			_update_scroll();
 			first = true;
+			_update_scroll();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -439,7 +439,9 @@ void Camera2D::clear_current() {
 void Camera2D::set_limit(Side p_side, int p_limit) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	limit[p_side] = p_limit;
+	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
+	smoothed_camera_pos = old_smoothed_camera_pos;
 }
 
 int Camera2D::get_limit(Side p_side) const {
@@ -653,9 +655,9 @@ bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
 }
 
-void Camera2D::_validate_property(PropertyInfo &property) const {
-	if (!smoothing_enabled && property.name == "smoothing_speed") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Camera2D::_validate_property(PropertyInfo &p_property) const {
+	if (!smoothing_enabled && p_property.name == "smoothing_speed") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

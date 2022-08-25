@@ -967,6 +967,12 @@ void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from
 	ERR_FAIL_COND(!g->nodes.has(p_to_node));
 	ERR_FAIL_INDEX(p_to_port, g->nodes[p_to_node].node->get_input_port_count());
 
+	for (const Connection &E : g->connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
+			return;
+		}
+	}
+
 	Connection c;
 	c.from_node = p_from_node;
 	c.from_port = p_from_port;
@@ -1030,11 +1036,11 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 	}
 }
 
-Array VisualShader::_get_node_connections(Type p_type) const {
+TypedArray<Dictionary> VisualShader::_get_node_connections(Type p_type) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Array());
 	const Graph *g = &graph[p_type];
 
-	Array ret;
+	TypedArray<Dictionary> ret;
 	for (const Connection &E : g->connections) {
 		Dictionary d;
 		d["from_node"] = E.from_node;
@@ -1692,13 +1698,13 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 								inputs[i] = "(" + src_var + " ? 1.0 : 0.0)";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
-								inputs[i] = "dot(" + src_var + ", vec2(0.5, 0.5))";
+								inputs[i] = src_var + ".x";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
-								inputs[i] = "dot(" + src_var + ", vec3(0.333333, 0.333333, 0.333333))";
+								inputs[i] = src_var + ".x";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
-								inputs[i] = "dot(" + src_var + ", vec4(0.25, 0.25, 0.25, 0.25))";
+								inputs[i] = src_var + ".x";
 							} break;
 							default:
 								break;
@@ -2641,6 +2647,10 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_right", "VIEW_RIGHT" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_world", "NODE_POSITION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_position_world", "CAMERA_POSITION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_direction_world", "CAMERA_DIRECTION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_view", "NODE_POSITION_VIEW" },
 
 	// Node3D, Fragment
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
@@ -2669,6 +2679,10 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_right", "VIEW_RIGHT" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_world", "NODE_POSITION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_position_world", "CAMERA_POSITION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_direction_world", "CAMERA_DIRECTION_WORLD" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_view", "NODE_POSITION_VIEW" },
 
 	// Node3D, Light
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
@@ -3139,8 +3153,8 @@ String VisualShaderNodeInput::get_input_index_name(int p_index) const {
 	return "";
 }
 
-void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
-	if (property.name == "input_name") {
+void VisualShaderNodeInput::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "input_name") {
 		String port_list;
 
 		int idx = 0;
@@ -3158,7 +3172,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 		if (port_list.is_empty()) {
 			port_list = RTR("None");
 		}
-		property.hint_string = port_list;
+		p_property.hint_string = port_list;
 	}
 }
 
@@ -3745,7 +3759,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 		}
 		return vformat(RTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
 	} else if (qualifier == Qualifier::QUAL_GLOBAL) {
-		RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(uniform_name);
+		RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(uniform_name);
 		if (gvt == RS::GLOBAL_VAR_TYPE_MAX) {
 			return vformat(RTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
 		}

@@ -1,5 +1,6 @@
 def can_build(env, platform):
-    return env.module_check_dependencies("msdfgen", ["freetype"])
+    env.module_add_dependencies("msdfgen", ["freetype"])
+    return True
 
 
 def configure(env):

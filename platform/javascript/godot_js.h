@@ -58,6 +58,7 @@ extern void godot_js_input_mouse_move_cb(void (*p_callback)(double p_x, double p
 extern void godot_js_input_mouse_wheel_cb(int (*p_callback)(double p_delta_x, double p_delta_y));
 extern void godot_js_input_touch_cb(void (*p_callback)(int p_type, int p_count), uint32_t *r_identifiers, double *r_coords);
 extern void godot_js_input_key_cb(void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
+extern void godot_js_input_vibrate_handheld(int p_duration_ms);
 
 // Input gamepad
 extern void godot_js_input_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));
@@ -120,11 +121,11 @@ extern void godot_js_display_notification_cb(void (*p_callback)(int p_notificati
 extern int godot_js_display_vk_available();
 extern int godot_js_display_tts_available();
 extern void godot_js_display_vk_cb(void (*p_input)(const char *p_text, int p_cursor));
-extern void godot_js_display_vk_show(const char *p_text, int p_multiline, int p_start, int p_end);
+extern void godot_js_display_vk_show(const char *p_text, int p_type, int p_start, int p_end);
 extern void godot_js_display_vk_hide();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* GODOT_JS_H */
+#endif // GODOT_JS_H

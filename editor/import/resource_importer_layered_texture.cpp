@@ -139,7 +139,7 @@ void ResourceImporterLayeredTexture::get_import_options(const String &p_path, Li
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Disabled,Enabled,RGBA Only"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized,Normal Map (RG Channels)"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 
@@ -250,7 +250,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 			}
 
 			if (p_mipmaps) {
-				p_images.write[i]->generate_mipmaps();
+				p_images.write[i]->generate_mipmaps(p_csource == Image::COMPRESS_SOURCE_NORMAL);
 			} else {
 				p_images.write[i]->clear_mipmaps();
 			}
@@ -354,6 +354,9 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	Image::CompressSource csource = Image::COMPRESS_SOURCE_GENERIC;
 	if (channel_pack == 0) {
 		csource = Image::COMPRESS_SOURCE_SRGB;
+	} else if (channel_pack == 2) {
+		// force normal
+		csource = Image::COMPRESS_SOURCE_NORMAL;
 	}
 
 	Image::UsedChannels used_channels = image->detect_used_channels(csource);
@@ -367,7 +370,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		for (int j = 0; j < hslices; j++) {
 			int x = slice_w * j;
 			int y = slice_h * i;
-			Ref<Image> slice = image->get_rect(Rect2(x, y, slice_w, slice_h));
+			Ref<Image> slice = image->get_rect(Rect2i(x, y, slice_w, slice_h));
 			ERR_CONTINUE(slice.is_null() || slice->is_empty());
 			if (slice->get_width() != slice_w || slice->get_height() != slice_h) {
 				slice->resize(slice_w, slice_h);
@@ -391,7 +394,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->bptc_ldr = bptc_ldr;
 	texture_import->mipmaps = mipmaps;
 	texture_import->used_channels = used_channels;
-	_check_compress_ctex(texture_import);
+	_check_compress_ctex(p_source_file, texture_import);
 	if (r_metadata) {
 		Dictionary metadata;
 		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
@@ -472,7 +475,7 @@ ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
 }
 
-void ResourceImporterLayeredTexture::_check_compress_ctex(Ref<LayeredTextureImport> r_texture_import) {
+void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source_file, Ref<LayeredTextureImport> r_texture_import) {
 	String extension = get_save_extension();
 	ERR_FAIL_NULL(r_texture_import->csource);
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
@@ -542,5 +545,5 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(Ref<LayeredTextureImpo
 		}
 		return;
 	}
-	EditorNode::add_io_error(TTR("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC."));
+	EditorNode::add_io_error(vformat(TTR("%s: No suitable PC VRAM compression algorithm enabled in Project Settings (S3TC or BPTC). This texture may not display correctly on desktop platforms."), p_source_file));
 }

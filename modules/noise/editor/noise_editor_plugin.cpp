@@ -54,7 +54,7 @@ public:
 		set_custom_minimum_size(Size2(0, EDSCALE * PREVIEW_HEIGHT));
 
 		_texture_rect = memnew(TextureRect);
-		_texture_rect->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+		_texture_rect->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		_texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_COVERED);
 		add_child(_texture_rect);
 

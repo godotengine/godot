@@ -186,6 +186,17 @@ bool CollisionObject2D::get_collision_mask_value(int p_layer_number) const {
 	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
+void CollisionObject2D::set_collision_priority(real_t p_priority) {
+	collision_priority = p_priority;
+	if (!area) {
+		PhysicsServer2D::get_singleton()->body_set_collision_priority(get_rid(), p_priority);
+	}
+}
+
+real_t CollisionObject2D::get_collision_priority() const {
+	return collision_priority;
+}
+
 void CollisionObject2D::set_disable_mode(DisableMode p_mode) {
 	if (disable_mode == p_mode) {
 		return;
@@ -350,8 +361,8 @@ void CollisionObject2D::get_shape_owners(List<uint32_t> *r_owners) {
 	}
 }
 
-Array CollisionObject2D::_get_shape_owners() {
-	Array ret;
+PackedInt32Array CollisionObject2D::_get_shape_owners() {
+	PackedInt32Array ret;
 	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ret.push_back(E.key);
 	}
@@ -574,6 +585,8 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CollisionObject2D::get_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CollisionObject2D::set_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CollisionObject2D::get_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CollisionObject2D::set_collision_priority);
+	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CollisionObject2D::get_collision_priority);
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject2D::set_disable_mode);
 	ClassDB::bind_method(D_METHOD("get_disable_mode"), &CollisionObject2D::get_disable_mode);
 	ClassDB::bind_method(D_METHOD("set_pickable", "enabled"), &CollisionObject2D::set_pickable);
@@ -611,6 +624,7 @@ void CollisionObject2D::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
 
 	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_pickable"), "set_pickable", "is_pickable");

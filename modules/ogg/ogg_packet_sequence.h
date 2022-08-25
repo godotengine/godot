@@ -38,12 +38,12 @@
 #include "core/variant/variant.h"
 #include "thirdparty/libogg/ogg/ogg.h"
 
-class OGGPacketSequencePlayback;
+class OggPacketSequencePlayback;
 
-class OGGPacketSequence : public Resource {
-	GDCLASS(OGGPacketSequence, Resource);
+class OggPacketSequence : public Resource {
+	GDCLASS(OggPacketSequence, Resource);
 
-	friend class OGGPacketSequencePlayback;
+	friend class OggPacketSequencePlayback;
 
 	// List of pages, each of which is a list of packets on that page. The innermost PackedByteArrays contain complete ogg packets.
 	Vector<Vector<PackedByteArray>> page_data;
@@ -73,7 +73,7 @@ public:
 	void set_packet_granule_positions(const Array &p_granule_positions);
 	Array get_packet_granule_positions() const;
 
-	// Sets a sampling rate associated with this object. OGGPacketSequence doesn't understand codecs,
+	// Sets a sampling rate associated with this object. OggPacketSequence doesn't understand codecs,
 	// so this value is naively stored as a convenience.
 	void set_sampling_rate(float p_sampling_rate);
 
@@ -86,18 +86,18 @@ public:
 	// Returns the granule position of the last page in this sequence.
 	int64_t get_final_granule_pos() const;
 
-	Ref<OGGPacketSequencePlayback> instance_playback();
+	Ref<OggPacketSequencePlayback> instantiate_playback();
 
-	OGGPacketSequence() {}
-	virtual ~OGGPacketSequence() {}
+	OggPacketSequence() {}
+	virtual ~OggPacketSequence() {}
 };
 
-class OGGPacketSequencePlayback : public RefCounted {
-	GDCLASS(OGGPacketSequencePlayback, RefCounted);
+class OggPacketSequencePlayback : public RefCounted {
+	GDCLASS(OggPacketSequencePlayback, RefCounted);
 
-	friend class OGGPacketSequence;
+	friend class OggPacketSequence;
 
-	Ref<OGGPacketSequence> ogg_packet_sequence;
+	Ref<OggPacketSequence> ogg_packet_sequence;
 
 	mutable int64_t page_cursor = 0;
 	mutable int32_t packet_cursor = 0;
@@ -121,8 +121,8 @@ public:
 	// Returns true on success, false on failure.
 	bool seek_page(int64_t p_granule_pos);
 
-	OGGPacketSequencePlayback();
-	virtual ~OGGPacketSequencePlayback();
+	OggPacketSequencePlayback();
+	virtual ~OggPacketSequencePlayback();
 };
 
 #endif // OGG_PACKET_SEQUENCE_H

@@ -12,8 +12,8 @@
 	<methods>
 		<method name="create_scene_tile">
 			<return type="int" />
-			<argument index="0" name="packed_scene" type="PackedScene" />
-			<argument index="1" name="id_override" type="int" default="-1" />
+			<param index="0" name="packed_scene" type="PackedScene" />
+			<param index="1" name="id_override" type="int" default="-1" />
 			<description>
 				Creates a scene-based tile out of the given scene.
 				Returns a newly generated unique ID.
@@ -27,23 +27,23 @@
 		</method>
 		<method name="get_scene_tile_display_placeholder" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
-				Returns whether the scene tile with id [code]id[/code] displays a placeholder in the editor.
+				Returns whether the scene tile with [param id] displays a placeholder in the editor.
 			</description>
 		</method>
 		<method name="get_scene_tile_id">
 			<return type="int" />
-			<argument index="0" name="index" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the scene tile ID of the scene tile at index [code]index[/code].
+				Returns the scene tile ID of the scene tile at [param index].
 			</description>
 		</method>
 		<method name="get_scene_tile_scene" qualifiers="const">
 			<return type="PackedScene" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
-				Returns the [PackedScene] resource of scene tile with id [code]id[/code].
+				Returns the [PackedScene] resource of scene tile with [param id].
 			</description>
 		</method>
 		<method name="get_scene_tiles_count">
@@ -54,40 +54,40 @@
 		</method>
 		<method name="has_scene_tile_id">
 			<return type="bool" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
-				Returns whether this TileSet source has a scene tile with id [code]id[/code].
+				Returns whether this TileSet source has a scene tile with [param id].
 			</description>
 		</method>
 		<method name="remove_scene_tile">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
+			<param index="0" name="id" type="int" />
 			<description>
-				Remove the scene tile with id [code]id[/code].
+				Remove the scene tile with [param id].
 			</description>
 		</method>
 		<method name="set_scene_tile_display_placeholder">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="display_placeholder" type="bool" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="display_placeholder" type="bool" />
 			<description>
-				Sets whether or not the scene tile with id [code]id[/code] should display a placeholder in the editor. This might be useful for scenes that are not visible.
+				Sets whether or not the scene tile with [param id] should display a placeholder in the editor. This might be useful for scenes that are not visible.
 			</description>
 		</method>
 		<method name="set_scene_tile_id">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="new_id" type="int" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="new_id" type="int" />
 			<description>
-				Changes a scene tile's ID from [code]id[/code] to [code]new_id[/code]. This will fail if there is already a tile with a ID equal to [code]new_id[/code].
+				Changes a scene tile's ID from [param id] to [param new_id]. This will fail if there is already a tile with a ID equal to [param new_id].
 			</description>
 		</method>
 		<method name="set_scene_tile_scene">
 			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="packed_scene" type="PackedScene" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="packed_scene" type="PackedScene" />
 			<description>
-				Assigns a [PackedScene] resource to the scene tile with id [code]id[/code]. This will fail if the scene does not extend CanvasItem, as positioning properties are needed to place the scene on the TileMap.
+				Assigns a [PackedScene] resource to the scene tile with [param id]. This will fail if the scene does not extend CanvasItem, as positioning properties are needed to place the scene on the TileMap.
 			</description>
 		</method>
 	</methods>

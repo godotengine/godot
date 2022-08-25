@@ -334,8 +334,8 @@ public:
 	Label3DGizmoPlugin();
 };
 
-class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(Position3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class Marker3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Marker3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
 	Vector<Vector3> cursor_points;
@@ -346,7 +346,7 @@ public:
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	Position3DGizmoPlugin();
+	Marker3DGizmoPlugin();
 };
 
 class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -371,6 +371,18 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
 	RayCast3DGizmoPlugin();
+};
+
+class ShapeCast3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(ShapeCast3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	ShapeCast3DGizmoPlugin();
 };
 
 class SpringArm3DGizmoPlugin : public EditorNode3DGizmoPlugin {

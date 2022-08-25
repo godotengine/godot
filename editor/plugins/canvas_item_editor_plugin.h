@@ -45,6 +45,7 @@
 class EditorData;
 class CanvasItemEditorViewport;
 class ViewPanner;
+class EditorUndoRedoManager;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
@@ -188,11 +189,10 @@ private:
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
-	HBoxContainer *hb = nullptr;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container = nullptr;
-	HBoxContainer *hbc_context_menu = nullptr;
+	PanelContainer *context_menu_panel = nullptr;
+	HBoxContainer *context_menu_hbox = nullptr;
 
 	Transform2D transform;
 	GridVisibility grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
@@ -215,8 +215,8 @@ private:
 	int primary_grid_steps = 8;
 	int grid_step_multiplier = 0;
 
-	real_t snap_rotation_step = 0.0;
-	real_t snap_rotation_offset = Math::deg2rad(15.0);
+	real_t snap_rotation_step = Math::deg2rad(15.0);
+	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.1f;
 	bool smart_snap_active = false;
 	bool grid_snap_active = false;
@@ -401,7 +401,7 @@ private:
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
@@ -503,8 +503,6 @@ protected:
 
 	static void _bind_methods();
 
-	HBoxContainer *get_panel_hb() { return hb; }
-
 	static CanvasItemEditor *singleton;
 
 public:
@@ -550,7 +548,7 @@ public:
 	Tool get_current_tool() { return tool; }
 	void set_current_tool(Tool p_tool);
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
@@ -633,4 +631,4 @@ public:
 	~CanvasItemEditorViewport();
 };
 
-#endif //CANVAS_ITEM_EDITOR_PLUGIN_H
+#endif // CANVAS_ITEM_EDITOR_PLUGIN_H

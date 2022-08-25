@@ -461,10 +461,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-		if (p_font_data->work_pool.get_thread_count() == 0) {
-			p_font_data->work_pool.init();
-		}
-		p_font_data->work_pool.do_work(h, this, &TextServerFallback::_generateMTSDF_threaded, &td);
+		WorkerThreadPool::GroupID group_id = WorkerThreadPool::get_singleton()->add_template_group_task(this, &TextServerFallback::_generateMTSDF_threaded, &td, h, -1, true, SNAME("TextServerFBRenderMSDF"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_id);
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
@@ -735,12 +733,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		fargs.stream = &fd->stream;
 
 		int max_index = 0;
-		FT_Face tmp_face;
+		FT_Face tmp_face = nullptr;
 		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-		if (error == 0) {
+		if (tmp_face && error == 0) {
 			max_index = tmp_face->num_faces - 1;
 		}
-		FT_Done_Face(tmp_face);
+		if (tmp_face) {
+			FT_Done_Face(tmp_face);
+		}
 
 		error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
 		if (error) {
@@ -1259,12 +1259,12 @@ double TextServerFallback::font_get_oversampling(const RID &p_font_rid) const {
 	return fd->oversampling;
 }
 
-Array TextServerFallback::font_get_size_cache_list(const RID &p_font_rid) const {
+TypedArray<Vector2i> TextServerFallback::font_get_size_cache_list(const RID &p_font_rid) const {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, TypedArray<Vector2i>());
 
 	MutexLock lock(fd->mutex);
-	Array ret;
+	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, FontForSizeFallback *> &E : fd->cache) {
 		ret.push_back(E.key);
 	}
@@ -1543,15 +1543,15 @@ PackedInt32Array TextServerFallback::font_get_texture_offsets(const RID &p_font_
 	return tex.offsets;
 }
 
-Array TextServerFallback::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
+PackedInt32Array TextServerFallback::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, PackedInt32Array());
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), PackedInt32Array());
 
-	Array ret;
+	PackedInt32Array ret;
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
 		ret.push_back(E.key);
@@ -1886,16 +1886,16 @@ Dictionary TextServerFallback::font_get_glyph_contours(const RID &p_font_rid, in
 #endif
 }
 
-Array TextServerFallback::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
+TypedArray<Vector2i> TextServerFallback::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, TypedArray<Vector2i>());
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size(fd, p_size);
 
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), TypedArray<Vector2i>());
 
-	Array ret;
+	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, Vector2> &E : fd->cache[size]->kerning_map) {
 		ret.push_back(E.key);
 	}
@@ -2122,7 +2122,7 @@ void TextServerFallback::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && FT_HAS_COLOR(fd->cache[size]->face)) {
+			if (fd->cache[size]->face && fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
@@ -3206,7 +3206,7 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if (p_trim_flags.has_flag(OVERRUN_TRIM) || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
 		sd->overrun_trim_data.ellipsis_pos = -1;
 		return;

@@ -178,7 +178,7 @@ Error AudioDriverPulseAudio::detect_channels(bool capture) {
 Error AudioDriverPulseAudio::init_device() {
 	// If there is a specified device check that it is really present
 	if (device_name != "Default") {
-		Array list = get_device_list();
+		PackedStringArray list = get_device_list();
 		if (list.find(device_name) == -1) {
 			device_name = "Default";
 			new_device = "Default";
@@ -285,9 +285,8 @@ Error AudioDriverPulseAudio::init() {
 		return ERR_CANT_OPEN;
 	}
 
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
+	active.clear();
+	exit_thread.clear();
 
 	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
@@ -384,7 +383,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
-	while (!ad->exit_thread) {
+	while (!ad->exit_thread.is_set()) {
 		size_t read_bytes = 0;
 		size_t written_bytes = 0;
 
@@ -392,7 +391,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			ad->lock();
 			ad->start_counting_ticks();
 
-			if (!ad->active) {
+			if (!ad->active.is_set()) {
 				ad->samples_out.fill(0);
 			} else {
 				ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
@@ -462,8 +461,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 				err = ad->init_device();
 				if (err != OK) {
-					ad->active = false;
-					ad->exit_thread = true;
+					ad->active.clear();
+					ad->exit_thread.set();
 					break;
 				}
 			}
@@ -501,8 +500,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					Error err = ad->init_device();
 					if (err != OK) {
 						ERR_PRINT("PulseAudio: init_device error");
-						ad->active = false;
-						ad->exit_thread = true;
+						ad->active.clear();
+						ad->exit_thread.set();
 						break;
 					}
 
@@ -555,8 +554,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 					err = ad->capture_init_device();
 					if (err != OK) {
-						ad->active = false;
-						ad->exit_thread = true;
+						ad->active.clear();
+						ad->exit_thread.set();
 						break;
 					}
 				}
@@ -571,12 +570,10 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	}
-
-	ad->thread_exited = true;
 }
 
 void AudioDriverPulseAudio::start() {
-	active = true;
+	active.set();
 }
 
 int AudioDriverPulseAudio::get_mix_rate() const {
@@ -599,7 +596,7 @@ void AudioDriverPulseAudio::pa_sinklist_cb(pa_context *c, const pa_sink_info *l,
 	ad->pa_status++;
 }
 
-Array AudioDriverPulseAudio::get_device_list() {
+PackedStringArray AudioDriverPulseAudio::get_device_list() {
 	pa_devices.clear();
 	pa_devices.push_back("Default");
 
@@ -661,7 +658,7 @@ void AudioDriverPulseAudio::finish() {
 		return;
 	}
 
-	exit_thread = true;
+	exit_thread.set();
 	thread.wait_to_finish();
 
 	finish_device();
@@ -681,7 +678,7 @@ void AudioDriverPulseAudio::finish() {
 Error AudioDriverPulseAudio::capture_init_device() {
 	// If there is a specified device check that it is really present
 	if (capture_device_name != "Default") {
-		Array list = capture_get_device_list();
+		PackedStringArray list = capture_get_device_list();
 		if (list.find(capture_device_name) == -1) {
 			capture_device_name = "Default";
 			capture_new_device = "Default";
@@ -785,7 +782,7 @@ void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info
 	ad->pa_status++;
 }
 
-Array AudioDriverPulseAudio::capture_get_device_list() {
+PackedStringArray AudioDriverPulseAudio::capture_get_device_list() {
 	pa_rec_devices.clear();
 	pa_rec_devices.push_back("Default");
 

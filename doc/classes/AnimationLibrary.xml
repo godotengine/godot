@@ -1,47 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationLibrary" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Container for [Animation] resources.
 	</brief_description>
 	<description>
+		An animation library stores a set of animations accessible through [StringName] keys, for use with [AnimationPlayer] nodes.
 	</description>
 	<tutorials>
+		<link title="Animation tutorial index">$DOCS_URL/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_animation">
 			<return type="int" enum="Error" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="animation" type="Animation" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="animation" type="Animation" />
 			<description>
+				Adds the [param animation] to the library, accesible by the key [param name].
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
+				Returns the [Animation] with the key [param name], or [code]null[/code] if none is found.
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
+				Returns the keys for the [Animation]s stored in the library.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the library stores an [Animation] with [param name] as the key.
 			</description>
 		</method>
 		<method name="remove_animation">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
+				Removes the [Animation] with the key [param name].
 			</description>
 		</method>
 		<method name="rename_animation">
 			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="newname" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="newname" type="StringName" />
 			<description>
+				Changes the key of the [Animation] associated with the key [param name] to [param newname].
 			</description>
 		</method>
 	</methods>
@@ -51,19 +60,22 @@
 	</members>
 	<signals>
 		<signal name="animation_added">
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
+				Emitted when an [Animation] is added, under the key [param name].
 			</description>
 		</signal>
 		<signal name="animation_removed">
-			<argument index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
+				Emitted when an [Animation] stored with the key [param name] is removed.
 			</description>
 		</signal>
 		<signal name="animation_renamed">
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="to_name" type="StringName" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="to_name" type="StringName" />
 			<description>
+				Emitted when the key for an [Animation] is changed, from [param name] to [param to_name].
 			</description>
 		</signal>
 	</signals>

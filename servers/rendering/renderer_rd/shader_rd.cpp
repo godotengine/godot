@@ -177,7 +177,7 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
 					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 				builder.append("#define MOLTENVK_USED\n");
 #endif
 			} break;
@@ -476,7 +476,9 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 #if 1
 
-	RendererThreadPool::singleton->thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, p_version, variant_defines.size(), -1, true, SNAME("ShaderCompilation"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 #else
 	for (int i = 0; i < variant_defines.size(); i++) {
 		_compile_variant(i, p_version);

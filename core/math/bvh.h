@@ -302,7 +302,7 @@ public:
 		tree.update();
 		_check_for_collisions();
 #ifdef BVH_INTEGRITY_CHECKS
-		tree.integrity_check_all();
+		tree._integrity_check_all();
 #endif
 	}
 

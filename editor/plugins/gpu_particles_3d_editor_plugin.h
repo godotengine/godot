@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_EDITOR_PLUGIN_H
-#define PARTICLES_EDITOR_PLUGIN_H
+#ifndef GPU_PARTICLES_3D_EDITOR_PLUGIN_H
+#define GPU_PARTICLES_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -114,4 +114,4 @@ public:
 	~GPUParticles3DEditorPlugin();
 };
 
-#endif // PARTICLES_EDITOR_PLUGIN_H
+#endif // GPU_PARTICLES_3D_EDITOR_PLUGIN_H

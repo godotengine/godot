@@ -359,7 +359,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	ScopedLocalRef<jbyteArray> encoded(env, (jbyteArray)env->CallObjectMethod(certificate, getEncoded));
 	jsize encodedLength = env->GetArrayLength(encoded);
 
-	MonoArray *encoded_ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), encodedLength);
+	MonoArray *encoded_ret = mono_array_new(mono_domain_get(), mono_get_byte_class(), encodedLength);
 	uint8_t *dest = (uint8_t *)mono_array_addr(encoded_ret, uint8_t, 0);
 
 	env->GetByteArrayRegion(encoded, 0, encodedLength, reinterpret_cast<jbyte *>(dest));

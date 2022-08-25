@@ -11,14 +11,14 @@
 	<methods>
 		<method name="_value_changed" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="new_value" type="float" />
+			<param index="0" name="new_value" type="float" />
 			<description>
 				Called when the [Range]'s value is changed (following the same conditions as [signal value_changed]).
 			</description>
 		</method>
 		<method name="share">
 			<return type="void" />
-			<argument index="0" name="with" type="Node" />
+			<param index="0" name="with" type="Node" />
 			<description>
 				Binds two [Range]s together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
 			</description>
@@ -69,10 +69,10 @@
 			</description>
 		</signal>
 		<signal name="value_changed">
-			<argument index="0" name="value" type="float" />
+			<param index="0" name="value" type="float" />
 			<description>
 				Emitted when [member value] changes. When used on a [Slider], this is called continuously while dragging (potentially every frame). If you are performing an expensive operation in a function connected to [signal value_changed], consider using a [i]debouncing[/i] [Timer] to call the function less often.
-				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [code]value[/code] is set directly via code.
+				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [param value] is set directly via code.
 			</description>
 		</signal>
 	</signals>

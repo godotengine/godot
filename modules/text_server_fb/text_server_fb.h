@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXT_SERVER_FALLBACK_H
-#define TEXT_SERVER_FALLBACK_H
+#ifndef TEXT_SERVER_FB_H
+#define TEXT_SERVER_FB_H
 
 /*************************************************************************/
 /* Fallback Text Server provides simplified TS functionality, without    */
@@ -79,9 +79,9 @@ using namespace godot;
 
 #include "servers/text/text_server_extension.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
@@ -98,6 +98,10 @@ using namespace godot;
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_CONFIG_OPTIONS_H
+#if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
+#warning FreeType is configured without Brotli support, built-in fonts will not be available.
+#endif
 #endif
 
 /*************************************************************************/
@@ -208,10 +212,7 @@ class TextServerFallback : public TextServerExtension {
 		size_t data_size;
 		int face_index = 0;
 
-		mutable ThreadWorkPool work_pool;
-
 		~FontFallback() {
-			work_pool.finish();
 			for (const KeyValue<Vector2i, FontForSizeFallback *> &E : cache) {
 				memdelete(E.value);
 			}
@@ -416,7 +417,7 @@ public:
 	virtual void font_set_oversampling(const RID &p_font_rid, double p_oversampling) override;
 	virtual double font_get_oversampling(const RID &p_font_rid) const override;
 
-	virtual Array font_get_size_cache_list(const RID &p_font_rid) const override;
+	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override;
 	virtual void font_clear_size_cache(const RID &p_font_rid) override;
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) override;
 
@@ -445,7 +446,7 @@ public:
 	virtual void font_set_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const PackedInt32Array &p_offset) override;
 	virtual PackedInt32Array font_get_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) const override;
 
-	virtual Array font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const override;
+	virtual PackedInt32Array font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const override;
 	virtual void font_clear_glyphs(const RID &p_font_rid, const Vector2i &p_size) override;
 	virtual void font_remove_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) override;
 
@@ -468,7 +469,7 @@ public:
 
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const override;
 
-	virtual Array font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const override;
+	virtual TypedArray<Vector2i> font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const override;
 	virtual void font_clear_kerning_map(const RID &p_font_rid, int64_t p_size) override;
 	virtual void font_remove_kerning(const RID &p_font_rid, int64_t p_size, const Vector2i &p_glyph_pair) override;
 
@@ -586,4 +587,4 @@ public:
 	~TextServerFallback();
 };
 
-#endif // TEXT_SERVER_FALLBACK_H
+#endif // TEXT_SERVER_FB_H

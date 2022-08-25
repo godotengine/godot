@@ -17,7 +17,7 @@
 		</method>
 		<method name="get_draw_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<param index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
@@ -30,8 +30,8 @@
 		</method>
 		<method name="set_draw_flag">
 			<return type="void" />
-			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the specified flag will be enabled. See [enum SpriteBase3D.DrawFlags] for a list of flags.
 			</description>
@@ -77,7 +77,7 @@
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 			Sets the render priority for the sprite. Higher priority objects will be sorted in front of lower priority objects.
-			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">

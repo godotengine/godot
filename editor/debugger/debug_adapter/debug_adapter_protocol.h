@@ -152,4 +152,4 @@ public:
 	~DebugAdapterProtocol();
 };
 
-#endif
+#endif // DEBUG_ADAPTER_PROTOCOL_H

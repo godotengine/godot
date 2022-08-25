@@ -82,6 +82,12 @@ public:
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override {
 		return Variant::PACKED_FLOAT32_ARRAY;
 	}
+	bool property_can_revert(const StringName &p_name) const override {
+		return false;
+	};
+	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
+		return false;
+	};
 	void get_method_list(List<MethodInfo> *p_list) const override {
 	}
 	bool has_method(const StringName &p_method) const override {
@@ -95,8 +101,8 @@ public:
 	Ref<Script> get_script() const override {
 		return Ref<Script>();
 	}
-	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override {
-		return Vector<Multiplayer::RPCConfig>();
+	const Variant get_rpc_config() const override {
+		return Variant();
 	}
 	ScriptLanguage *get_language() override {
 		return nullptr;

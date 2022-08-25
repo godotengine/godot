@@ -82,13 +82,14 @@
 # Christian Packenius <christian@packenius.com>, 2022.
 # Sajeg <jfx@posteo.de>, 2022.
 # Tobias Jacobs <tobi@jacobs.rocks>, 2022.
+# JeremyStarTM <jeremystartm@tuta.io>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-09 21:11+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2022-07-31 18:34+0000\n"
+"Last-Translator: JeremyStarTM <jeremystartm@tuta.io>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -96,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -520,9 +521,8 @@ msgid "Pressure"
 msgstr "Druck"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pen Inverted"
-msgstr "Umkehren"
+msgstr "Stift invertiert"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -1633,7 +1633,7 @@ msgstr "Methodenaufrufsspurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object:"
-msgstr "Methode nicht in Objekt gefunden:"
+msgstr "Methode im Objekt nicht gefunden:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -2169,14 +2169,15 @@ msgstr "Favoriten:"
 msgid "Recent:"
 msgstr "Kürzlich:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Suche:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Treffer:"
@@ -2236,8 +2237,8 @@ msgstr "Ersatzressource suchen:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2814,7 +2815,8 @@ msgid "Project export for platform:"
 msgstr "Projektexport für Plattform:"
 
 #: editor/editor_export.cpp
-msgid "Completed with errors."
+#, fuzzy
+msgid "Completed with warnings."
 msgstr "Fertiggestellt mit Fehlern."
 
 #: editor/editor_export.cpp
@@ -5566,6 +5568,10 @@ msgstr "Extramaustasten blättern durch Verlauf"
 #: editor/editor_settings.cpp
 msgid "Drag And Drop Selection"
 msgstr "Auswahl ziehen und fallen lassen"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr "Im Skript Editor bei ausgewähltem Node bleiben"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11691,6 +11697,10 @@ msgstr "Animationen:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Neue Animation"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Filter animations"
+msgstr "Animationen filtern"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -18142,7 +18152,7 @@ msgstr "Ungültiges Argument vom Typ:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Invalid arguments:"
-msgstr "Ungültige Argumente:"
+msgstr "Ungültige Parameter:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -19643,8 +19653,8 @@ msgid ""
 "Could not start codesign executable, make sure Xcode command line tools are "
 "installed."
 msgstr ""
-"Codesign-Anwendung konnte nicht gestartet werden. Wurden die Xcode-"
-"Kommandozeilen-Hilfsprogramme installiert?"
+"Codesign-Anwendung konnte nicht gestartet werden, stelle sicher dass die "
+"Xcode-Kommandozeilen-Tools installiert sind."
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "No identity found."
@@ -20136,17 +20146,18 @@ msgid "Could not find wine executable at \"%s\"."
 msgstr "Anwendung wine konnte nicht gefunden werden in „%s“."
 
 #: platform/windows/export/export.cpp
+#, fuzzy
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 "Anwendung rcedit konnte nicht gestartet werden. Bitte rcedit-Pfad in "
 "Editoreinstellungen festlegen (Export > Windows > Rcedit)."
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
 msgstr ""
 "Modifikation der Anwendung durch rcedit fehlgeschlagen:\n"
 "%s"
@@ -20168,17 +20179,18 @@ msgid "Invalid timestamp server."
 msgstr "Ungültiger Zeitstempelserver."
 
 #: platform/windows/export/export.cpp
+#, fuzzy
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 "Anwendung signtool konnte nicht gestartet werden. Bitte signtool-Pfad in "
 "Editoreinstellungen festlegen (Export > Windows > Signtool)."
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
 msgstr ""
 "Signieren der Anwendung durch Signtool ist fehlgeschlagen:\n"
 "%s"
@@ -23109,9 +23121,8 @@ msgstr ""
 "geändert werden."
 
 #: scene/3d/spatial.cpp
-#, fuzzy
 msgid "Global Translation"
-msgstr "Globales Transform"
+msgstr "Globale Verschiebung"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

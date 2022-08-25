@@ -35,7 +35,7 @@
 
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
+#include "editor/export/editor_export_platform.h"
 
 const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
@@ -80,10 +80,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
+#ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
 
 	static void _check_for_changes_poll_thread(void *ud);
+#endif
 
 	String get_project_name(const String &p_name) const;
 
@@ -156,7 +158,7 @@ public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
@@ -186,7 +188,8 @@ public:
 
 	static String get_apksigner_path();
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 
@@ -231,7 +234,7 @@ public:
 
 	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags);
 
-	virtual void get_platform_features(List<String> *r_features) override;
+	virtual void get_platform_features(List<String> *r_features) const override;
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 

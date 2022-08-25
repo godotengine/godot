@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
@@ -175,7 +176,7 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 }
 
 GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
@@ -222,7 +223,7 @@ void GradientTexture2DEditor::_notification(int p_what) {
 }
 
 GradientTexture2DEditor::GradientTexture2DEditor() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	HFlowContainer *toolbar = memnew(HFlowContainer);
 	add_child(toolbar);

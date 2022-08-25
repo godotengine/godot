@@ -64,7 +64,7 @@ static struct hb_shapers_lazy_loader_t : hb_lazy_loader_t<hb_shaper_entry_t,
       if (!end)
 	end = p + strlen (p);
 
-      for (unsigned int j = i; j < ARRAY_LENGTH (_hb_all_shapers); j++)
+      for (unsigned int j = i; j < ARRAY_LENGTH_CONST (_hb_all_shapers); j++)
 	if (end - p == (int) strlen (shapers[j].name) &&
 	    0 == strncmp (shapers[j].name, p, end - p))
 	{

@@ -38,6 +38,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
@@ -384,7 +385,7 @@ void ScriptCreateDialog::_create_new() {
 	} else {
 		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
-		Error err = ResourceSaver::save(lpath, scr, ResourceSaver::FLAG_CHANGE_PATH);
+		Error err = ResourceSaver::save(scr, lpath, ResourceSaver::FLAG_CHANGE_PATH);
 		if (err != OK) {
 			alert->set_text(TTR("Error - Could not create script in filesystem."));
 			alert->popup_centered();
@@ -620,9 +621,9 @@ void ScriptCreateDialog::_update_template_menu() {
 				} else {
 					String template_directory;
 					if (template_location == ScriptLanguage::TEMPLATE_PROJECT) {
-						template_directory = EditorSettings::get_singleton()->get_project_script_templates_dir();
+						template_directory = EditorPaths::get_singleton()->get_project_script_templates_dir();
 					} else {
-						template_directory = EditorSettings::get_singleton()->get_script_templates_dir();
+						template_directory = EditorPaths::get_singleton()->get_script_templates_dir();
 					}
 					templates_found = _get_user_templates(language, current_node, template_directory, template_location);
 				}
@@ -1008,7 +1009,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	parent_search_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
 	hb->add_child(parent_search_button);
 	parent_browse_button = memnew(Button);
-	parent_browse_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(true, false));
+	parent_browse_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(true, false));
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
@@ -1057,7 +1058,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(false, true));
+	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
 	hb->add_child(path_button);
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);

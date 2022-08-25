@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
@@ -423,6 +424,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			new_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
 			remove_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			split_sheet_zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
@@ -750,7 +752,7 @@ void SpriteFramesEditor::_animation_name_edited() {
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 
-	edited_anim = new_name;
+	edited_anim = name;
 
 	undo_redo->commit_action();
 }
@@ -814,6 +816,10 @@ void SpriteFramesEditor::_animation_remove_confirmed() {
 	edited_anim = StringName();
 
 	undo_redo->commit_action();
+}
+
+void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
+	_update_library();
 }
 
 void SpriteFramesEditor::_animation_loop_changed() {
@@ -900,13 +906,18 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		TreeItem *anim_root = animations->create_item();
 
 		List<StringName> anim_names;
-
 		frames->get_animation_list(&anim_names);
-
 		anim_names.sort_custom<StringName::AlphCompare>();
+
+		bool searching = anim_search_box->get_text().size();
+		String searched_string = searching ? anim_search_box->get_text().to_lower() : String();
 
 		for (const StringName &E : anim_names) {
 			String name = E;
+
+			if (searching && name.to_lower().find(searched_string) < 0) {
+				continue;
+			}
 
 			TreeItem *it = animations->create_item(anim_root);
 
@@ -970,7 +981,6 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
 
 	updating = false;
-	//player->add_resource("default",resource);
 }
 
 void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
@@ -999,6 +1009,10 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	} else {
 		hide();
 	}
+}
+
+void SpriteFramesEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
 }
 
 Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -1157,6 +1171,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(remove_anim);
 	remove_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
+	anim_search_box = memnew(LineEdit);
+	hbc_animlist->add_child(anim_search_box);
+	anim_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	anim_search_box->set_placeholder(TTR("Filter Animations"));
+	anim_search_box->set_clear_button_enabled(true);
+	anim_search_box->connect("text_changed", callable_mp(this, &SpriteFramesEditor::_animation_search_text_changed));
+
 	animations = memnew(Tree);
 	sub_vb->add_child(animations);
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1290,7 +1311,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	empty2->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty2_pressed));
 	move_up->connect("pressed", callable_mp(this, &SpriteFramesEditor::_up_pressed));
 	move_down->connect("pressed", callable_mp(this, &SpriteFramesEditor::_down_pressed));
-	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request), make_binds(-1));
+	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request).bind(-1));
 	loading_scene = false;
 	sel = -1;
 
@@ -1317,7 +1338,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_h->set_max(128);
 	split_sheet_h->set_step(1);
 	split_sheet_hb->add_child(split_sheet_h);
-	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_FRAME_COUNT));
+	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
 
 	split_sheet_hb->add_child(memnew(Label(TTR("Vertical:"))));
 	split_sheet_v = memnew(SpinBox);
@@ -1325,7 +1346,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_v->set_max(128);
 	split_sheet_v->set_step(1);
 	split_sheet_hb->add_child(split_sheet_v);
-	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_FRAME_COUNT));
+	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
 
 	split_sheet_hb->add_child(memnew(VSeparator));
 	split_sheet_hb->add_child(memnew(Label(TTR("Size:"))));
@@ -1333,13 +1354,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_x->set_min(1);
 	split_sheet_size_x->set_step(1);
 	split_sheet_size_x->set_suffix("px");
-	split_sheet_size_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_SIZE));
+	split_sheet_size_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
 	split_sheet_hb->add_child(split_sheet_size_x);
 	split_sheet_size_y = memnew(SpinBox);
 	split_sheet_size_y->set_min(1);
 	split_sheet_size_y->set_step(1);
 	split_sheet_size_y->set_suffix("px");
-	split_sheet_size_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_SIZE));
+	split_sheet_size_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
 	split_sheet_hb->add_child(split_sheet_size_y);
 
 	split_sheet_hb->add_child(memnew(VSeparator));
@@ -1348,13 +1369,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_x->set_min(0);
 	split_sheet_sep_x->set_step(1);
 	split_sheet_sep_x->set_suffix("px");
-	split_sheet_sep_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_sep_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_hb->add_child(split_sheet_sep_x);
 	split_sheet_sep_y = memnew(SpinBox);
 	split_sheet_sep_y->set_min(0);
 	split_sheet_sep_y->set_step(1);
 	split_sheet_sep_y->set_suffix("px");
-	split_sheet_sep_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_sep_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_hb->add_child(split_sheet_sep_y);
 
 	split_sheet_hb->add_child(memnew(VSeparator));
@@ -1363,13 +1384,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_x->set_min(0);
 	split_sheet_offset_x->set_step(1);
 	split_sheet_offset_x->set_suffix("px");
-	split_sheet_offset_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_offset_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_hb->add_child(split_sheet_offset_x);
 	split_sheet_offset_y = memnew(SpinBox);
 	split_sheet_offset_y->set_min(0);
 	split_sheet_offset_y->set_step(1);
 	split_sheet_offset_y->set_suffix("px");
-	split_sheet_offset_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_offset_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_hb->add_child(split_sheet_offset_y);
 
 	split_sheet_hb->add_spacer();
@@ -1448,10 +1469,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	max_sheet_zoom = 16.0f * MAX(1.0f, EDSCALE);
 	min_sheet_zoom = 0.01f * MAX(1.0f, EDSCALE);
 	_zoom_reset();
+
+	// Ensure the anim search box is wide enough by default.
+	// Not by setting its minimum size so it can still be shrinked if desired.
+	set_split_offset(56 * EDSCALE);
 }
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
-	frames_editor->set_undo_redo(&get_undo_redo());
+	frames_editor->set_undo_redo(get_undo_redo());
 
 	SpriteFrames *s;
 	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);

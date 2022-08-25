@@ -103,6 +103,7 @@ namespace GLES3 {
 enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_WHITE,
 	DEFAULT_GL_TEXTURE_BLACK,
+	DEFAULT_GL_TEXTURE_TRANSPARENT,
 	DEFAULT_GL_TEXTURE_NORMAL,
 	DEFAULT_GL_TEXTURE_ANISO,
 	DEFAULT_GL_TEXTURE_DEPTH,
@@ -577,6 +578,6 @@ inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
 
 } // namespace GLES3
 
-#endif // !GLES3_ENABLED
+#endif // GLES3_ENABLED
 
-#endif // !TEXTURE_STORAGE_GLES3_H
+#endif // TEXTURE_STORAGE_GLES3_H

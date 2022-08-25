@@ -46,7 +46,7 @@ TEST_CASE("[RegEx] Initialization") {
 	CHECK(re1.get_pattern() == pattern);
 	CHECK(re1.get_group_count() == 1);
 
-	Array names = re1.get_names();
+	PackedStringArray names = re1.get_names();
 	CHECK(names.size() == 1);
 	CHECK(names[0] == "vowel");
 
@@ -128,16 +128,6 @@ TEST_CASE("[RegEx] Empty Pattern") {
 	RegEx re;
 	CHECK(re.compile("") == OK);
 	CHECK(re.is_valid());
-}
-
-TEST_CASE("[RegEx] Invalid offset") {
-	const String s = "Godot";
-
-	RegEx re("o");
-	REQUIRE(re.is_valid());
-	CHECK(re.search(s, -1) == nullptr);
-	CHECK(re.search_all(s, -1).size() == 0);
-	CHECK(re.sub(s, "", true, -1) == "");
 }
 
 TEST_CASE("[RegEx] Invalid end position") {

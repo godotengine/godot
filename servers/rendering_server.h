@@ -35,12 +35,15 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/rid.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display_server.h"
-#include "servers/rendering/renderer_thread_pool.h"
 #include "servers/rendering/rendering_device.h"
+
+template <typename T>
+class TypedArray;
 
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
@@ -51,8 +54,6 @@ class RenderingServer : public Object {
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
-
-	RendererThreadPool *thread_pool = nullptr;
 
 	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
 	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
@@ -170,8 +171,9 @@ public:
 	virtual RID shader_create() = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
+	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
@@ -245,7 +247,7 @@ public:
 
 	enum ArrayFormat {
 		/* ARRAY FORMAT FLAGS */
-		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // Mandatory
+		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX,
 		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
 		ARRAY_FORMAT_TANGENT = 1 << ARRAY_TANGENT,
 		ARRAY_FORMAT_COLOR = 1 << ARRAY_COLOR,
@@ -263,17 +265,19 @@ public:
 
 		ARRAY_FORMAT_CUSTOM_BASE = (ARRAY_INDEX + 1),
 		ARRAY_FORMAT_CUSTOM_BITS = 3,
+		ARRAY_FORMAT_CUSTOM_MASK = 0x7,
 		ARRAY_FORMAT_CUSTOM0_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + 0),
 		ARRAY_FORMAT_CUSTOM1_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS),
 		ARRAY_FORMAT_CUSTOM2_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * 2),
 		ARRAY_FORMAT_CUSTOM3_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * 3),
 
-		ARRAY_FORMAT_CUSTOM_MASK = 0x7,
 		ARRAY_COMPRESS_FLAGS_BASE = (ARRAY_INDEX + 1 + 12),
 
 		ARRAY_FLAG_USE_2D_VERTICES = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 0),
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 1),
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 2),
+
+		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = 1 << (ARRAY_INDEX + 1 + 15),
 	};
 
 	enum PrimitiveType {
@@ -324,7 +328,7 @@ public:
 	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
 	Array mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const;
 	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
-	Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
+	TypedArray<Array> mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
@@ -426,6 +430,7 @@ public:
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
 		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
+		LIGHT_PARAM_SHADOW_OPACITY,
 		LIGHT_PARAM_SHADOW_BLUR,
 		LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
@@ -496,9 +501,10 @@ public:
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
-		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS,
 		LIGHT_PROJECTOR_FILTER_LINEAR,
+		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS,
 		LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS,
+		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC,
 		LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
 	};
 
@@ -558,9 +564,10 @@ public:
 
 	enum DecalFilter {
 		DECAL_FILTER_NEAREST,
-		DECAL_FILTER_NEAREST_MIPMAPS,
 		DECAL_FILTER_LINEAR,
+		DECAL_FILTER_NEAREST_MIPMAPS,
 		DECAL_FILTER_LINEAR_MIPMAPS,
+		DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC,
 		DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
 	};
 
@@ -798,7 +805,7 @@ public:
 	virtual void viewport_set_scaling_3d_mode(RID p_viewport, ViewportScaling3DMode p_scaling_3d_mode) = 0;
 	virtual void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) = 0;
 	virtual void viewport_set_fsr_sharpness(RID p_viewport, float p_fsr_sharpness) = 0;
-	virtual void viewport_set_fsr_mipmap_bias(RID p_viewport, float p_fsr_mipmap_bias) = 0;
+	virtual void viewport_set_texture_mipmap_bias(RID p_viewport, float p_texture_mipmap_bias) = 0;
 
 	enum ViewportUpdateMode {
 		VIEWPORT_UPDATE_DISABLED,
@@ -1209,9 +1216,9 @@ public:
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const = 0;
 
-	Array _instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario = RID()) const;
-	Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
-	Array _instances_cull_convex_bind(const Array &p_convex, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_convex_bind(const Array &p_convex, RID p_scenario = RID()) const;
 
 	enum InstanceFlags {
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
@@ -1243,10 +1250,10 @@ public:
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
-	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
-	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
-	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
-	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+	virtual void instance_geometry_set_shader_uniform(RID p_instance, const StringName &, const Variant &p_value) = 0;
+	virtual Variant instance_geometry_get_shader_uniform(RID p_instance, const StringName &) const = 0;
+	virtual Variant instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &) const = 0;
+	virtual void instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 
 	/* Bake 3D objects */
 
@@ -1426,9 +1433,9 @@ public:
 
 	virtual void canvas_set_shadow_texture_size(int p_size) = 0;
 
-	/* GLOBAL VARIABLES */
+	/* GLOBAL SHADER UNIFORMS */
 
-	enum GlobalVariableType {
+	enum GlobalShaderUniformType {
 		GLOBAL_VAR_TYPE_BOOL,
 		GLOBAL_VAR_TYPE_BVEC2,
 		GLOBAL_VAR_TYPE_BVEC3,
@@ -1460,20 +1467,20 @@ public:
 		GLOBAL_VAR_TYPE_MAX
 	};
 
-	virtual void global_variable_add(const StringName &p_name, GlobalVariableType p_type, const Variant &p_value) = 0;
-	virtual void global_variable_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_variable_get_list() const = 0;
+	virtual void global_shader_uniform_add(const StringName &p_name, GlobalShaderUniformType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_shader_uniform_get_list() const = 0;
 
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) = 0;
 
-	virtual Variant global_variable_get(const StringName &p_name) const = 0;
-	virtual GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
+	virtual Variant global_shader_uniform_get(const StringName &p_name) const = 0;
+	virtual GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const = 0;
 
-	virtual void global_variables_load_settings(bool p_load_textures) = 0;
-	virtual void global_variables_clear() = 0;
+	virtual void global_shader_uniforms_load_settings(bool p_load_textures) = 0;
+	virtual void global_shader_uniforms_clear() = 0;
 
-	static int global_variable_type_get_shader_datatype(GlobalVariableType p_type);
+	static int global_shader_uniform_type_get_shader_datatype(GlobalShaderUniformType p_type);
 
 	/* FREE */
 
@@ -1570,11 +1577,11 @@ private:
 	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
 	TypedArray<Image> _texture_3d_get(RID p_texture) const;
-	TypedArray<Dictionary> _shader_get_param_list(RID p_shader) const;
+	TypedArray<Dictionary> _shader_get_shader_uniform_list(RID p_shader) const;
 	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
-	Array _instance_geometry_get_shader_parameter_list(RID p_instance) const;
+	TypedArray<Dictionary> _instance_geometry_get_shader_uniform_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };
@@ -1649,7 +1656,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
-VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
+VARIANT_ENUM_CAST(RenderingServer::GlobalShaderUniformType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);

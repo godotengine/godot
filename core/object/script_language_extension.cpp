@@ -62,6 +62,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_script_signal, "signal");
 	GDVIRTUAL_BIND(_get_script_signal_list);
 
+	GDVIRTUAL_BIND(_has_property_default_value, "property");
 	GDVIRTUAL_BIND(_get_property_default_value, "property");
 
 	GDVIRTUAL_BIND(_update_exports);
@@ -74,7 +75,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_members);
 	GDVIRTUAL_BIND(_is_placeholder_fallback_enabled);
 
-	GDVIRTUAL_BIND(_get_rpc_methods);
+	GDVIRTUAL_BIND(_get_rpc_config);
 }
 
 void ScriptLanguageExtension::_bind_methods() {

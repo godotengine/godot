@@ -146,7 +146,7 @@ Array LightmapGIData::_get_light_textures_data() const {
 		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
 
 		for (int j = 0; j < texture_slice_count; j++) {
-			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2(0, 0, slice_width, slice_height), Point2(0, slice_height * j));
+			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
 		}
 
 		String texture_path = texture_count > 1 ? base_name + "_" + itos(i) + ".exr" : base_name + ".exr";
@@ -1219,7 +1219,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	data->set_path(p_image_data_path);
-	Error err = ResourceSaver::save(p_image_data_path, data);
+	Error err = ResourceSaver::save(data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
@@ -1410,17 +1410,16 @@ LightmapGI::GenerateProbes LightmapGI::get_generate_probes() const {
 	return gen_probes;
 }
 
-void LightmapGI::_validate_property(PropertyInfo &property) const {
-	if (property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		property.usage = PROPERTY_USAGE_NONE;
+void LightmapGI::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	VisualInstance3D::_validate_property(property);
 }
 
 void LightmapGI::_bind_methods() {

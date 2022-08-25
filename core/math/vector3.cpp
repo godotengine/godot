@@ -117,6 +117,22 @@ Vector3 Vector3::octahedron_decode(const Vector2 &p_oct) {
 	return n.normalized();
 }
 
+Vector2 Vector3::octahedron_tangent_encode(const float sign) const {
+	Vector2 res = this->octahedron_encode();
+	res.y = res.y * 0.5f + 0.5f;
+	res.y = sign >= 0.0f ? res.y : 1 - res.y;
+	return res;
+}
+
+Vector3 Vector3::octahedron_tangent_decode(const Vector2 &p_oct, float *sign) {
+	Vector2 oct_compressed = p_oct;
+	oct_compressed.y = oct_compressed.y * 2 - 1;
+	*sign = oct_compressed.y >= 0.0f ? 1.0f : -1.0f;
+	oct_compressed.y = Math::abs(oct_compressed.y);
+	Vector3 res = Vector3::octahedron_decode(oct_compressed);
+	return res;
+}
+
 Basis Vector3::outer(const Vector3 &p_with) const {
 	Vector3 row0(x * p_with.x, x * p_with.y, x * p_with.z);
 	Vector3 row1(y * p_with.x, y * p_with.y, y * p_with.z);

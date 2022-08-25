@@ -59,11 +59,11 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC(String, _get_name)
-	GDVIRTUAL0RC(Array, _get_supported_languages)
+	GDVIRTUAL0RC(PackedStringArray, _get_supported_languages)
 
 public:
 	virtual String _get_name() const;
-	virtual Array _get_supported_languages() const;
+	virtual PackedStringArray _get_supported_languages() const;
 
 	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resourse = p_res; }
 	Ref<RefCounted> _get_edited_resource() { return edited_resourse; }
@@ -156,7 +156,7 @@ public:
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
-	virtual Array get_breakpoints() = 0;
+	virtual PackedInt32Array get_breakpoints() = 0;
 	virtual void set_breakpoint(int p_line, bool p_enabled) = 0;
 	virtual void clear_breakpoints() = 0;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
@@ -386,7 +386,7 @@ class ScriptEditor : public PanelContainer {
 	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
 	ScriptEditorBase *_get_current_editor() const;
-	Array _get_open_script_editors() const;
+	TypedArray<ScriptEditorBase> _get_open_script_editors() const;
 
 	Ref<ConfigFile> script_editor_cache;
 	void _save_editor_state(ScriptEditorBase *p_editor);
@@ -452,7 +452,7 @@ class ScriptEditor : public PanelContainer {
 	void _file_dialog_action(String p_file);
 
 	Ref<Script> _get_current_script();
-	Array _get_open_scripts() const;
+	TypedArray<Script> _get_open_scripts() const;
 
 	HashSet<String> textfile_extensions;
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;

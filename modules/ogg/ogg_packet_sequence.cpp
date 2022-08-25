@@ -31,7 +31,7 @@
 #include "ogg_packet_sequence.h"
 #include "core/variant/typed_array.h"
 
-void OGGPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data) {
+void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data) {
 	Vector<PackedByteArray> data_stored;
 	for (int i = 0; i < p_data.size(); i++) {
 		data_stored.push_back(p_data[i]);
@@ -41,7 +41,7 @@ void OGGPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByte
 	data_version++;
 }
 
-void OGGPacketSequence::set_packet_data(const Array &p_data) {
+void OggPacketSequence::set_packet_data(const Array &p_data) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
 	page_data.clear();
 	for (int page_idx = 0; page_idx < p_data.size(); page_idx++) {
@@ -54,7 +54,7 @@ void OGGPacketSequence::set_packet_data(const Array &p_data) {
 	}
 }
 
-Array OGGPacketSequence::get_packet_data() const {
+Array OggPacketSequence::get_packet_data() const {
 	Array ret;
 	for (const Vector<PackedByteArray> &page : page_data) {
 		Array page_variant;
@@ -66,7 +66,7 @@ Array OGGPacketSequence::get_packet_data() const {
 	return ret;
 }
 
-void OGGPacketSequence::set_packet_granule_positions(const Array &p_granule_positions) {
+void OggPacketSequence::set_packet_granule_positions(const Array &p_granule_positions) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
 	page_granule_positions.clear();
 	for (int page_idx = 0; page_idx < p_granule_positions.size(); page_idx++) {
@@ -75,7 +75,7 @@ void OGGPacketSequence::set_packet_granule_positions(const Array &p_granule_posi
 	}
 }
 
-Array OGGPacketSequence::get_packet_granule_positions() const {
+Array OggPacketSequence::get_packet_granule_positions() const {
 	Array ret;
 	for (int64_t granule_pos : page_granule_positions) {
 		ret.push_back(granule_pos);
@@ -83,22 +83,22 @@ Array OGGPacketSequence::get_packet_granule_positions() const {
 	return ret;
 }
 
-void OGGPacketSequence::set_sampling_rate(float p_sampling_rate) {
+void OggPacketSequence::set_sampling_rate(float p_sampling_rate) {
 	sampling_rate = p_sampling_rate;
 }
 
-float OGGPacketSequence::get_sampling_rate() const {
+float OggPacketSequence::get_sampling_rate() const {
 	return sampling_rate;
 }
 
-int64_t OGGPacketSequence::get_final_granule_pos() const {
+int64_t OggPacketSequence::get_final_granule_pos() const {
 	if (!page_granule_positions.is_empty()) {
 		return page_granule_positions[page_granule_positions.size() - 1];
 	}
 	return -1;
 }
 
-float OGGPacketSequence::get_length() const {
+float OggPacketSequence::get_length() const {
 	int64_t granule_pos = get_final_granule_pos();
 	if (granule_pos < 0) {
 		return 0;
@@ -106,33 +106,33 @@ float OGGPacketSequence::get_length() const {
 	return granule_pos / sampling_rate;
 }
 
-Ref<OGGPacketSequencePlayback> OGGPacketSequence::instance_playback() {
-	Ref<OGGPacketSequencePlayback> playback;
+Ref<OggPacketSequencePlayback> OggPacketSequence::instantiate_playback() {
+	Ref<OggPacketSequencePlayback> playback;
 	playback.instantiate();
-	playback->ogg_packet_sequence = Ref<OGGPacketSequence>(this);
+	playback->ogg_packet_sequence = Ref<OggPacketSequence>(this);
 	playback->data_version = data_version;
 
 	return playback;
 }
 
-void OGGPacketSequence::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_packet_data", "packet_data"), &OGGPacketSequence::set_packet_data);
-	ClassDB::bind_method(D_METHOD("get_packet_data"), &OGGPacketSequence::get_packet_data);
+void OggPacketSequence::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_packet_data", "packet_data"), &OggPacketSequence::set_packet_data);
+	ClassDB::bind_method(D_METHOD("get_packet_data"), &OggPacketSequence::get_packet_data);
 
-	ClassDB::bind_method(D_METHOD("set_packet_granule_positions", "granule_positions"), &OGGPacketSequence::set_packet_granule_positions);
-	ClassDB::bind_method(D_METHOD("get_packet_granule_positions"), &OGGPacketSequence::get_packet_granule_positions);
+	ClassDB::bind_method(D_METHOD("set_packet_granule_positions", "granule_positions"), &OggPacketSequence::set_packet_granule_positions);
+	ClassDB::bind_method(D_METHOD("get_packet_granule_positions"), &OggPacketSequence::get_packet_granule_positions);
 
-	ClassDB::bind_method(D_METHOD("set_sampling_rate", "sampling_rate"), &OGGPacketSequence::set_sampling_rate);
-	ClassDB::bind_method(D_METHOD("get_sampling_rate"), &OGGPacketSequence::get_sampling_rate);
+	ClassDB::bind_method(D_METHOD("set_sampling_rate", "sampling_rate"), &OggPacketSequence::set_sampling_rate);
+	ClassDB::bind_method(D_METHOD("get_sampling_rate"), &OggPacketSequence::get_sampling_rate);
 
-	ClassDB::bind_method(D_METHOD("get_length"), &OGGPacketSequence::get_length);
+	ClassDB::bind_method(D_METHOD("get_length"), &OggPacketSequence::get_length);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "packet_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_data", "get_packet_data");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "granule_positions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_granule_positions", "get_packet_granule_positions");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sampling_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_sampling_rate", "get_sampling_rate");
 }
 
-bool OGGPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
+bool OggPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
 	ERR_FAIL_COND_V(data_version != ogg_packet_sequence->data_version, false);
 	ERR_FAIL_COND_V(ogg_packet_sequence->page_data.is_empty(), false);
 	ERR_FAIL_COND_V(ogg_packet_sequence->page_granule_positions.is_empty(), false);
@@ -161,7 +161,7 @@ bool OGGPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
 	return true;
 }
 
-uint32_t OGGPacketSequencePlayback::seek_page_internal(int64_t granule, uint32_t after_page_inclusive, uint32_t before_page_inclusive) {
+uint32_t OggPacketSequencePlayback::seek_page_internal(int64_t granule, uint32_t after_page_inclusive, uint32_t before_page_inclusive) {
 	// FIXME: This function needs better corner case handling.
 	if (before_page_inclusive == after_page_inclusive) {
 		return before_page_inclusive;
@@ -198,7 +198,7 @@ uint32_t OGGPacketSequencePlayback::seek_page_internal(int64_t granule, uint32_t
 	}
 }
 
-bool OGGPacketSequencePlayback::seek_page(int64_t p_granule_pos) {
+bool OggPacketSequencePlayback::seek_page(int64_t p_granule_pos) {
 	int correct_page = seek_page_internal(p_granule_pos, 0, ogg_packet_sequence->page_data.size() - 1);
 	if (correct_page == -1) {
 		return false;
@@ -213,10 +213,10 @@ bool OGGPacketSequencePlayback::seek_page(int64_t p_granule_pos) {
 	return true;
 }
 
-OGGPacketSequencePlayback::OGGPacketSequencePlayback() {
+OggPacketSequencePlayback::OggPacketSequencePlayback() {
 	packet = new ogg_packet();
 }
 
-OGGPacketSequencePlayback::~OGGPacketSequencePlayback() {
+OggPacketSequencePlayback::~OggPacketSequencePlayback() {
 	delete packet;
 }

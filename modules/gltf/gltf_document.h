@@ -31,48 +31,19 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
-#include "gltf_animation.h"
+#include "gltf_defines.h"
+#include "structures/gltf_animation.h"
 
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
-#include <cstdint>
-
-class GLTFState;
-class GLTFSkin;
-class GLTFNode;
-class GLTFSpecGloss;
-class GLTFSkeleton;
-class CSGShape3D;
-class GridMap;
-class MultiMeshInstance3D;
-class GLTFDocumentExtension;
-
-using GLTFAccessorIndex = int;
-using GLTFAnimationIndex = int;
-using GLTFBufferIndex = int;
-using GLTFBufferViewIndex = int;
-using GLTFCameraIndex = int;
-using GLTFImageIndex = int;
-using GLTFMaterialIndex = int;
-using GLTFMeshIndex = int;
-using GLTFLightIndex = int;
-using GLTFNodeIndex = int;
-using GLTFSkeletonIndex = int;
-using GLTFSkinIndex = int;
-using GLTFTextureIndex = int;
-
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
-	friend class GLTFState;
-	friend class GLTFSkin;
-	friend class GLTFSkeleton;
 	TypedArray<GLTFDocumentExtension> document_extensions;
 
 private:
@@ -81,15 +52,6 @@ private:
 public:
 	GLTFDocument();
 	const int32_t JOINT_GROUP_SIZE = 4;
-	enum GLTFType {
-		TYPE_SCALAR,
-		TYPE_VEC2,
-		TYPE_VEC3,
-		TYPE_VEC4,
-		TYPE_MAT2,
-		TYPE_MAT3,
-		TYPE_MAT4,
-	};
 
 	enum {
 		ARRAY_BUFFER = 34962,
@@ -118,58 +80,6 @@ public:
 	TypedArray<GLTFDocumentExtension> get_extensions() const;
 
 private:
-	template <class T>
-	static Array to_array(const Vector<T> &p_inp) {
-		Array ret;
-		for (int i = 0; i < p_inp.size(); i++) {
-			ret.push_back(p_inp[i]);
-		}
-		return ret;
-	}
-
-	template <class T>
-	static Array to_array(const HashSet<T> &p_inp) {
-		Array ret;
-		typename HashSet<T>::Iterator elem = p_inp.begin();
-		while (elem) {
-			ret.push_back(*elem);
-			++elem;
-		}
-		return ret;
-	}
-
-	template <class T>
-	static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
-		r_out.clear();
-		for (int i = 0; i < p_inp.size(); i++) {
-			r_out.push_back(p_inp[i]);
-		}
-	}
-
-	template <class T>
-	static void set_from_array(HashSet<T> &r_out, const Array &p_inp) {
-		r_out.clear();
-		for (int i = 0; i < p_inp.size(); i++) {
-			r_out.insert(p_inp[i]);
-		}
-	}
-	template <class K, class V>
-	static Dictionary to_dict(const HashMap<K, V> &p_inp) {
-		Dictionary ret;
-		for (const KeyValue<K, V> &E : p_inp) {
-			ret[E.key] = E.value;
-		}
-		return ret;
-	}
-
-	template <class K, class V>
-	static void set_from_dict(HashMap<K, V> &r_out, const Dictionary &p_inp) {
-		r_out.clear();
-		Array keys = p_inp.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			r_out[keys[i]] = p_inp[keys[i]];
-		}
-	}
 	void _build_parent_hierachy(Ref<GLTFState> state);
 	double _filter_number(double p_float);
 	String _get_component_type_name(const uint32_t p_component);
@@ -177,7 +87,7 @@ private:
 	Error _parse_scenes(Ref<GLTFState> state);
 	Error _parse_nodes(Ref<GLTFState> state);
 	String _get_type_name(const GLTFType p_component);
-	String _get_accessor_type_name(const GLTFDocument::GLTFType p_type);
+	String _get_accessor_type_name(const GLTFType p_type);
 	String _gen_unique_name(Ref<GLTFState> state, const String &p_name);
 	String _sanitize_animation_name(const String &name);
 	String _gen_unique_animation_name(Ref<GLTFState> state, const String &p_name);

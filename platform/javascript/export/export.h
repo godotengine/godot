@@ -33,4 +33,4 @@
 
 void register_javascript_exporter();
 
-#endif
+#endif // JAVASCRIPT_EXPORT_H

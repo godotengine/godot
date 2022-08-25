@@ -31,10 +31,10 @@
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
@@ -157,7 +157,7 @@ void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) 
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();
 		if (split[2] == "position") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, skeleton->get(p_path));
+			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
 		}
 		if (split[2] == "rotation") {
 			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
@@ -221,7 +221,7 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 };
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
-	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_INIT_SELECTED_POSES, !p_bone_options_enabled);
+	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
 };
 
@@ -231,12 +231,12 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 	}
 
 	switch (p_skeleton_option) {
-		case SKELETON_OPTION_INIT_ALL_POSES: {
-			init_pose(true);
+		case SKELETON_OPTION_RESET_ALL_POSES: {
+			reset_pose(true);
 			break;
 		}
-		case SKELETON_OPTION_INIT_SELECTED_POSES: {
-			init_pose(false);
+		case SKELETON_OPTION_RESET_SELECTED_POSES: {
+			reset_pose(false);
 			break;
 		}
 		case SKELETON_OPTION_ALL_POSES_TO_RESTS: {
@@ -258,7 +258,7 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 	}
 }
 
-void Skeleton3DEditor::init_pose(const bool p_all_bones) {
+void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 	if (!skeleton) {
 		return;
 	}
@@ -267,31 +267,25 @@ void Skeleton3DEditor::init_pose(const bool p_all_bones) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
-			Transform3D rest = skeleton->get_bone_rest(i);
-			ur->add_do_method(skeleton, "set_bone_pose_position", i, rest.origin);
-			ur->add_do_method(skeleton, "set_bone_pose_rotation", i, rest.basis.get_rotation_quaternion());
-			ur->add_do_method(skeleton, "set_bone_pose_scale", i, rest.basis.get_scale());
 			ur->add_undo_method(skeleton, "set_bone_pose_position", i, skeleton->get_bone_pose_position(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", i, skeleton->get_bone_pose_rotation(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_scale", i, skeleton->get_bone_pose_scale(i));
 		}
+		ur->add_do_method(skeleton, "reset_bone_poses");
 	} else {
 		// Todo: Do method with multiple bone selection.
 		if (selected_bone == -1) {
 			ur->commit_action();
 			return;
 		}
-		Transform3D rest = skeleton->get_bone_rest(selected_bone);
-		ur->add_do_method(skeleton, "set_bone_pose_position", selected_bone, rest.origin);
-		ur->add_do_method(skeleton, "set_bone_pose_rotation", selected_bone, rest.basis.get_rotation_quaternion());
-		ur->add_do_method(skeleton, "set_bone_pose_scale", selected_bone, rest.basis.get_scale());
 		ur->add_undo_method(skeleton, "set_bone_pose_position", selected_bone, skeleton->get_bone_pose_position(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_rotation", selected_bone, skeleton->get_bone_pose_rotation(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_scale", selected_bone, skeleton->get_bone_pose_scale(selected_bone));
+		ur->add_do_method(skeleton, "reset_bone_pose", selected_bone);
 	}
 	ur->commit_action();
 }
@@ -319,7 +313,7 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 		}
 
 		if (pos_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i));
+			te->insert_transform_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
 		}
 		if (rot_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
 			te->insert_transform_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
@@ -340,7 +334,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Rest"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
@@ -360,7 +354,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::create_physical_skeleton() {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ERR_FAIL_COND(!get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
@@ -515,7 +509,7 @@ void Skeleton3DEditor::_file_selected(const String &p_file) {
 		}
 	}
 
-	Error err = ResourceSaver::save(p_file, sp);
+	Error err = ResourceSaver::save(sp, p_file);
 
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_file));
@@ -593,7 +587,7 @@ void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_se
 	Node *node = get_node_or_null(p_skeleton_path);
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 	ERR_FAIL_NULL(skeleton);
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Parentage"));
 	// If the target is a child of ourselves, we move only *us* and not our children.
 	if (skeleton->is_bone_parent_of(p_target_boneidx, p_selected_boneidx)) {
@@ -721,8 +715,8 @@ void Skeleton3DEditor::create_editors() {
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/init_all_poses", TTR("Init all Poses")), SKELETON_OPTION_INIT_ALL_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/init_selected_poses", TTR("Init selected Poses")), SKELETON_OPTION_INIT_SELECTED_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset all bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
 	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
@@ -782,7 +776,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
-	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(false));
+	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
 	key_insert_button->set_tooltip(TTR("Insert key of bone poses already exist track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTR("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
@@ -790,7 +784,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button = memnew(Button);
 	key_insert_all_button->set_flat(true);
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
-	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(true));
+	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
 	key_insert_all_button->set_tooltip(TTR("Insert key of all bone poses."));
 	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);
@@ -836,7 +830,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
 			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
 			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Vector<Variant>(), Object::CONNECT_ONESHOT);
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
 			break;
 		}
 		case NOTIFICATION_ENTER_TREE: {
@@ -921,8 +915,8 @@ void fragment() {
 )");
 	handle_material->set_shader(handle_shader);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
-	handle_material->set_shader_param("point_size", handle->get_width());
-	handle_material->set_shader_param("texture_albedo", handle);
+	handle_material->set_shader_uniform("point_size", handle->get_width());
+	handle_material->set_shader_uniform("texture_albedo", handle);
 
 	handles_mesh_instance = memnew(MeshInstance3D);
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
@@ -1315,7 +1309,7 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Transform"));
 	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		for (int i = 0; i < p_ids.size(); i++) {

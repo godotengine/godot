@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "main/main.h"
 #include "servers/display_server.h"
 
 EditorRun::Status EditorRun::get_status() const {
@@ -46,6 +47,10 @@ String EditorRun::get_running_scene() const {
 Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	List<String> args;
 
+	for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_PROJECT)) {
+		args.push_back(a);
+	}
+
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 	if (!resource_path.is_empty()) {
 		args.push_back("--path");
@@ -55,7 +60,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	args.push_back("--remote-debug");
 	args.push_back(EditorDebuggerNode::get_singleton()->get_server_uri());
 
-	args.push_back("--allow_focus_steal_pid");
+	args.push_back("--editor-pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
 
 	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
@@ -103,10 +108,6 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		// Fixed monitor ID
 		// There are 3 special options, so decrement the option ID by 3 to get the monitor ID
 		screen -= 3;
-	}
-
-	if (OS::get_singleton()->is_disable_crash_handler()) {
-		args.push_back("--disable-crash-handler");
 	}
 
 	Rect2 screen_rect;

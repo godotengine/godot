@@ -43,7 +43,7 @@ void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t *lookups_o
 
 
 hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
-					  const hb_segment_properties_t *props_)
+					  const hb_segment_properties_t &props_)
 {
   memset (this, 0, sizeof (*this));
 
@@ -52,7 +52,7 @@ hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
     stages[table_index].init ();
 
   face = face_;
-  props = *props_;
+  props = props_;
 
   /* Fetch script/language indices for GSUB/GPOS.  We need these later to skip
    * features not available in either table and not waste precious bits for them. */
@@ -107,6 +107,21 @@ void hb_ot_map_builder_t::add_feature (hb_tag_t tag,
   info->default_value = (flags & F_GLOBAL) ? value : 0;
   info->stage[0] = current_stage[0];
   info->stage[1] = current_stage[1];
+}
+
+bool hb_ot_map_builder_t::has_feature (hb_tag_t tag)
+{
+  for (unsigned int table_index = 0; table_index < 2; table_index++)
+  {
+    if (hb_ot_layout_language_find_feature (face,
+					    table_tags[table_index],
+					    script_index[table_index],
+					    language_index[table_index],
+					    tag,
+					    nullptr))
+      return true;
+  }
+  return false;
 }
 
 void

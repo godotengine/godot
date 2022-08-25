@@ -33,7 +33,6 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
-#include "editor/property_editor.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
@@ -42,6 +41,7 @@
 
 class ProgressBar;
 class EditorFileDialog;
+class EditorUndoRedoManager;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -55,7 +55,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;

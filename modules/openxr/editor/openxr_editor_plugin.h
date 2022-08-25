@@ -50,4 +50,4 @@ public:
 	~OpenXREditorPlugin();
 };
 
-#endif // !OPENXR_EDITOR_PLUGIN_H
+#endif // OPENXR_EDITOR_PLUGIN_H

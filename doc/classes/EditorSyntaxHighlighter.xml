@@ -17,7 +17,7 @@
 			</description>
 		</method>
 		<method name="_get_supported_languages" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Virtual method which can be overridden to return the supported language names.
 			</description>
