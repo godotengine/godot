@@ -2162,6 +2162,14 @@ bool Engine::is_in_physics_frame() const {
 	return ::Engine::get_singleton()->is_in_physics_frame();
 }
 
+void Engine::set_session_id(int p_session_id) {
+	::Engine::get_singleton()->set_session_id(p_session_id);
+}
+
+int Engine::get_session_id() const {
+	return ::Engine::get_singleton()->get_session_id();
+}
+
 bool Engine::has_singleton(const StringName &p_name) const {
 	return ::Engine::get_singleton()->has_singleton(p_name);
 }
@@ -2258,6 +2266,9 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_architecture_name"), &Engine::get_architecture_name);
 
 	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &Engine::is_in_physics_frame);
+
+	ClassDB::bind_method(D_METHOD("get_session_id"), &Engine::get_session_id);
+	ClassDB::bind_method(D_METHOD("set_session_id", "p_session_id"), &Engine::set_session_id);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);

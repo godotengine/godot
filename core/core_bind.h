@@ -664,6 +664,9 @@ public:
 
 	bool is_in_physics_frame() const;
 
+	void set_session_id(int p_session_id);
+	int get_session_id() const;
+
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;
 	void register_singleton(const StringName &p_name, Object *p_object);

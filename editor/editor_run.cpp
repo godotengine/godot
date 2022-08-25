@@ -216,6 +216,10 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	String exec = OS::get_singleton()->get_executable_path();
 
 	const String raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
+
+	const int instances_count = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	int instance_count_array_position = -1;
+
 	if (!raw_custom_args.is_empty()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
 		// In this case, Godot will no longer be run directly; it's up to the underlying command
@@ -250,11 +254,19 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
 		} else {
-			// Append Godot-specific custom arguments.
 			custom_args = raw_custom_args.split(" ", false);
 			for (int i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
+		}
+	} else {
+		if (instances_count > 1) {
+			String scene_arg = args.back()->get();
+			args.pop_back();
+			args.push_back("--session-id");
+			args.push_back(String::num_int64(1));
+			instance_count_array_position = args.size() - 1;
+			args.push_back(scene_arg);
 		}
 	}
 
@@ -263,15 +275,19 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
-	printf("Running: %s", exec.utf8().get_data());
-	for (const String &E : args) {
-		printf(" %s", E.utf8().get_data());
-	};
-	printf("\n");
-
-	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
-	for (int i = 0; i < instances; i++) {
+	for (int i = 0; i < instances_count; i++) {
 		OS::ProcessID pid = 0;
+
+		if (instances_count > 1 && instance_count_array_position > 0) {
+			args[instance_count_array_position] = String::num_int64(i);
+		}
+
+		printf("Running Godot Instance: %s", exec.utf8().get_data());
+		for (const String &E : args) {
+			printf(" %s", E.utf8().get_data());
+		};
+		printf("\n");
+
 		Error err = OS::get_singleton()->create_instance(args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		pids.push_back(pid);

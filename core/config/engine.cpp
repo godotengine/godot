@@ -79,6 +79,10 @@ uint32_t Engine::get_frame_delay() const {
 	return _frame_delay;
 }
 
+void Engine::set_session_id(uint8_t p_session_id) {
+	_session_id = p_session_id;
+}
+
 void Engine::set_time_scale(double p_scale) {
 	_time_scale = p_scale;
 }

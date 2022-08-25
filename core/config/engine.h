@@ -71,6 +71,8 @@ private:
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
 
+	uint8_t _session_id = 1;
+
 	List<Singleton> singletons;
 	HashMap<StringName, Object *> singleton_ptrs;
 
@@ -119,6 +121,9 @@ public:
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
 
+	void set_session_id(uint8_t p_id);
+	uint8_t get_session_id() const { return _session_id; }
+
 	void add_singleton(const Singleton &p_singleton);
 	void get_singletons(List<Singleton> *p_singletons);
 	bool has_singleton(const StringName &p_name) const;
@@ -127,17 +132,29 @@ public:
 	bool is_singleton_user_created(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
-	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
+	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {
+		editor_hint = p_enabled;
+	}
+	_FORCE_INLINE_ bool is_editor_hint() const {
+		return editor_hint;
+	}
 
-	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
-	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
+	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {
+		project_manager_hint = p_enabled;
+	}
+	_FORCE_INLINE_ bool is_project_manager_hint() const {
+		return project_manager_hint;
+	}
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
+	_FORCE_INLINE_ bool is_editor_hint() const {
+		return false;
+	}
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
+	_FORCE_INLINE_ bool is_project_manager_hint() const {
+		return false;
+	}
 #endif
 
 	Dictionary get_version_info() const;

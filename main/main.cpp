@@ -178,6 +178,7 @@ static bool init_maximized = false;
 static bool init_windowed = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
+static uint8_t init_session_id = 1;
 static Vector2 init_custom_pos;
 
 // Debug
@@ -1123,6 +1124,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = "Dummy";
 			display_driver = "headless";
 			main_args.push_back(I->get());
+		} else if (I->get() == "--session-id") {
+			if (I->next()) {
+				init_session_id = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing session id argument, aborting.");
+			}
 #endif
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
@@ -1649,6 +1657,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+
+	Engine::get_singleton()->set_session_id(init_session_id);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
