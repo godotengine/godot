@@ -1183,9 +1183,9 @@ bool CharacterBody3D::move_and_slide() {
 	if ((collision_state.floor || collision_state.wall) && platform_rid.is_valid()) {
 		bool excluded = false;
 		if (collision_state.floor) {
-			excluded = (moving_platform_floor_layers & platform_layer) == 0;
+			excluded = (platform_floor_layers & platform_layer) == 0;
 		} else if (collision_state.wall) {
-			excluded = (moving_platform_wall_layers & platform_layer) == 0;
+			excluded = (platform_wall_layers & platform_layer) == 0;
 		}
 		if (!excluded) {
 			//this approach makes sure there is less delay between the actual body velocity and the one we saved
@@ -1237,10 +1237,10 @@ bool CharacterBody3D::move_and_slide() {
 	// Compute real velocity.
 	real_velocity = get_position_delta() / delta;
 
-	if (moving_platform_apply_velocity_on_leave != PLATFORM_VEL_ON_LEAVE_NEVER) {
+	if (platform_on_leave != PLATFORM_ON_LEAVE_DO_NOTHING) {
 		// Add last platform velocity when just left a moving platform.
 		if (!collision_state.floor && !collision_state.wall) {
-			if (moving_platform_apply_velocity_on_leave == PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY && current_platform_velocity.dot(up_direction) < 0) {
+			if (platform_on_leave == PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY && current_platform_velocity.dot(up_direction) < 0) {
 				current_platform_velocity = current_platform_velocity.slide(up_direction);
 			}
 			velocity += current_platform_velocity;
@@ -1860,20 +1860,20 @@ void CharacterBody3D::set_slide_on_ceiling_enabled(bool p_enabled) {
 	slide_on_ceiling = p_enabled;
 }
 
-uint32_t CharacterBody3D::get_moving_platform_floor_layers() const {
-	return moving_platform_floor_layers;
+uint32_t CharacterBody3D::get_platform_floor_layers() const {
+	return platform_floor_layers;
 }
 
-void CharacterBody3D::set_moving_platform_floor_layers(uint32_t p_exclude_layers) {
-	moving_platform_floor_layers = p_exclude_layers;
+void CharacterBody3D::set_platform_floor_layers(uint32_t p_exclude_layers) {
+	platform_floor_layers = p_exclude_layers;
 }
 
-uint32_t CharacterBody3D::get_moving_platform_wall_layers() const {
-	return moving_platform_wall_layers;
+uint32_t CharacterBody3D::get_platform_wall_layers() const {
+	return platform_wall_layers;
 }
 
-void CharacterBody3D::set_moving_platform_wall_layers(uint32_t p_exclude_layers) {
-	moving_platform_wall_layers = p_exclude_layers;
+void CharacterBody3D::set_platform_wall_layers(uint32_t p_exclude_layers) {
+	platform_wall_layers = p_exclude_layers;
 }
 
 void CharacterBody3D::set_motion_mode(MotionMode p_mode) {
@@ -1884,12 +1884,12 @@ CharacterBody3D::MotionMode CharacterBody3D::get_motion_mode() const {
 	return motion_mode;
 }
 
-void CharacterBody3D::set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_apply_velocity) {
-	moving_platform_apply_velocity_on_leave = p_on_leave_apply_velocity;
+void CharacterBody3D::set_platform_on_leave(PlatformOnLeave p_on_leave_apply_velocity) {
+	platform_on_leave = p_on_leave_apply_velocity;
 }
 
-CharacterBody3D::MovingPlatformApplyVelocityOnLeave CharacterBody3D::get_moving_platform_apply_velocity_on_leave() const {
-	return moving_platform_apply_velocity_on_leave;
+CharacterBody3D::PlatformOnLeave CharacterBody3D::get_platform_on_leave() const {
+	return platform_on_leave;
 }
 
 int CharacterBody3D::get_max_slides() const {
@@ -1965,10 +1965,10 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slide_on_ceiling_enabled", "enabled"), &CharacterBody3D::set_slide_on_ceiling_enabled);
 	ClassDB::bind_method(D_METHOD("is_slide_on_ceiling_enabled"), &CharacterBody3D::is_slide_on_ceiling_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_moving_platform_floor_layers", "exclude_layer"), &CharacterBody3D::set_moving_platform_floor_layers);
-	ClassDB::bind_method(D_METHOD("get_moving_platform_floor_layers"), &CharacterBody3D::get_moving_platform_floor_layers);
-	ClassDB::bind_method(D_METHOD("set_moving_platform_wall_layers", "exclude_layer"), &CharacterBody3D::set_moving_platform_wall_layers);
-	ClassDB::bind_method(D_METHOD("get_moving_platform_wall_layers"), &CharacterBody3D::get_moving_platform_wall_layers);
+	ClassDB::bind_method(D_METHOD("set_platform_floor_layers", "exclude_layer"), &CharacterBody3D::set_platform_floor_layers);
+	ClassDB::bind_method(D_METHOD("get_platform_floor_layers"), &CharacterBody3D::get_platform_floor_layers);
+	ClassDB::bind_method(D_METHOD("set_platform_wall_layers", "exclude_layer"), &CharacterBody3D::set_platform_wall_layers);
+	ClassDB::bind_method(D_METHOD("get_platform_wall_layers"), &CharacterBody3D::get_platform_wall_layers);
 
 	ClassDB::bind_method(D_METHOD("get_max_slides"), &CharacterBody3D::get_max_slides);
 	ClassDB::bind_method(D_METHOD("set_max_slides", "max_slides"), &CharacterBody3D::set_max_slides);
@@ -1982,8 +1982,8 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_up_direction", "up_direction"), &CharacterBody3D::set_up_direction);
 	ClassDB::bind_method(D_METHOD("set_motion_mode", "mode"), &CharacterBody3D::set_motion_mode);
 	ClassDB::bind_method(D_METHOD("get_motion_mode"), &CharacterBody3D::get_motion_mode);
-	ClassDB::bind_method(D_METHOD("set_moving_platform_apply_velocity_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_moving_platform_apply_velocity_on_leave);
-	ClassDB::bind_method(D_METHOD("get_moving_platform_apply_velocity_on_leave"), &CharacterBody3D::get_moving_platform_apply_velocity_on_leave);
+	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_platform_on_leave);
+	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody3D::get_platform_on_leave);
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody3D::is_on_floor_only);
@@ -2016,10 +2016,10 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,suffix:m"), "set_floor_snap_length", "get_floor_snap_length");
 
-	ADD_GROUP("Moving Platform", "moving_platform");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
+	ADD_GROUP("Moving Platform", "platform_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_on_leave", PROPERTY_HINT_ENUM, "Add Velocity,Add Upward Velocity,Do Nothing", PROPERTY_USAGE_DEFAULT), "set_platform_on_leave", "get_platform_on_leave");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
 
 	ADD_GROUP("Collision", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
@@ -2027,9 +2027,9 @@ void CharacterBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
 	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);
 
-	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_ALWAYS);
-	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY);
-	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
+	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_ADD_VELOCITY);
+	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY);
+	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_DO_NOTHING);
 }
 
 void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
