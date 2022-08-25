@@ -962,8 +962,13 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_inf
 
 	bool collided = move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only);
 
+	// Ugly hack as a hot fix, 65b3200 fix an issue but cause a problem with Bullet that broke games using Bullet.
+	// The bug is something internal to Bullet, seems to be related to the Bullet’s margin. As not proper fix was found yet,
+	// this temporary solution solves the issue for games using Bullet.
+	bool is_bullet = PhysicsServerManager::current_server_id != 0;
+
 	// Don't report collision when the whole motion is done.
-	if (collided && col.collision_safe_fraction < 1) {
+	if (collided && (col.collision_safe_fraction < 1 || is_bullet)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instance();

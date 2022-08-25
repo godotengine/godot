@@ -810,6 +810,7 @@ PhysicsServer::~PhysicsServer() {
 
 Vector<PhysicsServerManager::ClassInfo> PhysicsServerManager::physics_servers;
 int PhysicsServerManager::default_server_id = -1;
+int PhysicsServerManager::current_server_id = -1;
 int PhysicsServerManager::default_server_priority = -1;
 const String PhysicsServerManager::setting_property_name(PNAME("physics/3d/physics_engine"));
 
@@ -857,6 +858,7 @@ String PhysicsServerManager::get_server_name(int p_id) {
 
 PhysicsServer *PhysicsServerManager::new_default_server() {
 	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
+	current_server_id = default_server_id;
 	return physics_servers[default_server_id].create_callback();
 }
 
@@ -865,6 +867,7 @@ PhysicsServer *PhysicsServerManager::new_server(const String &p_name) {
 	if (id == -1) {
 		return nullptr;
 	} else {
+		current_server_id = id;
 		return physics_servers[id].create_callback();
 	}
 }
