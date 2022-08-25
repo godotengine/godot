@@ -578,8 +578,6 @@
 		</member>
 		<member name="text_editor/theme/line_spacing" type="int" setter="" getter="">
 		</member>
-		<member name="text_editor/tools/create_signal_callbacks" type="bool" setter="" getter="">
-		</member>
 		<member name="text_editor/tools/sort_members_outline_alphabetically" type="bool" setter="" getter="">
 		</member>
 	</members>
