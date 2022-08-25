@@ -4,64 +4,68 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Godot.SourceGenerators.Internal;
 
 [Generator]
-public class UnmanagedCallbacksGenerator : ISourceGenerator
+public class UnmanagedCallbacksGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterForPostInitialization(ctx => { GenerateAttribute(ctx); });
+        context.RegisterPostInitializationOutput(ctx => GenerateAttribute(ctx));
+
+        var unmanagedCallbacksClasses = context.SyntaxProvider.CreateSyntaxProvider(
+            predicate: static (s, _) => s is ClassDeclarationSyntax { AttributeLists.Count: > 0 },
+            transform: static (ctx, _) =>
+            {
+                var cds = (ClassDeclarationSyntax)ctx.Node;
+
+                if (!cds.HasGenerateUnmanagedCallbacksAttribute(ctx.SemanticModel, out var symbol))
+                    return default;
+
+                return (cds, symbol);
+            }
+        ).Where(static x => x.symbol is not null);
+
+        var values = context.CompilationProvider.Combine(unmanagedCallbacksClasses.Collect());
+
+        context.RegisterSourceOutput(values, (spc, source) =>
+        {
+            Execute(spc, source.Left, source.Right!);
+        });
     }
 
-    public void Execute(GeneratorExecutionContext context)
+    private static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol)> classesWithAttribute)
     {
-        INamedTypeSymbol[] unmanagedCallbacksClasses = context
-            .Compilation.SyntaxTrees
-            .SelectMany(tree =>
-                tree.GetRoot().DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .SelectUnmanagedCallbacksClasses(context.Compilation)
-                    // Report and skip non-partial classes
-                    .Where(x =>
-                    {
-                        if (x.cds.IsPartial())
-                        {
-                            if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
-                            {
-                                Common.ReportNonPartialUnmanagedCallbacksOuterClass(context, typeMissingPartial!);
-                                return false;
-                            }
+        INamedTypeSymbol[] unmanagedCallbacksClasses = classesWithAttribute.Where(x =>
+        {
+            // Report and skip non-partial classes
+            if (x.cds.IsPartial())
+            {
+                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                {
+                    Common.ReportNonPartialUnmanagedCallbacksOuterClass(context, compilation, typeMissingPartial!);
+                    return false;
+                }
 
-                            return true;
-                        }
+                return true;
+            }
 
-                        Common.ReportNonPartialUnmanagedCallbacksClass(context, x.cds, x.symbol);
-                        return false;
-                    })
-                    .Select(x => x.symbol)
-            )
+            Common.ReportNonPartialUnmanagedCallbacksClass(context, x.cds, x.symbol);
+            return false;
+        }).Select(x => x.symbol)
             .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
             .ToArray();
 
         foreach (var symbol in unmanagedCallbacksClasses)
         {
             var attr = symbol.GetGenerateUnmanagedCallbacksAttribute();
-            if (attr == null || attr.ConstructorArguments.Length != 1)
-            {
-                // TODO: Report error or throw exception, this is an invalid case and should never be reached
-                System.Diagnostics.Debug.Fail("FAILED!");
-                continue;
-            }
+            Debug.Assert(attr != null && attr.ConstructorArguments.Length == 1);
 
             var funcStructType = (INamedTypeSymbol?)attr.ConstructorArguments[0].Value;
-            if (funcStructType == null)
-            {
-                // TODO: Report error or throw exception, this is an invalid case and should never be reached
-                System.Diagnostics.Debug.Fail("FAILED!");
-                continue;
-            }
+            Debug.Assert(funcStructType != null);
 
             var data = new CallbacksData(symbol, funcStructType);
             GenerateInteropMethodImplementations(context, data);
@@ -69,28 +73,29 @@ public class UnmanagedCallbacksGenerator : ISourceGenerator
         }
     }
 
-    private void GenerateAttribute(GeneratorPostInitializationContext context)
+    private static void GenerateAttribute(IncrementalGeneratorPostInitializationContext context)
     {
         string source = @"using System;
 
 namespace Godot.SourceGenerators.Internal
 {
-internal class GenerateUnmanagedCallbacksAttribute : Attribute
-{
-    public Type FuncStructType { get; }
-
-    public GenerateUnmanagedCallbacksAttribute(Type funcStructType)
+    [AttributeUsage(AttributeTargets.Class)]
+    internal class GenerateUnmanagedCallbacksAttribute : Attribute
     {
-        FuncStructType = funcStructType;
+        public Type FuncStructType { get; }
+
+        public GenerateUnmanagedCallbacksAttribute(Type funcStructType)
+        {
+            FuncStructType = funcStructType;
+        }
     }
-}
 }";
 
         context.AddSource("GenerateUnmanagedCallbacksAttribute.generated",
             SourceText.From(source, Encoding.UTF8));
     }
 
-    private void GenerateInteropMethodImplementations(GeneratorExecutionContext context, CallbacksData data)
+    private static void GenerateInteropMethodImplementations(SourceProductionContext context, CallbacksData data)
     {
         var symbol = data.NativeTypeSymbol;
 
@@ -271,7 +276,7 @@ using Godot.NativeInterop;
             SourceText.From(source.ToString(), Encoding.UTF8));
     }
 
-    private void GenerateUnmanagedCallbacksStruct(GeneratorExecutionContext context, CallbacksData data)
+    private static void GenerateUnmanagedCallbacksStruct(SourceProductionContext context, CallbacksData data)
     {
         var symbol = data.FuncStructSymbol;
 
