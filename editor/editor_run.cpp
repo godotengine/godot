@@ -36,6 +36,20 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
+int EditorRun::append_session_identifiers_to_args(List<String> &args) {
+	const int instances_count = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	int instance_count_array_position = -1;
+
+	if (instances_count > 1) {
+		String scene_arg = args.back()->get();
+		args.push_back("--session-id");
+		args.push_back("%session_id%");
+		instance_count_array_position = args.size() - 1;
+	}
+
+	return instance_count_array_position;
+}
+
 EditorRun::Status EditorRun::get_status() const {
 	return status;
 }
@@ -209,6 +223,12 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back("--skip-breakpoints");
 	}
 
+	const int instances_count = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	int session_id_position = -1;
+	if (instances_count > 1) {
+		session_id_position = append_session_identifiers_to_args(args);
+	}
+
 	if (!p_scene.is_empty()) {
 		args.push_back(p_scene);
 	}
@@ -216,9 +236,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	String exec = OS::get_singleton()->get_executable_path();
 
 	const String raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
-
-	const int instances_count = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
-	int instance_count_array_position = -1;
+	int front_pushes = 0; // Used to track any offsets in indices cause by `push_front` calls.
 
 	if (!raw_custom_args.is_empty()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
@@ -241,11 +259,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 				// Append the Godot executable name before we append executable arguments
 				// (since the order is reversed when using `push_front()`).
 				args.push_front(OS::get_singleton()->get_executable_path());
+				front_pushes += 1;
 			}
 
 			for (int i = exec_args.size() - 1; i >= 0; i--) {
 				// Iterate backwards as we're pushing items in the reverse order.
 				args.push_front(exec_args[i].replace(" ", "%20"));
+				front_pushes += 1;
 			}
 
 			// Append Godot-specific custom arguments.
@@ -259,15 +279,6 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
 		}
-	} else {
-		if (instances_count > 1) {
-			String scene_arg = args.back()->get();
-			args.pop_back();
-			args.push_back("--session-id");
-			args.push_back(String::num_int64(1));
-			instance_count_array_position = args.size() - 1;
-			args.push_back(scene_arg);
-		}
 	}
 
 	// Pass the debugger stop shortcut to the running instance(s).
@@ -278,8 +289,8 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	for (int i = 0; i < instances_count; i++) {
 		OS::ProcessID pid = 0;
 
-		if (instances_count > 1 && instance_count_array_position > 0) {
-			args[instance_count_array_position] = String::num_int64(i);
+		if (instances_count > 1 && session_id_position >= 0) {
+			args[session_id_position + front_pushes] = String::num_int64(i);
 		}
 
 		printf("Running Godot Instance: %s", exec.utf8().get_data());

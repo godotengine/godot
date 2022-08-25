@@ -47,6 +47,8 @@ private:
 	Status status;
 	String running_scene;
 
+	int append_session_identifiers_to_args(List<String> &p_to_append_to);
+
 public:
 	Status get_status() const;
 	String get_running_scene() const;

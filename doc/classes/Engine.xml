@@ -131,14 +131,6 @@
 				Session ids are generally assigned to values between 1 and 4, with 1 being the default value.
 			</description>
 		</method>
-		<method name="set_session_id">
-			<return type="void" />
-			<argument index="0" name="p_session_id" type="int" />
-			<description>
-				Assigns a session id to the current engine instance, which happens at launch by supplying [code]--session-id[/code] to the executable.
-				This is used by Godot's multiple-instance debugger so that each engine instance can be differentiated from one another.
-			</description>
-		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object" />
 			<param index="0" name="name" type="StringName" />
@@ -229,6 +221,14 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="instance" type="Object" />
 			<description>
+			</description>
+		</method>
+		<method name="set_session_id">
+			<return type="void" />
+			<param index="0" name="p_session_id" type="int" />
+			<description>
+				Assigns a session id to the current engine instance, which happens at launch by supplying [code]--session-id[/code] to the executable.
+				This is used by Godot's multiple-instance debugger so that each engine instance can be differentiated from one another.
 			</description>
 		</method>
 		<method name="unregister_singleton">
