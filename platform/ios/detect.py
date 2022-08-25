@@ -36,12 +36,22 @@ def get_opts():
 
 def get_flags():
     return [
+        ("arch", "arm64"),  # Default for convenience.
         ("tools", False),
         ("use_volk", False),
     ]
 
 
 def configure(env):
+    # Validate arch.
+    supported_arches = ["x86_64", "arm64"]
+    if env["arch"] not in supported_arches:
+        print(
+            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
+        )
+        sys.exit()
+
     ## Build type
 
     if env["target"].startswith("release"):
@@ -63,11 +73,6 @@ def configure(env):
     if env["use_lto"]:
         env.Append(CCFLAGS=["-flto"])
         env.Append(LINKFLAGS=["-flto"])
-
-    ## Architecture
-    env["bits"] = "64"
-    if env["arch"] != "x86_64":
-        env["arch"] = "arm64"
 
     ## Compiler configuration
 

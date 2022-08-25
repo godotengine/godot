@@ -588,9 +588,9 @@ zip_fileinfo EditorExportPlatformAndroid::get_zip_fileinfo() {
 
 Vector<String> EditorExportPlatformAndroid::get_abis() {
 	Vector<String> abis;
-	abis.push_back("armeabi-v7a");
-	abis.push_back("arm64-v8a");
-	abis.push_back("x86");
+	abis.push_back("arm32");
+	abis.push_back("arm64");
+	abis.push_back("x86_32");
 	abis.push_back("x86_64");
 	return abis;
 }
@@ -1710,7 +1710,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 		const String abi = abis[i];
 		// All Android devices supporting Vulkan run 64-bit Android,
 		// so there is usually no point in exporting for 32-bit Android.
-		const bool is_default = abi == "arm64-v8a";
+		const bool is_default = abi == "arm64";
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("architectures"), abi)), is_default));
 	}
 

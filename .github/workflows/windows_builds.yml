@@ -29,7 +29,7 @@ jobs:
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no
-            bin: "./bin/godot.windows.opt.tools.64.exe"
+            bin: "./bin/godot.windows.opt.tools.x86_64.exe"
 
           - name: Template (target=release, tools=no)
             cache-name: windows-template

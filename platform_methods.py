@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import platform
 import uuid
 import functools
 import subprocess
@@ -71,9 +72,42 @@ def run_in_subprocess(builder_function):
 
 
 def subprocess_main(namespace):
-
     with open(sys.argv[1]) as json_file:
         data = json.load(json_file)
 
     fn = namespace[data["fn"]]
     fn(*data["args"])
+
+
+# CPU architecture options.
+architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32"]
+architecture_aliases = {
+    "x86": "x86_32",
+    "x64": "x86_64",
+    "amd64": "x86_64",
+    "armv7": "arm32",
+    "armv8": "arm64",
+    "arm64v8": "arm64",
+    "aarch64": "arm64",
+    "rv": "rv64",
+    "riscv": "rv64",
+    "riscv64": "rv64",
+    "ppcle": "ppc32",
+    "ppc": "ppc32",
+    "ppc64le": "ppc64",
+}
+
+
+def detect_arch():
+    host_machine = platform.machine().lower()
+    if host_machine in architectures:
+        return host_machine
+    elif host_machine in architecture_aliases.keys():
+        return architecture_aliases[host_machine]
+    elif "86" in host_machine:
+        # Catches x86, i386, i486, i586, i686, etc.
+        return "x86_32"
+    else:
+        print("Unsupported CPU architecture: " + host_machine)
+        print("Falling back to x86_64.")
+        return "x86_64"
