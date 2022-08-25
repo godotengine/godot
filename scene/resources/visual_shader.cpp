@@ -2214,6 +2214,12 @@ void VisualShader::_update_shader() const {
 				case VaryingType::VARYING_TYPE_FLOAT:
 					global_code += "float ";
 					break;
+				case VaryingType::VARYING_TYPE_INT:
+					if (E.value.mode == VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
+						global_code += "flat ";
+					}
+					global_code += "int ";
+					break;
 				case VaryingType::VARYING_TYPE_VECTOR_2D:
 					global_code += "vec2 ";
 					break;
@@ -2223,8 +2229,11 @@ void VisualShader::_update_shader() const {
 				case VaryingType::VARYING_TYPE_VECTOR_4D:
 					global_code += "vec4 ";
 					break;
-				case VaryingType::VARYING_TYPE_COLOR:
-					global_code += "vec4 ";
+				case VaryingType::VARYING_TYPE_BOOLEAN:
+					if (E.value.mode == VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
+						global_code += "flat ";
+					}
+					global_code += "bool ";
 					break;
 				case VaryingType::VARYING_TYPE_TRANSFORM:
 					global_code += "mat4 ";
@@ -2277,6 +2286,9 @@ void VisualShader::_update_shader() const {
 							case VaryingType::VARYING_TYPE_FLOAT:
 								code2 += "0.0";
 								break;
+							case VaryingType::VARYING_TYPE_INT:
+								code2 += "0";
+								break;
 							case VaryingType::VARYING_TYPE_VECTOR_2D:
 								code2 += "vec2(0.0)";
 								break;
@@ -2286,8 +2298,8 @@ void VisualShader::_update_shader() const {
 							case VaryingType::VARYING_TYPE_VECTOR_4D:
 								code2 += "vec4(0.0)";
 								break;
-							case VaryingType::VARYING_TYPE_COLOR:
-								code2 += "vec4(0.0)";
+							case VaryingType::VARYING_TYPE_BOOLEAN:
+								code2 += "false";
 								break;
 							case VaryingType::VARYING_TYPE_TRANSFORM:
 								code2 += "mat4(1.0)";
@@ -2585,10 +2597,11 @@ void VisualShader::_bind_methods() {
 	BIND_ENUM_CONSTANT(VARYING_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VARYING_TYPE_FLOAT);
+	BIND_ENUM_CONSTANT(VARYING_TYPE_INT);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_VECTOR_2D);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_VECTOR_3D);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_VECTOR_4D);
-	BIND_ENUM_CONSTANT(VARYING_TYPE_COLOR);
+	BIND_ENUM_CONSTANT(VARYING_TYPE_BOOLEAN);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_TRANSFORM);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_MAX);
 
@@ -4632,21 +4645,23 @@ void VisualShaderNodeVarying::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_varying_type"), &VisualShaderNodeVarying::get_varying_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "varying_name"), "set_varying_name", "get_varying_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "varying_type", PROPERTY_HINT_ENUM, "Float,Vector,Transform"), "set_varying_type", "get_varying_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "varying_type", PROPERTY_HINT_ENUM, "Float,Int,Vector2,Vector3,Vector4,Boolean,Transform"), "set_varying_type", "get_varying_type");
 }
 
 String VisualShaderNodeVarying::get_type_str() const {
 	switch (varying_type) {
 		case VisualShader::VARYING_TYPE_FLOAT:
 			return "float";
+		case VisualShader::VARYING_TYPE_INT:
+			return "int";
 		case VisualShader::VARYING_TYPE_VECTOR_2D:
 			return "vec2";
 		case VisualShader::VARYING_TYPE_VECTOR_3D:
 			return "vec3";
 		case VisualShader::VARYING_TYPE_VECTOR_4D:
 			return "vec4";
-		case VisualShader::VARYING_TYPE_COLOR:
-			return "vec4";
+		case VisualShader::VARYING_TYPE_BOOLEAN:
+			return "bool";
 		case VisualShader::VARYING_TYPE_TRANSFORM:
 			return "mat4";
 		default:
@@ -4657,17 +4672,16 @@ String VisualShaderNodeVarying::get_type_str() const {
 
 VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type(VisualShader::VaryingType p_type, int p_port) const {
 	switch (p_type) {
+		case VisualShader::VARYING_TYPE_INT:
+			return PORT_TYPE_SCALAR_INT;
 		case VisualShader::VARYING_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case VisualShader::VARYING_TYPE_VECTOR_3D:
 			return PORT_TYPE_VECTOR_3D;
 		case VisualShader::VARYING_TYPE_VECTOR_4D:
 			return PORT_TYPE_VECTOR_4D;
-		case VisualShader::VARYING_TYPE_COLOR:
-			if (p_port == 1) {
-				break; // scalar
-			}
-			return PORT_TYPE_VECTOR_3D;
+		case VisualShader::VARYING_TYPE_BOOLEAN:
+			return PORT_TYPE_BOOLEAN;
 		case VisualShader::VARYING_TYPE_TRANSFORM:
 			return PORT_TYPE_TRANSFORM;
 		default:
@@ -4711,9 +4725,6 @@ String VisualShaderNodeVaryingSetter::get_caption() const {
 }
 
 int VisualShaderNodeVaryingSetter::get_input_port_count() const {
-	if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		return 2;
-	}
 	return 1;
 }
 
@@ -4722,13 +4733,6 @@ VisualShaderNodeVaryingSetter::PortType VisualShaderNodeVaryingSetter::get_input
 }
 
 String VisualShaderNodeVaryingSetter::get_input_port_name(int p_port) const {
-	if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		if (p_port == 0) {
-			return "color";
-		} else {
-			return "alpha";
-		}
-	}
 	return "";
 }
 
@@ -4744,20 +4748,12 @@ String VisualShaderNodeVaryingSetter::get_output_port_name(int p_port) const {
 	return "";
 }
 
-String VisualShaderNodeVaryingSetter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	return vformat("varying %s %s;\n", get_type_str(), varying_name);
-}
-
 String VisualShaderNodeVaryingSetter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 	if (varying_name == "[None]") {
 		return code;
 	}
-	if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		code += vformat("	%s = vec4(%s, %s);\n", varying_name, p_input_vars[0], p_input_vars[1]);
-	} else {
-		code += vformat("	%s = %s;\n", varying_name, p_input_vars[0]);
-	}
+	code += vformat("	%s = %s;\n", varying_name, p_input_vars[0]);
 	return code;
 }
 
@@ -4783,9 +4779,6 @@ String VisualShaderNodeVaryingGetter::get_input_port_name(int p_port) const {
 }
 
 int VisualShaderNodeVaryingGetter::get_output_port_count() const {
-	if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		return 2;
-	}
 	return 1;
 }
 
@@ -4794,13 +4787,6 @@ VisualShaderNodeVaryingGetter::PortType VisualShaderNodeVaryingGetter::get_outpu
 }
 
 String VisualShaderNodeVaryingGetter::get_output_port_name(int p_port) const {
-	if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		if (p_port == 0) {
-			return "color";
-		} else {
-			return "alpha";
-		}
-	}
 	return "";
 }
 
@@ -4817,6 +4803,9 @@ String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualS
 			case VisualShader::VARYING_TYPE_FLOAT:
 				from = "0.0";
 				break;
+			case VisualShader::VARYING_TYPE_INT:
+				from = "0";
+				break;
 			case VisualShader::VARYING_TYPE_VECTOR_2D:
 				from = "vec2(0.0)";
 				break;
@@ -4826,9 +4815,8 @@ String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualS
 			case VisualShader::VARYING_TYPE_VECTOR_4D:
 				from = "vec4(0.0)";
 				break;
-			case VisualShader::VARYING_TYPE_COLOR:
-				from = "vec3(0.0)";
-				from2 = "0.0";
+			case VisualShader::VARYING_TYPE_BOOLEAN:
+				from = "false";
 				break;
 			case VisualShader::VARYING_TYPE_TRANSFORM:
 				from = "mat4(1.0)";
@@ -4836,16 +4824,6 @@ String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualS
 			default:
 				break;
 		}
-	} else if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		from = varying_name + ".rgb";
-		from2 = varying_name + ".a";
-	}
-
-	if (varying_type == VisualShader::VARYING_TYPE_COLOR) {
-		String code;
-		code += vformat("	%s = %s;\n", p_output_vars[0], from);
-		code += vformat("	%s = %s;\n", p_output_vars[1], from2);
-		return code;
 	}
 	return vformat("	%s = %s;\n", p_output_vars[0], from);
 }
