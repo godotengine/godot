@@ -600,9 +600,6 @@
 		<constant name="INTERPOLATION_CUBIC" value="2" enum="InterpolationType">
 			Cubic interpolation.
 		</constant>
-		<constant name="INTERPOLATION_CUBIC_IN_TIME" value="3" enum="InterpolationType">
-			Cubic interpolation with uniformed time.
-		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
 			Update between keyframes.
 		</constant>
