@@ -509,10 +509,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
 			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
 		}
-		if (I->get() == "--single-window" ||
-				I->get() == "--audio-driver" ||
+		if (I->get() == "--audio-driver" ||
 				I->get() == "--video-driver") {
-			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+			if (I->next()) {
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
+			}
 		}
 #endif
 
