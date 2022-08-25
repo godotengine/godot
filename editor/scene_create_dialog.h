@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  create_dialog.h                                                      */
+/*  scene_create_dialog.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,85 +28,78 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CREATE_DIALOG_H
-#define CREATE_DIALOG_H
+#ifndef SCENE_CREATE_DIALOG_H
+#define SCENE_CREATE_DIALOG_H
 
-#include "editor_help.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/tree.h"
 
-class CreateDialog : public ConfirmationDialog {
-	GDCLASS(CreateDialog, ConfirmationDialog);
+class ButtonGroup;
+class CheckBox;
+class CreateDialog;
+class EditorFileDialog;
+class Label;
+class LineEdit;
+class OptionButton;
+class PanelContainer;
 
-	Vector<String> favorite_list;
-	Tree *favorites;
-	Tree *recent;
+class SceneCreateDialog : public ConfirmationDialog {
+	GDCLASS(SceneCreateDialog, ConfirmationDialog);
 
-	Button *favorite;
-	LineEdit *search_box;
-	Tree *search_options;
-	HashMap<String, TreeItem *> search_options_types;
-	HashMap<String, RES> search_loaded_scripts;
-	bool is_replace_mode;
-	String base_type;
-	String preferred_search_result_type;
-	EditorHelpBit *help_bit;
-	List<StringName> type_list;
-	Set<StringName> type_blacklist;
+	enum MsgType {
+		MSG_OK,
+		MSG_ERROR,
+	};
 
-	void _item_selected();
+	const StringName type_meta = StringName("type");
 
-	void _update_search();
-	void _update_favorite_list();
-	void _save_favorite_list();
-	void _favorite_toggled();
+public:
+	enum RootType {
+		ROOT_2D_SCENE,
+		ROOT_3D_SCENE,
+		ROOT_USER_INTERFACE,
+		ROOT_OTHER,
+	};
 
-	void _history_selected();
-	void _favorite_selected();
+private:
+	String directory;
+	String scene_name;
+	String root_name;
 
-	void _history_activated();
-	void _favorite_activated();
+	Ref<ButtonGroup> node_type_group;
+	CheckBox *node_type_2d = nullptr;
+	CheckBox *node_type_3d = nullptr;
+	CheckBox *node_type_gui = nullptr;
+	CheckBox *node_type_other = nullptr;
 
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	LineEdit *other_type_display = nullptr;
+	Button *select_node_button = nullptr;
+	CreateDialog *select_node_dialog = nullptr;
 
-	void _confirmed();
-	void _text_changed(const String &p_newtext);
+	LineEdit *scene_name_edit = nullptr;
+	OptionButton *scene_extension_picker = nullptr;
+	LineEdit *root_name_edit = nullptr;
 
-	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
+	PanelContainer *status_panel = nullptr;
+	Label *file_error_label = nullptr;
+	Label *node_error_label = nullptr;
 
-	void select_type(const String &p_type);
-
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-
-	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
-	bool _is_type_prefered(const String &type);
+	void accept_create(Variant p_discard = Variant()); // Extra unused argument, because unbind() doesn't exist in 3.x.
+	void browse_types();
+	void on_type_picked();
+	void update_dialog(Variant p_discard = Variant());
+	void update_error(Label *p_label, MsgType p_type, const String &p_msg);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _save_and_update_favorite_list();
-
 public:
-	Variant instance_selected();
-	String get_selected_type();
+	void config(const String &p_dir);
 
-	void set_base_type(const String &p_base);
-	String get_base_type() const;
-	void select_base();
+	String get_scene_path() const;
+	Node *create_scene_root();
 
-	void set_preferred_search_result_type(const String &p_preferred_type);
-	String get_preferred_search_result_type();
-
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node");
-
-	CreateDialog();
+	SceneCreateDialog();
 };
 
-#endif // CREATE_DIALOG_H
+#endif // SCENE_CREATE_DIALOG_H
