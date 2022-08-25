@@ -113,8 +113,8 @@ private:
 	bool is_sync_to_physics_enabled() const;
 };
 
-class RigidDynamicBody2D : public PhysicsBody2D {
-	GDCLASS(RigidDynamicBody2D, PhysicsBody2D);
+class RigidBody2D : public PhysicsBody2D {
+	GDCLASS(RigidBody2D, PhysicsBody2D);
 
 public:
 	enum FreezeMode {
@@ -186,7 +186,7 @@ private:
 			local_shape = p_ls;
 		}
 	};
-	struct RigidDynamicBody2D_RemoveAction {
+	struct RigidBody2D_RemoveAction {
 		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
@@ -311,17 +311,17 @@ public:
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
-	RigidDynamicBody2D();
-	~RigidDynamicBody2D();
+	RigidBody2D();
+	~RigidBody2D();
 
 private:
 	void _reload_physics_characteristics();
 };
 
-VARIANT_ENUM_CAST(RigidDynamicBody2D::FreezeMode);
-VARIANT_ENUM_CAST(RigidDynamicBody2D::CenterOfMassMode);
-VARIANT_ENUM_CAST(RigidDynamicBody2D::DampMode);
-VARIANT_ENUM_CAST(RigidDynamicBody2D::CCDMode);
+VARIANT_ENUM_CAST(RigidBody2D::FreezeMode);
+VARIANT_ENUM_CAST(RigidBody2D::CenterOfMassMode);
+VARIANT_ENUM_CAST(RigidBody2D::DampMode);
+VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);

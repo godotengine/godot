@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidDynamicBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics Body which is moved by 2D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
 	<description>
-		This node implements simulated 2D physics. You do not control a RigidDynamicBody2D directly. Instead, you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
+		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead, you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
 		You can switch the body's behavior using [member lock_rotation], [member freeze], and [member freeze_mode].
-		[b]Note:[/b] You should not change a RigidDynamicBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
+		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
 		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
 	</description>
@@ -124,7 +124,7 @@
 			Damps the body's rotation. By default, the body will use the [b]Default Angular Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] or any value override set by an [Area2D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
-		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidDynamicBody2D.DampMode" default="0">
+		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidBody2D.DampMode" default="0">
 			Defines how [member angular_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
@@ -137,7 +137,7 @@
 			The body's custom center of mass, relative to the body's origin position, when [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_CUSTOM]. This is the balanced point of the body, where applied forces only cause linear acceleration. Applying forces outside of the center of mass causes angular acceleration.
 			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically computed.
 		</member>
-		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidDynamicBody2D.CenterOfMassMode" default="0">
+		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidBody2D.CenterOfMassMode" default="0">
 			Defines the way the body's center of mass is set. See [enum CenterOfMassMode] for possible values.
 		</member>
 		<member name="constant_force" type="Vector2" setter="set_constant_force" getter="get_constant_force" default="Vector2(0, 0)">
@@ -149,10 +149,10 @@
 			See [method add_constant_torque].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
-			If [code]true[/code], the RigidDynamicBody2D will emit signals when it collides with another RigidDynamicBody2D.
+			If [code]true[/code], the RigidBody2D will emit signals when it collides with another RigidBody2D.
 			[b]Note:[/b] By default the maximum contacts reported is set to 0, meaning nothing will be recorded, see [member max_contacts_reported].
 		</member>
-		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidDynamicBody2D.CCDMode" default="0">
+		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
 			Continuous collision detection mode.
 			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [enum CCDMode] for details.
 		</member>
@@ -164,7 +164,7 @@
 			See [member freeze_mode] to set the body's behavior when frozen.
 			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
-		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidDynamicBody2D.FreezeMode" default="0">
+		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidBody2D.FreezeMode" default="0">
 			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled. See [enum FreezeMode] for possible values.
 			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
@@ -179,7 +179,7 @@
 			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] or any value override set by an [Area2D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
-		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidDynamicBody2D.DampMode" default="0">
+		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidBody2D.DampMode" default="0">
 			Defines how [member linear_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
@@ -224,11 +224,11 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of this RigidDynamicBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMap]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				Emitted when one of this RigidBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMap]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[param body_rid] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
 				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape2D] of this RigidBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -237,11 +237,11 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when the collision between one of this RigidDynamicBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMap]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				Emitted when the collision between one of this RigidBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMap]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[param body_rid] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
 				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape2D] of this RigidBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

@@ -409,7 +409,7 @@
 			No collision for particles. Particles will go through [GPUParticlesCollision3D] nodes.
 		</constant>
 		<constant name="COLLISION_RIGID" value="1" enum="CollisionMode">
-			[RigidDynamicBody3D]-style collision for particles using [GPUParticlesCollision3D] nodes.
+			[RigidBody3D]-style collision for particles using [GPUParticlesCollision3D] nodes.
 		</constant>
 		<constant name="COLLISION_HIDE_ON_CONTACT" value="2" enum="CollisionMode">
 			Hide particles instantly when colliding with a [GPUParticlesCollision3D] node. This can be combined with a subemitter that uses the [constant COLLISION_RIGID] collision mode to "replace" the parent particle with the subemitter on impact.

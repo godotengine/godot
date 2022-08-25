@@ -42,7 +42,7 @@ class GodotConstraint2D;
 class GodotPhysicsDirectBodyState2D;
 
 class GodotBody2D : public GodotCollisionObject2D {
-	PhysicsServer2D::BodyMode mode = PhysicsServer2D::BODY_MODE_DYNAMIC;
+	PhysicsServer2D::BodyMode mode = PhysicsServer2D::BODY_MODE_RIGID;
 
 	Vector2 biased_linear_velocity;
 	real_t biased_angular_velocity = 0.0;
