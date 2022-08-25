@@ -483,7 +483,7 @@ namespace Godot.Collections
     /// <typeparam name="T">The type of the array.</typeparam>
     [SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
     [SuppressMessage("Naming", "CA1710", MessageId = "Identifiers should have correct suffix")]
-    public sealed class Array<T> :
+    public sealed class Array<[MustBeVariant] T> :
         IList<T>,
         IReadOnlyList<T>,
         ICollection<T>,
