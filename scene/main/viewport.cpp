@@ -1104,7 +1104,7 @@ Vector2 Viewport::get_mouse_position() const {
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
 	Transform2D xform = get_screen_transform();
-	Vector2 gpos = xform.xform(p_position).round();
+	Vector2 gpos = xform.xform(p_position);
 	Input::get_singleton()->warp_mouse(gpos);
 }
 

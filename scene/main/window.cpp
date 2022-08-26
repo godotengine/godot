@@ -966,6 +966,18 @@ DisplayServer::WindowID Window::get_window_id() const {
 	return window_id;
 }
 
+void Window::warp_mouse(const Vector2 &p_position) {
+	Transform2D xform = get_screen_transform();
+	Vector2 gpos = xform.xform(p_position);
+
+	if (transient_parent && !transient_parent->is_embedding_subwindows()) {
+		Transform2D window_trans = Transform2D().translated(get_position() + (transient_parent->get_visible_rect().size - transient_parent->get_real_size()));
+		gpos = window_trans.xform(gpos);
+	}
+
+	Input::get_singleton()->warp_mouse(gpos);
+}
+
 void Window::set_wrap_controls(bool p_enable) {
 	wrap_controls = p_enable;
 	if (wrap_controls) {
