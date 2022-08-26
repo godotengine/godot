@@ -6196,15 +6196,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_GOTO_PREV_STEP: {
 			goto_prev_step(false);
 		} break;
-		case EDIT_APPLY_RESET: {
-			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
-		} break;
 
-		case EDIT_BAKE_ANIMATION: {
+		case EDIT_BAKE_TRACK: {
 			bake_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
-		case EDIT_BAKE_ANIMATION_CONFIRM: {
-			undo_redo->create_action(TTR("Bake Animation as Linear keys."));
+		case EDIT_BAKE_TRACK_CONFIRM: {
+			undo_redo->create_action(TTR("Bake Track as Linear keys."));
 
 			int track_len = animation->get_track_count();
 			bool b_trs = bake_trs->is_pressed();
@@ -6311,6 +6308,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 
+		case EDIT_APPLY_RESET: {
+			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
+		} break;
+
 		case EDIT_OPTIMIZE_ANIMATION: {
 			optimize_dialog->popup_centered(Size2(250, 180) * EDSCALE);
 
@@ -6319,6 +6320,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			animation->optimize(optimize_velocity_error->get_value(), optimize_angular_error->get_value(), optimize_precision_error->get_value());
 			_update_tracks();
 			undo_redo->clear_history(true, undo_redo->get_history_for_object(animation.ptr()).id);
+			undo_redo->clear_history(true, undo_redo->get_history_for_object(this).id);
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
@@ -6387,6 +6389,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	}
 
 	undo_redo->clear_history(true, undo_redo->get_history_for_object(animation.ptr()).id);
+	undo_redo->clear_history(true, undo_redo->get_history_for_object(this).id);
 	_update_tracks();
 }
 
@@ -6732,11 +6735,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KeyModifierMask::CMD | Key::RIGHT), EDIT_GOTO_NEXT_STEP);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Go to Previous Step"), KeyModifierMask::CMD | Key::LEFT), EDIT_GOTO_PREV_STEP);
 	edit->get_popup()->add_separator();
+	edit->get_popup()->add_item(TTR("Bake Track"), EDIT_BAKE_TRACK);
+	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_item(TTR("Bake Animation"), EDIT_BAKE_ANIMATION);
-	edit->get_popup()->add_item(TTR("Optimize Animation"), EDIT_OPTIMIZE_ANIMATION);
-	edit->get_popup()->add_item(TTR("Clean-Up Animation"), EDIT_CLEAN_UP_ANIMATION);
+	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)"), EDIT_OPTIMIZE_ANIMATION);
+	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)"), EDIT_CLEAN_UP_ANIMATION);
 
 	edit->get_popup()->connect("id_pressed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed));
 	edit->get_popup()->connect("about_to_popup", callable_mp(this, &AnimationTrackEditor::_edit_menu_about_to_popup));
@@ -6904,8 +6908,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	//
 	bake_dialog = memnew(ConfirmationDialog);
-	bake_dialog->set_title(TTR("Anim. Baker"));
-	bake_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_BAKE_ANIMATION_CONFIRM));
+	bake_dialog->set_title(TTR("Track Baker"));
+	bake_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_BAKE_TRACK_CONFIRM));
 	add_child(bake_dialog);
 	GridContainer *bake_grid = memnew(GridContainer);
 	bake_grid->set_columns(2);
