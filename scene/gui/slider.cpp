@@ -188,6 +188,33 @@ void Slider::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
+			
+			if (adjust_step) {
+				float step = get_step(), min = get_min(), max = get_max();
+				int imax = get_max();
+				if (step > min && step < max) {
+
+					if (!Math::is_equal_approx(Math::fmod(max, min), 0)) {
+						List<int> factors = List<int>();
+						
+						for (int i = Math::sqrt(max); i > 0; i--) {
+							if (imax % i == 0) {
+								factors.push_back(i);
+								factors.push_back(imax / i);
+							}
+						}
+						factors.sort();
+
+						for (int i = factors.size() - 1; i >= 0; i--) {
+							if (step >= factors[i]) {
+								set_step(factors[i]);
+								break;
+							}
+						}
+					}
+					ticks = get_max() / get_step() + 1;
+				}
+			}
 
 			Ref<StyleBox> style = theme_cache.slider_style;
 			Ref<Texture2D> tick = theme_cache.tick_icon;
@@ -285,6 +312,19 @@ void Slider::set_ticks_on_borders(bool _tob) {
 	queue_redraw();
 }
 
+void Slider::set_adjust_step(bool p_adjust) {
+	if (adjust_step == p_adjust) {
+		return;
+	}
+
+	adjust_step = p_adjust;
+	update();
+}
+
+int Slider::is_adjusting_step() const {
+	return adjust_step;
+}
+
 void Slider::set_editable(bool p_editable) {
 	if (editable == p_editable) {
 		return;
@@ -313,6 +353,9 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"), &Slider::get_ticks_on_borders);
 	ClassDB::bind_method(D_METHOD("set_ticks_on_borders", "ticks_on_border"), &Slider::set_ticks_on_borders);
 
+	ClassDB::bind_method(D_METHOD("set_adjust_step", "count"), &Slider::set_adjust_step);
+	ClassDB::bind_method(D_METHOD("is_adjusting_step"), &Slider::is_adjusting_step);
+
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
@@ -325,6 +368,7 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjust_step"), "set_adjust_step", "is_adjusting_step");
 }
 
 Slider::Slider(Orientation p_orientation) {
