@@ -305,7 +305,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.Call("rotate", new Vector3(1f, 0f, 0f), 1.571f);
+				node.Call(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
@@ -323,7 +323,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.CallDeferred("rotate", new Vector3(1f, 0f, 0f), 1.571f);
+				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
@@ -342,7 +342,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.Callv("rotate", new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
+				node.Callv(Node3D.MethodName.Rotate, new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call
@@ -394,8 +394,8 @@
 
 				    // This assumes that a `Player` class exists, which defines a `Hit` signal.
 				    var player = new Player();
-				    // Signals as events (`player.Hit += OnPlayerHit;`) do not support argument binding. You have to use:
-				    player.Hit.Connect(OnPlayerHit, new Godot.Collections.Array {"sword", 100 });
+				    // We can use lambdas when we need to bind additional parameters.
+				    player.Hit += () =&gt; OnPlayerHit("sword", 100);
 				}
 
 				private void OnButtonDown()
@@ -405,7 +405,7 @@
 
 				private void OnPlayerHit(string weaponType, int damage)
 				{
-				    GD.Print(String.Format("Hit with weapon {0} for {1} damage.", weaponType, damage));
+				    GD.Print($"Hit with weapon {weaponType} for {damage} damage.");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -431,16 +431,12 @@
 				public override void _Ready()
 				{
 				    var button = new Button();
-				    // Option 1: Object.Connect() with an implicit Callable for the defined function.
-				    button.Connect("button_down", OnButtonDown);
-				    // Option 2: Object.connect() with a constructed Callable using a target object and method name.
-				    button.Connect("button_down", new Callable(self, nameof(OnButtonDown)));
-				    // Option 3: Signal.connect() with an implicit Callable for the defined function.
-				    button.ButtonDown.Connect(OnButtonDown);
-				    // Option 3b: In C#, we can use signals as events and connect with this more idiomatic syntax:
+				    // Option 1: In C#, we can use signals as events and connect with this idiomatic syntax:
 				    button.ButtonDown += OnButtonDown;
-				    // Option 4: Signal.connect() with a constructed Callable using a target object and method name.
-				    button.ButtonDown.Connect(new Callable(self, nameof(OnButtonDown)));
+				    // Option 2: Object.Connect() with a constructed Callable from a method group.
+				    button.Connect(Button.SignalName.ButtonDown, Callable.From(OnButtonDown));
+				    // Option 3: Object.Connect() with a constructed Callable using a target object and method name.
+				    button.Connect(Button.SignalName.ButtonDown, new Callable(this, MethodName.OnButtonDown));
 				}
 
 				private void OnButtonDown()
@@ -458,6 +454,7 @@
 				func _ready():
 				    # This assumes that a `Player` class exists, which defines a `hit` signal.
 				    var player = Player.new()
+				    # Using Callable.bind().
 				    player.hit.connect(_on_player_hit.bind("sword", 100))
 
 				    # Parameters added when emitting the signal are passed first.
@@ -473,20 +470,19 @@
 				{
 				    // This assumes that a `Player` class exists, which defines a `Hit` signal.
 				    var player = new Player();
-				    // Option 1: Using Callable.Bind(). This way we can still use signals as events.
-				    player.Hit += OnPlayerHit.Bind("sword", 100);
-				    // Option 2: Using a `binds` Array in Signal.Connect().
-				    player.Hit.Connect(OnPlayerHit, new Godot.Collections.Array{ "sword", 100 });
+				    // Using lambda expressions that create a closure that captures the additional parameters.
+				    // The lambda only receives the parameters defined by the signal's delegate.
+				    player.Hit += (hitBy, level) =&gt; OnPlayerHit(hitBy, level, "sword", 100);
 
 				    // Parameters added when emitting the signal are passed first.
-				    player.EmitSignal("hit", "Dark lord", 5);
+				    player.EmitSignal(SignalName.Hit, "Dark lord", 5);
 				}
 
 				// We pass two arguments when emitting (`hit_by`, `level`),
 				// and bind two more arguments when connecting (`weapon_type`, `damage`).
 				private void OnPlayerHit(string hitBy, int level, string weaponType, int damage)
 				{
-				    GD.Print(String.Format("Hit by {0} (level {1}) with weapon {2} for {3} damage.", hitBy, level, weaponType, damage));
+				    GD.Print($"Hit by {hitBy} (level {level}) with weapon {weaponType} for {damage} damage.");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -512,8 +508,8 @@
 				emit_signal("game_over")
 				[/gdscript]
 				[csharp]
-				EmitSignal("Hit", "sword", 100);
-				EmitSignal("GameOver");
+				EmitSignal(SignalName.Hit, "sword", 100);
+				EmitSignal(SignalName.GameOver);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
@@ -581,7 +577,7 @@
 				var b = node.GetIndexed("position:y"); // b is -10
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 				[b]Note:[/b] This method does not support actual paths to nodes in the [SceneTree], only sub-property paths. In the context of nodes, use [method Node.get_node_and_resource] instead.
 			</description>
 		</method>
@@ -868,7 +864,7 @@
 				GD.Print(node.Position); // Prints (42, -10)
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties.
+				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="set_message_translation">

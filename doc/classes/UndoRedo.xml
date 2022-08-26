@@ -48,10 +48,10 @@
 		{
 		    var node = GetNode&lt;Node2D&gt;("MyNode2D");
 		    UndoRedo.CreateAction("Move the node");
-		    UndoRedo.AddDoMethod(this, nameof(DoSomething));
-		    UndoRedo.AddUndoMethod(this, nameof(UndoSomething));
-		    UndoRedo.AddDoProperty(node, "position", new Vector2(100, 100));
-		    UndoRedo.AddUndoProperty(node, "position", node.Position);
+		    UndoRedo.AddDoMethod(this, MethodName.DoSomething);
+		    UndoRedo.AddUndoMethod(this, MethodName.UndoSomething);
+		    UndoRedo.AddDoProperty(node, Node2D.PropertyName.Position, new Vector2(100, 100));
+		    UndoRedo.AddUndoProperty(node, Node2D.PropertyName.Position, node.Position);
 		    UndoRedo.CommitAction();
 		}
 		[/csharp]

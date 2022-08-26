@@ -19,7 +19,7 @@
 		Tween tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode("Sprite"), "modulate", Colors.Red, 1.0f);
 		tween.TweenProperty(GetNode("Sprite"), "scale", Vector2.Zero, 1.0f);
-		tween.TweenCallback(new Callable(GetNode("Sprite").QueueFree));
+		tween.TweenCallback(Callable.From(GetNode("Sprite").QueueFree));
 		[/csharp]
 		[/codeblocks]
 		This sequence will make the [code]$Sprite[/code] node turn red, then shrink, before finally calling [method Node.queue_free] to free the sprite. [Tweener]s are executed one after another by default. This behavior can be changed using [method parallel] and [method set_parallel].
@@ -35,7 +35,7 @@
 		Tween tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode("Sprite"), "modulate", Colors.Red, 1.0f).SetTrans(Tween.TransitionType.Sine);
 		tween.TweenProperty(GetNode("Sprite"), "scale", Vector2.Zero, 1.0f).SetTrans(Tween.TransitionType.Bounce);
-		tween.TweenCallback(new Callable(GetNode("Sprite").QueueFree));
+		tween.TweenCallback(Callable.From(GetNode("Sprite").QueueFree));
 		[/csharp]
 		[/codeblocks]
 		Most of the [Tween] methods can be chained this way too. In the following example the [Tween] is bound to the running script's node and a default transition is set for its [Tweener]s:
@@ -50,7 +50,7 @@
 		var tween = GetTree().CreateTween().BindNode(this).SetTrans(Tween.TransitionType.Elastic);
 		tween.TweenProperty(GetNode("Sprite"), "modulate", Colors.Red, 1.0f);
 		tween.TweenProperty(GetNode("Sprite"), "scale", Vector2.Zero, 1.0f);
-		tween.TweenCallback(new Callable(GetNode("Sprite").QueueFree));
+		tween.TweenCallback(Callable.From(GetNode("Sprite").QueueFree));
 		[/csharp]
 		[/codeblocks]
 		Another interesting use for [Tween]s is animating arbitrary sets of objects:
@@ -281,7 +281,7 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = GetTree().CreateTween().SetLoops();
-				tween.TweenCallback(new Callable(Shoot)).SetDelay(1.0f);
+				tween.TweenCallback(Callable.From(Shoot)).SetDelay(1.0f);
 				[/csharp]
 				[/codeblocks]
 				[b]Example:[/b] Turning a sprite red and then blue, with 2 second delay:
@@ -294,8 +294,8 @@
 				[csharp]
 				Tween tween = GetTree().CreateTween();
 				Sprite2D sprite = GetNode&lt;Sprite2D&gt;("Sprite");
-				tween.TweenCallback(new Callable(() =&gt; sprite.Modulate = Colors.Red)).SetDelay(2.0f);
-				tween.TweenCallback(new Callable(() =&gt; sprite.Modulate = Colors.Blue)).SetDelay(2.0f);
+				tween.TweenCallback(Callable.From(() =&gt; sprite.Modulate = Colors.Red)).SetDelay(2.0f);
+				tween.TweenCallback(Callable.From(() =&gt; sprite.Modulate = Colors.Blue)).SetDelay(2.0f);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -332,10 +332,10 @@
 				[csharp]
 				Tween tween = CreateTween().SetLoops();
 				tween.TweenProperty(GetNode("Sprite"), "position:x", 200.0f, 1.0f).AsRelative();
-				tween.TweenCallback(new Callable(Jump));
+				tween.TweenCallback(Callable.From(Jump));
 				tween.TweenInterval(2.0f);
 				tween.TweenProperty(GetNode("Sprite"), "position:x", -200.0f, 1.0f).AsRelative();
-				tween.TweenCallback(new Callable(Jump));
+				tween.TweenCallback(Callable.From(Jump));
 				tween.TweenInterval(2.0f);
 				[/csharp]
 				[/codeblocks]
@@ -357,7 +357,7 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
-				tween.TweenMethod(new Callable(() =&gt; LookAt(Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // The LookAt() method takes up vector as second argument.
+				tween.TweenMethod(Callable.From(() =&gt; LookAt(Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // The LookAt() method takes up vector as second argument.
 				[/csharp]
 				[/codeblocks]
 				[b]Example:[/b] Setting the text of a [Label], using an intermediate method and after a delay:
@@ -376,7 +376,7 @@
 				    base._Ready();
 
 				    Tween tween = CreateTween();
-				    tween.TweenMethod(new Callable(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
+				    tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
 				}
 
 				private void SetLabelText(int value)
