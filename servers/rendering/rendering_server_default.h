@@ -565,6 +565,7 @@ public:
 
 	FUNCRIDSPLIT(camera)
 	FUNC4(camera_set_perspective, RID, float, float, float)
+	FUNC8(camera_set_oblique, RID, float, const Transform3D &, const Vector3 &, const Vector3 &, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
 	FUNC2(camera_set_transform, RID, const Transform3D &)

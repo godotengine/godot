@@ -47,7 +47,14 @@ void Camera3D::_update_camera_mode() {
 	switch (mode) {
 		case PROJECTION_PERSPECTIVE: {
 			set_perspective(fov, near, far);
-
+		} break;
+		case PROJECTION_OBLIQUE: {
+			Dictionary ob_data = Dictionary();
+			ob_data["camera_gt"] = get_global_transform();
+			ob_data["normal"] = oblique_normal;
+			ob_data["position"] = oblique_position;
+			ob_data["offset"] = oblique_offset;
+			set_oblique(fov, ob_data, near, far);
 		} break;
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size, near, far);
@@ -60,7 +67,7 @@ void Camera3D::_update_camera_mode() {
 
 void Camera3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "fov") {
-		if (mode != PROJECTION_PERSPECTIVE) {
+		if (mode != PROJECTION_PERSPECTIVE && mode != PROJECTION_OBLIQUE) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (p_property.name == "size") {
@@ -69,6 +76,10 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 		}
 	} else if (p_property.name == "frustum_offset") {
 		if (mode != PROJECTION_FRUSTUM) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "oblique_normal" || p_property.name == "oblique_position" || p_property.name == "oblique_offset") {
+		if (mode != PROJECTION_OBLIQUE) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
@@ -185,6 +196,28 @@ void Camera3D::set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_
 	force_change = false;
 }
 
+void Camera3D::set_oblique(real_t p_fovy_degrees, const Dictionary &p_oblique_data, real_t p_z_near, real_t p_z_far) {
+	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_OBLIQUE) {
+		return;
+	}
+
+	if (!force_change && (Vector3)p_oblique_data["normal"] == oblique_normal && (Vector3)p_oblique_data["position"] == oblique_position && (real_t)p_oblique_data["offset"] == oblique_offset) {
+		return;
+	}
+
+	fov = p_fovy_degrees;
+	oblique_normal = p_oblique_data["normal"];
+	oblique_position = p_oblique_data["position"];
+	oblique_offset = p_oblique_data["offset"];
+	near = p_z_near;
+	far = p_z_far;
+	mode = PROJECTION_OBLIQUE;
+
+	RenderingServer::get_singleton()->camera_set_oblique(camera, fov, p_oblique_data["camera_gt"], p_oblique_data["normal"], p_oblique_data["position"], p_oblique_data["offset"], near, far);
+	update_gizmos();
+	force_change = false;
+}
+
 void Camera3D::set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL) {
 		return;
@@ -218,8 +251,8 @@ void Camera3D::set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, rea
 	update_gizmos();
 }
 
-void Camera3D::set_projection(ProjectionType p_mode) {
-	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
+void Camera3D::set_projection(Camera3D::ProjectionType p_mode) {
+	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_OBLIQUE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
 		mode = p_mode;
 		_update_camera_mode();
 		notify_property_list_changed();
@@ -501,6 +534,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera3D::is_position_behind);
 	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera3D::project_position);
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera3D::set_perspective);
+	ClassDB::bind_method(D_METHOD("set_oblique", "fov", "oblique_data", "z_near", "z_far"), &Camera3D::set_oblique);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera3D::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera3D::set_frustum);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera3D::make_current);
@@ -509,11 +543,18 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera3D::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera3D::get_camera_transform);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera3D::get_fov);
+	ClassDB::bind_method(D_METHOD("get_oblique_normal"), &Camera3D::get_oblique_normal);
+	ClassDB::bind_method(D_METHOD("get_oblique_position"), &Camera3D::get_oblique_position);
+	ClassDB::bind_method(D_METHOD("get_oblique_offset"), &Camera3D::get_oblique_offset);
 	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera3D::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera3D::get_size);
 	ClassDB::bind_method(D_METHOD("get_far"), &Camera3D::get_far);
 	ClassDB::bind_method(D_METHOD("get_near"), &Camera3D::get_near);
 	ClassDB::bind_method(D_METHOD("set_fov", "fov"), &Camera3D::set_fov);
+	ClassDB::bind_method(D_METHOD("set_oblique_normal", "oblique_normal"), &Camera3D::set_oblique_normal);
+	ClassDB::bind_method(D_METHOD("set_oblique_position", "oblique_position"), &Camera3D::set_oblique_position);
+	ClassDB::bind_method(D_METHOD("set_oblique_plane_from_transform", "oblique_transform"), &Camera3D::set_oblique_plane_from_transform);
+	ClassDB::bind_method(D_METHOD("set_oblique_offset", "oblique_offset"), &Camera3D::set_oblique_offset);
 	ClassDB::bind_method(D_METHOD("set_frustum_offset", "offset"), &Camera3D::set_frustum_offset);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Camera3D::set_size);
 	ClassDB::bind_method(D_METHOD("set_far", "far"), &Camera3D::set_far);
@@ -551,17 +592,21 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum,Oblique"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,16384,0.001,suffix:m"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_frustum_offset", "get_frustum_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "oblique_normal"), "set_oblique_normal", "get_oblique_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "oblique_position"), "set_oblique_position", "get_oblique_position");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oblique_offset"), "set_oblique_offset", "get_oblique_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,16384,0.001"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp"), "set_near", "get_near");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp"), "set_far", "get_far");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(PROJECTION_FRUSTUM);
+	BIND_ENUM_CONSTANT(PROJECTION_OBLIQUE);
 
 	BIND_ENUM_CONSTANT(KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(KEEP_HEIGHT);
@@ -573,6 +618,18 @@ void Camera3D::_bind_methods() {
 
 real_t Camera3D::get_fov() const {
 	return fov;
+}
+
+Vector3 Camera3D::get_oblique_normal() const {
+	return oblique_normal;
+}
+
+Vector3 Camera3D::get_oblique_position() const {
+	return oblique_position;
+}
+
+real_t Camera3D::get_oblique_offset() const {
+	return oblique_offset;
 }
 
 real_t Camera3D::get_size() const {
@@ -598,6 +655,27 @@ Camera3D::ProjectionType Camera3D::get_projection() const {
 void Camera3D::set_fov(real_t p_fov) {
 	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
+	_update_camera_mode();
+}
+
+void Camera3D::set_oblique_normal(Vector3 p_oblique_normal) {
+	oblique_normal = p_oblique_normal;
+	_update_camera_mode();
+}
+
+void Camera3D::set_oblique_position(Vector3 p_oblique_position) {
+	oblique_position = p_oblique_position;
+	_update_camera_mode();
+}
+
+void Camera3D::set_oblique_offset(real_t p_oblique_offset) {
+	oblique_offset = p_oblique_offset;
+	_update_camera_mode();
+}
+
+void Camera3D::set_oblique_plane_from_transform(Transform3D p_oblique_transform) {
+	set_oblique_normal(p_oblique_transform.basis.get_column(1));
+	set_oblique_position(p_oblique_transform.origin);
 	_update_camera_mode();
 }
 
@@ -736,6 +814,9 @@ RID Camera3D::get_pyramid_shape_rid() {
 Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
 	set_perspective(75.0, 0.05, 4000.0);
+	oblique_normal = Vector3(0, 1, 0);
+	oblique_position = Vector3();
+	oblique_offset = 0;
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
 	velocity_tracker.instantiate();

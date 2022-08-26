@@ -116,6 +116,28 @@
 				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [param size], an [param offset], and the [param z_near] and [param z_far] clip planes in world space units. See also [member frustum_offset].
 			</description>
 		</method>
+		<method name="set_oblique">
+			<return type="void" />
+			<param index="0" name="fov" type="float" />
+			<param index="1" name="oblique_data" type="Dictionary" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<description>
+				Sets the camera projection to perspective with oblique near clipping (see [constant PROJECTION_OBLIQUE]), by specifying a [code]fov[/code] (field of view) angle in degrees, the [code]oblique_data[/code] used to transform the projection frustum, and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space before transformation.
+				[b]Note:[/b] [code]oblique_data[/code] is a dictionary containing the following fields:
+				[code]camera_gt[/code]: The camera global transform.
+				[code]normal[/code]: The desired normal vector of the plane.
+				[code]position[/code]: The world-space position of the plane relative to the camera
+				[code]offset[/code]: An adjustable offset for the oblique plane distance value
+			</description>
+		</method>
+		<method name="set_oblique_plane_from_transform">
+			<return type="void" />
+			<param index="0" name="oblique_transform" type="Transform3D" />
+			<description>
+				Sets the Oblique_normal and oblique_position values of an oblique projection camera using a the origin and upward vector of the transform argument. For ease of using plane meshes as portals and mirrors.
+			</description>
+		</method>
 		<method name="set_orthogonal">
 			<return type="void" />
 			<param index="0" name="size" type="float" />
@@ -190,6 +212,15 @@
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis.
 		</member>
+		<member name="oblique_normal" type="Vector3" setter="set_oblique_normal" getter="get_oblique_normal" default="Vector3(0, 1, 0)">
+			The desired normal vector of the world space plane used by an oblique camera as an oblique near clipping plane.
+		</member>
+		<member name="oblique_offset" type="float" setter="set_oblique_offset" getter="get_oblique_offset" default="0.0">
+			The an offset value for the oblique plane along it's forward vector.
+		</member>
+		<member name="oblique_position" type="Vector3" setter="set_oblique_position" getter="get_oblique_position" default="Vector3(0, 0, 0)">
+			The world space position of the plane used by an oblique camera as an oblique near clipping plane.
+		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
@@ -209,6 +240,9 @@
 		</constant>
 		<constant name="PROJECTION_FRUSTUM" value="2" enum="ProjectionType">
 			Frustum projection. This mode allows adjusting [member frustum_offset] to create "tilted frustum" effects.
+		</constant>
+		<constant name="PROJECTION_OBLIQUE" value="3" enum="ProjectionType">
+			Oblique Near Plane projection. This mode allows adjusting the near clipping plane to align with a given world plane.
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Preserves the horizontal aspect ratio; also known as Vert- scaling. This is usually the best option for projects running in portrait mode, as taller aspect ratios will benefit from a wider vertical FOV.
