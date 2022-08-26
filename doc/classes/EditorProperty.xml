@@ -38,12 +38,6 @@
 				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin.parse_property]), then this will return the property.
 			</description>
 		</method>
-		<method name="get_tooltip_text" qualifiers="const">
-			<return type="String" />
-			<description>
-				Must be implemented to provide a custom tooltip to the property editor.
-			</description>
-		</method>
 		<method name="set_bottom_editor">
 			<return type="void" />
 			<argument index="0" name="editor" type="Control" />

@@ -2236,8 +2236,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						if (tooltip == gui.tooltip_label->get_text()) {
 							is_tooltip_shown = true;
 						}
-					} else if (tooltip == String(gui.tooltip_popup->call("get_tooltip_text"))) {
-						is_tooltip_shown = true;
 					}
 				} else {
 					_gui_cancel_tooltip();

@@ -699,7 +699,6 @@ void EditorProperty::_update_pin_flags() {
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	tooltip_text = p_text;
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
 	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
@@ -719,10 +718,6 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	}
 
 	return help_bit;
-}
-
-String EditorProperty::get_tooltip_text() const {
-	return tooltip_text;
 }
 
 void EditorProperty::_bind_methods() {
@@ -751,8 +746,6 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_menu_option", "option"), &EditorProperty::_menu_option);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &EditorProperty::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_focusable_focused"), &EditorProperty::_focusable_focused);
-
-	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
 
 	ClassDB::bind_method(D_METHOD("add_focusable", "control"), &EditorProperty::add_focusable);
 	ClassDB::bind_method(D_METHOD("set_bottom_editor", "editor"), &EditorProperty::set_bottom_editor);
@@ -979,7 +972,6 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	tooltip_text = p_text;
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
 	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
@@ -1013,14 +1005,6 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	ms.height += get_constant("vseparation", "Tree");
 
 	return ms;
-}
-
-void EditorInspectorCategory::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorInspectorCategory::get_tooltip_text);
-}
-
-String EditorInspectorCategory::get_tooltip_text() const {
-	return tooltip_text;
 }
 
 EditorInspectorCategory::EditorInspectorCategory() {
