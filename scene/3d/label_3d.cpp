@@ -31,6 +31,7 @@
 #include "label_3d.h"
 
 #include "core/core_string_names.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 
@@ -184,6 +185,14 @@ void Label3D::_notification(int p_what) {
 			if (!pending_update) {
 				_im_update();
 			}
+			Viewport *viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			Viewport *viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = tr(text);
