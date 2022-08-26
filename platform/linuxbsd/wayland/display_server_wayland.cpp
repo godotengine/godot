@@ -1541,6 +1541,10 @@ int DisplayServerWayland::get_screen_count() const {
 Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 	MutexLock mutex_lock(wls.mutex);
 
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Point2i());
 
 	return wls.screens[p_screen].position;
@@ -1548,6 +1552,10 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 	MutexLock mutex_lock(wls.mutex);
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Size2i());
 
