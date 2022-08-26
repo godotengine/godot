@@ -518,8 +518,6 @@ void _err_flush_stdout();
 	} else                                                                                                                                                        \
 		((void)0)
 
-#endif
-
 /**
  * This should be a 'free' assert for program flow and should not be needed in any releases,
  *  only used in dev builds.
@@ -558,5 +556,6 @@ void _err_flush_stdout();
 		((void)0)
 #else
 #define DEV_CHECK_ONCE(m_cond)
+#endif
 
 #endif // ERROR_MACROS_H
