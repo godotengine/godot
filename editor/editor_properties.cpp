@@ -99,6 +99,10 @@ void EditorPropertyText::set_string_name(bool p_enabled) {
 	string_name = p_enabled;
 }
 
+void EditorPropertyText::set_secret(bool p_enabled) {
+	text->set_secret(p_enabled);
+}
+
 void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
@@ -4408,6 +4412,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
 					editor->set_placeholder(p_hint_text);
+				} else if (p_hint == PROPERTY_HINT_PASSWORD) {
+					editor->set_secret(true);
+					editor->set_placeholder(p_hint_text);
 				}
 				return editor;
 			}
@@ -4531,6 +4538,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
+					editor->set_placeholder(p_hint_text);
+				} else if (p_hint == PROPERTY_HINT_PASSWORD) {
+					editor->set_secret(true);
 					editor->set_placeholder(p_hint_text);
 				}
 				editor->set_string_name(true);
