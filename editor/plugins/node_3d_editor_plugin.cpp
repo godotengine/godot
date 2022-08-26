@@ -3981,19 +3981,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 			// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 			String name = path.get_file().get_basename();
-			switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
-				case NAME_CASING_PASCAL_CASE:
-					name = name.capitalize().replace(" ", "");
-					break;
-				case NAME_CASING_CAMEL_CASE:
-					name = name.capitalize().replace(" ", "");
-					name[0] = name.to_lower()[0];
-					break;
-				case NAME_CASING_SNAKE_CASE:
-					name = name.capitalize().replace(" ", "_").to_lower();
-					break;
-			}
-			mesh_instance->set_name(name);
+			mesh_instance->set_name(Node::adjust_name_casing(name));
 
 			instantiated_scene = mesh_instance;
 		} else {
