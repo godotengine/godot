@@ -2122,11 +2122,10 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
 				};
-				Ref<Texture2D> interp_icon[4] = {
+				Ref<Texture2D> interp_icon[3] = {
 					get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")),
-					get_theme_icon(SNAME("InterpCubicInTime"), SNAME("EditorIcons"))
 				};
 				Ref<Texture2D> cont_icon[4] = {
 					get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
@@ -2849,7 +2848,6 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
 				menu->add_icon_item(get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
 				menu->add_icon_item(get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
-				menu->add_icon_item(get_theme_icon(SNAME("InterpCubicInTime"), SNAME("EditorIcons")), TTR("CubicInTime"), MENU_INTERPOLATION_CUBIC_IN_TIME);
 				menu->reset_size();
 
 				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
@@ -3190,8 +3188,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		} break;
 		case MENU_INTERPOLATION_NEAREST:
 		case MENU_INTERPOLATION_LINEAR:
-		case MENU_INTERPOLATION_CUBIC:
-		case MENU_INTERPOLATION_CUBIC_IN_TIME: {
+		case MENU_INTERPOLATION_CUBIC: {
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
