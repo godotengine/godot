@@ -358,6 +358,15 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If nothing was found, error out.
  */
 Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	if (OS::get_singleton()->get_resource_dir() != "") {
+		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
+		// If the OS would rather use a specific location, then it will not be empty.
+		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
+		if (resource_path != "" && resource_path[resource_path.length() - 1] == '/') {
+			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
+		}
+	}
+
 	// If looking for files in a network client, use it directly
 
 	if (FileAccessNetworkClient::get_singleton()) {
@@ -439,13 +448,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// (Only Android -when reading from pck- and iOS use this.)
 
 	if (OS::get_singleton()->get_resource_dir() != "") {
-		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
-		// If the OS would rather use a specific location, then it will not be empty.
-		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
-		if (resource_path != "" && resource_path[resource_path.length() - 1] == '/') {
-			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
-		}
-
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
